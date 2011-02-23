@@ -19,7 +19,7 @@
 		ses.init("");
 		JobTemplate jt = ses.createJobTemplate();
 		jt.setRemoteCommand("/home/starexec/test");
-		jt.setWorkingDirectory("/export/starexec");
+		jt.setWorkingDirectory("/home/starexec");
 		String id = ses.runJob(jt);
 		out.write("<p>Job submitted with job ID: " + id + "</p>");				
 		
