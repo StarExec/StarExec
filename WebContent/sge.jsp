@@ -8,17 +8,18 @@
 </head>
 <body>
 <%	
+
+	// This is a test for submitting a job in SGE using DRMAA
 	Session ses = null;
 	 
-	try{
+	try {
 		SessionFactory factory = SessionFactory.getFactory();
 		ses = factory.getSession();
 				
 		ses.init("");
 		JobTemplate jt = ses.createJobTemplate();
-		jt.setRemoteCommand("/home/starexec/hello.sh");
-		//jt.setOutputPath("starexec:/home/starexec/stdout.txt");
-		//jt.setWorkingDirectory("/export/starexec");
+		jt.setRemoteCommand("/home/starexec/test");
+		jt.setWorkingDirectory("/export/starexec");
 		String id = ses.runJob(jt);
 		out.write("<p>Job submitted with job ID: " + id + "</p>");				
 		
@@ -38,7 +39,6 @@
 		if(ses != null)
 			ses.exit();
 	}
-	
 %>
 </body>
 </html>
