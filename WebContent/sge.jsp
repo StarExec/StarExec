@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Insert title here</title>
+<title>SGE Job Submitter</title>
 </head>
 <body>
 <%	
@@ -18,8 +18,8 @@
 				
 		ses.init("");
 		JobTemplate jt = ses.createJobTemplate();
-		jt.setRemoteCommand("/home/starexec/test");
-		//jt.setOutputPath("starexec:/project/tomcat-webapps/webapps");		
+		jt.setRemoteCommand("/home/starexec/Solvers/test");
+		jt.setOutputPath("starexec:/home/starexec/Solvers");		
 		jt.setWorkingDirectory("/project/tomcat-webapps/webapps");
 		jt.setJoinFiles(true);
 		String id = ses.runJob(jt);							
