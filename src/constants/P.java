@@ -12,4 +12,6 @@ public class P {
 	public static String USER_EMAIL = "em";
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
+	
+	public static String UPLOAD_FILE = "f";
 }

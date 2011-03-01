@@ -41,8 +41,7 @@
         <!-- Servlets --> 
         <!-- ========================================================== --> 
         
-        <servlet> 
-                <!-- Identification --> 
+        <servlet>  
                 <servlet-name>register</servlet-name> 
                 <servlet-class>servlets.Registration</servlet-class> 
         </servlet> 
@@ -50,6 +49,16 @@
         <servlet-mapping> 
                 <servlet-name>register</servlet-name> 
                 <url-pattern>/Registration</url-pattern> 
+        </servlet-mapping>
+        
+        <servlet>                 
+                <servlet-name>fileup</servlet-name> 
+                <servlet-class>servlets.FileUpload</servlet-class> 
+        </servlet> 
+
+        <servlet-mapping> 
+                <servlet-name>fileup</servlet-name> 
+                <url-pattern>/FileUpload</url-pattern> 
         </servlet-mapping>         
 
         <!-- ========================================================== --> 
