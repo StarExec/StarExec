@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -18,7 +20,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+
+import util.LogUtil;
+import util.Util;
 
 import com.google.gson.Gson;
 
@@ -34,76 +44,42 @@ public class FileUpload extends HttpServlet {
      */
     public FileUpload() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO: Clean this mess up!
-		Gson gson = new Gson();
-		boolean success = false; 
-		response.setContentType("text/plain");
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {			
+		boolean success = true; 												// Was the upload a success?
 		
-		try{
-			if (isValidFileInputForm(request)) {									// If the form is a valid file upload submission...			
-		 		DataInputStream in = new DataInputStream(request.getInputStream());	// Get the input stream from the request				
-				
-				int contentLen = request.getContentLength();						// How large is the file we're uploading? 
-				int byteRead = 0;													// How many bytes are read in a single pass
-				int totalBytesRead = 0;												// How many bytes have been read overall
-				byte[] buffer = new byte[contentLen];					 			// Create the buffer to hold the data that is the same size as the file length
-				
-				while (totalBytesRead < contentLen) {								// While we haven't read all the data...
-					byteRead = in.read(buffer, totalBytesRead, contentLen);			// Read data from the stream and place into the buffer
-					totalBytesRead += byteRead;										// Increment how many bytes we've seen
-				}
-				
-				String strFile = new String(buffer);								// Convert the buffer into a raw string			
-				int boundaryIndex = request.getContentType().lastIndexOf("=");		// Get the starting position of the boundary string
-				String boundary = request.getContentType().substring(boundaryIndex + 1, request.getContentType().length()); // Extract the boundary string (which is what separates files in the request)
-				int pos = strFile.indexOf("filename=\"");							// Get the position of the file name
-				String fileExtension = strFile.substring(pos, strFile.indexOf("\n", pos));
-				fileExtension = fileExtension.substring(fileExtension.lastIndexOf("."), fileExtension.lastIndexOf("\""));			
-				
-				pos = strFile.indexOf("\n", pos) + 1;								// Move 3 lines down to locate the start of the file data
-				pos = strFile.indexOf("\n", pos) + 1;
-				pos = strFile.indexOf("\n", pos) + 1;
-				int boundaryLocation = strFile.indexOf(boundary, pos) - 4;			// Find the next boundary location
-				int startPos = ((strFile.substring(0, pos)).getBytes()).length;		// Set the start position to the start of the file data
-				int dataLen = ((strFile.substring(0, boundaryLocation)).getBytes()).length;	// Set the length of how long the actual file data is 
-	 
-				// TODO: Determine what we should name the file and where to put it!
-				DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");
-				FileOutputStream fileOut = new FileOutputStream("/home/starexec/Solvers/" + shortDate.format(new Date()) + ".upload" + fileExtension);			// Create the file stream			
-				fileOut.write(buffer, startPos, (dataLen - startPos));				// Write the buffer to the file stream
-				fileOut.flush();													// Clean up!
-				fileOut.close();
-				
-				success = true;
+		try {
+			DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The dated name of the file
+			String path = "/home/starexec/Solvers/";							// The directory in which to save the file(s)
+			int i = 1;															// Unique number to differentiate the different files in case upload is too fast
+			
+			FileItemFactory factory = new DiskFileItemFactory();				
+			ServletFileUpload upload = new ServletFileUpload(factory);			// Create the helper objects to assist in getting the file and saving it
+			
+			List<FileItem> items = upload.parseRequest(request);				// The list of files to save					
+							
+			for(FileItem item : items) {										// For each file in the list			   
+			   if (!item.isFormField()) {										// If it's not a field...
+				   try {						 
+					   String fileName = String.format("%s%s-%d.%s", path, shortDate.format(new Date()), i++, Util.getFileExtension(item.getName()));
+					   File savedFile = new File(fileName);						// Save it with our special name
+					   item.write(savedFile);									// Save the file to disk!
+				   } catch (Exception e) {
+					   success = false;											// If there's a problem, sucess is false and log exception
+					   LogUtil.LogException(e);
+				   }			   
+			   }
 			}
-		} catch (Exception e) {			
-			StringBuilder sb = new StringBuilder();
-			for(StackTraceElement ste : e.getStackTrace()){
-				sb.append(ste.toString());
-			}
-			Logger.getLogger("starexec").severe(sb.toString());
-		}
+		} catch (FileUploadException e) {
+			LogUtil.LogException(e);
+			success = false;
+		}	
 		
-		String json = gson.toJson(success);
-		response.getWriter().write(json);
-	}
-	
-	/**
-	 * Makes sure the incoming request is the proper type for file uploading
-	 * and actually has content to send.
-	 * @param request The http request to check
-	 * @return True if the form submitted a valid file upload request, false if otherwise
-	 */
-	private boolean isValidFileInputForm(HttpServletRequest request){
-		String contentType = request.getContentType();
-		return ((contentType != null) && !contentType.isEmpty() 
-				&& contentType.contains("multipart/form-data") && request.getContentLength() > 0);
+		response.addHeader("Upload-Success", String.valueOf(success));			// Write the success to the header			
+		response.sendRedirect("upload.jsp?s=" + success);						// Send redirect to the same page
 	}
 }
