@@ -27,7 +27,7 @@
 		
 		<label>File</label>
 		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>									
-		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>
+		<!-- <input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>-->
 		<input type="submit"/>
 	</form>
 </body>
