@@ -13,7 +13,7 @@
 
 </head>
 <body>
-	<form id="upForm" enctype="multipart/form-data" action="FileUpload" method="POST">
+	<form id="upForm" enctype="multipart/form-data" action="tagselection.jsp" method="POST">
 		<h2>File Upload</h2>
 		<%
 			// Check to see if the upload is a success if this is a post-back

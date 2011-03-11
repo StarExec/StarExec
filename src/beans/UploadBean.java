@@ -1,62 +1,53 @@
-package servlets;
+package beans;
 
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+
+import data.Database;
+import data.to.Benchmark;
 
 import util.LogUtil;
 import util.Util;
 
-import com.google.gson.Gson;
-
-/**
- * Servlet implementation class FileUpload
- */
-@WebServlet(description = "Services incoming file upload requests", urlPatterns = { "/FileUpload" })
-public class FileUpload extends HttpServlet {
+public class UploadBean {
 	private static final long serialVersionUID = 1L;
-    //private final String rootPath = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the file(s)
-    private final String rootPath = "/home/starexec/Solvers/";					// The directory in which to save the file(s)
+	//private final String solverPath = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
+    //private final String benchPath = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
+    private final String solverPath = "/home/starexec/Solvers/";				// The directory in which to save the solver file(s)
+    private final String benchPath = "/home/starexec/Benchmarks/";			// The directory in which to save the benchmark file(s)
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public FileUpload() {
-        super();
+    private List<Benchmark> benchmarks;
+    private Database database;
+    private boolean isSolver = false;
+    private boolean isBenchmark = false;
+    
+    public UploadBean(){
+    	
     }
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {			
+    
+	public void doUpload(HttpServletRequest request){
+		database = new Database(request.getServletContext());					// Setup the database
 		boolean success = true; 												// Was the upload a success?
 		
 		try {			
@@ -68,9 +59,9 @@ public class FileUpload extends HttpServlet {
 			for(FileItem item : items) {										// For each file in the list			   
 			   if (!item.isFormField()) {										// If it's not a field...
 				   try {
-					   if(isSolver(item.getName()))								// If the file is a solver, handle it
+					   if(isSolver)												// If the file is a solver, handle it
 						   handleSolver(item);
-					   else if(isBenchmark(item.getName()))						// If the file is a benchmark, handle it
+					   else if(isBenchmark)										// If the file is a benchmark, handle it
 						   handleBenchmark(item);
 					   else
 						   throw new Exception("Unsupported file type uploaded.");	// If it's neither, throw an exception
@@ -84,12 +75,9 @@ public class FileUpload extends HttpServlet {
 			LogUtil.LogException(e);											// Log any problems with the file upload process here
 			success = false;
 		}	
-						
-		response.sendRedirect("upload.jsp?s=" + success);						// Send redirect to the same page with a get parameter to notify the user of success or failure
 	}
 	
 
-	
 	/**
 	 * This method simple takes in the name of the zip file, and extracts its contents into
 	 * the same directory that the zip file resides in. It will automatically create any sort
@@ -99,7 +87,10 @@ public class FileUpload extends HttpServlet {
 	 * @throws IOException If there was a problem extracting from the zip file	
 	 */
 	@SuppressWarnings("unchecked")
-	private void extractZip(String fileName) throws FileNotFoundException, IOException{		
+	private void extractZip(String fileName, boolean isBenchmark) throws FileNotFoundException, IOException{
+		if(isBenchmark)																				// Is we unzipping a benchmark zip?
+			benchmarks = new ArrayList<Benchmark>(25);												// Create a new benchmark list
+		
 		String directory = new File(fileName).getParentFile().getCanonicalPath() + File.separator;	// Get the directory the zip file is in (this will be the directory to extract to)
 	    ZipFile zipFile = new ZipFile(fileName);													// Create a zip file object
 	    Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zipFile.entries();	    			// Get all of the entries in the zip file
@@ -115,6 +106,15 @@ public class FileUpload extends HttpServlet {
 	        	
 	        	FileOutputStream fileOut = new FileOutputStream(directory + entry.getName());		// Open a new file for writing
 		        extractFile(zipFile.getInputStream(entry), new BufferedOutputStream(fileOut));		// Extract the zipped file to the newly opened file (essentially copy it)
+		        
+		        if(isBenchmark) {																	// If we're dealing with benchmarks
+		        	Benchmark b = new Benchmark();													// Create a new benchmark
+		        	b.setPath(directory + entry.getName());
+		        	b.setUser(-1);																	// TODO add the real user's ID
+		        	
+		        	b.setId(database.addBenchmark(b));												// Add it to the database
+		        	benchmarks.add(b);																// Add it to our list of added benchmarks
+		        }
 	        }	       
 	      }
 
@@ -145,11 +145,11 @@ public class FileUpload extends HttpServlet {
 	 * @throws Exception
 	 */
 	public void handleSolver(FileItem item) throws Exception{
-		File destFile = new File(String.format("%s%s%s%s", rootPath, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
+		File destFile = new File(String.format("%s%s%s%s", solverPath, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
 		new File(destFile.getParent()).mkdir();																							// Create said unique path
 						
 		item.write(destFile);																		// Copy the file to the server from the client
-		extractZip(destFile.getAbsolutePath());														// Extract the downloaded file
+		extractZip(destFile.getAbsolutePath(), false);														// Extract the downloaded file
 		destFile.delete();																			// Delete the archive
 		
 		//TODO: Update database with uploaded solver
@@ -160,31 +160,34 @@ public class FileUpload extends HttpServlet {
 	 * the appropriate location and updating the database to reflect
 	 * the new benchmark.
 	 * @param item
+	 * @throws Exception 
 	 */
-	public void handleBenchmark(FileItem item) {
-		// TODO: Handle benchmarks
+	public void handleBenchmark(FileItem item) throws Exception {
+		File destFile = new File(String.format("%s%s%s%s", benchPath, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
+		new File(destFile.getParent()).mkdir();																							// Create said unique path
+						
+		item.write(destFile);																		// Copy the file to the server from the client
+		extractZip(destFile.getAbsolutePath(), true);												// Extract the downloaded file
+		destFile.delete();																			// Delete the archive
 	}
-	
-	/**
-	 * Checks to see if the uploaded file is a proper solver
-	 * @param file The file to check
-	 * @return True if it is an accepted benchmark file format
-	 */
-	private boolean isBenchmark(String file){
-		String extension = Util.getFileExtension(file);
-		
-		// TODO: Check against acceptable file extensions for benchmarks
-		return false;
+
+	public List<Benchmark> getUploadedBenchmarks(){
+		return benchmarks;
 	}
-	
-	/**
-	 * Checks to see if the uploaded file is a proper solver
-	 * @param file The file to check
-	 * @return True if it is an accepted solver file format
-	 */
-	private boolean isSolver(String file){
-		String extension = Util.getFileExtension(file);
-		
-		return (extension.equals("zip") || extension.equals("gz"));			
+
+	public boolean isSolver() {
+		return isSolver;
 	}
+
+	public void setSolver(boolean isSolver) {
+		this.isSolver = isSolver;
+	}
+
+	public boolean isBenchmark() {
+		return isBenchmark;
+	}
+
+	public void setBenchmark(boolean isBenchmark) {
+		this.isBenchmark = isBenchmark;
+	}	
 }

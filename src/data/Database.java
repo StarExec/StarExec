@@ -10,6 +10,7 @@ import javax.servlet.ServletContext;
 import util.SHA256;
 
 import constants.*;
+import data.to.Benchmark;
 import data.to.User;
 
 public class Database {
@@ -19,6 +20,7 @@ public class Database {
 	private PreparedStatement psAddPassword = null;
 	private PreparedStatement psAddPermissions = null;
 	private PreparedStatement psGetUser = null;
+	private PreparedStatement psAddBenchmark = null;
 	
 	public Database(ServletContext context) {
 		try {
@@ -117,5 +119,27 @@ public class Database {
 		}
 		
 		return null;
+	}
+	
+	public synchronized int addBenchmark(Benchmark b){
+		try{						
+			if(psAddBenchmark == null)	// If the statement hasn't been prepared yet, create it...			
+					psAddBenchmark = connection.prepareStatement("INSERT INTO benchmarks (uploaded, physical_path, usr) VALUES (NOW(), ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			
+			// Fill in the prepared statement
+			psAddBenchmark.setString(1, b.getPath());
+			psAddBenchmark.setInt(2, b.getUser());
+			
+			// Execute the statement
+			psAddBenchmark.executeUpdate();		// Execute
+			ResultSet idSet = psAddBenchmark.getGeneratedKeys(); 
+			idSet.next();
+			
+			return idSet.getInt(1);					// Get the ID the record was inserted under			
+		} catch (Exception e){
+			log.severe("Error in addUser method: " + e.getMessage());
+			log.severe(Arrays.toString(e.getStackTrace()));
+			return -1;
+		}
 	}
 }
