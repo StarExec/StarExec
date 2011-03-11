@@ -35,7 +35,7 @@ public class UploadBean {
 	//private final String solverPath = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
     //private final String benchPath = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
     private final String solverPath = "/home/starexec/Solvers/";				// The directory in which to save the solver file(s)
-    private final String benchPath = "/home/starexec/Benchmarks/";			// The directory in which to save the benchmark file(s)
+    private final String benchPath = "/home/starexec/Solvers/Benchmarks/";			// The directory in which to save the benchmark file(s)
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format
     private List<Benchmark> benchmarks;
     private Database database;
@@ -175,19 +175,19 @@ public class UploadBean {
 		return benchmarks;
 	}
 
-	public boolean isSolver() {
+	public boolean getIsSolver() {
 		return isSolver;
 	}
 
-	public void setSolver(boolean isSolver) {
+	public void setIsSolver(boolean isSolver) {
 		this.isSolver = isSolver;
 	}
 
-	public boolean isBenchmark() {
+	public boolean getIsBenchmark() {
 		return isBenchmark;
 	}
 
-	public void setBenchmark(boolean isBenchmark) {
+	public void setIsBenchmark(boolean isBenchmark) {
 		this.isBenchmark = isBenchmark;
 	}	
 }

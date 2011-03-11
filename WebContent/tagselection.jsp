@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title><%=T.UPLOAD %></title>
 <%@ include file="includes/jQuery.html" %>
-<jsp:useBean id="uploader" class="beans.UploadBean" scope="request"/>
+<jsp:useBean id="uploader" class="beans.UploadBean" scope="page"/>
 <jsp:setProperty name="uploader" property="isBenchmark" value="true"/>
 </head>
 <body>

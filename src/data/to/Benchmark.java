@@ -42,6 +42,6 @@ public class Benchmark {
 	}
 	
 	public String getFileName(){
-		return path.substring(path.lastIndexOf(File.separator));
+		return path.substring(path.lastIndexOf(File.separator) + 1);
 	}
 }

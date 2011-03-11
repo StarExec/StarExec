@@ -137,7 +137,7 @@ public class Database {
 			
 			return idSet.getInt(1);					// Get the ID the record was inserted under			
 		} catch (Exception e){
-			log.severe("Error in addUser method: " + e.getMessage());
+			log.severe("Error in addBenchmark method: " + e.getMessage());
 			log.severe(Arrays.toString(e.getStackTrace()));
 			return -1;
 		}
