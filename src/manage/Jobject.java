@@ -28,8 +28,6 @@ import java.util.*;
  */
 public class Jobject {
 	private Stack<SolverLink> solverChain;
-	public final int JID, UID;
-	public final Date jobCreated;
 	
 	/**
 	 * This is a link in the solver chain as described above.
@@ -37,36 +35,44 @@ public class Jobject {
 	 * 
 	 */
 	private class SolverLink {
-		private Stack<String> benchmarks;
-		private String solverPath;
+		private Stack<String> bPaths;
+		private String sPath;
 		
-		public SolverLink(String solverPath) {
-			benchmarks = new Stack<String>();
-			this.solverPath = solverPath;
+		public SolverLink(int sid) {
+			bPaths = new Stack<String>();
+			String sPath = null;
+			
+			// Contact database to get the String path of the solver SID
+			
+			this.sPath = sPath;
 		}
 		
-		public void addBenchmark(String b) {
-			// Might want to constrain benchmarks ???
-			benchmarks.push(b);
+		public int getSize() {
+			return bPaths.size();
 		}
 		
-		public String getSolver() {
-			return solverPath;
+		public void addBenchmarkPath(int bid) {
+			String bPath = "";
+			
+			// Contact database to receive the String path that corrosponds to BID
+			
+			bPaths.add(bPath);
 		}
 		
-		public String getBenchMark() {
-			if(!benchmarks.isEmpty())
-				return "";
+		public String getSolverPath() {
+			return sPath;
+		}
+		
+		public String getNextBenchmarkPath() {
+			if(!bPaths.isEmpty())
+				return null;
 			else
-				return benchmarks.pop();
+				return bPaths.pop();
 		}
 	}
 	
 	public Jobject() {
 		this.solverChain = new Stack<SolverLink>();
-		this.JID = -1;
-		this.UID = -1;
-		this.jobCreated = new Date(System.currentTimeMillis());
 	}
 	
 	/**
@@ -86,8 +92,8 @@ public class Jobject {
 	}
 	
 	/**
-	 * Gives back the solver/benchmark stack at this index of the chain.
-	 * @param index
+	 * Gives back the solver/benchmark stack at this index of the chain. Useful if scanning
+	 * @param Index in chain
 	 * 
 	 */
 	public SolverLink peekLink(int index) {
@@ -96,21 +102,14 @@ public class Jobject {
 	
 	/**
 	 * Adds the solver to the chain and returns a reference to it.
-	 * @param solverPath
-	 * @return
+	 * The passed-back reference allows you to continue to add benchmarks to a particular solver, 
+	 * the idea being you populate a solver link before moving onto the next solver in the job.
+	 * @param Solver ID
+	 * @return The SolverLink just created.
 	 */
-	public SolverLink addSolver(String solverPath) {
-		SolverLink s = new SolverLink(solverPath);
-		return addSolver(s);
-	}
-	
-	/**
-	 * Adds the solver to the chain and returns a reference to it.
-	 * @param s
-	 * @return
-	 */
-	public SolverLink addSolver(SolverLink s) {
-		solverChain.push(s);
-		return s;
+	public SolverLink addSolver(int sid) {
+		SolverLink lnk = new SolverLink(sid);
+		solverChain.add(lnk);
+		return lnk;
 	}
 }

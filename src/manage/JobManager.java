@@ -21,21 +21,25 @@ package manage;
  * 
  */
 public abstract class JobManager {
-	public String jobScriptPath = "/home/starexec/Scripts";		// All jobs in script form go here on the master.
-
+	public static String jobScriptPath = "/home/starexec/Scripts";		// All jobs in script form go here on the master.
+	private static Jobject curJob;
+	
 	/**
 	 *  Builds, enqueues, and records the job.
-	 *  @param j
+	 *  @param Job to do
 	 */
-	public void doJob(Jobject j) {
-		buildJob(j);
+	public static void doJob(Jobject j) {
+		curJob = j;
+		
+		buildJob();
+		//enqueJob()
+		//recordJob();
 	}
 	
 	/**
 	 * Builds a script out of the job and deposits in an assigned location.
-	 * @param j
 	 */
-	public void buildJob(Jobject j) {
+	private static void buildJob() {
 		
 	}
 }
