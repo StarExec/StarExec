@@ -29,26 +29,27 @@ import data.to.Benchmark;
 
 import util.LogUtil;
 import util.Util;
+import util.ZipXMLConverter;
 
 public class UploadBean {
 	private static final long serialVersionUID = 1L;
-	//private final String solverPath = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
-    //private final String benchPath = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
-    private final String solverPath = "/home/starexec/Solvers/";				// The directory in which to save the solver file(s)
-    private final String benchPath = "/home/starexec/Solvers/Benchmarks/";			// The directory in which to save the benchmark file(s)
+	private final String solverPath = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
+    private final String benchPath = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
+    //private final String solverPath = "/home/starexec/Solvers/";				// The directory in which to save the solver file(s)
+    //private final String benchPath = "/home/starexec/Solvers/Benchmarks/";			// The directory in which to save the benchmark file(s)
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format
     private List<Benchmark> benchmarks;
     private Database database;
     private boolean isSolver = false;
     private boolean isBenchmark = false;
+    private String xmlPath = "";
     
     public UploadBean(){
     	
     }
     
 	public void doUpload(HttpServletRequest request){
-		database = new Database(request.getServletContext());					// Setup the database
-		boolean success = true; 												// Was the upload a success?
+		database = new Database(request.getServletContext());					// Setup the database		
 		
 		try {			
 			FileItemFactory factory = new DiskFileItemFactory();				
@@ -66,14 +67,12 @@ public class UploadBean {
 					   else
 						   throw new Exception("Unsupported file type uploaded.");	// If it's neither, throw an exception
 				   } catch (Exception e) {
-					   success = false;											// If there's a problem, success is false and log exception
 					   LogUtil.LogException(e);
 				   }			   
 			   }
 			}
 		} catch (FileUploadException e) {
-			LogUtil.LogException(e);											// Log any problems with the file upload process here
-			success = false;
+			LogUtil.LogException(e);											// Log any problems with the file upload process here			
 		}	
 	}
 	
@@ -163,12 +162,16 @@ public class UploadBean {
 	 * @throws Exception 
 	 */
 	public void handleBenchmark(FileItem item) throws Exception {
+		System.out.println("HIT BENCHMARK PROCESSOR");
 		File destFile = new File(String.format("%s%s%s%s", benchPath, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
 		new File(destFile.getParent()).mkdir();																							// Create said unique path
 						
 		item.write(destFile);																		// Copy the file to the server from the client
 		extractZip(destFile.getAbsolutePath(), true);												// Extract the downloaded file
 		destFile.delete();																			// Delete the archive
+		
+		String extPath = destFile.getParent() + File.separator + Util.getFileNameOnly(destFile.getAbsolutePath());
+		xmlPath = ZipXMLConverter.fileToXml(extPath, destFile.getParent()).toURI().toURL().toString();
 	}
 
 	public List<Benchmark> getUploadedBenchmarks(){
@@ -190,4 +193,8 @@ public class UploadBean {
 	public void setIsBenchmark(boolean isBenchmark) {
 		this.isBenchmark = isBenchmark;
 	}	
+	
+	public String getXMLPath(){
+		return xmlPath;
+	}
 }
