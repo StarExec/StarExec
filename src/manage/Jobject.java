@@ -1,6 +1,7 @@
 package manage;
 
-import java.util.*;
+import java.util.Stack;
+import data.Database;
 
 /**
  * This holds the paths to the solvers/benchmarks, and is passed to the job manager to begin a job.
@@ -38,7 +39,7 @@ public class Jobject {
 		private Stack<String> bPaths;
 		private String sPath;
 		
-		public SolverLink(int sid) {
+		public SolverLink(Long sid) {
 			bPaths = new Stack<String>();
 			String sPath = null;
 			
@@ -51,7 +52,7 @@ public class Jobject {
 			return bPaths.size();
 		}
 		
-		public void addBenchmarkPath(int bid) {
+		public void addBenchmarkPath(Long bid) {
 			String bPath = "";
 			
 			// Contact database to receive the String path that corrosponds to BID
@@ -107,7 +108,7 @@ public class Jobject {
 	 * @param Solver ID
 	 * @return The SolverLink just created.
 	 */
-	public SolverLink addSolver(int sid) {
+	public SolverLink addSolver(Long sid) {
 		SolverLink lnk = new SolverLink(sid);
 		solverChain.add(lnk);
 		return lnk;
