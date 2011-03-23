@@ -24,6 +24,8 @@ import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
+import constants.R;
+
 import data.Database;
 import data.to.Benchmark;
 
@@ -33,10 +35,6 @@ import util.ZipXMLConverter;
 
 public class UploadBean {
 	private static final long serialVersionUID = 1L;
-	private final String solverPath = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
-    private final String benchPath = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
-    //private final String solverPath = "/home/starexec/Solvers/";				// The directory in which to save the solver file(s)
-    //private final String benchPath = "/home/starexec/Solvers/Benchmarks/";			// The directory in which to save the benchmark file(s)
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format
     private List<Benchmark> benchmarks;
     private Database database;
@@ -93,12 +91,12 @@ public class UploadBean {
 		String directory = new File(fileName).getParentFile().getCanonicalPath() + File.separator;	// Get the directory the zip file is in (this will be the directory to extract to)
 	    ZipFile zipFile = new ZipFile(fileName);													// Create a zip file object
 	    Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zipFile.entries();	    			// Get all of the entries in the zip file
-      
+	    
 	    while(entries.hasMoreElements()) {															// For each file in the zip file...
 	    	ZipEntry entry = (ZipEntry)entries.nextElement();
 
 	        if(!entry.isDirectory()) {																// If it's actually a file and not a directory
-	        	File parentDir = new File(directory + entry.getName()).getParentFile();				// Get the file's parent directory
+	        	File parentDir = new File(directory, entry.getName()).getParentFile();				// Get the file's parent directory
 	        	
 	        	if(!parentDir.exists())																// If the directory structure doesn't exist, create it
 	        		parentDir.mkdirs();
@@ -109,12 +107,16 @@ public class UploadBean {
 		        if(isBenchmark) {																	// If we're dealing with benchmarks
 		        	Benchmark b = new Benchmark();													// Create a new benchmark
 		        	b.setPath(directory + entry.getName());
-		        	b.setUser(-1);																	// TODO add the real user's ID
+		        	b.setUserId(-1L);																	// TODO add the real user's ID
 		        	
 		        	b.setId(database.addBenchmark(b));												// Add it to the database
 		        	benchmarks.add(b);																// Add it to our list of added benchmarks
 		        }
-	        }	       
+	        } else {																				// If it is a directory...
+	        	File dir = new File(directory, entry.getName());									// Get the file's parent directory
+	        	if(!dir.exists())																	// Create it if it doesn't exist
+	        		dir.mkdirs();
+	        }
 	      }
 
 	      zipFile.close();																			// Close the zip file when finished
@@ -144,7 +146,7 @@ public class UploadBean {
 	 * @throws Exception
 	 */
 	public void handleSolver(FileItem item) throws Exception{
-		File destFile = new File(String.format("%s%s%s%s", solverPath, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
+		File destFile = new File(String.format("%s%s%s%s", R.SOLVER_PATH, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
 		new File(destFile.getParent()).mkdir();																							// Create said unique path
 						
 		item.write(destFile);																		// Copy the file to the server from the client
@@ -161,9 +163,8 @@ public class UploadBean {
 	 * @param item
 	 * @throws Exception 
 	 */
-	public void handleBenchmark(FileItem item) throws Exception {
-		System.out.println("HIT BENCHMARK PROCESSOR");
-		File destFile = new File(String.format("%s%s%s%s", benchPath, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
+	public void handleBenchmark(FileItem item) throws Exception {		
+		File destFile = new File(String.format("%s%s%s%s", R.BENCHMARK_PATH, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
 		new File(destFile.getParent()).mkdir();																							// Create said unique path
 						
 		item.write(destFile);																		// Copy the file to the server from the client

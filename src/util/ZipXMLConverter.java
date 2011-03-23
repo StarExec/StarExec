@@ -48,10 +48,10 @@ public class ZipXMLConverter {
 	 * @param xml The xml builder to use which initially consists of the xml root
 	 */
 	private static void convertDirectory(File dir, XMLBuilder xml){		
-		xml = xml.e(DIR_NAME).a(NAME_ATTR, dir.getName());				// Create the element for the current directory
+		xml = xml.e(DIR_NAME).a(NAME_ATTR, dir.getName());			// Create the element for the current directory
 		
 		for(File file : dir.listFiles(fileFilter)){					// For each benchmark in the directory...
-			xml.e(BENCHMARK_NAME).a(NAME_ATTR, file.getName());				// Create a new element for each benchmark and assign its name attribute to the file name
+			xml.e(BENCHMARK_NAME).a(NAME_ATTR, file.getName());		// Create a new element for each benchmark and assign its name attribute to the file name
 		}
 		
 		for(File directory : dir.listFiles(dirFilter)){				// For each subdirectory in the directory...

@@ -4,16 +4,17 @@ import java.io.File;
 import java.sql.Date;
 
 public class Benchmark {
-	private int id;
+	private long id;
 	private String path;
-	private int user;
+	private String fileName;
+	private long userid;
 	private Date uploaded;
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 	
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	
@@ -23,14 +24,15 @@ public class Benchmark {
 	
 	public void setPath(String path) {
 		this.path = path;
+		fileName = path.substring(path.lastIndexOf(File.separator) + 1);
 	}
 	
-	public int getUser() {
-		return user;
+	public long getUserId() {
+		return userid;
 	}
 	
-	public void setUser(int user) {
-		this.user = user;
+	public void setUserId(long userid) {
+		this.userid = userid;
 	}
 	
 	public Date getUploaded() {
@@ -42,6 +44,6 @@ public class Benchmark {
 	}
 	
 	public String getFileName(){
-		return path.substring(path.lastIndexOf(File.separator) + 1);
+		return fileName;
 	}
 }

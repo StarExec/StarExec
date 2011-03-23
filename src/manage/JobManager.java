@@ -21,7 +21,6 @@ package manage;
  * 
  */
 public abstract class JobManager {
-	private static String jobScriptPath = "/home/starexec/Scripts"; // ... All jobscripts go here before being enqueued. 
 	private static Jobject curJob; // .................................... Pointer to current Jobject (temporarily useful) 
 	private static int curJID; // ........................................ Assigned ID of current job. Part of jobscript name.
 	

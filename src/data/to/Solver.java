@@ -4,16 +4,18 @@ import java.io.File;
 import java.sql.Date;
 
 public class Solver {
-	private int id;
+	private long id;
 	private String path;
-	private int user;
+	private String fileName;
+	private long userId;
 	private Date uploaded;
+	private String notes;
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 	
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	
@@ -23,14 +25,15 @@ public class Solver {
 	
 	public void setPath(String path) {
 		this.path = path;
+		fileName = path.substring(path.lastIndexOf(File.separator) + 1);
 	}
 	
-	public int getUser() {
-		return user;
+	public long getUserId() {
+		return userId;
 	}
 	
-	public void setUser(int user) {
-		this.user = user;
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 	
 	public Date getUploaded() {
@@ -42,6 +45,14 @@ public class Solver {
 	}
 	
 	public String getFileName(){
-		return path.substring(path.lastIndexOf(File.separator) + 1);
+		return fileName;
 	}
+
+	public String getNotes() {
+		return notes;
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}		
 }
