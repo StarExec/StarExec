@@ -21,8 +21,9 @@ package manage;
  * 
  */
 public abstract class JobManager {
-	public static String jobScriptPath = "/home/starexec/Scripts";		// All jobs in script form go here on the master.
-	private static Jobject curJob;
+	private static String jobScriptPath = "/home/starexec/Scripts"; // ... All jobscripts go here before being enqueued. 
+	private static Jobject curJob; // .................................... Pointer to current Jobject (temporarily useful) 
+	private static int curJID; // ........................................ Assigned ID of current job. Part of jobscript name.
 	
 	/**
 	 *  Builds, enqueues, and records the job.
@@ -30,16 +31,24 @@ public abstract class JobManager {
 	 */
 	public static void doJob(Jobject j) {
 		curJob = j;
-		
+		curJID = -1;	// Dummy value
+				
+		// Creates the job script
 		buildJob();
+		
 		//enqueJob()
 		//recordJob();
 	}
 	
 	/**
 	 * Builds a script out of the job and deposits in an assigned location.
+	 * Each jobscript is composed of x parts:
+	 * 0. Deal with caching ... should jobs go to the nodes with warmest caches? In any case, query a cache list of benchmarks. 
+	 * 1. Copy solvers/benchmarks to local node's workspace ... also set up solvers with appropriate benchmarks in script. (should be done in one step)
+	 * 1.x. Deal with job output?
+	 * 2. Load jobscript into grid engine ... make job entry into database
+	 * 
 	 */
 	private static void buildJob() {
-		
 	}
 }
