@@ -38,14 +38,13 @@ public class Jobject {
 	private class SolverLink {
 		private Stack<String> bPaths;
 		private String sPath;
+		private Database db;
 		
 		public SolverLink(Long sid) {
 			bPaths = new Stack<String>();
-			String sPath = null;
+			db = new Database();
 			
-			// Contact database to get the String path of the solver SID
-			
-			this.sPath = sPath;
+			this.sPath = db.getSolver(sid).getPath();
 		}
 		
 		public int getSize() {
@@ -55,9 +54,7 @@ public class Jobject {
 		public void addBenchmarkPath(Long bid) {
 			String bPath = "";
 			
-			// Contact database to receive the String path that corrosponds to BID
-			
-			bPaths.add(bPath);
+			bPaths.add(db.getBenchmark(bid).getPath());
 		}
 		
 		public String getSolverPath() {
