@@ -32,7 +32,7 @@ public class UploadBean {
     }
     
 	public void doUpload(HttpServletRequest request){
-		database = new Database(request.getServletContext());					// Setup the database		
+		database = new Database();					// Setup the database		
 		
 		try {			
 			FileItemFactory factory = new DiskFileItemFactory();				

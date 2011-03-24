@@ -33,7 +33,7 @@ public class Registration extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Database database = new Database(getServletContext());
+		Database database = new Database();
 
 		User u = new User(request.getParameter(P.USER_USERNAME));
 		u.setAffiliation(request.getParameter(P.USER_AFILIATION));

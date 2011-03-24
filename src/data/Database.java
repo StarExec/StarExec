@@ -1,19 +1,18 @@
 package data;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContext;
-
 import util.LogUtil;
 import util.SHA256;
-
-import constants.*;
+import constants.R;
 import data.to.Benchmark;
 import data.to.Level;
 import data.to.Solver;
@@ -33,15 +32,13 @@ public class Database {
 	private PreparedStatement psGetBenchmarks = null;
 	private PreparedStatement psGetMaxLevel = null;
 	
-	public Database(ServletContext context) {
+	public Database() {
+		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
+	}
+	
+	public Database(String url, String username, String pass) {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");	// Load the MYSQL driver
-			
-			// Load connection info from the web.config file
-			String url = context.getInitParameter(R.MYSQL_URL);
-			String username = context.getInitParameter(R.MYSQL_USERNAME);
-			String pass = context.getInitParameter(R.MYSQL_PASSWORD);
-			
+			Class.forName("com.mysql.jdbc.Driver");	// Load the MYSQL driver						
 			connection = DriverManager.getConnection(url, username, pass);	// Open a connection to the database
 		} catch (Exception e) {
 			log.severe("Error in Database constructor: " + e.getMessage());

@@ -43,7 +43,7 @@ public class BXMLHandler extends DefaultHandler {
 			b.setPath(uri);								// TODO: Figure out my relative path
 			b.setBelongsTo(currentLevel);				// Set the level the benchmark belongs to to the current level
 			benchmarks.add(b);							// Add the benchmark to the list
-			//System.out.println("Added Benchmark: " + b.getName() + " [" + b.getBelongsTo() + "]");			
+			System.out.println("Added Benchmark: " + b.getName() + " [" + b.getBelongsTo() + "]");			
 		} else if(localName.equals("dir")){				// If we're starting a directory tag...
 			Level l = new Level();						// Create a new level object
 			l.setLeft(++currentLevel);					// Increment the current level and set it as my left
@@ -58,7 +58,7 @@ public class BXMLHandler extends DefaultHandler {
 			Level l = dirStack.pop();					// Get the object associated with the start of the tag
 			l.setRight(++currentLevel);					// Set the right value to the current level + 1
 			finalLevels.put(l.getLeft(), l);			// Put the level in the final hashmap with its left value as the key
-			//System.out.println("Added Directory: " + l.getName() + " [" + l.getLeft() + ", " + l.getRight() + "]");
+			System.out.println("Added Directory: " + l.getName() + " [" + l.getLeft() + ", " + l.getRight() + "]");
 		}
 	}
 	

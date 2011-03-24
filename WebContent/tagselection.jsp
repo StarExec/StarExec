@@ -12,7 +12,7 @@
 <body>
 <table>
 <tr><th>ID</th><th>Name</th><th>Path</th></tr>
-<%
+<%	
 	uploader.doUpload(request);
 	for(Benchmark b : uploader.getUploadedBenchmarks()) {
 %>		

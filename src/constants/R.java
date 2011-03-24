@@ -9,9 +9,9 @@ package constants;
 public class R {
 	// String keys to properties in the web.xml file for MySQL
 	// TODO: Crate a new MySQL account with limited privleges
-	public static final String MYSQL_URL = "MySqlURL";
-	public static final String MYSQL_USERNAME = "MySqlUsername";
-	public static final String MYSQL_PASSWORD = "MySqlPassword";
+	public static final String MYSQL_URL = "jdbc:mysql://localhost/starexec";
+	public static final String MYSQL_USERNAME = "root";
+	public static final String MYSQL_PASSWORD = "star3x3c2011!";
 	
 	// Global path information
 	public static final String SOLVER_PATH = "/home/starexec/Solvers/";				// The directory in which to save the solver file(s)
