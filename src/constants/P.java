@@ -14,4 +14,8 @@ public class P {
 	public static String USER_LASTNAME = "ln";
 	
 	public static String UPLOAD_FILE = "f";
+	
+	public static String BENCH_XML = "bxml";
+	public static String FILE_PARENT = "parent";
+	public static String FILE_REQUEST_TYPE = "type";
 }

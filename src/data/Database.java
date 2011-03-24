@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -16,6 +15,7 @@ import util.SHA256;
 
 import constants.*;
 import data.to.Benchmark;
+import data.to.Level;
 import data.to.Solver;
 import data.to.User;
 
@@ -25,11 +25,13 @@ public class Database {
 	private PreparedStatement psAddUser = null;
 	private PreparedStatement psAddPassword = null;
 	private PreparedStatement psAddPermissions = null;
+	private PreparedStatement psAddLevel = null;
 	private PreparedStatement psGetUser = null;
 	private PreparedStatement psGetUser2 = null;
 	private PreparedStatement psAddBenchmark = null;
 	private PreparedStatement psGetSolvers = null;
 	private PreparedStatement psGetBenchmarks = null;
+	private PreparedStatement psGetMaxLevel = null;
 	
 	public Database(ServletContext context) {
 		try {
@@ -284,5 +286,58 @@ public class Database {
 			LogUtil.LogException(e);
 			return null;
 		}			
+	}
+	
+	/**
+	 * Inserts a level structure into the database given a collection of valid levels
+	 * @param levels The collection of levels to add
+	 * @return True for success, false for failure
+	 */
+	public synchronized boolean addLevelStructure(Collection<Level> levels){
+		try {
+			if(psAddLevel == null)
+				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt) VALUES (?, ?, ?)");
+			
+			connection.setAutoCommit(false);
+			int inserted = 0;			
+			int offSet = getMaxLevel();
+			
+			for(Level l : levels){
+				psAddLevel.setString(1, l.getName());
+				psAddLevel.setInt(2, l.getLeft() + offSet);
+				psAddLevel.setInt(3, l.getRight() + offSet);
+				inserted += psAddLevel.executeUpdate();
+			}
+													
+			connection.commit();
+			connection.setAutoCommit(true);
+			
+			return levels.size() == inserted;
+		} catch (Exception e){
+			log.severe("Error in addLevelStructure method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return false;
+		}				
+	}
+	
+	/**
+	 * @return The next level to use when inserting into the levels table. (Essentially the largest right-value)
+	 */
+	public synchronized int getMaxLevel(){
+		try {
+			if(psGetMaxLevel == null)
+				psGetMaxLevel = connection.prepareStatement("SELECT MAX(rgt) FROM levels");
+												
+			ResultSet results = psGetBenchmarks.executeQuery();
+			
+			if(!results.next())
+				return 0;					
+			
+			return results.getInt(0);
+		} catch (Exception e){
+			log.severe("Error in getBenchmark method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return 0;
+		}	
 	}
 }

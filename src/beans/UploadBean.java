@@ -1,37 +1,22 @@
 package beans;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.util.zip.*;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.apache.tomcat.util.http.fileupload.*;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.xml.sax.*;
+import org.xml.sax.helpers.XMLReaderFactory;
 
+import util.*;
 import constants.R;
-
 import data.Database;
 import data.to.Benchmark;
-
-import util.LogUtil;
-import util.Util;
-import util.ZipXMLConverter;
 
 public class UploadBean {
 	private static final long serialVersionUID = 1L;
@@ -107,7 +92,7 @@ public class UploadBean {
 		        if(isBenchmark) {																	// If we're dealing with benchmarks
 		        	Benchmark b = new Benchmark();													// Create a new benchmark
 		        	b.setPath(directory + entry.getName());
-		        	b.setUserId(-1L);																	// TODO add the real user's ID
+		        	b.setUserId(-1L);																// TODO add the real user's ID
 		        	
 		        	b.setId(database.addBenchmark(b));												// Add it to the database
 		        	benchmarks.add(b);																// Add it to our list of added benchmarks
@@ -165,14 +150,21 @@ public class UploadBean {
 	 */
 	public void handleBenchmark(FileItem item) throws Exception {		
 		File destFile = new File(String.format("%s%s%s%s", R.BENCHMARK_PATH, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
-		new File(destFile.getParent()).mkdir();																							// Create said unique path
+		new File(destFile.getParent()).mkdir();																									// Create said unique path
 						
 		item.write(destFile);																		// Copy the file to the server from the client
 		extractZip(destFile.getAbsolutePath(), true);												// Extract the downloaded file
 		destFile.delete();																			// Delete the archive
 		
-		String extPath = destFile.getParent() + File.separator + Util.getFileNameOnly(destFile.getAbsolutePath());
-		xmlPath = ZipXMLConverter.fileToXml(extPath, destFile.getParent()).toURI().toURL().toString();
+		String extPath = destFile.getParent() + File.separator + Util.getFileNameOnly(destFile.getAbsolutePath());	// Get the path to the uploaded folder
+		String xmlPhysicalPath = ZipXMLConverter.fileToXml(extPath, destFile.getParent()).getAbsolutePath();		// Convert the extracted ZIP to xml and return the path to the generated xml file
+		xmlPath = "GetFile?type=bxml&parent=" + destFile.getParentFile().getName();									// Set the path where to get the XML file from the browser
+
+        XMLReader xr = XMLReaderFactory.createXMLReader();															// Create a new SAX parser to parse the xml
+        xr.setContentHandler(new BXMLHandler());																	// Set the handler to our custom benchmark XML handler
+        xr.parse(new InputSource(new FileReader(xmlPhysicalPath)));													// Parse the generated file!
+        
+        // TODO: Add resulting level structure to database
 	}
 
 	public List<Benchmark> getUploadedBenchmarks(){

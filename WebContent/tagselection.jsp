@@ -21,6 +21,6 @@
 	}
 %>
 </table>
-<a href="<%= uploader.getXMLPath() %>">Download XML</a>
+<a href="/starexec/<%= uploader.getXMLPath() %>">Download XML</a>
 </body>
 </html>

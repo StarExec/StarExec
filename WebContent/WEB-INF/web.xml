@@ -1,157 +1,71 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee" 
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" 
-        version="2.4"> 
-
-        <!-- ========================================================== --> 
-        <!-- General --> 
-        <!-- ========================================================== --> 
-
-        <!-- Name the application --> 
-        <display-name>STAREXEC</display-name> 
-        <description>Logic solver collaboration tool</description>        
-
-        <!-- Set timeout to 120 minutes --> 
-        <session-config> 
-                <session-timeout>60</session-timeout> 
-        </session-config> 
-
-        <!-- ========================================================== --> 
-        <!-- Context Parameters --> 
-        <!-- ========================================================== --> 
-
-        <context-param> 
-                <description>MySQL Connection String</description> 
-                <param-name>MySqlURL</param-name> 
-                <param-value>jdbc:mysql://localhost/starexec</param-value> 
-        </context-param> 
-        <context-param> 
-                <description>MySQL Username</description> 
-                <param-name>MySqlUsername</param-name> 
-                <param-value>root</param-value> 
-        </context-param>
-        <context-param> 
-                <description>MySQL Password</description> 
-                <param-name>MySqlPassword</param-name> 
-                <param-value>star3x3c2011!</param-value> 
-        </context-param>  
-
-        <!-- ========================================================== --> 
-        <!-- Servlets --> 
-        <!-- ========================================================== --> 
-        
-        <servlet>  
-                <servlet-name>register</servlet-name> 
-                <servlet-class>servlets.Registration</servlet-class> 
-        </servlet> 
-
-        <servlet-mapping> 
-                <servlet-name>register</servlet-name> 
-                <url-pattern>/Registration</url-pattern> 
-        </servlet-mapping>
-        
-        <servlet>                 
-                <servlet-name>fileup</servlet-name> 
-                <servlet-class>servlets.FileUpload</servlet-class> 
-        </servlet> 
-
-        <servlet-mapping> 
-                <servlet-name>fileup</servlet-name> 
-                <url-pattern>/FileUpload</url-pattern> 
-        </servlet-mapping>         
-
-        <!-- ========================================================== --> 
-        <!-- Security --> 
-        <!-- ========================================================== --> 
-
-        <!-- Define roles --> 
-        <security-role> 
-                <role-name>admin</role-name> 
-        </security-role> 
-        <security-role> 
-                <role-name>users</role-name> 
-        </security-role> 
-         
-        <!-- Define a constraint to restrict access to /private/* --> 
-        <security-constraint> 
-                <display-name>Security constraints</display-name> 
-
-                <web-resource-collection>                          
-                        <web-resource-name>Home Page</web-resource-name> 
-                        <url-pattern>/home.jsp</url-pattern>                                                  
-                        <http-method>DELETE</http-method> 
-                        <http-method>GET</http-method> 
-                        <http-method>POST</http-method> 
-                        <http-method>PUT</http-method> 
-                </web-resource-collection> 
-
-                <auth-constraint> 
-                        <role-name>users</role-name>                         
-                </auth-constraint> 
-        </security-constraint> 
-        
-        <login-config> 
-                <auth-method>FORM</auth-method> 
-                <form-login-config> 
-                        <form-login-page>/login.jsp</form-login-page> 
-                        <form-error-page>/error.jsp</form-error-page> 
-                </form-login-config> 
-        </login-config>               
-
-        <!-- Define a constraint to force SSL on all pages in the application
-        <security-constraint> 
-
-                <web-resource-collection> 
-                        <web-resource-name>Entire Application</web-resource-name> 
-                        <url-pattern>/*</url-pattern> 
-                </web-resource-collection> 
-
-                <user-data-constraint> 
-                        <transport-guarantee>CONFIDENTIAL</transport-guarantee> 
-                </user-data-constraint> 
-
-        </security-constraint> -->
-
-
-        <!-- ========================================================== --> 
-        <!-- Error Handler --> 
-        <!-- ========================================================== --> 
-
-        <!-- Define an error handler for 404 pages 
-        <error-page> 
-                <error-code>404</error-code> 
-                <location>/error404.jsp</location> 
-        </error-page> 
-        
-        <error-page> 
-                <exception-type>java.lang.Throwable</exception-type> 
-                <location>/errorThrowable.jsp</location> 
-        </error-page> -->
-
-
-        <!-- ========================================================== --> 
-        <!-- Extra MIME types --> 
-        <!-- ========================================================== --> 
-
-        <!-- Set XML mime-mapping so spreadsheets open properly instead of being sent as an octet/stream 
-        <mime-mapping> 
-                <extension>xls</extension> 
-                <mime-type>application/vnd.ms-excel</mime-type> 
-        </mime-mapping> -->
-
-
-        <!-- ========================================================== --> 
-        <!-- Welcome Files --> 
-        <!-- ========================================================== --> 
-
-        <!-- Define, in order of preference, which file to show when no filename is defined in the path --> 
-        <!-- eg: when user goes to http://yoursite.com/ or http://yoursite.com/somefolder --> 
-        <!-- Defaults are provided in the server-wide web.xml file, such as index.jsp, index.htm --> 
-        <!-- Note: using this tag overrides the defaults, so don't forget to add them here --> 
-        <welcome-file-list> 
-                <welcome-file>index.jsp</welcome-file>                 
-                <welcome-file>index.html</welcome-file> 
-                <welcome-file>index.htm</welcome-file>                 
-        </welcome-file-list> 
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+  <display-name>STAREXEC</display-name>
+  <description>Logic solver collaboration tool</description>
+  <session-config>
+    <session-timeout>60</session-timeout>
+  </session-config>
+  <context-param>
+    <description>MySQL Connection String</description>
+    <param-name>MySqlURL</param-name>
+    <param-value>jdbc:mysql://localhost/starexec</param-value>
+  </context-param>
+  <context-param>
+    <description>MySQL Username</description>
+    <param-name>MySqlUsername</param-name>
+    <param-value>root</param-value>
+  </context-param>
+  <context-param>
+    <description>MySQL Password</description>
+    <param-name>MySqlPassword</param-name>
+    <param-value>star3x3c2011!</param-value>
+  </context-param>
+  <servlet>
+    <servlet-name>register</servlet-name>
+    <servlet-class>servlets.Registration</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>register</servlet-name>
+    <url-pattern>/Registration</url-pattern>
+  </servlet-mapping>  
+  <servlet>
+    <servlet-name>getfile</servlet-name>
+    <servlet-class>servlets.GetFile</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>getfile</servlet-name>
+    <url-pattern>/GetFile</url-pattern>
+  </servlet-mapping>
+  <security-role>
+    <role-name>admin</role-name>
+  </security-role>
+  <security-role>
+    <role-name>users</role-name>
+  </security-role>
+  <security-constraint>
+    <display-name>Security constraints</display-name>
+    <web-resource-collection>
+      <web-resource-name>Home Page</web-resource-name>
+      <url-pattern>/home.jsp</url-pattern>
+      <http-method>DELETE</http-method>
+      <http-method>GET</http-method>
+      <http-method>POST</http-method>
+      <http-method>PUT</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>users</role-name>
+    </auth-constraint>
+  </security-constraint>
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/login.jsp</form-login-page>
+      <form-error-page>/error.jsp</form-error-page>
+    </form-login-config>
+  </login-config>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+  </welcome-file-list>
 </web-app>

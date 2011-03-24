@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import com.jamesmurty.utils.XMLBuilder;
 
+import constants.R;
+
 public class ZipXMLConverter {
 	public static final String DIR_NAME = "dir";
 	public static final String BENCHMARK_NAME = "bench";
@@ -28,13 +30,13 @@ public class ZipXMLConverter {
 		
 		convertDirectory(root, xml);								// Convert the directory to xml with the current builder
 
-		File xmlFile = new File(outPath, "output.xml"); 				// Create the file handle for the output file
+		File xmlFile = new File(outPath, R.XML_OUTPUT_NAME); 		// Create the file handle for the output file
 		PrintWriter fileOut = new PrintWriter(new FileOutputStream(xmlFile));	// Create the output stream to the file
 		
 		Properties props = new Properties();   						// Set up our output properties
 		props.put(javax.xml.transform.OutputKeys.METHOD, "xml"); 	// Explicitly identify the output as an XML document   
 		props.put(javax.xml.transform.OutputKeys.INDENT, "yes"); 	// Pretty-print the XML output
-		props.put("{http://xml.apache.org/xslt}indent-amount", "3");// Set the indentation amount to 3 spaces
+		props.put("{http://xml.apache.org/xslt}indent-amount", "5");// Set the indentation amount to 3 spaces
 		
 		xml.toWriter(fileOut, props);								// Write the xml to the output file
 		fileOut.close();											// Close the output file

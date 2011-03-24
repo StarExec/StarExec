@@ -21,4 +21,6 @@ public class R {
 	//Tyler's local debug paths
     //public static final String SOLVER_PATH = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
     //public static final String BENCHMARK_PATH = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
+    
+    public static final String XML_OUTPUT_NAME = "output.xml";						// The output name for benchmark xml files
 }
