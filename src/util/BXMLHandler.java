@@ -1,5 +1,6 @@
 package util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Stack;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
+import com.sun.org.apache.xml.internal.serializer.utils.Utils;
 
 import data.to.*;
 
@@ -20,14 +23,24 @@ public class BXMLHandler extends DefaultHandler {
 	private Stack<Level> dirStack;					// Temporary stack to keep track of the last seen directory
 	private HashMap<Integer, Level> finalLevels;	// The final map of levels (key is left position, value is the level object)
 	private int currentLevel;						// The current level we're on in terms of processing
-	private List<BenchLevel> benchmarks;			// The final list of benchmark level objects to add into the database
+	private List<Benchmark> benchmarks;				// The final list of benchmark level objects to add into the database
+	private String root;							// The path to where the xml file we're processing is at (used to derive absolute paths for benchmarks)
+	private File fullPath;
+	
+	/**
+	 * @param rootPath The root directory of the benchmarks (Where the XML file is located)
+	 */
+	public BXMLHandler(String rootPath){
+		this.root = rootPath;		
+	}
 	
 	@Override
 	public void startDocument(){
 		currentLevel = 0;							// Initialize everything before parsing begins
 		dirStack = new Stack<Level>();
 		finalLevels = new HashMap<Integer, Level>();
-		benchmarks = new ArrayList<BenchLevel>(20);
+		benchmarks = new ArrayList<Benchmark>(20);
+		fullPath = new File(root);
 	}
 	
 	@Override
@@ -37,18 +50,19 @@ public class BXMLHandler extends DefaultHandler {
 	
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes){
-		if(localName.equals("bench")){					// If we're starting a benchmark tag
-			BenchLevel b = new BenchLevel();			// Create a new benchmark object 
-			b.setName(attributes.getValue("name"));		// Get the benchmark's name
-			b.setPath(uri);								// TODO: Figure out my relative path
-			b.setBelongsTo(currentLevel);				// Set the level the benchmark belongs to to the current level
+		if(localName.equals("bench")){					// If we're starting a benchmark tag			
+			Benchmark b = new Benchmark();				// Create a new benchmark object 			
+			b.setPath(new File(fullPath, attributes.getValue("name")).getAbsolutePath());
+			b.setLevel(currentLevel);					// Set the level the benchmark belongs to to the current level
 			benchmarks.add(b);							// Add the benchmark to the list
-			System.out.println("Added Benchmark: " + b.getName() + " [" + b.getBelongsTo() + "]");			
+			System.out.println("Added Benchmark: " + b.getFileName() + " [" + b.getLevel() + "]");
+			System.out.println("\t" + b.getPath());
 		} else if(localName.equals("dir")){				// If we're starting a directory tag...
 			Level l = new Level();						// Create a new level object
 			l.setLeft(++currentLevel);					// Increment the current level and set it as my left
 			l.setName(attributes.getValue("name"));		// Set the name of the level
-			dirStack.add(l);							// Add the level to the temporary stack to be processed later 
+			dirStack.add(l);							// Add the level to the temporary stack to be processed later
+			fullPath = new File(fullPath, l.getName());			
 		}
 	}
 	
@@ -58,6 +72,7 @@ public class BXMLHandler extends DefaultHandler {
 			Level l = dirStack.pop();					// Get the object associated with the start of the tag
 			l.setRight(++currentLevel);					// Set the right value to the current level + 1
 			finalLevels.put(l.getLeft(), l);			// Put the level in the final hashmap with its left value as the key
+			fullPath = fullPath.getParentFile();
 			System.out.println("Added Directory: " + l.getName() + " [" + l.getLeft() + ", " + l.getRight() + "]");
 		}
 	}
@@ -66,7 +81,7 @@ public class BXMLHandler extends DefaultHandler {
 		return finalLevels.values();
 	}
 	
-	public List<BenchLevel> getBenchmarks(){
+	public List<Benchmark> getBenchmarks(){
 		return benchmarks;
-	}
+	}	
 }

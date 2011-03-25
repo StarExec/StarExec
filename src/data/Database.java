@@ -41,8 +41,7 @@ public class Database {
 			Class.forName("com.mysql.jdbc.Driver");	// Load the MYSQL driver						
 			connection = DriverManager.getConnection(url, username, pass);	// Open a connection to the database
 		} catch (Exception e) {
-			log.severe("Error in Database constructor: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.severe("DATABASE CONNECTION ERROR");
 		}		
 	}
 	

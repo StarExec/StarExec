@@ -90,12 +90,12 @@ public class UploadBean {
 		        extractFile(zipFile.getInputStream(entry), new BufferedOutputStream(fileOut));		// Extract the zipped file to the newly opened file (essentially copy it)
 		        
 		        if(isBenchmark) {																	// If we're dealing with benchmarks
-		        	Benchmark b = new Benchmark();													// Create a new benchmark
-		        	b.setPath(directory + entry.getName());
-		        	b.setUserId(-1L);																// TODO add the real user's ID
-		        	
-		        	b.setId(database.addBenchmark(b));												// Add it to the database
-		        	benchmarks.add(b);																// Add it to our list of added benchmarks
+//		        	Benchmark b = new Benchmark();													// Create a new benchmark
+//		        	b.setPath(directory + entry.getName());
+//		        	b.setUserId(-1L);																// TODO add the real user's ID
+//		        	
+//		        	b.setId(database.addBenchmark(b));												// Add it to the database
+//		        	benchmarks.add(b);																// Add it to our list of added benchmarks
 		        }
 	        } else {																				// If it is a directory...
 	        	File dir = new File(directory, entry.getName());									// Get the file's parent directory
@@ -156,12 +156,12 @@ public class UploadBean {
 		extractZip(destFile.getAbsolutePath(), true);												// Extract the downloaded file
 		destFile.delete();																			// Delete the archive
 		
-		String extPath = destFile.getParent() + File.separator + Util.getFileNameOnly(destFile.getAbsolutePath());	// Get the path to the uploaded folder
-		String xmlPhysicalPath = ZipXMLConverter.fileToXml(extPath, destFile.getParent()).getAbsolutePath();		// Convert the extracted ZIP to xml and return the path to the generated xml file
+		File extPath = new File(destFile.getParent(), Util.getFileNameOnly(destFile.getAbsolutePath()));	// Get the path to the uploaded folder
+		File xmlPhysicalPath = new File(ZipXMLConverter.fileToXml(extPath.getAbsolutePath(), destFile.getParent()).getAbsolutePath());		// Convert the extracted ZIP to xml and return the path to the generated xml file
 		xmlPath = "GetFile?type=bxml&parent=" + destFile.getParentFile().getName();									// Set the path where to get the XML file from the browser
 
         XMLReader xr = XMLReaderFactory.createXMLReader();															// Create a new SAX parser to parse the xml
-        xr.setContentHandler(new BXMLHandler());																	// Set the handler to our custom benchmark XML handler
+        xr.setContentHandler(new BXMLHandler(xmlPhysicalPath.getParent()));																	// Set the handler to our custom benchmark XML handler
         xr.parse(new InputSource(new FileReader(xmlPhysicalPath)));													// Parse the generated file!
         
         // TODO: Add resulting level structure to database

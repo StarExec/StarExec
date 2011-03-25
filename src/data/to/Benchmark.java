@@ -9,6 +9,7 @@ public class Benchmark {
 	private String fileName;
 	private long userid;
 	private Date uploaded;
+	private int level;
 	
 	public long getId() {
 		return id;
@@ -46,4 +47,12 @@ public class Benchmark {
 	public String getFileName(){
 		return fileName;
 	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}		
 }
