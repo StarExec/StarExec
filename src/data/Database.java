@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -90,13 +91,15 @@ public class Database {
 			
 			rowsAffected += psAddPermissions.executeUpdate();	// Execute and get the rows affected
 			connection.commit();			// Now commit everything to the database
-			connection.setAutoCommit(true);	// Turn auto-commit back on for the other methods
 			
 			return rowsAffected == 3;	// If exactly 3 rows were affected, success!
 		} catch (Exception e){
+			doRollback();
 			log.severe("Error in addUser method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return false;
+		} finally {
+			autoCommitOn();
 		}
 	}
 	
@@ -135,12 +138,12 @@ public class Database {
 	 * @param userid The id of the user to retrieve
 	 * @return The user object associated with the id
 	 */
-	public synchronized User getUser(long userid){
+	public synchronized User getUser(int userid){
 		try {
 			if(psGetUser2 == null)
 				psGetUser2 = connection.prepareStatement("SELECT * FROM users JOIN passwords WHERE users.userid=?");
 			
-			psGetUser2.setLong(1, userid);
+			psGetUser2.setInt(1, userid);
 			ResultSet results = psGetUser2.executeQuery();
 			
 			if(results.next()){
@@ -160,30 +163,51 @@ public class Database {
 		return null;
 	}
 	
+	public synchronized boolean addLevelsBenchmarks(Collection<Level> levels, Collection<Benchmark> benchmarks){
+		int offset = getMaxLevel();
+		boolean retVal = true;
+		retVal = retVal && addLevelStructure(levels, offset);
+		retVal = retVal && addBenchmarks(benchmarks, offset);
+		return retVal;
+	}
+	
 	/**
-	 * Adds the benchmark to the database
-	 * @param b The benchmark to add
-	 * @return The id the benchmark was inserted under. -1 if the benchmark was not inserted successfully
+	 * Adds a set of benchmarks to the database. Benchmarks must be added before the level structure is added or else
+	 * the benchmarks will be mis-aligned with their proper levels.
+	 * @param benchmarks The set of benchmarks to add
+	 * @return True if all benchmarks were added, false if otherwise.
 	 */
-	public synchronized long addBenchmark(Benchmark b){
+	public synchronized boolean addBenchmarks(Collection<Benchmark> benchmarks, int offSet){
 		try{						
 			if(psAddBenchmark == null)	// If the statement hasn't been prepared yet, create it...			
-					psAddBenchmark = connection.prepareStatement("INSERT INTO benchmarks (uploaded, physical_path, usr) VALUES (NOW(), ?, ?)", Statement.RETURN_GENERATED_KEYS);
+					psAddBenchmark = connection.prepareStatement("INSERT INTO benchmarks (uploaded, physical_path, usr, lvl) VALUES (NOW(), ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+						
+			connection.setAutoCommit(false);
+			int rowsAffected = 0;
 			
-			// Fill in the prepared statement
-			psAddBenchmark.setString(1, b.getPath());
-			psAddBenchmark.setLong(2, b.getUserId());
+			for(Benchmark b : benchmarks){
+				// Fill in the prepared statement
+				psAddBenchmark.setString(1, b.getPath());
+				psAddBenchmark.setInt(2, b.getUserId());
+				psAddBenchmark.setInt(3, b.getLevel() + offSet);
+				
+				// Execute the statement
+				rowsAffected += psAddBenchmark.executeUpdate();
+			}									
 			
-			// Execute the statement
-			psAddBenchmark.executeUpdate();		// Execute
-			ResultSet idSet = psAddBenchmark.getGeneratedKeys(); 
-			idSet.next();
-			
-			return idSet.getLong(1);					// Get the ID the record was inserted under			
+			if(rowsAffected == benchmarks.size()) {
+				connection.commit();
+				return true;
+			} else {
+				throw new Exception("Benchmarks inserted do not match the benchmarks received.");
+			}
 		} catch (Exception e){
-			log.severe("Error in addBenchmark method: " + e.getMessage());
+			doRollback();
+			log.severe("Error in addBenchmarks method: " + e.getMessage());
 			LogUtil.LogException(e);
-			return -1L;
+			return false;
+		} finally {
+			autoCommitOn();
 		}
 	}
 	
@@ -224,7 +248,7 @@ public class Database {
 			Benchmark benchmark = new Benchmark();
 			benchmark.setId(results.getLong("id"));
 			benchmark.setPath(results.getString("physical_path"));
-			benchmark.setUserId(results.getLong("usr"));
+			benchmark.setUserId(results.getInt("usr"));
 			benchmark.setUploaded(results.getDate("uploaded"));
 			
 			return benchmark;
@@ -285,18 +309,18 @@ public class Database {
 	}
 	
 	/**
-	 * Inserts a level structure into the database given a collection of valid levels
+	 * Inserts a level structure into the database given a collection of valid levels. Note that
+	 * benchmarks must be added first or else the proper offsets will not be obtained for the benchmarks.
 	 * @param levels The collection of levels to add
 	 * @return True for success, false for failure
 	 */
-	public synchronized boolean addLevelStructure(Collection<Level> levels){
+	public synchronized boolean addLevelStructure(Collection<Level> levels, int offSet){
 		try {
 			if(psAddLevel == null)
 				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt) VALUES (?, ?, ?)");
 			
 			connection.setAutoCommit(false);
-			int inserted = 0;			
-			int offSet = getMaxLevel();
+			int inserted = 0;						
 			
 			for(Level l : levels){
 				psAddLevel.setString(1, l.getName());
@@ -305,15 +329,16 @@ public class Database {
 				inserted += psAddLevel.executeUpdate();
 			}
 													
-			connection.commit();
-			connection.setAutoCommit(true);
-			
+			connection.commit();			
 			return levels.size() == inserted;
 		} catch (Exception e){
+			doRollback();
 			log.severe("Error in addLevelStructure method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return false;
-		}				
+		} finally {
+			autoCommitOn();
+		}
 	}
 	
 	/**
@@ -324,16 +349,33 @@ public class Database {
 			if(psGetMaxLevel == null)
 				psGetMaxLevel = connection.prepareStatement("SELECT MAX(rgt) FROM levels");
 												
-			ResultSet results = psGetBenchmarks.executeQuery();
+			ResultSet results = psGetMaxLevel.executeQuery();
 			
 			if(!results.next())
 				return 0;					
 			
-			return results.getInt(0);
+			return results.getInt(1);
 		} catch (Exception e){
 			log.severe("Error in getBenchmark method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return 0;
 		}	
+	}
+	
+	protected synchronized void autoCommitOn(){
+		try {
+			connection.setAutoCommit(true);
+		} catch (Exception e) {
+			// Ignore any errors
+		}
+	}
+	
+	protected synchronized void doRollback(){
+		try {
+			connection.rollback();
+			log.warning("Database transaction rollback.");
+		} catch (Exception e) {
+			// Ignore any errors
+		}
 	}
 }

@@ -7,7 +7,7 @@ public class Benchmark {
 	private long id;
 	private String path;
 	private String fileName;
-	private long userid;
+	private int userid;
 	private Date uploaded;
 	private int level;
 	
@@ -28,11 +28,11 @@ public class Benchmark {
 		fileName = path.substring(path.lastIndexOf(File.separator) + 1);
 	}
 	
-	public long getUserId() {
+	public int getUserId() {
 		return userid;
 	}
 	
-	public void setUserId(long userid) {
+	public void setUserId(int userid) {
 		this.userid = userid;
 	}
 	

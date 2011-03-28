@@ -160,11 +160,12 @@ public class UploadBean {
 		File xmlPhysicalPath = new File(ZipXMLConverter.fileToXml(extPath.getAbsolutePath(), destFile.getParent()).getAbsolutePath());		// Convert the extracted ZIP to xml and return the path to the generated xml file
 		xmlPath = "GetFile?type=bxml&parent=" + destFile.getParentFile().getName();									// Set the path where to get the XML file from the browser
 
+		BXMLHandler handler = new BXMLHandler(xmlPhysicalPath.getParent());
         XMLReader xr = XMLReaderFactory.createXMLReader();															// Create a new SAX parser to parse the xml
-        xr.setContentHandler(new BXMLHandler(xmlPhysicalPath.getParent()));																	// Set the handler to our custom benchmark XML handler
+        xr.setContentHandler(handler);																	// Set the handler to our custom benchmark XML handler
         xr.parse(new InputSource(new FileReader(xmlPhysicalPath)));													// Parse the generated file!
         
-        // TODO: Add resulting level structure to database
+        database.addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());        
 	}
 
 	public List<Benchmark> getUploadedBenchmarks(){

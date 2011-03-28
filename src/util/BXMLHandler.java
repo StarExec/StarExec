@@ -54,6 +54,7 @@ public class BXMLHandler extends DefaultHandler {
 			Benchmark b = new Benchmark();				// Create a new benchmark object 			
 			b.setPath(new File(fullPath, attributes.getValue("name")).getAbsolutePath());
 			b.setLevel(currentLevel);					// Set the level the benchmark belongs to to the current level
+			b.setUserId(1);								// TODO: Use real userid
 			benchmarks.add(b);							// Add the benchmark to the list
 			System.out.println("Added Benchmark: " + b.getFileName() + " [" + b.getLevel() + "]");
 			System.out.println("\t" + b.getPath());
