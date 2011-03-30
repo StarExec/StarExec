@@ -22,5 +22,9 @@ public class R {
     //public static final String SOLVER_PATH = "C:\\Users\\Tyler\\Desktop\\";			// The directory in which to save the solver file(s)
     //public static final String BENCHMARK_PATH = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
     
-    public static final String XML_OUTPUT_NAME = "output.xml";						// The output name for benchmark xml files
+    // Benchmark XML constants
+    public static final String BXML_OUTPUT_NAME = "output.xml";						// The output name for benchmark xml files    
+	public static final String BXML_DIR_NAME = "dir";
+	public static final String BXML_BENCH_NAME = "bench";
+	public static final String BXML_NAME_ATTR = "name";
 }

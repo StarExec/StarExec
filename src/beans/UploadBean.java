@@ -18,6 +18,9 @@ import constants.R;
 import data.Database;
 import data.to.Benchmark;
 
+/**
+ * @deprecated Use UploadBench or UploadSolver servlets instead. Keeping around until I am sure I don't need any of this code.
+ */
 public class UploadBean {
 	private static final long serialVersionUID = 1L;
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format
@@ -149,23 +152,23 @@ public class UploadBean {
 	 * @throws Exception 
 	 */
 	public void handleBenchmark(FileItem item) throws Exception {		
-		File destFile = new File(String.format("%s%s%s%s", R.BENCHMARK_PATH, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
-		new File(destFile.getParent()).mkdir();																									// Create said unique path
-						
-		item.write(destFile);																		// Copy the file to the server from the client
-		extractZip(destFile.getAbsolutePath(), true);												// Extract the downloaded file
-		destFile.delete();																			// Delete the archive
-		
-		File extPath = new File(destFile.getParent(), Util.getFileNameOnly(destFile.getAbsolutePath()));	// Get the path to the uploaded folder
-		File xmlPhysicalPath = new File(ZipXMLConverter.fileToXml(extPath.getAbsolutePath(), destFile.getParent()).getAbsolutePath());		// Convert the extracted ZIP to xml and return the path to the generated xml file
-		xmlPath = "GetFile?type=bxml&parent=" + destFile.getParentFile().getName();									// Set the path where to get the XML file from the browser
-
-		BXMLHandler handler = new BXMLHandler(xmlPhysicalPath.getParent());
-        XMLReader xr = XMLReaderFactory.createXMLReader();															// Create a new SAX parser to parse the xml
-        xr.setContentHandler(handler);																	// Set the handler to our custom benchmark XML handler
-        xr.parse(new InputSource(new FileReader(xmlPhysicalPath)));													// Parse the generated file!
-        
-        database.addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());        
+//		File destFile = new File(String.format("%s%s%s%s", R.BENCHMARK_PATH, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
+//		new File(destFile.getParent()).mkdir();																									// Create said unique path
+//						
+//		item.write(destFile);																		// Copy the file to the server from the client
+//		extractZip(destFile.getAbsolutePath(), true);												// Extract the downloaded file
+//		destFile.delete();																			// Delete the archive
+//		
+//		File extPath = new File(destFile.getParent(), Util.getFileNameOnly(destFile.getAbsolutePath()));	// Get the path to the uploaded folder
+//		File xmlPhysicalPath = new File(ZipUtil.fileToXml(extPath.getAbsolutePath(), destFile.getParent()).getAbsolutePath());		// Convert the extracted ZIP to xml and return the path to the generated xml file
+//		xmlPath = "GetFile?type=bxml&parent=" + destFile.getParentFile().getName();									// Set the path where to get the XML file from the browser
+//
+//		BXMLHandler handler = new BXMLHandler(xmlPhysicalPath.getParent());
+//        XMLReader xr = XMLReaderFactory.createXMLReader();															// Create a new SAX parser to parse the xml
+//        xr.setContentHandler(handler);																	// Set the handler to our custom benchmark XML handler
+//        xr.parse(new InputSource(new FileReader(xmlPhysicalPath)));													// Parse the generated file!
+//        
+//        database.addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());        
 	}
 
 	public List<Benchmark> getUploadedBenchmarks(){

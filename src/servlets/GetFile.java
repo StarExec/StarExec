@@ -39,7 +39,7 @@ public class GetFile extends HttpServlet {
 		
 		if(type.equals(P.BENCH_XML)){
 			File f = new File(R.BENCHMARK_PATH, request.getParameter(P.FILE_PARENT));
-			f = new File(f.getAbsolutePath(), R.XML_OUTPUT_NAME);
+			f = new File(f.getAbsolutePath(), R.BXML_OUTPUT_NAME);
 			response.setContentType("text/xml");
 		    response.setHeader("Cache-Control", "no-cache");
 		    response.setHeader("pragma","no-cache");

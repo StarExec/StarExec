@@ -1,15 +1,25 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1" import="constants.*, data.*, data.to.*, java.util.*"%>    
+    pageEncoding="ISO-8859-1" import="constants.*, data.*, data.to.*, java.util.*"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title><%=T.UPLOAD %></title>
 <%@ include file="includes/jQuery.html" %>
+
 <jsp:useBean id="uploader" class="beans.UploadBean" scope="page"/>
 <jsp:setProperty name="uploader" property="isBenchmark" value="true"/>
+
 </head>
 <body>
-
+	<h1>Benchmark Upload</h1>
+	
+	<form id="upForm" enctype="multipart/form-data" action="UploadBench" method="POST">		
+		<label>File</label>
+		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>									
+		<!-- <input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>-->
+		<input type="submit"/>
+	</form>	
 </body>
 </html>

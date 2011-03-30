@@ -36,6 +36,14 @@
     <servlet-name>getfile</servlet-name>
     <url-pattern>/GetFile</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <servlet-name>benchup</servlet-name>
+    <servlet-class>servlets.UploadBench</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>benchup</servlet-name>
+    <url-pattern>/UploadBench</url-pattern>
+  </servlet-mapping>
   <security-role>
     <role-name>admin</role-name>
   </security-role>
