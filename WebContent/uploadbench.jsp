@@ -16,10 +16,10 @@
 	<h1>Benchmark Upload</h1>
 	
 	<form id="upForm" enctype="multipart/form-data" action="UploadBench" method="POST">		
-		<label>File</label>
+		<label>Benchmark Zip</label>
 		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>									
 		<!-- <input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>-->
-		<input type="submit"/>
+		<input type="submit" />
 	</form>	
 </body>
 </html>

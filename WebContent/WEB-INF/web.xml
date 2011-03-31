@@ -44,6 +44,14 @@
     <servlet-name>benchup</servlet-name>
     <url-pattern>/UploadBench</url-pattern>
   </servlet-mapping>
+    <servlet>
+    <servlet-name>solveup</servlet-name>
+    <servlet-class>servlets.UploadSolver</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>solveup</servlet-name>
+    <url-pattern>/UploadSolver</url-pattern>
+  </servlet-mapping>
   <security-role>
     <role-name>admin</role-name>
   </security-role>
@@ -76,4 +84,7 @@
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.htm</welcome-file>
   </welcome-file-list>
+  <listener>
+    <listener-class>app.AppListener</listener-class>
+  </listener> 
 </web-app>

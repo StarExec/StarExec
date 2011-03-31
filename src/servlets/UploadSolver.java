@@ -1,31 +1,21 @@
 package servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.io.*;
+import java.text.*;
+import java.util.*;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import org.apache.tomcat.util.http.fileupload.*;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import util.*;
+import constants.*;
+import data.*;
+import data.to.*;
 
-import util.BXMLHandler;
-import util.LogUtil;
-import util.XmlUtil;
-import util.ZipUtil;
-import constants.R;
-import data.Database;
-
-public class UploadBench extends HttpServlet {
+// TODO: Change from UploadBench to UploadSolver
+public class UploadSolver extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format    
     
