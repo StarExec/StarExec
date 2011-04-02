@@ -39,7 +39,7 @@ public class UploadBench extends HttpServlet {
 			for(FileItem item : items) {										// For each file in the list			   
 			   if (!item.isFormField()) {										// If it's not a field...
 				   try {
-					   handleBenchmark(item, response);									// Handle the benchmark file
+					   handleBenchmark(item, request, response);									// Handle the benchmark file
 				   } catch (Exception e) {
 					   LogUtil.LogException(e);
 				   }			   
@@ -54,11 +54,11 @@ public class UploadBench extends HttpServlet {
 	 * This method is responsible for uploading a benchmark to
 	 * the appropriate location and updating the database to reflect
 	 * the new benchmark.
-	 * @param item
-	 * @param response The response which we can re-direct to based on a result
 	 * @throws Exception 
 	 */
-	public void handleBenchmark(FileItem item, HttpServletResponse response) throws Exception {	
+	public void handleBenchmark(FileItem item, HttpServletRequest request , HttpServletResponse response) throws Exception {
+		//int userId = Integer.parseInt(request.getSession().getAttribute("userid").toString()); // TODO: When sessions are set up, extract the appropriate user id
+		int userId = 1;	// For current testing, just use the test userid
 		File uniqueDir = new File(R.BENCHMARK_PATH, shortDate.format(new Date()));		// Create a unique path the zip file will be extracted to
 		File zipFile = new File(uniqueDir,  item.getName());							// Create the zip file object-to-be		
 		new File(zipFile.getParent()).mkdir();											// Create the directory the benchmark zip will be written to
@@ -68,7 +68,7 @@ public class UploadBench extends HttpServlet {
 		zipFile.delete();																// Delete the archive, we don't need it anymore!
 				
 		File bxmlFile = XmlUtil.dirToBXml(uniqueDir.getAbsolutePath());					// Convert the extracted ZIP to xml and save the path to the generated xml file				
-		BXMLHandler handler = XmlUtil.parseBXML(bxmlFile);								// Parse the bxml file and get back the handler to gather results		
+		BXMLHandler handler = XmlUtil.parseBXML(bxmlFile, userId);						// Parse the bxml file and get back the handler to gather results		
 		new Database().addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());// Add the resulting levels and benchmarks to the database
 		
         response.sendRedirect("GetFile?type=bxml&parent=" + bxmlFile.getParentFile().getName()); // Send the response to the resulting XML file

@@ -32,6 +32,7 @@ public class Database {
 	private PreparedStatement psGetSolvers = null;
 	private PreparedStatement psGetBenchmarks = null;
 	private PreparedStatement psGetMaxLevel = null;
+	private PreparedStatement psGetMaxLevelGroup = null;
 	
 	public Database() {
 		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
@@ -163,7 +164,7 @@ public class Database {
 		return null;
 	}
 	
-	public synchronized boolean addLevelsBenchmarks(Collection<Level> levels, Collection<Benchmark> benchmarks){
+	public synchronized boolean addLevelsBenchmarks(Collection<Level> levels, Collection<Benchmark> benchmarks){		
 		int offset = getMaxLevel();
 		boolean retVal = true;
 		retVal = retVal && addLevelStructure(levels, offset);
@@ -317,15 +318,18 @@ public class Database {
 	public synchronized boolean addLevelStructure(Collection<Level> levels, int offSet){
 		try {
 			if(psAddLevel == null)
-				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt) VALUES (?, ?, ?)");
+				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt, gid, usr) VALUES (?, ?, ?, ?, ?)");
 			
 			connection.setAutoCommit(false);
 			int inserted = 0;						
+			int nextGroupId = getNextLevelGroup();
 			
 			for(Level l : levels){
 				psAddLevel.setString(1, l.getName());
 				psAddLevel.setInt(2, l.getLeft() + offSet);
 				psAddLevel.setInt(3, l.getRight() + offSet);
+				psAddLevel.setInt(4, nextGroupId);
+				psAddLevel.setInt(5, l.getUserId());
 				inserted += psAddLevel.executeUpdate();
 			}
 													
@@ -356,7 +360,28 @@ public class Database {
 			
 			return results.getInt(1);
 		} catch (Exception e){
-			log.severe("Error in getBenchmark method: " + e.getMessage());
+			log.severe("Error in getMaxLevel method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return 0;
+		}	
+	}
+	
+	/**
+	 * @return The next level to use when inserting into the levels table. (Essentially the largest right-value)
+	 */
+	public synchronized int getNextLevelGroup(){
+		try {
+			if(psGetMaxLevelGroup == null)
+				psGetMaxLevelGroup = connection.prepareStatement("SELECT MAX(gid) FROM levels");
+												
+			ResultSet results = psGetMaxLevelGroup.executeQuery();
+			
+			if(!results.next())
+				return 0;					
+			
+			return results.getInt(1) + 1;
+		} catch (Exception e){
+			log.severe("Error in getNextLevelGroup method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return 0;
 		}	

@@ -72,11 +72,12 @@ public class XmlUtil {
 	 * of the fie. The bxml file location is used to determine the absolute paths to the benchmark
 	 * files.
 	 * @param bxmlFile The bxml file to parse
+	 * @param userid The id of the user the benchmarks will belong to
 	 * @return The handler that contains the results from the parse
 	 * @throws Exception
 	 */
-	public static BXMLHandler parseBXML(File bxmlFile) throws Exception{
-		BXMLHandler handler = new BXMLHandler(bxmlFile.getParent());	// Create a new BXML handler rooted at the directory of the bxml file        
+	public static BXMLHandler parseBXML(File bxmlFile, int userid) throws Exception{
+		BXMLHandler handler = new BXMLHandler(bxmlFile.getParent(), userid);	// Create a new BXML handler rooted at the directory of the bxml file        
 		XMLReader xr = XMLReaderFactory.createXMLReader();				// Create a new SAX parser to parse the xml
         xr.setContentHandler(handler);									// Set the handler to our custom benchmark XML handler
         xr.parse(new InputSource(new FileReader(bxmlFile)));			// Parse the generated file!

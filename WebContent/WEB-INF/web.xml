@@ -5,21 +5,8 @@
   <session-config>
     <session-timeout>60</session-timeout>
   </session-config>
-  <context-param>
-    <description>MySQL Connection String</description>
-    <param-name>MySqlURL</param-name>
-    <param-value>jdbc:mysql://localhost/starexec</param-value>
-  </context-param>
-  <context-param>
-    <description>MySQL Username</description>
-    <param-name>MySqlUsername</param-name>
-    <param-value>root</param-value>
-  </context-param>
-  <context-param>
-    <description>MySQL Password</description>
-    <param-name>MySqlPassword</param-name>
-    <param-value>star3x3c2011!</param-value>
-  </context-param>
+  
+  <!-- Servlet Declarations -->
   <servlet>
     <servlet-name>register</servlet-name>
     <servlet-class>servlets.Registration</servlet-class>
@@ -27,15 +14,17 @@
   <servlet-mapping>
     <servlet-name>register</servlet-name>
     <url-pattern>/Registration</url-pattern>
-  </servlet-mapping>  
+  </servlet-mapping>
+  
   <servlet>
     <servlet-name>getfile</servlet-name>
     <servlet-class>servlets.GetFile</servlet-class>
-  </servlet>
+  </servlet>  
   <servlet-mapping>
     <servlet-name>getfile</servlet-name>
     <url-pattern>/GetFile</url-pattern>
   </servlet-mapping>
+  
   <servlet>
     <servlet-name>benchup</servlet-name>
     <servlet-class>servlets.UploadBench</servlet-class>
@@ -44,7 +33,8 @@
     <servlet-name>benchup</servlet-name>
     <url-pattern>/UploadBench</url-pattern>
   </servlet-mapping>
-    <servlet>
+  
+  <servlet>
     <servlet-name>solveup</servlet-name>
     <servlet-class>servlets.UploadSolver</servlet-class>
   </servlet>
@@ -52,14 +42,45 @@
     <servlet-name>solveup</servlet-name>
     <url-pattern>/UploadSolver</url-pattern>
   </servlet-mapping>
+  <!-- End Servlet Declarations -->
+  
+  <!--  RESTEasy Configurations -->
+  <servlet>
+     <servlet-name>Resteasy</servlet-name>
+     <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+  </servlet>
+  <servlet-mapping>
+     <servlet-name>Resteasy</servlet-name>
+     <url-pattern>/services/*</url-pattern>
+  </servlet-mapping>
+   
+  <context-param>
+     <param-name>resteasy.scan.resources</param-name>
+     <param-value>true</param-value>
+  </context-param>
+  
+  <context-param>
+     <param-name>resteasy.servlet.mapping.prefix</param-name>
+     <param-value>/services</param-value>
+  </context-param>
+  
+  <listener>
+      <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+  </listener> 
+  <!-- End RESTEasy Configurations -->
+  
+  <!--  Security Config (TODO) -->
   <security-role>
     <role-name>admin</role-name>
   </security-role>
+  
   <security-role>
     <role-name>users</role-name>
   </security-role>
+  
   <security-constraint>
     <display-name>Security constraints</display-name>
+    
     <web-resource-collection>
       <web-resource-name>Home Page</web-resource-name>
       <url-pattern>/home.jsp</url-pattern>
@@ -68,10 +89,12 @@
       <http-method>POST</http-method>
       <http-method>PUT</http-method>
     </web-resource-collection>
+    
     <auth-constraint>
       <role-name>users</role-name>
     </auth-constraint>
   </security-constraint>
+  
   <login-config>
     <auth-method>FORM</auth-method>
     <form-login-config>
@@ -79,12 +102,15 @@
       <form-error-page>/error.jsp</form-error-page>
     </form-login-config>
   </login-config>
+  <!--  End Security Config -->
+  
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.htm</welcome-file>
   </welcome-file-list>
+  
   <listener>
     <listener-class>app.AppListener</listener-class>
-  </listener> 
+  </listener>   
 </web-app>

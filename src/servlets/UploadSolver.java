@@ -58,8 +58,8 @@ public class UploadSolver extends HttpServlet {
 		zipFile.delete();																// Delete the archive, we don't need it anymore!
 				
 		File bxmlFile = XmlUtil.dirToBXml(uniqueDir.getAbsolutePath());					// Convert the extracted ZIP to xml and save the path to the generated xml file				
-		BXMLHandler handler = XmlUtil.parseBXML(bxmlFile);								// Parse the bxml file and get back the handler to gather results		
-		new Database().addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());// Add the resulting levels and benchmarks to the database
+		//BXMLHandler handler = XmlUtil.parseBXML(bxmlFile);								// Parse the bxml file and get back the handler to gather results		
+		//new Database().addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());// Add the resulting levels and benchmarks to the database
 		
         response.sendRedirect("GetFile?type=bxml&parent=" + bxmlFile.getParentFile().getName()); // Send the response to the resulting XML file
 	}	

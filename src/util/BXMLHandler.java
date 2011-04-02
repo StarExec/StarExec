@@ -26,12 +26,14 @@ public class BXMLHandler extends DefaultHandler {
 	private List<Benchmark> benchmarks;				// The final list of benchmark level objects to add into the database
 	private String root;							// The path to where the xml file we're processing is at (used to derive absolute paths for benchmarks)
 	private File fullPath;							// The current path we're at in our processing
+	private int userId;								// The id of the user who owns the benchmarks
 	
 	/**
 	 * @param rootPath The root directory of the benchmarks (Where the XML file is located)
 	 */
-	public BXMLHandler(String rootPath){
+	public BXMLHandler(String rootPath, int userid){
 		this.root = rootPath;		
+		this.userId = userid;
 	}
 	
 	@Override
@@ -54,7 +56,7 @@ public class BXMLHandler extends DefaultHandler {
 			Benchmark b = new Benchmark();				// Create a new benchmark object 			
 			b.setPath(new File(fullPath, attributes.getValue("name")).getAbsolutePath());
 			b.setLevel(currentLevel);					// Set the level the benchmark belongs to to the current level
-			b.setUserId(1);								// TODO: Use real userid
+			b.setUserId(userId);						// Set the userid to the id of the owner
 			benchmarks.add(b);							// Add the benchmark to the list
 			//System.out.println("Added Benchmark: " + b.getFileName() + " [" + b.getLevel() + "]");
 			//System.out.println("\t" + b.getPath());
@@ -62,6 +64,7 @@ public class BXMLHandler extends DefaultHandler {
 			Level l = new Level();						// Create a new level object
 			l.setLeft(++currentLevel);					// Increment the current level and set it as my left
 			l.setName(attributes.getValue("name"));		// Set the name of the level
+			l.setUserId(userId);						// Set the user who owns the level
 			dirStack.add(l);							// Add the level to the temporary stack to be processed later
 			fullPath = new File(fullPath, l.getName());			
 		}

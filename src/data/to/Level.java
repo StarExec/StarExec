@@ -4,6 +4,8 @@ public class Level {
 	private int left;
 	private int right;
 	private String name;
+	private int userId;
+	private int groupId;
 	
 	public int getLeft() {
 		return left;
@@ -27,5 +29,21 @@ public class Level {
 	
 	public void setName(String name) {
 		this.name = name;
-	}	
+	}
+
+	public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}		
 }

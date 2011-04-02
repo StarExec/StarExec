@@ -1,6 +1,7 @@
 package app;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -30,7 +31,9 @@ public class AppListener implements ServletContextListener {
 		
 		if(testDir.exists()) {
 		    R.SOLVER_PATH = "C:\\Users\\Tyler\\Desktop\\SOLVERS\\";			// The directory in which to save the solver file(s)
-		    R.BENCHMARK_PATH = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)		    
+		    R.BENCHMARK_PATH = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
+		    
+		    Logger.getAnonymousLogger().info("Tyler local development paths set");
 		}
 	}
 }
