@@ -18,7 +18,7 @@ public class SolverLink {
 		bPaths = new Stack<String>();
 		db = new Database();
 		
-		this.sPath = db.getSolver(sid).getPath();
+		sPath = db.getSolver(sid).getPath();
 	}
 	
 	public int getSize() {
@@ -26,7 +26,8 @@ public class SolverLink {
 	}
 	
 	public void addBenchmark(Long bid) {
-		bPaths.add(db.getBenchmark(bid).getPath());
+		String bPath = db.getBenchmark(bid).getPath();
+		bPaths.add(bPath);
 	}
 	
 	public String getSolverPath() {
@@ -34,7 +35,7 @@ public class SolverLink {
 	}
 	
 	public String getNextBenchmarkPath() {
-		if(!bPaths.isEmpty())
+		if(bPaths.isEmpty())
 			return null;
 		else
 			return bPaths.pop();

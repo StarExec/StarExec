@@ -1,6 +1,8 @@
 package manage;
 
 import java.io.*;
+import org.ggf.drmaa.*;
+import com.sun.grid.drmaa.*;
 
 /**
  * --------
@@ -24,8 +26,10 @@ import java.io.*;
  */
 public abstract class JobManager {
 	private static Jobject curJob; // .................................... Pointer to current Jobject (temporarily useful) 
+	private static String curJobName; // ................................. Current name of job. "job_<job id>.bash"
 	private static int curJID; // ........................................ Assigned ID of current job. Part of jobscript name.
-	private static String workingDirectory;
+	private static String workingDirectory; // ........................... Should be the job inbox .
+	private static SessionFactory factory; // ............................ Makes a new factory for every job.
 	
 	/**
 	 *  Builds, enqueues, and records the job.
@@ -35,8 +39,10 @@ public abstract class JobManager {
 	public static void doJob(Jobject j) throws Exception {
 		curJob = j;
 		curJID = -1;	// Dummy value
-		workingDirectory = "/export/starexec/jobin";
-				
+		workingDirectory = "/home/starexec/jobin";
+		curJobName = "job_" + curJID + ".bash";
+		factory = SessionFactory.getFactory();
+		
 		try {
 			recordJob();
 			buildJob();
@@ -47,9 +53,21 @@ public abstract class JobManager {
 		}
 	}
 	
-	private static void enqueJob() {
-		// TODO Auto-generated method stub
+	private static void enqueJob() throws DrmaaException {
+		Session session = factory.getSession();
+		String id = null;
+
+		session.init("");
+		JobTemplate jt = session.createJobTemplate();
+		jt.setWorkingDirectory(workingDirectory);
+		jt.setRemoteCommand(curJobName);
+		jt.setArgs(null);
 		
+		// Job submitted with id 
+		id = session.runJob(jt);
+		
+		session.deleteJobTemplate(jt);
+		session.exit();
 	}
 
 	private static void recordJob() {
@@ -64,9 +82,17 @@ public abstract class JobManager {
 	 */
 	private static void buildJob() throws IOException {
 		// Open a file on the shared space and write the job script to it.
-		FileWriter out = new FileWriter(String.format("%s/%s", workingDirectory, "testing.out"));
+		String filePath = String.format("%s/%s", workingDirectory, curJobName);
+		File f = new File(filePath);
 		
-		out.write("#!/bin/bash"
+		if(f.exists()) {
+			f.delete();
+		}
+		
+		f.createNewFile();
+		FileWriter out = new FileWriter(f);
+			
+		out.write("#!/bin/bash\n"
 				+ "# This submits a test bash job to the SGE\n"
 				+ "#$ -j y\n"
 				+ "#$ -o /dev/null\n"
@@ -78,14 +104,12 @@ public abstract class JobManager {
 				+ "ROOT='/export/starexec'\n"
 				+ "WDIR=$ROOT/workspace\n"
 				+ "SHR=/home/starexec\n"
-				+ "SSP=$SHR/Solvers	# Solver Shared Path\n"
-				+ "BSP=$SHR/Benchmarks\n"
 				+ "\n"
 				+ "# Test values. No equivalents in real script.\n"
-				+ "TSOL=z3\n"
-				+ "TBEN=model_6_66.smt2 \n"
+				+ "TSOL=/home/starexec/Solvers/z3\n"
+				+ "TBEN=/home/starexec/Benchmarks/model_6_66.smt2 \n"
 				+ "\n"
-				+ "JOB=tmp\n"
+				+ "JOB=job_" + curJID + "\n"
 				+ "JOBFILE=$WDIR/$JOB.out\n"
 				+ "\n"
 				+ "T=\"date +%s.%m\"\n"
@@ -98,8 +122,10 @@ public abstract class JobManager {
 				+ "# Functions\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "function runsb {\n"
-				+ "	SOL=$1\n"
-				+ "	BEN=$2\n"
+				+ "	SPATH=$1\n"
+				+ "	BPATH=$2\n"
+				+ "	SOL=${SPATH##*/}\n"
+				+ "	BEN=${BPATH##*/}\n"
 				+ "	SWP=$WDIR/$SOL # Solver Working Path\n"
 				+ "	BWP=$WDIR/$BEN\n"
 				+ "\n"
@@ -108,12 +134,12 @@ public abstract class JobManager {
 				+ "	# this code to be less granular.\n"
 				+ "	if [ ! -f $SWP ]; then\n"
 				+ "		echo Copying $SOL to working directory $WDIR\n"
-				+ "		cp $SSP/$SOL $WDIR\n"
+				+ "		cp $SPATH $WDIR\n"
 				+ "	fi\n"
 				+ "	\n"
 				+ "	if [ ! -f $BWP ]; then\n"
 				+ "		echo Copying $BEN to working directory $WDIR\n"
-				+ "		cp $BSP/$BEN $WDIR\n"
+				+ "		cp $BPATH $WDIR\n"
 				+ "	fi\n"
 				+ "		\n"
 				+ "\n"
@@ -141,9 +167,17 @@ public abstract class JobManager {
 				+ "echo '*************************************'\n"
 				+ "echo\n"
 				+ "\n"
-				+ "# We'd have all of our tests right here.\n"
-				+ "runsb $TSOL $TBEN\n"
-				+ "\n"
+				+ "# All tests are right here\n" );
+		
+		SolverLink lnk;
+		for(int i = curJob.getNumSolvers(); i > 0; i--) {
+			lnk = curJob.popLink();
+			for(int j = lnk.getSize(); j > 0; j--) {
+				out.write(String.format("runsb %s %s\n", lnk.getSolverPath(), lnk.getNextBenchmarkPath()));
+			}
+		}
+		
+		out.write("\n"
 				+ "\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Teardown\n"
@@ -152,5 +186,6 @@ public abstract class JobManager {
 				+ "\n"
 				+ "# Cleanup. May not be necessary if we want to cache solvers/benchmarks\n"
 				+ "#rm $WDIR/*\n" );
+		out.close();
 	}
 }
