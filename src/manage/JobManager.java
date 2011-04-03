@@ -2,7 +2,6 @@ package manage;
 
 import java.io.*;
 import org.ggf.drmaa.*;
-import com.sun.grid.drmaa.*;
 
 /**
  * --------
@@ -49,7 +48,7 @@ public abstract class JobManager {
 			enqueJob();
 		}
 		catch(Exception e) {
-			throw new Exception("Exception in Jobject : " + e.getMessage());
+			throw new Exception("Exception in Jobject : " + e);
 		}
 	}
 	
