@@ -30,45 +30,6 @@ import data.Database;
 public class Jobject {
 	private Stack<SolverLink> solverChain;
 	
-	/**
-	 * This is a link in the solver chain as described above.
-	 * Associates a solver with n benchmarks.
-	 * 
-	 */
-	private class SolverLink {
-		private Stack<String> bPaths;
-		private String sPath;
-		private Database db;
-		
-		public SolverLink(Long sid) {
-			bPaths = new Stack<String>();
-			db = new Database();
-			
-			this.sPath = db.getSolver(sid).getPath();
-		}
-		
-		public int getSize() {
-			return bPaths.size();
-		}
-		
-		public void addBenchmarkPath(Long bid) {
-			String bPath = "";
-			
-			bPaths.add(db.getBenchmark(bid).getPath());
-		}
-		
-		public String getSolverPath() {
-			return sPath;
-		}
-		
-		public String getNextBenchmarkPath() {
-			if(!bPaths.isEmpty())
-				return null;
-			else
-				return bPaths.pop();
-		}
-	}
-	
 	public Jobject() {
 		this.solverChain = new Stack<SolverLink>();
 	}
@@ -107,7 +68,11 @@ public class Jobject {
 	 */
 	public SolverLink addSolver(Long sid) {
 		SolverLink lnk = new SolverLink(sid);
-		solverChain.add(lnk);
+		addLink(lnk);
 		return lnk;
+	}
+	
+	public void addLink(SolverLink lnk) {
+		solverChain.add(lnk);
 	}
 }
