@@ -65,7 +65,7 @@ public abstract class JobManager {
 			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
 			
 			if(info.wasAborted())
-				throw new Exception("Job " + id + " failed : " + info);
+				throw new Exception("Job " + id + " failed");
 		} catch(Exception e) {
 			throw e;
 		} finally {
@@ -108,10 +108,6 @@ public abstract class JobManager {
 				+ "ROOT='/export/starexec'\n"
 				+ "WDIR=$ROOT/workspace\n"
 				+ "SHR=/home/starexec\n"
-				+ "\n"
-				+ "# Test values. No equivalents in real script.\n"
-				+ "TSOL=/home/starexec/Solvers/z3\n"
-				+ "TBEN=/home/starexec/Benchmarks/model_6_66.smt2 \n"
 				+ "\n"
 				+ "JOB=job_" + curJID + "\n"
 				+ "JOBFILE=$WDIR/$JOB.out\n"

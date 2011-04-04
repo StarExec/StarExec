@@ -11,27 +11,34 @@ import data.Database;
  */
 public class SolverLink {
 	private Stack<String> bPaths;
-	private String sPath;
+	private String spath;
 	private Database db;
 	
-	public SolverLink(Long sid) {
+	public SolverLink(Long sid) throws Exception {
 		bPaths = new Stack<String>();
 		db = new Database();
 		
-		sPath = db.getSolver(sid).getPath();
+		spath = db.getSolver(sid).getPath();
+		
+		if(spath == null)
+			throw new Exception("Solver id " + sid + " returned null.");
 	}
 	
 	public int getSize() {
 		return bPaths.size();
 	}
 	
-	public void addBenchmark(Long bid) {
-		String bPath = db.getBenchmark(bid).getPath();
-		bPaths.add(bPath);
+	public void addBenchmark(Long bid) throws Exception {
+		String bpath = db.getBenchmark(bid).getPath();
+		
+		if(bpath == null)
+			throw new Exception("Benchmark id " + bid + " returned null.");
+		
+		bPaths.add(bpath);
 	}
 	
 	public String getSolverPath() {
-		return sPath;
+		return spath;
 	}
 	
 	public String getNextBenchmarkPath() {

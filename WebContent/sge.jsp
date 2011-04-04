@@ -18,7 +18,7 @@
 				
 		ses.init("");
 		JobTemplate jt = ses.createJobTemplate();
-		jt.setRemoteCommand("/home/starexec/Solvers/test");
+		jt.setRemoteCommand("/home/starexec/jobin/job_-1.bash");
 		jt.setOutputPath("starexec:/home/starexec/Solvers");		
 		jt.setWorkingDirectory("/project/tomcat-webapps/webapps");
 		jt.setJoinFiles(true);

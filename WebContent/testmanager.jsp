@@ -19,11 +19,14 @@
 	<P>Last run at <%= date %></P>
 	<p>I'm adding solver ID 1 and associating benchmark ID 1 with it, then passing the jobject to the JobManager.</p>
 	<% 
-	lnk = job.addSolver(1L);
-	lnk.addBenchmark(1L);
-	
-	JobManager.doJob(job);
-	
+	try {
+		lnk = job.addSolver(1L);
+		lnk.addBenchmark(1L);
+		
+		JobManager.doJob(job);
+	} catch(Exception e) {
+		out.write("<h3 style='color: red;'>Exception\n" + e + "\n</h3>");
+	}
 	%>
 </body>
 </html>
