@@ -33,6 +33,8 @@ public class Database {
 	private PreparedStatement psGetBenchmarks = null;
 	private PreparedStatement psGetMaxLevel = null;
 	private PreparedStatement psGetMaxLevelGroup = null;
+	private PreparedStatement psGetRootLevels = null;
+	private PreparedStatement psGetSubLevels = null;
 	
 	public Database() {
 		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
@@ -384,6 +386,74 @@ public class Database {
 			log.severe("Error in getNextLevelGroup method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return 0;
+		}	
+	}
+	
+	/**
+	 * @return A list of root levels (top-level virtual directories)
+	 */
+	public synchronized List<Level> getRootLevels(){
+		try {
+			if(psGetRootLevels == null)
+				psGetRootLevels = connection.prepareStatement("SELECT * FROM levels GROUP BY gid HAVING MIN(lft)");
+									
+			
+			ResultSet results = psGetRootLevels.executeQuery();
+			ArrayList<Level> returnList = new ArrayList<Level>(15);
+			
+			while(results.next()){
+				Level l = new Level(results.getInt("id"));
+				l.setGroupId(results.getInt("gid"));
+				l.setLeft(results.getInt("lft"));
+				l.setRight(results.getInt("rgt"));
+				l.setName(results.getString("name"));
+				l.setUserId(results.getInt("usr"));
+				l.setDescription(results.getString("description"));
+				
+				returnList.add(l);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getRootLevels method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
+	
+	/**
+	 * Gets all virtual directories listed under another (children directories)
+	 * @param id The is the parent directory
+	 * @return A list of children directories of the parent
+	 */
+	public synchronized List<Level> getSubLevels(int id){
+		try {
+			if(psGetSubLevels == null)
+				psGetSubLevels = connection.prepareStatement("SELECT * FROM levels WHERE lft > (SELECT lft FROM levels WHERE id=?) AND rgt < (SELECT rgt FROM levels WHERE id=?)");
+									
+			psGetSubLevels.setInt(1, id);
+			psGetSubLevels.setInt(2, id);
+			
+			ResultSet results = psGetSubLevels.executeQuery();
+			ArrayList<Level> returnList = new ArrayList<Level>(10);
+			
+			while(results.next()){
+				Level l = new Level(results.getInt("id"));
+				l.setGroupId(results.getInt("gid"));
+				l.setLeft(results.getInt("lft"));
+				l.setRight(results.getInt("rgt"));
+				l.setName(results.getString("name"));
+				l.setUserId(results.getInt("usr"));
+				l.setDescription(results.getString("description"));
+				
+				returnList.add(l);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getSubLevels method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
 		}	
 	}
 	

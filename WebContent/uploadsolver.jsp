@@ -14,15 +14,41 @@
 		$.ajax( {
 			type:'Get',
 			dataType: 'json',
-			url:'/starexec/services/level',
+			url:'/starexec/services/levels/root',
 			success:function(data) {
-			 	alert(data.key);
+			 	populateRoots(data);
 			},
 			error:function(xhr, textStatus, errorThrown) {
 				alert(errorThrown);
 			}
 		});		
 	});
+	
+	function populateRoots(json){
+		$.each(json, function(i, level){
+			$('#levels').append("<li onclick='getSublevel(this," + level.id + ")'>" + level.name + "</li>");			
+		});
+	}
+	
+	function getSublevel(element, levelId){
+		$.ajax( {
+			type:'Get',
+			dataType: 'json',
+			url:'/starexec/services/levels/sublevels/' + levelId,
+			success:function(data) {				
+				var li = $(document.createElement('li'));
+				var ul = $(document.createElement('ul'));
+				$.each(data, function(i, level){
+					$(ul).append("<li onclick='getSublevel(this," + level.id + ")'>" + level.name + "</li>");			
+				});				
+				$(li).append(ul);
+				$(element).after(li);
+			},
+			error:function(xhr, textStatus, errorThrown) {
+				alert(errorThrown);
+			}
+		});	
+	}
 </script>
 
 </head>
@@ -33,5 +59,10 @@
 		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>											
 		<input type="submit"/>
 	</form>
+	
+	<h2>Select solveable groups</h2>
+	<ul style="margin-top:10px; list-style-type:none;" id="levels">
+
+	</ul>
 </body>
 </html>

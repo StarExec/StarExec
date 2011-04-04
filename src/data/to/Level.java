@@ -6,7 +6,27 @@ public class Level {
 	private String name;
 	private int userId;
 	private int groupId;
+	private int id;
+	private String description;
 	
+	public Level(int id){
+		this.id = id;
+	}
+	
+	public Level(){}
+	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public int getId() {
+		return id;
+	}
+
 	public int getLeft() {
 		return left;
 	}
