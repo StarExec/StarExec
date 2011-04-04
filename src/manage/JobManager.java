@@ -28,7 +28,6 @@ public abstract class JobManager {
 	private static String curJobName; // ................................. Current name of job. "job_<job id>.bash"
 	private static int curJID; // ........................................ Assigned ID of current job. Part of jobscript name.
 	private static String workingDirectory; // ........................... Should be the job inbox .
-	private static SessionFactory factory; // ............................ Makes a new factory for every job.
 	
 	/**
 	 *  Builds, enqueues, and records the job.
@@ -40,7 +39,6 @@ public abstract class JobManager {
 		curJID = -1;	// Dummy value
 		workingDirectory = "/home/starexec/jobin";
 		curJobName = "job_" + curJID + ".bash";
-		factory = SessionFactory.getFactory();
 		
 		try {
 			recordJob();
@@ -52,21 +50,28 @@ public abstract class JobManager {
 		}
 	}
 	
-	private static void enqueJob() throws DrmaaException {
-		Session session = factory.getSession();
-		String id = null;
-
-		session.init("");
-		JobTemplate jt = session.createJobTemplate();
-		jt.setWorkingDirectory(workingDirectory);
-		jt.setRemoteCommand(curJobName);
-		jt.setArgs(null);
+	private static void enqueJob() throws Exception {
+		Session ses = null;
 		
-		// Job submitted with id 
-		id = session.runJob(jt);
-		
-		session.deleteJobTemplate(jt);
-		session.exit();
+		try {
+			SessionFactory factory = SessionFactory.getFactory();
+			ses = factory.getSession();
+			
+			ses.init("");
+			JobTemplate jt = ses.createJobTemplate();
+			jt.setWorkingDirectory(workingDirectory);
+			jt.setRemoteCommand(curJobName);
+			String id = ses.runJob(jt);							
+			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
+			
+			if(info.wasAborted())
+				throw new Exception("Job " + id + " failed : " + info);
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			if(ses != null)
+				ses.exit();
+		}
 	}
 
 	private static void recordJob() {
