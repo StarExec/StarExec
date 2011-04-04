@@ -16,4 +16,11 @@ public class RESTServices {
 	 public String getBook(@PathParam("command") String input) {
 		 return "Echo: " + input;
 	 }
+	 
+	 @GET
+	 @Path("/level")
+	 @Produces("application/json")
+	 public String getRoots() {
+		 return "{\"key\":\"val\"}";
+	 }
 }

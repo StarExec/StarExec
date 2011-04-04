@@ -13,12 +13,13 @@
 	$(document).ready(function(){
 		$.ajax( {
 			type:'Get',
-			url:'/starexec/services/echo/whats up',
+			dataType: 'json',
+			url:'/starexec/services/level',
 			success:function(data) {
-			 	alert(data);
+			 	alert(data.key);
 			},
-			error:function(error) {
-				alert("Error!");
+			error:function(xhr, textStatus, errorThrown) {
+				alert(errorThrown);
 			}
 		});		
 	});
