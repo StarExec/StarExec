@@ -9,9 +9,19 @@
 <title><%=T.UPLOAD %></title>
 <%@ include file="includes/jQuery.html" %>
 
+<style type="text/css">
+ul {
+	list-style-type:none;
+}
+
+ul span {
+	cursor: pointer;
+}
+</style>
+
 <script type="text/javascript">
 	$(document).ready(function(){
-		$.ajax( {
+		$.ajax({
 			type:'Get',
 			dataType: 'json',
 			url:'/starexec/services/levels/root',
@@ -24,13 +34,26 @@
 		});		
 	});
 	
+	function toggleCheck(element){				
+		if($(element).is(":checked")){
+			$(element).parent().next().find("ul input[type=checkbox]").attr('checked', true);
+		} else {
+			$(element).parent().next().find("ul input[type=checkbox]").attr('checked', false);
+		}
+	}
+	
 	function populateRoots(json){
-		$.each(json, function(i, level){
-			$('#levels').append("<li onclick='getSublevel(this," + level.id + ")'>" + level.name + "</li>");			
+		$.each(json, function(i, level){			
+			$('#levels').append("<li><input onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
 		});
 	}
 	
 	function getSublevel(element, levelId){
+		if($(element).parent().next().has("ul").length > 0){	// If the element already fetched a list
+			$(element).parent().next().toggle();				// Toggle it
+			return;												// Don't call the database again
+		}
+			
 		$.ajax( {
 			type:'Get',
 			dataType: 'json',
@@ -38,11 +61,11 @@
 			success:function(data) {				
 				var li = $(document.createElement('li'));
 				var ul = $(document.createElement('ul'));
-				$.each(data, function(i, level){
-					$(ul).append("<li onclick='getSublevel(this," + level.id + ")'>" + level.name + "</li>");			
+				$.each(data, function(i, level){							
+					$(ul).append("<li><input onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
 				});				
 				$(li).append(ul);
-				$(element).after(li);
+				$(element).parent().after(li);
 			},
 			error:function(xhr, textStatus, errorThrown) {
 				alert(errorThrown);
@@ -60,8 +83,8 @@
 		<input type="submit"/>
 	</form>
 	
-	<h2>Select solveable groups</h2>
-	<ul style="margin-top:10px; list-style-type:none;" id="levels">
+	<h2>Select Supported Divisions</h2>
+	<ul style="margin-top:10px;" id="levels">
 
 	</ul>
 </body>

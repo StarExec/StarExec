@@ -429,7 +429,7 @@ public class Database {
 	public synchronized List<Level> getSubLevels(int id){
 		try {
 			if(psGetSubLevels == null)
-				psGetSubLevels = connection.prepareStatement("SELECT * FROM levels WHERE lft > (SELECT lft FROM levels WHERE id=?) AND rgt < (SELECT rgt FROM levels WHERE id=?)");
+				psGetSubLevels = connection.prepareStatement("SELECT node.id, node.name, node.description, node.lft, node.rgt, node.gid, node.usr, (COUNT(parent.id) - (sub_tree.depth + 1)) AS depth FROM levels AS node, levels AS parent, levels AS sub_parent,(SELECT node.name, (COUNT(parent.id) - 1) AS depth FROM levels AS node, levels AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.id = ? GROUP BY node.id ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.name = sub_tree.name GROUP BY node.id HAVING depth=1 AND gid=(SELECT gid FROM levels WHERE id=?) ORDER BY node.lft;");
 									
 			psGetSubLevels.setInt(1, id);
 			psGetSubLevels.setInt(2, id);
