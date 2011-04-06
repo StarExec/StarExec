@@ -18,10 +18,12 @@
 				
 		ses.init("");
 		JobTemplate jt = ses.createJobTemplate();
-		jt.setRemoteCommand("/home/starexec/jobin/job_-1.bash");
+		jt.setRemoteCommand("/home/starexec/Solvers/hello.bash");
+		/*
 		jt.setOutputPath("starexec:/home/starexec/Solvers");		
 		jt.setWorkingDirectory("/project/tomcat-webapps/webapps");
 		jt.setJoinFiles(true);
+		*/
 		String id = ses.runJob(jt);							
 		JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
 				

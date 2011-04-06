@@ -10,8 +10,6 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.sun.org.apache.xml.internal.serializer.utils.Utils;
-
 import data.to.*;
 
 /**
