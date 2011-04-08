@@ -19,8 +19,11 @@ public class UploadSolver extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format    
     
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
-		try {			
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	for(String name : request.getParameterMap().keySet()){
+    		System.out.println(name + ": " + request.getParameter(name));    		
+    	}
+		/*try {			
 			FileItemFactory factory = new DiskFileItemFactory();				
 			ServletFileUpload upload = new ServletFileUpload(factory);			// Create the helper objects to assist in getting the file and saving it
 			
@@ -37,7 +40,7 @@ public class UploadSolver extends HttpServlet {
 			}
 		} catch (FileUploadException e) {
 			LogUtil.LogException(e);											// Log any problems with the file upload process here
-		}
+		}*/
 	}
     
 	/**

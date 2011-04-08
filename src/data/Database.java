@@ -320,7 +320,7 @@ public class Database {
 	public synchronized boolean addLevelStructure(Collection<Level> levels, int offSet){
 		try {
 			if(psAddLevel == null)
-				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt, gid, usr) VALUES (?, ?, ?, ?, ?)");
+				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt, gid, usr, dep) VALUES (?, ?, ?, ?, ?, ?)");
 			
 			connection.setAutoCommit(false);
 			int inserted = 0;						
@@ -332,6 +332,7 @@ public class Database {
 				psAddLevel.setInt(3, l.getRight() + offSet);
 				psAddLevel.setInt(4, nextGroupId);
 				psAddLevel.setInt(5, l.getUserId());
+				psAddLevel.setInt(6, l.getDepth());
 				inserted += psAddLevel.executeUpdate();
 			}
 													
@@ -395,7 +396,7 @@ public class Database {
 	public synchronized List<Level> getRootLevels(){
 		try {
 			if(psGetRootLevels == null)
-				psGetRootLevels = connection.prepareStatement("SELECT * FROM levels GROUP BY gid HAVING MIN(lft)");
+				psGetRootLevels = connection.prepareStatement("SELECT * FROM levels WHERE dep=0");
 									
 			
 			ResultSet results = psGetRootLevels.executeQuery();
@@ -406,6 +407,7 @@ public class Database {
 				l.setGroupId(results.getInt("gid"));
 				l.setLeft(results.getInt("lft"));
 				l.setRight(results.getInt("rgt"));
+				l.setDepth(results.getInt("dep"));
 				l.setName(results.getString("name"));
 				l.setUserId(results.getInt("usr"));
 				l.setDescription(results.getString("description"));
@@ -429,10 +431,9 @@ public class Database {
 	public synchronized List<Level> getSubLevels(int id){
 		try {
 			if(psGetSubLevels == null)
-				psGetSubLevels = connection.prepareStatement("SELECT node.id, node.name, node.description, node.lft, node.rgt, node.gid, node.usr, (COUNT(parent.id) - (sub_tree.depth + 1)) AS depth FROM levels AS node, levels AS parent, levels AS sub_parent,(SELECT node.name, (COUNT(parent.id) - 1) AS depth FROM levels AS node, levels AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.id = ? GROUP BY node.id ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.name = sub_tree.name GROUP BY node.id HAVING depth=1 AND gid=(SELECT gid FROM levels WHERE id=?) ORDER BY node.lft;");
+				psGetSubLevels = connection.prepareStatement("SELECT node.* FROM levels AS node, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE node.lft > parent.lft AND node.rgt < parent.rgt AND node.dep=(parent.dep + 1)");
 									
 			psGetSubLevels.setInt(1, id);
-			psGetSubLevels.setInt(2, id);
 			
 			ResultSet results = psGetSubLevels.executeQuery();
 			ArrayList<Level> returnList = new ArrayList<Level>(10);

@@ -18,7 +18,8 @@ import data.to.*;
  * @author Tyler
  */
 public class BXMLHandler extends DefaultHandler {
-	private Stack<Level> dirStack;					// Temporary stack to keep track of the last seen directory
+	private Stack<Level> dirStack;					// Temporary stack to keep track of the last seen directory	
+	private int currentDepth;						// What our current depth is
 	private HashMap<Integer, Level> finalLevels;	// The final map of levels (key is left position, value is the level object)
 	private int currentLevel;						// The current level we're on in terms of processing
 	private List<Benchmark> benchmarks;				// The final list of benchmark level objects to add into the database
@@ -41,6 +42,8 @@ public class BXMLHandler extends DefaultHandler {
 		finalLevels = new HashMap<Integer, Level>();
 		benchmarks = new ArrayList<Benchmark>(20);
 		fullPath = new File(root);
+		currentDepth = -1;
+		
 	}
 	
 	@Override
@@ -58,8 +61,9 @@ public class BXMLHandler extends DefaultHandler {
 			benchmarks.add(b);							// Add the benchmark to the list
 			//System.out.println("Added Benchmark: " + b.getFileName() + " [" + b.getLevel() + "]");
 			//System.out.println("\t" + b.getPath());
-		} else if(localName.equals("dir")){				// If we're starting a directory tag...
+		} else if(localName.equals("dir")){				// If we're starting a directory tag...			
 			Level l = new Level();						// Create a new level object
+			l.setDepth(++currentDepth);
 			l.setLeft(++currentLevel);					// Increment the current level and set it as my left
 			l.setName(attributes.getValue("name"));		// Set the name of the level
 			l.setUserId(userId);						// Set the user who owns the level
@@ -75,6 +79,7 @@ public class BXMLHandler extends DefaultHandler {
 			l.setRight(++currentLevel);					// Set the right value to the current level + 1
 			finalLevels.put(l.getLeft(), l);			// Put the level in the final hashmap with its left value as the key
 			fullPath = fullPath.getParentFile();
+			currentDepth--;
 			//System.out.println("Added Directory: " + l.getName() + " [" + l.getLeft() + ", " + l.getRight() + "]");
 		}
 	}

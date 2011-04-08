@@ -1,5 +1,7 @@
 package data.to;
 
+import java.util.*;
+
 public class Level {
 	private int left;
 	private int right;
@@ -7,13 +9,18 @@ public class Level {
 	private int userId;
 	private int groupId;
 	private int id;
+	private int depth;
 	private String description;
+	private List<Benchmark> benchmarks;
 	
 	public Level(int id){
-		this.id = id;
+		this.id = id;		
+		benchmarks = new ArrayList<Benchmark>();
 	}
 	
-	public Level(){}
+	public Level(){
+		benchmarks = new ArrayList<Benchmark>();
+	}
 	
 	public String getDescription() {
 		return description;
@@ -65,5 +72,21 @@ public class Level {
 
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
-	}		
+	}
+
+	public List<Benchmark> getBenchmarks() {
+		return benchmarks;
+	}
+
+	public void setBenchmarks(List<Benchmark> benchmarks) {
+		this.benchmarks = benchmarks;
+	}
+
+	public int getDepth() {
+		return depth;
+	}
+
+	public void setDepth(int depth) {
+		this.depth = depth;
+	}			
 }

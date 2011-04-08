@@ -35,10 +35,12 @@ ul span {
 	});
 	
 	function toggleCheck(element){				
-		if($(element).is(":checked")){
-			$(element).parent().next().find("ul input[type=checkbox]").attr('checked', true);
+		if($(element).is(":checked")){		// If I'm checked
+			$(element).parent().find("input[type=checkbox]").attr('checked', true);	// Check any child checkboxes
 		} else {
-			$(element).parent().next().find("ul input[type=checkbox]").attr('checked', false);
+			//$(element).parent().find("ul input[type=checkbox]").attr('checked', false);	// Else uncheck my child checkboxes
+			// Uncheck all my ancestors
+			$(element).parents("li").children("input[type=checkbox]").attr('checked', false);
 		}
 	}
 	
@@ -49,8 +51,8 @@ ul span {
 	}
 	
 	function getSublevel(element, levelId){
-		if($(element).parent().next().has("ul").length > 0){	// If the element already fetched a list
-			$(element).parent().next().toggle();				// Toggle it
+		if($(element).parent().has("ul").length > 0){	// If the element already fetched a list
+			$(element).siblings("ul").toggle();				// Toggle it
 			return;												// Don't call the database again
 		}
 			
@@ -64,13 +66,17 @@ ul span {
 				$.each(data, function(i, level){							
 					$(ul).append("<li><input onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
 				});				
-				$(li).append(ul);
-				$(element).parent().after(li);
+				//$(li).append(ul);
+				$(element).after(ul);
+				
+				if($(element).siblings("input[type=checkbox]").is(":checked")){			
+					$(element).parent().find("input[type=checkbox]").attr('checked', true);			
+				}
 			},
 			error:function(xhr, textStatus, errorThrown) {
 				alert(errorThrown);
 			}
-		});	
+		});			
 	}
 </script>
 
@@ -79,13 +85,14 @@ ul span {
 	<form id="upForm" enctype="multipart/form-data" action="UploadSolver" method="POST">
 		<h2>Solver Upload</h2>
 		<label>Solver ZIP</label>
-		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>											
-		<input type="submit"/>
-	</form>
+		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>
+		
+		<h2>Select Supported Divisions</h2>
+		<ul style="margin-top:10px;" id="levels">
+		</ul>
+															
+		<input type="submit"/>		
+	</form>	
 	
-	<h2>Select Supported Divisions</h2>
-	<ul style="margin-top:10px;" id="levels">
-
-	</ul>
 </body>
 </html>
