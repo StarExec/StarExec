@@ -2,20 +2,35 @@ package data.to;
 
 import java.io.File;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Solver {
-	private long id;
+	private int id;
 	private String path;
 	private String fileName;
-	private long userId;
+	private int userId;
 	private Date uploaded;
 	private String notes;
+	private List<Level> supportedDivs;
 	
-	public long getId() {
+	public Solver(){
+		supportedDivs = new ArrayList<Level>(5);
+	}
+	
+	public List<Level> getSupportedDivs() {
+		return supportedDivs;
+	}
+
+	public void addSupportedDiv(Level division) {
+		this.supportedDivs.add(division);
+	}
+
+	public int getId() {
 		return id;
 	}
 	
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	
@@ -28,11 +43,11 @@ public class Solver {
 		fileName = path.substring(path.lastIndexOf(File.separator) + 1);
 	}
 	
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 	
-	public void setUserId(long userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
 	

@@ -73,21 +73,4 @@ public class UploadBench extends HttpServlet {
 		
         response.sendRedirect("GetFile?type=bxml&parent=" + bxmlFile.getParentFile().getName()); // Send the response to the resulting XML file
 	}	
-	
-	/**
-	 * This method has the responsibility of uploading an archive file, extracting it, removing it
-	 * and updating the database to reflect that the solver has been uploaded.
-	 * @param item The file item of the solver to upload (given by apache)
-	 * @throws Exception
-	 */
-	/*public void handleSolver(FileItem item) throws Exception{
-		File destFile = new File(String.format("%s%s%s%s", R.SOLVER_PATH, shortDate.format(new Date()), File.separator, item.getName()));	// Generate a unique path for the solver		
-		new File(destFile.getParent()).mkdir();																							// Create said unique path
-						
-		item.write(destFile);																		// Copy the file to the server from the client
-		ZipUtil.extractZip(destFile.getAbsolutePath());														// Extract the downloaded file
-		destFile.delete();																			// Delete the archive
-		
-		//TODO: Update database with uploaded solver
-	}*/
 }

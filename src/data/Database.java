@@ -35,6 +35,8 @@ public class Database {
 	private PreparedStatement psGetMaxLevelGroup = null;
 	private PreparedStatement psGetRootLevels = null;
 	private PreparedStatement psGetSubLevels = null;
+	private PreparedStatement psAddSolver = null;
+	private PreparedStatement psAddCanSolve = null;
 	
 	public Database() {
 		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
@@ -174,6 +176,42 @@ public class Database {
 		return retVal;
 	}
 	
+	public synchronized boolean addSolver(Solver s){		
+		try{
+			connection.setAutoCommit(false);
+			
+			if(psAddSolver == null)			
+				psAddSolver = connection.prepareStatement("INSERT INTO solvers (uploaded, path, usr, notes) VALUES (NOW(), ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+						
+			psAddSolver.setString(1, s.getPath());
+			psAddSolver.setInt(2, s.getUserId());
+			psAddSolver.setString(3, s.getNotes());			
+			
+			psAddSolver.executeUpdate();
+			ResultSet idSet = psAddSolver.getGeneratedKeys(); idSet.next();
+			int insertedID = idSet.getInt(1);
+
+			if(psAddCanSolve == null)
+				psAddCanSolve = connection.prepareStatement("INSERT INTO can_solve VALUES (?, ?)");
+			
+			for(Level l : s.getSupportedDivs()){
+				psAddCanSolve.setInt(1, insertedID);
+				psAddCanSolve.setInt(2, l.getId());
+				psAddCanSolve.executeUpdate();
+			}
+			
+			connection.commit();
+			return true;			
+		} catch (Exception e){
+			doRollback();
+			log.severe("Error in addSolver method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return false;
+		} finally {
+			autoCommitOn();
+		}
+	}	
+	
 	/**
 	 * Adds a set of benchmarks to the database. Benchmarks must be added before the level structure is added or else
 	 * the benchmarks will be mis-aligned with their proper levels.
@@ -297,9 +335,9 @@ public class Database {
 				return null;
 			
 			Solver solver = new Solver();
-			solver.setId(results.getLong("id"));
+			solver.setId(results.getInt("id"));
 			solver.setPath(results.getString("path"));
-			solver.setUserId(results.getLong("usr"));
+			solver.setUserId(results.getInt("usr"));
 			solver.setUploaded(results.getDate("uploaded"));
 			solver.setNotes(results.getString("notes"));
 			

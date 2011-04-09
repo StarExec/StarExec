@@ -31,8 +31,32 @@ ul span {
 			error:function(xhr, textStatus, errorThrown) {
 				alert(errorThrown);
 			}
-		});		
+		});					
 	});
+	
+	function doSubmit(){		
+		valList = extractSelected($('#levels'));			
+		$('form').attr('action', "UploadSolver?lvl=" + valList.join(','));
+
+		if(valList.length)
+			return true;
+		else {
+			alert("The solver must support at least one division!");
+			return false;
+		}
+	}
+	
+	function extractSelected(ulist){												// Extracts selected checkbox values from a list
+		var localList = [];															// Create a list for my subtree...
+		$(ulist).children('li').each(function(index, li){							// For each list item in my immediate children
+			if($(li).children("input[type=checkbox]:first").is(':checked'))	// If the listitem contains a checked checkbox...
+				localList.push($(li).children("input[type=checkbox]:first").val());									// Add that value to the list and don't bother evaluating my subtrees because I'm selected, therefore they must be as well
+			else if($(li).children("ul").length) 																	// Else, traverse my subtree recursively and find selected checkbox values				
+				localList = localList.concat(extractSelected($(li).children("ul:first")));		// Traverse my subtree and append the results to my list
+		});
+		
+		return localList;	// Return the resulting list
+	}
 	
 	function toggleCheck(element){				
 		if($(element).is(":checked")){		// If I'm checked
@@ -46,7 +70,7 @@ ul span {
 	
 	function populateRoots(json){
 		$.each(json, function(i, level){			
-			$('#levels').append("<li><input onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
+			$('#levels').append("<li><input class='lvlChk' onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
 		});
 	}
 	
@@ -64,7 +88,7 @@ ul span {
 				var li = $(document.createElement('li'));
 				var ul = $(document.createElement('ul'));
 				$.each(data, function(i, level){							
-					$(ul).append("<li><input onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
+					$(ul).append("<li><input class='lvlChk' onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
 				});				
 				//$(li).append(ul);
 				$(element).after(ul);
@@ -82,7 +106,7 @@ ul span {
 
 </head>
 <body>
-	<form id="upForm" enctype="multipart/form-data" action="UploadSolver" method="POST">
+	<form id="upForm" enctype="multipart/form-data" action="" method="POST" onSubmit="return doSubmit()">
 		<h2>Solver Upload</h2>
 		<label>Solver ZIP</label>
 		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>
