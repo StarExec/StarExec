@@ -1,6 +1,7 @@
 package manage;
 
 import java.io.*;
+
 import org.ggf.drmaa.*;
 
 /**
@@ -27,7 +28,8 @@ public abstract class JobManager {
 	private static Jobject curJob; // .................................... Pointer to current Jobject (temporarily useful) 
 	private static String curJobName; // ................................. Current name of job. "job_<job id>.bash"
 	private static int curJID; // ........................................ Assigned ID of current job. Part of jobscript name.
-	private static String workingDirectory; // ........................... Should be the job inbox .
+	private static String jobinDir; // ................................... Should be the job inbox .
+	private static String workDir;
 	
 	/**
 	 *  Builds, enqueues, and records the job.
@@ -37,7 +39,8 @@ public abstract class JobManager {
 	public static void doJob(Jobject j) throws Exception {
 		curJob = j;
 		curJID = -1;	// Dummy value
-		workingDirectory = "/home/starexec/jobin";
+		jobinDir = "/home/starexec/jobin";
+		workDir = "/project/tomcat-webapps/webapps";
 		curJobName = "job_" + curJID + ".bash";
 		
 		try {
@@ -59,13 +62,15 @@ public abstract class JobManager {
 			
 			ses.init("");
 			JobTemplate jt = ses.createJobTemplate();
-			jt.setWorkingDirectory(workingDirectory);
-			jt.setRemoteCommand(curJobName);
+			jt.setWorkingDirectory(workDir);
+			jt.setOutputPath(":/dev/null");
+			jt.setJoinFiles(true);
+			jt.setRemoteCommand(jobinDir + "/" + curJobName);
 			String id = ses.runJob(jt);							
 			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
 			
 			if(info.wasAborted())
-				throw new Exception("Job " + id + " failed");
+				throw new Exception("Job " + id + " was aborted.");
 		} catch(Exception e) {
 			throw e;
 		} finally {
@@ -86,7 +91,7 @@ public abstract class JobManager {
 	 */
 	private static void buildJob() throws IOException {
 		// Open a file on the shared space and write the job script to it.
-		String filePath = String.format("%s/%s", workingDirectory, curJobName);
+		String filePath = String.format("%s/%s", jobinDir, curJobName);
 		File f = new File(filePath);
 		
 		if(f.exists()) {
@@ -94,6 +99,14 @@ public abstract class JobManager {
 		}
 		
 		f.createNewFile();
+		if(!f.setExecutable(true))
+			throw new IOException("Can't change owner's executable permissions on file.");
+//		if(!f.setExecutable(true, false))
+//			throw new IOException("Can't change everybody's executable permissions on file.");
+//		if(!f.setReadable(true, false))
+//			throw new IOException("Can't change everybody's read permissions on file.");
+//		if(!f.setWritable(true, false))
+//			throw new IOException("Can't change everybody's write permissions on file.");
 		FileWriter out = new FileWriter(f);
 			
 		out.write("#!/bin/bash\n"
