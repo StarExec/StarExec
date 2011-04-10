@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +29,9 @@ public class Database {
 	private PreparedStatement psGetUser2 = null;
 	private PreparedStatement psAddBenchmark = null;
 	private PreparedStatement psGetSolvers = null;
+	private PreparedStatement psGetAllSolvers = null;
 	private PreparedStatement psGetBenchmarks = null;
+	private PreparedStatement psGetAllBenchmarks = null;
 	private PreparedStatement psGetMaxLevel = null;
 	private PreparedStatement psGetMaxLevelGroup = null;
 	private PreparedStatement psGetRootLevels = null;
@@ -181,11 +182,12 @@ public class Database {
 			connection.setAutoCommit(false);
 			
 			if(psAddSolver == null)			
-				psAddSolver = connection.prepareStatement("INSERT INTO solvers (uploaded, path, usr, notes) VALUES (NOW(), ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				psAddSolver = connection.prepareStatement("INSERT INTO solvers (uploaded, path, usr, notes, name) VALUES (NOW(), ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 						
 			psAddSolver.setString(1, s.getPath());
 			psAddSolver.setInt(2, s.getUserId());
-			psAddSolver.setString(3, s.getNotes());			
+			psAddSolver.setString(3, s.getNotes());
+			psAddSolver.setString(4, s.getName());
 			
 			psAddSolver.executeUpdate();
 			ResultSet idSet = psAddSolver.getGeneratedKeys(); idSet.next();
@@ -254,19 +256,40 @@ public class Database {
 	
 	/**
 	 * Gets a list of benchmarks given a list of id's to retrieve
-	 * @param idList The list of ids to fetch benchmarks for
+	 * @param idList The list of ids to fetch benchmarks for. Null retrieves all benchmarks.
 	 * @return An arraylist of benchmarks corresponding to the input ids (ordering is preserved)
 	 */
-	public synchronized List<Benchmark> getBenchmarks(Collection<Long> idList){
-		ArrayList<Benchmark> returnList = new ArrayList<Benchmark>(5);
-		
-		for(long id : idList){
-			Benchmark benchmark = this.getBenchmark(id);
-			if(benchmark != null)
-				returnList.add(benchmark);
+	public synchronized List<Benchmark> getBenchmarks(Collection<Integer> idList){
+		try {
+			ArrayList<Benchmark> returnList = new ArrayList<Benchmark>(5);
+			
+			if(idList == null){
+				if(psGetAllBenchmarks == null)
+					psGetAllBenchmarks = connection.prepareStatement("SELECT * FROM benchmarks");
+				
+				ResultSet results = psGetAllBenchmarks.executeQuery();
+				while(results.next()){
+					Benchmark benchmark = new Benchmark();
+					benchmark.setId(results.getLong("id"));
+					benchmark.setPath(results.getString("physical_path"));
+					benchmark.setUserId(results.getInt("usr"));
+					benchmark.setUploaded(results.getDate("uploaded"));
+					returnList.add(benchmark);
+				}
+			} else {		
+				for(int id : idList){
+					Benchmark benchmark = this.getBenchmark(id);
+					if(benchmark != null)
+						returnList.add(benchmark);
+				}
+			}		
+			
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getBenchmarks method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
 		}
-		
-		return returnList;
 	}
 	
 	/**
@@ -274,12 +297,12 @@ public class Database {
 	 * @param id The is of the benchmark to retrieve
 	 * @return The benchmark associated with the id
 	 */
-	public synchronized Benchmark getBenchmark(Long id){
+	public synchronized Benchmark getBenchmark(int id){
 		try {
 			if(psGetBenchmarks == null)
 				psGetBenchmarks = connection.prepareStatement("SELECT * FROM benchmarks WHERE id=?");
 						
-			psGetBenchmarks.setLong(1, id);
+			psGetBenchmarks.setInt(1, id);
 			
 			ResultSet results = psGetBenchmarks.executeQuery();
 			
@@ -302,19 +325,42 @@ public class Database {
 	
 	/**
 	 * Gets a list of solvers given a list of solver id's
-	 * @param idList The list of id's of the solvers to retrieve
+	 * @param idList The list of id's of the solvers to retrieve. Null gets all solvers
 	 * @return An arraylist of solvers that correspond to the input id's (ordering is preserved)
 	 */
-	public synchronized List<Solver> getSolvers(Collection<Long> idList){
-		ArrayList<Solver> returnList = new ArrayList<Solver>(5);
-		
-		for(long id : idList){
-			Solver solver = this.getSolver(id);
-			if(solver != null)
-				returnList.add(solver);
+	public synchronized List<Solver> getSolvers(Collection<Integer> idList){
+		try {
+			ArrayList<Solver> returnList = new ArrayList<Solver>(5);
+					
+			if(idList == null){
+				if(psGetAllSolvers == null)
+					psGetAllSolvers = connection.prepareStatement("SELECT * FROM solvers");
+				
+				ResultSet results = psGetAllSolvers.executeQuery();
+				while(results.next()){
+					Solver solver = new Solver();
+					solver.setId(results.getInt("id"));
+					solver.setPath(results.getString("path"));
+					solver.setName(results.getString("name"));
+					solver.setUserId(results.getInt("usr"));
+					solver.setUploaded(results.getDate("uploaded"));
+					solver.setNotes(results.getString("notes"));
+					returnList.add(solver);
+				}
+			} else {
+				for(int id : idList){
+					Solver solver = this.getSolver(id);
+					if(solver != null)
+						returnList.add(solver);
+				}	
+			}					
+			
+			return returnList;
+		} catch (Exception e) {
+			log.severe("Error in getSolvers method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
 		}
-		
-		return returnList;
 	}
 	
 	/**
@@ -322,12 +368,12 @@ public class Database {
 	 * @param id The id of the solver
 	 * @return The solver which corresponds to the given id
 	 */
-	public synchronized Solver getSolver(Long id){
+	public synchronized Solver getSolver(int id){
 		try {
 			if(psGetSolvers == null)
 				psGetSolvers = connection.prepareStatement("SELECT * FROM solvers WHERE id=?");
 						
-			psGetSolvers.setLong(1, id);
+			psGetSolvers.setInt(1, id);
 			
 			ResultSet results = psGetSolvers.executeQuery();
 			
@@ -336,6 +382,7 @@ public class Database {
 			
 			Solver solver = new Solver();
 			solver.setId(results.getInt("id"));
+			solver.setName(results.getString("name"));
 			solver.setPath(results.getString("path"));
 			solver.setUserId(results.getInt("usr"));
 			solver.setUploaded(results.getDate("uploaded"));

@@ -43,8 +43,8 @@ ul span {
 	
 	function doSubmit(){		
 		valList = extractSelected($('#levels'));		// Extract the top-most selected checkbox values from the levels list
-		$('form').attr('action', "UploadSolver?<%=P.SUPPORT_DIV%>=" + valList.join(','));	// Set the form to submit to the UploadSolver servlet with the selected values
-
+		$('form').attr('action', 'UploadSolver?<%=P.SUPPORT_DIV%>=' + valList.join(',') + '&<%=P.SOLVER_NAME %>=' + $('#sName').val());	// Set the form to submit to the UploadSolver servlet with the selected values
+		
 		if(valList.length)								// If we had at least one supported level selected...
 			return true;
 		else {											// Else show an error and return false
@@ -116,6 +116,12 @@ ul span {
 		<h2>Solver Upload</h2>
 		<label>Solver ZIP</label>
 		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>
+		
+		<br/>
+		<br/>
+		
+		<label>Solver Name</label>
+		<input id="sName" type="text"/>
 		
 		<h2>Select Supported Divisions</h2>
 		<ul style="margin-top:10px;" id="levels">

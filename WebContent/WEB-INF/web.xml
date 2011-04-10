@@ -42,6 +42,15 @@
     <servlet-name>solveup</servlet-name>
     <url-pattern>/UploadSolver</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>newjob</servlet-name>
+    <servlet-class>servlets.SubmitJob</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>newjob</servlet-name>
+    <url-pattern>/SubmitJob</url-pattern>
+  </servlet-mapping>
   <!-- End Servlet Declarations -->
   
   <!--  RESTEasy Configurations -->

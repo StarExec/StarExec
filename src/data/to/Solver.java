@@ -1,6 +1,5 @@
 package data.to;
 
-import java.io.File;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.List;
 public class Solver {
 	private int id;
 	private String path;
-	private String fileName;
+	private String name;
 	private int userId;
 	private Date uploaded;
 	private String notes;
@@ -38,9 +37,12 @@ public class Solver {
 		return path;
 	}
 	
-	public void setPath(String path) {
+	public void setPath(String path){
 		this.path = path;
-		fileName = path.substring(path.lastIndexOf(File.separator) + 1);
+	}
+	
+	public void setName(String name) {
+		this.name = name;		
 	}
 	
 	public int getUserId() {
@@ -59,8 +61,8 @@ public class Solver {
 		this.uploaded = uploaded;
 	}
 	
-	public String getFileName(){
-		return fileName;
+	public String getName(){
+		return name;
 	}
 
 	public String getNotes() {

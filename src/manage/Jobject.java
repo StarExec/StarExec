@@ -66,7 +66,7 @@ public class Jobject {
 	 * @param Solver ID
 	 * @return The SolverLink just created.
 	 */
-	public SolverLink addSolver(Long sid) throws Exception {
+	public SolverLink addSolver(int sid) throws Exception {
 		SolverLink lnk = new SolverLink(sid);
 		addLink(lnk);
 		return lnk;

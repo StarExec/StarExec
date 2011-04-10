@@ -12,20 +12,6 @@ public class RESTServices {
 	public RESTServices(){
 		database = new Database();
 	}
-	
-	@GET
-	@Path("/hello")
-	@Produces("text/plain")
-	public String hello(){
-		return "Hello World";    
-	}
-	 
-	@GET
-	@Path("/echo/{command}")
-	@Produces("text/plain")
-	public String getBook(@PathParam("command") String input) {
-		return "Echo: " + input;
-	}
 	 
 	@GET
 	@Path("/levels/root")
@@ -42,6 +28,24 @@ public class RESTServices {
 	public String getSubLevels(@PathParam("id") String id) {
 		Gson gson = new Gson();
 		String jsonStr = gson.toJson(database.getSubLevels(Integer.parseInt(id)));		
+		return jsonStr;
+	}
+	
+	@GET
+	@Path("/solvers/all")
+	@Produces("application/json")
+	public String getAllSolvers() {
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(database.getSolvers(null));		
+		return jsonStr;
+	}
+	
+	@GET
+	@Path("/benchmarks/all")
+	@Produces("application/json")
+	public String getAllBenchmarks() {
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(database.getBenchmarks(null));				
 		return jsonStr;
 	}
 }

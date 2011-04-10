@@ -14,7 +14,7 @@ public class SolverLink {
 	private String spath;
 	private Database db;
 	
-	public SolverLink(Long sid) throws Exception {
+	public SolverLink(int sid) throws Exception {
 		bPaths = new Stack<String>();
 		db = new Database();
 		
@@ -28,7 +28,7 @@ public class SolverLink {
 		return bPaths.size();
 	}
 	
-	public void addBenchmark(Long bid) throws Exception {
+	public void addBenchmark(int bid) throws Exception {
 		String bpath = db.getBenchmark(bid).getPath();
 		
 		if(bpath == null)

@@ -9,21 +9,54 @@
 <title><%=T.CREATE_JOB %></title>
 <%@ include file="includes/jQuery.html" %>
 
+<style type="text/css">
+ul {
+	list-style-type:none;
+}
+</style>
+
 <script type="text/javascript">
-	/*$(document).ready(function(){
+	$(document).ready(function(){
 		$.ajax({
 			type:'Get',
 			dataType: 'json',
-			url:'/starexec/services/levels/root',
+			url:'/starexec/services/solvers/all',
 			success:function(data) {
-			 	populateRoots(data);		// Get the root divisions from the database
+			 	populateSolvers(data);		// Get the root divisions from the database
 			},
 			error:function(xhr, textStatus, errorThrown) {
 				alert(errorThrown);
 			}
-		});		
+		});	
+		
+		$.ajax({
+			type:'Get',
+			dataType: 'json',
+			url:'/starexec/services/benchmarks/all',
+			success:function(data) {				
+				populateBenchmarks(data);		// Get the root divisions from the database
+			},
+			error:function(xhr, textStatus, errorThrown) {
+				alert(errorThrown);
+			}
+		});	
 	});
 	
+	function populateSolvers(json){
+		// For each json solver return from the webservice, shove it into the DOM
+		$.each(json, function(i, solver){			
+			$('#solvers').append("<li><input name='solver' class='solChk' type='checkbox' value='" + solver.id + "'/> <span> " + solver.name + "</span></li>");
+		});
+	}
+	
+	function populateBenchmarks(json){
+		// For each json solver return from the webservice, shove it into the DOM
+		$.each(json, function(i, bench){			
+			$('#bench').append("<li><input name ='bench' class='benchChk' type='checkbox' value='" + bench.id + "'/> <span> " + bench.fileName + "</span></li>");
+		});
+	}
+	
+	/*
 	function doSubmit(){		
 		valList = extractSelected($('#levels'));		// Extract the top-most selected checkbox values from the levels list
 		$('form').attr('action', "UploadSolver?<%=P.SUPPORT_DIV%>=" + valList.join(','));	// Set the form to submit to the UploadSolver servlet with the selected values
@@ -96,10 +129,14 @@
 
 </head>
 <body>
-	<form id="upForm" action="" method="POST" onSubmit="return doSubmit()">
-		<h2>Job Creator</h2>		
+	<form id="upForm" action="SubmitJob" method="POST">
+		<h1>Job Creator</h1>
+		<h2>Select Solvers</h2>
+		<ul style="margin-top:10px;" id="solvers">		
+		</ul>
+		
 		<h2>Select Benchmarks</h2>
-		<ul style="margin-top:10px;" id="levels">
+		<ul style="margin-top:10px;" id="bench">
 		</ul>
 															
 		<input type="submit"/>		

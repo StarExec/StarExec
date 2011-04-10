@@ -28,11 +28,13 @@ public class UploadSolver extends HttpServlet {
 			List<Integer> supportedDivs = new LinkedList<Integer>();			// Create a new list of integers that will store the benchmark's supported divisions
 	    	for(String s : request.getParameter(P.SUPPORT_DIV).split(","))		// Get the level id's from the querystring, and split them. 
 	    		supportedDivs.add(Integer.parseInt(s));							// And convert each one to an integer and add it to the list
-							
+			
+	    	String solverName = request.getParameter(P.SOLVER_NAME);			// Get the solver's name from the querystring
+	    	
 			for(FileItem item : items) {										// For each file in the list			   
 			   if (!item.isFormField()) {										// If it's not a field...
 				   try {
-					   handleSolver(item, response, supportedDivs);				// Process the uploaded solver file
+					   handleSolver(item, response, supportedDivs, solverName);	// Process the uploaded solver file
 				   } catch (Exception e) {
 					   LogUtil.LogException(e);
 				   }			   
@@ -50,7 +52,7 @@ public class UploadSolver extends HttpServlet {
 	 * @param response The response which we can re-direct to based on a result
 	 * @throws Exception 
 	 */
-	public void handleSolver(FileItem item, HttpServletResponse response, List<Integer> supportedDivs) throws Exception {	
+	public void handleSolver(FileItem item, HttpServletResponse response, List<Integer> supportedDivs, String solverName) throws Exception {	
 		File uniqueDir = new File(R.SOLVER_PATH, shortDate.format(new Date()));		// Create a unique path the zip file will be extracted to
 		File zipFile = new File(uniqueDir,  item.getName());						// Create the zip file object-to-be		
 		new File(zipFile.getParent()).mkdir();										// Create the directory the solver zip will be written to
@@ -62,6 +64,7 @@ public class UploadSolver extends HttpServlet {
 		Solver s = new Solver();													// Create a new solver
 		s.setPath(uniqueDir.getAbsolutePath());										// Set its path to where we extracted the zip to
 		s.setUserId(1);																// TODO use real username!
+		s.setName(solverName);														// Set the solver's name
 		for(Integer i : supportedDivs)												// For each of the supported divs the user selected
 			s.addSupportedDiv(new Level(i));										// Add it to the solver
 				
