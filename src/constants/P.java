@@ -18,4 +18,6 @@ public class P {
 	public static String BENCH_XML = "bxml";
 	public static String FILE_PARENT = "parent";
 	public static String FILE_REQUEST_TYPE = "type";
+	
+	public static String SUPPORT_DIV = "lvl";
 }

@@ -30,7 +30,7 @@ public class AppListener implements ServletContextListener {
 		File testDir = new File("C:\\Users\\Tyler\\Desktop\\");
 		
 		if(testDir.exists()) {
-		    R.SOLVER_PATH = "C:\\Users\\Tyler\\Desktop\\SOLVERS\\";			// The directory in which to save the solver file(s)
+		    R.SOLVER_PATH = "C:\\Users\\Tyler\\Desktop\\Solvers\\";			// The directory in which to save the solver file(s)
 		    R.BENCHMARK_PATH = "C:\\Users\\Tyler\\Desktop\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
 		    
 		    Logger.getAnonymousLogger().info("Tyler local development paths set");

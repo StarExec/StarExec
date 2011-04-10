@@ -6,21 +6,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title><%=T.UPLOAD %></title>
+<title><%=T.CREATE_JOB %></title>
 <%@ include file="includes/jQuery.html" %>
 
-<style type="text/css">
-ul {
-	list-style-type:none;
-}
-
-ul span {
-	cursor: pointer;
-}
-</style>
-
 <script type="text/javascript">
-	$(document).ready(function(){
+	/*$(document).ready(function(){
 		$.ajax({
 			type:'Get',
 			dataType: 'json',
@@ -32,13 +22,6 @@ ul span {
 				alert(errorThrown);
 			}
 		});		
-		
-		<c:if test="${param.s == 'true'}">
-			alert("Upload Successful!");
-		</c:if>
-		<c:if test="${param.s == 'false'}">
-			alert("Upload Failed");
-		</c:if>
 	});
 	
 	function doSubmit(){		
@@ -108,16 +91,14 @@ ul span {
 			}
 		});			
 	}
+	*/
 </script>
 
 </head>
 <body>
-	<form id="upForm" enctype="multipart/form-data" action="" method="POST" onSubmit="return doSubmit()">
-		<h2>Solver Upload</h2>
-		<label>Solver ZIP</label>
-		<input id="uploadFile" name="<%=P.UPLOAD_FILE %>" type="file"/>
-		
-		<h2>Select Supported Divisions</h2>
+	<form id="upForm" action="" method="POST" onSubmit="return doSubmit()">
+		<h2>Job Creator</h2>		
+		<h2>Select Benchmarks</h2>
 		<ul style="margin-top:10px;" id="levels">
 		</ul>
 															
