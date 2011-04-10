@@ -43,7 +43,7 @@ public class SolverLink {
 		List<Benchmark> blist = db.getBenchmarks(ilist);
 		
 		for(Benchmark b : blist)
-			bPaths.add(b.getFileName());
+			bPaths.add(b.getPath());
 	}
 	
 	public String getSolverPath() {

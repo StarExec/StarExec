@@ -1,13 +1,14 @@
 package servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import manage.*;
 
 public class SubmitJob extends HttpServlet {
@@ -18,7 +19,6 @@ public class SubmitJob extends HttpServlet {
     	String[] solverIds = request.getParameterValues("solver");
     	String[] benchmarkIds = request.getParameterValues("bench");
     	
-    	//ArrayList<Integer> sids = new ArrayList<Integer>();
     	ArrayList<Integer> bids = new ArrayList<Integer>();
 
     	for(String s : benchmarkIds)
@@ -39,6 +39,12 @@ public class SubmitJob extends HttpServlet {
 			JobManager.doJob(job);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		File f = new File("/home/starexec/jobout/job_-1.out");
+		Scanner in = new Scanner(f);
+		while(in.hasNext()) {
+			response.getWriter().println(in.nextLine());
 		}
 	}    
 }

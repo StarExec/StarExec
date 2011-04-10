@@ -191,7 +191,7 @@ public abstract class JobManager {
 				+ "mv -f $JOBFILE $SHR/jobout\n"
 				+ "\n"
 				+ "# Cleanup. May not be necessary if we want to cache solvers/benchmarks\n"
-				+ "#rm $WDIR/*\n" );
+				+ "rm $WDIR/*\n" );
 		out.close();
 	}
 }
