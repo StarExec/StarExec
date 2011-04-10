@@ -1,7 +1,6 @@
 package manage;
 
 import java.util.Stack;
-import data.Database;
 
 /**
  * This holds the paths to the solvers/benchmarks, and is passed to the job manager to begin a job.

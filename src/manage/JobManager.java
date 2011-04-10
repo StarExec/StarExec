@@ -65,7 +65,7 @@ public abstract class JobManager {
 			jt.setWorkingDirectory(workDir);
 			jt.setOutputPath(":/dev/null");
 			jt.setJoinFiles(true);
-			jt.setRemoteCommand(jobinDir + "/" + curJobName);
+			jt.setRemoteCommand(jobinDir + File.separatorChar + curJobName);
 			String id = ses.runJob(jt);							
 			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
 			
@@ -94,19 +94,11 @@ public abstract class JobManager {
 		String filePath = String.format("%s/%s", jobinDir, curJobName);
 		File f = new File(filePath);
 		
-		if(f.exists()) {
-			f.delete();
-		}
+		if(f.exists()) f.delete();
 		
 		f.createNewFile();
 		if(!f.setExecutable(true))
 			throw new IOException("Can't change owner's executable permissions on file.");
-//		if(!f.setExecutable(true, false))
-//			throw new IOException("Can't change everybody's executable permissions on file.");
-//		if(!f.setReadable(true, false))
-//			throw new IOException("Can't change everybody's read permissions on file.");
-//		if(!f.setWritable(true, false))
-//			throw new IOException("Can't change everybody's write permissions on file.");
 		FileWriter out = new FileWriter(f);
 			
 		out.write("#!/bin/bash\n"
@@ -159,7 +151,7 @@ public abstract class JobManager {
 				+ "	# Now how should we handle flags for solvers???\n"
 				+ "	echo Running $SOL on $BEN ...\n"
 				+ "	ST=`$T`\n"
-				+ "	RESULT=`$SWP -smt2 $BWP`\n"
+				+ "	RESULT=`$SWP $BWP`\n"
 				+ "	FI=`$T`\n"
 				+ "	\n"
 				+ "	STIME=$((${FI%\\.*} - ${ST%\\.*}))\n"
@@ -173,10 +165,11 @@ public abstract class JobManager {
 				+ "# Run job\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "echo '*************************************'\n"
-				+ "echo Job ID: $JOB_ID \n"
-				+ "echo Directory: $M:$PWD\n"
-				+ "echo Shell: $SHELL\n"
-				+ "echo Out: $JOBFILE\n"
+				+ "echo JID: $JOB_ID \n"
+				+ "echo MNM: $M\n"
+				+ "echo DIR: $PWD\n"
+				+ "echo SHL: $SHELL\n"
+				+ "echo OUT: $JOBFILE\n"
 				+ "echo '*************************************'\n"
 				+ "echo\n"
 				+ "\n"

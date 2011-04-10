@@ -20,8 +20,8 @@
 	<p>I'm adding solver ID 1 and associating benchmark ID 1 with it, then passing the jobject to the JobManager.</p>
 	<% 
 	try {
-		lnk = job.addSolver(1L);
-		lnk.addBenchmark(1L);
+		lnk = job.addSolver(1);
+		lnk.addBenchmark(1);
 		
 		JobManager.doJob(job);
 	} catch(Exception e) {

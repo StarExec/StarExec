@@ -1,6 +1,8 @@
 package manage;
 
 import java.util.Stack;
+import data.to.*;
+import java.util.*;
 import data.Database;
 
 
@@ -35,6 +37,13 @@ public class SolverLink {
 			throw new Exception("Benchmark id " + bid + " returned null.");
 		
 		bPaths.add(bpath);
+	}
+	
+	public void addBenchmarks(Collection<Integer> ilist) {
+		List<Benchmark> blist = db.getBenchmarks(ilist);
+		
+		for(Benchmark b : blist)
+			bPaths.add(b.getFileName());
 	}
 	
 	public String getSolverPath() {
