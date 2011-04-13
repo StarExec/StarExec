@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1" import="data.*, data.to.*, manage.*, java.util.*"%>
+    pageEncoding="ISO-8859-1" import="com.starexec.data.*, com.starexec.data.to.*, com.starexec.manage.*, java.util.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>

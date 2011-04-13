@@ -9,7 +9,7 @@
   <!-- Servlet Declarations -->
   <servlet>
     <servlet-name>register</servlet-name>
-    <servlet-class>servlets.Registration</servlet-class>
+    <servlet-class>com.starexec.servlets.Registration</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>register</servlet-name>
@@ -18,7 +18,7 @@
   
   <servlet>
     <servlet-name>getfile</servlet-name>
-    <servlet-class>servlets.GetFile</servlet-class>
+    <servlet-class>com.starexec.servlets.GetFile</servlet-class>
   </servlet>  
   <servlet-mapping>
     <servlet-name>getfile</servlet-name>
@@ -27,7 +27,7 @@
   
   <servlet>
     <servlet-name>benchup</servlet-name>
-    <servlet-class>servlets.UploadBench</servlet-class>
+    <servlet-class>com.starexec.servlets.UploadBench</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>benchup</servlet-name>
@@ -36,7 +36,7 @@
   
   <servlet>
     <servlet-name>solveup</servlet-name>
-    <servlet-class>servlets.UploadSolver</servlet-class>
+    <servlet-class>com.starexec.servlets.UploadSolver</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>solveup</servlet-name>
@@ -45,7 +45,7 @@
   
   <servlet>
     <servlet-name>newjob</servlet-name>
-    <servlet-class>servlets.SubmitJob</servlet-class>
+    <servlet-class>com.starexec.servlets.SubmitJob</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>newjob</servlet-name>
@@ -120,6 +120,6 @@
   </welcome-file-list>
   
   <listener>
-    <listener-class>app.AppListener</listener-class>
+    <listener-class>com.starexec.app.AppListener</listener-class>
   </listener>   
 </web-app>
