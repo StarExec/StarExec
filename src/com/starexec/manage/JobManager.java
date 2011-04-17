@@ -1,8 +1,12 @@
 package com.starexec.manage;
 
 import java.io.*;
+import java.util.Date;
 
 import org.ggf.drmaa.*;
+
+import com.starexec.data.Database;
+import com.starexec.data.to.*;
 
 /**
  * --------
@@ -25,11 +29,13 @@ import org.ggf.drmaa.*;
  * 
  */
 public abstract class JobManager {
-	private static Jobject curJob; // .................................... Pointer to current Jobject (temporarily useful) 
-	private static String curJobName; // ................................. Current name of job. "job_<job id>.bash"
-	private static int curJID; // ........................................ Assigned ID of current job. Part of jobscript name.
-	private static String jobinDir; // ................................... Should be the job inbox .
-	private static String workDir;
+	private static int curJID; // ............................................ Assigned ID of current job. Part of jobscript name.
+	private static Jobject curJob; // ........................................ Pointer to current Jobject (temporarily useful) 
+	private static Job jobRecord; // ......................................... Holds record of current job. Built during the buildJob()
+	private static String curJobName; // ..................................... Current name of job. "job_<job id>.bash"
+	private static final String jobinDir = "/home/starexec/jobin"; // ........ Should be the job inbox .
+	private static final String workDir = "/project/tomcat-webapps/webapps";// Working directory on each local node.
+	private static final String jobFileNameFormat = "job_%d.bash";
 	
 	/**
 	 *  Builds, enqueues, and records the job.
@@ -38,21 +44,23 @@ public abstract class JobManager {
 	 */
 	public static void doJob(Jobject j) throws Exception {
 		curJob = j;
-		curJID = -1;	// Dummy value
-		jobinDir = "/home/starexec/jobin";
-		workDir = "/project/tomcat-webapps/webapps";
-		curJobName = "job_" + curJID + ".bash";
+		curJID = -1; // Dummy value. Must have a reference to some constant static value ....
+		curJobName = String.format(jobFileNameFormat, curJID);
+		jobRecord = null;
 		
 		try {
-			recordJob();
 			buildJob();
 			enqueJob();
-		}
-		catch(Exception e) {
+			recordJob();
+		} catch(Exception e) {
 			throw new Exception("Exception in Jobject : " + e);
 		}
 	}
 	
+	/**
+	 * Puts the current job into SGE
+	 * @throws Exception
+	 */
 	private static void enqueJob() throws Exception {
 		Session ses = null;
 		
@@ -66,9 +74,12 @@ public abstract class JobManager {
 			jt.setOutputPath(":/dev/null");
 			jt.setJoinFiles(true);
 			jt.setRemoteCommand(jobinDir + File.separatorChar + curJobName);
-			String id = ses.runJob(jt);							
-			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
 			
+			jobRecord.setSubmitted(new Date());
+			String id = ses.runJob(jt);					
+			
+			// This keeps a tab on the running job ... also brings the JM to a halt! Testing ONLY.
+			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
 			if(info.wasAborted())
 				throw new Exception("Job " + id + " was aborted.");
 		} catch(Exception e) {
@@ -78,10 +89,17 @@ public abstract class JobManager {
 				ses.exit();
 		}
 	}
-
-	private static void recordJob() {
-		// TODO Auto-generated method stub
-		
+	
+	/**
+	 * Send the job record object into the DB
+	 * @throws Exception
+	 */
+	private static void recordJob() throws Exception {
+		if(jobRecord != null) {
+			Database db = new Database();
+			db.addJob(jobRecord);
+		} else
+			throw new Exception("Job record is null");
 	}
 
 	/**
@@ -100,7 +118,20 @@ public abstract class JobManager {
 		if(!f.setExecutable(true))
 			throw new IOException("Can't change owner's executable permissions on file.");
 		FileWriter out = new FileWriter(f);
+		
+		// Create a new job TO object
+		jobRecord = new Job();
+		jobRecord.setJobId(curJID);
+		jobRecord.setUserId(-1);
+		//jobRecord.setSubmitted(new Date()); Set at last second possible.
+		jobRecord.setCompleted(null);
+		jobRecord.setDescription("Default");
+		jobRecord.setNode("Default");
+		jobRecord.setStatus("Default");
+		jobRecord.setTimeout(Long.MAX_VALUE);
 			
+		
+		// Write the ugly, ugly bash file
 		out.write("#!/bin/bash\n"
 				+ "# This submits a test bash job to the SGE\n"
 				+ "#$ -j y\n"
@@ -176,10 +207,22 @@ public abstract class JobManager {
 				+ "# All tests are right here\n" );
 		
 		SolverLink lnk;
+		Solver s;
+		Benchmark b;
 		for(int i = curJob.getNumSolvers(); i > 0; i--) {
 			lnk = curJob.popLink();
 			for(int j = lnk.getSize(); j > 0; j--) {
-				out.write(String.format("runsb %s %s\n", lnk.getSolverPath(), lnk.getNextBenchmarkPath()));
+				s = lnk.getSolver();
+				b = lnk.getNextBenchmark();
+				out.write(String.format("runsb %s %s\n", s.getPath(), b.getPath()));
+				
+				JobPair jp = new JobPair();
+				jp.setSolver(s);
+				jp.setBenchmark(b);
+				jp.setJobId(curJID);
+				jp.setResult(null);
+				
+				jobRecord.addJobPair(jp);
 			}
 		}
 		

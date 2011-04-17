@@ -13,17 +13,17 @@ import com.starexec.data.to.*;
  * 
  */
 public class SolverLink {
-	private Stack<String> bPaths;
-	private String spath;
+	private Stack<Benchmark> bPaths;
+	private Solver solver;
 	private Database db;
 	
 	public SolverLink(int sid) throws Exception {
-		bPaths = new Stack<String>();
+		bPaths = new Stack<Benchmark>();
 		db = new Database();
 		
-		spath = db.getSolver(sid).getPath();
+		solver = db.getSolver(sid);
 		
-		if(spath == null)
+		if(solver == null)
 			throw new Exception("Solver id " + sid + " returned null.");
 	}
 	
@@ -32,26 +32,26 @@ public class SolverLink {
 	}
 	
 	public void addBenchmark(int bid) throws Exception {
-		String bpath = db.getBenchmark(bid).getPath();
+		Benchmark bench = db.getBenchmark(bid);
 		
-		if(bpath == null)
+		if(bench == null)
 			throw new Exception("Benchmark id " + bid + " returned null.");
 		
-		bPaths.add(bpath);
+		bPaths.add(bench);
 	}
 	
 	public void addBenchmarks(Collection<Integer> ilist) {
 		List<Benchmark> blist = db.getBenchmarks(ilist);
 		
 		for(Benchmark b : blist)
-			bPaths.add(b.getPath());
+			bPaths.add(b);
 	}
 	
-	public String getSolverPath() {
-		return spath;
+	public Solver getSolver() {
+		return solver;
 	}
 	
-	public String getNextBenchmarkPath() {
+	public Benchmark getNextBenchmark() {
 		if(bPaths.isEmpty())
 			return null;
 		else
