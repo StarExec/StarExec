@@ -42,7 +42,7 @@ public class SubmitJob extends HttpServlet {
 			e.printStackTrace();
 		}
 		
-		File f = new File("/home/starexec/jobout/job_-1.out");
+		File f = new File(String.format("/home/starexec/jobout/job_%d.out", JobManager.getJID()));
 		Scanner in = new Scanner(f);
 		while(in.hasNext()) {
 			response.getWriter().println(in.nextLine());

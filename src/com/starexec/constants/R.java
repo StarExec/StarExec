@@ -23,4 +23,7 @@ public class R {
 	public static final String BXML_DIR_NAME = "dir";
 	public static final String BXML_BENCH_NAME = "bench";
 	public static final String BXML_NAME_ATTR = "name";
+	
+	// Job Manager (JM) constants
+	public static int NEXT_JID = 0;
 }

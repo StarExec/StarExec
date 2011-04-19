@@ -27,6 +27,7 @@ import java.util.Stack;
  *  
  */
 public class Jobject {
+	//private User usr; // Info about user building the job??
 	private Stack<SolverLink> solverChain;
 	
 	public Jobject() {

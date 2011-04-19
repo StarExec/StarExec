@@ -7,6 +7,7 @@ import org.ggf.drmaa.*;
 
 import com.starexec.data.Database;
 import com.starexec.data.to.*;
+import com.starexec.constants.R;
 
 /**
  * --------
@@ -33,6 +34,7 @@ public abstract class JobManager {
 	private static Jobject curJob; // ........................................ Pointer to current Jobject (temporarily useful) 
 	private static Job jobRecord; // ......................................... Holds record of current job. Built during the buildJob()
 	private static String curJobName; // ..................................... Current name of job. "job_<job id>.bash"
+	private static String curJobPath;
 	private static final String jobinDir = "/home/starexec/jobin"; // ........ Should be the job inbox .
 	private static final String workDir = "/project/tomcat-webapps/webapps";// Working directory on each local node.
 	private static final String jobFileNameFormat = "job_%d.bash";
@@ -44,8 +46,9 @@ public abstract class JobManager {
 	 */
 	public static void doJob(Jobject j) throws Exception {
 		curJob = j;
-		curJID = -1; // Dummy value. Must have a reference to some constant static value ....
+		curJID = R.NEXT_JID++;
 		curJobName = String.format(jobFileNameFormat, curJID);
+		curJobPath = String.format("%s/%s", jobinDir, curJobName);
 		jobRecord = null;
 		
 		try {
@@ -55,6 +58,10 @@ public abstract class JobManager {
 		} catch(Exception e) {
 			throw new Exception("Exception in Jobject : " + e);
 		}
+	}
+	
+	public static int getJID() {
+		return curJID;
 	}
 	
 	/**
@@ -73,15 +80,16 @@ public abstract class JobManager {
 			jt.setWorkingDirectory(workDir);
 			jt.setOutputPath(":/dev/null");
 			jt.setJoinFiles(true);
-			jt.setRemoteCommand(jobinDir + File.separatorChar + curJobName);
+			jt.setRemoteCommand(curJobPath);
 			
 			jobRecord.setSubmitted(new Date());
-			String id = ses.runJob(jt);					
+			String sge_id = ses.runJob(jt);					
 			
 			// This keeps a tab on the running job ... also brings the JM to a halt! Testing ONLY.
-			JobInfo info = ses.wait(id, Session.TIMEOUT_WAIT_FOREVER);
+			JobInfo info = ses.wait(sge_id, Session.TIMEOUT_WAIT_FOREVER);
 			if(info.wasAborted())
-				throw new Exception("Job " + id + " was aborted.");
+				//throw new Exception("Job " + sge_id + " was aborted.");
+				throw new Exception(String.format("Job %d was aborted (SGE ID %d)\n", curJID, sge_id));
 		} catch(Exception e) {
 			throw e;
 		} finally {
@@ -91,7 +99,8 @@ public abstract class JobManager {
 	}
 	
 	/**
-	 * Send the job record object into the DB
+	 * Send the job record object into the DB.
+	 * I'd like to explicitly set IDs from the JM. 
 	 * @throws Exception
 	 */
 	private static void recordJob() throws Exception {
@@ -109,7 +118,7 @@ public abstract class JobManager {
 	 */
 	private static void buildJob() throws IOException {
 		// Open a file on the shared space and write the job script to it.
-		String filePath = String.format("%s/%s", jobinDir, curJobName);
+		String filePath = curJobPath;
 		File f = new File(filePath);
 		
 		if(f.exists()) f.delete();
@@ -128,10 +137,10 @@ public abstract class JobManager {
 		jobRecord.setDescription("Default");
 		jobRecord.setNode("Default");
 		jobRecord.setStatus("Default");
-		jobRecord.setTimeout(Long.MAX_VALUE);
+		jobRecord.setTimeout(Long.MAX_VALUE); // Might have to be user-set. 
 			
 		
-		// Write the ugly, ugly bash file
+		// Write the ugly, ugly bash file. Shouldn't be hardcoded like this.
 		out.write("#!/bin/bash\n"
 				+ "# This submits a test bash job to the SGE\n"
 				+ "#$ -j y\n"
@@ -145,7 +154,8 @@ public abstract class JobManager {
 				+ "WDIR=$ROOT/workspace\n"
 				+ "SHR=/home/starexec\n"
 				+ "\n"
-				+ "JOB=job_" + curJID + "\n"
+				+ "JID=" + curJID + "\n"
+				+ "JOB=job_$JID\n"
 				+ "JOBFILE=$WDIR/$JOB.out\n"
 				+ "\n"
 				+ "T=\"date +%s.%m\"\n"
@@ -157,7 +167,7 @@ public abstract class JobManager {
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Functions\n"
 				+ "# /////////////////////////////////////////////\n"
-				+ "function runsb {\n"
+				+ "function runsb { # Run a solver on a benchmark\n"
 				+ "	SPATH=$1\n"
 				+ "	BPATH=$2\n"
 				+ "	SOL=${SPATH##*/}\n"
@@ -166,21 +176,17 @@ public abstract class JobManager {
 				+ "	BWP=$WDIR/$BEN\n"
 				+ "\n"
 				+ "	# Make sure files exist!\n"
-				+ "	# I hope this isn't necessary. I want \n"
-				+ "	# this code to be less granular.\n"
 				+ "	if [ ! -f $SWP ]; then\n"
-				+ "		echo Copying $SOL to working directory $WDIR\n"
+				+ "		#echo Copying $SOL to working directory $WDIR\n"
 				+ "		cp $SPATH $WDIR\n"
 				+ "	fi\n"
 				+ "	\n"
 				+ "	if [ ! -f $BWP ]; then\n"
-				+ "		echo Copying $BEN to working directory $WDIR\n"
+				+ "		#echo Copying $BEN to working directory $WDIR\n"
 				+ "		cp $BPATH $WDIR\n"
 				+ "	fi\n"
 				+ "		\n"
-				+ "\n"
-				+ "	# Now how should we handle flags for solvers???\n"
-				+ "	echo Running $SOL on $BEN ...\n"
+				+ "	#echo Running $SOL on $BEN ...\n"
 				+ "	ST=`$T`\n"
 				+ "	RESULT=`$SWP $BWP`\n"
 				+ "	FI=`$T`\n"
@@ -190,21 +196,22 @@ public abstract class JobManager {
 				+ "\n"
 				+ "	# Print runtime for solver run\n"
 				+ "	echo \"$SOL($BEN) : $RESULT : $STIME.$MTIME\"\n"
+				+ "\n"
+				+ "	return 0\n"
 				+ "}\n"
 				+ "\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Run job\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "echo '*************************************'\n"
-				+ "echo JID: $JOB_ID \n"
-				+ "echo MNM: $M\n"
-				+ "echo DIR: $PWD\n"
-				+ "echo SHL: $SHELL\n"
-				+ "echo OUT: $JOBFILE\n"
+				+ "echo SGE Job ID: $JOB_ID \n"
+				+ "echo JM Job ID:  " + curJID + "\n"
+				+ "echo Directory:  $M:$PWD\n"
+				+ "echo Shell:      $SHELL\n"
+				+ "echo Out:        $JOBFILE\n"
 				+ "echo '*************************************'\n"
 				+ "echo\n"
-				+ "\n"
-				+ "# All tests are right here\n" );
+				+ "\n" );
 		
 		SolverLink lnk;
 		Solver s;
@@ -227,14 +234,13 @@ public abstract class JobManager {
 		}
 		
 		out.write("\n"
-				+ "\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Teardown\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "mv -f $JOBFILE $SHR/jobout\n"
 				+ "\n"
-				+ "# Cleanup. May not be necessary if we want to cache solvers/benchmarks\n"
-				+ "rm $WDIR/*\n" );
+				+ "# Cleanup. Not necessary if we want to cache solvers/benchmarks\n"
+				+ "#rm $WDIR/*\n" );
 		out.close();
 	}
 }
