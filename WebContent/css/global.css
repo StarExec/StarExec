@@ -1,0 +1,140 @@
+@CHARSET "ISO-8859-1";
+
+* {
+	padding: 0px; 
+	margin: 0px; 
+}
+
+body {
+	background-color: #fff; 
+	background-image: url('/starexec/images/background.png');
+	background-repeat: repeat-x;
+	font-family: sans-serif;
+	color: #323232;
+}
+
+#wrapper {
+	width: 1280px;
+	min-height: 100%;
+	height: 100%;	
+	margin-left: auto;
+	margin-right: auto;	
+	position: relative;
+}
+
+#content {	
+	width: 100%;
+	min-height: 894px;
+}
+
+#badge {
+	width: 204px;
+	height: 124px;
+	background-image: url('/starexec/images/badge.png');
+	background-repeat: no-repeat;
+	position:relative;
+	left: 100px;
+}
+
+#nav {
+	position: absolute;
+	height: 43px;
+	top: 81px;
+	left: 330px;
+}
+
+#nav li {
+	list-style: none;
+	position: absolute;
+	top: 0px;
+	background-image: url('/starexec/images/btn_inactive.png');
+	background-repeat: no-repeat;
+	height: 43px;
+	width: 112px;
+}
+
+#nav li, #nav a {
+	height: 43px;
+	display: block;	
+	text-decoration: none;
+	text-align: center;
+	text-shadow: 0.03em 0.03em 0.03em #eeeeee;	
+}
+
+#nav li span {	
+	font-size: 18px;		
+	margin-top: 10px;
+	display:inline-table;		
+}
+
+#dashboard {
+	left: 0px;
+	width: 112px;
+}
+#solver {
+	left: 122px;
+	width: 112px;
+}
+#benchmark 
+{
+	left: 244px;
+	width: 112px;	
+}
+#job {	
+	left: 366px;
+	width: 112px;
+}
+
+#nav li a:hover {background: url('/starexec/images/btn_hover.png');}
+#nav li a:active {background: url('/starexec/images/btn_press.png');}
+#nav li a.current {background: url('/starexec/images/btn_active.png');}
+
+#user {
+	position: absolute;
+	right: 10px;
+	top: 20px;
+	color: #ffffff;
+	text-align: right;
+	font-size: 12px;
+}
+
+#user .username {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+body a {
+	color: #323232;
+	text-decoration: none;
+}
+
+#user ul {
+	list-style: none;
+	float: right;	
+	display:block;
+	clear: left;
+	margin-top: 5px;
+}
+
+
+#user li {	
+	float: left;
+	margin-left: 8px;
+}
+
+.btn { 
+   outline: 0; 
+   margin:0 4px 0 0; 
+   padding: .4em 1em; 
+   text-decoration:none !important; 
+   cursor:pointer; 
+   position: relative; 
+   text-align: center; 
+   zoom: 1; 
+}
+
+.btn span { 
+   float: right;
+   margin-left: 5px;
+   margin-top: 2px; 
+}
