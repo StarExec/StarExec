@@ -453,23 +453,24 @@ public class Database {
 			connection.setAutoCommit(false);
 			
 			if(psAddJob == null)			
-				psAddJob = connection.prepareStatement("INSERT INTO jobs (subDate, description, status, node, timeout, usr) VALUES (NOW(), ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				psAddJob = connection.prepareStatement("INSERT INTO jobs (id, subDate, description, status, node, timeout, usr) VALUES (?, NOW(), ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			
-			psAddJob.setString(1, j.getDescription());
-			psAddJob.setString(2, j.getStatus());
-			psAddJob.setString(3, j.getNode());
-			psAddJob.setLong(4, j.getTimeout());
-			psAddJob.setInt(5, j.getUserId());
+			psAddJob.setInt(1, j.getJobid());
+			psAddJob.setString(2, j.getDescription());
+			psAddJob.setString(3, j.getStatus());
+			psAddJob.setString(4, j.getNode());
+			psAddJob.setLong(5, j.getTimeout());
+			psAddJob.setInt(6, j.getUserId());
 
 			int rowsAffected = psAddJob.executeUpdate();
-			ResultSet idSet = psAddJob.getGeneratedKeys(); idSet.next();
-			int insertedID = idSet.getInt(1);
+			//ResultSet idSet = psAddJob.getGeneratedKeys(); idSet.next();
+			//int insertedID = idSet.getInt(1);
 			
 			if(psAddJobPair == null)
 				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (jid, sid, bid) VALUES (?, ?, ?)");
 			
 			for(JobPair jp : j.getJobPairs()){ 
-				psAddJobPair.setInt(1, insertedID);
+				psAddJobPair.setInt(1, j.getJobid());
 				psAddJobPair.setInt(2, jp.getSolver().getId());
 				psAddJobPair.setInt(3, jp.getBenchmark().getId());
 				rowsAffected += psAddJobPair.executeUpdate();

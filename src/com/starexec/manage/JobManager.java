@@ -237,6 +237,7 @@ public abstract class JobManager {
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Teardown\n"
 				+ "# /////////////////////////////////////////////\n"
+				+ "/home/starexec/Scripts/stardb_jupdate " + curJID + " $M done\n"
 				+ "mv -f $JOBFILE $SHR/jobout\n"
 				+ "\n"
 				+ "# Cleanup. Not necessary if we want to cache solvers/benchmarks\n"
