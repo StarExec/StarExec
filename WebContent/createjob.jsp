@@ -13,6 +13,10 @@
 ul {
 	list-style-type:none;
 }
+
+#bench span {
+	cursor: pointer;
+}
 </style>
 
 <script type="text/javascript">
@@ -32,9 +36,9 @@ ul {
 		$.ajax({
 			type:'Get',
 			dataType: 'json',
-			url:'/starexec/services/benchmarks/all',
+			url:'/starexec/services/levels/root/benchmarks',
 			success:function(data) {				
-				populateBenchmarks(data);		// Get the root divisions from the database
+				populateRoots(data);		// Get the root divisions from the database
 			},
 			error:function(xhr, textStatus, errorThrown) {
 				alert(errorThrown);
@@ -45,18 +49,28 @@ ul {
 	function populateSolvers(json){
 		// For each json solver return from the webservice, shove it into the DOM
 		$.each(json, function(i, solver){			
-			$('#solvers').append("<li><input name='solver' class='solChk' type='checkbox' value='" + solver.id + "'/> <span> " + solver.name + "</span></li>");
+			$('#solvers').append("<li><input name='solver' class='solChk' type='checkbox' value='" + solver.id + "'/> <span> " + solver.name + "</span></li>");			
 		});
 	}
 	
-	function populateBenchmarks(json){
-		// For each json solver return from the webservice, shove it into the DOM
-		$.each(json, function(i, bench){			
-			$('#bench').append("<li><input name ='bench' class='benchChk' type='checkbox' value='" + bench.id + "'/> <span> " + bench.fileName + "</span></li>");
+	function populateRoots(json){
+		// For each json level returned from the webservice, shove it into the DOM
+		$.each(json, function(i, level){
+			var li = $(document.createElement('li'));	 // Create a new list item to insert
+			$(li).append("<input name='lvl' onclick='toggleCheck(this)' class='lvlChk' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'>" + level.name + "</span>");
+			
+			var ul = $(document.createElement('ul'));	 // Create a new list
+			$.each(level.benchmarks, function(j, bench){ // For each benchmark that belongs in the level
+				$(ul).append("<li><input class='benchChk' onclick='toggleCheck(this)' type='checkbox' value='" + bench.id + "'/> <span> " + bench.path + "</span></li>");
+			});				
+			
+			$(li).children('span').after(ul);	// Insert the benchmark list as a child list of the level
+			//$(ul).hide();						// Don't show the benchmarks initially
+			$('#bench').append(li);	// Insert the whole list into the level/benchmark list
 		});
 	}
 	
-	/*
+	
 	function doSubmit(){		
 		valList = extractSelected($('#levels'));		// Extract the top-most selected checkbox values from the levels list
 		$('form').attr('action', "UploadSolver?<%=P.SUPPORT_DIV%>=" + valList.join(','));	// Set the form to submit to the UploadSolver servlet with the selected values
@@ -90,27 +104,33 @@ ul {
 		}
 	}
 	
-	function populateRoots(json){
-		// For each json level return from the webservice, shove it into the DOM
-		$.each(json, function(i, level){			
-			$('#levels').append("<li><input class='lvlChk' onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
-		});
-	}
-	
 	function getSublevel(element, levelId){
-		if($(element).parent().has("ul").length > 0){	// If the element already fetched a list
-			$(element).siblings("ul").toggle();			// Toggle it
-			return;										// Don't call the database again
-		}
+		// // TODO: When this element has been clicked once, remove getSublevel on click and change to toggle. (Move toggle to new function)
+		
+		//if($(element).parent().has("ul li input .lvlChk").length > 0){	// If the element already fetched a list
+			//$(element).siblings("ul").toggle();			// Toggle it
+			//return;										// Don't call the database again
+		//}
 			
 		$.ajax( {
 			type:'Get',
 			dataType: 'json',
-			url:'/starexec/services/levels/sublevels/' + levelId,	// Call the webservice to get my direct children
+			url:'/starexec/services/levels/sublevels/' + levelId + '/benchmarks',	// Call the webservice to get my direct children
 			success:function(data) {								
 				var ul = $(document.createElement('ul'));			// Create a new list
 				$.each(data, function(i, level){					// For each sublevel returned from the service, insert it into the DOM
-					$(ul).append("<li><input class='lvlChk' onclick='toggleCheck(this)' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'> " + level.name + "</span></li>");
+					var li = $(document.createElement('li'));	 // Create a new list item to insert
+					$(li).append("<input name='lvl' onclick='toggleCheck(this)' class='lvlChk' type='checkbox' value='" + level.id + "'/> <span onclick='getSublevel(this, " + level.id + ")'>" + level.name + "</span>");					
+				
+					var ulbench = $(document.createElement('ul'));	 // Create a new list
+					$.each(level.benchmarks, function(j, bench){ // For each benchmark that belongs in the level
+						$(ulbench).append("<li><input class='benchChk' type='checkbox' onclick='toggleCheck(this)' value='" + bench.id + "'/> <span> " + bench.path + "</span></li>");
+					});				
+					
+					$(li).children('span').after(ulbench);	// Insert the benchmark list as a child list of the level
+					//$(ulbench).hide();						// Don't show the benchmarks initially
+					
+					$(ul).append(li);	// Insert the whole list into the level/benchmark list
 				});				
 				
 				$(element).after(ul);	// Insert the list after the element that was clicked 
@@ -123,8 +143,7 @@ ul {
 				alert(errorThrown);
 			}
 		});			
-	}
-	*/
+	}	
 </script>
 
 </head>

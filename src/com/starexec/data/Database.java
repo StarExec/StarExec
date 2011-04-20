@@ -39,6 +39,7 @@ public class Database {
 	private PreparedStatement psGetSolvers = null;
 	private PreparedStatement psGetAllSolvers = null;
 	private PreparedStatement psGetBenchmarks = null;
+	private PreparedStatement psGetImmediateBench = null;
 	private PreparedStatement psGetAllBenchmarks = null;
 	private PreparedStatement psGetMaxLevel = null;
 	private PreparedStatement psGetMaxLevelGroup = null;
@@ -455,7 +456,7 @@ public class Database {
 			if(psAddJob == null)			
 				psAddJob = connection.prepareStatement("INSERT INTO jobs (id, subDate, description, status, node, timeout, usr) VALUES (?, NOW(), ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			
-			psAddJob.setInt(1, j.getJobid());
+			psAddJob.setInt(1, j.getJobId());
 			psAddJob.setString(2, j.getDescription());
 			psAddJob.setString(3, j.getStatus());
 			psAddJob.setString(4, j.getNode());
@@ -470,7 +471,7 @@ public class Database {
 				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (jid, sid, bid) VALUES (?, ?, ?)");
 			
 			for(JobPair jp : j.getJobPairs()){ 
-				psAddJobPair.setInt(1, j.getJobid());
+				psAddJobPair.setInt(1, j.getJobId());
 				psAddJobPair.setInt(2, jp.getSolver().getId());
 				psAddJobPair.setInt(3, jp.getBenchmark().getId());
 				rowsAffected += psAddJobPair.executeUpdate();
@@ -593,6 +594,106 @@ public class Database {
 			return returnList;
 		} catch (Exception e){
 			log.severe("Error in getSubLevels method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
+	
+	/**
+	 * Gets all virtual directories listed under another (children directories) including
+	 * benchmarks that are within each child sub-level
+	 * @param id The is the parent directory
+	 * @return A list of children directories of the parent
+	 */
+	public synchronized List<Level> getSubLevelsWithBench(int id){
+		try {
+			if(psGetSubLevels == null)
+				psGetSubLevels = connection.prepareStatement("SELECT node.* FROM levels AS node, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE node.lft > parent.lft AND node.rgt < parent.rgt AND node.dep=(parent.dep + 1)");
+									
+			psGetSubLevels.setInt(1, id);
+			
+			ResultSet results = psGetSubLevels.executeQuery();
+			ArrayList<Level> returnList = new ArrayList<Level>(10);
+			
+			while(results.next()){
+				Level l = new Level(results.getInt("id"));
+				l.setGroupId(results.getInt("gid"));
+				l.setLeft(results.getInt("lft"));
+				l.setRight(results.getInt("rgt"));
+				l.setName(results.getString("name"));
+				l.setUserId(results.getInt("usr"));
+				l.setDescription(results.getString("description"));
+				
+				if(psGetImmediateBench == null)
+					psGetImmediateBench = connection.prepareStatement("SELECT * FROM benchmarks WHERE lvl=?");
+				
+				psGetImmediateBench.setInt(1, l.getLeft());
+				
+				ResultSet benchResult = psGetImmediateBench.executeQuery();	
+				while(benchResult.next()){
+					Benchmark benchmark = new Benchmark();
+					benchmark.setId(benchResult.getInt("id"));					
+					benchmark.setUserId(benchResult.getInt("usr"));
+					benchmark.setUploaded(benchResult.getDate("uploaded"));
+					benchmark.setPath(benchResult.getString("physical_path"));	// TODO: Eventually we want to hide this
+					l.getBenchmarks().add(benchmark);
+				}
+				
+				returnList.add(l);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getSubLevels method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
+	
+	/**
+	 * @return A list of root levels (top-level virtual directories) including
+	 * all benchmarks immediately in the directory.
+	 */
+	public synchronized List<Level> getRootLevelsWithBench(){
+		try {
+			if(psGetRootLevels == null)
+				psGetRootLevels = connection.prepareStatement("SELECT * FROM levels WHERE dep=0");
+									
+			
+			ResultSet results = psGetRootLevels.executeQuery();
+			ArrayList<Level> returnList = new ArrayList<Level>(15);
+			
+			while(results.next()){
+				Level l = new Level(results.getInt("id"));
+				l.setGroupId(results.getInt("gid"));
+				l.setLeft(results.getInt("lft"));
+				l.setRight(results.getInt("rgt"));
+				l.setDepth(results.getInt("dep"));
+				l.setName(results.getString("name"));
+				l.setUserId(results.getInt("usr"));
+				l.setDescription(results.getString("description"));
+				
+				if(psGetImmediateBench == null)
+					psGetImmediateBench = connection.prepareStatement("SELECT * FROM benchmarks WHERE lvl=?");
+				
+				psGetImmediateBench.setInt(1, l.getLeft());
+				
+				ResultSet benchResult = psGetImmediateBench.executeQuery();	
+				while(benchResult.next()){
+					Benchmark benchmark = new Benchmark();
+					benchmark.setId(benchResult.getInt("id"));					
+					benchmark.setUserId(benchResult.getInt("usr"));
+					benchmark.setPath(benchResult.getString("physical_path"));	// TODO: Eventually we want to hide this
+					benchmark.setUploaded(benchResult.getDate("uploaded"));
+					l.getBenchmarks().add(benchmark);
+				}
+				
+				returnList.add(l);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getRootLevelsWithBench method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return null;
 		}	

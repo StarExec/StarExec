@@ -23,11 +23,29 @@ public class RESTServices {
 	}
 	
 	@GET
+	@Path("/levels/root/benchmarks")
+	@Produces("application/json")
+	public String getRootsWithBench() {
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(database.getRootLevelsWithBench());		
+		return jsonStr;
+	}
+	
+	@GET
 	@Path("/levels/sublevels/{id}")
 	@Produces("application/json")
 	public String getSubLevels(@PathParam("id") String id) {
 		Gson gson = new Gson();
 		String jsonStr = gson.toJson(database.getSubLevels(Integer.parseInt(id)));		
+		return jsonStr;
+	}
+	
+	@GET
+	@Path("/levels/sublevels/{id}/benchmarks")
+	@Produces("application/json")
+	public String getSubLevelsWithBench(@PathParam("id") String id) {
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(database.getSubLevelsWithBench(Integer.parseInt(id)));		
 		return jsonStr;
 	}
 	

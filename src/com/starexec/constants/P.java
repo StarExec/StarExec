@@ -21,4 +21,8 @@ public class P {
 	
 	public static String SUPPORT_DIV = "lvl";
 	public static String SOLVER_NAME = "n";
+	
+	public static String JOB_ID = "jid";
+	public static String PAIR_ID = "pid";
+	public static String JOB_STATUS = "status";
 }

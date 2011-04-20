@@ -20,7 +20,7 @@ public class Job {
 		setJobId(id);
 	}
 	
-	public int getJobid() {
+	public int getJobId() {
 		return jobid;
 	}
 	
