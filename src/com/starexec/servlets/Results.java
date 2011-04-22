@@ -9,12 +9,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.starexec.constants.P;
+import com.starexec.data.Database;
+
 /**
  * Servlet implementation class Results
  */
 @WebServlet("/Results")
 public class Results extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private Database database = new Database();
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -27,16 +31,15 @@ public class Results extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// Submit that a job is running
-		// ?jid=1&status=running		
-		
-		// Submit that a pair obtained a result
-		// ?pid=5&status=sat
-		
-		// Submit that an entire job is complete
-		// ?jid=1&status=running					
-		
-		Logger.getAnonymousLogger().info(request.getQueryString());		
+		if(request.getParameter(P.JOB_ID) != null){
+			int jobId = Integer.parseInt(request.getParameter(P.JOB_ID));
+			String status = request.getParameter(P.JOB_STATUS);
+			database.updateJobStatus(jobId, status);
+		} else if (request.getParameter(P.PAIR_ID) != null) {
+			int pairId = Integer.parseInt(request.getParameter(P.PAIR_ID));
+			String status = request.getParameter(P.JOB_STATUS);
+			database.updatePairResult(pairId, status);
+		}											
 	}
 
 	/**

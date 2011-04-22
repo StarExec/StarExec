@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.starexec.data.Database;
 import com.starexec.manage.*;
 
 public class SubmitJob extends HttpServlet {
@@ -17,15 +18,20 @@ public class SubmitJob extends HttpServlet {
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	Jobject job = new Jobject();
-    	String[] solverIds = request.getParameterValues("solver");
-    	String[] benchmarkIds = request.getParameterValues("bench");
+    	Database database = new Database();
+    	String solverIds = request.getParameter("solver");
+    	String benchmarkIds = request.getParameter("bench");
+    	String levelIds = request.getParameter("level");
     	
     	ArrayList<Integer> bids = new ArrayList<Integer>();
 
-    	for(String s : benchmarkIds)
+    	for(String s : benchmarkIds.split(","))
     		bids.add(Integer.parseInt(s));
     	    
-    	for(String s : solverIds) {
+    	for(String s : levelIds.split(","))
+    		bids.addAll(database.levelToBenchmarkIds(Integer.parseInt(s)));
+    	
+    	for(String s : solverIds.split(",")) {
     		int sid = Integer.parseInt(s);
     		try {
 				SolverLink sl = job.addSolver(sid);
