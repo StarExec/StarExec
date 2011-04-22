@@ -471,12 +471,13 @@ public class Database {
 			//int insertedID = idSet.getInt(1);
 			
 			if(psAddJobPair == null)
-				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (jid, sid, bid) VALUES (?, ?, ?)");
+				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, sid, bid) VALUES (?, ?, ?, ?)");
 			
 			for(JobPair jp : j.getJobPairs()){ 
-				psAddJobPair.setInt(1, j.getJobId());
-				psAddJobPair.setInt(2, jp.getSolver().getId());
-				psAddJobPair.setInt(3, jp.getBenchmark().getId());
+				psAddJobPair.setInt(1, jp.getId());
+				psAddJobPair.setInt(2, j.getJobId());
+				psAddJobPair.setInt(3, jp.getSolver().getId());
+				psAddJobPair.setInt(4, jp.getBenchmark().getId());
 				rowsAffected += psAddJobPair.executeUpdate();
 			}						
 			

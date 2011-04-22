@@ -2,6 +2,7 @@ package com.starexec.manage;
 
 import java.io.*;
 import java.util.Date;
+import java.util.logging.Logger;
 
 import org.ggf.drmaa.*;
 
@@ -44,7 +45,9 @@ public abstract class JobManager {
 	 *  @param j Job to do
 	 * @throws Exception 
 	 */
-	public static void doJob(Jobject j) throws Exception {
+	public static void doJob(Jobject j) {
+		
+		// Set up for new job
 		curJob = j;
 		curJID = R.NEXT_JID++;
 		curJobName = String.format(jobFileNameFormat, curJID);
@@ -56,12 +59,16 @@ public abstract class JobManager {
 			enqueJob();
 			recordJob();
 		} catch(Exception e) {
-			throw new Exception("Exception in Jobject : " + e);
+			log(e);
 		}
 	}
 	
 	public static int getJID() {
 		return curJID;
+	}
+	
+	private static void log(Object o) {
+		Logger.getAnonymousLogger().info("JobManager: " + o);
 	}
 	
 	/**
@@ -133,7 +140,7 @@ public abstract class JobManager {
 		
 		f.createNewFile();
 		if(!f.setExecutable(true))
-			throw new IOException("Can't change owner's executable permissions on file.");
+			throw new IOException("Can't change owner's executable permissions on file " + curJobPath);
 		FileWriter out = new FileWriter(f);
 		
 		// Create a new job TO object
