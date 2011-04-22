@@ -21,7 +21,7 @@
 			<a class="help" href="#">Help</a>
 			
 			<div class="createJobForm">
-				<form id="jobForm" action="" method="GET">		
+				<form id="jobForm" action="" method="POST">		
 					<ol class="steps">
 						<li class='step'>
 							<label>Select Solvers</label>
@@ -33,7 +33,7 @@
 						</li>					
 					</ol>														
 																											
-					<a onclick="doSubmit()" class="btn ui-state-default ui-corner-all" id="btnSubmit"><span class="ui-icon ui-icon-circle-arrow-e"></span>Submit</a>
+					<a onclick="doSubmit()" class="btn ui-state-default ui-corner-all" id="btnSubmit"><span class="ui-icon ui-icon-circle-arrow-e"></span>Submit</a>					
 				</form>
 			</div>			
 		</div>		

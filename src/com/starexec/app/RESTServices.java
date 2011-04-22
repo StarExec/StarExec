@@ -18,19 +18,12 @@ public class RESTServices {
 	public RESTServices(){
 		database = new Database();
 	}
-	 
-	@GET
-	@Path("/levels/root")
-	@Produces("application/json")
-	public String getRoots() {		
-		return new Gson().toJson(database.getRootLevels());				
-	}
 	
 	@GET
-	@Path("/levels/sublevels/{id}")
+	@Path("/levels/sublevels")
 	@Produces("application/json")
-	public String getSubLevels(@PathParam("id") int id) {		
-		return new Gson().toJson(database.getSubLevels(id));				
+	public String getSubLevels(@QueryParam("id") int id) {		
+		return new Gson().toJson(toLevelTree(database.getSubLevels(id)));				
 	}
 	
 	@GET
@@ -73,6 +66,24 @@ public class RESTServices {
 				t.getChildren().add(t1);
 			}
 			
+			list.add(t);
+		}
+
+		return list;
+	}
+	
+	/**
+	 * Takes in a list of levels and converts it into
+	 * a list of JSTreeItems suitable for being displayed
+	 * on the client side with the jsTree plugin.
+	 * @param levels The list of levels to convert
+	 * @return List of JSTreeItems to be serialized and sent to client
+	 */
+	private List<JSTreeItem> toLevelTree(List<Level> levels){
+		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		
+		for(Level level : levels){
+			JSTreeItem t = new JSTreeItem(level.getName(), level.getId(), "closed", "level");	
 			list.add(t);
 		}
 

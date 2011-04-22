@@ -1,21 +1,5 @@
 @CHARSET "ISO-8859-1";
 
-#levels, #levels ul {
-	list-style-type:none;
-	display:block;
-	position:static;
-	font-size: 15px;
-	font-weight: normal;
-}
-
-#levels span {
-	cursor: pointer;
-}
-
-#levels ul li {	
-	padding-left: 30px; 	
-}
-
 div .content {
 	width: 815px;
 	min-height: 350px;

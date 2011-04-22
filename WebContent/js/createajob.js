@@ -19,7 +19,6 @@ $(function(){
 			"valid_children" : [ "level" ],
 			"types" : {						
 				"level" : {
-					// can have files and other folders inside of it, but NOT `drive` nodes
 					"valid_children" : [ "bench", "level" ],
 					"icon" : {
 						"image" : "/starexec/images/tree_level.png"
@@ -74,6 +73,7 @@ $(function(){
 function doSubmit(){		
 	var lvlList = [];
 	var benchList = [];
+	var solverList = [];
 	
 	$("#benchList").jstree("get_checked", false,false).each(function(i, data){
 		var type = $(data).attr("rel");
@@ -84,6 +84,10 @@ function doSubmit(){
 			benchList.push(data.id);		
     });
 	
-	$('jobForm').attr('action', "SubmitJob?bench=" + benchList.join(',') + "&level=" + lvlList.join(','));
-	$('jobForm').submit();
+	$("#solverList").jstree("get_checked", false,false).each(function(i, data){				
+		solverList.push(data.id);			
+    });
+		
+	$('#jobForm').attr('action', 'SubmitJob?bench=' + benchList.join() + '&level=' + lvlList.join() + '&solver=' + solverList.join());
+	$('form').submit();
 }

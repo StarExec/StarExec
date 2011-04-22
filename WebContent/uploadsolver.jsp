@@ -8,6 +8,7 @@
 	<title><%=T.UPLOAD %></title>
 	<%@ include file="includes/jQuery.html" %>
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/uploadsolver.css" />
+	<script type="text/javascript" src="/starexec/js/jquery.jstree.js"></script>
 	<script type="text/javascript" src="/starexec/js/uploadsolver.js"></script>
 </head>
 
@@ -36,7 +37,7 @@
 						</li>
 						<li class='step'>
 							<label>Supported Divisions</label>
-							<ul style="margin-top:10px;" id="levels">
+							<ul id="levels">
 							</ul>
 						</li>
 					</ol>														
