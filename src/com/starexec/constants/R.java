@@ -26,4 +26,5 @@ public class R {
 	
 	// Job Manager (JM) constants
 	public static int NEXT_JID = 0;
+	public static int PAIR_ID = 0;
 }

@@ -35,10 +35,14 @@ public class Results extends HttpServlet {
 			int jobId = Integer.parseInt(request.getParameter(P.JOB_ID));
 			String status = request.getParameter(P.JOB_STATUS);
 			database.updateJobStatus(jobId, status);
+			
+			Logger.getAnonymousLogger().config(String.format("Changed job %s status to %s", jobId, status));
 		} else if (request.getParameter(P.PAIR_ID) != null) {
 			int pairId = Integer.parseInt(request.getParameter(P.PAIR_ID));
 			String status = request.getParameter(P.JOB_STATUS);
 			database.updatePairResult(pairId, status);
+
+			Logger.getAnonymousLogger().config(String.format("Changed pair %d status to %s", pairId, status));
 		}											
 	}
 

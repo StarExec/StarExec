@@ -83,13 +83,14 @@ public abstract class JobManager {
 			jt.setRemoteCommand(curJobPath);
 			
 			jobRecord.setSubmitted(new Date());
-			String sge_id = ses.runJob(jt);					
-			
+			ses.runJob(jt);
+			/*
+			String sge_id = ses.runJob(jt);	
 			// This keeps a tab on the running job ... also brings the JM to a halt! Testing ONLY.
 			JobInfo info = ses.wait(sge_id, Session.TIMEOUT_WAIT_FOREVER);
 			if(info.wasAborted())
-				//throw new Exception("Job " + sge_id + " was aborted.");
 				throw new Exception(String.format("Job %d was aborted (SGE ID %d)\n", curJID, sge_id));
+			*/
 		} catch(Exception e) {
 			throw e;
 		} finally {
@@ -117,6 +118,13 @@ public abstract class JobManager {
 	 * 
 	 */
 	private static void buildJob() throws IOException {
+		/*
+		 * NOTE: uses the 'wget' command in script to call servlet that handles interface to SQL server on starexec
+		 * Ex: wget "starexec/starexec/Results?type=job&id=2&node=starexec1&status=done" -O /dev/null --spider
+		 * 
+		 * Job has the following statuses : 0 (done), 1 (running), 2 (enqueued), 3 (error), 4 (frozen)
+		 * 
+		 */
 		// Open a file on the shared space and write the job script to it.
 		String filePath = curJobPath;
 		File f = new File(filePath);
@@ -131,18 +139,16 @@ public abstract class JobManager {
 		// Create a new job TO object
 		jobRecord = new Job();
 		jobRecord.setJobId(curJID);
-		jobRecord.setUserId(-1);
-		//jobRecord.setSubmitted(new Date()); Set at last second possible.
+		jobRecord.setUserId(curJob.getUser().getUserId());
 		jobRecord.setCompleted(null);
-		jobRecord.setDescription("Default");
-		jobRecord.setNode("Default");
-		jobRecord.setStatus("Default");
+		jobRecord.setDescription(curJob.getDescription());
+		jobRecord.setNode("local");
+		jobRecord.setStatus("enqueued");
 		jobRecord.setTimeout(Long.MAX_VALUE); // Might have to be user-set. 
 			
 		
 		// Write the ugly, ugly bash file. Shouldn't be hardcoded like this.
 		out.write("#!/bin/bash\n"
-				+ "# This submits a test bash job to the SGE\n"
 				+ "#$ -j y\n"
 				+ "#$ -o /dev/null\n"
 				+ "#$ -S /bin/bash\n"
@@ -157,6 +163,8 @@ public abstract class JobManager {
 				+ "JID=" + curJID + "\n"
 				+ "JOB=job_$JID\n"
 				+ "JOBFILE=$WDIR/$JOB.out\n"
+				+ "\n"
+				+ "RESULT=''\n"
 				+ "\n"
 				+ "T=\"date +%s.%m\"\n"
 				+ "M=`uname -n`; M=${M%%\\.*}\n"
@@ -194,21 +202,30 @@ public abstract class JobManager {
 				+ "	STIME=$((${FI%\\.*} - ${ST%\\.*}))\n"
 				+ "	MTIME=$((${FI#*\\.} - ${ST#*\\.}))\n"
 				+ "\n"
-				+ "	# Print runtime for solver run\n"
+				+ "	# Print runtime for solver \n"
 				+ "	echo \"$SOL($BEN) : $RESULT : $STIME.$MTIME\"\n"
+				+ "}\n"
 				+ "\n"
-				+ "	return 0\n"
+				+ "function sendResult {\n"
+				+ "	if [ $# -ne 1 ]; then\n"
+				+ "		echo $0 : Wrong number of arguments -- wants 1, got $#\n"
+				+ "		return 1\n"
+				+ "	fi \n"
+				+ "\n"
+				+ "	wget \"starexec/starexec/Results?pid=$1&result=$RESULT\" -o /dev/null  -O /dev/null --spider\n"
+				+ "\n"
+				+ "	return $?\n"
 				+ "}\n"
 				+ "\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Run job\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "echo '*************************************'\n"
-				+ "echo SGE Job ID: $JOB_ID \n"
-				+ "echo JM Job ID:  " + curJID + "\n"
-				+ "echo Directory:  $M:$PWD\n"
-				+ "echo Shell:      $SHELL\n"
-				+ "echo Out:        $JOBFILE\n"
+				+ "echo \"SGE Job ID: $JOB_ID\" \n"
+				+ "echo \"JM Job ID:  $JID\"\n"
+				+ "echo \"Directory:  $M:$PWD\"\n"
+				+ "echo \"Shell:      $SHELL\"\n"
+				+ "echo \"Out:        $JOBFILE\"\n"
 				+ "echo '*************************************'\n"
 				+ "echo\n"
 				+ "\n" );
@@ -221,15 +238,17 @@ public abstract class JobManager {
 			for(int j = lnk.getSize(); j > 0; j--) {
 				s = lnk.getSolver();
 				b = lnk.getNextBenchmark();
-				out.write(String.format("runsb %s %s\n", s.getPath(), b.getPath()));
+				out.write(String.format("runsb %s %s\nsendResult %d\n\n", s.getPath(), b.getPath(), R.PAIR_ID));
 				
 				JobPair jp = new JobPair();
+				jp.setId(R.PAIR_ID);
 				jp.setSolver(s);
 				jp.setBenchmark(b);
 				jp.setJobId(curJID);
 				jp.setResult(null);
 				
 				jobRecord.addJobPair(jp);
+				R.PAIR_ID++;
 			}
 		}
 		
@@ -237,7 +256,6 @@ public abstract class JobManager {
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Teardown\n"
 				+ "# /////////////////////////////////////////////\n"
-				+ "/home/starexec/Scripts/stardb_jupdate " + curJID + " $M done\n"
 				+ "mv -f $JOBFILE $SHR/jobout\n"
 				+ "\n"
 				+ "# Cleanup. Not necessary if we want to cache solvers/benchmarks\n"

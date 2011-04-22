@@ -57,7 +57,7 @@ public class User {
 	public boolean isVerified() {
 		return verified;
 	}
-	public int getUserid() {
+	public int getUserId() {
 		return userid;
 	}
 	public String getUsername() {

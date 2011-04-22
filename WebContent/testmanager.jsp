@@ -9,7 +9,8 @@
 
 <%!
 	Date date = new Date();
-	Jobject job = new Jobject();	// Where the job is stored
+	User usr = new User("admin");
+	Jobject job = new Jobject(usr);	// Where the job is stored
 	SolverLink lnk;	// A subjob (1 solver and 1 or more benchmarks)
 %>
 

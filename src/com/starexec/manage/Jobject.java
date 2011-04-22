@@ -2,6 +2,8 @@ package com.starexec.manage;
 
 import java.util.Stack;
 
+import com.starexec.data.to.User;
+
 /**
  * This holds the paths to the solvers/benchmarks, and is passed to the job manager to begin a job.
  * For n solvers, there is at least n benchmarks.
@@ -27,11 +29,27 @@ import java.util.Stack;
  *  
  */
 public class Jobject {
-	//private User usr; // Info about user building the job??
+	private User usr; // Info about user building the job??
+	private String description;
 	private Stack<SolverLink> solverChain;
 	
-	public Jobject() {
+	public Jobject(User usr) {
+		this.usr = usr;
+		this.description = "None";
+		
 		this.solverChain = new Stack<SolverLink>();
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public String getDescription() {
+		return this.description;
+	}
+	
+	public User getUser() {
+		return usr;
 	}
 	
 	/**

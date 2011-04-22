@@ -1,6 +1,7 @@
 package com.starexec.data.to;
 
 public class JobPair {
+	private int id;
 	private int jobid;
 	private String result;
 	private Benchmark benchmark;
@@ -36,5 +37,13 @@ public class JobPair {
 
 	public void setSolver(Solver solver) {
 		this.solver = solver;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}			
+	
+	public int getId() {
+		return this.id;
+	}
 }
