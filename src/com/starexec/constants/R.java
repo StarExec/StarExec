@@ -1,5 +1,7 @@
 package com.starexec.constants;
 
+import java.util.Collection;
+
 /**
  * Class which holds static resources (R) available for use
  * throughout the entire application. This will include many
@@ -27,4 +29,9 @@ public class R {
 	// Job Manager (JM) constants
 	public static int NEXT_JID = 0;
 	public static int PAIR_ID = 0;
+	
+	public static final String JOB_STATUS_DONE = "Done";
+	public static final String JOB_STATUS_RUNNING = "Running";
+	public static final String JOB_STATUS_ENQUEUED = "Enqueued";
+	public static final String JOB_STATUS_ERR = "Error";
 }

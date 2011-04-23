@@ -1,6 +1,7 @@
 package com.starexec.data;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -533,15 +534,18 @@ public class Database {
 			LogUtil.LogException(e);
 			return 0;
 		}	
-	}	
+	}
 	
-	public synchronized boolean updateJobStatus(int jobId, String status){
+	public synchronized boolean updateJobStatus(int jobId, String status, String node){
 		try {
 			if(psJobStatus == null)
-				psJobStatus = connection.prepareStatement("UPDATE jobs SET status=? WHERE id=?");
+					psJobStatus = connection.prepareStatement("UPDATE jobs SET status=?,node=?,finDate=NOW() WHERE id=?");
 			
 			psJobStatus.setString(1, status);
-			psJobStatus.setInt(2, jobId);
+			psJobStatus.setString(2, node);
+			psJobStatus.setInt(3, jobId);
+			
+			LogUtil.LogInfo(psJobStatus.toString());
 			
 			return psJobStatus.executeUpdate() == 1;			
 		} catch (Exception e){

@@ -10,7 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.starexec.constants.P;
+import com.starexec.constants.R;
 import com.starexec.data.Database;
+import com.starexec.util.LogUtil;
 
 /**
  * Servlet implementation class Results
@@ -34,15 +36,19 @@ public class Results extends HttpServlet {
 		if(request.getParameter(P.JOB_ID) != null){
 			int jobId = Integer.parseInt(request.getParameter(P.JOB_ID));
 			String status = request.getParameter(P.JOB_STATUS);
-			database.updateJobStatus(jobId, status);
+			String node = request.getParameter(P.JOB_NODE);
 			
-			Logger.getAnonymousLogger().info(String.format("Changed job %s status to %s", jobId, status));
+			
+			database.updateJobStatus(jobId, status, node);
+			
+			LogUtil.LogInfo(String.format("Changed job %d status to %s, node is %s", jobId, status, node));
 		} else if (request.getParameter(P.PAIR_ID) != null) {
 			int pairId = Integer.parseInt(request.getParameter(P.PAIR_ID));
-			String status = request.getParameter(P.JOB_STATUS);
-			database.updatePairResult(pairId, status);
+			String result = request.getParameter(P.PAIR_RESULT);
+			
+			database.updatePairResult(pairId, result);
 
-			Logger.getAnonymousLogger().info(String.format("Changed pair %d status to %s", pairId, status));
+			LogUtil.LogInfo(String.format("Changed pair %d result to %s", pairId, result));
 		}											
 	}
 

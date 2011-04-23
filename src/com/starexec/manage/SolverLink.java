@@ -1,7 +1,8 @@
 package com.starexec.manage;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Stack;
-import java.util.*;
 
 import com.starexec.data.Database;
 import com.starexec.data.to.*;

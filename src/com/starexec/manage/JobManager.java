@@ -149,13 +149,14 @@ public abstract class JobManager {
 		jobRecord.setUserId(curJob.getUser().getUserId());
 		jobRecord.setCompleted(null);
 		jobRecord.setDescription(curJob.getDescription());
-		jobRecord.setNode("local");
-		jobRecord.setStatus("enqueued");
+		jobRecord.setNode(null);
+		jobRecord.setStatus(R.JOB_STATUS_ENQUEUED);
 		jobRecord.setTimeout(Long.MAX_VALUE); // Might have to be user-set. 
 			
 		
 		// Write the ugly, ugly bash file. Shouldn't be hardcoded like this.
 		out.write("#!/bin/bash\n"
+				+ "# This submits a test bash job to the SGE\n"
 				+ "#$ -j y\n"
 				+ "#$ -o /dev/null\n"
 				+ "#$ -S /bin/bash\n"
@@ -168,10 +169,12 @@ public abstract class JobManager {
 				+ "SHR=/home/starexec\n"
 				+ "\n"
 				+ "JID=" + curJID + "\n"
+				+ "ST_STA=" + R.JOB_STATUS_ENQUEUED + "\n"
+				+ "ST_FIN=" + R.JOB_STATUS_DONE + "\n"
+				+ "RESULT=tmp\n"
+				+ "\n"
 				+ "JOB=job_$JID\n"
 				+ "JOBFILE=$WDIR/$JOB.out\n"
-				+ "\n"
-				+ "RESULT=''\n"
 				+ "\n"
 				+ "T=\"date +%s.%m\"\n"
 				+ "M=`uname -n`; M=${M%%\\.*}\n"
@@ -214,12 +217,21 @@ public abstract class JobManager {
 				+ "}\n"
 				+ "\n"
 				+ "function sendResult {\n"
-				+ "	if [ $# -ne 1 ]; then\n"
-				+ "		echo $0 : Wrong number of arguments -- wants 1, got $#\n"
+				+ "	if [ $# == 1 ]; then\n"
+				+ "		wget \"starexec/starexec/Results?pid=$1&result=$RESULT\" -o /dev/null  -O /dev/null --spider\n"
+				+ "	else\n"
 				+ "		return 1\n"
-				+ "	fi \n"
+				+ "	fi\n"
 				+ "\n"
-				+ "	wget \"starexec/starexec/Results?pid=$1&result=$RESULT\" -o /dev/null  -O /dev/null --spider\n"
+				+ "	return $?\n"
+				+ "}\n"
+				+ "\n"
+				+ "function sendJobStatus {\n"
+				+ "	if [ $# == 1 ]; then\n"
+				+ "		wget \"starexec/starexec/Results?jid=$JID&status=$1&node=$M\" -o /dev/null  -O /dev/null --spider\n"
+				+ "	else\n"
+				+ "		return 1\n"
+				+ "	fi\n"
 				+ "\n"
 				+ "	return $?\n"
 				+ "}\n"
@@ -235,6 +247,8 @@ public abstract class JobManager {
 				+ "echo \"Out:        $JOBFILE\"\n"
 				+ "echo '*************************************'\n"
 				+ "echo\n"
+				+ "\n"
+				+ "sendJobStatus $ST_STA \n"
 				+ "\n" );
 		
 		SolverLink lnk;
@@ -260,6 +274,8 @@ public abstract class JobManager {
 		}
 		
 		out.write("\n"
+				+ "\n"
+				+ "sendJobStatus $ST_FIN\n"
 				+ "# /////////////////////////////////////////////\n"
 				+ "# Teardown\n"
 				+ "# /////////////////////////////////////////////\n"

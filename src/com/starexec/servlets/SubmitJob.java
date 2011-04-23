@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.starexec.data.Database;
 import com.starexec.data.to.User;
 import com.starexec.manage.*;
+import com.starexec.util.LogUtil;
 
 @WebServlet("/SubmitJob")
 public class SubmitJob extends HttpServlet {
@@ -27,10 +28,11 @@ public class SubmitJob extends HttpServlet {
 	
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
 		Logger.getAnonymousLogger().info(request.getRequestURL().toString());
+		
     	User usr = new User("admin");
-    	
     	Jobject job = new Jobject(usr);
     	Database database = new Database();
+    	
     	String solverIds = request.getParameter("solver");
     	String benchmarkIds = request.getParameter("bench");
     	String levelIds = request.getParameter("level");
@@ -46,30 +48,29 @@ public class SubmitJob extends HttpServlet {
     			bids.addAll(database.levelToBenchmarkIds(Integer.parseInt(s)));
     	
     	System.out.println(Arrays.toString(bids.toArray()));
-    	
-    	for(String s : solverIds.split(",")) {
-    		int sid = Integer.parseInt(s);
-    		try {
-				SolverLink sl = job.addSolver(sid);
-				sl.addBenchmarks(bids);				
-			} catch (Exception e) {
-				Logger.getAnonymousLogger().info(e.toString());
-			}
-    	}
-    	
-    	try {
+
+		try {
+	    	for(String s : solverIds.split(",")) {
+	    		int sid = Integer.parseInt(s);
+	    		SolverLink sl = job.addSolver(sid);
+				sl.addBenchmarks(bids);	
+	    	}
+	    	
 			JobManager.doJob(job);
+			
+			String line;
+			File f = new File(String.format("/home/starexec/jobout/job_%d.out", JobManager.getJID()));
+			
+			while(!f.exists())
+				Thread.sleep(2000);
+			
+			Scanner in = new Scanner(f);
+			while(in.hasNext()) {
+				line = in.nextLine();
+				response.getWriter().println(line);
+			}
 		} catch (Exception e) {
-			Logger.getAnonymousLogger().info(e.toString());
-		}
-		
-		String line;
-		File f = new File(String.format("/home/starexec/jobout/job_%d.out", JobManager.getJID()));
-		Scanner in = new Scanner(f);
-		while(in.hasNext()) {
-			line = in.nextLine();
-			response.getWriter().println(line);
-			Logger.getAnonymousLogger().info(line);
+			LogUtil.LogException(e);
 		}
 	}    
 }

@@ -11,4 +11,8 @@ public class LogUtil {
 		}
 		Logger.getLogger("starerror").severe(sb.toString());
 	}
-}
+	
+	public static void LogInfo(String msg) {
+		Logger.getAnonymousLogger().info(msg);
+	}
+	}
