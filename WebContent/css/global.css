@@ -14,12 +14,13 @@ body {
 }
 
 #wrapper {
-	width: 1280px;
+	width: 1024px;
 	min-height: 100%;
 	height: 100%;	
 	margin-left: auto;
 	margin-right: auto;	
 	position: relative;
+	padding-bottom: 50px;
 }
 
 #content {	
@@ -28,9 +29,9 @@ body {
 }
 
 #badge {
-	width: 204px;
-	height: 124px;
-	background-image: url('/starexec/images/badge.png');
+	width: 215px;
+	height: 72px;
+	background-image: url('/starexec/images/logo.png');
 	background-repeat: no-repeat;
 	position:relative;
 	left: 100px;
@@ -40,7 +41,7 @@ body {
 	position: absolute;
 	height: 43px;
 	top: 81px;
-	left: 330px;
+	left: 100px;
 }
 
 #nav li {
@@ -87,7 +88,7 @@ body {
 
 #nav li a:hover {background: url('/starexec/images/btn_hover.png');}
 #nav li a:active {background: url('/starexec/images/btn_press.png');}
-#nav li a.current {background: url('/starexec/images/btn_active.png');}
+#nav li a.current {background: url('/starexec/images/btn_active.png'); color: #dddddd; 	text-shadow: 0.03em 0.03em 0.03em #444444;}
 
 #user {
 	position: absolute;

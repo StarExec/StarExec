@@ -89,5 +89,8 @@ function doSubmit(){
     });
 		
 	$('#jobForm').attr('action', 'SubmitJob?bench=' + benchList.join() + '&level=' + lvlList.join() + '&solver=' + solverList.join());
+	
+	$('#btnSubmit').text('Uploading');
+	$('#btnSubmit').attr('disabled', 'disabled');
 	$('form').submit();
 }

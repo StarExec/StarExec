@@ -21,7 +21,7 @@ function setActivePage(path){
 		$('#solver a').addClass('current');
 	} else if(path.indexOf('createjob') >= 0){
 		$('#job a').addClass('current');
-	} else if(path.indexOf('uploadbench') >= 0){
-		$('#benchmark a').addClass('current');
-	}
+	} else {
+		$('#dashboard a').addClass('current');
+	} 
 }

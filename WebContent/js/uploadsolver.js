@@ -41,7 +41,9 @@ function doSubmit(){
 			
 	$('#upForm').attr('action', 'UploadSolver?lvl=' + lvlList.join() + '&n=' + $('#sName').val());	// Set the form to submit to the UploadSolver servlet with the selected values
 	
-	if(lvlList.length){								// If we had at least one supported level selected...		
+	if(lvlList.length){								// If we had at least one supported level selected...
+		$('#btnSubmit').text('Uploading');
+		$('#btnSubmit').attr('disabled', 'disabled');
 		$('form').submit();
 	} else {											// Else show an error and return false
 		alert("The solver must support at least one division!");		
