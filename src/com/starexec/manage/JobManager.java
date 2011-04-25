@@ -168,6 +168,7 @@ public abstract class JobManager {
 				+ "WDIR=$ROOT/workspace\n"
 				+ "SHR=/home/starexec\n"
 				+ "\n"
+				+ "RUN=run\n"
 				+ "JID=" + curJID + "\n"
 				+ "ST_STA=" + R.JOB_STATUS_ENQUEUED + "\n"
 				+ "ST_FIN=" + R.JOB_STATUS_DONE + "\n"
@@ -205,6 +206,7 @@ public abstract class JobManager {
 				+ "	fi\n"
 				+ "		\n"
 				+ "	#echo Running $SOL on $BEN ...\n"
+				+ "	chmod 700 $SWP\n"
 				+ "	ST=`$T`\n"
 				+ "	RESULT=`$SWP $BWP`\n"
 				+ "	FI=`$T`\n"
@@ -259,7 +261,7 @@ public abstract class JobManager {
 			for(int j = lnk.getSize(); j > 0; j--) {
 				s = lnk.getSolver();
 				b = lnk.getNextBenchmark();
-				out.write(String.format("runsb %s %s\nsendResult %d\n\n", s.getPath(), b.getPath(), R.PAIR_ID));
+				out.write(String.format("runsb %s/$RUN %s\nsendResult %d\n\n", s.getPath(), b.getPath(), R.PAIR_ID));
 				
 				JobPair jp = new JobPair();
 				jp.setId(R.PAIR_ID);
@@ -282,7 +284,7 @@ public abstract class JobManager {
 				+ "mv -f $JOBFILE $SHR/jobout\n"
 				+ "\n"
 				+ "# Cleanup. Not necessary if we want to cache solvers/benchmarks\n"
-				+ "#rm $WDIR/*\n" );
+				+ "rm -r $WDIR/*\n" );
 		out.close();
 	}
 }
