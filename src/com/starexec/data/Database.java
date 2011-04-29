@@ -53,6 +53,8 @@ public class Database {
 	private PreparedStatement psJobStatus = null;
 	private PreparedStatement psPairStatus = null;
 	private PreparedStatement psLevelToBenchs = null;
+	private PreparedStatement psGetJobs = null;
+	private PreparedStatement psGetJobPairs = null;
 	
 	public Database() {
 		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
@@ -699,6 +701,87 @@ public class Database {
 		}	
 	}
 	
+	/**
+	 * Gets all job pairs associated with a job.
+	 * @param id The id of the job to retrieve pairs for
+	 * @return A list of job pairs under the job
+	 */
+	public synchronized List<JobPair> getJobPairs(int id){
+		try {						
+			if(psGetJobPairs == null)
+				psGetJobPairs = connection.prepareStatement("SELECT * FROM job_pairs JOIN benchmarks ON bid=benchmarks.id JOIN solvers ON sid=solvers.id WHERE jid=?");
+			
+			psGetJobPairs.setInt(1, id);
+			ResultSet results = psGetJobPairs.executeQuery();									 
+			List<JobPair> returnList = new ArrayList<JobPair>(10);
+			
+			while(results.next()){
+				Benchmark b = new Benchmark();
+				Solver s = new Solver();
+				JobPair p = new JobPair();
+				
+				p.setId(results.getInt("job_pairs.id"));
+				p.setJobId(results.getInt("job_pairs.jid"));
+				
+				b.setId(results.getInt("benchmarks.id"));
+				b.setPath(results.getString("benchmarks.physical_path"));
+				b.setLevel(results.getInt("benchmarks.lvl"));
+				b.setUserId(results.getInt("benchmarks.usr"));
+				p.setBenchmark(b);
+				
+				s.setId(results.getInt("solvers.id"));
+				s.setName(results.getString("solvers.name"));
+				s.setUploaded(results.getDate("solvers.uploaded"));
+				s.setUserId(results.getInt("solvers.usr"));
+				s.setNotes(results.getString("solvers.notes"));
+				s.setPath(results.getString("solvers.path"));
+				p.setSolver(s);
+				
+				returnList.add(p);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getJobPairs method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
+	
+	/**
+	 * Gets all jobs in the database (without job pair info)
+	 * @return A list of jobs in the database
+	 */
+	public synchronized List<Job> getJobs(){
+		try {						
+			if(psGetJobs == null)
+				psGetJobs = connection.prepareStatement("SELECT * FROM jobs");
+			
+			ResultSet results = psGetJobs.executeQuery();									 
+			List<Job> returnList = new ArrayList<Job>(10);
+			
+			while(results.next()){
+				Job j = new Job();
+				
+				j.setCompleted(results.getDate("finDate"));
+				j.setDescription(results.getString("description"));
+				j.setJobId(results.getInt("id"));
+				j.setNode(results.getString("node"));
+				j.setStatus(results.getString("status"));
+				j.setSubmitted(results.getDate("subDate"));
+				j.setTimeout(results.getLong("timeout"));
+				j.setUserId(results.getInt("usr"));
+				
+				returnList.add(j);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getJobs method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
 	
 	protected synchronized void autoCommitOn(){
 		try {

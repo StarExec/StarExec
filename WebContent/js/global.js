@@ -20,7 +20,9 @@ function setActivePage(path){
 	} else if(path.indexOf('uploadsolver') >= 0){
 		$('#solver a').addClass('current');
 	} else if(path.indexOf('createjob') >= 0){
-		$('#job a').addClass('current');
+		$('#cjob a').addClass('current');
+	} else if(path.indexOf('viewjob') >= 0){
+		$('#vjob a').addClass('current');
 	} else {
 		$('#dashboard a').addClass('current');
 	} 

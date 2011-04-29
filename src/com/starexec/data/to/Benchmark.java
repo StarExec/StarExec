@@ -5,7 +5,7 @@ import java.sql.Date;
 
 public class Benchmark {
 	private int id;
-	private String path;
+	transient private String path;
 	private String fileName;
 	private int userid;
 	private Date uploaded;

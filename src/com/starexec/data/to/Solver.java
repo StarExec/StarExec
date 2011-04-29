@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Solver {
 	private int id;
-	private String path;
+	transient private String path;
 	private String name;
 	private int userId;
 	private Date uploaded;

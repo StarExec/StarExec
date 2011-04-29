@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="/starexec/js/createajob.js"></script>	
 </head>
 
-<body>
+<body>		
 	<div id="wrapper">
 		<%@ include file="includes/header.html" %>
 		<div class="content round">

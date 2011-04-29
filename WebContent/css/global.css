@@ -20,7 +20,7 @@ body {
 	margin-left: auto;
 	margin-right: auto;	
 	position: relative;
-	padding-bottom: 50px;
+	padding: 0px 30px 50px 30px;
 }
 
 #content {	
@@ -33,25 +33,24 @@ body {
 	height: 72px;
 	background-image: url('/starexec/images/logo.png');
 	background-repeat: no-repeat;
-	position:relative;
-	left: 100px;
+	position:relative;	
 }
 
 #nav {
 	position: absolute;
 	height: 43px;
 	top: 81px;
-	left: 100px;
 }
 
 #nav li {
 	list-style: none;
-	position: absolute;
 	top: 0px;
 	background-image: url('/starexec/images/btn_inactive.png');
 	background-repeat: no-repeat;
 	height: 43px;
 	width: 112px;
+	float: left;
+	margin-right: 8px;
 }
 
 #nav li, #nav a {
@@ -68,31 +67,13 @@ body {
 	display:inline-table;		
 }
 
-#dashboard {
-	left: 0px;
-	width: 112px;
-}
-#solver {
-	left: 122px;
-	width: 112px;
-}
-#benchmark 
-{
-	left: 244px;
-	width: 112px;	
-}
-#job {	
-	left: 366px;
-	width: 112px;
-}
-
 #nav li a:hover {background: url('/starexec/images/btn_hover.png');}
 #nav li a:active {background: url('/starexec/images/btn_press.png');}
 #nav li a.current {background: url('/starexec/images/btn_active.png'); color: #dddddd; 	text-shadow: 0.03em 0.03em 0.03em #444444;}
 
 #user {
 	position: absolute;
-	right: 10px;
+	right: 30px;
 	top: 20px;
 	color: #ffffff;
 	text-align: right;

@@ -48,6 +48,13 @@ public class RESTServices {
 		return new Gson().toJson(toLevelBenchTree(levels));				
 	}
 	
+	@GET
+	@Path("/jobs/all")
+	@Produces("application/json")	
+	public String getJobs() {			
+		return new Gson().toJson(database.getJobs());				
+	}
+	
 	/**
 	 * Takes in a list of levels and converts it into
 	 * a list of JSTreeItems suitable for being displayed
