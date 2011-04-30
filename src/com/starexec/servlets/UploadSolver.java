@@ -69,8 +69,31 @@ public class UploadSolver extends HttpServlet {
 		s.setName(solverName);														// Set the solver's name
 		for(Integer i : supportedDivs)												// For each of the supported divs the user selected
 			s.addSupportedDiv(new Level(i));										// Add it to the solver
+		for(Configuration c : findConfigs(uniqueDir.getAbsolutePath()))				// For each configuration that was found in the bin directory
+			s.addConfig(c);
 				
 		boolean success = new Database().addSolver(s);								// Add the solver to the database
 		response.sendRedirect("uploadsolver.jsp?s=" + success);
 	}	
+	
+	private List<Configuration> findConfigs(String fromPath){		
+		File binDir = new File(fromPath, R.BIN_DIR);								// Get the path to the bin directory
+		
+		if(!binDir.exists())														// If the bin directory doesn't exist
+			return Collections.emptyList();											// Give back an empty list
+		
+		List<Configuration> returnList = new ArrayList<Configuration>();			// The list of configs we will give back
+		
+		for(File f : binDir.listFiles()){											// For each file in the bin directory... 
+			f.setExecutable(true, false);											// Assume everything in bin is executable
+			
+			if(f.isFile() && f.getName().startsWith("run")){						// If the file is a file and it starts with run...
+				Configuration c = new Configuration();								// Create a new configuration with that name of the file
+				c.setName(f.getName());
+				returnList.add(c);
+			}				
+		}
+		
+		return returnList;															// Give back the results!
+	}
 }

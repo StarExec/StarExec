@@ -12,6 +12,7 @@ $(function(){
 	});
 	
 	setActivePage($(location).attr('href'));
+	buildSubmenu();	
 });		
 
 function setActivePage(path){
@@ -26,4 +27,16 @@ function setActivePage(path){
 	} else {
 		$('#dashboard a').addClass('current');
 	} 
+}
+
+function buildSubmenu(){
+	$('#job a').hover(function(){
+		// Mouse in
+		$('#job a').parent().append('<li id="jobView"><a href="createjob.jsp"><span>View</span></a></li>');
+		$('#job a').parent().append('<li id="jobCreate"><a href="createjob.jsp"><span>Create</span></a></li>');
+	},
+	function(){
+		$('#jobView').remove();
+		$('#jobCreate').remove();
+	});
 }

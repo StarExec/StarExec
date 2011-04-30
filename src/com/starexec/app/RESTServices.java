@@ -7,6 +7,7 @@ import javax.ws.rs.*;
 import com.google.gson.Gson;
 import com.starexec.data.Database;
 import com.starexec.data.to.Benchmark;
+import com.starexec.data.to.Job;
 import com.starexec.data.to.Level;
 import com.starexec.data.to.Solver;
 
@@ -49,10 +50,71 @@ public class RESTServices {
 	}
 	
 	@GET
+	@POST
 	@Path("/jobs/all")
 	@Produces("application/json")	
 	public String getJobs() {			
-		return new Gson().toJson(database.getJobs());				
+		return new Gson().toJson(jobToTableRow(database.getJobs()));				
+	}
+	
+	/**
+	 * Converts a job list into the appropriate format to be
+	 * displayed by jquery's flexigrid.
+	 * @param jList The list of jobs to format
+	 * @return A TableRow object that can be serialized to JSON in the proper format
+	 */
+	public TableRow jobToTableRow(List<Job> jList){
+		TableRow tr = new TableRow(1, jList.size());
+		for(Job j : jList){
+			Row r = new Row(j.getJobId());
+			r.addCell(j.getJobId());
+			r.addCell(j.getStatus());
+			r.addCell(j.getSubmitted());
+			r.addCell(j.getCompleted());
+			r.addCell(j.getNode());
+			r.addCell(j.getTimeout());
+			tr.addRow(r);
+		}
+		
+		return tr;
+	}
+	
+	/**
+	 * A collection of rows and metadata that represents the format
+	 * that the jQuery flexigrid requires. This can be serialized and sent
+	 * to a client to be displayed properly in the flexigrid.
+	 */
+	public static class TableRow {
+		private int page;
+		private int total;
+		private List<Row> rows;
+		
+		public TableRow(int page, int total){
+			this.page = page;
+			this.total = total;
+			rows = new LinkedList<Row>();
+		}
+		
+		public void addRow(Row r){
+			rows.add(r);
+		}
+	}
+	
+	/**
+	 * Represents a row (collection of cells with an id) in the jquery flexigrid	 
+	 */
+	public static class Row {
+		private int id;
+		private List<String> cell;
+		
+		public Row(int id){
+			this.id = id;
+			cell = new LinkedList<String>();
+		}
+		
+		public void addCell(Object o){
+			cell.add(o.toString());
+		}
 	}
 	
 	/**
@@ -97,6 +159,12 @@ public class RESTServices {
 		return list;
 	}
 	
+	/**
+	 * Takes in a list of solvers and gives back a list of tree items that can be
+	 * serialized into JSON and displayed by the jsTree plugin.
+	 * @param solvers The solvers to format
+	 * @return A formatable list of JSTreeItems
+	 */
 	private List<JSTreeItem> toSolverTree(List<Solver> solvers){
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		

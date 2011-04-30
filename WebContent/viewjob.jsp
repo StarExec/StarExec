@@ -7,8 +7,9 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<title>View Jobs</title>
 	<%@ include file="includes/jQuery.html" %>
-	<link type="text/css" rel="StyleSheet" href="/starexec/css/viewjob.css" />	
-	<script type="text/javascript" src="/starexec/js/jquery.jstree.js"></script>
+	<link type="text/css" rel="StyleSheet" href="/starexec/css/viewjob.css" />
+	<link type="text/css" rel="StyleSheet" href="/starexec/js/css/flexigrid.pack.css" />	
+	<script type="text/javascript" src="/starexec/js/flexigrid.pack.js"></script>
 	<script type="text/javascript" src="/starexec/js/viewjob.js"></script>	
 </head>
 
@@ -20,14 +21,6 @@
 			<h1>View Jobs</h1>
 			<a class="help" href="#">Help</a>		
 			<table id="jobs">
-				<tr>
-					<th>Job #</th>
-					<th>Status</th>
-					<th>Submitted</th>
-					<th>Completed</th>
-					<th>Node</th>
-					<th>Timeout</th>
-				</tr>
 			</table>			
 		</div>		
 	</div>

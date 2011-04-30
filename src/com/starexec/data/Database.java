@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import com.starexec.constants.R;
 import com.starexec.data.to.Benchmark;
+import com.starexec.data.to.Configuration;
 import com.starexec.data.to.Job;
 import com.starexec.data.to.JobPair;
 import com.starexec.data.to.Level;
@@ -55,6 +56,7 @@ public class Database {
 	private PreparedStatement psLevelToBenchs = null;
 	private PreparedStatement psGetJobs = null;
 	private PreparedStatement psGetJobPairs = null;
+	private PreparedStatement psAddConfiguration = null;
 	
 	public Database() {
 		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
@@ -63,7 +65,7 @@ public class Database {
 	public Database(String url, String username, String pass) {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");	// Load the MYSQL driver						
-			connection = DriverManager.getConnection(url, username, pass);	// Open a connection to the database
+			connection = DriverManager.getConnection(url, username, pass);	// Open a connection to the database			
 		} catch (Exception e) {
 			log.severe("DATABASE CONNECTION ERROR");
 		}		
@@ -217,6 +219,15 @@ public class Database {
 				psAddCanSolve.setInt(1, insertedID);
 				psAddCanSolve.setInt(2, l.getId());
 				psAddCanSolve.executeUpdate();
+			}
+			
+			if(psAddConfiguration == null)
+				psAddConfiguration = connection.prepareStatement("INSERT INTO configurations (sid, name) VALUES (?, ?)");
+			
+			for(Configuration c : s.getConfigurations()){
+				psAddConfiguration.setInt(1, insertedID);
+				psAddConfiguration.setString(2, c.getName());
+				psAddConfiguration.executeUpdate();
 			}
 			
 			connection.commit();

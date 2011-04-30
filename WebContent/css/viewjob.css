@@ -22,6 +22,7 @@ div .content h1 {
 	position:relative;	
 	top: 7px;
 	margin-left: 60px;
+	margin-bottom: 30px;
 	font-size: 24px;
 	text-shadow: 0.04em 0.04em 0.03em #eeeeee;	
 }
@@ -34,6 +35,15 @@ div .content h1 {
 	font-size: 12px;
 }
 
+#jobs {
+	width: 100%;
+}
+
+#jobs td, #jobs th {
+	text-align: left;	 	
+}
+
+/*
 #jobs {
 	margin-top: 40px;
 	width: 100%;
@@ -52,4 +62,4 @@ div .content h1 {
 
 #jobs tr {
 	cursor: hand;
-}
+}*/
