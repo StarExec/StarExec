@@ -50,7 +50,7 @@ body {
 	height: 43px;
 	width: 112px;
 	float: left;
-	margin-right: 8px;
+	margin-right: 2px;
 }
 
 #nav li, #nav a {
@@ -115,8 +115,14 @@ body a {
    zoom: 1; 
 }
 
-.btn span { 
+.btn span.right { 
    float: right;
    margin-left: 5px;
+   margin-top: 2px; 
+}
+
+.btn span.left { 
+   float: left;
+   margin-right: 5px;
    margin-top: 2px; 
 }

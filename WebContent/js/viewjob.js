@@ -1,16 +1,4 @@
 $(function(){
-	/*$.ajax({
-		type:'Get',
-		dataType: 'json',
-		url:'/starexec/services/jobs/all',
-		success:function(data) {
-		 	populateJobs(data);		// Get the root divisions from the database
-		},
-		error:function(xhr, textStatus, errorThrown) {
-			alert(errorThrown);
-		}
-	});*/
-	
 	$('#jobs').flexigrid({
 		url: '/starexec/services/jobs/all',
 		dataType: 'json',
@@ -20,7 +8,7 @@ $(function(){
 			{display: 'Submitted', name : 'submitted', width : 160, sortable : true, align: 'left', process: onJobClick},
 			{display: 'Completed', name : 'completed', width : 160, sortable : true, align: 'left', process: onJobClick},
 			{display: 'Node', name : 'node', width : 160, sortable : true, align: 'left', process: onJobClick},
-			{display: 'Timeout', name : 'timeout', width : 100, sortable : true, align: 'left', process: onJobClick}
+			{display: 'Timeout', name : 'timeout', width : 90, sortable : true, align: 'left', process: onJobClick}
 			],
 		searchitems : [
 			{display: 'ID', name : 'jobid', isdefault: true},
@@ -35,13 +23,63 @@ $(function(){
 		useRp: true,
 		rp: 15,
 		singleSelect: true
-	});		
+	});	
+	
+	$('.flexigrid').attr('id', 'jobGrid');	// Give the main grid a new id
+	$('#btnBack').hide();
 });
 
 function onJobClick(cellDiv, id){
   $(cellDiv).click(function(){
-	  alert(id); 
+	  // When a row is clicked, get the job pair data related to the job and display it
+	  var pairTable = $(document.createElement('table'));
+	  $(pairTable).hide();
+	  
+	  $('#jobGrid').before(pairTable);	  	 	  
+	  $('#jobGrid').fadeOut(200, function(){
+		  $(pairTable).flexigrid({
+				url: '/starexec/services/jobs/pairs/' + id,
+				dataType: 'json',
+				colModel : [
+					{display: 'ID', name : 'jpid', width : 50, sortable : true, align: 'center'},
+					{display: 'Status', name : 'status', width : 60, sortable : true, align: 'left'},
+					{display: 'Result', name : 'result', width : 50, sortable : true, align: 'left'},
+					{display: 'Solver', name : 'solver', width : 100, sortable : true, align: 'left'},
+					{display: 'Bechmark', name : 'benchmark', width : 100, sortable : true, align: 'left'}	,			
+					{display: 'Run Time', name : 'runtime', width : 80, sortable : true, align: 'left'},
+					{display: 'Start Time', name : 'startime', width : 140, sortable : true, align: 'left'},
+					{display: 'End Time', name : 'endtime', width : 140, sortable : true, align: 'left'},
+					{display: 'Node', name : 'node', width : 70, sortable : true, align: 'left'}
+					],
+				searchitems : [
+					{display: 'ID', name : 'jpid', isdefault: true},
+					{display: 'Status', name : 'status'},
+					{display: 'Result', name : 'result'},
+					{display: 'Solver', name : 'solver'},
+					{display: 'Bechmark', name : 'benchmark'},
+					{display: 'Run Time', name : 'runtime'},
+					{display: 'Start Time', name : 'startime'},
+					{display: 'End Time', name : 'endtime'},
+					{display: 'Node', name : 'node'},
+					],
+				sortname: "jpid",
+				sortorder: "desc",
+				usepager: true,
+				title: 'Job pairs for job #' + id,
+				useRp: true,
+				rp: 15,
+				singleSelect: true
+			});	
+		  $(pairTable).fadeIn(400, function(){});
+		  $('#btnBack').fadeIn(400, function(){});
+	  });
   });
+}
+
+function showJobs(){
+	$('.flexigrid:not(:last)').remove();
+	$('#jobGrid').fadeIn(400, function(){});
+	$('#btnBack').hide();
 }
 
 function populateJobs(json){	

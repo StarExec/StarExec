@@ -41,7 +41,7 @@
 							</ul>
 						</li>
 					</ol>														
-					<a onclick="doSubmit()" class="btn ui-state-default ui-corner-all" id="btnSubmit"><span class="ui-icon ui-icon-circle-arrow-e"></span>Submit</a>
+					<a onclick="doSubmit()" class="btn ui-state-default ui-corner-all" id="btnSubmit"><span class="ui-icon ui-icon-circle-arrow-e right"></span>Submit</a>
 				</form>
 			</div>			
 		</div>		

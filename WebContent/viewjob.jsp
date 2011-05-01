@@ -21,7 +21,9 @@
 			<h1>View Jobs</h1>
 			<a class="help" href="#">Help</a>		
 			<table id="jobs">
-			</table>			
+			</table>	
+			
+			<a onclick="showJobs()" class="btn ui-state-default ui-corner-all" id="btnBack"><span class="ui-icon ui-icon-circle-arrow-w left"></span>Back</a>		
 		</div>		
 	</div>
 </body>

@@ -1,6 +1,6 @@
 package com.starexec.data.to;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 /**
  * Class which represents a user.
@@ -14,7 +14,7 @@ public class User {
 	private String firstName;
 	private String lastName;
 	private String affiliation;
-	private Date createDate;
+	private Timestamp createDate;
 	private String email;
 	private boolean verified;
 	
@@ -45,7 +45,7 @@ public class User {
 	public void setAffiliation(String affiliation) {
 		this.affiliation = affiliation;
 	}
-	public Date getCreateDate() {
+	public Timestamp getCreateDate() {
 		return createDate;
 	}
 	public String getEmail() {

@@ -1,4 +1,5 @@
 package com.starexec.app;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import com.google.gson.Gson;
 import com.starexec.data.Database;
 import com.starexec.data.to.Benchmark;
 import com.starexec.data.to.Job;
+import com.starexec.data.to.JobPair;
 import com.starexec.data.to.Level;
 import com.starexec.data.to.Solver;
 
@@ -15,6 +17,7 @@ import com.starexec.data.to.Solver;
 @Path("")
 public class RESTServices {
 	protected Database database;
+	protected static SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd, yyyy h:mm a");	
 	
 	public RESTServices(){
 		database = new Database();
@@ -48,13 +51,41 @@ public class RESTServices {
 		List<Level> levels = database.getSubLevelsWithBench(id);					
 		return new Gson().toJson(toLevelBenchTree(levels));				
 	}
-	
+		
 	@GET
 	@POST
 	@Path("/jobs/all")
 	@Produces("application/json")	
 	public String getJobs() {			
 		return new Gson().toJson(jobToTableRow(database.getJobs()));				
+	}
+	
+	@GET
+	@POST
+	@Path("/jobs/pairs/{id}")
+	@Produces("application/json")	
+	public String getJobPairs(@PathParam("id") int id) {		
+		return new Gson().toJson(pairToTableRow(database.getJobPairs(id)));				
+	}
+	
+	public TableRow pairToTableRow(List<JobPair> jList){
+		TableRow tr = new TableRow(1, jList.size());
+		for(JobPair jp : jList){
+			Row r = new Row(jp.getId());
+			r.addCell(jp.getId());
+			r.addCell(jp.getStatus());
+			r.addCell(jp.getResult());
+			r.addCell(jp.getSolver().getName());
+			r.addCell(jp.getBenchmark().getFileName());		
+			r.addCell(jp.getRunTime());
+			r.addCell(dateFormat.format(jp.getStartTime()));
+			r.addCell(dateFormat.format(jp.getEndTime()));		
+			r.addCell(jp.getNode());
+			
+			tr.addRow(r);
+		}
+		
+		return tr;
 	}
 	
 	/**
@@ -69,8 +100,8 @@ public class RESTServices {
 			Row r = new Row(j.getJobId());
 			r.addCell(j.getJobId());
 			r.addCell(j.getStatus());
-			r.addCell(j.getSubmitted());
-			r.addCell(j.getCompleted());
+			r.addCell(dateFormat.format(j.getSubmitted()));
+			r.addCell(dateFormat.format(j.getCompleted()));
 			r.addCell(j.getNode());
 			r.addCell(j.getTimeout());
 			tr.addRow(r);

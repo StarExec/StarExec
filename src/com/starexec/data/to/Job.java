@@ -1,12 +1,12 @@
 package com.starexec.data.to;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class Job {
 	private int jobid, userid;
-	private Date submitted, completed;
+	private Timestamp submitted, completed;
 	private String description, status, node;	// TODO: Create a node TO later on with hardware info?
 	private long timeout;	
 	private List<JobPair> jobPairs;
@@ -36,19 +36,19 @@ public class Job {
 		this.userid = userid;
 	}
 	
-	public Date getSubmitted() {
+	public Timestamp getSubmitted() {
 		return submitted;
 	}
 	
-	public void setSubmitted(Date submitted) {
+	public void setSubmitted(Timestamp submitted) {
 		this.submitted = submitted;
 	}
 	
-	public Date getCompleted() {
+	public Timestamp getCompleted() {
 		return completed;
 	}
 	
-	public void setCompleted(Date completed) {
+	public void setCompleted(Timestamp completed) {
 		this.completed = completed;
 	}
 	

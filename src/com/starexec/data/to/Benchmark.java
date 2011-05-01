@@ -1,14 +1,14 @@
 package com.starexec.data.to;
 
 import java.io.File;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Benchmark {
 	private int id;
 	transient private String path;
 	private String fileName;
 	private int userid;
-	private Date uploaded;
+	private Timestamp uploaded;
 	private int level;
 	
 	public int getId() {
@@ -36,11 +36,11 @@ public class Benchmark {
 		this.userid = userid;
 	}
 	
-	public Date getUploaded() {
+	public Timestamp getUploaded() {
 		return uploaded;
 	}
 	
-	public void setUploaded(Date uploaded) {
+	public void setUploaded(Timestamp uploaded) {
 		this.uploaded = uploaded;
 	}
 	

@@ -82,7 +82,7 @@ public class Database {
 			
 			// INSERT INTO USERS TABLE
 			if(psAddUser == null)	// If the statement hasn't been prepared yet, create it...			
-					psAddUser = connection.prepareStatement("INSERT INTO users (username, fname, lname, affiliation, created, email) VALUES (?, ?, ?, ?, NOW(), ?)", Statement.RETURN_GENERATED_KEYS);
+					psAddUser = connection.prepareStatement("INSERT INTO users (username, fname, lname, affiliation, created, email) VALUES (?, ?, ?, ?, SYSDATE(), ?)", Statement.RETURN_GENERATED_KEYS);
 			
 			// Fill in the prepared statement
 			psAddUser.setString(1, u.getUsername());
@@ -201,7 +201,7 @@ public class Database {
 			connection.setAutoCommit(false);
 			
 			if(psAddSolver == null)			
-				psAddSolver = connection.prepareStatement("INSERT INTO solvers (uploaded, path, usr, notes, name) VALUES (NOW(), ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				psAddSolver = connection.prepareStatement("INSERT INTO solvers (uploaded, path, usr, notes, name) VALUES (SYSDATE(), ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 						
 			psAddSolver.setString(1, s.getPath());
 			psAddSolver.setInt(2, s.getUserId());
@@ -251,7 +251,7 @@ public class Database {
 	public synchronized boolean addBenchmarks(Collection<Benchmark> benchmarks, int offSet){
 		try{						
 			if(psAddBenchmark == null)	// If the statement hasn't been prepared yet, create it...			
-					psAddBenchmark = connection.prepareStatement("INSERT INTO benchmarks (uploaded, physical_path, usr, lvl) VALUES (NOW(), ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+					psAddBenchmark = connection.prepareStatement("INSERT INTO benchmarks (uploaded, physical_path, usr, lvl) VALUES (SYSDATE(), ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 						
 			connection.setAutoCommit(false);
 			int rowsAffected = 0;
@@ -301,7 +301,7 @@ public class Database {
 					benchmark.setId(results.getInt("id"));
 					benchmark.setPath(results.getString("physical_path"));
 					benchmark.setUserId(results.getInt("usr"));
-					benchmark.setUploaded(results.getDate("uploaded"));
+					benchmark.setUploaded(results.getTimestamp("uploaded"));
 					returnList.add(benchmark);
 				}
 			} else {		
@@ -341,7 +341,7 @@ public class Database {
 			benchmark.setId(results.getInt("id"));
 			benchmark.setPath(results.getString("physical_path"));
 			benchmark.setUserId(results.getInt("usr"));
-			benchmark.setUploaded(results.getDate("uploaded"));
+			benchmark.setUploaded(results.getTimestamp("uploaded"));
 			
 			return benchmark;
 		} catch (Exception e){
@@ -471,7 +471,7 @@ public class Database {
 			connection.setAutoCommit(false);
 			
 			if(psAddJob == null)			
-				psAddJob = connection.prepareStatement("INSERT INTO jobs (id, subDate, description, status, node, timeout, usr) VALUES (?, NOW(), ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				psAddJob = connection.prepareStatement("INSERT INTO jobs (id, subDate, description, status, node, timeout, usr) VALUES (?, SYSDATE(), ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			
 			psAddJob.setInt(1, j.getJobId());
 			psAddJob.setString(2, j.getDescription());
@@ -552,7 +552,7 @@ public class Database {
 	public synchronized boolean updateJobStatus(int jobId, String status, String node){
 		try {
 			if(psJobStatus == null)
-					psJobStatus = connection.prepareStatement("UPDATE jobs SET status=?,node=?,finDate=NOW() WHERE id=?");
+					psJobStatus = connection.prepareStatement("UPDATE jobs SET status=?,node=?,finDate=SYSDATE() WHERE id=?");
 			
 			psJobStatus.setString(1, status);
 			psJobStatus.setString(2, node);
@@ -672,7 +672,7 @@ public class Database {
 					Benchmark benchmark = new Benchmark();
 					benchmark.setId(benchResult.getInt("id"));					
 					benchmark.setUserId(benchResult.getInt("usr"));
-					benchmark.setUploaded(benchResult.getDate("uploaded"));
+					benchmark.setUploaded(benchResult.getTimestamp("uploaded"));
 					benchmark.setPath(benchResult.getString("physical_path"));	// TODO: Eventually we want to hide this
 					l.getBenchmarks().add(benchmark);
 				}
@@ -720,7 +720,7 @@ public class Database {
 	public synchronized List<JobPair> getJobPairs(int id){
 		try {						
 			if(psGetJobPairs == null)
-				psGetJobPairs = connection.prepareStatement("SELECT * FROM job_pairs JOIN benchmarks ON bid=benchmarks.id JOIN solvers ON sid=solvers.id WHERE jid=?");
+				psGetJobPairs = connection.prepareStatement("SELECT *, TIMESTAMPDIFF(SECOND, job_pairs.endTime,job_pairs.startTime) AS runtime FROM job_pairs JOIN benchmarks ON bid=benchmarks.id JOIN solvers ON sid=solvers.id WHERE jid=?");
 			
 			psGetJobPairs.setInt(1, id);
 			ResultSet results = psGetJobPairs.executeQuery();									 
@@ -731,21 +731,27 @@ public class Database {
 				Solver s = new Solver();
 				JobPair p = new JobPair();
 				
-				p.setId(results.getInt("job_pairs.id"));
-				p.setJobId(results.getInt("job_pairs.jid"));
+				p.setId(results.getInt(1));
+				p.setJobId(results.getInt(2));
+				p.setResult(results.getString(5));
+				p.setStartTime(results.getTimestamp(6));
+				p.setEndTime(results.getTimestamp(7));
+				p.setNode(results.getString(8));
+				p.setStatus(results.getString(9));
+				p.setRunTime(results.getInt(21));
 				
-				b.setId(results.getInt("benchmarks.id"));
-				b.setPath(results.getString("benchmarks.physical_path"));
-				b.setLevel(results.getInt("benchmarks.lvl"));
-				b.setUserId(results.getInt("benchmarks.usr"));
+				b.setId(results.getInt(4));
+				b.setPath(results.getString(12));
+				b.setLevel(results.getInt(14));
+				b.setUserId(results.getInt(13));
 				p.setBenchmark(b);
 				
-				s.setId(results.getInt("solvers.id"));
-				s.setName(results.getString("solvers.name"));
-				s.setUploaded(results.getDate("solvers.uploaded"));
-				s.setUserId(results.getInt("solvers.usr"));
-				s.setNotes(results.getString("solvers.notes"));
-				s.setPath(results.getString("solvers.path"));
+				s.setId(results.getInt(3));
+				s.setName(results.getString(16));
+				s.setUploaded(results.getDate(17));
+				s.setUserId(results.getInt(19));
+				s.setNotes(results.getString(20));
+				s.setPath(results.getString(18));
 				p.setSolver(s);
 				
 				returnList.add(p);
@@ -774,12 +780,12 @@ public class Database {
 			while(results.next()){
 				Job j = new Job();
 				
-				j.setCompleted(results.getDate("finDate"));
+				j.setCompleted(results.getTimestamp("finDate"));
 				j.setDescription(results.getString("description"));
 				j.setJobId(results.getInt("id"));
 				j.setNode(results.getString("node"));
 				j.setStatus(results.getString("status"));
-				j.setSubmitted(results.getDate("subDate"));
+				j.setSubmitted(results.getTimestamp("subDate"));
 				j.setTimeout(results.getLong("timeout"));
 				j.setUserId(results.getInt("usr"));
 				

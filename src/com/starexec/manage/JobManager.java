@@ -88,8 +88,7 @@ public abstract class JobManager {
 			jt.setOutputPath(":/dev/null");
 			jt.setJoinFiles(true);
 			jt.setRemoteCommand(curJobPath);
-			
-			jobRecord.setSubmitted(new Date());
+						
 			ses.runJob(jt);
 			/*
 			String sge_id = ses.runJob(jt);	
