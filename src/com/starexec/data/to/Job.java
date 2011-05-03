@@ -9,6 +9,7 @@ public class Job {
 	private Timestamp submitted, completed;
 	private String description, status, node;	// TODO: Create a node TO later on with hardware info?
 	private long timeout;	
+	private String runTime = "";
 	private List<JobPair> jobPairs;
 	
 	public Job(){
@@ -91,4 +92,22 @@ public class Job {
 	public boolean addJobPair(JobPair jp){
 		return jobPairs.add(jp);
 	}
+		
+	public String getRunTime() {
+		return runTime;
+	}
+
+	/**
+	 * @param runTime The run time in total seconds (which is converted to a time string)
+	 */
+	public void setRunTime(int runTime) {
+		runTime = Math.abs(runTime);
+		int minutes = runTime / 60;
+		int hours = runTime / (3600);
+		int days = runTime / (86400);
+		int seconds = runTime - (minutes * 60) - (hours * 3600) - (days * 86400);
+		
+		
+		this.runTime = String.format("%sd %sh %sm %ss", days, hours, minutes, seconds);
+	}	
 }

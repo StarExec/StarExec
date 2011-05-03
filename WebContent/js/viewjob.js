@@ -4,10 +4,11 @@ $(function(){
 		dataType: 'json',
 		colModel : [
 			{display: 'ID', name : 'jobid', width : 50, sortable : true, align: 'center', process: onJobClick},
-			{display: 'Status', name : 'status', width : 120, sortable : true, align: 'left', process: onJobClick},
-			{display: 'Submitted', name : 'submitted', width : 160, sortable : true, align: 'left', process: onJobClick},
-			{display: 'Completed', name : 'completed', width : 160, sortable : true, align: 'left', process: onJobClick},
-			{display: 'Node', name : 'node', width : 160, sortable : true, align: 'left', process: onJobClick},
+			{display: 'Status', name : 'status', width : 80, sortable : true, align: 'left', process: onJobClick},
+			{display: 'Runtime', name : 'runtime', width : 80, sortable : true, align: 'left', process: onJobClick},
+			{display: 'Submitted', name : 'submitted', width : 150, sortable : true, align: 'left', process: onJobClick},
+			{display: 'Completed', name : 'completed', width : 150, sortable : true, align: 'left', process: onJobClick},
+			{display: 'Node', name : 'node', width : 140, sortable : true, align: 'left', process: onJobClick},
 			{display: 'Timeout', name : 'timeout', width : 90, sortable : true, align: 'left', process: onJobClick}
 			],
 		searchitems : [
@@ -44,7 +45,8 @@ function onJobClick(cellDiv, id){
 					{display: 'ID', name : 'jpid', width : 50, sortable : true, align: 'center'},
 					{display: 'Status', name : 'status', width : 60, sortable : true, align: 'left'},
 					{display: 'Result', name : 'result', width : 50, sortable : true, align: 'left'},
-					{display: 'Solver', name : 'solver', width : 100, sortable : true, align: 'left'},
+					{display: 'Solver', name : 'solver', width : 80, sortable : true, align: 'left'},
+					{display: 'Config', name : 'config', width : 80, sortable : true, align: 'left'},
 					{display: 'Bechmark', name : 'benchmark', width : 100, sortable : true, align: 'left'}	,			
 					{display: 'Run Time', name : 'runtime', width : 80, sortable : true, align: 'left'},
 					{display: 'Start Time', name : 'startime', width : 140, sortable : true, align: 'left'},

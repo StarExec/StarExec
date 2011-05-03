@@ -30,28 +30,30 @@ public class SubmitJob extends HttpServlet {
 		Logger.getAnonymousLogger().info(request.getRequestURL().toString());
 
     	Jobject job = new Jobject(new User("admin"));			// Start a new job.
-    	String configIds = request.getParameter("config");		// Naked string "cid1, cid2, cid3"
-    	String benchmarkIds = request.getParameter("bench");	// Naked string "bid1, bid2, bid3"
-    	String levelIds = request.getParameter("level");		// ???
-    	Database database = new Database();						// Grab new db connection.
+    	String configIds = request.getParameter("config");		// Get the selected config ids
+    	String benchmarkIds = request.getParameter("bench");	// Get the selected benchmark ids
+    	String levelIds = request.getParameter("level");		// Get the selected level ids
+    	String solverIds = request.getParameter("solver");		// Get the selected solver ids
+    	Database database = new Database();						// Grab a new db connection
     	
     	ArrayList<Integer> bids = new ArrayList<Integer>();	
-    	if(benchmarkIds != null && !benchmarkIds.isEmpty())
+    	if(benchmarkIds != null && !benchmarkIds.isEmpty())		// Add all benchmark id's to the list to pass to the Jobject
     		for(String s : benchmarkIds.split(","))
     			bids.add(Integer.parseInt(s));
+    	
+    	if(levelIds != null && !levelIds.isEmpty())				// Get all benchmarks under a selected level and add it to the list
+    		for(String s : levelIds.split(","))
+    			bids.addAll(database.levelToBenchmarkIds(Integer.parseInt(s)));
     	    
-    	ArrayList<Integer> cids = new ArrayList<Integer>();
+    	ArrayList<Integer> cids = new ArrayList<Integer>();		// Add all config ids to the list to pass to the jobject
     	if(configIds != null && !configIds.isEmpty())
     		for(String s : configIds.split(","))
     			cids.add(Integer.parseInt(s));
     	
-    	// What the heck is this?
-    	if(levelIds != null && !levelIds.isEmpty())
-    		for(String s : levelIds.split(","))
-    			bids.addAll(database.levelToBenchmarkIds(Integer.parseInt(s)));
-    	
-    	System.out.println(Arrays.toString(bids.toArray()));
-
+    	if(solverIds != null && !solverIds.isEmpty())			// Get all configs under the solver and add it to the list
+    		for(String s : solverIds.split(","))
+    			cids.addAll(database.solverToConfigIds(Integer.parseInt(s)));    	        	
+    	   
 		try {
 	    	for(int bid : bids) {
 	    		BenchmarkLink link = job.addBenchmark(bid);

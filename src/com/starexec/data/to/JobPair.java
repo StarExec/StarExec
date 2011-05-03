@@ -8,11 +8,12 @@ public class JobPair {
 	private String result;
 	private Benchmark benchmark;
 	private Solver solver;
+	private Configuration config;
 	private Timestamp startTime;
 	private Timestamp endTime;
 	private String runTime = "";
-	String node;
-	String status;
+	private String node;
+	private String status;
 	
 	public int getJobId() {
 		return jobid;
@@ -76,6 +77,14 @@ public class JobPair {
 
 	public void setNode(String node) {
 		this.node = node;
+	}
+
+	public Configuration getConfig() {
+		return config;
+	}
+
+	public void setConfig(Configuration config) {
+		this.config = config;
 	}
 
 	public String getStatus() {

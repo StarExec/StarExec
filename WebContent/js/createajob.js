@@ -40,9 +40,9 @@ $(function(){
 	jQuery("#solverList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
-				"url" : "/starexec/services/solvers/all", 
+				"url" : "/starexec/services/solvers", 
 				"data" : function (n) {  							
-					return { id : -1 };  
+					return { id : n.attr ? n.attr("id") : -1 };  
 				} 
 			} 
 		}, 
@@ -58,9 +58,16 @@ $(function(){
 			"types" : {						
 				"solver" : {
 					// can have files and other folders inside of it, but NOT `drive` nodes
-					"valid_children" : "none",
+					"valid_children" : "config",
 					"icon" : {
 						"image" : "/starexec/images/tree_solver.png"
+					}
+				},
+				"config" : {
+					// can have files and other folders inside of it, but NOT `drive` nodes
+					"valid_children" : "none",
+					"icon" : {
+						"image" : "/starexec/images/tree_config.png"
 					}
 				}				
 			}
@@ -74,6 +81,7 @@ function doSubmit(){
 	var lvlList = [];
 	var benchList = [];
 	var solverList = [];
+	var configList = [];
 	
 	$("#benchList").jstree("get_checked", false,false).each(function(i, data){
 		var type = $(data).attr("rel");
@@ -84,11 +92,16 @@ function doSubmit(){
 			benchList.push(data.id);		
     });
 	
-	$("#solverList").jstree("get_checked", false,false).each(function(i, data){				
-		solverList.push(data.id);			
+	$("#solverList").jstree("get_checked", false,false).each(function(i, data){						
+		var type = $(data).attr("rel");
+		
+		if(type == "solver")			
+			solverList.push(data.id);
+		else if (type == "config")
+			configList.push(data.id);
     });
 		
-	$('#jobForm').attr('action', 'SubmitJob?bench=' + benchList.join() + '&level=' + lvlList.join() + '&solver=' + solverList.join());
+	$('#jobForm').attr('action', 'SubmitJob?bench=' + benchList.join() + '&level=' + lvlList.join() + '&solver=' + solverList.join() + '&config=' + configList.join());
 	
 	$('#btnSubmit').text('Uploading');
 	$('#btnSubmit').attr('disabled', 'disabled');

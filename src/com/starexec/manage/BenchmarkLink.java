@@ -45,7 +45,7 @@ public class BenchmarkLink {
 	public void addConfigs(Collection<Integer> ilist) {
 		List<Configuration> clist = db.getConfigurations(ilist);
 
-		(Configuration c : clist)
+		for(Configuration c : clist)
 			addConfig(c);
 	}
 	

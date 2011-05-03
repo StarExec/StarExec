@@ -8,6 +8,7 @@ import javax.ws.rs.*;
 import com.google.gson.Gson;
 import com.starexec.data.Database;
 import com.starexec.data.to.Benchmark;
+import com.starexec.data.to.Configuration;
 import com.starexec.data.to.Job;
 import com.starexec.data.to.JobPair;
 import com.starexec.data.to.Level;
@@ -31,10 +32,13 @@ public class RESTServices {
 	}
 	
 	@GET
-	@Path("/solvers/all")
+	@Path("/solvers")
 	@Produces("application/json")
-	public String getAllSolvers() {		
-		return new Gson().toJson(toSolverTree(database.getSolvers(null)));				
+	public String getAllSolvers(@QueryParam("id") int id) {		
+		if(id < 0)
+			return new Gson().toJson(toSolverTree(database.getSolvers(null)));
+		else
+			return new Gson().toJson(toConfigTree(database.getConfigurations(id)));
 	}
 	
 	@GET
@@ -47,9 +51,8 @@ public class RESTServices {
 	@GET
 	@Path("/level/bench")
 	@Produces("application/json")	
-	public String getLevelsBench(@QueryParam("id") int id) {		
-		List<Level> levels = database.getSubLevelsWithBench(id);					
-		return new Gson().toJson(toLevelBenchTree(levels));				
+	public String getLevelsBench(@QueryParam("id") int id) {					
+		return new Gson().toJson(toLevelBenchTree(database.getSubLevelsWithBench(id)));				
 	}
 		
 	@GET
@@ -76,6 +79,7 @@ public class RESTServices {
 			r.addCell(jp.getStatus());
 			r.addCell(jp.getResult());
 			r.addCell(jp.getSolver().getName());
+			r.addCell(jp.getConfig().getName());
 			r.addCell(jp.getBenchmark().getFileName());		
 			r.addCell(jp.getRunTime());
 			r.addCell(dateFormat.format(jp.getStartTime()));
@@ -100,6 +104,7 @@ public class RESTServices {
 			Row r = new Row(j.getJobId());
 			r.addCell(j.getJobId());
 			r.addCell(j.getStatus());
+			r.addCell(j.getRunTime());
 			r.addCell(dateFormat.format(j.getSubmitted()));
 			r.addCell(dateFormat.format(j.getCompleted()));
 			r.addCell(j.getNode());
@@ -200,7 +205,18 @@ public class RESTServices {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		
 		for(Solver solver : solvers){
-			JSTreeItem t = new JSTreeItem(solver.getName(), solver.getId(), "leaf", "solver");			
+			JSTreeItem t = new JSTreeItem(solver.getName(), solver.getId(), "closed", "solver");			
+			list.add(t);
+		}
+
+		return list;
+	}
+	
+	private List<JSTreeItem> toConfigTree(List<Configuration> configs){
+		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		
+		for(Configuration c : configs){
+			JSTreeItem t = new JSTreeItem(c.getName(), c.getId(), "leaf", "config");			
 			list.add(t);
 		}
 

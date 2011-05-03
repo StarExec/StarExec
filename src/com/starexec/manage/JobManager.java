@@ -266,6 +266,7 @@ public abstract class JobManager {
 				JobPair jp = new JobPair();
 				jp.setId(R.PAIR_ID);
 				jp.setSolver(s);
+				jp.setConfig(c);
 				jp.setBenchmark(b);
 				jp.setJobId(curJID);
 				jp.setResult(null);

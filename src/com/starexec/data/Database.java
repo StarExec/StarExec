@@ -51,12 +51,17 @@ public class Database {
 	private PreparedStatement psAddCanSolve = null;
 	private PreparedStatement psAddJob = null;
 	private PreparedStatement psAddJobPair = null;
-	private PreparedStatement psJobStatus = null;
+	private PreparedStatement psJobStatusStart = null;
+	private PreparedStatement psJobStatusDone = null;
 	private PreparedStatement psPairStatus = null;
 	private PreparedStatement psLevelToBenchs = null;
 	private PreparedStatement psGetJobs = null;
 	private PreparedStatement psGetJobPairs = null;
 	private PreparedStatement psAddConfiguration = null;
+	private PreparedStatement psGetConfigurations = null;
+	private PreparedStatement psGetConfigIds = null;
+	private PreparedStatement psGetConfig = null;
+	private PreparedStatement psGetConfigs = null;
 	
 	public Database() {
 		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
@@ -371,7 +376,7 @@ public class Database {
 		} catch (Exception e){
 			log.severe("Error in getBenchmark method: " + e.getMessage());
 			LogUtil.LogException(e);
-			return null;
+			return null;	
 		}	
 	}
 	
@@ -380,7 +385,8 @@ public class Database {
 			ArrayList<Configuration> returnList = new ArrayList<Configuration>(5);
 					
 			if(idList == null){
-				PreparedStatement psGetConfigs = connection.prepareStatement("SELECT * FROM configurations");
+				if(psGetConfigs == null)
+					psGetConfigs = connection.prepareStatement("SELECT * FROM configurations");
 				
 				ResultSet results = psGetConfigs.executeQuery();
 				while(results.next()){
@@ -409,7 +415,8 @@ public class Database {
 	
 	public synchronized Configuration getConfiguration(int id){
 		try {
-			PreparedStatement psGetConfig = connection.prepareStatement("SELECT * FROM configurations WHERE id=?");
+			if(psGetConfig == null)
+				psGetConfig = connection.prepareStatement("SELECT * FROM configurations WHERE id=?");
 				
 			psGetConfig.setInt(1, id);
 			
@@ -566,12 +573,12 @@ public class Database {
 			//int insertedID = idSet.getInt(1);
 			
 			if(psAddJobPair == null)
-				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, sid, bid) VALUES (?, ?, ?, ?)");
+				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, cid, bid) VALUES (?, ?, ?, ?)");
 			
 			for(JobPair jp : j.getJobPairs()){ 
 				psAddJobPair.setInt(1, jp.getId());
 				psAddJobPair.setInt(2, j.getJobId());
-				psAddJobPair.setInt(3, jp.getSolver().getId());
+				psAddJobPair.setInt(3, jp.getConfig().getId());
 				psAddJobPair.setInt(4, jp.getBenchmark().getId());
 				rowsAffected += psAddJobPair.executeUpdate();
 			}						
@@ -632,16 +639,25 @@ public class Database {
 	
 	public synchronized boolean updateJobStatus(int jobId, String status, String node){
 		try {
-			if(psJobStatus == null)
-					psJobStatus = connection.prepareStatement("UPDATE jobs SET status=?,node=?,finDate=SYSDATE() WHERE id=?");
+			if(psJobStatusStart == null)
+				psJobStatusStart = connection.prepareStatement("UPDATE jobs SET status=?,node=?,subDate=SYSDATE() WHERE id=?");
+			if(psJobStatusDone == null)
+				psJobStatusDone = connection.prepareStatement("UPDATE jobs SET status=?,node=?,finDate=SYSDATE() WHERE id=?");							
 			
-			psJobStatus.setString(1, status);
-			psJobStatus.setString(2, node);
-			psJobStatus.setInt(3, jobId);
+			if(status.equals(R.JOB_STATUS_RUNNING)){
+				psJobStatusStart.setString(1, status);
+				psJobStatusStart.setString(2, node);
+				psJobStatusStart.setInt(3, jobId);
+				return psJobStatusStart.executeUpdate() == 1;
+			} else if(status.equals(R.JOB_STATUS_DONE) || status.equals(R.JOB_STATUS_ERR)) {
+				psJobStatusDone.setString(1, status);
+				psJobStatusDone.setString(2, node);
+				psJobStatusDone.setInt(3, jobId);
+				return psJobStatusDone.executeUpdate() == 1;
+			} else {
+				return false;
+			}
 			
-			LogUtil.LogInfo(psJobStatus.toString());
-			
-			return psJobStatus.executeUpdate() == 1;			
 		} catch (Exception e){
 			log.severe("Error in updateJobStatus method: " + e.getMessage());
 			LogUtil.LogException(e);
@@ -651,6 +667,8 @@ public class Database {
 	
 	public synchronized boolean updatePairResult(int pairId, String result){
 		try {
+			// TODO: Get status and set start/end time properly
+			
 			if(psPairStatus == null)
 				psPairStatus = connection.prepareStatement("UPDATE job_pairs SET result=? WHERE id=?");
 			
@@ -793,6 +811,26 @@ public class Database {
 		}	
 	}
 	
+	public synchronized List<Integer> solverToConfigIds(int solverId){
+		try {
+			if(psGetConfigIds == null)
+				psGetConfigIds = connection.prepareStatement("SELECT id FROM configurations WHERE sid=?");
+												
+			psGetConfigIds.setInt(1, solverId);
+			ResultSet results = psGetConfigIds.executeQuery();
+			ArrayList<Integer> returnList = new ArrayList<Integer>(5);
+			
+			while(results.next())
+				returnList.add(results.getInt("id"));							
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in solverToConfigIds method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
+	
 	/**
 	 * Gets all job pairs associated with a job.
 	 * @param id The id of the job to retrieve pairs for
@@ -801,7 +839,7 @@ public class Database {
 	public synchronized List<JobPair> getJobPairs(int id){
 		try {						
 			if(psGetJobPairs == null)
-				psGetJobPairs = connection.prepareStatement("SELECT *, TIMESTAMPDIFF(SECOND, job_pairs.endTime,job_pairs.startTime) AS runtime FROM job_pairs JOIN benchmarks ON bid=benchmarks.id JOIN solvers ON sid=solvers.id WHERE jid=?");
+				psGetJobPairs = connection.prepareStatement("SELECT jp.id, jp.jid, jp.result, jp.startTime, jp.endTime, jp.node, jp.status, b.id, b.physical_path, s.id, s.name, c.name, c.id, TIMESTAMPDIFF(SECOND, jp.endTime,jp.startTime) AS runtime FROM (((job_pairs AS jp JOIN benchmarks AS b ON bid=b.id) JOIN configurations AS c ON cid = c.id)) JOIN solvers AS s ON sid=s.id WHERE jid=?");
 			
 			psGetJobPairs.setInt(1, id);
 			ResultSet results = psGetJobPairs.executeQuery();									 
@@ -810,30 +848,35 @@ public class Database {
 			while(results.next()){
 				Benchmark b = new Benchmark();
 				Solver s = new Solver();
+				Configuration c = new Configuration();
 				JobPair p = new JobPair();
 				
-				p.setId(results.getInt(1));
-				p.setJobId(results.getInt(2));
-				p.setResult(results.getString(5));
-				p.setStartTime(results.getTimestamp(6));
-				p.setEndTime(results.getTimestamp(7));
-				p.setNode(results.getString(8));
-				p.setStatus(results.getString(9));
-				p.setRunTime(results.getInt(21));
+				p.setId(results.getInt("jp.id"));
+				p.setJobId(results.getInt("jp.jid"));
+				p.setResult(results.getString("jp.result"));
+				p.setStartTime(results.getTimestamp("jp.startTime"));
+				p.setEndTime(results.getTimestamp("jp.endTime"));
+				p.setNode(results.getString("jp.node"));
+				p.setStatus(results.getString("jp.status"));
+				p.setRunTime(results.getInt("runtime"));
 				
-				b.setId(results.getInt(4));
-				b.setPath(results.getString(12));
-				b.setLevel(results.getInt(14));
-				b.setUserId(results.getInt(13));
+				b.setId(results.getInt("b.id"));
+				b.setPath(results.getString("b.physical_path"));
+				//b.setLevel(results.getInt(14));
+				//b.setUserId(results.getInt(13));
 				p.setBenchmark(b);
 				
-				s.setId(results.getInt(3));
-				s.setName(results.getString(16));
-				s.setUploaded(results.getDate(17));
-				s.setUserId(results.getInt(19));
-				s.setNotes(results.getString(20));
-				s.setPath(results.getString(18));
+				s.setId(results.getInt("s.id"));
+				s.setName(results.getString("s.name"));
+				//s.setUploaded(results.getDate(17));
+				//s.setUserId(results.getInt(19));
+				//s.setNotes(results.getString(20));
+				//s.setPath(results.getString(18));								
 				p.setSolver(s);
+				
+				c.setId(results.getInt("c.id"));
+				c.setName(results.getString("c.name"));
+				p.setConfig(c);
 				
 				returnList.add(p);
 			}			
@@ -853,7 +896,7 @@ public class Database {
 	public synchronized List<Job> getJobs(){
 		try {						
 			if(psGetJobs == null)
-				psGetJobs = connection.prepareStatement("SELECT * FROM jobs");
+				psGetJobs = connection.prepareStatement("SELECT *, TIMESTAMPDIFF(SECOND, finDate,subDate) AS runtime FROM jobs");
 			
 			ResultSet results = psGetJobs.executeQuery();									 
 			List<Job> returnList = new ArrayList<Job>(10);
@@ -869,6 +912,7 @@ public class Database {
 				j.setSubmitted(results.getTimestamp("subDate"));
 				j.setTimeout(results.getLong("timeout"));
 				j.setUserId(results.getInt("usr"));
+				j.setRunTime(results.getInt("runtime"));
 				
 				returnList.add(j);
 			}			
@@ -876,6 +920,35 @@ public class Database {
 			return returnList;
 		} catch (Exception e){
 			log.severe("Error in getJobs method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}	
+	}
+	
+	public synchronized List<Configuration> getConfigurations(int id){
+		try {						
+			if(psGetConfigurations == null)
+				psGetConfigurations = connection.prepareStatement("SELECT * FROM configurations WHERE sid=?");
+			
+			psGetConfigurations.setInt(1, id);
+			ResultSet results = psGetConfigurations.executeQuery();
+			
+			List<Configuration> returnList = new ArrayList<Configuration>(5);
+			
+			while(results.next()){
+				Configuration c = new Configuration();
+				
+				c.setId(results.getInt("id"));
+				c.setName(results.getString("name"));
+				c.setNotes(results.getString("notes"));
+				c.setSolverId(results.getInt("sid"));
+				
+				returnList.add(c);
+			}			
+						
+			return returnList;
+		} catch (Exception e){
+			log.severe("Error in getConfigurations method: " + e.getMessage());
 			LogUtil.LogException(e);
 			return null;
 		}	
