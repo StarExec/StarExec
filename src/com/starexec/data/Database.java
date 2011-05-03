@@ -196,6 +196,30 @@ public class Database {
 		return retVal;
 	}
 	
+	public synchronized boolean addConfiguration(Configuration c) {
+		try{
+			connection.setAutoCommit(false);
+			
+			PreparedStatement psAddConfig = connection.prepareStatement("INSERT INTO configurations (sid, name, notes) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			
+			psAddConfig.setInt(1, c.getSolverId());
+			psAddConfig.setString(2, c.getName());
+			psAddConfig.setString(3, c.getNotes());
+			
+			psAddConfig.executeUpdate();
+			
+			connection.commit();
+			return true;			
+		} catch (Exception e){
+			doRollback();
+			log.severe("Error in addConfiguration method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return false;
+		} finally {
+			autoCommitOn();
+		}
+	}
+	
 	public synchronized boolean addSolver(Solver s){		
 		try{
 			connection.setAutoCommit(false);
@@ -349,6 +373,63 @@ public class Database {
 			LogUtil.LogException(e);
 			return null;
 		}	
+	}
+	
+	public synchronized List<Configuration> getConfigurations(Collection<Integer> idList){
+		try {
+			ArrayList<Configuration> returnList = new ArrayList<Configuration>(5);
+					
+			if(idList == null){
+				PreparedStatement psGetConfigs = connection.prepareStatement("SELECT * FROM configurations");
+				
+				ResultSet results = psGetConfigs.executeQuery();
+				while(results.next()){
+					Configuration config = new Configuration();
+					config.setId(results.getInt("id"));
+					config.setSolverId(results.getInt("sid"));
+					config.setName(results.getString("name"));
+					config.setNotes(results.getString("notes"));
+					returnList.add(config);
+				}
+			} else {
+				for(int id : idList){
+					Configuration config = this.getConfiguration(id);
+					if(config != null)
+						returnList.add(config);
+				}	
+			}					
+			
+			return returnList;
+		} catch (Exception e) {
+			log.severe("Error in getConfigurations method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}
+	}
+	
+	public synchronized Configuration getConfiguration(int id){
+		try {
+			PreparedStatement psGetConfig = connection.prepareStatement("SELECT * FROM configurations WHERE id=?");
+				
+			psGetConfig.setInt(1, id);
+			
+			ResultSet results = psGetConfig.executeQuery();
+			
+			if(!results.next())
+				return null;
+			
+			Configuration config = new Configuration();
+			config.setId(results.getInt("id"));
+			config.setSolverId(results.getInt("sid"));
+			config.setName(results.getString("name"));
+			config.setNotes(results.getString("notes"));
+			
+			return config;
+		} catch (Exception e){
+			log.severe("Error in getConfiguration method: " + e.getMessage());
+			LogUtil.LogException(e);
+			return null;
+		}			
 	}
 	
 	/**

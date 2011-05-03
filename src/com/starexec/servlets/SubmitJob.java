@@ -28,21 +28,24 @@ public class SubmitJob extends HttpServlet {
 	
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
 		Logger.getAnonymousLogger().info(request.getRequestURL().toString());
-		
-    	User usr = new User("admin");
-    	Jobject job = new Jobject(usr);
-    	Database database = new Database();
-    	
-    	String solverIds = request.getParameter("solver");
-    	String benchmarkIds = request.getParameter("bench");
-    	String levelIds = request.getParameter("level");
-    	
-    	ArrayList<Integer> bids = new ArrayList<Integer>();
 
+    	Jobject job = new Jobject(new User("admin"));			// Start a new job.
+    	String configIds = request.getParameter("config");		// Naked string "cid1, cid2, cid3"
+    	String benchmarkIds = request.getParameter("bench");	// Naked string "bid1, bid2, bid3"
+    	String levelIds = request.getParameter("level");		// ???
+    	Database database = new Database();						// Grab new db connection.
+    	
+    	ArrayList<Integer> bids = new ArrayList<Integer>();	
     	if(benchmarkIds != null && !benchmarkIds.isEmpty())
     		for(String s : benchmarkIds.split(","))
     			bids.add(Integer.parseInt(s));
     	    
+    	ArrayList<Integer> cids = new ArrayList<Integer>();
+    	if(configIds != null && !configIds.isEmpty())
+    		for(String s : configIds.split(","))
+    			cids.add(Integer.parseInt(s));
+    	
+    	// What the heck is this?
     	if(levelIds != null && !levelIds.isEmpty())
     		for(String s : levelIds.split(","))
     			bids.addAll(database.levelToBenchmarkIds(Integer.parseInt(s)));
@@ -50,10 +53,9 @@ public class SubmitJob extends HttpServlet {
     	System.out.println(Arrays.toString(bids.toArray()));
 
 		try {
-	    	for(String s : solverIds.split(",")) {
-	    		int sid = Integer.parseInt(s);
-	    		SolverLink sl = job.addSolver(sid);
-				sl.addBenchmarks(bids);	
+	    	for(int bid : bids) {
+	    		BenchmarkLink link = job.addBenchmark(bid);
+				link.addConfigs(cids);
 	    	}
 	    	
 			JobManager.doJob(job);

@@ -1,7 +1,6 @@
 package com.starexec.manage;
 
 import java.io.*;
-import java.util.Date;
 import java.util.logging.Logger;
 
 import org.ggf.drmaa.*;
@@ -252,15 +251,17 @@ public abstract class JobManager {
 				+ "sendJobStatus $ST_STA \n"
 				+ "\n" );
 		
-		SolverLink lnk;
-		Solver s;
+		BenchmarkLink lnk;
+		Configuration c;
 		Benchmark b;
-		for(int i = curJob.getNumSolvers(); i > 0; i--) {
+		Solver s;
+		for(int i = curJob.getNumBenchmarks(); i > 0; i--) {
 			lnk = curJob.popLink();
-			for(int j = lnk.getSize(); j > 0; j--) {
-				s = lnk.getSolver();
-				b = lnk.getNextBenchmark();
-				out.write(String.format("runsb %s/$RUN %s\nsendResult %d\n\n", s.getPath(), b.getPath(), R.PAIR_ID));
+			b = lnk.getBenchmark();
+			while(lnk.getSize() > 0) {
+				c = lnk.getNextConfig();
+				s = curJob.getSolver(c.getSolverId());
+				out.write(String.format("runsb %s %s %s\nsendResult %d\n\n", s.getPath(), b.getPath(), c.getName(), R.PAIR_ID));
 				
 				JobPair jp = new JobPair();
 				jp.setId(R.PAIR_ID);

@@ -1,47 +1,58 @@
 package com.starexec.manage;
 
+import java.util.HashMap;
 import java.util.Stack;
 
+import com.starexec.data.to.Solver;
 import com.starexec.data.to.User;
 
 /**
  * This holds the paths to the solvers/benchmarks, and is passed to the job manager to begin a job.
- * For n solvers, there is at least n benchmarks.
+ * For n benchmarks, there is at least n solvers.
  * The format for the chain is:
  * 
  * +------------+    +------------+
- * | solver1    | -->| solver2    |--> ...
+ * | benchmark1 | -->| benchmark2 |--> ...
  * +------------+    +------------+
  * +------------+    +------------+
- * | benchmark1 |    | benchmark3 |
+ * | config1    |    | config2    |
  * +------------+    +------------+
- * | benchmark2 |    | benchmark4 |
+ * | config2    |    | config3    |
  * +------------+    +------------+
  * +------------+    +------------+
  * | ...        |    | ...        |
  *     
- * Each link in the chain is a SolverLink (solver and benchmarks in a stack). 
+ * Each link in the chain is a SolverLink (benchmarks and solver in a stack). 
  * There may be duplicates in benchmarks or solvers; there's no constraints for that right now.
  * Constraints should be added in the SolverLink object and NOT in the Jobject parent,
  * since SolverLinks will be exposed to users.
  * 
- * @author cpalmer
+ * @author Clifton Palmer
  *  
  */
 public class Jobject {
 	private User usr; // Info about user building the job??
 	private String description;
-	private Stack<SolverLink> solverChain;
+	private Stack<BenchmarkLink> chain;
+	private HashMap<Integer, Solver> solvers; // Holds common solver info.
 	
 	public Jobject(User usr) {
 		this.usr = usr;
 		this.description = "None";
-		
-		this.solverChain = new Stack<SolverLink>();
+		this.solvers = new HashMap<Integer, Solver>();
+		this.chain = new Stack<BenchmarkLink>();
 	}
 	
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public void addSolver(Solver s) {
+		solvers.put(s.getId(), s);
+	}
+	
+	public Solver getSolver(int sid) {
+		return solvers.get(sid);
 	}
 	
 	public String getDescription() {
@@ -51,21 +62,13 @@ public class Jobject {
 	public User getUser() {
 		return usr;
 	}
-	
-	/**
-	 * Gets the number of solvers in the solver chain.
-	 * 
-	 */
-	public int getNumSolvers() {
-		return solverChain.size();
+
+	public int getNumBenchmarks() {
+		return chain.size();
 	}
 	
-	/**
-	 * Pops the next solver on the chain.
-	 * 
-	 */
-	public SolverLink popLink() {
-		return solverChain.pop();
+	public BenchmarkLink popLink() {
+		return chain.pop();
 	}
 	
 	/**
@@ -73,8 +76,8 @@ public class Jobject {
 	 * @param Index in chain
 	 * 
 	 */
-	public SolverLink peekLink(int index) {
-		return solverChain.get(index);
+	public BenchmarkLink peekLink(int index) {
+		return chain.get(index);
 	}
 	
 	/**
@@ -84,13 +87,13 @@ public class Jobject {
 	 * @param Solver ID
 	 * @return The SolverLink just created.
 	 */
-	public SolverLink addSolver(int sid) throws Exception {
-		SolverLink lnk = new SolverLink(sid);
+	public BenchmarkLink addBenchmark(int bid) throws Exception {
+		BenchmarkLink lnk = new BenchmarkLink(bid, this);
 		addLink(lnk);
 		return lnk;
 	}
 	
-	public void addLink(SolverLink lnk) {
-		solverChain.add(lnk);
+	public void addLink(BenchmarkLink lnk) {
+		chain.add(lnk);
 	}
 }
