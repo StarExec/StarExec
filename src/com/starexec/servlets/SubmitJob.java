@@ -62,17 +62,19 @@ public class SubmitJob extends HttpServlet {
 	    	
 			JobManager.doJob(job);
 			
-			String line;
-			File f = new File(String.format("/home/starexec/jobout/job_%d.out", JobManager.getJID()));
+			response.sendRedirect("/starexec/viewjob.jsp");
 			
-			while(!f.exists())
-				Thread.sleep(2000);
-			
-			Scanner in = new Scanner(f);
-			while(in.hasNext()) {
-				line = in.nextLine();
-				response.getWriter().println(line);
-			}
+//			String line;
+//			File f = new File(String.format("/home/starexec/jobout/job_%d.out", JobManager.getJID()));
+//			
+//			while(!f.exists())
+//				Thread.sleep(2000);
+//			
+//			Scanner in = new Scanner(f);
+//			while(in.hasNext()) {
+//				line = in.nextLine();
+//				response.getWriter().println(line);
+//			}
 		} catch (Exception e) {
 			LogUtil.LogException(e);
 		}

@@ -277,7 +277,7 @@ public abstract class JobManager {
 			while(lnk.getSize() > 0) {
 				c = lnk.getNextConfig();
 				s = curJob.getSolver(c.getSolverId());
-				out.write(String.format("runPair %d %s %s %s\nsendResult %d\n\n", R.PAIR_ID, s.getPath(), b.getPath(), c.getName(), R.PAIR_ID));
+				out.write(String.format("runPair %d '%s' '%s' '%s'\n\n", R.PAIR_ID, s.getPath(), b.getPath(), c.getName(), R.PAIR_ID));
 				
 				JobPair jp = new JobPair();
 				jp.setId(R.PAIR_ID);

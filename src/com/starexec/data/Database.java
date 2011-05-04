@@ -573,7 +573,7 @@ public class Database {
 			//int insertedID = idSet.getInt(1);
 			
 			if(psAddJobPair == null)
-				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, cid, bid) VALUES (?, ?, ?, ?)");
+				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, cid, bid, endTime) VALUES (?, ?, ?, ?, SYSDATE())"); //TODO: Remove endTime=Sysdate when CJ gives us the proper end time
 			
 			for(JobPair jp : j.getJobPairs()){ 
 				psAddJobPair.setInt(1, jp.getId());
