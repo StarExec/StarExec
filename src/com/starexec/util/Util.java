@@ -2,6 +2,10 @@ package com.starexec.util;
 
 import java.io.File;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.jboss.resteasy.spi.HttpRequest;
+
 public class Util {
 	/**
 	 * Extracts the file extesion from a file path
@@ -28,5 +32,13 @@ public class Util {
 		int lastSep = path.lastIndexOf(File.separator);
 		int lastDot = path.lastIndexOf('.');
 		return path.substring(lastSep + 1, lastDot);
+	}
+	
+	public static boolean paramExists(String name, HttpServletRequest request){
+		return request.getParameter(name) != null;
+	}
+	
+	public static boolean isNullOrEmpty(String s){
+		return (s != null && s.trim().length() > 0);
 	}
 }

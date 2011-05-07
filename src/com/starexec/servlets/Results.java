@@ -13,6 +13,7 @@ import com.starexec.constants.P;
 import com.starexec.constants.R;
 import com.starexec.data.Database;
 import com.starexec.util.LogUtil;
+import com.starexec.util.Util;
 
 /**
  * Servlet implementation class Results
@@ -33,23 +34,40 @@ public class Results extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if(request.getParameter(P.JOB_ID) != null){
-			int jobId = Integer.parseInt(request.getParameter(P.JOB_ID));
-			String status = request.getParameter(P.JOB_STATUS);
-			String node = request.getParameter(P.JOB_NODE);
+		// When a request comes in to the results service...
+		if(Util.paramExists(P.JOB_ID, request))			// If it has a job id parameter, handle the request as a job
+			handleJob(request, response);
+		else if (Util.paramExists(P.PAIR_ID, request))	// Else if it has a pair id parameter, handle the request as a pair
+			handlePair(request, response);					
+	}
+	
+	private void handleJob(HttpServletRequest request, HttpServletResponse response){
+		int jobId = Integer.parseInt(request.getParameter(P.JOB_ID));		// Get the job id
+		String status = request.getParameter(P.JOB_STATUS);					// Get the status (may be empty/null)
+		String node = request.getParameter(P.JOB_NODE);						// Get the node the ran on (may be empty/null)
 			
-			
-			database.updateJobStatus(jobId, status, node);
-			
-			LogUtil.LogInfo(String.format("Changed job %d status to %s, node is %s", jobId, status, node));
-		} else if (request.getParameter(P.PAIR_ID) != null) {
-			int pairId = Integer.parseInt(request.getParameter(P.PAIR_ID));
-			String result = request.getParameter(P.PAIR_RESULT);
-			
-			database.updatePairResult(pairId, result);
+		database.updateJobStatus(jobId, status, node);
+		
+		LogUtil.LogInfo(String.format("Changed job %d status to %s, node is %s", jobId, status, node));
+	}
+	
+	private void handlePair(HttpServletRequest request, HttpServletResponse response){
+		int pairId = Integer.parseInt(request.getParameter(P.PAIR_ID));
+		
+		String result = request.getParameter(P.PAIR_RESULT);
+		String status = request.getParameter(P.JOB_STATUS);
+		String node = request.getParameter(P.JOB_NODE);
+		
+		Long startTime = null;
+		Long endTime = null;
+		if(Util.paramExists(P.PAIR_START_TIME, request))
+			startTime = Long.parseLong(request.getParameter(P.PAIR_START_TIME));
+		if(Util.paramExists(P.PAIR_END_TIME, request))
+			endTime = Long.parseLong(request.getParameter(P.PAIR_END_TIME));			
+		
+		database.updatePairResult(pairId, status, result, node, startTime, endTime);
 
-			LogUtil.LogInfo(String.format("Changed pair %d result to %s", pairId, result));
-		}											
+		LogUtil.LogInfo(String.format("Changed pair %d result to %s", pairId, result));		
 	}
 
 	/**

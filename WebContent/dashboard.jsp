@@ -13,11 +13,10 @@
 	<div id="wrapper">
 		<%@ include file="includes/header.html" %>
 		<div class="content round">
-			<img class='ul_icon' src="/starexec/images/icon_up.png"/>
 			<h1>Dashboard</h1>
 			<a class="help" href="#">Help</a>
 			
-			<h2 style="text-align: center; margin-top:100px;">Welome To Starexec</h2>			
+			<h2 style="text-align: center; margin-top:100px;">Welcome To Starexec</h2>			
 		</div>		
 	</div>
 </body>

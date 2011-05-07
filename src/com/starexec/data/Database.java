@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +22,7 @@ import com.starexec.data.to.Solver;
 import com.starexec.data.to.User;
 import com.starexec.util.LogUtil;
 import com.starexec.util.SHA256;
+import com.starexec.util.Util;
 
 /**
  * Database objects are responsible for any and all communication to the MySQL back-end database.
@@ -665,17 +667,33 @@ public class Database {
 		}
 	}
 	
-	public synchronized boolean updatePairResult(int pairId, String result){
+	public synchronized boolean updatePairResult(int pairId, String status, String result, String node, Long startTime, Long endTime){
 		try {
-			// TODO: Get status and set start/end time properly
-			
 			if(psPairStatus == null)
-				psPairStatus = connection.prepareStatement("UPDATE job_pairs SET result=? WHERE id=?");
+				psPairStatus = connection.prepareStatement("SELECT * FROM job_pairs WHERE id=?");
+						
+			psPairStatus.setInt(1, pairId);
+			ResultSet results = psPairStatus.executeQuery();
+			results.first();
 			
-			psPairStatus.setString(1, result);
-			psPairStatus.setInt(2, pairId);
+			if(!Util.isNullOrEmpty(result))
+				results.updateString("result", result);			
 			
-			return psPairStatus.executeUpdate() == 1;			
+			if(!Util.isNullOrEmpty(status)) 
+				results.updateString("status", status);
+			
+			if(!Util.isNullOrEmpty(node))
+				results.updateString("node", node);
+			
+			if(startTime > 0)
+				results.updateTimestamp("startTime", new Timestamp(startTime * 1000));	// We get seconds since the epoch began, must convert to milliseconds for the constructor
+			
+			if(endTime > 0)
+				results.updateTimestamp("endTime", new Timestamp(endTime * 1000));
+			
+			results.updateRow();
+			
+			return true;			
 		} catch (Exception e){
 			log.severe("Error in updatePairResult method: " + e.getMessage());
 			LogUtil.LogException(e);
@@ -854,8 +872,11 @@ public class Database {
 				p.setId(results.getInt("jp.id"));
 				p.setJobId(results.getInt("jp.jid"));
 				p.setResult(results.getString("jp.result"));
-				p.setStartTime(results.getTimestamp("jp.startTime"));
-				p.setEndTime(results.getTimestamp("jp.endTime"));
+				
+				// We may get back a null time, in which getting a timestamp will error out, just catch and ignore for now				
+				try {p.setStartTime(results.getTimestamp("jp.startTime"));} catch(Exception e){}
+				try {p.setEndTime(results.getTimestamp("jp.endTime"));} catch(Exception e){}				
+				
 				p.setNode(results.getString("jp.node"));
 				p.setStatus(results.getString("jp.status"));
 				p.setRunTime(results.getInt("runtime"));

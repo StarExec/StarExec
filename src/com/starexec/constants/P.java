@@ -27,4 +27,6 @@ public class P {
 	public static String JOB_NODE = "node";
 	public static String PAIR_ID = "pid";
 	public static String PAIR_RESULT = "result";
+	public static String PAIR_START_TIME = "stime";
+	public static String PAIR_END_TIME = "etime";
 }

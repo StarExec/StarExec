@@ -72,33 +72,26 @@
   <listener>
     <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
   </listener>
-  <security-role>
-    <role-name>admin</role-name>
-  </security-role>
-  <security-role>
-    <role-name>users</role-name>
+  <!-- <security-role>
+    <role-name>dev</role-name>
   </security-role>
   <security-constraint>
-    <display-name>Security constraints</display-name>
+    <display-name>Security Constraints</display-name>
     <web-resource-collection>
-      <web-resource-name>Home Page</web-resource-name>
-      <url-pattern>/home.jsp</url-pattern>
+      <web-resource-name>Starexec</web-resource-name>
+      <url-pattern>/*</url-pattern>
       <http-method>DELETE</http-method>
       <http-method>GET</http-method>
       <http-method>POST</http-method>
       <http-method>PUT</http-method>
     </web-resource-collection>
     <auth-constraint>
-      <role-name>users</role-name>
+      <role-name>dev</role-name>
     </auth-constraint>
   </security-constraint>
   <login-config>
-    <auth-method>FORM</auth-method>
-    <form-login-config>
-      <form-login-page>/login.jsp</form-login-page>
-      <form-error-page>/error.jsp</form-error-page>
-    </form-login-config>
-  </login-config>
+    <auth-method>BASIC</auth-method>    
+  </login-config> -->
   <welcome-file-list>
     <welcome-file>dashboard.jsp</welcome-file>
     <welcome-file>index.jsp</welcome-file>    

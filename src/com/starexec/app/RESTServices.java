@@ -79,7 +79,12 @@ public class RESTServices {
 			r.addCell(jp.getStatus());
 			r.addCell(jp.getResult());
 			r.addCell(jp.getSolver().getName());
-			r.addCell(jp.getConfig().getName());
+			
+			if(jp.getConfig().getName().length() > 3)
+				r.addCell(jp.getConfig().getName().substring(3));
+			else
+				r.addCell("Default");
+			
 			r.addCell(jp.getBenchmark().getFileName());		
 			r.addCell(jp.getRunTime());
 			r.addCell(dateFormat.format(jp.getStartTime()));
@@ -216,7 +221,12 @@ public class RESTServices {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		
 		for(Configuration c : configs){
-			JSTreeItem t = new JSTreeItem(c.getName(), c.getId(), "leaf", "config");			
+			JSTreeItem t;
+			if(c.getName().length() > 3)
+				t = new JSTreeItem(c.getName().substring(3), c.getId(), "leaf", "config");
+			else
+				t = new JSTreeItem("Default", c.getId(), "leaf", "config");
+						
 			list.add(t);
 		}
 
