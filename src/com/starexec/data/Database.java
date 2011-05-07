@@ -332,7 +332,7 @@ public class Database {
 					benchmark.setId(results.getInt("id"));
 					benchmark.setPath(results.getString("physical_path"));
 					benchmark.setUserId(results.getInt("usr"));
-					benchmark.setUploaded(results.getTimestamp("uploaded"));
+					try{benchmark.setUploaded(results.getTimestamp("uploaded"));}catch(Exception e){}
 					returnList.add(benchmark);
 				}
 			} else {		
@@ -925,12 +925,13 @@ public class Database {
 			while(results.next()){
 				Job j = new Job();
 				
-				j.setCompleted(results.getTimestamp("finDate"));
+				// Guard against null timestamps for now
+				try{j.setCompleted(results.getTimestamp("finDate"));}catch(Exception e){}
+				try{j.setSubmitted(results.getTimestamp("subDate"));}catch(Exception e){}
 				j.setDescription(results.getString("description"));
 				j.setJobId(results.getInt("id"));
 				j.setNode(results.getString("node"));
-				j.setStatus(results.getString("status"));
-				j.setSubmitted(results.getTimestamp("subDate"));
+				j.setStatus(results.getString("status"));							
 				j.setTimeout(results.getLong("timeout"));
 				j.setUserId(results.getInt("usr"));
 				j.setRunTime(results.getInt("runtime"));
