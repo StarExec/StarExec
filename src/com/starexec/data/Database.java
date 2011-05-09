@@ -575,7 +575,7 @@ public class Database {
 			//int insertedID = idSet.getInt(1);
 			
 			if(psAddJobPair == null)
-				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, cid, bid, endTime) VALUES (?, ?, ?, ?, SYSDATE())"); //TODO: Remove endTime=Sysdate when CJ gives us the proper end time
+				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, cid, bid) VALUES (?, ?, ?, ?)"); //TODO: Remove endTime=Sysdate when CJ gives us the proper end time
 			
 			for(JobPair jp : j.getJobPairs()){ 
 				psAddJobPair.setInt(1, jp.getId());
@@ -686,10 +686,10 @@ public class Database {
 				results.updateString("node", node);
 			
 			if(startTime > 0)
-				results.updateTimestamp("startTime", new Timestamp(startTime * 1000));	// We get seconds since the epoch began, must convert to milliseconds for the constructor
+				results.updateTimestamp("startTime", new Timestamp(startTime));	// We get seconds since the epoch began, must convert to milliseconds for the constructor
 			
 			if(endTime > 0)
-				results.updateTimestamp("endTime", new Timestamp(endTime * 1000));
+				results.updateTimestamp("endTime", new Timestamp(endTime));
 			
 			results.updateRow();
 			
