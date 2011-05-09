@@ -87,8 +87,17 @@ public class RESTServices {
 			
 			r.addCell(jp.getBenchmark().getFileName());		
 			r.addCell(jp.getRunTime());
-			r.addCell(dateFormat.format(jp.getStartTime()));
-			r.addCell(dateFormat.format(jp.getEndTime()));		
+			
+			if(jp.getStartTime() != null)
+				r.addCell(dateFormat.format(jp.getStartTime()));
+			else
+				r.addCell("");
+			
+			if(jp.getEndTime() != null)
+				r.addCell(dateFormat.format(jp.getEndTime()));
+			else
+				r.addCell("");
+			
 			r.addCell(jp.getNode());
 			
 			tr.addRow(r);
@@ -110,8 +119,17 @@ public class RESTServices {
 			r.addCell(j.getJobId());
 			r.addCell(j.getStatus());
 			r.addCell(j.getRunTime());
-			r.addCell(dateFormat.format(j.getSubmitted()));
-			r.addCell(dateFormat.format(j.getCompleted()));
+			
+			if(j.getSubmitted() != null)
+				r.addCell(dateFormat.format(j.getSubmitted()));
+			else
+				r.addCell("");
+			
+			if(j.getCompleted() != null)
+				r.addCell(dateFormat.format(j.getCompleted()));
+			else
+				r.addCell("");
+			
 			r.addCell(j.getNode());
 			r.addCell(j.getTimeout());
 			tr.addRow(r);
