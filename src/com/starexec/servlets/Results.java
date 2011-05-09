@@ -58,8 +58,8 @@ public class Results extends HttpServlet {
 		String status = request.getParameter(P.JOB_STATUS);
 		String node = request.getParameter(P.JOB_NODE);
 		
-		Long startTime = null;
-		Long endTime = null;
+		Long startTime = -1L;
+		Long endTime = -1L;
 		if(Util.paramExists(P.PAIR_START_TIME, request))
 			startTime = Long.parseLong(request.getParameter(P.PAIR_START_TIME));
 		if(Util.paramExists(P.PAIR_END_TIME, request))

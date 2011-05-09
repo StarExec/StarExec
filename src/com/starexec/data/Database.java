@@ -670,7 +670,7 @@ public class Database {
 	public synchronized boolean updatePairResult(int pairId, String status, String result, String node, Long startTime, Long endTime){
 		try {
 			if(psPairStatus == null)
-				psPairStatus = connection.prepareStatement("SELECT * FROM job_pairs WHERE id=?");
+				psPairStatus = connection.prepareStatement("SELECT * FROM job_pairs WHERE id=?", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 						
 			psPairStatus.setInt(1, pairId);
 			ResultSet results = psPairStatus.executeQuery();
