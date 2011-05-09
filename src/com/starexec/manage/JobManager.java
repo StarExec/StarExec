@@ -272,6 +272,7 @@ public abstract class JobManager {
 				+ "echo \"Out:        $JOBFILE\"\n"
 				+ "echo '*************************************'\n"
 				+ "echo\n"
+				+ "sendJobStatus $J_STA # Signals that whole job starts.\n"
 				+ "\n" );
 		
 		BenchmarkLink lnk;
