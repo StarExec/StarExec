@@ -72,7 +72,7 @@
   <listener>
     <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
   </listener>
-  <!-- <security-role>
+  <security-role>
     <role-name>dev</role-name>
   </security-role>
   <security-constraint>
@@ -91,7 +91,7 @@
   </security-constraint>
   <login-config>
     <auth-method>BASIC</auth-method>    
-  </login-config> -->
+  </login-config>
   <welcome-file-list>
     <welcome-file>dashboard.jsp</welcome-file>
     <welcome-file>index.jsp</welcome-file>    
