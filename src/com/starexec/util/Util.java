@@ -35,7 +35,7 @@ public class Util {
 	}
 	
 	public static boolean paramExists(String name, HttpServletRequest request){
-		return request.getParameter(name) != null;
+		return !isNullOrEmpty(request.getParameter(name));
 	}
 	
 	public static boolean isNullOrEmpty(String s){
