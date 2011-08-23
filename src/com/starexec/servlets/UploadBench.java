@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
@@ -21,12 +22,12 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import com.starexec.constants.R;
 import com.starexec.data.Database;
 import com.starexec.util.BXMLHandler;
-import com.starexec.util.LogUtil;
 import com.starexec.util.XmlUtil;
 import com.starexec.util.ZipUtil;
 
 
 public class UploadBench extends HttpServlet {
+	private static final Logger log = Logger.getLogger(UploadBench.class);
 	private static final long serialVersionUID = 1L;
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format    
     
@@ -42,12 +43,12 @@ public class UploadBench extends HttpServlet {
 				   try {
 					   handleBenchmark(item, request, response);									// Handle the benchmark file
 				   } catch (Exception e) {
-					   LogUtil.LogException(e);
+					   log.error(e);
 				   }			   
 			   }
 			}
 		} catch (FileUploadException e) {
-			LogUtil.LogException(e);											// Log any problems with the file upload process here
+			log.error(e);											// Log any problems with the file upload process here
 		}
 	}
     

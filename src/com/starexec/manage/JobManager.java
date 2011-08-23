@@ -1,8 +1,8 @@
 package com.starexec.manage;
 
 import java.io.*;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Logger;
 import org.ggf.drmaa.*;
 
 import com.starexec.data.Database;
@@ -30,6 +30,8 @@ import com.starexec.constants.R;
  * 
  */
 public abstract class JobManager {
+	
+	private static final Logger log = Logger.getLogger(JobManager.class); 
 	private static int curJID; // ............................................ Assigned ID of current job. Part of jobscript name.
 	private static Jobject curJob; // ........................................ Pointer to current Jobject (temporarily useful) 
 	private static Job jobRecord; // ......................................... Holds record of current job. Built during the buildJob()
@@ -67,7 +69,7 @@ public abstract class JobManager {
 	}
 	
 	private static void log(Object o) {
-		Logger.getAnonymousLogger().info("JobManager: " + o);
+		log.info("JobManager: " + o);
 	}
 	
 	/**

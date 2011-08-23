@@ -31,6 +31,7 @@ public class R {
 	public static int NEXT_JID = 1;
 	public static int PAIR_ID = 1;
 	
+	// Job status strings
 	public static final String JOB_STATUS_DONE = "Done";
 	public static final String JOB_STATUS_RUNNING = "Running";
 	public static final String JOB_STATUS_ENQUEUED = "Enqueued";

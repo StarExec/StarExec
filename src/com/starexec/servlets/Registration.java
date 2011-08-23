@@ -1,11 +1,13 @@
 package com.starexec.servlets;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
 
 import com.starexec.constants.P;
 import com.starexec.data.Database;
@@ -14,6 +16,7 @@ import com.starexec.data.to.User;
 
 
 public class Registration extends HttpServlet {
+	private static final Logger log = Logger.getLogger(Registration.class);
 	private static final long serialVersionUID = 1L;
        
     public Registration() {

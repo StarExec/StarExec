@@ -6,6 +6,8 @@ import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.*;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -18,6 +20,8 @@ import com.starexec.util.*;
 
 // TODO: Change from UploadBench to UploadSolver
 public class UploadSolver extends HttpServlet {
+	
+	private static final Logger log = Logger.getLogger(UploadSolver.class);	
 	private static final long serialVersionUID = 1L;
     private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format    
     
@@ -38,12 +42,12 @@ public class UploadSolver extends HttpServlet {
 				   try {
 					   handleSolver(item, response, supportedDivs, solverName);	// Process the uploaded solver file
 				   } catch (Exception e) {
-					   LogUtil.LogException(e);
+					   log.error(e);
 				   }			   
 			   }
 			}
 		} catch (FileUploadException e) {
-			LogUtil.LogException(e);											// Log any problems with the file upload process here
+			log.error(e);											// Log any problems with the file upload process here
 		}
 	}
     

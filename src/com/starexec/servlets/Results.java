@@ -1,7 +1,6 @@
 package com.starexec.servlets;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,10 +8,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 import com.starexec.constants.P;
-import com.starexec.constants.R;
 import com.starexec.data.Database;
-import com.starexec.util.LogUtil;
 import com.starexec.util.Util;
 
 /**
@@ -20,6 +19,7 @@ import com.starexec.util.Util;
  */
 @WebServlet("/Results")
 public class Results extends HttpServlet {
+	private static final Logger log = Logger.getLogger(Results.class);
 	private static final long serialVersionUID = 1L;
 	private Database database = new Database();
        
@@ -48,7 +48,7 @@ public class Results extends HttpServlet {
 			
 		database.updateJobStatus(jobId, status, node);
 		
-		LogUtil.LogInfo(String.format("Changed job %d status to %s, node is %s", jobId, status, node));
+		log.info(String.format("Changed job %d status to %s, node is %s", jobId, status, node));
 	}
 	
 	private void handlePair(HttpServletRequest request, HttpServletResponse response){
@@ -67,7 +67,7 @@ public class Results extends HttpServlet {
 		
 		database.updatePairResult(pairId, status, result, node, startTime, endTime);
 
-		LogUtil.LogInfo(String.format("Changed pair %d result to %s", pairId, result));		
+		log.info(String.format("Changed pair %d result to %s", pairId, result));		
 	}
 
 	/**

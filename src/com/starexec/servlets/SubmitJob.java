@@ -1,11 +1,7 @@
 package com.starexec.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,13 +9,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 import com.starexec.data.Database;
 import com.starexec.data.to.User;
-import com.starexec.manage.*;
-import com.starexec.util.LogUtil;
+import com.starexec.manage.BenchmarkLink;
+import com.starexec.manage.JobManager;
+import com.starexec.manage.Jobject;
 
 @WebServlet("/SubmitJob")
 public class SubmitJob extends HttpServlet {
+	private static final Logger log = Logger.getLogger(SubmitJob.class);
 	private static final long serialVersionUID = 2L;       
     
 	public SubmitJob(){
@@ -27,7 +27,7 @@ public class SubmitJob extends HttpServlet {
 	}
 	
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
-		Logger.getAnonymousLogger().info(request.getRequestURL().toString());
+		log.info(request.getRequestURL().toString());
 
     	Jobject job = new Jobject(new User("admin"));			// Start a new job.
     	String configIds = request.getParameter("config");		// Get the selected config ids
@@ -76,7 +76,7 @@ public class SubmitJob extends HttpServlet {
 //				response.getWriter().println(line);
 //			}
 		} catch (Exception e) {
-			LogUtil.LogException(e);
+			log.error(e);
 		}
 	}    
 }

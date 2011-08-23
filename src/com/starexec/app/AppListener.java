@@ -1,15 +1,19 @@
 package com.starexec.app;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import org.apache.log4j.Logger;
 
 import com.starexec.constants.R;
 
 
 public class AppListener implements ServletContextListener {
+	
+	private static final Logger log = Logger.getLogger(AppListener.class);
+	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		
@@ -33,8 +37,8 @@ public class AppListener implements ServletContextListener {
 		if(testDir.exists()) {
 		    R.SOLVER_PATH = "C:\\Users\\Tyler\\Documents\\Docs\\University of Iowa\\Research\\STAREXEC\\Solvers\\";			// The directory in which to save the solver file(s)
 		    R.BENCHMARK_PATH = "C:\\Users\\Tyler\\Documents\\Docs\\University of Iowa\\Research\\STAREXEC\\Benchmarks\\";	// The directory in which to save the benchmark file(s)
-		    
-		    Logger.getAnonymousLogger().info("Tyler local development paths set");
+		    		    
+		    log.debug("Tyler local development paths set");
 		}
 	}
 }

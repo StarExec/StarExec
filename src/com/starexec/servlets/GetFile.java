@@ -1,9 +1,6 @@
 package com.starexec.servlets;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -12,6 +9,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
 
 import com.starexec.constants.P;
 import com.starexec.constants.R;
@@ -22,6 +21,7 @@ import com.starexec.constants.R;
  */
 @WebServlet("/GetFile")
 public class GetFile extends HttpServlet {
+	private static final Logger log = Logger.getLogger(GetFile.class);
 	private static final long serialVersionUID = 1L;
        
     /**

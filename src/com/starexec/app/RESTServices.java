@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.ws.rs.*;
 
+import org.apache.log4j.Logger;
+
 import com.google.gson.Gson;
 import com.starexec.data.Database;
 import com.starexec.data.to.Benchmark;
@@ -17,6 +19,8 @@ import com.starexec.data.to.Solver;
 
 @Path("")
 public class RESTServices {
+	
+	private static final Logger log = Logger.getLogger(RESTServices.class);	
 	protected Database database;
 	protected static SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd, yyyy h:mm a");	
 	
@@ -44,7 +48,7 @@ public class RESTServices {
 	@GET
 	@Path("/benchmarks/all")
 	@Produces("application/json")
-	public String getAllBenchmarks() {		
+	public String getAllBenchmarks() {	
 		return new Gson().toJson(database.getBenchmarks(null));						
 	}
 	

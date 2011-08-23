@@ -75,7 +75,7 @@
   <security-role>
     <role-name>dev</role-name>
   </security-role>
-  <security-constraint>
+  <!--<security-constraint>
     <display-name>Security Constraints</display-name>
     <web-resource-collection>
       <web-resource-name>Starexec</web-resource-name>
@@ -91,7 +91,7 @@
   </security-constraint>
   <login-config>
     <auth-method>BASIC</auth-method>    
-  </login-config>
+  </login-config>-->
   <welcome-file-list>
     <welcome-file>dashboard.jsp</welcome-file>
     <welcome-file>index.jsp</welcome-file>    

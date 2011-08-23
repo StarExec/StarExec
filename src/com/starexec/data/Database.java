@@ -1,7 +1,6 @@
 package com.starexec.data;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +9,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import com.starexec.constants.R;
 import com.starexec.data.to.Benchmark;
@@ -20,7 +20,6 @@ import com.starexec.data.to.JobPair;
 import com.starexec.data.to.Level;
 import com.starexec.data.to.Solver;
 import com.starexec.data.to.User;
-import com.starexec.util.LogUtil;
 import com.starexec.util.SHA256;
 import com.starexec.util.Util;
 
@@ -31,7 +30,8 @@ import com.starexec.util.Util;
  * @author Tyler Jensen
  */
 public class Database {
-	private Logger log = Logger.getLogger("starexec.data");
+	
+	private static final Logger log = Logger.getLogger(Database.class);
 	private Connection connection = null;
 	private PreparedStatement psAddUser = null;
 	private PreparedStatement psAddPassword = null;
@@ -74,7 +74,7 @@ public class Database {
 			Class.forName("com.mysql.jdbc.Driver");	// Load the MYSQL driver						
 			connection = DriverManager.getConnection(url, username, pass);	// Open a connection to the database			
 		} catch (Exception e) {
-			log.severe("DATABASE CONNECTION ERROR");
+			log.fatal("DATABASE CONNECTION ERROR");
 		}		
 	}
 	
@@ -127,8 +127,8 @@ public class Database {
 			return rowsAffected == 3;	// If exactly 3 rows were affected, success!
 		} catch (Exception e){
 			doRollback();
-			log.severe("Error in addUser method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in addUser method: " + e.getMessage());
+			log.error(e);
 			return false;
 		} finally {
 			autoCommitOn();
@@ -158,8 +158,8 @@ public class Database {
 				return u;
 			}					
 		} catch (Exception e){
-			log.severe("Error in getUser method: " + e.getMessage());
-			LogUtil.LogException(e);		
+			log.error("Error in getUser method: " + e.getMessage());
+			log.error(e);		
 		}
 		
 		return null;
@@ -188,8 +188,8 @@ public class Database {
 				return u;
 			}					
 		} catch (Exception e){
-			log.severe("Error in getUser method: " + e.getMessage());
-			LogUtil.LogException(e);		
+			log.error("Error in getUser method: " + e.getMessage());
+			log.error(e);		
 		}
 		
 		return null;
@@ -219,8 +219,8 @@ public class Database {
 			return true;			
 		} catch (Exception e){
 			doRollback();
-			log.severe("Error in addConfiguration method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in addConfiguration method: " + e.getMessage());
+			log.error(e);
 			return false;
 		} finally {
 			autoCommitOn();
@@ -265,8 +265,8 @@ public class Database {
 			return true;			
 		} catch (Exception e){
 			doRollback();
-			log.severe("Error in addSolver method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in addSolver method: " + e.getMessage());
+			log.error(e);
 			return false;
 		} finally {
 			autoCommitOn();
@@ -305,8 +305,8 @@ public class Database {
 			}
 		} catch (Exception e){
 			doRollback();
-			log.severe("Error in addBenchmarks method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in addBenchmarks method: " + e.getMessage());
+			log.error(e);
 			return false;
 		} finally {
 			autoCommitOn();
@@ -345,8 +345,8 @@ public class Database {
 			
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in getBenchmarks method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getBenchmarks method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}
 	}
@@ -376,8 +376,8 @@ public class Database {
 			
 			return benchmark;
 		} catch (Exception e){
-			log.severe("Error in getBenchmark method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getBenchmark method: " + e.getMessage());
+			log.error(e);
 			return null;	
 		}	
 	}
@@ -409,8 +409,8 @@ public class Database {
 			
 			return returnList;
 		} catch (Exception e) {
-			log.severe("Error in getConfigurations method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getConfigurations method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}
 	}
@@ -435,8 +435,8 @@ public class Database {
 			
 			return config;
 		} catch (Exception e){
-			log.severe("Error in getConfiguration method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getConfiguration method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}			
 	}
@@ -475,8 +475,8 @@ public class Database {
 			
 			return returnList;
 		} catch (Exception e) {
-			log.severe("Error in getSolvers method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getSolvers method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}
 	}
@@ -508,8 +508,8 @@ public class Database {
 			
 			return solver;
 		} catch (Exception e){
-			log.severe("Error in getSolver method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getSolver method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}			
 	}
@@ -543,8 +543,8 @@ public class Database {
 			return levels.size() == inserted;
 		} catch (Exception e){
 			doRollback();
-			log.severe("Error in addLevelStructure method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in addLevelStructure method: " + e.getMessage());
+			log.error(e);
 			return false;
 		} finally {
 			autoCommitOn();
@@ -589,8 +589,8 @@ public class Database {
 			return rowsAffected == j.getJobPairs().size() + 1;
 		} catch (Exception e){
 			doRollback();
-			log.severe("Error in addJob method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in addJob method: " + e.getMessage());
+			log.error(e);
 			return false;
 		} finally {
 			autoCommitOn();
@@ -612,8 +612,8 @@ public class Database {
 			
 			return results.getInt(1);
 		} catch (Exception e){
-			log.severe("Error in getMaxLevel method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getMaxLevel method: " + e.getMessage());
+			log.error(e);
 			return 0;
 		}	
 	}
@@ -633,8 +633,8 @@ public class Database {
 			
 			return results.getInt(1) + 1;
 		} catch (Exception e){
-			log.severe("Error in getNextLevelGroup method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getNextLevelGroup method: " + e.getMessage());
+			log.error(e);
 			return 0;
 		}	
 	}
@@ -661,8 +661,8 @@ public class Database {
 			}
 			
 		} catch (Exception e){
-			log.severe("Error in updateJobStatus method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in updateJobStatus method: " + e.getMessage());
+			log.error(e);
 			return false;
 		}
 	}
@@ -695,8 +695,8 @@ public class Database {
 			
 			return true;			
 		} catch (Exception e){
-			log.severe("Error in updatePairResult method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in updatePairResult method: " + e.getMessage());
+			log.error(e);
 			return false;
 		}
 	}
@@ -739,8 +739,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in getSubLevels method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getSubLevels method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -799,8 +799,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in getSubLevels method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getSubLevels method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -823,8 +823,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in levelToBenchmarkIds method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in levelToBenchmarkIds method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -843,8 +843,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in solverToConfigIds method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in solverToConfigIds method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -904,8 +904,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in getJobPairs method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getJobPairs method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -941,8 +941,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in getJobs method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getJobs method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -970,8 +970,8 @@ public class Database {
 						
 			return returnList;
 		} catch (Exception e){
-			log.severe("Error in getConfigurations method: " + e.getMessage());
-			LogUtil.LogException(e);
+			log.error("Error in getConfigurations method: " + e.getMessage());
+			log.error(e);
 			return null;
 		}	
 	}
@@ -987,7 +987,7 @@ public class Database {
 	protected synchronized void doRollback(){
 		try {
 			connection.rollback();
-			log.warning("Database transaction rollback.");
+			log.warn("Database transaction rollback.");
 		} catch (Exception e) {
 			// Ignore any errors
 		}
