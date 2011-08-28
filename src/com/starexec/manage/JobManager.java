@@ -131,7 +131,7 @@ public abstract class JobManager {
 		String script = "";
 		
 		try {
-			reader = new BufferedReader(new FileReader(new File("/starexec/src/jobscript")));
+			reader = new BufferedReader(new FileReader(new File("/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/jobscript")));
 			String line = null;
 			StringBuilder str = new StringBuilder();
 			while( (line = reader.readLine()) != null ) {
@@ -143,6 +143,8 @@ public abstract class JobManager {
 			throw e;
 		}
 		
+		log("Read in scriptfile");
+		
 		// Opens a file on the shared space and writes the empty job script to it.
 		String filePath = curJobPath;
 		File f = new File(filePath);
@@ -153,6 +155,8 @@ public abstract class JobManager {
 		if(!f.setExecutable(true))
 			throw new IOException("Can't change owner's executable permissions on file " + curJobPath);
 		FileWriter out = new FileWriter(f);
+		
+		log("Opened empty jobscript file");
 		
 		// Creates a new job TO object
 		jobRecord = new Job();
@@ -191,15 +195,17 @@ public abstract class JobManager {
 			}
 		}
 		
+		log("Built all runpairs: " + runPairs);
+		
 		// Writes out the bash file
-		out.write(String.format(
-				script, 
-				curJID, 
-				R.JOB_STATUS_RUNNING, 
-				R.JOB_STATUS_DONE, 
-				R.JOB_STATUS_ERR, 
-				runPairs
-				));
+		script = script.replace("$$JID$$", "" + curJID);
+		script = script.replace("$$JOBSTA$$", R.JOB_STATUS_RUNNING);
+		script = script.replace("$$JOBFIN$$", R.JOB_STATUS_DONE);
+		script = script.replace("$$JOBERR$$", R.JOB_STATUS_ERR);
+		script = script.replace("$$JOBPAIRS$$", runPairs);
+		out.write(script);
+		
+		log("Wrote out bash file");
 		
 		out.close();
 	}

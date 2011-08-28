@@ -12,10 +12,12 @@ SHR=/home/starexec
 T="date +%s.%m"
 M=`uname -n`; M=${M%%\.*}
 
-J_ID=%d%
-J_STA=%s%
-J_FIN=%s%
-J_ERR=%s%
+# @@
+J_ID=$$JID$$
+J_STA=$$JOBSTA$$
+J_FIN=$$JOBFIN$$
+J_ERR=$$JOBERR$$
+# @@
 RESULT=''
 
 JOB=job_$J_ID
@@ -78,8 +80,8 @@ function runPair { # Run a solver on a benchmark
         FT=`$T`
 
 		# Calculates time for jobpair run in ms
-        ST=$(((${ST%\.*} * 1000) + ${ST#*\.}))
-        FT=$(((${FT%\.*} * 1000) + ${FT#*\.}))
+        ST=$(((${ST%\.*} * 1000) + 10#${ST#*\.}))
+        FT=$(((${FT%\.*} * 1000) + 10#${FT#*\.}))
         echo "$SOL($BEN) : $RESULT : $(($ST - $FT))"
 
         sendPairStatus $PID $J_FIN
@@ -116,7 +118,7 @@ echo '*************************************'
 sendJobStatus $J_STA 
 
 # All jobpairs start here
-%s%
+$$JOBPAIRS$$
 # All jobpairs end here 
 
 # Signals that whole job terminates.
