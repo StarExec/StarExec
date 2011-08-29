@@ -1,8 +1,12 @@
 $(function(){
+	// Initialize jsTree on the benchList element
 	jQuery("#benchList").jstree({  
+		// Exchange data using JSON via AJAX
 		"json_data" : { 
 			"ajax" : { 
+				// The service URL to get the benchmarks from
 				"url" : "/starexec/services/level/bench", 
+				// Set the ID attr as the identifier
 				"data" : function (n) {  							
 					return { id : n.attr ? n.attr("id") : -1 };  
 				} 
@@ -18,12 +22,14 @@ $(function(){
 			"max_children" : -2,					
 			"valid_children" : [ "level" ],
 			"types" : {						
+				// Specify the 'level' type (directory)
 				"level" : {
 					"valid_children" : [ "bench", "level" ],
 					"icon" : {
 						"image" : "/starexec/images/tree_level.png"
 					}
-				},						
+				},			
+				// Specify the benchmark type
 				"bench" : {							
 					"valid_children" : "none",
 					"icon" : {
@@ -36,7 +42,7 @@ $(function(){
 		"core" : { animation : 200 }
 	});
 	
-	
+	// Initialize the solver list with jsTree
 	jQuery("#solverList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
@@ -57,14 +63,12 @@ $(function(){
 			"valid_children" : [ "solver" ],
 			"types" : {						
 				"solver" : {
-					// can have files and other folders inside of it, but NOT `drive` nodes
 					"valid_children" : "config",
 					"icon" : {
 						"image" : "/starexec/images/tree_solver.png"
 					}
 				},
 				"config" : {
-					// can have files and other folders inside of it, but NOT `drive` nodes
 					"valid_children" : "none",
 					"icon" : {
 						"image" : "/starexec/images/tree_config.png"
@@ -83,26 +87,36 @@ function doSubmit(){
 	var solverList = [];
 	var configList = [];
 	
-	$("#benchList").jstree("get_checked", false,false).each(function(i, data){
+	$("#benchList").jstree("get_checked", false, false).each(function(i, data){
+		// For each item checked in the benchmark tree...
+		
+		// Get the type
 		var type = $(data).attr("rel");
 		
-		if(type == "level")			
+		// And add it to the appropriate list
+		if(type == "level") {
 			lvlList.push(data.id);
-		else if (type == "bench")
-			benchList.push(data.id);		
+		} else if (type == "bench") {
+			benchList.push(data.id);
+		}
     });
 	
-	$("#solverList").jstree("get_checked", false,false).each(function(i, data){						
+	$("#solverList").jstree("get_checked", false, false).each(function(i, data){
+		// For each solver in the list...
+		
+		// Get the type
 		var type = $(data).attr("rel");
 		
-		if(type == "solver")			
+		// And add it to the appropriate list
+		if(type == "solver") {			
 			solverList.push(data.id);
-		else if (type == "config")
+		} else if (type == "config") {
 			configList.push(data.id);
+		}
     });
 		
-	$('#jobForm').attr('action', 'SubmitJob?bench=' + benchList.join() + '&level=' + lvlList.join() + '&solver=' + solverList.join() + '&config=' + configList.join());
-	
+	// Add the action of the form to be the URL with the appropriate params
+	$('#jobForm').attr('action', 'SubmitJob?bench=' + benchList.join() + '&level=' + lvlList.join() + '&solver=' + solverList.join() + '&config=' + configList.join());	
 	$('#btnSubmit').text('Uploading');
 	$('#btnSubmit').attr('disabled', 'disabled');
 	$('form').submit();

@@ -25,14 +25,6 @@ div .content h1 {
 	text-shadow: 0.04em 0.04em 0.03em #eeeeee;	
 }
 
-.benchUpForm {
-	margin-top: 95px;
-	width: 300px;
-	margin-left: auto;
-	margin-right: auto;
-	font-weight: bold;
-}
-
 #btnSubmit {
 	position: absolute;
 	bottom: 10px;

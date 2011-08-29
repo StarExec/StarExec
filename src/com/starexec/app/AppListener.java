@@ -24,7 +24,8 @@ public class AppListener implements ServletContextListener {
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent event) {		
-		checkTestPath();		
+		log.info("Application started");
+		checkTestPath();
 	}
 	
 	/**

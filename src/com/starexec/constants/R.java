@@ -1,6 +1,5 @@
 package com.starexec.constants;
 
-import java.util.Collection;
 
 /**
  * Class which holds static resources (R) available for use
@@ -14,6 +13,7 @@ public class R {
 	public static final String MYSQL_URL = "jdbc:mysql://localhost/starexec?autoReconnect=true";
 	public static final String MYSQL_USERNAME = "root";
 	public static final String MYSQL_PASSWORD = "star3x3c2011!";
+	public static final int CONNECTION_POOL_SIZE = 5;
 	
 	// Global path information
 	public static String SOLVER_PATH = "/home/starexec/Solvers";				// The directory in which to save the solver file(s)

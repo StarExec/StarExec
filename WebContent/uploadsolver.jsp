@@ -5,9 +5,10 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-	<title><%=T.UPLOAD %></title>
+	<title><%=T.UPLOAD_SOLVER %></title>
 	<%@ include file="includes/jQuery.html" %>
-	<link type="text/css" rel="StyleSheet" href="/starexec/css/uploadsolver.css" />
+	<link type="text/css" rel="StyleSheet" href="/starexec/css/maincontent.css" />
+	<link type="text/css" rel="StyleSheet" href="/starexec/css/uploadsolver.css" />	
 	<script type="text/javascript" src="/starexec/js/jquery.jstree.js"></script>
 	<script type="text/javascript" src="/starexec/js/uploadsolver.js"></script>
 </head>
@@ -15,7 +16,7 @@
 <body>
 	<div id="wrapper">
 		<%@ include file="includes/header.html" %>
-		<div class="content round">
+		<div class="content round" style="height: 350px;">
 			<img class='ul_icon' src="/starexec/images/icon_up.png"/>
 			<h1>Solver Upload</h1>
 			<a class="help" href="#">Help</a>

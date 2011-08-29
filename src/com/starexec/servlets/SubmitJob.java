@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.starexec.data.Database;
+import com.starexec.data.Databases;
 import com.starexec.data.to.User;
 import com.starexec.manage.BenchmarkLink;
 import com.starexec.manage.JobManager;
@@ -33,26 +34,37 @@ public class SubmitJob extends HttpServlet {
     	String configIds = request.getParameter("config");		// Get the selected config ids
     	String benchmarkIds = request.getParameter("bench");	// Get the selected benchmark ids
     	String levelIds = request.getParameter("level");		// Get the selected level ids
-    	String solverIds = request.getParameter("solver");		// Get the selected solver ids
-    	Database database = new Database();						// Grab a new db connection
+    	String solverIds = request.getParameter("solver");		// Get the selected solver ids    	
     	
     	ArrayList<Integer> bids = new ArrayList<Integer>();	
-    	if(benchmarkIds != null && !benchmarkIds.isEmpty())		// Add all benchmark id's to the list to pass to the Jobject
-    		for(String s : benchmarkIds.split(","))
+    	if(benchmarkIds != null && !benchmarkIds.isEmpty()) {
+    		// Add all benchmark id's to the list to pass to the Jobject    	
+    		for(String s : benchmarkIds.split(",")) {
     			bids.add(Integer.parseInt(s));
+    		}
+    	}
     	
-    	if(levelIds != null && !levelIds.isEmpty())				// Get all benchmarks under a selected level and add it to the list
-    		for(String s : levelIds.split(","))
-    			bids.addAll(database.levelToBenchmarkIds(Integer.parseInt(s)));
+    	if(levelIds != null && !levelIds.isEmpty()) {
+    		// Get all benchmarks under a selected level and add it to the list    	
+    		for(String s : levelIds.split(",")) {
+    			bids.addAll(Databases.next().levelToBenchmarkIds(Integer.parseInt(s)));
+    		}
+    	}
     	    
-    	ArrayList<Integer> cids = new ArrayList<Integer>();		// Add all config ids to the list to pass to the jobject
-    	if(configIds != null && !configIds.isEmpty())
-    		for(String s : configIds.split(","))
+    	// Add all config ids to the list to pass to the jobject
+    	ArrayList<Integer> cids = new ArrayList<Integer>();
+    	if(configIds != null && !configIds.isEmpty()) {
+    		for(String s : configIds.split(",")) {
     			cids.add(Integer.parseInt(s));
+    		}
+    	}
     	
-    	if(solverIds != null && !solverIds.isEmpty())			// Get all configs under the solver and add it to the list
-    		for(String s : solverIds.split(","))
-    			cids.addAll(database.solverToConfigIds(Integer.parseInt(s)));    	        	
+    	// Get all configs under the solver and add it to the list
+    	if(solverIds != null && !solverIds.isEmpty()) {
+    		for(String s : solverIds.split(",")) {
+    			cids.addAll(Databases.next().solverToConfigIds(Integer.parseInt(s)));
+    		}
+    	}
     	   
 		try {
 	    	for(int bid : bids) {
@@ -60,21 +72,8 @@ public class SubmitJob extends HttpServlet {
 				link.addConfigs(cids);
 	    	}
 	    	
-			JobManager.doJob(job);
-			
-			response.sendRedirect("/starexec/viewjob.jsp");
-			
-//			String line;
-//			File f = new File(String.format("/home/starexec/jobout/job_%d.out", JobManager.getJID()));
-//			
-//			while(!f.exists())
-//				Thread.sleep(2000);
-//			
-//			Scanner in = new Scanner(f);
-//			while(in.hasNext()) {
-//				line = in.nextLine();
-//				response.getWriter().println(line);
-//			}
+			JobManager.doJob(job);			
+			response.sendRedirect("/starexec/viewjob.jsp");			
 		} catch (Exception e) {
 			log.error(e);
 		}

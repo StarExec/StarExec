@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Stack;
 
 import com.starexec.data.Database;
+import com.starexec.data.Databases;
 import com.starexec.data.to.*;
 
 
@@ -16,13 +17,11 @@ import com.starexec.data.to.*;
 public class BenchmarkLink {
 	private Jobject parent;
 	private Stack<Configuration> cPaths;
-	private Benchmark benchmark;
-	private Database db;
+	private Benchmark benchmark;	
 	
-	public BenchmarkLink(int bid, Jobject parent) throws Exception {
-		db = new Database();
+	public BenchmarkLink(int bid, Jobject parent) throws Exception {		
 		this.cPaths = new Stack<Configuration>();
-		this.benchmark = db.getBenchmark(bid);
+		this.benchmark = Databases.next().getBenchmark(bid);
 		this.parent = parent;
 		
 		if(benchmark == null)
@@ -34,7 +33,7 @@ public class BenchmarkLink {
 	}
 	
 	public void addConfig(int cid) throws Exception {
-		Configuration c = db.getConfiguration(cid);
+		Configuration c = Databases.next().getConfiguration(cid);
 		
 		if(c == null)
 			throw new Exception("Configuration id " + cid + " returned null.");
@@ -43,7 +42,7 @@ public class BenchmarkLink {
 	}
 	
 	public void addConfigs(Collection<Integer> ilist) {
-		List<Configuration> clist = db.getConfigurations(ilist);
+		List<Configuration> clist = Databases.next().getConfigurations(ilist);
 
 		for(Configuration c : clist)
 			addConfig(c);
@@ -53,7 +52,7 @@ public class BenchmarkLink {
 		int sid = c.getSolverId();
 		cPaths.add(c);
 		if(parent.getSolver(sid) == null) {
-			Solver s = db.getSolver(c.getSolverId());
+			Solver s = Databases.next().getSolver(c.getSolverId());
 			parent.addSolver(s);
 		}
 	}

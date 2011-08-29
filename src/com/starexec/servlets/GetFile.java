@@ -20,7 +20,7 @@ import com.starexec.constants.R;
  * Servlet which handles incoming requests for files and gives the browser back the requested file
  */
 @WebServlet("/GetFile")
-public class GetFile extends HttpServlet {
+public class GetFile extends HttpServlet {	
 	private static final Logger log = Logger.getLogger(GetFile.class);
 	private static final long serialVersionUID = 1L;
        

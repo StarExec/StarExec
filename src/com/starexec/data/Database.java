@@ -1,27 +1,11 @@
 package com.starexec.data;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import java.sql.*;
+import java.util.*;
 import org.apache.log4j.Logger;
-
-import com.starexec.constants.R;
-import com.starexec.data.to.Benchmark;
-import com.starexec.data.to.Configuration;
-import com.starexec.data.to.Job;
-import com.starexec.data.to.JobPair;
-import com.starexec.data.to.Level;
-import com.starexec.data.to.Solver;
-import com.starexec.data.to.User;
-import com.starexec.util.SHA256;
-import com.starexec.util.Util;
+import com.starexec.constants.*;
+import com.starexec.data.to.*;
+import com.starexec.util.*;
 
 /**
  * Database objects are responsible for any and all communication to the MySQL back-end database.
@@ -33,48 +17,34 @@ public class Database {
 	
 	private static final Logger log = Logger.getLogger(Database.class);
 	private Connection connection = null;
-	private PreparedStatement psAddUser = null;
-	private PreparedStatement psAddPassword = null;
-	private PreparedStatement psAddPermissions = null;
-	private PreparedStatement psAddLevel = null;
-	private PreparedStatement psGetUser = null;
-	private PreparedStatement psGetUser2 = null;
-	private PreparedStatement psAddBenchmark = null;
-	private PreparedStatement psGetSolvers = null;
-	private PreparedStatement psGetAllSolvers = null;
-	private PreparedStatement psGetBenchmarks = null;
-	private PreparedStatement psGetImmediateBench = null;
-	private PreparedStatement psGetAllBenchmarks = null;
-	private PreparedStatement psGetMaxLevel = null;
-	private PreparedStatement psGetMaxLevelGroup = null;
-	private PreparedStatement psGetRootLevels = null;
-	private PreparedStatement psGetSubLevels = null;
-	private PreparedStatement psAddSolver = null;
-	private PreparedStatement psAddCanSolve = null;
-	private PreparedStatement psAddJob = null;
-	private PreparedStatement psAddJobPair = null;
-	private PreparedStatement psJobStatusStart = null;
-	private PreparedStatement psJobStatusDone = null;
-	private PreparedStatement psPairStatus = null;
-	private PreparedStatement psLevelToBenchs = null;
-	private PreparedStatement psGetJobs = null;
-	private PreparedStatement psGetJobPairs = null;
-	private PreparedStatement psAddConfiguration = null;
-	private PreparedStatement psGetConfigurations = null;
-	private PreparedStatement psGetConfigIds = null;
-	private PreparedStatement psGetConfig = null;
-	private PreparedStatement psGetConfigs = null;
+	private StatementPool statementPool = null;
 	
 	public Database() {
-		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);	// Use the default connection info			
+		// Use the default connection info
+		this(R.MYSQL_URL, R.MYSQL_USERNAME, R.MYSQL_PASSWORD);			
 	}
 	
+	/**
+	 * Creates a new database connection
+	 * @param url The JDBC url to the database
+	 * @param username Username
+	 * @param pass Password
+	 */
 	public Database(String url, String username, String pass) {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");	// Load the MYSQL driver						
-			connection = DriverManager.getConnection(url, username, pass);	// Open a connection to the database			
+			// Load the MYSQL driver
+			Class.forName("com.mysql.jdbc.Driver");						
+			
+			// Open a connection to the database
+			connection = DriverManager.getConnection(url, username, pass);
+			
+			// Initialize the statement pool
+			statementPool = new StatementPool();
+			statementPool.Initialize(connection);
+			
+			log.info("New database connection created to: " + url);
 		} catch (Exception e) {
-			log.fatal("DATABASE CONNECTION ERROR");
+			log.fatal(e.getMessage(), e);
 		}		
 	}
 	
@@ -85,53 +55,60 @@ public class Database {
 	 */
 	public synchronized boolean addUser(User u){
 		try{
-			connection.setAutoCommit(false);	// Turn auto commit off (the operations below need to be a single transaction)
+			// Turn auto commit off (the operations below need to be a single transaction)
+			this.beginTransaction();
 			
-			// INSERT INTO USERS TABLE
-			if(psAddUser == null)	// If the statement hasn't been prepared yet, create it...			
-					psAddUser = connection.prepareStatement("INSERT INTO users (username, fname, lname, affiliation, created, email) VALUES (?, ?, ?, ?, SYSDATE(), ?)", Statement.RETURN_GENERATED_KEYS);
-			
-			// Fill in the prepared statement
+			PreparedStatement psAddUser = statementPool.getStatement(StatementPool.ADD_USER);
 			psAddUser.setString(1, u.getUsername());
 			psAddUser.setString(2, u.getFirstName());
 			psAddUser.setString(3, u.getLastName());
 			psAddUser.setString(4, u.getAffiliation());
 			psAddUser.setString(5, u.getEmail());
 			
-			// Execute the statement
-			int rowsAffected = psAddUser.executeUpdate();	// Execute and get the number of rows affected (should be one)
+			// Execute and get the number of rows affected (should be one)
+			int rowsAffected = psAddUser.executeUpdate();
 			ResultSet idSet = psAddUser.getGeneratedKeys(); idSet.next();
-			int insertedID = idSet.getInt(1);				// Get the ID the record was inserted under (used for the next two queries
+			
+			// Get the ID the record was inserted under (used for the next two queries
+			int insertedID = idSet.getInt(1);
 			
 			// INSERT INTO PASSWORD TABLE
-			if(psAddPassword == null)	// If the statement hasn't been prepared yet, create it...
-				psAddPassword = connection.prepareStatement("INSERT INTO passwords (userid, password) VALUES (?, ?)");
+			PreparedStatement psAddPassword = statementPool.getStatement(StatementPool.ADD_PASSWORD);			
 			
 			// Fill in the prepared statement
 			// TODO: Add salt to passwords
 			psAddPassword.setInt(1, insertedID);
 			psAddPassword.setString(2, SHA256.getHash(u.getPassword()));
 			
-			rowsAffected += psAddPassword.executeUpdate();	// Execute and get the rows affected
+			// Execute and get the rows affected
+			rowsAffected += psAddPassword.executeUpdate();
 			
 			// INSERT INTO PERMISSIONS TABLE
-			if(psAddPermissions == null)	// If the statement hasn't been prepared yet, create it...
-				psAddPermissions = connection.prepareStatement("INSERT INTO permissions (userid) VALUES (?)");
+			PreparedStatement psAddPermissions = statementPool.getStatement(StatementPool.ADD_PERMISSION);			
 			
 			// Fill in the prepared statement
 			psAddPermissions.setInt(1, insertedID);
 			
-			rowsAffected += psAddPermissions.executeUpdate();	// Execute and get the rows affected
-			connection.commit();			// Now commit everything to the database
+			// Execute and get the rows affected
+			rowsAffected += psAddPermissions.executeUpdate();
 			
-			return rowsAffected == 3;	// If exactly 3 rows were affected, success!
+			// Now commit everything to the database
+			this.endTransaction();
+						
+			log.info(String.format(
+					"New user created with username [%s], name [%s] and email [%s]", 
+					u.getUsername(), 
+					u.getFullName(), 
+					u.getEmail()));
+			
+			// If exactly 3 rows were affected, success!
+			return rowsAffected == 3;
 		} catch (Exception e){
-			doRollback();
-			log.error("Error in addUser method: " + e.getMessage());
-			log.error(e);
+			this.doRollback();			
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
-			autoCommitOn();
+			this.enableAutoCommit();
 		}
 	}
 	
@@ -142,10 +119,9 @@ public class Database {
 	 */
 	public synchronized User getUser(String username){
 		try {
-			if(psGetUser == null)
-				psGetUser = connection.prepareStatement("SELECT * FROM users JOIN passwords ON users.userid = passwords.userid WHERE users.username='?'");
-			
+			PreparedStatement psGetUser = statementPool.getStatement(StatementPool.GET_USER);			
 			psGetUser.setString(1, username);
+			
 			ResultSet results = psGetUser.executeQuery();
 			
 			if(results.next()){
@@ -157,9 +133,8 @@ public class Database {
 				u.setPassword(results.getString("password"));
 				return u;
 			}					
-		} catch (Exception e){
-			log.error("Error in getUser method: " + e.getMessage());
-			log.error(e);		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
 		}
 		
 		return null;
@@ -172,10 +147,9 @@ public class Database {
 	 */
 	public synchronized User getUser(int userid){
 		try {
-			if(psGetUser2 == null)
-				psGetUser2 = connection.prepareStatement("SELECT * FROM users JOIN passwords WHERE users.userid=?");
-			
+			PreparedStatement psGetUser2 = statementPool.getStatement(StatementPool.GET_USER2);						
 			psGetUser2.setInt(1, userid);
+			
 			ResultSet results = psGetUser2.executeQuery();
 			
 			if(results.next()){
@@ -187,15 +161,21 @@ public class Database {
 				u.setPassword(results.getString("password"));
 				return u;
 			}					
-		} catch (Exception e){
-			log.error("Error in getUser method: " + e.getMessage());
-			log.error(e);		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
 		}
 		
 		return null;
 	}
 	
-	public synchronized boolean addLevelsBenchmarks(Collection<Level> levels, Collection<Benchmark> benchmarks){		
+	/**
+	 * Adds a set of levels and benchmarks belonging to the given levels to the database
+	 * @param levels The level structure to add
+	 * @param benchmarks The benchmark to add
+	 * @return True if the operation was a success, false otherwise
+	 */
+	public synchronized boolean addLevelsBenchmarks(Collection<Level> levels, Collection<Benchmark> benchmarks){
+		// TODO: Fix the synchronization issue (essentially, make this one atomic operation that locks the appropriate tables)
 		int offset = getMaxLevel();
 		boolean retVal = true;
 		retVal = retVal && addLevelStructure(levels, offset);
@@ -203,37 +183,38 @@ public class Database {
 		return retVal;
 	}
 	
+	/**
+	 * Adds a new configuration of a run-script into the database
+	 * @param c The configuration to add
+	 * @return True if the operation was a success, false otherwise
+	 */
 	public synchronized boolean addConfiguration(Configuration c) {
-		try{
-			connection.setAutoCommit(false);
-			
-			PreparedStatement psAddConfig = connection.prepareStatement("INSERT INTO configurations (sid, name, notes) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			
+		try{		
+			PreparedStatement psAddConfig = statementPool.getStatement(StatementPool.ADD_CONFIGURATION);			
 			psAddConfig.setInt(1, c.getSolverId());
 			psAddConfig.setString(2, c.getName());
 			psAddConfig.setString(3, c.getNotes());
 			
-			psAddConfig.executeUpdate();
+			psAddConfig.executeUpdate();	
 			
-			connection.commit();
+			log.info(String.format("New configuration added [%s] to solver [%d]", c.getName(), c.getSolverId()));
 			return true;			
-		} catch (Exception e){
-			doRollback();
-			log.error("Error in addConfiguration method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){						
+			log.error(e.getMessage(), e);
 			return false;
-		} finally {
-			autoCommitOn();
 		}
 	}
 	
+	/**
+	 * Adds a solver to the database
+	 * @param s The solver to add
+	 * @return True if the operation was a success, false otherwise 
+	 */
 	public synchronized boolean addSolver(Solver s){		
 		try{
-			connection.setAutoCommit(false);
+			this.beginTransaction();
 			
-			if(psAddSolver == null)			
-				psAddSolver = connection.prepareStatement("INSERT INTO solvers (uploaded, path, usr, notes, name) VALUES (SYSDATE(), ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-						
+			PreparedStatement psAddSolver = statementPool.getStatement(StatementPool.ADD_SOLVER);									
 			psAddSolver.setString(1, s.getPath());
 			psAddSolver.setInt(2, s.getUserId());
 			psAddSolver.setString(3, s.getNotes());
@@ -243,33 +224,38 @@ public class Database {
 			ResultSet idSet = psAddSolver.getGeneratedKeys(); idSet.next();
 			int insertedID = idSet.getInt(1);
 
-			if(psAddCanSolve == null)
-				psAddCanSolve = connection.prepareStatement("INSERT INTO can_solve VALUES (?, ?)");
+			log.info(String.format(
+					"New solver added by user [%d] with name [%s] and path [%s]",
+					s.getUserId(),
+					s.getName(),
+					s.getPath()));
+			
+			PreparedStatement psAddCanSolve = statementPool.getStatement(StatementPool.ADD_CAN_SOLVE);			
 			
 			for(Level l : s.getSupportedDivs()){
 				psAddCanSolve.setInt(1, insertedID);
 				psAddCanSolve.setInt(2, l.getId());
-				psAddCanSolve.executeUpdate();
+				psAddCanSolve.executeUpdate();				
+				log.info(String.format("New can-solve support for solver [%d] and level [%d]", insertedID, l.getId()));
 			}
 			
-			if(psAddConfiguration == null)
-				psAddConfiguration = connection.prepareStatement("INSERT INTO configurations (sid, name) VALUES (?, ?)");
+			PreparedStatement psAddConfiguration = statementPool.getStatement(StatementPool.ADD_CONFIGURATION2);			
 			
 			for(Configuration c : s.getConfigurations()){
 				psAddConfiguration.setInt(1, insertedID);
 				psAddConfiguration.setString(2, c.getName());
 				psAddConfiguration.executeUpdate();
+				log.info(String.format("New configuration added [%s] to solver [%d]", c.getName(), insertedID));
 			}
-			
-			connection.commit();
+						
+			this.endTransaction();
 			return true;			
 		} catch (Exception e){
-			doRollback();
-			log.error("Error in addSolver method: " + e.getMessage());
-			log.error(e);
+			this.doRollback();			
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
-			autoCommitOn();
+			this.enableAutoCommit();
 		}
 	}	
 	
@@ -280,36 +266,37 @@ public class Database {
 	 * @return True if all benchmarks were added, false if otherwise.
 	 */
 	public synchronized boolean addBenchmarks(Collection<Benchmark> benchmarks, int offSet){
-		try{						
-			if(psAddBenchmark == null)	// If the statement hasn't been prepared yet, create it...			
-					psAddBenchmark = connection.prepareStatement("INSERT INTO benchmarks (uploaded, physical_path, usr, lvl) VALUES (SYSDATE(), ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+		try{		
+			this.beginTransaction();
 						
-			connection.setAutoCommit(false);
+			PreparedStatement psAddBenchmark = statementPool.getStatement(StatementPool.ADD_BENCHMARK);												
 			int rowsAffected = 0;
 			
 			for(Benchmark b : benchmarks){
-				// Fill in the prepared statement
 				psAddBenchmark.setString(1, b.getPath());
 				psAddBenchmark.setInt(2, b.getUserId());
 				psAddBenchmark.setInt(3, b.getLevel() + offSet);
 				
-				// Execute the statement
 				rowsAffected += psAddBenchmark.executeUpdate();
 			}									
 			
 			if(rowsAffected == benchmarks.size()) {
-				connection.commit();
+				this.endTransaction();
+				
+				log.info(String.format("%d benchmarks added starting at level offset [%d]", benchmarks.size(), offSet));						
 				return true;
 			} else {
-				throw new Exception("Benchmarks inserted do not match the benchmarks received.");
+				throw new Exception(String.format(
+						"Benchmarks inserted do not match the benchmarks received. Expected [%d] Actual [%d]",
+						benchmarks.size(),
+						rowsAffected));
 			}
 		} catch (Exception e){
-			doRollback();
-			log.error("Error in addBenchmarks method: " + e.getMessage());
-			log.error(e);
+			this.doRollback();			
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
-			autoCommitOn();
+			this.enableAutoCommit();
 		}
 	}
 	
@@ -323,30 +310,29 @@ public class Database {
 			ArrayList<Benchmark> returnList = new ArrayList<Benchmark>(5);
 			
 			if(idList == null){
-				if(psGetAllBenchmarks == null)
-					psGetAllBenchmarks = connection.prepareStatement("SELECT * FROM benchmarks");
-				
+				PreparedStatement psGetAllBenchmarks = statementPool.getStatement(StatementPool.GET_ALL_BENCHMARKS);								
 				ResultSet results = psGetAllBenchmarks.executeQuery();
+				
 				while(results.next()){
 					Benchmark benchmark = new Benchmark();
 					benchmark.setId(results.getInt("id"));
 					benchmark.setPath(results.getString("physical_path"));
 					benchmark.setUserId(results.getInt("usr"));
-					try{benchmark.setUploaded(results.getTimestamp("uploaded"));}catch(Exception e){}
+					benchmark.setUploaded(results.getTimestamp("uploaded"));
 					returnList.add(benchmark);
 				}
 			} else {		
 				for(int id : idList){
 					Benchmark benchmark = this.getBenchmark(id);
-					if(benchmark != null)
+					if(benchmark != null) {
 						returnList.add(benchmark);
+					}
 				}
 			}		
 			
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in getBenchmarks method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage());
 			return null;
 		}
 	}
@@ -358,15 +344,14 @@ public class Database {
 	 */
 	public synchronized Benchmark getBenchmark(int id){
 		try {
-			if(psGetBenchmarks == null)
-				psGetBenchmarks = connection.prepareStatement("SELECT * FROM benchmarks WHERE id=?");
-						
+			PreparedStatement psGetBenchmarks = statementPool.getStatement(StatementPool.GET_BENCHMARKS);									
 			psGetBenchmarks.setInt(1, id);
 			
 			ResultSet results = psGetBenchmarks.executeQuery();
 			
-			if(!results.next())
+			if(!results.next()) {
 				return null;
+			}
 			
 			Benchmark benchmark = new Benchmark();
 			benchmark.setId(results.getInt("id"));
@@ -375,22 +360,25 @@ public class Database {
 			benchmark.setUploaded(results.getTimestamp("uploaded"));
 			
 			return benchmark;
-		} catch (Exception e){
-			log.error("Error in getBenchmark method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;	
 		}	
 	}
 	
+	/**
+	 * Retrieves all configurations given a collection of ids
+	 * @param idList A list of ids to collect configurations for
+	 * @return A list of corresponding configurations
+	 */
 	public synchronized List<Configuration> getConfigurations(Collection<Integer> idList){
 		try {
 			ArrayList<Configuration> returnList = new ArrayList<Configuration>(5);
 					
 			if(idList == null){
-				if(psGetConfigs == null)
-					psGetConfigs = connection.prepareStatement("SELECT * FROM configurations");
-				
+				PreparedStatement psGetConfigs = statementPool.getStatement(StatementPool.GET_CONFIGURATIONS);								
 				ResultSet results = psGetConfigs.executeQuery();
+				
 				while(results.next()){
 					Configuration config = new Configuration();
 					config.setId(results.getInt("id"));
@@ -402,30 +390,34 @@ public class Database {
 			} else {
 				for(int id : idList){
 					Configuration config = this.getConfiguration(id);
-					if(config != null)
+					if(config != null) {
 						returnList.add(config);
+					}
 				}	
 			}					
 			
 			return returnList;
-		} catch (Exception e) {
-			log.error("Error in getConfigurations method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e) {			
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
 	
+	/**
+	 * Gets a configuration with the given id
+	 * @param id The id of the configuration to retrieve
+	 * @return The corresponding configuration
+	 */
 	public synchronized Configuration getConfiguration(int id){
 		try {
-			if(psGetConfig == null)
-				psGetConfig = connection.prepareStatement("SELECT * FROM configurations WHERE id=?");
-				
+			PreparedStatement psGetConfig = statementPool.getStatement(StatementPool.GET_CONFIGURATION);							
 			psGetConfig.setInt(1, id);
 			
 			ResultSet results = psGetConfig.executeQuery();
 			
-			if(!results.next())
+			if(!results.next()) {
 				return null;
+			}
 			
 			Configuration config = new Configuration();
 			config.setId(results.getInt("id"));
@@ -434,9 +426,8 @@ public class Database {
 			config.setNotes(results.getString("notes"));
 			
 			return config;
-		} catch (Exception e){
-			log.error("Error in getConfiguration method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}			
 	}
@@ -451,10 +442,9 @@ public class Database {
 			ArrayList<Solver> returnList = new ArrayList<Solver>(5);
 					
 			if(idList == null){
-				if(psGetAllSolvers == null)
-					psGetAllSolvers = connection.prepareStatement("SELECT * FROM solvers");
-				
+				PreparedStatement psGetAllSolvers = statementPool.getStatement(StatementPool.GET_ALL_SOLVERS);							
 				ResultSet results = psGetAllSolvers.executeQuery();
+				
 				while(results.next()){
 					Solver solver = new Solver();
 					solver.setId(results.getInt("id"));
@@ -468,15 +458,15 @@ public class Database {
 			} else {
 				for(int id : idList){
 					Solver solver = this.getSolver(id);
-					if(solver != null)
+					if(solver != null) {
 						returnList.add(solver);
+					}
 				}	
 			}					
 			
 			return returnList;
-		} catch (Exception e) {
-			log.error("Error in getSolvers method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e) {			
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
@@ -488,15 +478,14 @@ public class Database {
 	 */
 	public synchronized Solver getSolver(int id){
 		try {
-			if(psGetSolvers == null)
-				psGetSolvers = connection.prepareStatement("SELECT * FROM solvers WHERE id=?");
-						
+			PreparedStatement psGetSolvers = statementPool.getStatement(StatementPool.GET_SOLVERS);			
 			psGetSolvers.setInt(1, id);
 			
 			ResultSet results = psGetSolvers.executeQuery();
 			
-			if(!results.next())
+			if(!results.next()) {
 				return null;
+			}
 			
 			Solver solver = new Solver();
 			solver.setId(results.getInt("id"));
@@ -507,9 +496,8 @@ public class Database {
 			solver.setNotes(results.getString("notes"));
 			
 			return solver;
-		} catch (Exception e){
-			log.error("Error in getSolver method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}			
 	}
@@ -522,10 +510,9 @@ public class Database {
 	 */
 	public synchronized boolean addLevelStructure(Collection<Level> levels, int offSet){
 		try {
-			if(psAddLevel == null)
-				psAddLevel = connection.prepareStatement("INSERT INTO levels (name, lft, rgt, gid, usr, dep) VALUES (?, ?, ?, ?, ?, ?)");
+			this.beginTransaction();
 			
-			connection.setAutoCommit(false);
+			PreparedStatement psAddLevel = statementPool.getStatement(StatementPool.ADD_LEVEL);						
 			int inserted = 0;						
 			int nextGroupId = getNextLevelGroup();
 			
@@ -539,15 +526,21 @@ public class Database {
 				inserted += psAddLevel.executeUpdate();
 			}
 													
-			connection.commit();			
+			this.endTransaction();
+			
+			log.info(String.format(
+				"New level structure added with [%d] levels starting at [%d] with group id [%d]",
+				levels.size(),
+				offSet,
+				nextGroupId));					
+			
 			return levels.size() == inserted;
 		} catch (Exception e){
-			doRollback();
-			log.error("Error in addLevelStructure method: " + e.getMessage());
-			log.error(e);
+			this.doRollback();			
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
-			autoCommitOn();
+			this.enableAutoCommit();
 		}
 	}
 	
@@ -558,11 +551,9 @@ public class Database {
 	 */
 	public synchronized boolean addJob(Job j){
 		try{
-			connection.setAutoCommit(false);
+			this.beginTransaction();
 			
-			if(psAddJob == null)			
-				psAddJob = connection.prepareStatement("INSERT INTO jobs (id, subDate, description, status, node, timeout, usr) VALUES (?, SYSDATE(), ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			
+			PreparedStatement psAddJob = statementPool.getStatement(StatementPool.ADD_JOB);		
 			psAddJob.setInt(1, j.getJobId());
 			psAddJob.setString(2, j.getDescription());
 			psAddJob.setString(3, j.getStatus());
@@ -571,11 +562,8 @@ public class Database {
 			psAddJob.setInt(6, j.getUserId());
 
 			int rowsAffected = psAddJob.executeUpdate();
-			//ResultSet idSet = psAddJob.getGeneratedKeys(); idSet.next();
-			//int insertedID = idSet.getInt(1);
 			
-			if(psAddJobPair == null)
-				psAddJobPair = connection.prepareStatement("INSERT INTO job_pairs (id, jid, cid, bid) VALUES (?, ?, ?, ?)"); //TODO: Remove endTime=Sysdate when CJ gives us the proper end time
+			PreparedStatement psAddJobPair = statementPool.getStatement(StatementPool.ADD_JOB_PAIR);			
 			
 			for(JobPair jp : j.getJobPairs()){ 
 				psAddJobPair.setInt(1, jp.getId());
@@ -585,15 +573,23 @@ public class Database {
 				rowsAffected += psAddJobPair.executeUpdate();
 			}						
 			
-			connection.commit();			
+			this.endTransaction();	
+			
+			log.info(String.format(
+					"New job added with id [%d] by user [%d] on node [%s] with a timeout of [%s seconds] and [%d] job pairs",
+					j.getJobId(),
+					j.getUserId(),
+					j.getNode(),
+					j.getTimeout(),
+					j.getJobPairs().size()));
+			
 			return rowsAffected == j.getJobPairs().size() + 1;
 		} catch (Exception e){
-			doRollback();
-			log.error("Error in addJob method: " + e.getMessage());
-			log.error(e);
+			this.doRollback();			
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
-			autoCommitOn();
+			this.enableAutoCommit();
 		}
 	}
 	
@@ -602,101 +598,127 @@ public class Database {
 	 */
 	public synchronized int getMaxLevel(){
 		try {
-			if(psGetMaxLevel == null)
-				psGetMaxLevel = connection.prepareStatement("SELECT MAX(rgt) FROM levels");
-												
+			PreparedStatement psGetMaxLevel = statementPool.getStatement(StatementPool.GET_MAX_LEVEL);															
 			ResultSet results = psGetMaxLevel.executeQuery();
 			
-			if(!results.next())
-				return 0;					
+			// If there are no levels, the first should start at 0
+			if(!results.next()) {
+				return 0;		
+			}
 			
 			return results.getInt(1);
-		} catch (Exception e){
-			log.error("Error in getMaxLevel method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return 0;
 		}	
 	}
 	
 	/**
-	 * @return The next level to use when inserting into the levels table. (Essentially the largest right-value)
+	 * @return The next group id to use when inserting into the levels table.
 	 */
 	public synchronized int getNextLevelGroup(){
 		try {
-			if(psGetMaxLevelGroup == null)
-				psGetMaxLevelGroup = connection.prepareStatement("SELECT MAX(gid) FROM levels");
-												
+			PreparedStatement psGetMaxLevelGroup = statementPool.getStatement(StatementPool.GET_MAX_LEVEL_GROUP);			
 			ResultSet results = psGetMaxLevelGroup.executeQuery();
 			
-			if(!results.next())
-				return 0;					
+			// If there are no current groups, then the first should be 0
+			if(!results.next()) {
+				return 0;		
+			}
 			
 			return results.getInt(1) + 1;
-		} catch (Exception e){
-			log.error("Error in getNextLevelGroup method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return 0;
 		}	
 	}
 	
+	/**
+	 * Updates the status of a job
+	 * @param jobId The id of the job to update the status for
+	 * @param status The status to set for the job
+	 * @param node Which node the update is coming from (computer-node)
+	 * @return True if the status is successfully set, false otherwise
+	 */
 	public synchronized boolean updateJobStatus(int jobId, String status, String node){
 		try {
-			if(psJobStatusStart == null)
-				psJobStatusStart = connection.prepareStatement("UPDATE jobs SET status=?,node=?,subDate=SYSDATE() WHERE id=?");
-			if(psJobStatusDone == null)
-				psJobStatusDone = connection.prepareStatement("UPDATE jobs SET status=?,node=?,finDate=SYSDATE() WHERE id=?");							
+			PreparedStatement psJobStatusStart = statementPool.getStatement(StatementPool.SET_JOB_STATUS_START);
+			PreparedStatement psJobStatusDone = statementPool.getStatement(StatementPool.SET_JOB_STATUS_DONE);															
 			
 			if(status.equals(R.JOB_STATUS_RUNNING)){
+				// If this status update is for a running job, use the start prepared statement
 				psJobStatusStart.setString(1, status);
 				psJobStatusStart.setString(2, node);
 				psJobStatusStart.setInt(3, jobId);
 				return psJobStatusStart.executeUpdate() == 1;
 			} else if(status.equals(R.JOB_STATUS_DONE) || status.equals(R.JOB_STATUS_ERR)) {
+				// If this status update is for an error or a finishing job, use the done prepared statement
 				psJobStatusDone.setString(1, status);
 				psJobStatusDone.setString(2, node);
 				psJobStatusDone.setInt(3, jobId);
 				return psJobStatusDone.executeUpdate() == 1;
-			} else {
-				return false;
 			}
+
+			log.debug(String.format("Job status updated for job [%d] status [%s] node [%s]", jobId, status, node));
 			
-		} catch (Exception e){
-			log.error("Error in updateJobStatus method: " + e.getMessage());
-			log.error(e);
+			// Return false if we don't recognize the status
+			return false;			
+		} catch (Exception e){			
+			log.error(e.getMessage());
 			return false;
 		}
 	}
 	
+	/**
+	 * Updates a job pair to a given status. Not all fields are required, 
+	 * only the given non-null or non-empty ones are updated in the database
+	 * @param pairId The id of the pair to update
+	 * @param status What the status should be set to
+	 * @param result The result of the job pair (solver outcome)
+	 * @param node Which node the pair ran on (computer-node)
+	 * @param startTime When the job started
+	 * @param endTime When the job ended
+	 * @return True if the operation was a success, false otherwise
+	 */
 	public synchronized boolean updatePairResult(int pairId, String status, String result, String node, Long startTime, Long endTime){
 		try {
-			if(psPairStatus == null)
-				psPairStatus = connection.prepareStatement("SELECT * FROM job_pairs WHERE id=?", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-						
+			// This is a little different, for this method we use the built-in result updating feature
+			// of JDBC to selectively update values that are given
+			
+			PreparedStatement psPairStatus = statementPool.getStatement(StatementPool.SET_PAIR_STATUS);									
 			psPairStatus.setInt(1, pairId);
+			
 			ResultSet results = psPairStatus.executeQuery();
 			results.first();
 			
-			if(!Util.isNullOrEmpty(result))
-				results.updateString("result", result);			
+			if(!Util.isNullOrEmpty(result)) {
+				results.updateString("result", result);
+			}
 			
-			if(!Util.isNullOrEmpty(status)) 
+			if(!Util.isNullOrEmpty(status)) { 
 				results.updateString("status", status);
+			}
 			
-			if(!Util.isNullOrEmpty(node))
+			if(!Util.isNullOrEmpty(node)) {
 				results.updateString("node", node);
+			}
 			
-			if(startTime > 0)
+			if(startTime > 0) {
 				results.updateTimestamp("startTime", new Timestamp(startTime));	// We get seconds since the epoch began, must convert to milliseconds for the constructor
+			}
 			
-			if(endTime > 0)
+			if(endTime > 0) {
 				results.updateTimestamp("endTime", new Timestamp(endTime));
+			}
 			
+			// Perform the update on the current row
 			results.updateRow();
 			
+			log.debug(String.format("Job pair status updated for pair [%d] status [%s] node [%s]", pairId, status, node));
+			
 			return true;			
-		} catch (Exception e){
-			log.error("Error in updatePairResult method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return false;
 		}
 	}
@@ -711,14 +733,10 @@ public class Database {
 			ResultSet results;
 			
 			if(id < 0){
-				if(psGetRootLevels == null)
-					psGetRootLevels = connection.prepareStatement("SELECT * FROM levels WHERE dep=0");
-				
+				PreparedStatement psGetRootLevels = statementPool.getStatement(StatementPool.GET_ROOT_LEVELS);				
 				results = psGetRootLevels.executeQuery();
 			} else {
-				if(psGetSubLevels == null)
-					psGetSubLevels = connection.prepareStatement("SELECT node.* FROM levels AS node, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE node.lft > parent.lft AND node.rgt < parent.rgt AND node.dep=(parent.dep + 1)");
-										
+				PreparedStatement psGetSubLevels = statementPool.getStatement(StatementPool.GET_SUBLEVELS);					
 				psGetSubLevels.setInt(1, id);
 				results = psGetSubLevels.executeQuery();
 			}						
@@ -738,9 +756,8 @@ public class Database {
 			}			
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in getSubLevels method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}	
 	}
@@ -755,15 +772,11 @@ public class Database {
 		try {
 			ResultSet results;
 			
-			if(id < 0){	// Get roots
-				if(psGetRootLevels == null)
-					psGetRootLevels = connection.prepareStatement("SELECT * FROM levels WHERE dep=0");
-				
+			if(id < 0){
+				PreparedStatement psGetRootLevels = statementPool.getStatement(StatementPool.GET_ROOT_LEVELS);				
 				results = psGetRootLevels.executeQuery();
 			} else {
-				if(psGetSubLevels == null)
-					psGetSubLevels = connection.prepareStatement("SELECT node.* FROM levels AS node, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE node.lft > parent.lft AND node.rgt < parent.rgt AND node.dep=(parent.dep + 1)");
-										
+				PreparedStatement psGetSubLevels = statementPool.getStatement(StatementPool.GET_SUBLEVELS);									
 				psGetSubLevels.setInt(1, id);
 				results = psGetSubLevels.executeQuery();
 			}			
@@ -779,9 +792,7 @@ public class Database {
 				l.setUserId(results.getInt("usr"));
 				l.setDescription(results.getString("description"));
 				
-				if(psGetImmediateBench == null)
-					psGetImmediateBench = connection.prepareStatement("SELECT * FROM benchmarks WHERE lvl=?");
-				
+				PreparedStatement psGetImmediateBench= statementPool.getStatement(StatementPool.GET_IMMEDIATE_BENCHMARKS);				
 				psGetImmediateBench.setInt(1, l.getLeft());
 				
 				ResultSet benchResult = psGetImmediateBench.executeQuery();	
@@ -798,9 +809,8 @@ public class Database {
 			}			
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in getSubLevels method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}	
 	}
@@ -811,6 +821,7 @@ public class Database {
 	 */
 	public synchronized List<Integer> levelToBenchmarkIds(int levelId){
 		try {
+			PreparedStatement psLevelToBenchs= statementPool.getStatement(StatementPool.GET_IMMEDIATE_BENCHMARKS);
 			if(psLevelToBenchs == null)
 				psLevelToBenchs = connection.prepareStatement("SELECT bench.id FROM benchmarks AS bench, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE bench.lvl BETWEEN parent.lft AND parent.rgt");
 												
@@ -822,29 +833,27 @@ public class Database {
 				returnList.add(results.getInt("id"));							
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in levelToBenchmarkIds method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage());
 			return null;
 		}	
 	}
 	
 	public synchronized List<Integer> solverToConfigIds(int solverId){
 		try {
-			if(psGetConfigIds == null)
-				psGetConfigIds = connection.prepareStatement("SELECT id FROM configurations WHERE sid=?");
-												
+			PreparedStatement psGetConfigIds= statementPool.getStatement(StatementPool.GET_CONFIGURATION_IDS);															
 			psGetConfigIds.setInt(1, solverId);
+			
 			ResultSet results = psGetConfigIds.executeQuery();
 			ArrayList<Integer> returnList = new ArrayList<Integer>(5);
 			
-			while(results.next())
-				returnList.add(results.getInt("id"));							
+			while(results.next()) {
+				returnList.add(results.getInt("id"));
+			}
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in solverToConfigIds method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}	
 	}
@@ -855,11 +864,10 @@ public class Database {
 	 * @return A list of job pairs under the job
 	 */
 	public synchronized List<JobPair> getJobPairs(int id){
-		try {						
-			if(psGetJobPairs == null)
-				psGetJobPairs = connection.prepareStatement("SELECT jp.id, jp.jid, jp.result, jp.startTime, jp.endTime, jp.node, jp.status, b.id, b.physical_path, s.id, s.name, c.name, c.id, TIMESTAMPDIFF(SECOND, jp.endTime,jp.startTime) AS runtime FROM (((job_pairs AS jp JOIN benchmarks AS b ON bid=b.id) JOIN configurations AS c ON cid = c.id)) JOIN solvers AS s ON sid=s.id WHERE jid=?");
-			
+		try {			
+			PreparedStatement psGetJobPairs= statementPool.getStatement(StatementPool.GET_JOB_PAIRS);						
 			psGetJobPairs.setInt(1, id);
+			
 			ResultSet results = psGetJobPairs.executeQuery();									 
 			List<JobPair> returnList = new ArrayList<JobPair>(10);
 			
@@ -883,16 +891,11 @@ public class Database {
 				
 				b.setId(results.getInt("b.id"));
 				b.setPath(results.getString("b.physical_path"));
-				//b.setLevel(results.getInt(14));
-				//b.setUserId(results.getInt(13));
 				p.setBenchmark(b);
 				
 				s.setId(results.getInt("s.id"));
 				s.setName(results.getString("s.name"));
-				//s.setUploaded(results.getDate(17));
-				//s.setUserId(results.getInt(19));
-				//s.setNotes(results.getString(20));
-				//s.setPath(results.getString(18));								
+				
 				p.setSolver(s);
 				
 				c.setId(results.getInt("c.id"));
@@ -903,9 +906,8 @@ public class Database {
 			}			
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in getJobPairs method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}	
 	}
@@ -915,10 +917,8 @@ public class Database {
 	 * @return A list of jobs in the database
 	 */
 	public synchronized List<Job> getJobs(){
-		try {						
-			if(psGetJobs == null)
-				psGetJobs = connection.prepareStatement("SELECT *, TIMESTAMPDIFF(SECOND, finDate,subDate) AS runtime FROM jobs");
-			
+		try {	
+			PreparedStatement psGetJobs = statementPool.getStatement(StatementPool.GET_JOBS);			
 			ResultSet results = psGetJobs.executeQuery();									 
 			List<Job> returnList = new ArrayList<Job>(10);
 			
@@ -940,18 +940,15 @@ public class Database {
 			}			
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in getJobs method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}	
 	}
 	
 	public synchronized List<Configuration> getConfigurations(int id){
-		try {						
-			if(psGetConfigurations == null)
-				psGetConfigurations = connection.prepareStatement("SELECT * FROM configurations WHERE sid=?");
-			
+		try {		
+			PreparedStatement psGetConfigurations = statementPool.getStatement(StatementPool.GET_CONFIGURATION_SOLVER);			
 			psGetConfigurations.setInt(1, id);
 			ResultSet results = psGetConfigurations.executeQuery();
 			
@@ -969,14 +966,39 @@ public class Database {
 			}			
 						
 			return returnList;
-		} catch (Exception e){
-			log.error("Error in getConfigurations method: " + e.getMessage());
-			log.error(e);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
 			return null;
 		}	
 	}
 	
-	protected synchronized void autoCommitOn(){
+	/**
+	 * Begins a transaction by turning off auto-commit
+	 */
+	protected void beginTransaction(){
+		try {
+			connection.setAutoCommit(false);
+		} catch (Exception e) {
+			// Ignore any errors
+		}
+	}
+	
+	/**
+	 * Ends a transaction by commiting any changes and re-enabling auto-commit
+	 */
+	protected void endTransaction(){
+		try {
+			connection.commit();
+			enableAutoCommit();
+		} catch (Exception e) {
+			this.doRollback();
+		}
+	}
+	
+	/**
+	 * Turns on auto-commit
+	 */
+	protected void enableAutoCommit(){
 		try {
 			connection.setAutoCommit(true);
 		} catch (Exception e) {
@@ -984,7 +1006,10 @@ public class Database {
 		}
 	}
 	
-	protected synchronized void doRollback(){
+	/**
+	 * Rolls back any actions not committed to the database
+	 */
+	protected void doRollback(){
 		try {
 			connection.rollback();
 			log.warn("Database transaction rollback.");

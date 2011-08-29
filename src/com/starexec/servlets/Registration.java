@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.starexec.constants.P;
 import com.starexec.data.Database;
+import com.starexec.data.Databases;
 import com.starexec.data.to.User;
 
 
@@ -36,9 +37,7 @@ public class Registration extends HttpServlet {
 	 * Responds with true or false in plain text indicating if the user was successfully added or not
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Database database = new Database();
-
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		User u = new User(request.getParameter(P.USER_USERNAME));
 		u.setAffiliation(request.getParameter(P.USER_AFILIATION));
 		u.setEmail(request.getParameter(P.USER_EMAIL));
@@ -47,7 +46,7 @@ public class Registration extends HttpServlet {
 		u.setPassword(request.getParameter(P.USER_PASSWORD));
 		
 		response.setContentType("text/plain");
-		response.getWriter().print(database.addUser(u));
+		response.getWriter().print(Databases.next().addUser(u));
 		response.getWriter().close();
 	}
 

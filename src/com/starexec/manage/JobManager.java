@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.*;
 
 import com.starexec.data.Database;
+import com.starexec.data.Databases;
 import com.starexec.data.to.*;
 import com.starexec.constants.R;
 
@@ -112,9 +113,8 @@ public abstract class JobManager {
 	 * @throws Exception
 	 */
 	private static void recordJob() throws Exception {
-		if(jobRecord != null) {
-			Database db = new Database();
-			db.addJob(jobRecord);
+		if(jobRecord != null) {			
+			Databases.next().addJob(jobRecord);
 		} else
 			throw new Exception("Job record is null");
 	}
@@ -131,6 +131,7 @@ public abstract class JobManager {
 		String script = "";
 		
 		try {
+			// TODO: Make this path relative to the project directory
 			reader = new BufferedReader(new FileReader(new File("/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/jobscript")));
 			String line = null;
 			StringBuilder str = new StringBuilder();
