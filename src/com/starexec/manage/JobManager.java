@@ -37,10 +37,7 @@ public abstract class JobManager {
 	private static Jobject curJob; // ........................................ Pointer to current Jobject (temporarily useful) 
 	private static Job jobRecord; // ......................................... Holds record of current job. Built during the buildJob()
 	private static String curJobName; // ..................................... Current name of job. "job_<job id>.bash"
-	private static String curJobPath;
-	private static final String jobinDir = "/home/starexec/jobin"; // ........ Should be the job inbox .
-	private static final String workDir = "/project/tomcat-webapps/webapps";// Working directory on each local node.
-	private static final String jobFileNameFormat = "job_%d.bash";
+	private static String curJobPath;	
 	
 	/**
 	 *  Builds, enqueues, and records the job.
@@ -52,8 +49,8 @@ public abstract class JobManager {
 		// Set up for new job
 		curJob = j;
 		curJID = R.NEXT_JID++;
-		curJobName = String.format(jobFileNameFormat, curJID);
-		curJobPath = String.format("%s/%s", jobinDir, curJobName);
+		curJobName = String.format(R.JOBFILE_FORMAT, curJID);
+		curJobPath = String.format("%s/%s", R.JOB_INBOX_DIR, curJobName);
 		jobRecord = null;
 		
 		try {
@@ -86,7 +83,7 @@ public abstract class JobManager {
 			
 			ses.init("");
 			JobTemplate jt = ses.createJobTemplate();
-			jt.setWorkingDirectory(workDir);
+			jt.setWorkingDirectory(R.NODE_WORKING_DIR);
 			jt.setOutputPath(":/dev/null");
 			jt.setJoinFiles(true);
 			jt.setRemoteCommand(curJobPath);
@@ -131,8 +128,7 @@ public abstract class JobManager {
 		String script = "";
 		
 		try {
-			// TODO: Make this path relative to the project directory
-			reader = new BufferedReader(new FileReader(new File("/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/jobscript")));
+			reader = new BufferedReader(new FileReader(new File(R.CLASS_PATH, "jobscript")));
 			String line = null;
 			StringBuilder str = new StringBuilder();
 			while( (line = reader.readLine()) != null ) {
@@ -204,6 +200,7 @@ public abstract class JobManager {
 		script = script.replace("$$JOBFIN$$", R.JOB_STATUS_DONE);
 		script = script.replace("$$JOBERR$$", R.JOB_STATUS_ERR);
 		script = script.replace("$$JOBPAIRS$$", runPairs);
+		// TODO: Use jobout from R
 		out.write(script);
 		
 		log("Wrote out bash file");

@@ -115,7 +115,7 @@ public class UploadSolver extends HttpServlet {
 	
 	private List<Configuration> findConfigs(String fromPath){		
 		// Get the path to the bin directory
-		File binDir = new File(fromPath, R.BIN_DIR);
+		File binDir = new File(fromPath, R.SOLVER_BIN_DIR);
 
 		// If the bin directory doesn't exist
 		if(!binDir.exists()) {

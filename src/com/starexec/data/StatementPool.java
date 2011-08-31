@@ -3,16 +3,12 @@ package com.starexec.data;
 import java.io.File;
 import java.sql.*;
 import java.util.*;
-
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.jstl.core.Config;
-import javax.ws.rs.core.Application;
 import javax.xml.parsers.*;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 
-import com.sun.xml.internal.bind.CycleRecoverable.Context;
+import com.starexec.constants.R;
 
 
 /**
@@ -35,9 +31,7 @@ public class StatementPool {
 	public void Initialize(Connection connection){
 		try {
 			// Open the statements xml file and parse it into a dom
-			// TODO: Make this path relative to the project directory
-			File statementFile = new File("/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/sqlstatements.xml");
-			
+			File statementFile = new File(R.CLASS_PATH, "sqlstatements.xml");
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			
@@ -79,7 +73,7 @@ public class StatementPool {
 			 
 			log.debug(pool.entrySet().size() + " entries added to the statement pool.");
 		} catch (Exception e) {
-			log.fatal(e.getMessage(), e);
+			log.fatal(e);
 		}
 	}
 	

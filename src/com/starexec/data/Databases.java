@@ -15,7 +15,13 @@ public class Databases {
 	private static final Logger log = Logger.getLogger(Databases.class);
 	private static ConcurrentLinkedQueue<Database> dataPool = null;	
 	
+	public Databases() throws Exception{
+		throw new Exception("Cannot instantiate class because it is static.");
+	}
+	
 	static {
+		log.info("Initializing database connection pool");
+		
 		// Create a new concurrent queue
 		dataPool = new ConcurrentLinkedQueue<Database>();
 		
@@ -30,7 +36,7 @@ public class Databases {
 		// Get the end time to log performance
 		long end = System.currentTimeMillis();
 		
-		log.info(String.format("Database connection pool set up in [%d ms] with [%d] connections.", start - end, dataPool.size()));		
+		log.info(String.format("Database connection pool set up in [%d ms] with [%d] connections.", end - start, dataPool.size()));		
 	}	
 	
 	/**

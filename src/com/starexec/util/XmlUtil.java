@@ -15,7 +15,10 @@ import com.starexec.constants.R;
 
 
 public class XmlUtil {
-
+	// XML metadata for attributes and nodes
+	private static String BXML_DIR_NAME = "dir";
+	private static String BXML_BENCH_NAME = "bench";
+	private static String BXML_NAME_ATTR = "name";
 	
 	/**
 	 * Takes in a file path which corresponds to the root directory
@@ -90,10 +93,10 @@ public class XmlUtil {
 	 * @param xml The xml builder to use which initially consists of the xml root
 	 */
 	private static void convertDirectory(File dir, XMLBuilder xml){		
-		xml = xml.e(R.BXML_DIR_NAME).a(R.BXML_NAME_ATTR, dir.getName());			// Create the element for the current directory
+		xml = xml.e(XmlUtil.BXML_DIR_NAME).a(XmlUtil.BXML_NAME_ATTR, dir.getName());		// Create the element for the current directory
 		
-		for(File file : dir.listFiles(fileFilter)){					// For each benchmark in the directory...
-			xml.e(R.BXML_BENCH_NAME).a(R.BXML_NAME_ATTR, file.getName());		// Create a new element for each benchmark and assign its name attribute to the file name
+		for(File file : dir.listFiles(fileFilter)){								// For each benchmark in the directory...
+			xml.e(XmlUtil.BXML_BENCH_NAME).a(XmlUtil.BXML_NAME_ATTR, file.getName());		// Create a new element for each benchmark and assign its name attribute to the file name
 		}
 		
 		for(File directory : dir.listFiles(dirFilter)){				// For each subdirectory in the directory...
