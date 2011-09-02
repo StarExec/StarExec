@@ -1,12 +1,59 @@
 package com.starexec.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.jboss.resteasy.spi.HttpRequest;
-
 public class Util {
+	private static final char[] symbols = new char[36];
+	private static Random rand = new Random();
+
+	static {
+		  for (int i = 0; i < 26; ++i) {
+		    if(i < 10) { symbols[i] = (char) ('0' + i); }
+		    symbols[i+10] = (char) ('a' + i);
+		  }
+		}
+	
+	public static String generateConfCode(int len) {
+		String s = "";
+		
+		for(int i = 0; i < len; i++) {
+			s += symbols[rand.nextInt(symbols.length)];
+		}
+		
+		return s;
+	}
+	
+	/**
+	 * Be careful not to read in a file that takes up too much memory.
+	 * @param f File to insert
+	 * @return The string representation of the file
+	 * @throws IOException
+	 */
+	public static String readFile(File f) throws IOException {
+		BufferedReader reader = null;
+		String ls = getLineSeparator();
+		
+		try {
+			reader = new BufferedReader(new FileReader(f));
+			String line = null;
+			StringBuilder str = new StringBuilder();
+			while( (line = reader.readLine()) != null ) {
+				str.append(line + ls);
+			}
+			reader.close();
+			return str.toString();
+		} catch(IOException e) {
+			if(reader != null) reader.close();
+			throw e;
+		}
+	}
+	
 	/**
 	 * Extracts the file extesion from a file path
 	 * @param s The file path

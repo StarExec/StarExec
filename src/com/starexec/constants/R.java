@@ -25,9 +25,12 @@ public class R {
 	}
 	
 	// Emails
+	public static String EMAIL_SMTP = "smtp.gmail.com";
+	public static String EMAIL_USER = "clifton.palmer@gmail.com";
+	public static String EMAIL_PWD = "palmerperson";
 	public static String EMAIL_PARTICLE = "@starexec.org";
-	public static String EMAIL_NOREPLY = "noreply";
-	public static String EMAIL_ADMIN = "admin";
+	public static String EMAIL_NOREPLY = "noreply" + EMAIL_PARTICLE;
+	public static String EMAIL_ADMIN = "admin" + EMAIL_PARTICLE;
 	
 	
 	// MySQL properties

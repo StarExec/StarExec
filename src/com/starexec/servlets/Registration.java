@@ -1,5 +1,6 @@
 package com.starexec.servlets;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -10,9 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.starexec.constants.P;
+import com.starexec.constants.R;
 import com.starexec.data.Database;
 import com.starexec.data.Databases;
 import com.starexec.data.to.User;
+import com.starexec.util.Util;
 
 
 
@@ -45,9 +48,23 @@ public class Registration extends HttpServlet {
 		u.setLastName(request.getParameter(P.USER_LASTNAME));
 		u.setPassword(request.getParameter(P.USER_PASSWORD));
 		
+		boolean added = Databases.next().addUser(u);
+		
 		response.setContentType("text/plain");
-		response.getWriter().print(Databases.next().addUser(u));
+		response.getWriter().print(added);
 		response.getWriter().close();
+		
+		// If the user has been added, send a verification email.
+		if(added) {
+			String email = Util.readFile(new File(R.CLASS_PATH, "verification_email"));
+			String conf = Util.generateConfCode(64);
+			email = email.replace("$$USER$$", u.getUsername());
+			email = email.replace("$$LINK$$", 
+					String.format("http://starexec.cs.uiowa.edu/starexec/Verify?%s=%s", P.VERIFY_EMAIL, conf));
+			log.info("Sent verification email to user " + u.getUsername() + " at " + u.getEmail());
+		} else {
+			log.info("Unable to add user " + u.getEmail());
+		}
 	}
 
 }

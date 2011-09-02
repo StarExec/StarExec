@@ -5,9 +5,9 @@ import java.io.*;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.*;
 
-import com.starexec.data.Database;
 import com.starexec.data.Databases;
 import com.starexec.data.to.*;
+import com.starexec.util.Util;
 import com.starexec.constants.R;
 
 /**
@@ -115,23 +115,8 @@ public abstract class JobManager {
 	 * 
 	 */
 	private static void buildJob() throws IOException {
-		// Reads in the bash script and inserts variables
-		BufferedReader reader = null;
-		String ls = System.getProperty("line.separator");
-		String script = "";
-		
-		try {
-			reader = new BufferedReader(new FileReader(new File(R.CLASS_PATH, "jobscript")));
-			String line = null;
-			StringBuilder str = new StringBuilder();
-			while( (line = reader.readLine()) != null ) {
-				str.append(line + ls);
-			}
-			script = str.toString();
-		} catch(IOException e) {
-			if(reader != null) reader.close();
-			throw e;
-		}
+		// Reads in the bash script
+		String script = Util.readFile(new File(R.CLASS_PATH, "jobscript"));
 		
 		
 		// Opens a file on the shared space and writes the empty job script to it.
@@ -158,6 +143,7 @@ public abstract class JobManager {
 		
 		
 		// Gets all the runpairs
+		String ls = Util.getLineSeparator();
 		String runPairs = "";
 		BenchmarkLink lnk;
 		Configuration c;
