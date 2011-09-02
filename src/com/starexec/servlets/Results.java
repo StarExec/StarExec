@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.starexec.constants.P;
-import com.starexec.data.Database;
 import com.starexec.data.Databases;
 import com.starexec.util.Util;
 

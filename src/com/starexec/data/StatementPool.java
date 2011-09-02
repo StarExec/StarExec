@@ -131,6 +131,9 @@ public class StatementPool {
 	public static final String SET_JOB_STATUS_DONE = "setjobstatdone";
 	public static final String SET_PAIR_STATUS = "setpairstat";
 	
+	// Misc keys
+	public static final String VERIFY_EMAIL = "verifycode";
+	
 	// Private xml tags and attributes for parsing statements
 	private static final String STATEMENT_NODE = "Statement";
 	private static final String STATEMENT_KEY = "key";

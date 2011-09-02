@@ -13,6 +13,8 @@ public class P {
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
 	
+	public static String VERIFY_EMAIL = "conf";
+	
 	public static String UPLOAD_FILE = "f";
 	
 	public static String BENCH_XML = "bxml";

@@ -24,6 +24,11 @@ public class R {
 		throw new Exception("Cannot instantiate class because it is static.");
 	}
 	
+	// Emails
+	public static String EMAIL_PARTICLE = "@starexec.org";
+	public static String EMAIL_NOREPLY = "noreply";
+	public static String EMAIL_ADMIN = "admin";
+	
 	
 	// MySQL properties
 	// TODO: Crate a new MySQL account with limited privleges

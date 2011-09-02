@@ -33,6 +33,9 @@
    <Statement key="addconfig2">        
 		<![CDATA[INSERT INTO configurations (sid, name) VALUES (?, ?)]]>
    </Statement>  
+   <Statement key="verifycode" row_return="true">        
+		<![CDATA[UPDATE users SET verified=1 WHERE userid=(SELECT userid FROM verify WHERE code='?')]]>
+   </Statement>  
    <Statement key="getusr">
         <![CDATA[SELECT * FROM users JOIN passwords ON users.userid = passwords.userid WHERE users.username='?']]>
    </Statement>  

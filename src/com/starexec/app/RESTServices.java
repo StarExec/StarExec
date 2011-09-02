@@ -1,21 +1,10 @@
 package com.starexec.app;
-import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
-
 import javax.ws.rs.*;
 
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
-import com.starexec.data.Database;
 import com.starexec.data.Databases;
-import com.starexec.data.to.Benchmark;
-import com.starexec.data.to.Configuration;
-import com.starexec.data.to.Job;
-import com.starexec.data.to.JobPair;
-import com.starexec.data.to.Level;
-import com.starexec.data.to.Solver;
 
 
 @Path("")

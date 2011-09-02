@@ -89,13 +89,6 @@ public abstract class JobManager {
 			jt.setRemoteCommand(curJobPath);
 						
 			ses.runJob(jt);
-			/*
-			String sge_id = ses.runJob(jt);	
-			// This keeps a tab on the running job ... also brings the JM to a halt! Testing ONLY.
-			JobInfo info = ses.wait(sge_id, Session.TIMEOUT_WAIT_FOREVER);
-			if(info.wasAborted())
-				throw new Exception(String.format("Job %d was aborted (SGE ID %d)\n", curJID, sge_id));
-			*/
 		} catch(Exception e) {
 			throw e;
 		} finally {
@@ -140,7 +133,6 @@ public abstract class JobManager {
 			throw e;
 		}
 		
-		log("Read in scriptfile");
 		
 		// Opens a file on the shared space and writes the empty job script to it.
 		String filePath = curJobPath;
@@ -152,8 +144,7 @@ public abstract class JobManager {
 		if(!f.setExecutable(true))
 			throw new IOException("Can't change owner's executable permissions on file " + curJobPath);
 		FileWriter out = new FileWriter(f);
-		
-		log("Opened empty jobscript file");
+				
 		
 		// Creates a new job TO object
 		jobRecord = new Job();
@@ -164,6 +155,7 @@ public abstract class JobManager {
 		jobRecord.setNode(null);
 		jobRecord.setStatus(R.JOB_STATUS_ENQUEUED);
 		jobRecord.setTimeout(Long.MAX_VALUE); // Might have to be user-set. 
+		
 		
 		// Gets all the runpairs
 		String runPairs = "";
@@ -192,7 +184,6 @@ public abstract class JobManager {
 			}
 		}
 		
-		log("Built all runpairs: " + runPairs);
 		
 		// Writes out the bash file
 		script = script.replace("$$JID$$", "" + curJID);
@@ -203,7 +194,6 @@ public abstract class JobManager {
 		// TODO: Use jobout from R
 		out.write(script);
 		
-		log("Wrote out bash file");
 		
 		out.close();
 	}

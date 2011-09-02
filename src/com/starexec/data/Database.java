@@ -112,6 +112,24 @@ public class Database {
 		}
 	}
 	
+	public synchronized boolean verifyCode(String conf) {
+		try {
+			PreparedStatement psVerifyCode = statementPool.getStatement(StatementPool.VERIFY_EMAIL);
+			psVerifyCode.setString(1, conf);
+			
+			if(psVerifyCode.executeUpdate() > 0) {
+				log.info("Verified code " + conf);
+				return true;
+			} else {
+				log.info("Code " + conf + " is not recognized.");
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Retrieves a user from the database given the username
 	 * @param username The username of the user to retrieve
