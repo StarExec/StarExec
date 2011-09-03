@@ -12,9 +12,9 @@ import org.apache.log4j.Logger;
 
 import com.starexec.constants.P;
 import com.starexec.constants.R;
-import com.starexec.data.Database;
 import com.starexec.data.Databases;
 import com.starexec.data.to.User;
+import com.starexec.util.Mail;
 import com.starexec.util.Util;
 
 
@@ -56,11 +56,13 @@ public class Registration extends HttpServlet {
 		
 		// If the user has been added, send a verification email.
 		if(added) {
+			String conf = Util.generateConfCode(32);
+			Databases.next().addCode(u.getEmail(), conf);
 			String email = Util.readFile(new File(R.CLASS_PATH, "verification_email"));
-			String conf = Util.generateConfCode(64);
 			email = email.replace("$$USER$$", u.getUsername());
 			email = email.replace("$$LINK$$", 
 					String.format("http://starexec.cs.uiowa.edu/starexec/Verify?%s=%s", P.VERIFY_EMAIL, conf));
+			Mail.mail(email, "Verify your Starexec Account", "STAREXEC", new String[] { u.getEmail() });
 			log.info("Sent verification email to user " + u.getUsername() + " at " + u.getEmail());
 		} else {
 			log.info("Unable to add user " + u.getEmail());

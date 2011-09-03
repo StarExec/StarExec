@@ -112,9 +112,28 @@ public class Database {
 		}
 	}
 	
+	public synchronized boolean addCode(String email, String conf) {
+		try {
+			PreparedStatement psAddCode = statementPool.getStatement(StatementPool.ADD_CONF_CODE);
+			psAddCode.setString(1, email);
+			psAddCode.setString(2, conf);
+			
+			if(psAddCode.executeUpdate() > 0) {
+				log.info("Added code " + conf + " for user " + email);
+				return true;
+			} else {
+				log.info("Could not add conf code.");
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		}
+		
+		return false;
+	}
+	
 	public synchronized boolean verifyCode(String conf) {
 		try {
-			PreparedStatement psVerifyCode = statementPool.getStatement(StatementPool.VERIFY_EMAIL);
+			PreparedStatement psVerifyCode = statementPool.getStatement(StatementPool.VERIFY_CONF_CODE);
 			psVerifyCode.setString(1, conf);
 			
 			if(psVerifyCode.executeUpdate() > 0) {

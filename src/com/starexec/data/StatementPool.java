@@ -132,7 +132,8 @@ public class StatementPool {
 	public static final String SET_PAIR_STATUS = "setpairstat";
 	
 	// Misc keys
-	public static final String VERIFY_EMAIL = "verifycode";
+	public static final String ADD_CONF_CODE = "addcode";
+	public static final String VERIFY_CONF_CODE = "verifycode";
 	
 	// Private xml tags and attributes for parsing statements
 	private static final String STATEMENT_NODE = "Statement";

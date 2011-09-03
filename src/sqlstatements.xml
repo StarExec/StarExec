@@ -33,6 +33,9 @@
    <Statement key="addconfig2">        
 		<![CDATA[INSERT INTO configurations (sid, name) VALUES (?, ?)]]>
    </Statement>  
+   <Statement key="addcode">        
+		<![CDATA[INSERT INTO verify (email, code) VALUES ('?', '?')]]>
+   </Statement> 
    <Statement key="verifycode" row_return="true">        
 		<![CDATA[UPDATE users SET verified=1 WHERE userid=(SELECT userid FROM verify WHERE code='?')]]>
    </Statement>  
