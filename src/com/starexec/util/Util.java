@@ -4,31 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class Util {
-	private static final char[] symbols = new char[36];
-	private static Random rand = new Random();
-
-	static {
-		  for (int i = 0; i < 26; ++i) {
-		    if(i < 10) { symbols[i] = (char) ('0' + i); }
-		    symbols[i+10] = (char) ('a' + i);
-		  }
-		}
-	
-	public static String generateConfCode(int len) {
-		String s = "";
-		
-		for(int i = 0; i < len; i++) {
-			s += symbols[rand.nextInt(symbols.length)];
-		}
-		
-		return s;
-	}
-	
+public class Util {		
 	/**
 	 * Be careful not to read in a file that takes up too much memory.
 	 * @param f File to insert

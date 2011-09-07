@@ -1,8 +1,14 @@
 package com.starexec.data;
 
+import java.security.MessageDigest;
 import java.sql.*;
 import java.util.*;
+
+import org.apache.catalina.util.MD5Encoder;
 import org.apache.log4j.Logger;
+
+import sun.security.provider.MD5;
+
 import com.starexec.constants.*;
 import com.starexec.data.to.*;
 import com.starexec.util.*;
@@ -42,73 +48,40 @@ public class Database {
 			statementPool = new StatementPool();
 			statementPool.Initialize(connection);
 			
-			log.info("New database connection created to: " + url);
+			log.debug("New database connection created to: " + url);
 		} catch (Exception e) {
 			log.fatal(e.getMessage(), e);
 		}		
 	}
 	
 	/**
-	 * Adds the specified user to the database. Defaults to an unverified user and does not handle user verification.
+	 * Adds the specified user to the database as pending for a community leader to accept them. 
+	 * This method will hash the user's password for them, so it must be supplied in plaintext.
 	 * @param u The user to add
 	 * @return True if the user was successfully added, false if otherwise
 	 */
 	public synchronized boolean addUser(User u){
 		try{
-			// Turn auto commit off (the operations below need to be a single transaction)
-			this.beginTransaction();
+			// Encoders used to hash passwords for storage
+			MD5Encoder md5Hexer = new MD5Encoder();
+			MessageDigest md5Hasher = MessageDigest.getInstance("MD5");
+			md5Hasher.update(u.getPassword().getBytes());
 			
 			PreparedStatement psAddUser = statementPool.getStatement(StatementPool.ADD_USER);
-			psAddUser.setString(1, u.getUsername());
-			psAddUser.setString(2, u.getFirstName());
-			psAddUser.setString(3, u.getLastName());
-			psAddUser.setString(4, u.getAffiliation());
-			psAddUser.setString(5, u.getEmail());
-			
-			// Execute and get the number of rows affected (should be one)
-			int rowsAffected = psAddUser.executeUpdate();
-			ResultSet idSet = psAddUser.getGeneratedKeys(); idSet.next();
-			
-			// Get the ID the record was inserted under (used for the next two queries
-			int insertedID = idSet.getInt(1);
-			
-			// INSERT INTO PASSWORD TABLE
-			PreparedStatement psAddPassword = statementPool.getStatement(StatementPool.ADD_PASSWORD);			
-			
-			// Fill in the prepared statement
-			// TODO: Add salt to passwords
-			psAddPassword.setInt(1, insertedID);
-			psAddPassword.setString(2, SHA256.getHash(u.getPassword()));
-			
-			// Execute and get the rows affected
-			rowsAffected += psAddPassword.executeUpdate();
-			
-			// INSERT INTO PERMISSIONS TABLE
-			PreparedStatement psAddPermissions = statementPool.getStatement(StatementPool.ADD_PERMISSION);			
-			
-			// Fill in the prepared statement
-			psAddPermissions.setInt(1, insertedID);
-			
-			// Execute and get the rows affected
-			rowsAffected += psAddPermissions.executeUpdate();
-			
-			// Now commit everything to the database
-			this.endTransaction();
+			psAddUser.setString(1, u.getFirstName());
+			psAddUser.setString(2, u.getLastName());
+			psAddUser.setString(3, u.getAffiliation());
+			psAddUser.setString(4, u.getEmail());			
+			// Hash the password before storing!
+			psAddUser.setString(5, md5Hexer.encode(md5Hasher.digest()));
+			//psAddUser.setInt(6, u.getCommunityId());
 						
-			log.info(String.format(
-					"New user created with username [%s], name [%s] and email [%s]", 
-					u.getUsername(), 
-					u.getFullName(), 
-					u.getEmail()));
-			
-			// If exactly 3 rows were affected, success!
-			return rowsAffected == 3;
-		} catch (Exception e){
-			this.doRollback();			
+			psAddUser.executeUpdate();										
+			log.info(String.format("New user created with name [%s] and email [%s]", u.getFullName(), u.getEmail()));
+			return true;
+		} catch (Exception e){					
 			log.error(e.getMessage(), e);
 			return false;
-		} finally {
-			this.enableAutoCommit();
 		}
 	}
 	
@@ -150,24 +123,23 @@ public class Database {
 	}
 	
 	/**
-	 * Retrieves a user from the database given the username
-	 * @param username The username of the user to retrieve
+	 * Retrieves a user from the database given the email address
+	 * @param email The email of the user to retrieve
 	 * @return The user object associated with the user
 	 */
-	public synchronized User getUser(String username){
+	public synchronized User getUser(String email){
 		try {
 			PreparedStatement psGetUser = statementPool.getStatement(StatementPool.GET_USER);			
-			psGetUser.setString(1, username);
+			psGetUser.setString(1, email);
 			
 			ResultSet results = psGetUser.executeQuery();
 			
 			if(results.next()){
-				User u = new User(results.getInt("userid"), results.getString("username"));
+				User u = new User(results.getInt("userid"));
 				u.setAffiliation(results.getString("affiliation"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("fname"));
 				u.setLastName(results.getString("lname"));
-				u.setPassword(results.getString("password"));
 				return u;
 			}					
 		} catch (Exception e){			
@@ -190,12 +162,11 @@ public class Database {
 			ResultSet results = psGetUser2.executeQuery();
 			
 			if(results.next()){
-				User u = new User(results.getInt("userid"), results.getString("username"));
+				User u = new User(results.getInt("userid"));
 				u.setAffiliation(results.getString("affiliation"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("fname"));
-				u.setLastName(results.getString("lname"));
-				u.setPassword(results.getString("password"));
+				u.setLastName(results.getString("lname"));				
 				return u;
 			}					
 		} catch (Exception e){			
@@ -256,6 +227,7 @@ public class Database {
 			psAddSolver.setInt(2, s.getUserId());
 			psAddSolver.setString(3, s.getNotes());
 			psAddSolver.setString(4, s.getName());
+			psAddSolver.setInt(5, s.getCommunityId());
 			
 			psAddSolver.executeUpdate();
 			ResultSet idSet = psAddSolver.getGeneratedKeys(); idSet.next();
@@ -313,6 +285,7 @@ public class Database {
 				psAddBenchmark.setString(1, b.getPath());
 				psAddBenchmark.setInt(2, b.getUserId());
 				psAddBenchmark.setInt(3, b.getLevel() + offSet);
+				psAddBenchmark.setInt(4, b.getCommunityId());
 				
 				rowsAffected += psAddBenchmark.executeUpdate();
 			}									
@@ -346,30 +319,44 @@ public class Database {
 		try {
 			ArrayList<Benchmark> returnList = new ArrayList<Benchmark>(5);
 			
-			if(idList == null){
-				PreparedStatement psGetAllBenchmarks = statementPool.getStatement(StatementPool.GET_ALL_BENCHMARKS);								
-				ResultSet results = psGetAllBenchmarks.executeQuery();
-				
-				while(results.next()){
-					Benchmark benchmark = new Benchmark();
-					benchmark.setId(results.getInt("id"));
-					benchmark.setPath(results.getString("physical_path"));
-					benchmark.setUserId(results.getInt("usr"));
-					benchmark.setUploaded(results.getTimestamp("uploaded"));
+			for(int id : idList){
+				Benchmark benchmark = this.getBenchmark(id);
+				if(benchmark != null) {
 					returnList.add(benchmark);
 				}
-			} else {		
-				for(int id : idList){
-					Benchmark benchmark = this.getBenchmark(id);
-					if(benchmark != null) {
-						returnList.add(benchmark);
-					}
-				}
+			}
+			
+			return returnList;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			return null;
+		}
+	}
+	
+	/**
+	 * @param communityId The community to retrieve all benchmarks for
+	 * @return A list of all benchmarks belonging to a community
+	 */
+	public synchronized List<Benchmark> getAllBenchmarks(int communityId){
+		try {
+			ArrayList<Benchmark> returnList = new ArrayList<Benchmark>(5);			
+			PreparedStatement psGetAllBenchmarks = statementPool.getStatement(StatementPool.GET_ALL_BENCHMARKS);	
+			psGetAllBenchmarks.setInt(1, communityId);
+			ResultSet results = psGetAllBenchmarks.executeQuery();
+			
+			while(results.next()){
+				Benchmark benchmark = new Benchmark();
+				benchmark.setId(results.getInt("id"));
+				benchmark.setPath(results.getString("physical_path"));
+				benchmark.setUserId(results.getInt("usr"));
+				benchmark.setUploaded(results.getTimestamp("uploaded"));
+				benchmark.setCommunityId(results.getInt("comid"));
+				returnList.add(benchmark);
 			}		
 			
 			return returnList;
 		} catch (Exception e){			
-			log.error(e.getMessage());
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
@@ -395,12 +382,36 @@ public class Database {
 			benchmark.setPath(results.getString("physical_path"));
 			benchmark.setUserId(results.getInt("usr"));
 			benchmark.setUploaded(results.getTimestamp("uploaded"));
+			benchmark.setCommunityId(results.getInt("comid"));
 			
 			return benchmark;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 			return null;	
 		}	
+	}
+	
+	/**
+	 * @return A list of all communities in the database
+	 */
+	public synchronized List<Community> getAllCommunities(){
+		try {
+			ArrayList<Community> returnList = new ArrayList<Community>();					
+			PreparedStatement psGetAllCommunities = statementPool.getStatement(StatementPool.GET_ALL_COMMUNITIES);								
+			ResultSet results = psGetAllCommunities.executeQuery();
+			
+			while(results.next()){
+				Community community = new Community();
+				community.setId(results.getInt("comid"));
+				community.setName(results.getString("name"));					
+				returnList.add(community);
+			}					
+			
+			return returnList;
+		} catch (Exception e){			
+			log.error(e.getMessage());
+			return null;
+		}
 	}
 	
 	/**
@@ -471,34 +482,18 @@ public class Database {
 	
 	/**
 	 * Gets a list of solvers given a list of solver id's
-	 * @param idList The list of id's of the solvers to retrieve. Null gets all solvers
+	 * @param idList The list of id's of the solvers to retrieve.
 	 * @return An arraylist of solvers that correspond to the input id's (ordering is preserved)
 	 */
 	public synchronized List<Solver> getSolvers(Collection<Integer> idList){
 		try {
 			ArrayList<Solver> returnList = new ArrayList<Solver>(5);
 					
-			if(idList == null){
-				PreparedStatement psGetAllSolvers = statementPool.getStatement(StatementPool.GET_ALL_SOLVERS);							
-				ResultSet results = psGetAllSolvers.executeQuery();
-				
-				while(results.next()){
-					Solver solver = new Solver();
-					solver.setId(results.getInt("id"));
-					solver.setPath(results.getString("path"));
-					solver.setName(results.getString("name"));
-					solver.setUserId(results.getInt("usr"));
-					solver.setUploaded(results.getDate("uploaded"));
-					solver.setNotes(results.getString("notes"));
+			for(int id : idList){
+				Solver solver = this.getSolver(id);
+				if(solver != null) {
 					returnList.add(solver);
 				}
-			} else {
-				for(int id : idList){
-					Solver solver = this.getSolver(id);
-					if(solver != null) {
-						returnList.add(solver);
-					}
-				}	
 			}					
 			
 			return returnList;
@@ -506,6 +501,38 @@ public class Database {
 			log.error(e.getMessage(), e);
 			return null;
 		}
+	}
+	
+	/**
+	 * Gets all solvers for a given community
+	 * @param id The id of the community
+	 * @return All solvers belonging to the community
+	 */
+	public synchronized List<Solver> getAllSolvers(int communityId){
+		try {
+			ArrayList<Solver> returnList = new ArrayList<Solver>(5);
+
+			PreparedStatement psGetAllSolvers = statementPool.getStatement(StatementPool.GET_ALL_SOLVERS);		
+			psGetAllSolvers.setInt(1, communityId);
+			ResultSet results = psGetAllSolvers.executeQuery();
+			
+			while(results.next()){
+				Solver solver = new Solver();
+				solver.setId(results.getInt("id"));
+				solver.setPath(results.getString("path"));
+				solver.setName(results.getString("name"));
+				solver.setUserId(results.getInt("usr"));
+				solver.setUploaded(results.getDate("uploaded"));
+				solver.setNotes(results.getString("notes"));
+				solver.setCommunityId(results.getInt("comid"));
+				returnList.add(solver);
+			}				
+			
+			return returnList;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			return null;
+		}			
 	}
 	
 	/**
@@ -531,6 +558,7 @@ public class Database {
 			solver.setUserId(results.getInt("usr"));
 			solver.setUploaded(results.getDate("uploaded"));
 			solver.setNotes(results.getString("notes"));
+			solver.setCommunityId(results.getInt("com"));
 			
 			return solver;
 		} catch (Exception e){			
@@ -560,6 +588,7 @@ public class Database {
 				psAddLevel.setInt(4, nextGroupId);
 				psAddLevel.setInt(5, l.getUserId());
 				psAddLevel.setInt(6, l.getDepth());
+				psAddLevel.setInt(7, l.getCommunityId());
 				inserted += psAddLevel.executeUpdate();
 			}
 													
@@ -597,6 +626,7 @@ public class Database {
 			psAddJob.setString(4, j.getNode());
 			psAddJob.setLong(5, j.getTimeout());
 			psAddJob.setInt(6, j.getUserId());
+			psAddJob.setInt(7, j.getCommunityId());
 
 			int rowsAffected = psAddJob.executeUpdate();
 			
@@ -767,17 +797,10 @@ public class Database {
 	 */
 	public synchronized List<Level> getSubLevels(int id){
 		try {
-			ResultSet results;
-			
-			if(id < 0){
-				PreparedStatement psGetRootLevels = statementPool.getStatement(StatementPool.GET_ROOT_LEVELS);				
-				results = psGetRootLevels.executeQuery();
-			} else {
-				PreparedStatement psGetSubLevels = statementPool.getStatement(StatementPool.GET_SUBLEVELS);					
-				psGetSubLevels.setInt(1, id);
-				results = psGetSubLevels.executeQuery();
-			}						
-						 
+			PreparedStatement psGetSubLevels = statementPool.getStatement(StatementPool.GET_SUBLEVELS);					
+			psGetSubLevels.setInt(1, id);
+			ResultSet results = psGetSubLevels.executeQuery();
+		 
 			ArrayList<Level> returnList = new ArrayList<Level>(10);
 			
 			while(results.next()){
@@ -788,6 +811,7 @@ public class Database {
 				l.setName(results.getString("name"));
 				l.setUserId(results.getInt("usr"));
 				l.setDescription(results.getString("description"));
+				l.setCommunityId(results.getInt("comid"));
 				
 				returnList.add(l);
 			}			
@@ -806,17 +830,10 @@ public class Database {
 	 * @return A list of children directories of the parent
 	 */
 	public synchronized List<Level> getSubLevelsWithBench(int id){
-		try {
-			ResultSet results;
-			
-			if(id < 0){
-				PreparedStatement psGetRootLevels = statementPool.getStatement(StatementPool.GET_ROOT_LEVELS);				
-				results = psGetRootLevels.executeQuery();
-			} else {
-				PreparedStatement psGetSubLevels = statementPool.getStatement(StatementPool.GET_SUBLEVELS);									
-				psGetSubLevels.setInt(1, id);
-				results = psGetSubLevels.executeQuery();
-			}			
+		try {			
+			PreparedStatement psGetSubLevels = statementPool.getStatement(StatementPool.GET_SUBLEVELS);									
+			psGetSubLevels.setInt(1, id);
+			ResultSet results = psGetSubLevels.executeQuery();		
 						
 			ArrayList<Level> returnList = new ArrayList<Level>(10);
 			
@@ -828,6 +845,7 @@ public class Database {
 				l.setName(results.getString("name"));
 				l.setUserId(results.getInt("usr"));
 				l.setDescription(results.getString("description"));
+				l.setCommunityId(results.getInt("comid"));
 				
 				PreparedStatement psGetImmediateBench= statementPool.getStatement(StatementPool.GET_IMMEDIATE_BENCHMARKS);				
 				psGetImmediateBench.setInt(1, l.getLeft());
@@ -839,6 +857,54 @@ public class Database {
 					benchmark.setUserId(benchResult.getInt("usr"));
 					benchmark.setUploaded(benchResult.getTimestamp("uploaded"));
 					benchmark.setPath(benchResult.getString("physical_path"));	// TODO: Eventually we want to hide this
+					benchmark.setCommunityId(benchResult.getInt("comid"));
+					l.getBenchmarks().add(benchmark);
+				}
+				
+				returnList.add(l);
+			}			
+						
+			return returnList;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			return null;
+		}	
+	}
+	
+	/**
+	 * Gets all root virtual directories for all communities
+	 * @param communityId The id of the community
+	 * @return A list of root levels belonging to the community
+	 */
+	public synchronized List<Level> getRootLevels(int communityId){
+		try {										
+			PreparedStatement psGetRootLevels = statementPool.getStatement(StatementPool.GET_ROOT_LEVELS);
+			psGetRootLevels.setInt(1, communityId);
+			ResultSet results = psGetRootLevels.executeQuery();			
+						
+			ArrayList<Level> returnList = new ArrayList<Level>(10);
+			
+			while(results.next()){
+				Level l = new Level(results.getInt("id"));
+				l.setGroupId(results.getInt("gid"));
+				l.setLeft(results.getInt("lft"));
+				l.setRight(results.getInt("rgt"));
+				l.setName(results.getString("name"));
+				l.setUserId(results.getInt("usr"));
+				l.setDescription(results.getString("description"));
+				l.setCommunityId(results.getInt("comid"));
+				
+				PreparedStatement psGetImmediateBench= statementPool.getStatement(StatementPool.GET_IMMEDIATE_BENCHMARKS);				
+				psGetImmediateBench.setInt(1, l.getLeft());
+				
+				ResultSet benchResult = psGetImmediateBench.executeQuery();	
+				while(benchResult.next()){
+					Benchmark benchmark = new Benchmark();
+					benchmark.setId(benchResult.getInt("id"));					
+					benchmark.setUserId(benchResult.getInt("usr"));
+					benchmark.setUploaded(benchResult.getTimestamp("uploaded"));
+					benchmark.setPath(benchResult.getString("physical_path"));	// TODO: Eventually we want to hide this
+					benchmark.setCommunityId(benchResult.getInt("comid"));
 					l.getBenchmarks().add(benchmark);
 				}
 				
@@ -858,16 +924,14 @@ public class Database {
 	 */
 	public synchronized List<Integer> levelToBenchmarkIds(int levelId){
 		try {
-			PreparedStatement psLevelToBenchs= statementPool.getStatement(StatementPool.GET_IMMEDIATE_BENCHMARKS);
-			if(psLevelToBenchs == null)
-				psLevelToBenchs = connection.prepareStatement("SELECT bench.id FROM benchmarks AS bench, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE bench.lvl BETWEEN parent.lft AND parent.rgt");
-												
+			PreparedStatement psLevelToBenchs = statementPool.getStatement(StatementPool.GET_LEVELS_FROM_BENCH);															
 			psLevelToBenchs.setInt(1, levelId);
 			ResultSet results = psLevelToBenchs.executeQuery();
 			ArrayList<Integer> returnList = new ArrayList<Integer>(5);
 			
-			while(results.next())
-				returnList.add(results.getInt("id"));							
+			while(results.next()) {
+				returnList.add(results.getInt("id"));
+			}
 						
 			return returnList;
 		} catch (Exception e){			
@@ -876,6 +940,10 @@ public class Database {
 		}	
 	}
 	
+	/**
+	 * @param solverId The solver id to find configurations for
+	 * @return A list of configuration IDs that belong to the given solver
+	 */
 	public synchronized List<Integer> solverToConfigIds(int solverId){
 		try {
 			PreparedStatement psGetConfigIds= statementPool.getStatement(StatementPool.GET_CONFIGURATION_IDS);															
@@ -972,6 +1040,7 @@ public class Database {
 				j.setTimeout(results.getLong("timeout"));
 				j.setUserId(results.getInt("usr"));
 				j.setRunTime(results.getInt("runtime"));
+				j.setCommunityId(results.getInt("comid"));
 				
 				returnList.add(j);
 			}			

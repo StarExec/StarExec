@@ -5,7 +5,9 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public class Job {
-	private int jobid, userid;
+	private int jobid;
+	private int communityId;
+	private int userid;
 	private Timestamp submitted, completed;
 	private String description, status, node;	// TODO: Create a node TO later on with hardware info?
 	private long timeout;	
@@ -109,5 +111,13 @@ public class Job {
 		
 		
 		this.runTime = String.format("%sd %sh %sm %ss", days, hours, minutes, seconds);
+	}
+
+	public int getCommunityId() {
+		return communityId;
+	}
+
+	public void setCommunityId(int communityId) {
+		this.communityId = communityId;
 	}	
 }

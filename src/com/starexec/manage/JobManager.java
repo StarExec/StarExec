@@ -116,7 +116,7 @@ public abstract class JobManager {
 	 */
 	private static void buildJob() throws IOException {
 		// Reads in the bash script
-		String script = Util.readFile(new File(R.CLASS_PATH, "jobscript"));
+		String script = Util.readFile(new File(R.CONFIG_PATH, "jobscript"));
 		
 		
 		// Opens a file on the shared space and writes the empty job script to it.

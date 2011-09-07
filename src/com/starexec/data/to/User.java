@@ -9,23 +9,20 @@ import java.sql.Timestamp;
  */
 public class User {
 	private int userid = -1;
-	private String username;
 	private String password;
 	private String firstName;
 	private String lastName;
 	private String affiliation;
 	private Timestamp createDate;
 	private String email;
-	private boolean verified;
-	
-	public User(int userid, String username){
-		this.userid = userid;
-		this.username = username;
+
+	public User(){
+				
 	}
 	
-	public User(String username){	
-		this.username = username;
-	}
+	public User(int userid){
+		this.userid = userid;		
+	}	
 	
 	public String getFirstName() {
 		return firstName;
@@ -54,15 +51,9 @@ public class User {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public boolean isVerified() {
-		return verified;
-	}
 	public int getUserId() {
 		return userid;
 	}
-	public String getUsername() {
-		return username;
-	}	
 	public String getPassword() {
 		return password;
 	}
@@ -71,5 +62,5 @@ public class User {
 	}
 	public String getFullName() {
 		return firstName + " " + lastName;
-	}
+	}	
 }

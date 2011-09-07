@@ -6,7 +6,7 @@ package com.starexec.constants;
  * @author Tyler Jensen
  */
 public class P {
-	public static String USER_USERNAME = "un";
+	public static String USER_COMMUNITY = "cm";
 	public static String USER_PASSWORD = "pwd";
 	public static String USER_AFILIATION = "af";
 	public static String USER_EMAIL = "em";
@@ -31,4 +31,6 @@ public class P {
 	public static String PAIR_RESULT = "result";
 	public static String PAIR_START_TIME = "stime";
 	public static String PAIR_END_TIME = "etime";
+	
+	public static String SESSION_USER = "usr";
 }

@@ -2,6 +2,14 @@
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
   <display-name>STAREXEC</display-name>
   <description>Logic solver collaboration tool</description>
+  <filter-mapping>
+    <filter-name>Session Filter</filter-name>
+    <url-pattern>/pages/*</url-pattern>    
+ </filter-mapping>
+ <filter>
+    <filter-name>Session Filter</filter-name>
+    <filter-class>com.starexec.app.SessionFilter</filter-class>    
+ </filter>
   <session-config>
     <session-timeout>60</session-timeout>
   </session-config>
@@ -71,32 +79,48 @@
   </context-param>
   <listener>
     <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
-  </listener>
+  </listener>  
   <security-role>
-    <role-name>dev</role-name>
+    <role-name>dev</role-name>    
   </security-role>
-  <!--<security-constraint>
-    <display-name>Security Constraints</display-name>
+  <security-role>
+    <role-name>admin</role-name>    
+  </security-role>
+  <security-role>
+    <role-name>leader</role-name>    
+  </security-role>
+  <security-role>
+    <role-name>user</role-name>    
+  </security-role>
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/pages/login.jsp</form-login-page>
+      <form-error-page>/pages/login.jsp?result=failed</form-error-page>
+    </form-login-config>	  
+  </login-config>  
+  <security-constraint>	
     <web-resource-collection>
-      <web-resource-name>Starexec</web-resource-name>
-      <url-pattern>/*</url-pattern>
-      <http-method>DELETE</http-method>
-      <http-method>GET</http-method>
-      <http-method>POST</http-method>
-      <http-method>PUT</http-method>
+	  <web-resource-name>Users Only</web-resource-name>
+	  <url-pattern>/pages/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
-      <role-name>dev</role-name>
-    </auth-constraint>
+	  <role-name>user</role-name>
+    </auth-constraint>		
   </security-constraint>
-  <login-config>
-    <auth-method>BASIC</auth-method>    
-  </login-config>-->
+  <security-constraint>	
+    <web-resource-collection>
+	  <web-resource-name>Users Only</web-resource-name>
+	  <url-pattern>/services/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	  <role-name>user</role-name>
+    </auth-constraint>		
+  </security-constraint>
   <welcome-file-list>
-    <welcome-file>dashboard.jsp</welcome-file>
-    <welcome-file>index.jsp</welcome-file>    
+    <welcome-file>/pages/login.jsp</welcome-file>
   </welcome-file-list>
   <listener>
-    <listener-class>com.starexec.app.AppListener</listener-class>
+    <listener-class>com.starexec.app.Starexec</listener-class>
   </listener>
 </web-app>

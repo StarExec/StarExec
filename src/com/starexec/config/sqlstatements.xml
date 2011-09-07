@@ -1,28 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Statements>
-  <Statement key="adduser" row_return="true">
-        <![CDATA[INSERT INTO users (username, fname, lname, affiliation, created, email) VALUES (?, ?, ?, ?, SYSDATE(), ?)]]>
-   </Statement>  
-   <Statement key="addpass">
-        <![CDATA[INSERT INTO passwords (userid, password) VALUES (?, ?)]]>
-   </Statement>  
-   <Statement key="addperm">
-        <![CDATA[INSERT INTO permissions (userid) VALUES (?)]]>
-   </Statement>  
+  <Statement key="adduser">
+        <![CDATA[INSERT INTO users (fname, lname, affiliation, created, email, password, comid) VALUES (?, ?, ?, SYSDATE(), ?, ?, ?)]]>
+   </Statement>   
    <Statement key="addlvl">
-        <![CDATA[INSERT INTO levels (name, lft, rgt, gid, usr, dep) VALUES (?, ?, ?, ?, ?, ?)]]>
+        <![CDATA[INSERT INTO levels (name, lft, rgt, gid, usr, dep, comid) VALUES (?, ?, ?, ?, ?, ?, ?)]]>
    </Statement>  
    <Statement key="addbench" row_return="true">
-        <![CDATA[INSERT INTO benchmarks (uploaded, physical_path, usr, lvl) VALUES (SYSDATE(), ?, ?, ?)]]>
+        <![CDATA[INSERT INTO benchmarks (uploaded, physical_path, usr, lvl, comid) VALUES (SYSDATE(), ?, ?, ?, ?)]]>
    </Statement>  
    <Statement key="addslvr" row_return="true">
-        <![CDATA[INSERT INTO solvers (uploaded, path, usr, notes, name) VALUES (SYSDATE(), ?, ?, ?, ?)]]>
+        <![CDATA[INSERT INTO solvers (uploaded, path, usr, notes, name, comid) VALUES (SYSDATE(), ?, ?, ?, ?, ?)]]>
    </Statement>  
    <Statement key="addcanslv">
         <![CDATA[INSERT INTO can_solve VALUES (?, ?)]]>
    </Statement>  
    <Statement key="addjob" row_return="true">
-        <![CDATA[INSERT INTO jobs (id, subDate, description, status, node, timeout, usr) VALUES (?, SYSDATE(), ?, ?, ?, ?, ?)]]>
+        <![CDATA[INSERT INTO jobs (id, subDate, description, status, node, timeout, usr, comid) VALUES (?, SYSDATE(), ?, ?, ?, ?, ?, ?)]]>
    </Statement>  
    <Statement key="addjobpair">
         <![CDATA[INSERT INTO job_pairs (id, jid, cid, bid) VALUES (?, ?, ?, ?)]]>
@@ -40,7 +34,7 @@
 		<![CDATA[UPDATE users SET verified=1 WHERE userid=(SELECT userid FROM verify WHERE code='?')]]>
    </Statement>  
    <Statement key="getusr">
-        <![CDATA[SELECT * FROM users JOIN passwords ON users.userid = passwords.userid WHERE users.username='?']]>
+        <![CDATA[SELECT * FROM users WHERE email=?]]>
    </Statement>  
    <Statement key="getusr2">
         <![CDATA[SELECT * FROM users JOIN passwords WHERE users.userid=?]]>
@@ -49,7 +43,7 @@
         <![CDATA[SELECT * FROM solvers WHERE id=?]]>
    </Statement>  
    <Statement key="getallslvr">
-        <![CDATA[SELECT * FROM solvers]]>
+        <![CDATA[SELECT * FROM solvers WHERE comid=?]]>
    </Statement>  
    <Statement key="getbench">
         <![CDATA[SELECT * FROM benchmarks WHERE id=?]]>
@@ -58,8 +52,11 @@
         <![CDATA[SELECT * FROM benchmarks WHERE lvl=?]]>
    </Statement>  
    <Statement key="getallbench">
-        <![CDATA[SELECT * FROM benchmarks]]>
-   </Statement>  
+        <![CDATA[SELECT * FROM benchmarks WHERE comid=?]]>
+   </Statement>
+   <Statement key="getallcommunities">
+        <![CDATA[SELECT * FROM communities]]>
+   </Statement>    
    <Statement key="getmaxlevel">
         <![CDATA[SELECT MAX(rgt) FROM levels]]>
    </Statement>  
@@ -67,7 +64,7 @@
         <![CDATA[SELECT MAX(gid) FROM levels]]>
    </Statement>  
    <Statement key="getrtlvl">
-        <![CDATA[SELECT * FROM levels WHERE dep=0]]>
+        <![CDATA[SELECT * FROM levels WHERE dep=0 AND comid=?]]>
    </Statement> 
    <Statement key="getsublvl">
         <![CDATA[SELECT node.* FROM levels AS node, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE node.lft > parent.lft AND node.rgt < parent.rgt AND node.dep=(parent.dep + 1)]]>
@@ -76,7 +73,7 @@
         <![CDATA[SELECT bench.id FROM benchmarks AS bench, (SELECT lft, rgt, dep FROM levels WHERE id=?) AS parent WHERE bench.lvl BETWEEN parent.lft AND parent.rgt]]>
    </Statement>  
    <Statement key="getjobs">
-        <![CDATA[SELECT *, TIMESTAMPDIFF(SECOND, finDate,subDate) AS runtime FROM jobs]]>
+        <![CDATA[SELECT *, TIMESTAMPDIFF(SECOND, finDate, subDate) AS runtime FROM jobs]]>
    </Statement>  
    <Statement key="getjobpairs">
         <![CDATA[SELECT jp.id, jp.jid, jp.result, jp.startTime, jp.endTime, jp.node, jp.status, b.id, b.physical_path, s.id, s.name, c.name, c.id, TIMESTAMPDIFF(SECOND, jp.endTime,jp.startTime) AS runtime FROM (((job_pairs AS jp JOIN benchmarks AS b ON bid=b.id) JOIN configurations AS c ON cid = c.id)) JOIN solvers AS s ON sid=s.id WHERE jid=?]]>

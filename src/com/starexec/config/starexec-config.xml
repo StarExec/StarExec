@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<starexec-configuration>
+	<class name="com.starexec.constants.R">
+		<!-- MYSQL Configuration -->
+		<property key="MYSQL_USERNAME" value="root" />
+		<property key="MYSQL_PASSWORD" value="star3x3c2011!" />
+		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true" />
+		<property key="CONNECTION_POOL_SIZE" value="5" />
+		<!-- Path Configuration -->
+		<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
+		<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
+		<property key="CLASS_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes" />		
+		<property key="CONFIG_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/com/starexec/config" />
+		<property key="STAREXEC_ROOT" value="/project/tomcat-webapps/webapps/starexec" />
+		<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
+		<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />
+		<property key="SOLVER_BIN_DIR" value="/bin" />
+		<!-- Misc. Configuration -->
+		<property key="JOBFILE_FORMAT" value="job_%d.bash" />
+		<property key="LOG_TO_CONSOLE" value="true" />
+	</class>
+	<class name="com.starexec.constants.T">
+		<property key="APP_TITLE" value="STAREXEC" />			
+		<property key="REGISTER" value="STAREXEC: Registration" />
+		<property key="UPLOAD_BENCHMARK" value="STAREXEC: Upload Benchmark" />
+		<property key="UPLOAD_SOLVER" value="STAREXEC: Upload Solver" />
+		<property key="DASHBOARD" value="STAREXEC: Dashboard" />
+		<property key="CREATE_JOB" value="STAREXEC: Create a Job" />
+		<property key="VIEW_JOBS" value="STAREXEC: View Jobs" />
+		<property key="LOGIN" value="STAREXEC: Login" />
+		<property key="LOGOUT" value="STAREXEC: Logged Out" />
+	</class>
+</starexec-configuration>

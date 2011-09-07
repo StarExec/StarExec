@@ -5,7 +5,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<title><%=T.UPLOAD_BENCHMARK %></title>
-	<%@ include file="includes/jQuery.html" %>
+	<%@ include file="/includes/jQuery.html" %>
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/uploadbenchmark.css" />
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/maincontent.css" />
 	<script type="text/javascript" src="/starexec/js/uploadbench.js"></script>	
@@ -13,7 +13,7 @@
 
 <body>
 	<div id="wrapper">
-		<%@ include file="includes/header.html" %>
+		<jsp:include page="/includes/header.jsp" />
 		<div class="content round">
 			<img class='ul_icon' src="/starexec/images/icon_up.png"/>
 			<h1>Benchmark Upload</h1>

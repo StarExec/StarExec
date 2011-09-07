@@ -5,7 +5,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<title><%=T.CREATE_JOB %></title>
-	<%@ include file="includes/jQuery.html" %>
+	<%@ include file="/includes/jQuery.html" %>
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/createajob.css" />	
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/maincontent.css" />
 	<script type="text/javascript" src="/starexec/js/jquery.jstree.js"></script>
@@ -14,7 +14,7 @@
 
 <body>		
 	<div id="wrapper">
-		<%@ include file="includes/header.html" %>
+		<jsp:include page="/includes/header.jsp" />		
 		<div class="content round">
 			<img class='ul_icon' src="/starexec/images/icon_addjob.png"/>
 			<h1>Job Creator</h1>

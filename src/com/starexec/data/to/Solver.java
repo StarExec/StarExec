@@ -9,6 +9,7 @@ public class Solver {
 	transient private String path;
 	private String name;
 	private int userId;
+	private int communityId;
 	private Date uploaded;
 	private String notes;
 	private List<Level> supportedDivs;
@@ -82,4 +83,10 @@ public class Solver {
 	public void setNotes(String notes) {
 		this.notes = notes;
 	}		
+	public int getCommunityId() {
+		return communityId;
+	}
+	public void setCommunityId(int communityId) {
+		this.communityId = communityId;
+	}
 }

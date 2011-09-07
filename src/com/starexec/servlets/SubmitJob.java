@@ -30,7 +30,7 @@ public class SubmitJob extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
 		log.info(request.getRequestURL().toString());
 
-    	Jobject job = new Jobject(new User("admin"));			// Start a new job.
+    	Jobject job = new Jobject(new User(1));					// Start a new job.
     	String configIds = request.getParameter("config");		// Get the selected config ids
     	String benchmarkIds = request.getParameter("bench");	// Get the selected benchmark ids
     	String levelIds = request.getParameter("level");		// Get the selected level ids

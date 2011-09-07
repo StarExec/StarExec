@@ -9,6 +9,7 @@ public class Level {
 	private int userId;
 	private int groupId;
 	private int id;
+	private int communityId;
 	private int depth;
 	private String description;
 	private List<Benchmark> benchmarks;
@@ -88,5 +89,13 @@ public class Level {
 
 	public void setDepth(int depth) {
 		this.depth = depth;
+	}
+
+	public int getCommunityId() {
+		return communityId;
+	}
+
+	public void setCommunityId(int communityId) {
+		this.communityId = communityId;
 	}			
 }

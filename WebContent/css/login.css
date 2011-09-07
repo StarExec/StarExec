@@ -1,0 +1,22 @@
+@CHARSET "ISO-8859-1";
+
+#loginForm {
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 80px;
+	width: 275px;	
+}
+
+.login_label {
+	width: 80px;	
+}
+
+.loginError {
+	font-size: 12px;
+	color: red;
+	text-align: left;	
+}
+
+#btnLogin {
+	float: right;	
+}

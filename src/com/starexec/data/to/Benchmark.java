@@ -8,6 +8,7 @@ public class Benchmark {
 	transient private String path;
 	private String fileName;
 	private int userid;
+	private int communityId;
 	private Timestamp uploaded;
 	private int level;
 	
@@ -54,5 +55,13 @@ public class Benchmark {
 
 	public void setLevel(int level) {
 		this.level = level;
+	}
+
+	public int getCommunityId() {
+		return communityId;
+	}
+
+	public void setCommunityId(int communityId) {
+		this.communityId = communityId;
 	}		
 }

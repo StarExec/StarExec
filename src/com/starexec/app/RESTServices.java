@@ -1,9 +1,18 @@
 package com.starexec.app;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
+import com.starexec.data.*;
+import com.starexec.data.to.*;
 import com.starexec.data.Databases;
 
 
@@ -19,13 +28,22 @@ public class RESTServices {
 		
 	}
 	
+	// TODO: None of these web services will work, need to redefine "communities"
+	// and "spaces" and some other fundamental things before refactoring.
+	
 	@GET
 	@Path("/levels/sublevels")
 	@Produces("application/json")
 	public String getSubLevels(@QueryParam("id") int id) {		
-		return new Gson().toJson(
-				RESTHelpers.toLevelTree(
-				Databases.next().getSubLevels(id)));				
+		if(id < 0) {						
+			return new Gson().toJson(
+					RESTHelpers.toLevelTree(
+					Databases.next().getRootLevels(0)));
+		} else {
+			return new Gson().toJson(
+					RESTHelpers.toLevelTree(
+					Databases.next().getSubLevels(id)));				
+		}
 	}
 	
 	@GET
@@ -35,7 +53,7 @@ public class RESTServices {
 		if(id < 0) {
 			return new Gson().toJson(
 					RESTHelpers.toSolverTree(
-					Databases.next().getSolvers(null)));
+					Databases.next().getAllSolvers(0)));
 		} else {
 			return new Gson().toJson(
 					RESTHelpers.toConfigTree(
@@ -44,26 +62,25 @@ public class RESTServices {
 	}
 	
 	@GET
-	@Path("/benchmarks/all")
-	@Produces("application/json")
-	public String getAllBenchmarks() {	
-		return new Gson().toJson(Databases.next().getBenchmarks(null));						
-	}
-	
-	@GET
 	@Path("/level/bench")
 	@Produces("application/json")	
-	public String getLevelsBench(@QueryParam("id") int id) {					
-		return new Gson().toJson(
-				RESTHelpers.toLevelBenchTree(
-				Databases.next().getSubLevelsWithBench(id)));				
+	public String getLevelsBench(@QueryParam("id") int id) {	
+		if(id < 0){
+			return new Gson().toJson(
+					RESTHelpers.toLevelBenchTree(
+					Databases.next().getRootLevels(0)));
+		} else {
+			return new Gson().toJson(
+					RESTHelpers.toLevelBenchTree(
+					Databases.next().getSubLevelsWithBench(id)));
+		}
 	}
 		
 	@GET
 	@POST
 	@Path("/jobs/all")
 	@Produces("application/json")	
-	public String getJobs() {			
+	public String getJobs(@Context HttpServletRequest request) {			
 		return new Gson().toJson(
 				RESTHelpers.jobToTableRow(
 				Databases.next().getJobs()));				
@@ -77,5 +94,5 @@ public class RESTServices {
 		return new Gson().toJson(
 				RESTHelpers.pairToTableRow(
 				Databases.next().getJobPairs(id)));				
-	}	
+	}		
 }

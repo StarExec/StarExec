@@ -25,6 +25,7 @@ public class R {
 	}
 	
 	// Emails
+	//TODO: Get an SMTP server (HUUUGH)
 	public static String EMAIL_SMTP = "smtp.gmail.com";
 	public static String EMAIL_USER = "clifton.palmer@gmail.com";
 	public static String EMAIL_PWD = "palmerperson";
@@ -44,7 +45,8 @@ public class R {
 	public static String SOLVER_PATH = null;								// The top-level directory in which to save the solver file(s)
 	public static String BENCHMARK_PATH = null;								// The top-level directory in which to save the benchmark file(s)
 	public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp
-	public static String CLASS_PATH = null;									// The directory of starexec's compiled classes
+	public static String CLASS_PATH = null;									// The directory of starexec's compiled classes relative to the root path
+	public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
 	public static String NODE_WORKING_DIR = null;							// The directory on the local nodes where they can use for scratch space (read/write)
 	public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node
     
@@ -64,46 +66,5 @@ public class R {
 	public static String JOB_STATUS_ERR = "Error";							// The status of a failed job
 	
 	// Misc application properties
-	public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
-	
-	/**
-	 * Loads resources from the starexec.properties file into the static resource class
-	 * (com.starexec.constants.R) using reflection. The property file keys must match the
-	 * corresponding field name in the R resource class.
-	 */
-	@SuppressWarnings("unchecked")
-	public static void loadStarexecResources(){
-		try {
-			log.debug("Loading properties from starexec.properties");
-			// Load the starexec.properties file (this searches for it automatically according to class loader path)
-			ResourceBundle properties = ResourceBundle.getBundle("starexec");			
-			
-			// Get a reflected reference to the resource class
-			Class<R> resourceClass = (Class<R>) Class.forName("com.starexec.constants.R");
-			
-			// For each property key in the loaded property file
-			for(String key : properties.keySet()){
-				try {
-					// Get the field from the resource class that matches the property key
-					Field field = resourceClass.getField(key);
-					
-					// Based on the type of field we're expecting, set that field's value to the property's value
-					if(field.getType().equals(String.class)){
-						field.set(null, properties.getString(key));
-					} else if(field.getType().equals(int.class)){
-						field.setInt(null, Integer.parseInt(properties.getString(key)));
-					} else if(field.getType().equals(boolean.class)){
-						field.set(null,Boolean.parseBoolean(properties.getString(key)));
-					}	            
-					
-					log.debug(String.format("Loaded property [%s]: %s", key, field.get(null)));
-				} catch (Exception e){
-					log.error(String.format("Failed to load property [%s]. Error [%s]", key, e.getMessage()));
-				}
-			}
-			log.debug("Property loading complete");
-		} catch(Exception e) {
-           log.fatal(e.getMessage(), e);
-		}
-	}
+	public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console		
 }

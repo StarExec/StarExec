@@ -71,6 +71,8 @@ public class UploadBench extends HttpServlet {
 	public void handleBenchmark(FileItem item, HttpServletRequest request , HttpServletResponse response) throws Exception {
 		//int userId = Integer.parseInt(request.getSession().getAttribute("userid").toString()); // TODO: When sessions are set up, extract the appropriate user id
 		int userId = 1;	// For current testing, just use the test userid
+		int communityId = 1; // TODO: Get the real community id
+		
 		// Create a unique path the zip file will be extracted to
 		File uniqueDir = new File(R.BENCHMARK_PATH, shortDate.format(new Date()));		
 
@@ -93,7 +95,7 @@ public class UploadBench extends HttpServlet {
 		File bxmlFile = XmlUtil.dirToBXml(uniqueDir.getAbsolutePath());					
 		
 		// Parse the bxml file and get back the handler to gather results
-		BXMLHandler handler = XmlUtil.parseBXML(bxmlFile, userId);							
+		BXMLHandler handler = XmlUtil.parseBXML(bxmlFile, userId, communityId);							
 		
 		// Add the resulting levels and benchmarks to the database
 		Databases.next().addLevelsBenchmarks(handler.getLevels(), handler.getBenchmarks());

@@ -2,6 +2,7 @@ package com.starexec.servlets;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -31,9 +32,8 @@ public class Registration extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// Don't accept GETs, just hand back false
-		response.setContentType("text/plain");
-		response.getWriter().print(false);
+		// Don't accept GET
+		log.warn("Illegal GET request to registration servlet from ip address: " + request.getRemoteHost());
 	}
 
 	/**
@@ -41,7 +41,7 @@ public class Registration extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		User u = new User(request.getParameter(P.USER_USERNAME));
+		User u = new User();
 		u.setAffiliation(request.getParameter(P.USER_AFILIATION));
 		u.setEmail(request.getParameter(P.USER_EMAIL));
 		u.setFirstName(request.getParameter(P.USER_FIRSTNAME));
@@ -53,19 +53,26 @@ public class Registration extends HttpServlet {
 		response.setContentType("text/plain");
 		response.getWriter().print(added);
 		response.getWriter().close();
+		//u.setCommunityId(Integer.parseInt(request.getParameter(P.USER_COMMUNITY)));
+				
+		if(Databases.next().addUser(u)) {
+			response.sendRedirect("/starexec/registration?result=ok");
+		} else {
+			response.sendRedirect("/starexec/registration?result=fail");
+		}
 		
 		// If the user has been added, send a verification email.
 		if(added) {
-			String conf = Util.generateConfCode(32);
+			String conf = UUID.randomUUID().toString();
 			Databases.next().addCode(u.getEmail(), conf);
-			String email = Util.readFile(new File(R.CLASS_PATH, "verification_email"));
-			email = email.replace("$$USER$$", u.getUsername());
+			String email = Util.readFile(new File(R.CONFIG_PATH, "verification_email"));
+			email = email.replace("$$USER$$", u.getFullName());
 			email = email.replace("$$LINK$$", 
 					String.format("http://starexec.cs.uiowa.edu/starexec/Verify?%s=%s", P.VERIFY_EMAIL, conf));
 			Mail.mail(email, "Verify your Starexec Account", "STAREXEC", new String[] { u.getEmail() });
-			log.info("Sent verification email to user " + u.getUsername() + " at " + u.getEmail());
+			log.info("Sent verification email to user " + u.getFullName() + " at " + u.getEmail());
 		} else {
-			log.info("Unable to add user " + u.getEmail());
+			log.warn("Unable to add user " + u.getEmail());
 		}
 	}
 

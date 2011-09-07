@@ -5,7 +5,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<title><%=T.VIEW_JOBS %></title>
-	<%@ include file="includes/jQuery.html" %>
+	<%@ include file="/includes/jQuery.html" %>
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/viewjob.css" />
 	<link type="text/css" rel="StyleSheet" href="/starexec/js/css/flexigrid.pack.css" />	
 	<script type="text/javascript" src="/starexec/js/flexigrid.pack.js"></script>
@@ -14,7 +14,7 @@
 
 <body>		
 	<div id="wrapper">
-		<%@ include file="includes/header.html" %>
+		<jsp:include page="/includes/header.jsp" />
 		<div class="content round">
 			<img class='ul_icon' src="/starexec/images/icon_vjob.png"/>
 			<h1>View Jobs</h1>

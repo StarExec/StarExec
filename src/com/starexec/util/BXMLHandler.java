@@ -27,13 +27,15 @@ public class BXMLHandler extends DefaultHandler {
 	private String root;							// The path to where the xml file we're processing is at (used to derive absolute paths for benchmarks)
 	private File fullPath;							// The current path we're at in our processing
 	private int userId;								// The id of the user who owns the benchmarks
+	private int communityId;						// The id of community the benchmark belongs to
 	
 	/**
 	 * @param rootPath The root directory of the benchmarks (Where the XML file is located)
 	 */
-	public BXMLHandler(String rootPath, int userid){
+	public BXMLHandler(String rootPath, int userid, int communityId){
 		this.root = rootPath;		
 		this.userId = userid;
+		this.communityId = communityId;
 	}
 	
 	@Override
@@ -59,15 +61,15 @@ public class BXMLHandler extends DefaultHandler {
 			b.setPath(new File(fullPath, attributes.getValue("name")).getAbsolutePath());
 			b.setLevel(currentLevel);					// Set the level the benchmark belongs to to the current level
 			b.setUserId(userId);						// Set the userid to the id of the owner
+			b.setCommunityId(communityId);				// Set the community id of the benchmark
 			benchmarks.add(b);							// Add the benchmark to the list
-			//System.out.println("Added Benchmark: " + b.getFileName() + " [" + b.getLevel() + "]");
-			//System.out.println("\t" + b.getPath());
 		} else if(localName.equals("dir")){				// If we're starting a directory tag...			
 			Level l = new Level();						// Create a new level object
 			l.setDepth(++currentDepth);
 			l.setLeft(++currentLevel);					// Increment the current level and set it as my left
 			l.setName(attributes.getValue("name"));		// Set the name of the level
 			l.setUserId(userId);						// Set the user who owns the level
+			l.setCommunityId(communityId);				// Set the community the level belongs to
 			dirStack.add(l);							// Add the level to the temporary stack to be processed later
 			fullPath = new File(fullPath, l.getName());			
 		}
@@ -81,7 +83,6 @@ public class BXMLHandler extends DefaultHandler {
 			finalLevels.put(l.getLeft(), l);			// Put the level in the final hashmap with its left value as the key
 			fullPath = fullPath.getParentFile();
 			currentDepth--;
-			//System.out.println("Added Directory: " + l.getName() + " [" + l.getLeft() + ", " + l.getRight() + "]");
 		}
 	}
 	

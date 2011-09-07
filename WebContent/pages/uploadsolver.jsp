@@ -6,7 +6,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<title><%=T.UPLOAD_SOLVER %></title>
-	<%@ include file="includes/jQuery.html" %>
+	<%@ include file="/includes/jQuery.html" %>
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/maincontent.css" />
 	<link type="text/css" rel="StyleSheet" href="/starexec/css/uploadsolver.css" />	
 	<script type="text/javascript" src="/starexec/js/jquery.jstree.js"></script>
@@ -15,7 +15,7 @@
 
 <body>
 	<div id="wrapper">
-		<%@ include file="includes/header.html" %>
+		<jsp:include page="/includes/header.jsp" />
 		<div class="content round" style="height: 350px;">
 			<img class='ul_icon' src="/starexec/images/icon_up.png"/>
 			<h1>Solver Upload</h1>

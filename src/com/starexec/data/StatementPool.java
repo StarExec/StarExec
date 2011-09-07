@@ -31,7 +31,7 @@ public class StatementPool {
 	public void Initialize(Connection connection){
 		try {
 			// Open the statements xml file and parse it into a dom
-			File statementFile = new File(R.CLASS_PATH, "sqlstatements.xml");
+			File statementFile = new File(R.CONFIG_PATH, "sqlstatements.xml");
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			
@@ -73,7 +73,7 @@ public class StatementPool {
 			 
 			log.debug(pool.entrySet().size() + " entries added to the statement pool.");
 		} catch (Exception e) {
-			log.fatal(e);
+			log.fatal(e.getMessage(), e);
 		}
 	}
 	
@@ -94,9 +94,7 @@ public class StatementPool {
 	// All keys below should correspond to an entry in the sqlstatements.xml file so code can reference the desired statement
 	
 	// Add keys
-	public static final String ADD_USER = "adduser";
-	public static final String ADD_PASSWORD = "addpass";
-	public static final String ADD_PERMISSION = "addperm";
+	public static final String ADD_USER = "adduser";	
 	public static final String ADD_LEVEL = "addlvl";
 	public static final String ADD_BENCHMARK = "addbench";
 	public static final String ADD_SOLVER = "addslvr";
@@ -111,6 +109,7 @@ public class StatementPool {
 	public static final String GET_USER2 = "getusr2";	
 	public static final String GET_SOLVERS = "getslvr";
 	public static final String GET_ALL_SOLVERS = "getallslvr";
+	public static final String GET_ALL_COMMUNITIES = "getallcommunities";
 	public static final String GET_BENCHMARKS = "getbench";
 	public static final String GET_IMMEDIATE_BENCHMARKS = "getimbench";
 	public static final String GET_ALL_BENCHMARKS = "getallbench";

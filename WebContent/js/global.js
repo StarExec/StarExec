@@ -24,7 +24,7 @@ function setActivePage(path){
 		$('#cjob a').addClass('current');
 	} else if(path.indexOf('viewjob') >= 0){
 		$('#vjob a').addClass('current');
-	} else {
+	} else if(path.indexOf('dashboard') >= 0){
 		$('#dashboard a').addClass('current');
 	} 
 }
