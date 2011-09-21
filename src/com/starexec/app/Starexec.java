@@ -32,12 +32,14 @@ public class Starexec implements ServletContextListener {
 	private static String CONFIG_PATH = "/WEB-INF/classes/com/starexec/config/starexec-config.xml";
 	private static String LOG4J_PATH = "/WEB-INF/classes/com/starexec/config/log4j.properties";
 	
-	// XML Metadata to parse starexec's config file
+	// XML Metadata to parse starexec's config file	
 	private static String NODE_CLASS = "class";
 	private static String NODE_PROP = "property";
+	private static String NODE_CONFIG = "configuration";
 	private static String ATTR_KEY = "key";
 	private static String ATTR_VALUE = "value";
 	private static String ATTR_NAME = "name";
+	private static String ATTR_DEFAULT = "default";
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -81,16 +83,57 @@ public class Starexec implements ServletContextListener {
 			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();			 
 			
 			Document starexecConfigDoc = db.parse(statementFile);
-			starexecConfigDoc.getDocumentElement().normalize();
-			   
-			// Get all class nodes from the document
-			NodeList classNodes = starexecConfigDoc.getElementsByTagName(NODE_CLASS);			   
-			log.debug("Parsing starexec-config XML file resulted in " + classNodes.getLength() + " class nodes.");
+			starexecConfigDoc.getDocumentElement().normalize();			   			
 			
-			// For each class node in the xml file...
+			if(starexecConfigDoc.getDocumentElement().getAttributes().getNamedItem(ATTR_DEFAULT) == null) {
+				// Check if the default configuration is specified! We explicitly require it
+				throw new Exception(String.format("starexec-config parsing error: the root element must define an attribute \"%s\"", ATTR_DEFAULT));
+			}
+			
+			// Find the name of the configuration to use
+			String defaultConfigName = starexecConfigDoc.getDocumentElement().getAttributes().getNamedItem(ATTR_DEFAULT).getNodeValue();
+			
+			// Get all configuration nodes
+			NodeList configNodes = starexecConfigDoc.getDocumentElement().getElementsByTagName(NODE_CONFIG);
+			
+			// The default configuration node
+			Node defaultConfigNode = null;			
+			
+			// For each of the configuration nodes
+			for(int i = 1; i < configNodes.getLength(); i++) {
+				Node currentConfig = configNodes.item(i);											
+				Node currentConfigNameAttr = currentConfig.getAttributes().getNamedItem(ATTR_NAME);
+				
+				if(currentConfigNameAttr == null) {
+					// If the current node doesn't have a name attribute, skip it
+					continue;					
+				} else if(currentConfigNameAttr.getNodeValue().equals(defaultConfigName)) {
+					// Otherwise if we've found a config with the name that matches the one to use, keep it and break
+					defaultConfigNode = currentConfig;
+					log.debug(String.format("Using configuration [%s] for properties specification", defaultConfigName));					
+					break;
+				}
+			}
+			
+			if(defaultConfigNode == null) {
+				// If we didn't find a node that matched the specified name, then that's an error!
+				throw new Exception(String.format("The default configuration \"%s\" was not found.", defaultConfigName));
+			}
+			
+			// Get all class nodes from the document
+			NodeList classNodes = defaultConfigNode.getChildNodes();
+			log.debug("Parsing starexec-config XML file resulted in " + classNodes.getLength() + " nodes.");
+			
+			// For each class node in the configuration file...
 			for(int i = 0; i < classNodes.getLength(); i++) {
 				// Get that class node and it's child nodes
-				Node currentClassNode = classNodes.item(i);
+				Node currentClassNode = classNodes.item(i);				
+				
+				if(!currentClassNode.getNodeName().equals(NODE_CLASS)){
+					// If we're not looking at class node (most likely an attribute) skip
+					continue;
+				}
+				
 				NodeList classNodeChildren = currentClassNode.getChildNodes();
 				
 				// Parse the class name from XML attribute and load that class via reflection

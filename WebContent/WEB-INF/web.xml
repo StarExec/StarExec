@@ -95,8 +95,8 @@
   <login-config>
     <auth-method>FORM</auth-method>
     <form-login-config>
-      <form-login-page>/pages/login.jsp</form-login-page>
-      <form-error-page>/pages/login.jsp?result=failed</form-error-page>
+      <form-login-page>/login.jsp</form-login-page>
+      <form-error-page>/login.jsp?result=failed</form-error-page>
     </form-login-config>	  
   </login-config>  
   <security-constraint>	
@@ -118,7 +118,7 @@
     </auth-constraint>		
   </security-constraint>
   <welcome-file-list>
-    <welcome-file>/pages/login.jsp</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
   <listener>
     <listener-class>com.starexec.app.Starexec</listener-class>

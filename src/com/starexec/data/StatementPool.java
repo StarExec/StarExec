@@ -94,7 +94,8 @@ public class StatementPool {
 	// All keys below should correspond to an entry in the sqlstatements.xml file so code can reference the desired statement
 	
 	// Add keys
-	public static final String ADD_USER = "adduser";	
+	public static final String ADD_USER = "adduser";
+	public static final String ADD_LOGIN = "addlogin";	
 	public static final String ADD_LEVEL = "addlvl";
 	public static final String ADD_BENCHMARK = "addbench";
 	public static final String ADD_SOLVER = "addslvr";

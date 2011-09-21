@@ -36,16 +36,35 @@ public class SessionFilter implements Filter {
 		if(httpRequest.getUserPrincipal() != null) {
 			// Check if they have the neccessary user object stored in their session
 			if(httpRequest.getSession().getAttribute(P.SESSION_USER) == null) {
-				// If not, create it and log the login
+				// If not, retreive the user's information from the database
 				String userEmail = httpRequest.getUserPrincipal().getName();
 				User user = Databases.next().getUser(userEmail);
+				
+				// And add it to their session to be used elsewhere
 				httpRequest.getSession().setAttribute(P.SESSION_USER, user);
-				log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
-				// TODO: Log login information to database
+				
+				// Add the login to the database
+				this.logUserLogin(user, httpRequest);				
 			}
 		}
 		
 		chain.doFilter(request, response);
+	}
+	
+	/**
+	 * Adds a record to the database that represents the login
+	 * @param user The user that just logged in
+	 * @param request The request containing data required to log
+	 */
+	private void logUserLogin(User user, HttpServletRequest request) {
+		// Log the regular application log
+		log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
+			
+		String ip = request.getRemoteAddr();
+		String rawBrowser = request.getHeader("user-agent");
+		
+		// Also save in the database to maintain a historical record
+		Databases.next().addLoginRecord(user.getUserId(), ip, rawBrowser);
 	}
 
 	@Override

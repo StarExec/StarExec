@@ -177,6 +177,29 @@ public class Database {
 	}
 	
 	/**
+	 * Adds a login log entry to the database to keep track of when users have logged into the system
+	 * @param userId The id of the user that logged in
+	 * @param ipAddress The IP address of the user
+	 * @param userAgent The user's browser/operating system information from the HTTP header
+	 * @return True if the log was successful, false otherwise
+	 */
+	public synchronized boolean addLoginRecord(int userId, String ipAddress, String userAgent){
+		try {
+			PreparedStatement psAddLogin = statementPool.getStatement(StatementPool.ADD_LOGIN);						
+			psAddLogin.setInt(1, userId);
+			psAddLogin.setString(2, ipAddress);
+			psAddLogin.setString(3, userAgent);
+			
+			psAddLogin.executeUpdate();
+			return true;					
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		}	
+		
+		return false;
+	}
+	
+	/**
 	 * Adds a set of levels and benchmarks belonging to the given levels to the database
 	 * @param levels The level structure to add
 	 * @param benchmarks The benchmark to add

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Statements>
-  <Statement key="adduser">
-        <![CDATA[INSERT INTO users (fname, lname, affiliation, created, email, password, comid) VALUES (?, ?, ?, SYSDATE(), ?, ?, ?)]]>
+   <Statement key="addlogin">
+        <![CDATA[INSERT INTO logins (usr, login_date, ip_address, user_agent) VALUES (?, SYSDATE(), ?, ?)]]>
    </Statement>   
+   <Statement key="adduser">
+        <![CDATA[INSERT INTO users (fname, lname, affiliation, created, email, password, comid) VALUES (?, ?, ?, SYSDATE(), ?, ?, ?)]]>
+   </Statement>      
    <Statement key="addlvl">
         <![CDATA[INSERT INTO levels (name, lft, rgt, gid, usr, dep, comid) VALUES (?, ?, ?, ?, ?, ?, ?)]]>
    </Statement>  
