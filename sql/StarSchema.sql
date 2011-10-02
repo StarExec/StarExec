@@ -1,25 +1,10 @@
 -- Author: Tyler N Jensen (tylernjensen@gmail.com) --
 -- Description: This file is the schema used to create the starexec database in MySQL --
 
-USE starexec;
+DROP DATABASE IF EXISTS starexec;
+CREATE DATABASE starexec;
 
-DROP TABLE IF EXISTS user_roles;
-DROP TABLE IF EXISTS logins;
-DROP TABLE IF EXISTS verify;
-DROP TABLE IF EXISTS user_assoc;
-DROP TABLE IF EXISTS set_assoc;
-DROP TABLE IF EXISTS bench_assoc;
-DROP TABLE IF EXISTS job_assoc;
-DROP TABLE IF EXISTS solver_assoc;
-DROP TABLE IF EXISTS job_pairs;
-DROP TABLE IF EXISTS benchmarks;
-DROP TABLE IF EXISTS configurations;
-DROP TABLE IF EXISTS jobs;
-DROP TABLE IF EXISTS solvers;
-DROP TABLE IF EXISTS nodes;
-DROP TABLE IF EXISTS node_class;
-DROP TABLE IF EXISTS sets;
-DROP TABLE IF EXISTS users;
+USE starexec;
 
 CREATE TABLE users (
 	id BIGINT NOT NULL AUTO_INCREMENT,	
@@ -143,6 +128,7 @@ CREATE TABLE sets (
 CREATE TABLE user_assoc (
 	set_id BIGINT NOT NULL, 
 	user_id BIGINT NOT NULL,	
+	permission INT DEFAULT 0,
 	PRIMARY KEY (set_id, user_id),
 	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -153,7 +139,7 @@ CREATE TABLE set_assoc (
 	child_id BIGINT NOT NULL,	
 	PRIMARY KEY (set_id, child_id),
 	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
-	FOREIGN KEY (child_id) REFERENCES set_assoc(set_id) ON DELETE CASCADE
+	FOREIGN KEY (child_id) REFERENCES sets(id) ON DELETE CASCADE,
 );
 
 CREATE TABLE bench_assoc (

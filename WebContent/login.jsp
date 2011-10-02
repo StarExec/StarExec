@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="login" css="login">		
+<star:template title="login" css="login">	
 	<form method="POST" action="j_security_check" id="loginForm">			
 		<table cellspacing="10px">								
 			<tr>
