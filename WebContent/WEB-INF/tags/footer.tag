@@ -1,5 +1,5 @@
 <%@tag description="Standard footer for all starexec pages"%>
-<%@tag import="com.starexec.data.to.*, com.starexec.constants.*"%>
+<%@tag import="org.starexec.data.to.*, org.starexec.constants.*"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <footer id="pageFooter">

@@ -1,67 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+  <!-- Application Configuration -->
   <display-name>STAREXEC</display-name>
   <description>Logic solver collaboration tool</description>
-  <filter-mapping>
-    <filter-name>Session Filter</filter-name>
-    <url-pattern>/pages/*</url-pattern>    
- </filter-mapping>
- <filter>
-    <filter-name>Session Filter</filter-name>
-    <filter-class>com.starexec.app.SessionFilter</filter-class>    
- </filter>
   <session-config>
     <session-timeout>60</session-timeout>
   </session-config>
+  
+  <!-- Filters -->
+  <filter-mapping>
+    <filter-name>Session Filter</filter-name>
+    <url-pattern>/pages/*</url-pattern>    
+  </filter-mapping>
+  <filter>
+    <!-- Filter that checks all requests and sets up session parameters -->
+    <filter-name>Session Filter</filter-name>
+    <filter-class>org.starexec.app.SessionFilter</filter-class>    
+  </filter>
+  
+  <!-- Servlet Definitions -->
   <servlet>
-    <servlet-name>register</servlet-name>
-    <servlet-class>com.starexec.servlets.Registration</servlet-class>
+    <servlet-name>Registration</servlet-name>
+    <servlet-class>org.starexec.servlets.Registration</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>register</servlet-name>
+    <servlet-name>Registration</servlet-name>
     <url-pattern>/Registration</url-pattern>
   </servlet-mapping>
+    
   <servlet>
-    <servlet-name>getfile</servlet-name>
-    <servlet-class>com.starexec.servlets.GetFile</servlet-class>
+    <servlet-name>BenchmarkUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadBench</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>getfile</servlet-name>
-    <url-pattern>/GetFile</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>benchup</servlet-name>
-    <servlet-class>com.starexec.servlets.UploadBench</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>benchup</servlet-name>
+    <servlet-name>BenchmarkUploader</servlet-name>
     <url-pattern>/UploadBench</url-pattern>
   </servlet-mapping>
+  
   <servlet>
-    <servlet-name>solveup</servlet-name>
-    <servlet-class>com.starexec.servlets.UploadSolver</servlet-class>
+    <servlet-name>SolverUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadSolver</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>solveup</servlet-name>
+    <servlet-name>SolverUploader</servlet-name>
     <url-pattern>/UploadSolver</url-pattern>
   </servlet-mapping>
+  
   <servlet>
-    <servlet-name>newjob</servlet-name>
-    <servlet-class>com.starexec.servlets.SubmitJob</servlet-class>
+    <servlet-name>JobCreator</servlet-name>
+    <servlet-class>org.starexec.servlets.SubmitJob</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>newjob</servlet-name>
+    <servlet-name>JobCreator</servlet-name>
     <url-pattern>/SubmitJob</url-pattern>
   </servlet-mapping>
+  
   <servlet>
-    <servlet-name>jobresult</servlet-name>
-    <servlet-class>com.starexec.servlets.Results</servlet-class>
+    <servlet-name>JobResults</servlet-name>
+    <servlet-class>org.starexec.servlets.Results</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>jobresult</servlet-name>
+    <servlet-name>JobResults</servlet-name>
     <url-pattern>/Results</url-pattern>
   </servlet-mapping>
-  <servlet>
+  
+  <!-- RESTEasy webservice framework configuration -->
+  <servlet>  	
     <servlet-name>Resteasy</servlet-name>
     <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
   </servlet>
@@ -80,18 +84,16 @@
   <listener>
     <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
   </listener>  
-  <security-role>
-    <role-name>dev</role-name>    
-  </security-role>
+  
+  <!-- Security Roles -->  
   <security-role>
     <role-name>admin</role-name>    
-  </security-role>
-  <security-role>
-    <role-name>leader</role-name>    
-  </security-role>
+  </security-role>  
   <security-role>
     <role-name>user</role-name>    
   </security-role>
+  
+  <!-- Form based authentication configuration -->
   <login-config>
     <auth-method>FORM</auth-method>
     <form-login-config>
@@ -99,6 +101,8 @@
       <form-error-page>/login.jsp?result=failed</form-error-page>
     </form-login-config>	  
   </login-config>  
+  
+  <!-- Security restrictions -->
   <security-constraint>	
     <web-resource-collection>
 	  <web-resource-name>Users Only</web-resource-name>
@@ -108,6 +112,7 @@
 	  <role-name>user</role-name>
     </auth-constraint>		
   </security-constraint>
+  
   <security-constraint>	
     <web-resource-collection>
 	  <web-resource-name>Users Only</web-resource-name>
@@ -117,10 +122,14 @@
 	  <role-name>user</role-name>
     </auth-constraint>		
   </security-constraint>
+  
+  <!-- Default pages to load -->
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
+  
+  <!-- Application event listeners -->
   <listener>
-    <listener-class>com.starexec.app.Starexec</listener-class>
+    <listener-class>org.starexec.app.Starexec</listener-class>
   </listener>
 </web-app>
