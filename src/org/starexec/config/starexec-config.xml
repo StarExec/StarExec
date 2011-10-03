@@ -10,9 +10,8 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
-			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
-			<property key="CLASS_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes" />		
-			<property key="CONFIG_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/com/starexec/config" />
+			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />					
+			<property key="CONFIG_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/org/starexec/config" />
 			<property key="STAREXEC_ROOT" value="/project/tomcat-webapps/webapps/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
 			<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />
@@ -32,9 +31,8 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\benchmarks" />
-			<property key="SOLVER_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\solvers" />
-			<property key="CLASS_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\build\\classes" />		
-			<property key="CONFIG_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\build\\classes\\com\\starexec\\config" />
+			<property key="SOLVER_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\solvers" />				
+			<property key="CONFIG_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\build\\classes\\org\\starexec\\config" />
 			<property key="STAREXEC_ROOT" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\" />
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobs" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\node" />
@@ -54,9 +52,8 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="/home/tnjensen/stardev/data/benchmarks" />
-			<property key="SOLVER_PATH" value="/home/tnjensen/stardev/data/solvers" />
-			<property key="CLASS_PATH" value="/home/tnjensen/stardev/tomcat/webapps/starexec/WEB-INF/classes" />		
-			<property key="CONFIG_PATH" value="/home/tnjensen/stardev/tomcat/webapps/starexec/WEB-INF/classes/com/starexec/config" />
+			<property key="SOLVER_PATH" value="/home/tnjensen/stardev/data/solvers" />				
+			<property key="CONFIG_PATH" value="/home/tnjensen/stardev/tomcat/webapps/starexec/WEB-INF/classes/org/starexec/config" />
 			<property key="STAREXEC_ROOT" value="/home/tnjensen/stardev/tomcat/webapps/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/tnjensen/stardev/data/jobin" />
 			<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />

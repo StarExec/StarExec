@@ -24,8 +24,8 @@ public class Starexec implements ServletContextListener {
 	private static String ROOT_APPLICATION_PATH = "";
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
-	private static String CONFIG_PATH = "/WEB-INF/classes/com/starexec/config/starexec-config.xml";
-	private static String LOG4J_PATH = "/WEB-INF/classes/com/starexec/config/log4j.properties";
+	private static String CONFIG_PATH = "/WEB-INF/classes/org/starexec/config/starexec-config.xml";
+	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
 	
 	// XML Metadata to parse starexec's config file	
 	private static String NODE_CLASS = "class";

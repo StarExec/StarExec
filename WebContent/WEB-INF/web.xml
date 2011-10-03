@@ -74,8 +74,8 @@
     <url-pattern>/services/*</url-pattern>
   </servlet-mapping>
   <context-param>
-    <param-name>resteasy.scan.resources</param-name>
-    <param-value>true</param-value>
+    <param-name>resteasy.resources</param-name>
+    <param-value>org.starexec.app.RESTServices</param-value>
   </context-param>
   <context-param>
     <param-name>resteasy.servlet.mapping.prefix</param-name>
