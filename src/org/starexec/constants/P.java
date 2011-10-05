@@ -14,7 +14,7 @@ public class P {
 	
 	public static String USER_COMMUNITY = "cm";
 	public static String USER_PASSWORD = "pwd";
-	public static String USER_AFILIATION = "af";
+	public static String USER_INSTITUTION = "inst";
 	public static String USER_EMAIL = "em";
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";

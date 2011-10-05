@@ -108,7 +108,7 @@ public class UploadSolver extends HttpServlet {
 		
 		// For each configuration that was found in the bin directory
 		for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
-			s.addConfig(c);
+			//s.addConfig(c);
 		}
 				
 		// Add the solver to the database

@@ -27,6 +27,11 @@ public class Verify extends HttpServlet {
         super();        
     }
 	
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	// Don't accept POST, this could be a malicious request
+		log.warn("Illegal POST request to verification servlet from ip address: " + request.getRemoteHost());
+    }
+    
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	if(Util.paramExists(P.VERIFY_EMAIL, request)) {
     		handleEmail(request, response);
@@ -40,10 +45,12 @@ public class Verify extends HttpServlet {
     	// then the verify bit (users.verified) is flipped. Else, nothing.
     	boolean r = false; //Database.verifyCode(conf);
     	
-    	if(r) log.info("Verified user with conf code " + conf);
-    	
-		response.setContentType("text/plain");
-    	response.getWriter().print(r);
-		response.getWriter().close();
+    	if(r) {
+    		log.info("Verified user with confirmation code " + conf);
+    		response.sendRedirect("/starexec/verify.jsp?result=ok");
+    	} else {
+    		log.warn("Failed to verify user with confirmation code " + conf);
+    		response.sendRedirect("/starexec/verify.jsp?result=fail");
+    	}    		
     }
 }

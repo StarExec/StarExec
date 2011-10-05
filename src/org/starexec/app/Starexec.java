@@ -2,16 +2,18 @@ package org.starexec.app;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ResourceBundle;
 
-import javax.servlet.*;
-import javax.xml.parsers.*;
-import org.apache.log4j.*;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.starexec.data.Database;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Class which listens for application events (mainly startup/shutdown)
@@ -61,8 +63,8 @@ public class Starexec implements ServletContextListener {
 		// Load all properties from the starexec-config file
 		Starexec.loadProperties();
 		
-		// Reference the database class to force database connection pool initialization
-		Database d = null;		
+		// Add the database to the application scope to expose it to JSP's via EL
+		event.getServletContext().setAttribute("database", new Database());
 	}
 	
 	/**

@@ -1,103 +1,159 @@
 package org.starexec.data.to;
 
-import java.util.ArrayList;
 import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * @deprecated This class is out of date and needs to be updated
+ * Represents a job in the database
+ * 
+ * @author Tyler Jensen
  */
-public class Job {
-	private int jobid;
-	private int communityId;
-	private int userid;
-	private Timestamp submitted, completed;
-	private String description, status, node;	// TODO: Create a node TO later on with hardware info?
-	private long timeout;	
-	private String runTime = "";
+public class Job extends Identifiable {
+	private long userId = -1;
+	private long nodeClassId = -1;
+	private String name;
+	private Timestamp submitted;
+	private Timestamp finished;
+	private long timeout;
+	private String status;
+	private String description;
+	private String runTime = "N/A";
 	private List<JobPair> jobPairs;
 	
-	public Job(){
-		jobPairs = new ArrayList<JobPair>();
+	public Job() {
+		jobPairs = new LinkedList<JobPair>();
 	}
 	
-	public Job(int id){
-		this();
-		setJobId(id);
+	/**
+	 * @return the user id of the user who created the job
+	 */
+	public long getUserId() {
+		return userId;
 	}
-	
-	public int getJobId() {
-		return jobid;
+
+	/**
+	 * @param userId the user id to set as the creator
+	 */
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
-	
-	public void setJobId(int jobid) {
-		this.jobid = jobid;
+
+	/**
+	 * @return the id of the node class the job was intended to run on
+	 */
+	public long getNodeClassId() {
+		return nodeClassId;
 	}
-	
-	public int getUserId() {
-		return userid;
+
+	/**
+	 * @param nodeClassId the id of the node class to set for the job
+	 */
+	public void setNodeClassId(long nodeClassId) {
+		this.nodeClassId = nodeClassId;
 	}
-	
-	public void setUserId(int userid) {
-		this.userid = userid;
+
+	/**
+	 * @return the user defined name for the job
+	 */
+	public String getName() {
+		return name;
 	}
-	
+
+	/**
+	 * @param name the name to set for the job
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @return the date the job was submitted
+	 */
 	public Timestamp getSubmitted() {
 		return submitted;
 	}
-	
+
+	/**
+	 * @param submitted the submit date to set for the job
+	 */
 	public void setSubmitted(Timestamp submitted) {
 		this.submitted = submitted;
 	}
-	
-	public Timestamp getCompleted() {
-		return completed;
+
+	/**
+	 * @return the date the job finished
+	 */
+	public Timestamp getFinished() {
+		return finished;
 	}
-	
-	public void setCompleted(Timestamp completed) {
-		this.completed = completed;
+
+	/**
+	 * @param finished the finish date to set for the job
+	 */
+	public void setFinished(Timestamp finished) {
+		this.finished = finished;
 	}
-	
+
+	/**
+	 * @return the maximum amount of time (in seconds) a job can run
+	 */
+	public long getTimeout() {
+		return timeout;
+	}
+
+	/**
+	 * @param timeout the timeout for the job
+	 */
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
+
+	/**
+	 * @return the current status of the job (e.g. ready, enqueued, etc.)
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status for the job
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	/**
+	 * @return the user defined description of the job
+	 */
 	public String getDescription() {
 		return description;
 	}
-	
+
+	/**
+	 * @param description the description for the job
+	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 	
-	public String getStatus() {
-		return status;
-	}
-	
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	
-	public String getNode() {
-		return node;
-	}
-	
-	public void setNode(String node) {
-		this.node = node;
-	}
-	
-	public long getTimeout() {
-		return timeout;
-	}
-	
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
-	
+	/**
+	 * @return the list of job pairs belonging to this job
+	 */
 	public List<JobPair> getJobPairs() {
 		return jobPairs;
-	}	
-	
-	public boolean addJobPair(JobPair jp){
-		return jobPairs.add(jp);
 	}
-		
+
+	/**
+	 * @param jobPair the job pair to add to the job
+	 */
+	public void addJobPair(JobPair jobPair) {
+		jobPairs.add(jobPair);
+	}
+
+	/**
+	 * @return a formatted string representing the job's total runtime
+	 */
 	public String getRunTime() {
 		return runTime;
 	}
@@ -110,17 +166,7 @@ public class Job {
 		int minutes = runTime / 60;
 		int hours = runTime / (3600);
 		int days = runTime / (86400);
-		int seconds = runTime - (minutes * 60) - (hours * 3600) - (days * 86400);
-		
-		
+		int seconds = runTime - (minutes * 60) - (hours * 3600) - (days * 86400);			
 		this.runTime = String.format("%sd %sh %sm %ss", days, hours, minutes, seconds);
 	}
-
-	public int getCommunityId() {
-		return communityId;
-	}
-
-	public void setCommunityId(int communityId) {
-		this.communityId = communityId;
-	}	
 }

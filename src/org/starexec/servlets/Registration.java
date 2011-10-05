@@ -29,21 +29,14 @@ public class Registration extends HttpServlet {
         super();
     }
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// Don't accept GET, this could be a malicious request
 		log.warn("Illegal GET request to registration servlet from ip address: " + request.getRemoteHost());
 	}
 
-	/**
-	 * Responds with true or false in plain text indicating if the user was successfully added or not
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		User u = new User();
-		u.setAffiliation(request.getParameter(P.USER_AFILIATION));
+		u.setInstitution(request.getParameter(P.USER_INSTITUTION));
 		u.setEmail(request.getParameter(P.USER_EMAIL));
 		u.setFirstName(request.getParameter(P.USER_FIRSTNAME));
 		u.setLastName(request.getParameter(P.USER_LASTNAME));

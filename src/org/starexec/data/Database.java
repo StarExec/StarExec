@@ -48,10 +48,6 @@ public class Database {
 		}
 	}
 	
-	public Database() throws Exception {
-		throw new Exception("Cannot instatiate an object of a static class");
-	}
-	
 	/**
 	 * Adds the specified user to the database. This method will hash the 
 	 * user's password for them, so it must be supplied in plaintext.
@@ -94,24 +90,26 @@ public class Database {
 		Connection con = null;			
 		
 		try {
-			con = dataPool.getConnection();
-			
-			//PreparedStatement psGetUser = statementPool.getStatement(StatementPool.GET_USER);
-			PreparedStatement psGetUser = null;
-			psGetUser.setString(1, email);
-			
-			ResultSet results = psGetUser.executeQuery();
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
+			procedure.setString(1, email);					
+			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
-				User u = new User(results.getInt("userid"));
-				u.setAffiliation(results.getString("affiliation"));
+				User u = new User();
+				u.setId(results.getLong("id"));
 				u.setEmail(results.getString("email"));
-				u.setFirstName(results.getString("fname"));
-				u.setLastName(results.getString("lname"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setInstitution(results.getString("institution"));
+				u.setCreateDate(results.getTimestamp("created"));
+				u.setRole(results.getString("role"));							
 				return u;
 			}					
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
 		}
 		
 		return null;

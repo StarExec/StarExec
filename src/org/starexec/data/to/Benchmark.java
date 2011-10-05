@@ -4,67 +4,99 @@ import java.io.File;
 import java.sql.Timestamp;
 
 /**
- * @deprecated This class is out of date and needs to be updated
+ * Represents a benchmark in the database
+ * 
+ * @author Tyler Jensen
  */
-public class Benchmark {
-	private int id;
-	transient private String path;
-	private String fileName;
-	private int userid;
-	private int communityId;
-	private Timestamp uploaded;
-	private int level;
+public class Benchmark extends Identifiable {
+	private long userId = -1;
+	private String name;	
+	private String description;	
+	private Timestamp uploadDate;	
+	private transient String path;
+	private boolean isDownloadable;
 	
-	public int getId() {
-		return id;
+	/**
+	 * @return the user id of the user who uploaded the solver
+	 */
+	public long getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId the user id to set as the uploader
+	 */
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 	
-	public void setId(int id) {
-		this.id = id;
+	/**
+	 * @return the canonical name of the benchmark
+	 */
+	public String getName() {
+		return name;
 	}
 	
+	/**
+	 * @param name the name to set for the benchmark
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	/**
+	 * @return the user defined description of the benchmark
+	 */
+	public String getDescription() {
+		return description;
+	}
+	
+	/**
+	 * @param description the description to set for the benchmark
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	/**
+	 * @return the date the benchmark was added to the system
+	 */
+	public Timestamp getUploadDate() {
+		return uploadDate;
+	}
+	
+	/**
+	 * @param uploadDate the upload date to set for the benchmark
+	 */
+	public void setUploadDate(Timestamp uploadDate) {
+		this.uploadDate = uploadDate;
+	}
+	
+	/**
+	 * @return the absolute file path to the benchmark on disk
+	 */
 	public String getPath() {
 		return path;
 	}
 	
+	/**
+	 * @param path the absolute path to set for the benchmark
+	 */
 	public void setPath(String path) {
 		this.path = path;
-		fileName = path.substring(path.lastIndexOf(File.separator) + 1);
 	}
 	
-	public int getUserId() {
-		return userid;
+	/**
+	 * @return true if this benchmark can be downloaded, false otherwise
+	 */
+	public boolean isDownloadable() {
+		return isDownloadable;
 	}
 	
-	public void setUserId(int userid) {
-		this.userid = userid;
-	}
-	
-	public Timestamp getUploaded() {
-		return uploaded;
-	}
-	
-	public void setUploaded(Timestamp uploaded) {
-		this.uploaded = uploaded;
-	}
-	
-	public String getFileName(){
-		return fileName;
-	}
-
-	public int getLevel() {
-		return level;
-	}
-
-	public void setLevel(int level) {
-		this.level = level;
-	}
-
-	public int getCommunityId() {
-		return communityId;
-	}
-
-	public void setCommunityId(int communityId) {
-		this.communityId = communityId;
-	}		
+	/**
+	 * @param isDownloadable sets whether or not this benchmark down be downloaded
+	 */
+	public void setDownloadable(boolean isDownloadable) {
+		this.isDownloadable = isDownloadable;
+	}	
 }

@@ -38,7 +38,8 @@ CREATE TABLE logins (
 
 CREATE TABLE verify (
 	user_id BIGINT NOT NULL,
-	code VARCHAR(36) NOT NULL,	
+	code VARCHAR(36) NOT NULL,
+	created TIMESTAMP NOT NULL,
 	PRIMARY KEY (user_id, code),
 	UNIQUE KEY (user_id),
 	UNIQUE KEY (code),
@@ -47,22 +48,24 @@ CREATE TABLE verify (
 
 CREATE TABLE benchmarks (
 	id BIGINT NOT NULL AUTO_INCREMENT,
-	user_id BIGINT NOT NULL,	
+	user_id BIGINT NOT NULL,
 	name VARCHAR(32) NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
-	path TEXT NOT NULL,	
+	path TEXT NOT NULL,
 	description TEXT,
-	PRIMARY KEY (id),	
+	downloadable BOOLEAN DEFAULT 1,
+	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
 
-CREATE TABLE solvers (	
+CREATE TABLE solvers (
 	id BIGINT NOT NULL AUTO_INCREMENT,
-	user_id BIGINT NOT NULL,	
+	user_id BIGINT NOT NULL,
 	name VARCHAR(32) NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
-	path TEXT NOT NULL,	
+	path TEXT NOT NULL,
 	description TEXT,
+	downloadable BOOLEAN DEFAULT 0,
 	PRIMARY KEY (id),	
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
@@ -75,22 +78,22 @@ CREATE TABLE node_class (
 
 CREATE TABLE nodes (
 	id BIGINT NOT NULL AUTO_INCREMENT, 
-	class_id BIGINT NOT NULL,	
-	name VARCHAR(32) NOT NULL,		
+	class_id BIGINT NOT NULL,
+	name VARCHAR(32) NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (class_id) REFERENCES node_class(id) ON DELETE NO ACTION
 );
 
 CREATE TABLE jobs (
 	id BIGINT NOT NULL AUTO_INCREMENT,
-	user_id BIGINT NOT NULL,	
-	node_class BIGINT,	
+	user_id BIGINT NOT NULL,
+	node_class BIGINT,
 	name VARCHAR(32),
 	submitted TIMESTAMP DEFAULT 0,
-	finished TIMESTAMP DEFAULT 0,	
-	timeout BIGINT,			
+	finished TIMESTAMP DEFAULT 0,
+	timeout BIGINT,
 	status VARCHAR(24) DEFAULT "Ready",
-	description TEXT,	
+	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	FOREIGN KEY (node_class) REFERENCES node_class(id) ON DELETE NO ACTION	
@@ -100,7 +103,7 @@ CREATE TABLE configurations (
 	id BIGINT NOT NULL AUTO_INCREMENT,
 	solver_id BIGINT NOT NULL,
 	name VARCHAR(32) NOT NULL,
-	description TEXT,	
+	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
@@ -114,54 +117,86 @@ CREATE TABLE job_pairs (
 	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE NO ACTION,
 	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE NO ACTION
 );
-	
-CREATE TABLE sets (
+
+CREATE TABLE permissions (
 	id BIGINT NOT NULL AUTO_INCREMENT, 
-	user_id BIGINT NOT NULL,	
-	name VARCHAR(32) NOT NULL,	
+	add_solver BOOLEAN DEFAULT 0,
+	add_bench BOOLEAN DEFAULT 0,
+	add_user BOOLEAN DEFAULT 0,
+	add_space BOOLEAN DEFAULT 0,
+	remove_solver BOOLEAN DEFAULT 0,
+	remove_bench BOOLEAN DEFAULT 0,
+	remove_user BOOLEAN DEFAULT 0,
+	remove_space BOOLEAN DEFAULT 0,
+	is_leader BOOLEAN DEFAULT 0,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE spaces (
+	id BIGINT NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(32) NOT NULL,
 	created TIMESTAMP DEFAULT 0,
 	description TEXT,
+	locked BOOLEAN DEFAULT 0,
+	default_permission BIGINT NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE website (
+	id BIGINT NOT NULL AUTO_INCREMENT, 
+	space_id BIGINT, 
+	user_id BIGINT,
+	solver_id BIGINT,
+	url TEXT NOT NULL,
+	name VARCHAR(64),
+	PRIMARY KEY (id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE	
 );
 
 CREATE TABLE user_assoc (
-	set_id BIGINT NOT NULL, 
-	user_id BIGINT NOT NULL,	
-	permission INT DEFAULT 0,
-	PRIMARY KEY (set_id, user_id),
-	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	space_id BIGINT NOT NULL,
+	user_id BIGINT NOT NULL,
+	permission BIGINT NOT NULL,
+	PRIMARY KEY (space_id, user_id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE CASCADE
 );
 
 CREATE TABLE set_assoc (
-	set_id BIGINT NOT NULL, 
-	child_id BIGINT NOT NULL,	
-	PRIMARY KEY (set_id, child_id),
-	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
-	FOREIGN KEY (child_id) REFERENCES sets(id) ON DELETE CASCADE,
+	space_id BIGINT NOT NULL, 
+	child_id BIGINT NOT NULL,
+	inherit BOOLEAN DEFAULT 0,
+	permission BIGINT NOT NULL,
+	PRIMARY KEY (space_id, child_id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (child_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE CASCADE
 );
 
 CREATE TABLE bench_assoc (
-	set_id BIGINT NOT NULL, 
+	space_id BIGINT NOT NULL, 
 	bench_id BIGINT NOT NULL,	
-	PRIMARY KEY (set_id, bench_id),
-	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
+	PRIMARY KEY (space_id, bench_id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 CREATE TABLE job_assoc (
-	set_id BIGINT NOT NULL, 
-	job_id BIGINT NOT NULL,	
-	PRIMARY KEY (set_id, job_id),
-	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
+	space_id BIGINT NOT NULL, 
+	job_id BIGINT NOT NULL,
+	PRIMARY KEY (space_id, job_id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 CREATE TABLE solver_assoc (
-	set_id BIGINT NOT NULL, 
-	solver_id BIGINT NOT NULL,	
-	PRIMARY KEY (set_id, solver_id),
-	FOREIGN KEY (set_id) REFERENCES sets(id) ON DELETE CASCADE,
+	space_id BIGINT NOT NULL,
+	solver_id BIGINT NOT NULL,
+	PRIMARY KEY (space_id, solver_id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );

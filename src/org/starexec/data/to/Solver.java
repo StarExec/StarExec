@@ -1,85 +1,123 @@
 package org.starexec.data.to;
 
-import java.sql.Date;
-import java.util.ArrayList;
+import java.io.File;
+import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * @deprecated This class is out of date and needs to be updated
+ * Represents a solver in the database
+ * 
+ * @author Tyler Jensen
  */
-public class Solver {
-	private int id;
-	transient private String path;
-	private String name;
-	private int userId;
-	private int communityId;
-	private Date uploaded;
-	private String notes;	
+public class Solver extends Identifiable {
+	private long userId = -1;
+	private String name;	
+	private String description;	
+	private Timestamp uploadDate;	
+	private transient String path;
+	private boolean isDownloadable;	
 	private List<Configuration> configurations;
 	
-	public Solver(){		
-		configurations = new ArrayList<Configuration>(3);
+	public Solver() {
+		this.configurations = new LinkedList<Configuration>();
 	}
 	
-	public List<Configuration> getConfigurations(){
-		return configurations;
-	}
-	
-	public void addConfig(Configuration config){
-		this.configurations.add(config);
+	/**
+	 * @return the user id of the user who uploaded the solver
+	 */
+	public long getUserId() {
+		return userId;
 	}
 
-	public int getId() {
-		return id;
+	/**
+	 * @param userId the user id to set as the uploader
+	 */
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+
+	/**
+	 * @return the canonical name of the solver
+	 */
+	public String getName() {
+		return name;
 	}
 	
-	public void setId(int id) {
-		this.id = id;
+	/**
+	 * @param name the name to set for the solver
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
+	/**
+	 * @return the user defined description of the solver
+	 */
+	public String getDescription() {
+		return description;
+	}
+	
+	/**
+	 * @param description the description to set for the solver
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}	
+	
+	/**
+	 * @return the date the solver was added to the system
+	 */
+	public Timestamp getUploadDate() {
+		return uploadDate;
+	}
+	
+	/**
+	 * @param uploadDate the upload date to set for the solver
+	 */
+	public void setUploadDate(Timestamp uploadDate) {
+		this.uploadDate = uploadDate;
+	}
+	
+	/**
+	 * @return the absolute file path to the solver on disk
+	 */
 	public String getPath() {
 		return path;
 	}
 	
-	public void setPath(String path){
+	/**
+	 * @param path the absolute path to set for the solver
+	 */
+	public void setPath(String path) {
 		this.path = path;
 	}
 	
-	public void setName(String name) {
-		this.name = name;		
+	/**
+	 * @return true if this solver can be downloaded, false otherwise
+	 */
+	public boolean isDownloadable() {
+		return isDownloadable;
 	}
 	
-	public int getUserId() {
-		return userId;
-	}
-	
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
-	
-	public Date getUploaded() {
-		return uploaded;
-	}
-	
-	public void setUploaded(Date uploaded) {
-		this.uploaded = uploaded;
-	}
-	
-	public String getName(){
-		return name;
+	/**
+	 * @param isDownloadable sets whether or not this solver down be downloaded
+	 */
+	public void setDownloadable(boolean isDownloadable) {
+		this.isDownloadable = isDownloadable;
 	}
 
-	public String getNotes() {
-		return notes;
+	/**
+	 * @return the configurations that belong to the job
+	 */
+	public List<Configuration> getConfigurations() {
+		return configurations;
 	}
 
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}		
-	public int getCommunityId() {
-		return communityId;
-	}
-	public void setCommunityId(int communityId) {
-		this.communityId = communityId;
-	}
+	/**
+	 * @param configuration the configuration to add to the job
+	 */
+	public void addConfiguration(Configuration configuration) {
+		this.configurations.add(configuration);
+	}	
 }
