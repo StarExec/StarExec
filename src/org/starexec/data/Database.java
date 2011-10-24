@@ -115,6 +115,132 @@ public class Database {
 		return null;
 	}
 	
+	public static boolean updateFirstName(long userId, String newValue){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
+			procedure.setLong(1, userId);					
+			procedure.setString(2, newValue);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	public static boolean updateLastName(long userId, String newValue){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateLastName(?, ?)}");
+			procedure.setLong(1, userId);					
+			procedure.setString(2, newValue);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	public static boolean updateEmail(long userId, String newValue){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateEmail(?, ?)}");
+			procedure.setLong(1, userId);					
+			procedure.setString(2, newValue);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	public static boolean updateInstitution(long userId, String newValue){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
+			procedure.setLong(1, userId);					
+			procedure.setString(2, newValue);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	public static boolean updatePassword(long userId, String newValue){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdatePassword(?, ?)}");
+			procedure.setLong(1, userId);					
+			procedure.setString(2, newValue);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	public static String getWebsites(long userId) {
+		Connection con = null;
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetWebsitesById(?)}");
+			procedure.setLong(1, userId);
+			ResultSet results = procedure.executeQuery();
+			StringBuffer websites = new StringBuffer("{\"websites\":[ ");
+			
+			while (results.next()) {
+				websites.append("{\"name\": \"" + results.getString("name") + "\", \"url\": \"" + results.getString("url") + "\"},");
+			}
+			websites.setCharAt(websites.length()-1,']');  // replace last character with ]
+	        websites.append("}");
+			return websites.toString();
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Begins a transaction by turning off auto-commit
 	 */
