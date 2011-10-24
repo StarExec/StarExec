@@ -15,9 +15,7 @@ import org.starexec.data.Database;
 import org.starexec.data.to.*;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.google.gson.GsonBuilder;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -26,10 +24,51 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class RESTServices {	
 	private static final Logger log = Logger.getLogger(RESTServices.class);			
 	private static Gson gson = new Gson();
+	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 	
 	public RESTServices(){
 		
 	}
+
+	/**
+	 * @return a json string representing all the subspaces of the space with
+	 * the given id. If the given id is <= 0, then the root space is returned
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/space/subspaces")
+	@Produces("application/json")	
+	public String getSubSpaces(@QueryParam("id") long id) {		
+		log.debug("getSubSpaces id=" + id);
+		return gson.toJson(RESTHelpers.toSpaceTree(Database.getSubSpaces(id)));
+	}	
+	
+	/**
+	 * @return a json string representing all the subspaces of the space with
+	 * the given id. If the given id is <= 0, then the root space is returned
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/space/{id}")
+	@Produces("application/json")	
+	public String getSpaceDetails(@PathParam("id") long id) {	
+		log.debug("getSpaceDetails id=" + id);
+		return limitGson.toJson(Database.getSpaceDetails(id));
+	}	
+	
+	/**
+	 * @return a json string representing all the subspaces of the space with
+	 * the given id. If the given id is <= 0, then the root space is returned
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/session/logout")
+	@Produces("application/json")	
+	public String doInvalidateSession(@Context HttpServletRequest request) {	
+		log.debug("doInvalidateSession user=" + request.getSession().getAttribute("user"));
+		request.getSession().invalidate();
+		return gson.toJson(0);
+	}	
 	
 	@GET
 	@Path("/websites")

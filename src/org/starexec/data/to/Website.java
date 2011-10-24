@@ -1,8 +1,10 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 public class Website extends Identifiable {
-	private String url;
-	private String name;
+	@Expose private String url;
+	@Expose private String name;
 	
 	/**
 	 * @return the url of the website

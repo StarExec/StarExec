@@ -13,19 +13,19 @@
 			</tr>
 			<tr class="shade">
 				<td class="label">first name </td>
-				<td id="editfirstname">${usr.firstName}</td>
+				<td id="editfirstname">${user.firstName}</td>
 			</tr>
 			<tr>
 				<td>last name</td>
-				<td id="editlastname">${usr.lastName}</td>
+				<td id="editlastname">${user.lastName}</td>
 			</tr>
 			<tr class="shade">
 				<td>institution </td>
-				<td id="editinstitution">${usr.institution}</td>
+				<td id="editinstitution">${user.institution}</td>
 			</tr>
 			<tr>
 				<td>email </td>
-				<td id="editemail">${usr.email}</td>
+				<td id="editemail">${user.email}</td>
 			</tr>
 		</table>
 		<h6>(click the current value of an attribute to edit it)</h6>

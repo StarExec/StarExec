@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * Represents a job in the database
  * 
@@ -12,12 +14,12 @@ import java.util.List;
 public class Job extends Identifiable {
 	private long userId = -1;
 	private long nodeClassId = -1;
-	private String name;
+	@Expose private String name;
 	private Timestamp submitted;
 	private Timestamp finished;
 	private long timeout;
-	private String status;
-	private String description;
+	@Expose	private String status;
+	@Expose	private String description;
 	private String runTime = "N/A";
 	private List<JobPair> jobPairs;
 	

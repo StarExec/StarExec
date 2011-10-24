@@ -14,13 +14,16 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
 /**
  * Database objects are responsible for any and all communication to the MySQL back-end database.
  * This class provides a convenient front for storing things in the database and extracting information.
- * 
- * @author Tyler Jensen
  */
 public class Database {	
 	private static final Logger log = Logger.getLogger(Database.class);
 	private static DataSource dataPool = null;
 	
+	/**
+	 * Static initialzer block which gets executed when this class is loaded.
+	 * The code below configures the tomcat JDBC connection pool.
+	 * @author Tyler Jensen
+	 */
 	static {						
 		try {
 			log.debug("Setting up data connection pool properties");
@@ -84,7 +87,7 @@ public class Database {
 	 * Retrieves a user from the database given the email address
 	 * @param email The email of the user to retrieve
 	 * @return The user object associated with the user
-	 * @deprecated Left as an example, need to update to use stored procedures
+	 * @author Tyler Jensen
 	 */
 	public static User getUser(String email){
 		Connection con = null;			
@@ -232,6 +235,246 @@ public class Database {
 	        websites.append("}");
 			return websites.toString();
 			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets all subspaces belonging to another space
+	 * @param id The id of the parent space. Give an id <= 0 to get the root space
+	 * @return A list of child spaces belonging to the parent space.
+	 * @author Tyler Jensen
+	 */
+	public static List<Space> getSubSpaces(long id) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();
+			List<Space> subSpaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getLong("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				s.setPermissionId(results.getLong("default_permission"));
+				subSpaces.add(s);
+			}			
+			
+			log.debug("getSubSpaces returning " + subSpaces.size() + " records");
+			return subSpaces;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a space with minimal information (only details about the space itself)
+	 * @param id The id of the space to get information for
+	 * @return A space object consisting of shallow information about the space
+	 * @author Tyler Jensen
+	 */
+	public static Space getSpace(long id) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();		
+			
+			if(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getLong("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				s.setCreated(results.getTimestamp("created"));
+				s.setPermissionId(results.getLong("default_permission"));
+				return s;
+			}											
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a space with detailed information (solvers, benchmarks, jobs and user belonging
+	 * to the space are also populated)
+	 * @param id The id of the space to get information for
+	 * @return A space object consisting of detailed information about the space
+	 * @author Tyler Jensen
+	 */
+	public static Space getSpaceDetails(long id) {		
+		try {
+			Space s = Database.getSpace(id);
+			s.setUsers(Database.getSpaceUsers(id));
+			s.setBenchmarks(Database.getSpaceBenchmarks(id));
+			s.setSolvers(Database.getSpaceSolvers(id));
+			s.setJobs(Database.getSpaceJobs(id));
+						
+			log.debug(String.format("getSpaceDetails returning %d record(s) for space id=%d", s == null ? 0 : 1, id));			
+			return s;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param spaceId The id of the space to get users for
+	 * @return A list of users belonging directly to the space
+	 * @author Tyler Jensen
+	 */
+	public static List<User> getSpaceUsers(long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceUsersById(?)}");
+			procedure.setLong(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+			List<User> users= new LinkedList<User>();
+			
+			while(results.next()){
+				User u = new User();
+				u.setId(results.getLong("id"));
+				u.setEmail(results.getString("email"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setInstitution(results.getString("institution"));
+				u.setCreateDate(results.getTimestamp("created"));				
+				users.add(u);
+			}			
+			
+			log.debug(String.format("getSpaceUsers returning %d records for id=%d", users.size(), spaceId));
+			return users;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param spaceId The id of the space to get benchmarks for
+	 * @return A list of all benchmarks belonging to the space
+	 * @author Tyler Jensen
+	 */
+	public static List<Benchmark> getSpaceBenchmarks(long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
+			procedure.setLong(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			
+			while(results.next()){
+				Benchmark b = new Benchmark();
+				b.setId(results.getLong("id"));
+				b.setName(results.getString("name"));
+				b.setUploadDate(results.getTimestamp("uploaded"));
+				b.setDescription(results.getString("description"));
+				b.setDownloadable(results.getBoolean("downloadable"));				
+				benchmarks.add(b);
+			}			
+			
+			log.debug(String.format("getSpaceBenchmarks returning %d records for id=%d", benchmarks.size(), spaceId));
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param spaceId The id of the space to get jobs for
+	 * @return A list of jobs existing directly in the space
+	 * @author Tyler Jensen
+	 */
+	public static List<Job> getSpaceJobs(long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceJobsById(?)}");
+			procedure.setLong(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+				Job j = new Job();
+				j.setId(results.getLong("id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));
+				j.setSubmitted(results.getTimestamp("submitted"));
+				j.setStatus(results.getString("status"));
+				jobs.add(j);
+			}			
+			
+			log.debug(String.format("getSpaceJobs returning %d records for id=%d", jobs.size(), spaceId));
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param spaceId The id of the space to get solvers for
+	 * @return A list of all solvers belonging directly to the space
+	 * @author Tyler Jensen
+	 */
+	public static List<Solver> getSpaceSolvers(long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceSolversById(?)}");
+			procedure.setLong(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+			
+			while(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getLong("id"));
+				s.setName(results.getString("name"));				
+				s.setUploadDate(results.getTimestamp("uploaded"));
+				s.setDescription(results.getString("description"));
+				s.setDownloadable(results.getBoolean("downloadable"));
+				solvers.add(s);
+			}			
+			
+			log.debug(String.format("getSpaceSolvers returning %d records for id=%d", solvers.size(), spaceId));
+			return solvers;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

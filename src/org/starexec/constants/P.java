@@ -39,5 +39,5 @@ public class P {
 	public static String PAIR_START_TIME = "stime";
 	public static String PAIR_END_TIME = "etime"; */
 	
-	public static String SESSION_USER = "usr";
+	public static String SESSION_USER = "user";
 }

@@ -2,16 +2,18 @@ package org.starexec.data.to;
 
 import java.sql.Timestamp;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * Represents a user in the database
  * 
  * @author Tyler Jensen
  */
 public class User extends Identifiable {
-	private String email;
-	private String firstName;
-	private String lastName;
-	private String institution;	
+	@Expose	private String email;
+	@Expose	private String firstName;
+	@Expose	private String lastName;
+	@Expose	private String institution;	
 	private String role;
 	private Timestamp createDate;	
 	private transient String password;		
