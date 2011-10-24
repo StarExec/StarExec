@@ -1,0 +1,63 @@
+fieldset {	
+	border-width: 5px;
+	border-style: solid;
+	border-color: #111111;	
+	border-radius: 5px;					
+	width: 75%;
+	margin: auto;
+	margin-top: 70px;						
+	padding: 30px;
+}
+
+legend {
+	border-width: 5px;
+	border-style: solid;
+	border-color: #111111;
+	border-radius: 10px;
+	background-color: #111111;
+	padding: 3px 10px;
+	margin-left: 25px;
+}
+
+fieldset table {
+	width: 100%;
+}
+
+tr .label {
+	width: 25%;
+}
+
+.shade td {
+	background-color: #111111;
+}
+
+tr td {
+	padding: 10px;	
+	border-style: solid;
+	border-width: 3px;
+	border-color: #1C1C1C;
+}
+
+tr td button {
+	height: 20px;
+	width: 20%;
+}
+
+fieldset h6 {
+	padding-top: 20px;
+	text-align: right;
+	font-size: small;
+}
+
+input {
+	width: 50%;
+	height: 20px;
+}
+
+button.round {
+	float: right;
+}
+
+#editfirstname:hover, #editlastname:hover, #editinstitution:hover, #editemail:hover {
+	cursor: pointer;	
+}
