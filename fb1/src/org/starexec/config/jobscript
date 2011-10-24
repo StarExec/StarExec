@@ -1,0 +1,133 @@
+#!/bin/bash
+# This submits a test bash job to the SGE
+#$ -j y
+#$ -o /dev/null
+#$ -S /bin/bash
+# /////////////////////////////////////////////
+# Setup
+# /////////////////////////////////////////////
+ROOT='/export/starexec'
+WDIR=$ROOT/workspace
+SHR=/home/starexec
+T="date +%s.%m"
+M=`uname -n`; M=${M%%\.*}
+
+# @@
+J_ID=$$JID$$
+J_STA=$$JOBSTA$$
+J_FIN=$$JOBFIN$$
+J_ERR=$$JOBERR$$
+# @@
+RESULT=''
+
+JOB=job_$J_ID
+JOBFILE=$WDIR/$JOB.out
+
+# Redirect stdout and stderr streams
+exec 1>$JOBFILE 2>&1
+
+# /////////////////////////////////////////////
+# Functions
+# /////////////////////////////////////////////
+function runPair { # Run a solver on a benchmark
+
+        PID=$1
+        SPATH=$2
+        BPATH=$3
+        RUN=$4
+        ST=''
+        FT=''
+        RESULT=''
+
+        if [ $# != 4 ]; then
+                echo Incorrect number of args for $0
+                sendPairStatus $PID $J_ERR
+                return 1
+        fi
+
+        sendPairStatus $PID $J_STA
+
+        SOL=${SPATH##*/} # Solver directory name
+        SWD=$WDIR/$SOL   # Solver Working Directory
+        SWP=$SWD/$RUN
+
+        BEN=${BPATH##*/} # Benchmark name
+        BWP=$WDIR/$BEN   # Benchmark Working Path
+
+        # If directory doesn't exist, create it.
+        if [ ! -d $SWD ]; then
+                mkdir $SWD
+        fi
+
+        # Copy all contents from the solver's shared bin dir to here
+        cp $SPATH/bin/* $SWD
+
+        # Make sure solver runfile exists
+        if [ ! -f $SWP ]; then
+                echo Cannot find runfile $RUN in $SWD
+                return 1
+        fi
+
+        # Copy benchmark to workspace. WARNING: can't tell the difference between benchmarks with same name!
+        cp $BPATH $WDIR
+
+        # Change dir to solver working directory for runfile
+        cd $SWD
+
+        # Running $SOL on $BEN
+        ST=`$T`
+        RESULT=`$SWP $BWP`
+        FT=`$T`
+
+		# Calculates time for jobpair run in ms
+        ST=$(((${ST%\.*} * 1000) + 10#${ST#*\.}))
+        FT=$(((${FT%\.*} * 1000) + 10#${FT#*\.}))
+        echo "$SOL($BEN) : $RESULT : $(($ST - $FT))"
+
+        sendPairStatus $PID $J_FIN
+}
+
+function toResultServlet {
+        wget "starexec/starexec/Results?node=$M&$1" -o /dev/null  -O /dev/null --spider
+        return $?
+}
+
+function sendPairStatus {
+        toResultServlet "pid=$1&status=$2&result=$RESULT&stime=$ST&etime=$FT"
+        return $?
+}
+
+function sendJobStatus {
+        toResultServlet "jid=$J_ID&status=$1"
+        return $?
+}
+
+# /////////////////////////////////////////////
+# Run job
+# /////////////////////////////////////////////
+echo '*************************************'
+echo "SGE Job ID: $JOB_ID"
+echo "JM Job ID:  $J_ID"
+echo "Machine:    $M"
+echo "Directory:  $PWD"
+echo "Shell:      $SHELL"
+echo "Out:        $JOBFILE"
+echo '*************************************'
+
+# Signals that whole job starts.
+sendJobStatus $J_STA 
+
+# All jobpairs start here
+$$JOBPAIRS$$
+# All jobpairs end here 
+
+# Signals that whole job terminates.
+sendJobStatus $J_FIN 
+
+# /////////////////////////////////////////////
+# Teardown
+# /////////////////////////////////////////////
+mv -f $JOBFILE $SHR/jobout
+
+# Cleanup
+rm -rf $WDIR/*
