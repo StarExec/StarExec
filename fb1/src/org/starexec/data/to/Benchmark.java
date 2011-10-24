@@ -3,22 +3,24 @@ package org.starexec.data.to;
 import java.io.File;
 import java.sql.Timestamp;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * Represents a benchmark in the database
  * 
  * @author Tyler Jensen
  */
 public class Benchmark extends Identifiable {
-	private long userId = -1;
-	private String name;	
-	private String description;	
+	private long userId = -1;	
+	@Expose private String name;	
+	@Expose private String description;	
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;
 	
 	/**
 	 * @return the user id of the user who uploaded the solver
-	 */
+	 */	
 	public long getUserId() {
 		return userId;
 	}

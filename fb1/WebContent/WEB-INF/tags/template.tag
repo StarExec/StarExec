@@ -14,7 +14,8 @@
 		<div id="wrapper">
 			<star:header />
 			<div id="content" class="round">
-				<h1>${title}</h1>				
+				<h1>${title}</h1>
+				<img alt="loading" src="/starexec/images/loader.gif" id="loader">			
 				<jsp:doBody/>
 			</div>		
 		<star:footer />

@@ -1,14 +1,16 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * Represents a configuration, which is a run script to execute a solver with specific parameters
  * 
  * @author Tyler Jensen
  */
-public class Configuration extends Identifiable {	
+public class Configuration extends Identifiable {		
 	private long solverId = -1;
-	private String name;
-	private String description;
+	@Expose private String name;
+	@Expose private String description;
 	/**
 	 * @return the id of the solver the configuration belongs to
 	 */

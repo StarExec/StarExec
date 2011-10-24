@@ -1,22 +1,6 @@
-fieldset {	
-	border-width: 5px;
-	border-style: solid;
-	border-color: #111111;	
-	border-radius: 5px;					
-	width: 75%;
-	margin: auto;
-	margin-top: 70px;						
-	padding: 30px;
-}
-
-legend {
-	border-width: 5px;
-	border-style: solid;
-	border-color: #111111;
-	border-radius: 10px;
-	background-color: #111111;
-	padding: 3px 10px;
-	margin-left: 25px;
+fieldset {						
+	width: 75%;	
+	margin-top: 50px;
 }
 
 fieldset table {
@@ -32,10 +16,7 @@ tr .label {
 }
 
 tr td {
-	padding: 10px;	
-	border-style: solid;
-	border-width: 3px;
-	border-color: #1C1C1C;
+	padding: 10px;		
 }
 
 tr td button {
@@ -58,6 +39,9 @@ button.round {
 	float: right;
 }
 
-#editfirstname:hover, #editlastname:hover, #editinstitution:hover, #editemail:hover {
+#editfirstname:hover, 
+#editlastname:hover, 
+#editinstitution:hover, 
+#editemail:hover {
 	cursor: pointer;	
 }
