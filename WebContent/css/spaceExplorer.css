@@ -1,0 +1,74 @@
+#explorer {
+	margin-top: 15px;
+	float:left;
+	width: 28%;		
+	min-height: 90%;
+	height: 90%;
+	overflow: auto;	
+	position: absolute;
+}
+
+#explorer a:link {
+	text-decoration: none;	
+}
+
+#detailPanel {
+	padding-left: 10px;
+	margin-top: 15px;
+	float:right;	
+	width: 70%;
+	border-left: solid 4px #111111;	
+}
+
+#detailPanel hr {
+	border-top: solid 1px #666666;
+}
+
+#spaceName {
+	color: #8C0000;
+}
+
+h3 {
+	font-size: 24px;
+	margin-bottom: 5px;
+}
+
+h4 {
+	font-size: 20px;
+}
+
+.solver, .benchmark,  .job, .user {
+	min-width: 140px;
+	height: 40px;	
+	border: solid 1px #666666;
+	display: inline-block;
+	cursor: pointer;
+	margin-right: 10px;
+	padding: 5px;
+	text-align: center;	
+	text-decoration: none;
+	font-size: 18px;
+	background-color: #666666;
+	margin-bottom: 10px;
+}
+
+a.solver:hover, a.benchmark:hover,  
+a.job:hover, a.user:hover {	
+	background-color: #dc6f04;
+}
+
+.solver p, .benchmark p {
+	margin-top: 9px;
+}
+
+.user > p:first-child, .job > p:first-child {
+	margin-top: 3px;
+}
+
+.user > p:last-child, .job > p:last-child {
+	font-size: 12px;
+}
+
+fieldset {	
+	margin-bottom: 35px;
+}
