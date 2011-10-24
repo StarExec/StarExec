@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+  <!-- Application Configuration -->
+  <display-name>STAREXEC</display-name>
+  <description>Logic solver collaboration tool</description>
+  <session-config>
+    <session-timeout>60</session-timeout>
+  </session-config>
+  
+  <!-- Filters -->
+  <filter-mapping>
+    <filter-name>Session Filter</filter-name>
+    <url-pattern>/pages/*</url-pattern>    
+  </filter-mapping>
+  <filter>
+    <!-- Filter that checks all requests and sets up session parameters -->
+    <filter-name>Session Filter</filter-name>
+    <filter-class>org.starexec.app.SessionFilter</filter-class>    
+  </filter>
+  
+  <!-- Servlet Definitions -->
+  <servlet>
+    <servlet-name>Registration</servlet-name>
+    <servlet-class>org.starexec.servlets.Registration</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Registration</servlet-name>
+    <url-pattern>/Registration</url-pattern>
+  </servlet-mapping>
+    
+  <servlet>
+    <servlet-name>BenchmarkUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadBench</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BenchmarkUploader</servlet-name>
+    <url-pattern>/UploadBench</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>SolverUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadSolver</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SolverUploader</servlet-name>
+    <url-pattern>/UploadSolver</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>JobCreator</servlet-name>
+    <servlet-class>org.starexec.servlets.SubmitJob</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobCreator</servlet-name>
+    <url-pattern>/SubmitJob</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>JobResults</servlet-name>
+    <servlet-class>org.starexec.servlets.Results</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobResults</servlet-name>
+    <url-pattern>/Results</url-pattern>
+  </servlet-mapping>
+  
+  <!-- RESTEasy webservice framework configuration -->
+  <servlet>  	
+    <servlet-name>Resteasy</servlet-name>
+    <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Resteasy</servlet-name>
+    <url-pattern>/services/*</url-pattern>
+  </servlet-mapping>
+  <context-param>
+    <param-name>resteasy.resources</param-name>
+    <param-value>org.starexec.app.RESTServices</param-value>
+  </context-param>
+  <context-param>
+    <param-name>resteasy.servlet.mapping.prefix</param-name>
+    <param-value>/services</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+  </listener>  
+  
+  <!-- Security Roles -->  
+  <security-role>
+    <role-name>admin</role-name>    
+  </security-role>  
+  <security-role>
+    <role-name>user</role-name>    
+  </security-role>
+  
+  <!-- Form based authentication configuration -->
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/login.jsp</form-login-page>
+      <form-error-page>/login.jsp?result=failed</form-error-page>
+    </form-login-config>	  
+  </login-config>  
+  
+  <!-- Security restrictions -->
+  <security-constraint>	
+    <web-resource-collection>
+	  <web-resource-name>Users Only</web-resource-name>
+	  <url-pattern>/pages/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	  <role-name>user</role-name>
+    </auth-constraint>		
+  </security-constraint>
+  
+  <security-constraint>	
+    <web-resource-collection>
+	  <web-resource-name>Users Only</web-resource-name>
+	  <url-pattern>/services/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	  <role-name>user</role-name>
+    </auth-constraint>		
+  </security-constraint>
+  
+  <!-- Default pages to load -->
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <!-- Application event listeners -->
+  <listener>
+    <listener-class>org.starexec.app.Starexec</listener-class>
+  </listener>
+</web-app>
