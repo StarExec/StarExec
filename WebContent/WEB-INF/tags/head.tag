@@ -1,7 +1,7 @@
 <%@tag description="Standard html header info for all starexec pages"%>
 <%@tag import="org.starexec.data.to.*, org.starexec.constants.*"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%@attribute name="title" %>
 <%@attribute name="css" %>

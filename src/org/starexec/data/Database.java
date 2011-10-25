@@ -54,27 +54,51 @@ public class Database {
 	/**
 	 * Adds the specified user to the database. This method will hash the 
 	 * user's password for them, so it must be supplied in plaintext.
-	 * @param u The user to add
+	 * 
+	 * @param user The user to add
 	 * @return True if the user was successfully added, false if otherwise
-	 * @deprecated Left as an example, need to update to use stored procedures
 	 */
-	public static boolean addUser(User u){
+	public static boolean addUser(User user){
 		Connection con = null;
 		
 		try{
 			con = dataPool.getConnection();
-			
-			// Encoders used to hash passwords for storage			
+		
+			// Encoders used to hash passwords for storage
 			MessageDigest hasher = MessageDigest.getInstance(R.PWD_HASH_ALGORITHM);
-			hasher.update(u.getPassword().getBytes());
-			
-			// TODO Utilize callable statements to use stored procedure
-			
+			hasher.update(user.getPassword().getBytes());
 			// Get the hashed version of the password
 			String hashedPass = HexUtils.convert(hasher.digest());
-										
-			log.info(String.format("New user created with name [%s] and email [%s]", u.getFullName(), u.getEmail()));
-			return true;
+			
+			// Insert data into IN parameters of the CallableStatment
+			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?)}");
+			procedure.setString(1, user.getFirstName());
+			procedure.setString(2, user.getLastName());
+			procedure.setString(3, user.getEmail());
+			procedure.setString(4, user.getInstitution());
+			procedure.setString(5, hashedPass);
+			
+			// Set the OUT parameters
+			procedure.registerOutParameter(6, java.sql.Types.BIGINT);
+			procedure.registerOutParameter(7, java.sql.Types.TIMESTAMP);
+			
+			// Apply update to database
+			procedure.executeUpdate();
+			
+			// Extract values from OUT parameters
+			user.setId(procedure.getLong(6));
+			user.setCreateDate(procedure.getTimestamp(7));
+			
+			// Generate a UUID code and add it to VERIFY database under new user's id
+			boolean added = addCode(user);
+			
+			if(added){
+				log.info(String.format("New user (id=%d) added to USERS, with name [%s] and email [%s]", user.getId(), user.getFullName(), user.getEmail()));
+				return true;				
+			} else {
+				return false;
+			}
+			
 		} catch (Exception e){					
 			log.error(e.getMessage(), e);
 			return false;
@@ -83,11 +107,95 @@ public class Database {
 		}
 	}
 	
+	
+	/**
+	 * Adds a verification code to the database for a given user
+	 * 
+	 * @param user the user to add a verification code to the database for
+	 * @return true iff the new verification code is added to the database
+	 */
+	public static boolean addCode(User user) {
+		Connection con = null;
+		
+		// Generate unique verification code
+		String code = UUID.randomUUID().toString();
+
+		try {
+			con = dataPool.getConnection();
+
+			// Add a new entry to the VERIFY table
+			CallableStatement procedure = con.prepareCall("{CALL AddCode(?, ?, ?)}");
+			procedure.setLong(1, user.getId());
+			procedure.setString(2, code);
+			procedure.setTimestamp(3, user.getCreateDate());
+
+			// Apply update to database
+			procedure.executeUpdate();
+
+			log.info(String.format("New email verification code [%s] added to VERIFY for user [%s]", code, user.getFullName()));
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Database.safeClose(con);
+		}
+
+	}
+	
+	/**
+	 * Retrieves a user's verification code and compares it to 'responseCode'. 
+	 * If they are the same, the 'verified' attribute for the given user in the USERS table
+	 * will be set to 1.
+	 * 
+	 * @param user the user whose code need to be queried for
+	 * @param responseCode the response the user sent back
+	 * @return true iff the verification code matches 'responseCode'
+	 */
+	public static boolean verifyCode(User user, String responseCode){
+		Connection con = null;
+		String initialCode = null;
+
+		try {
+			con = dataPool.getConnection();
+
+			// Query VERIFY table for verification code associated with user
+			CallableStatement procedure = con.prepareCall("{CALL GetCode(?)}");
+			procedure.setLong(1, user.getId());
+			ResultSet result = procedure.executeQuery();
+			if(result.next()){
+				initialCode = result.getString("code");
+			}
+			
+			// IF the verification code from VERIFY matches 'responseCode'
+			// THEN set 'verified' attribute in USERS to 1
+			if(initialCode.equals(responseCode)){
+				procedure = con.prepareCall("{CALL VerifyUser(?)}");
+				procedure.setLong(1, user.getId());
+				procedure.executeUpdate();
+				System.out.println("initialCode  = " + initialCode);
+				System.out.println("responseCode = " + responseCode);
+				System.out.println("Code verification completed.");					
+				return true;
+			} else {
+				return false;
+			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Database.safeClose(con);
+		}
+	}
+	
+	
 	/**
 	 * Retrieves a user from the database given the email address
+	 * 
 	 * @param email The email of the user to retrieve
 	 * @return The user object associated with the user
-	 * @author Tyler Jensen
 	 */
 	public static User getUser(String email){
 		Connection con = null;			
@@ -108,7 +216,8 @@ public class Database {
 				u.setCreateDate(results.getTimestamp("created"));
 				u.setRole(results.getString("role"));							
 				return u;
-			}					
+			}			
+			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

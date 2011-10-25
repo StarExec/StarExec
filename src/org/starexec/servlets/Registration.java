@@ -1,8 +1,6 @@
 package org.starexec.servlets;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,11 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-
-import org.starexec.constants.*;
 import org.starexec.data.Database;
-import org.starexec.data.to.*;
-import org.starexec.util.*;
+import org.starexec.data.to.User;
+import org.starexec.util.Validate;
 
 
 /**
@@ -24,7 +20,7 @@ import org.starexec.util.*;
 public class Registration extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Registration.class);
 	private static final long serialVersionUID = 1L;
-       
+	
     public Registration() {
         super();
     }
@@ -34,39 +30,81 @@ public class Registration extends HttpServlet {
 		log.warn("Illegal GET request to registration servlet from ip address: " + request.getRemoteHost());
 	}
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		User u = new User();
-		u.setInstitution(request.getParameter(P.USER_INSTITUTION));
-		u.setEmail(request.getParameter(P.USER_EMAIL));
-		u.setFirstName(request.getParameter(P.USER_FIRSTNAME));
-		u.setLastName(request.getParameter(P.USER_LASTNAME));
-		u.setPassword(request.getParameter(P.USER_PASSWORD));
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
+		// Attempt to register new user request
+		boolean registered = register(request);
 		
-		boolean added = Database.addUser(u);
-		
-		response.setContentType("text/plain");
-		response.getWriter().print(added);
-		response.getWriter().close();
-		//u.setCommunityId(Integer.parseInt(request.getParameter(P.USER_COMMUNITY)));
-				
-		if(Database.addUser(u)) {
-			response.sendRedirect("/starexec/registration?result=ok");
+		// Redirect user depending on registration outcome
+		if(registered == true) {
+			response.sendRedirect("/starexec/registration.jsp?result=ok");
 		} else {
-			response.sendRedirect("/starexec/registration?result=fail");
+			response.sendRedirect("/starexec/registration.jsp?result=fail");
 		}
+
+	}
+	
+	
+	/**
+	 * Attempts to register a new user by performing parameter validation
+	 * on a new user request and then adding user to the database
+	 * 
+	 * @param request the new user request
+	 * @return true iff the new user request passed parameter validation and 
+	 * was added to the database
+	 */
+	public static boolean register(HttpServletRequest request){
+		// Validate parameters of the new user request
+		User newUser = validateRequest(request);
 		
-		// If the user has been added, send a verification email.
-		if(added) {
-			String conf = UUID.randomUUID().toString();
-			//Database.addCode(u.getEmail(), conf);
-			String email = Util.readFile(new File(R.CONFIG_PATH, "verification_email"));
-			email = email.replace("$$USER$$", u.getFullName());
-			email = email.replace("$$LINK$$", 
-					String.format("http://starexec.cs.uiowa.edu/starexec/Verify?%s=%s", P.VERIFY_EMAIL, conf));
-			Mail.mail(email, "Verify your Starexec Account", "STAREXEC", new String[] { u.getEmail() });
-			log.info("Sent verification email to user " + u.getFullName() + " at " + u.getEmail());
+		// Attempt to add new user to database if parameters are valid
+		if(newUser == null){
+			return false;
 		} else {
-			log.warn("Unable to add user " + u.getEmail());
+			return Database.addUser(newUser);
+		}	
+	}
+	
+	
+	/**
+	 * Validates the parameters of a received servlet request for user
+	 * registration
+	 * 
+	 * @param request the servlet containing the parameters to validate
+	 * @return a new User object if the parameters pass validation, null otherwise
+	 */
+    public static User validateRequest(HttpServletRequest request){
+    	User u = new User();
+		u.setFirstName(request.getParameter("firstname"));
+		u.setLastName(request.getParameter("lastname"));
+		u.setEmail(request.getParameter("email"));
+		u.setPassword(request.getParameter("password"));
+		u.setInstitution(request.getParameter("institute"));
+		
+		return (validateUser(u) ? u : null);
+    }
+    
+    
+    
+    /**
+     * Validates the parameters of a User object
+     * 
+     * @param u the User object to check the parameters of
+     * @return true iff all parameters of the User object pass validation
+     */
+	public static boolean validateUser(User u) {
+		// Validate parameters of User object
+		if (!Validate.name(u.getFirstName()) 
+				|| !Validate.name(u.getLastName()) 
+				|| !Validate.email(u.getEmail())
+				|| !Validate.institute(u.getInstitution())
+				|| !Validate.password(u.getPassword())) {
+			log.info("Parameter validation successful");
+			return false;
+		} else {
+			log.info("Parameter validation failed");
+			return true;
 		}
 	}
+
 }

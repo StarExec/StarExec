@@ -4,10 +4,10 @@
 
 // When the document is ready to be executed on
 $(document).ready(function(){
-	
+		
 	// If the JSP contains a single message to display to the user...
 	if ($(".message").length == 1){
-		
+				
 		// Extract the text from the message element
 		var messageText = $(".message").text();
 		
@@ -21,7 +21,9 @@ $(document).ready(function(){
 		// Show the message to the user (we do this programatically so we can re-use code)	
 		// defaults to 5 seconds
 		showMessage(messageClass, messageText, -1);			
-	}		
+	}
+	
+	
 	
 	
 	// Setup navigation submenus
@@ -38,6 +40,8 @@ $(document).ready(function(){
 	        });
 		}, function () {});	    
 });
+
+
 
 /**
  * Function to display a message to the user. We can call this from other javascript

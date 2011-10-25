@@ -148,4 +148,35 @@ CREATE PROCEDURE UpdatePassword(IN _id BIGINT, IN _password VARCHAR(128))
 		WHERE users.id = _id;
 	END //
 	
+CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  OUT id BIGINT, OUT stamp TIMESTAMP)
+	BEGIN		
+		SELECT SYSDATE() INTO stamp;
+		INSERT INTO users(first_name, last_name, email, institution, created, password)
+		VALUES (_first_name, _last_name, _email, _institute, stamp, _password);
+		SELECT LAST_INSERT_ID() INTO id;
+		INSERT INTO user_roles(email, role) 
+		VALUES(_email, 'user');
+	END //
+	
+CREATE PROCEDURE AddCode(IN _id BIGINT, IN _code VARCHAR(36), IN _created TIMESTAMP)
+	BEGIN
+		INSERT INTO verify(user_id, code, created)
+		VALUES (_id, _code, _created);
+	END //
+		
+CREATE PROCEDURE GetCode(IN _id BIGINT)
+	BEGIN
+		SELECT code
+		FROM verify
+		WHERE user_id = _id;
+	END //	
+			
+CREATE PROCEDURE VerifyUser(IN _id BIGINT)
+	BEGIN
+		UPDATE users
+		SET verified = 1
+		WHERE id = _id;
+	END //
+	
+
 DELIMITER ; -- This should always be at the end of this file

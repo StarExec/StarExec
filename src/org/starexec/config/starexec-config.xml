@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="tyler_dev_local">
+<starexec-configuration default="todd_dev_local">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
@@ -61,6 +61,27 @@
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
+		</class>
+	</configuration>
+	<configuration name="todd_dev_local">
+		<class name="org.starexec.constants.R">
+			<!-- MYSQL Configuration -->
+			<property key="MYSQL_USERNAME" value="root" />
+			<property key="MYSQL_PASSWORD" value="rooty" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true" />
+			<property key="MYSQL_POOL_MAX_SIZE" value="3" />			
+			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
+			<!-- Path Configuration -->
+			<property key="BENCHMARK_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\benchmarks\\" />
+			<property key="SOLVER_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\solvers\\" />				
+			<property key="CONFIG_PATH" value="C:\\Users\\Todd\\workspace\\starexec_proj\\build\\classes\\org\\starexec\\config\\" />
+			<property key="STAREXEC_ROOT" value="C:\\Users\\Todd\\workspace\\starexec_proj\\" />
+			<property key="JOB_INBOX_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\jobs\\" />
+			<property key="NODE_WORKING_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\node\\" />
+			<property key="SOLVER_BIN_DIR" value="\\bin" />
+			<!-- Misc. Configuration -->
+			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
+			<property key="LOG_TO_CONSOLE" value="true" />
 		</class>
 	</configuration>
 	<configuration name="skylar_dev_local">

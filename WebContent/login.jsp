@@ -8,11 +8,11 @@
 			<legend>credentials</legend>
 			<table cellspacing="10px">								
 			<tr>
-				<td class="lable">email </td>
+				<td class="label">email </td>
 				<td><input type="text" name="j_username" /></td>
 			</tr>
 			<tr>
-				<td class="lable">password </td>
+				<td class="label">password </td>
 				<td><input type="password" name="j_password" /></td>
 			</tr>												
 			<tr>
