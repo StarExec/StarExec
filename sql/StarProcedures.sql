@@ -4,6 +4,8 @@ USE starexec;
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
+-- Returns the (hashed) password of the user with the given user id
+-- Author: Skylar Stark
 CREATE PROCEDURE GetPasswordById(IN _id BIGINT)
 	BEGIN
 		SELECT password
@@ -24,13 +26,20 @@ CREATE PROCEDURE GetUserByEmail(IN _email VARCHAR(64))
 		FROM users NATURAL JOIN user_roles
 		WHERE users.email = _email;
 	END //
-CREATE PROCEDURE GetWebsitesById(IN _id BIGINT)
+	
+-- Returns all websites associated with the user with the given user id
+-- Author: Skylar Stark
+CREATE PROCEDURE GetWebsitesByUserId(IN _userid BIGINT)
 	BEGIN
-		SELECT name, url
+		SELECT id, name, url
 		FROM website
-		WHERE website.user_id = _id;
+		WHERE website.user_id = _userid
+		ORDER BY name;
 	END //
 
+-- Updates the email address of the user with the given user id to the
+-- given email address. The email address should already be verified
+-- Author: Skylar Stark
 CREATE PROCEDURE UpdateEmail(IN _id BIGINT, IN _email VARCHAR(64))
 	BEGIN
 		UPDATE users
@@ -119,14 +128,20 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id BIGINT)
 				WHERE space_id = _id)
 		ORDER BY name;
 	END //	
-	
+
+-- Updates the first name of the user with the given user id to the
+-- given first name. The first name should already be verified
+-- Author: Skylar Stark
 CREATE PROCEDURE UpdateFirstName(IN _id BIGINT, IN _firstname VARCHAR(32))
 	BEGIN
 		UPDATE users
 		SET first_name = _firstname
 		WHERE users.id = _id;
 	END //
-
+	
+-- Updates the last name of the user with the given user id to the
+-- given last name. The last name should already be verified
+-- Author: Skylar Stark
 CREATE PROCEDURE UpdateLastName(IN _id BIGINT, IN _lastname VARCHAR(32))
 	BEGIN
 		UPDATE users
@@ -134,6 +149,9 @@ CREATE PROCEDURE UpdateLastName(IN _id BIGINT, IN _lastname VARCHAR(32))
 		WHERE users.id = _id;
 	END //
 
+-- Updates the institution of the user with the given user id to the
+-- given institution. The institution should already be verified
+-- Author: Skylar Stark
 CREATE PROCEDURE UpdateInstitution(IN _id BIGINT, IN _institution VARCHAR(64))
 	BEGIN
 		UPDATE users
@@ -141,6 +159,9 @@ CREATE PROCEDURE UpdateInstitution(IN _id BIGINT, IN _institution VARCHAR(64))
 		WHERE users.id = _id;
 	END //
 
+-- Updates the password of the user with the given user id to the
+-- given (already hashed and verified) password.
+-- Author: Skylar Stark
 CREATE PROCEDURE UpdatePassword(IN _id BIGINT, IN _password VARCHAR(128))
 	BEGIN
 		UPDATE users

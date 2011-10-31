@@ -3,7 +3,8 @@ fieldset {
 	margin-top: 50px;
 }
 
-fieldset table {
+fieldset table,
+fieldset ul {
 	width: 100%;
 }
 
@@ -11,11 +12,13 @@ tr .label {
 	width: 25%;
 }
 
-.shade td {
+.shade {
 	background-color: #111111;
 }
 
-tr td {
+tr td,
+tr th {
+	border: #1C1C1C solid 3px;
 	padding: 10px;		
 }
 
@@ -37,6 +40,15 @@ input {
 
 button.round {
 	float: right;
+}
+
+fieldset ul li {
+	list-style: none;
+	display: block;
+	margin: auto;
+	border: #1C1C1C solid 3px;
+	padding: 10px;
+	width: 95%;		
 }
 
 #editfirstname:hover, 

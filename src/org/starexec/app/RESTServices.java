@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.P;
 import org.starexec.data.Database;
 import org.starexec.data.to.*;
+import org.starexec.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -70,19 +71,26 @@ public class RESTServices {
 		return gson.toJson(0);
 	}	
 	
+	/**
+	 * @return a json string representing all the websites associated with
+	 * the current user
+	 * @author Skylar Stark
+	 */
 	@GET
 	@Path("/websites")
 	@Produces("application/json")
 	public String getWebsites(@Context HttpServletRequest request) {
 		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
-		String websites = Database.getWebsites(userId);
-		
-		return gson.toJson(websites);
+		return gson.toJson(Database.getWebsitesByUserId(userId));
 	}
 	
 	/** 
 	 * Updates information in the database using a POST. Attribute and
-	 * new value are included in the path.
+	 * new value are included in the path. First validates that the new value
+	 * is legal, then updates the database and session information accordingly.
+	 * 
+	 * @return a json string containing '0' if the update was successful, else 
+	 * a json string containing '1'
 	 * @author Skylar Stark
 	 */
 	@POST
@@ -92,32 +100,86 @@ public class RESTServices {
 		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
 		boolean success = false;
 		
+		// Go through all the cases, depending on what attribute we are changing.
+		// First, validate that it is in legal form. Then, try to update the database.
+		// Finally, update the current session data
 		if (attribute.equals("firstname")) {
-			success = Database.updateFirstName(userId, newValue);
-			if (true == success) {
-				((User)(request.getSession().getAttribute(P.SESSION_USER))).setFirstName(newValue);
+			if (true == Validate.name(newValue)) {
+				success = Database.updateFirstName(userId, newValue);
+				if (true == success) {
+					((User)(request.getSession().getAttribute(P.SESSION_USER))).setFirstName(newValue);
+				}
 			}
 		} else if (attribute.equals("lastname")) {
-			success = Database.updateLastName(userId, newValue);
-			if (true == success) {
-				((User)(request.getSession().getAttribute(P.SESSION_USER))).setLastName(newValue);
+			if (true == Validate.name(newValue)) {
+				success = Database.updateLastName(userId, newValue);
+				if (true == success) {
+					((User)(request.getSession().getAttribute(P.SESSION_USER))).setLastName(newValue);
+				}
 			}
 		} else if (attribute.equals("email")) {
-			success = Database.updateEmail(userId, newValue);
-			if (true == success) {
-				((User)(request.getSession().getAttribute(P.SESSION_USER))).setEmail(newValue);
+			if (true == Validate.email(newValue)) { 
+				success = Database.updateEmail(userId, newValue);
+				if (true == success) {
+					((User)(request.getSession().getAttribute(P.SESSION_USER))).setEmail(newValue);
+				}
 			}
 		} else if (attribute.equals("institution")) {
-			success = Database.updateInstitution(userId, newValue);
-			if (true == success) {
-				((User)(request.getSession().getAttribute(P.SESSION_USER))).setInstitution(newValue);
+			if (true == Validate.institute(newValue)) {
+				success = Database.updateInstitution(userId, newValue);
+				if (true == success) {
+					((User)(request.getSession().getAttribute(P.SESSION_USER))).setInstitution(newValue);
+				}
 			}
 		}
-			
+		
+		// Passed validation AND Database update successful
 		if(true == success) {
 			return gson.toJson(0);
 		}
 		
 		return gson.toJson(1);
+	}
+	
+	/**
+	 * Updates the current user's password. First verifies that it is in
+	 * the correct format, then hashes is and updates it to the database.
+	 * 
+	 * @return 0 if the whole update was successful, 1 if the database operation 
+	 * was unsuccessful, 2 if the new password failed validation, 3 if the new 
+	 * password did not match the confirm password, or 4 if the current password \
+	 * did not match the password in the database.
+	 * @author Skylar Stark
+	 */
+	@POST
+	@Path("/edit/user/password/")
+	@Produces("application/json")
+	public String editUserPassword(@Context HttpServletRequest request) {
+		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+		String currentPass = request.getParameter("current");
+		String newPass = request.getParameter("newpass");
+		String confirmPass = request.getParameter("confirm");
+				
+		String hashedPass = Hash.hashPassword(currentPass);
+		String databasePass = Database.getPassword(userId);
+		
+		if (hashedPass.compareTo(databasePass) == 0) {
+			if (newPass.compareTo(confirmPass) == 0) {
+				if (true == Validate.password(newPass)) {
+					//updatePassword requires the plaintext password
+					if (true == Database.updatePassword(userId, newPass)) {
+						return gson.toJson(0);
+					} else {
+						return gson.toJson(1); //Database operation returned false
+					}
+				} else {
+					return gson.toJson(2); //Validate operation returned false
+				}
+			} else {
+				return gson.toJson(3); //newPass != confirmPass
+			}
+		} else {
+			return gson.toJson(4); //hashedPass != databasePass
+		}
 	}
 }

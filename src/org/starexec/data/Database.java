@@ -1,13 +1,12 @@
 package org.starexec.data;
 
-import java.security.MessageDigest;
 import java.sql.*;
 import java.util.*;
 
-import org.apache.catalina.util.HexUtils;
 import org.apache.log4j.*;
 import org.starexec.constants.R;
 import org.starexec.data.to.*;
+import org.starexec.util.Hash;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 
@@ -64,11 +63,7 @@ public class Database {
 		try{
 			con = dataPool.getConnection();
 		
-			// Encoders used to hash passwords for storage
-			MessageDigest hasher = MessageDigest.getInstance(R.PWD_HASH_ALGORITHM);
-			hasher.update(user.getPassword().getBytes());
-			// Get the hashed version of the password
-			String hashedPass = HexUtils.convert(hasher.digest());
+			String hashedPass = Hash.hashPassword(user.getPassword());
 			
 			// Insert data into IN parameters of the CallableStatment
 			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?)}");
@@ -227,6 +222,42 @@ public class Database {
 		return null;
 	}
 	
+	/**
+	 * Returns the (hashed) password of the given user.
+	 * @param userId the user ID of the user to get the password of
+	 * @return The (hashed) password for the user
+	 */
+	public static String getPassword(long userId) {
+		Connection con = null;
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetPasswordById(?)}");
+			procedure.setLong(1, userId);
+			ResultSet results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getString("password");
+			}
+			
+		} catch (Exception e) {			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Updates the first name of a user in the database with the 
+	 * given user ID
+	 * 
+	 * @param userId the user ID of the user we want to update
+	 * @param newValue what the first name will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Skylar Stark
+	 */
 	public static boolean updateFirstName(long userId, String newValue){
 		Connection con = null;			
 		
@@ -247,6 +278,15 @@ public class Database {
 		return false;
 	}
 	
+	/**
+	 * Updates the last name of a user in the database with the 
+	 * given user ID
+	 * 
+	 * @param userId the user ID of the user we want to update
+	 * @param newValue what the last name will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Skylar Stark
+	 */
 	public static boolean updateLastName(long userId, String newValue){
 		Connection con = null;			
 		
@@ -267,6 +307,15 @@ public class Database {
 		return false;
 	}
 	
+	/**
+	 * Updates the email address of a user in the database with the 
+	 * given user ID
+	 * 
+	 * @param userId the user ID of the user we want to update
+	 * @param newValue what the email address will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Skylar Stark
+	 */
 	public static boolean updateEmail(long userId, String newValue){
 		Connection con = null;			
 		
@@ -287,12 +336,21 @@ public class Database {
 		return false;
 	}
 	
+	/**
+	 * Updates the institution of a user in the database with the 
+	 * given user ID
+	 * 
+	 * @param userId the user ID of the user we want to update
+	 * @param newValue what the institution will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Skylar Stark
+	 */
 	public static boolean updateInstitution(long userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = dataPool.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL UpdateInstitution(?, ?)}");
 			procedure.setLong(1, userId);					
 			procedure.setString(2, newValue);
 			int result = procedure.executeUpdate();
@@ -307,14 +365,25 @@ public class Database {
 		return false;
 	}
 	
+	/**
+	 * Updates the password of a user in the database with the 
+	 * given user ID. Hashes the password before updating, so
+	 * the password should be supplied in plain-text.
+	 * 
+	 * @param userId the user ID of the user we want to update
+	 * @param newValue what the password will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Skylar Stark
+	 */
 	public static boolean updatePassword(long userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = dataPool.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdatePassword(?, ?)}");
-			procedure.setLong(1, userId);					
-			procedure.setString(2, newValue);
+			procedure.setLong(1, userId);
+			String hashedPassword = Hash.hashPassword(newValue);
+			procedure.setString(2, hashedPassword);
 			int result = procedure.executeUpdate();
 			
 			return result == 1;			
@@ -327,22 +396,31 @@ public class Database {
 		return false;
 	}
 	
-	public static String getWebsites(long userId) {
+	/**
+	 * Get all websites associated with a given user.
+	 * 
+	 * @param userId the user ID of the user we want to find websites for
+	 * @return A list of websites associated with the user
+	 * @author Skylar Stark
+	 */
+	public static List<Website> getWebsitesByUserId(long userId) {
 		Connection con = null;
 		
 		try {
 			con = dataPool.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetWebsitesById(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetWebsitesByUserId(?)}");
 			procedure.setLong(1, userId);
 			ResultSet results = procedure.executeQuery();
-			StringBuffer websites = new StringBuffer("{\"websites\":[ ");
+			List<Website> websites = new LinkedList<Website>();
 			
 			while (results.next()) {
-				websites.append("{\"name\": \"" + results.getString("name") + "\", \"url\": \"" + results.getString("url") + "\"},");
+				Website w = new Website();
+				w.setId(results.getLong("id"));
+				w.setName(results.getString("name"));
+				w.setUrl(results.getString("url"));
+				websites.add(w);
 			}
-			websites.setCharAt(websites.length()-1,']');  // replace last character with ]
-	        websites.append("}");
-			return websites.toString();
+			return websites;
 			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

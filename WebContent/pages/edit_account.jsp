@@ -6,20 +6,20 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 		<legend>personal information</legend>
-		<table>
+		<table id="personal">
 			<tr>
-				<th>attribute</th>
+				<th class="label">attribute</th>
 				<th>current value</th>
 			</tr>
-			<tr class="shade">
-				<td class="label">first name </td>
+			<tr>
+				<td>first name </td>
 				<td id="editfirstname">${user.firstName}</td>
 			</tr>
 			<tr>
 				<td>last name</td>
 				<td id="editlastname">${user.lastName}</td>
 			</tr>
-			<tr class="shade">
+			<tr>
 				<td>institution </td>
 				<td id="editinstitution">${user.institution}</td>
 			</tr>
@@ -32,33 +32,27 @@
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
-		<table id="websites">
-			<tr>
-				<th class="label">name</th>
-				<th>url</th>
-			</tr>
-		</table>
-		<!--  TODO make the information editable -->
-		<!-- <h6>(click the url to edit or delete it)</h6> -->
+		<ul id="websites">
+		</ul>
 	</fieldset>
 	<fieldset>
 		<legend>password</legend>
-		<table>
+		<table id="password">
 			<!--  doesn't do anything yet -->
-			<tr class="shade">
+			<tr>
 				<td>current password</td>
-				<td><input type="password" name="current_pass" /></td>
+				<td><input type="password" id="current_pass" /></td>
 			</tr>
 			<tr>
 				<td>new password</td>
-				<td><input type="password" name="new_pass1" /></td>
-			</tr>
-			<tr class="shade">
-				<td>re-enter new password</td>
-				<td><input type="password" name="new_pass2" /></td>
+				<td><input type="password" id="new_pass" /></td>
 			</tr>
 			<tr>
-				<td colspan="2"><button class="round" id="changePass">submit change</button></td>
+				<td>re-enter new password</td>
+				<td><input type="password" id="confirm_pass" /></td>
+			</tr>
+			<tr>
+				<td colspan="2"><button class="round" id="changePass">change</button></td>
 			</tr>
 		</table>
 	</fieldset>
