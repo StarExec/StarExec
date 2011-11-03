@@ -29,7 +29,7 @@
 				<li class="round">
 					<a href="#">spaces</a>  
 			        <ul class="subnav round">  
-			        	<li class="round"><a href="/starexec/pages/spaceExplorer.jsp">explore</a></li>  
+			        	<li class="round"><a href="/starexec/pages/space_explorer.jsp">explore</a></li>  
 			            <li class="round"><a href="#">historical</a></li>
 			            <li class="round"><a href="#">mine</a></li>    			            
 			        </ul>  

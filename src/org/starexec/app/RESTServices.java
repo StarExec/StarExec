@@ -77,7 +77,7 @@ public class RESTServices {
 	 * @author Skylar Stark
 	 */
 	@GET
-	@Path("/websites")
+	@Path("/websites/user")
 	@Produces("application/json")
 	public String getWebsites(@Context HttpServletRequest request) {
 		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();

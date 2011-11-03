@@ -6,7 +6,7 @@
 <footer id="pageFooter">
 	<c:if test="${not empty user}">
 		<ul>
-			<li>${fn:toLowerCase(user.fullName)}</li>
+			<li><a target="_blank" href="/starexec/pages/details/user.jsp?id=${user.id}">${fn:toLowerCase(user.fullName)}</a></li>
 			<li>|</li>
 			<li><a onclick="javascript:logout();">logout</a></li>
 		</ul>
@@ -18,5 +18,5 @@
 			<li><a href="/starexec/registration.jsp">register</a></li>
 		</ul>		
 	</c:if>				
-	<a class="copyright" href="http://www.uiowa.edu">© 2011 the university of iowa</a>			
+	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">© 2011 the university of iowa</a>			
 </footer>

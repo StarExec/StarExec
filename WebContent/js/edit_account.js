@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	$.getJSON('/starexec/services/websites', displayWebsites).error(function(){
+	$.getJSON('/starexec/services/websites/user', displayWebsites).error(function(){
 		alert('Session expired');
 		window.location.reload(true);
 	});
@@ -11,7 +11,7 @@ $(document).ready(function(){
 function displayWebsites(data) {
 	$.each(data, function(i, site) {
 		var shade = !(i % 2) ? ' class="shade"' : '';
-		$('#websites').append('<li' + shade + '><a href="' + site.url + '">' + site.name + '</li>');
+		$('#websites').append('<li' + shade + '><a target="_blank" href="' + site.url + '">' + site.name + '</li>');
 	});
 }
 

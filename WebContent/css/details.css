@@ -1,0 +1,19 @@
+fieldset {
+	width: 500px;
+	margin: auto;	
+	margin-bottom: 20px;
+}
+
+table {
+	width: 100%;	
+}
+
+table tr td {
+	padding: 15px;
+}
+
+#content ul li {
+	list-style: none;
+	float: left;
+	margin-right: 20px;
+}

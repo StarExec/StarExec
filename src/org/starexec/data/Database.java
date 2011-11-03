@@ -258,6 +258,206 @@ public class Database {
 	 * @return true iff the update succeeds on exactly one entry
 	 * @author Skylar Stark
 	 */
+	/**
+	 * Retrieves a user from the database given the email address
+	 * 
+	 * @param email The email of the user to retrieve
+	 * @return The user object associated with the user
+	 */
+	public static User getUser(long id){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetUserById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				User u = new User();
+				u.setId(results.getLong("id"));
+				u.setEmail(results.getString("email"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setInstitution(results.getString("institution"));
+				u.setCreateDate(results.getTimestamp("created"));
+				u.setRole(results.getString("role"));							
+				return u;
+			}			
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param id The id of the benchmark to retrieve
+	 * @return A benchmark object representing the benchmark with the given ID
+	 * @author Tyler Jensen
+	 */
+	public static Benchmark getBenchmark(long id) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				Benchmark b = new Benchmark();
+				b.setId(results.getLong("id"));
+				b.setUserId(results.getLong("user_id"));
+				b.setName(results.getString("name"));
+				b.setUploadDate(results.getTimestamp("uploaded"));
+				b.setPath(results.getString("path"));
+				b.setDescription(results.getString("description"));
+				b.setDownloadable(results.getBoolean("downloadable"));
+				return b;
+			}			
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets very basic information about a job (but not about
+	 * any of its pairs) use getPairsForJob for those details
+	 * @param id The if of the job to get information for
+	 * @return A job object containing information about the requested job
+	 */
+	public static Job getJob(long id) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				Job j = new Job();
+				j.setId(results.getLong("id"));
+				j.setUserId(results.getLong("user_id"));
+				j.setName(results.getString("name"));								
+				j.setDescription(results.getString("description"));	
+				j.setSubmitted(results.getTimestamp("submitted"));
+				j.setFinished(results.getTimestamp("finished"));
+				j.setStatus(results.getString("status"));
+				j.setTimeout(results.getLong("timeout"));
+				return j;
+			}			
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets all job pairs for the given job
+	 * @param id The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author Tyler Jensen
+	 */
+	public static List<JobPair> getPairsForJob(long id) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairByJob(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+			
+			while(results.next()){
+				JobPair jp = new JobPair();
+				jp.setId(results.getLong("id"));
+				jp.setResult(results.getString("result"));
+				jp.setStatus(results.getString("status"));
+				jp.setStartDate(results.getTimestamp("start"));
+				jp.setEndDate(results.getTimestamp("stop"));
+				
+				Configuration c = new Configuration();
+				c.setId(results.getLong("config_id"));
+				c.setDescription(results.getString("config_desc"));
+				c.setName(results.getString("config_name"));
+				
+				Benchmark b = new Benchmark();
+				b.setId(results.getLong("bench_id"));
+				b.setDescription(results.getString("bench_desc"));
+				b.setName(results.getString("bench_name"));
+				
+				Solver s = new Solver();
+				s.setId(results.getLong("solver_id"));
+				s.setDescription(results.getString("solver_desc"));
+				s.setName(results.getString("solver_name"));	
+				s.addConfiguration(c);
+				c.setSolverId(s.getId());
+				
+				jp.setBenchmark(b);
+				jp.setSolver(s);
+				
+				returnList.add(jp);
+			}			
+			
+			return returnList;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param id The id of the solver to retrieve
+	 * @return A solver object representing the solver with the given ID
+	 * @author Tyler Jensen
+	 */
+	public static Solver getSolver(long id) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSolverById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getLong("id"));
+				s.setUserId(results.getLong("user_id"));
+				s.setName(results.getString("name"));
+				s.setUploadDate(results.getTimestamp("uploaded"));
+				s.setPath(results.getString("path"));
+				s.setDescription(results.getString("description"));
+				s.setDownloadable(results.getBoolean("downloadable"));
+				return s;
+			}			
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
 	public static boolean updateFirstName(long userId, String newValue){
 		Connection con = null;			
 		
@@ -410,6 +610,7 @@ public class Database {
 			con = dataPool.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetWebsitesByUserId(?)}");
 			procedure.setLong(1, userId);
+			
 			ResultSet results = procedure.executeQuery();
 			List<Website> websites = new LinkedList<Website>();
 			
@@ -420,6 +621,43 @@ public class Database {
 				w.setUrl(results.getString("url"));
 				websites.add(w);
 			}
+			
+			return websites;
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Returns a list of websites associated with the given solver id
+	 * @param id The id of the solver to get websites for
+	 * @return A list of websites associated with the solver
+	 * @author Tyler Jensen
+	 */
+	public static List<Website> getWebsitesForSolver(long id) {
+		Connection con = null;
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSolverWebsitesById(?)}");
+			procedure.setLong(1, id);
+			
+			ResultSet results = procedure.executeQuery();
+			List<Website> websites = new LinkedList<Website>();
+			
+			while (results.next()) {
+				Website w = new Website();
+				w.setId(results.getLong("id"));
+				w.setName(results.getString("name"));
+				w.setUrl(results.getString("url"));
+				websites.add(w);				
+			}
+			
 			return websites;
 			
 		} catch (Exception e){			

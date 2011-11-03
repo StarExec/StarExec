@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="jquery.cookie, jquery.jstree, spaceExplorer" css="spaceExplorer">			
+<star:template title="space explorer" js="jquery.cookie, jquery.jstree, space_explorer" css="space_explorer">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		<ul id="spaceList">

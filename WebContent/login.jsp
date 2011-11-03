@@ -16,12 +16,13 @@
 				<td><input type="password" name="j_password" /></td>
 			</tr>												
 			<tr>
-				<td colspan="2"><button type="submit" class="round">login</button></td>
+				<td><a href="/starexec/pages/password_reset.jsp">forgot password?</a></td>
+				<td><button type="submit" class="round">login</button></td>
 			</tr>
 		</table>
 		</fieldset>					
 	</form>
-	<c:if test="${not empty param.result}">			
+	<c:if test="${not empty param.result}">
 		<div class='error message'>invalid username or password</div>
 	</c:if>			
 </star:template>

@@ -14,7 +14,7 @@
 	float: right;		
 }
 										
-#loginForm tr .lable {
+#loginForm tr .label {
 	width: 160px;				
 }
 
@@ -30,4 +30,11 @@
 
 #loginForm input {
 	width: 200px;
+}
+
+#loginForm a:link {
+	text-decoration: none;
+	font-size: 14px;		
+	position: relative;
+	bottom: 7px;
 }

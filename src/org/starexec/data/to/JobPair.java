@@ -7,57 +7,57 @@ import java.sql.Timestamp;
  * 
  * @author Tyler Jensen
  */
-public class JobPair extends Identifiable {
-	private long jobId = -1;
-	private long benchmarkId = -1;
-	private long configurationId = -1;	
+public class JobPair extends Identifiable {	
 	private long nodeId = -1;
 	private String status;
 	private String result;
-	private String runTime;
+	private String runTime = "";
 	private Timestamp startDate;
 	private Timestamp endDate;
+	private Job job;
+	private Benchmark benchmark;
+	private Solver solver;
 
 	/**
-	 * @return the id of the job this pair is apart of
+	 * @return the job this pair is apart of
 	 */
-	public long getJobId() {
-		return jobId;
+	public Job getJob() {
+		return job;
 	}
 
 	/**
-	 * @param jobId the jobId to set for the pair
+	 * @param job the job to set for the pair
 	 */
-	public void setJobId(long jobId) {
-		this.jobId = jobId;
+	public void setJob(Job job) {
+		this.job = job;
 	}
 
 	/**
-	 * @return the id of the benchmark that corresponds to this pair
+	 * @return the benchmark that corresponds to this pair
 	 */
-	public long getBenchmarkId() {
-		return benchmarkId;
+	public Benchmark getBenchmark() {
+		return benchmark;
 	}
 
 	/**
-	 * @param benchmarkId the benchmark id to set for this pair
+	 * @param benchmark the benchmark to set for this pair
 	 */
-	public void setBenchmarkId(long benchmarkId) {
-		this.benchmarkId = benchmarkId;
+	public void setBenchmark(Benchmark benchmark) {
+		this.benchmark = benchmark;
 	}
 
 	/**
-	 * @return the id of the configuration that corresponds to this pair
+	 * @return the solver that corresponds to this pair
 	 */
-	public long getConfigurationId() {
-		return configurationId;
+	public Solver getSolver() {
+		return solver;
 	}
 
 	/**
-	 * @param configurationId the configurationId to set for this pair
+	 * @param solver the solver to set for this pair
 	 */
-	public void setConfigurationId(long configurationId) {
-		this.configurationId = configurationId;
+	public void setSolver(Solver solver) {
+		this.solver = solver;
 	}
 
 	/**
@@ -114,6 +114,10 @@ public class JobPair extends Identifiable {
 	 */
 	public void setStartDate(Timestamp startDate) {
 		this.startDate = startDate;
+		
+		if(this.endDate!= null && this.startDate != null) {
+			this.setRunTime(endDate.getTime() - startDate.getTime());
+		}
 	}
 
 	/**
@@ -128,6 +132,10 @@ public class JobPair extends Identifiable {
 	 */
 	public void setEndDate(Timestamp endDate) {
 		this.endDate = endDate;
+		
+		if(this.endDate!= null && this.startDate != null) {
+			this.setRunTime(endDate.getTime() - startDate.getTime());
+		}
 	}
 	
 	/**
@@ -138,14 +146,20 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * @param runTime The run time in total seconds (which is converted to a time string)
+	 * @param runTime The run time in total milliseconds (which is converted to a time string)
 	 */
-	public void setRunTime(int runTime) {
-		runTime = Math.abs(runTime);
-		int minutes = runTime / 60;
-		int hours = runTime / (3600);
-		int days = runTime / (86400);
-		int seconds = runTime - (minutes * 60) - (hours * 3600) - (days * 86400);			
-		this.runTime = String.format("%sd %sh %sm %ss", days, hours, minutes, seconds);
-	}	
+	public void setRunTime(long runTime) {
+		runTime = Math.abs(runTime);	
+		long days = runTime / (86400000);		
+		runTime -= (days * 86400000);
+		long hours = runTime / 3600000;
+		runTime -= (hours * 3600000);
+		long minutes = runTime / 60000;	
+		runTime -= (minutes * 60000);
+		long seconds = runTime / 1000;
+		runTime -= (seconds * 1000);
+		long ms = runTime;
+		
+		this.runTime = String.format("%sd %sh %sm %s.%ss", days, hours, minutes, seconds, ms);
+	}
 }

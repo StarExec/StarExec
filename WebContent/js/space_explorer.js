@@ -81,7 +81,8 @@ function populateDetails(jsonData) {
 				id: 'job_' + job.id,
 				class: 'job round',
 				title: job.description,
-				onClick: 'return popup("/starexec/pages/detail/job.jsp?id=' + job.id + '");',
+				href: '/starexec/pages/details/job.jsp?id=' + job.id,
+				target: '_blank'
 			});		
 			var jobNameElement = $('<p></p>').text(job.name);
 			var jobStatElement = $('<p></p>').text(job.status);
@@ -108,9 +109,10 @@ function populateDetails(jsonData) {
 		$.each(jsonData.users, function(i, user) {
 			var userElement = $('<a></a>').attr({
 				id: 'user_' + user.id,
-				class: 'user round',
-				onClick: 'return popup("/starexec/pages/detail/user.jsp?id=' + user.id + '");',
-				title: user.email
+				class: 'user round',				
+				title: user.email,
+				href: '/starexec/pages/details/user.jsp?id=' + user.id,
+				target: '_blank'
 			});		
 			var userNameElement = $('<p></p>').text(user.firstName + ' ' + user.lastName);
 			var userInstElement = $('<p></p>').text(user.institution);
@@ -133,7 +135,8 @@ function populateDetails(jsonData) {
 				id: 'solver_' + solver.id,
 				class: 'solver round',
 				title: solver.description,
-				onClick: 'return popup("/starexec/pages/detail/solver.jsp?id=' + solver.id + '");',
+				href: '/starexec/pages/details/solver.jsp?id=' + solver.id,
+				target: '_blank'
 			});		
 			var solverNameElement = $('<p></p>').text(solver.name);
 			
@@ -154,7 +157,8 @@ function populateDetails(jsonData) {
 				id: 'bench_' + bench.id,
 				class: 'benchmark round',
 				title: bench.description,
-				onClick: 'return popup("/starexec/pages/detail/benchmark.jsp?id=' + bench.id + '");',
+				href: '/starexec/pages/details/benchmark.jsp?id=' + bench.id,
+				target: '_blank'
 			});		
 			var benchNameElement = $('<p></p>').text(bench.name);
 			
@@ -169,14 +173,4 @@ function populateDetails(jsonData) {
 	
 	// Done loading, hide the loader
 	$('#loader').hide();
-}
-
-/**
- * Pops up a new window with content at the given URL
- * @param url The page to display in the popup window
- */
-function popup(url) {
-	window.open(url,
-	'window',
-	'width=510,height=510,scrollbars=no,status=no');
 }

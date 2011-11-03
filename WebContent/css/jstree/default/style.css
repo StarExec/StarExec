@@ -7,7 +7,7 @@
 .jstree-default li, 
 .jstree-default ins { background-image:url("d.png"); background-repeat:no-repeat; background-color:transparent; }
 .jstree-default li { background-position:-90px 0; background-repeat:repeat-y; }
-.jstree-default li.jstree-last { background: #1C1C1C; }
+.jstree-default li.jstree-last { background: #222222; }
 .jstree-default .jstree-open > ins { background-position:-72px 0; }
 .jstree-default .jstree-closed > ins { background-position:-54px 0; }
 .jstree-default .jstree-leaf > ins { background-position:-36px 0; }

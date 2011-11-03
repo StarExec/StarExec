@@ -18,7 +18,6 @@ tr .label {
 
 tr td,
 tr th {
-	border: #1C1C1C solid 3px;
 	padding: 10px;		
 }
 
@@ -46,7 +45,6 @@ fieldset ul li {
 	list-style: none;
 	display: block;
 	margin: auto;
-	border: #1C1C1C solid 3px;
 	padding: 10px;
 	width: 95%;		
 }
