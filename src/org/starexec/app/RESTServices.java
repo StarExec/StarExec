@@ -84,6 +84,53 @@ public class RESTServices {
 		return gson.toJson(Database.getWebsitesByUserId(userId));
 	}
 	
+	/**
+	 * Adds website information to the database. This is dynamic to allow adding a
+	 * website associated with a space, solver, or user. The type of website is given
+	 * in the path
+	 * 
+	 * @return a json string containing '0' if the add was successful, '1' otherwise
+	 */
+	@POST
+	@Path("/website/add/{type}")
+	@Produces("application/json")
+	public String addWebsite(@PathParam("type") String type, @Context HttpServletRequest request) {
+		boolean success = false;
+		
+		if (type.equals("user")) {
+			long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+			String name = request.getParameter("name");
+			String url = request.getParameter("url");
+			
+			success = Database.addUserWebsite(userId, url, name);
+		}
+		
+		if (true == success) {
+			return gson.toJson(0);
+		}
+		
+		return gson.toJson(1);
+	}
+	
+	/**
+	 * Deletes website information in the database. Website ID is included in the path.
+	 * 
+	 * @return a json string containing '0' if the delete is successful, '1' otherwise
+	 */
+	@POST
+	@Path("/websites/delete/user/{val}")
+	@Produces("application/json")
+	public String deleteWebsite(@PathParam("val") long id, @Context HttpServletRequest request) {
+		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+		boolean success = Database.deleteUserWebsite(id, userId);
+		
+		if (true == success) {
+			return gson.toJson(0);
+		}
+		
+		return gson.toJson(1);
+	}
+	
 	/** 
 	 * Updates information in the database using a POST. Attribute and
 	 * new value are included in the path. First validates that the new value
@@ -163,8 +210,8 @@ public class RESTServices {
 		String hashedPass = Hash.hashPassword(currentPass);
 		String databasePass = Database.getPassword(userId);
 		
-		if (hashedPass.compareTo(databasePass) == 0) {
-			if (newPass.compareTo(confirmPass) == 0) {
+		if (hashedPass.equals(databasePass)) {
+			if (newPass.equals(confirmPass)) {
 				if (true == Validate.password(newPass)) {
 					//updatePassword requires the plaintext password
 					if (true == Database.updatePassword(userId, newPass)) {

@@ -264,6 +264,21 @@ CREATE PROCEDURE VerifyUser(IN _id BIGINT)
 		SET verified = 1
 		WHERE id = _id;
 	END //
-	
+
+-- Adds a website that is associated with a user
+-- Author: Skylar Stark	
+CREATE PROCEDURE AddUserWebsite(IN _userId BIGINT, IN _url TEXT, IN _name VARCHAR(64))
+	BEGIN
+		INSERT INTO website(user_id, url, name)
+		VALUES(_userId, _url, _name);
+	END //
+
+-- Deletes the website with the given website id
+-- Author: Skylar Stark
+CREATE PROCEDURE DeleteUserWebsite(IN _id BIGINT, IN _userId BIGINT)
+	BEGIN
+		DELETE FROM website
+		WHERE id = _id AND user_id = _userId;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

@@ -107,12 +107,8 @@ INSERT INTO job_assoc VALUES (2, 2);
 INSERT INTO website (user_id, name, url) VALUES (1, 'Personal', 'http://www.tylernjensen.com');
 INSERT INTO website (user_id, name, url) VALUES (1, 'University', 'http://www.cs.uiowa.edu');
 INSERT INTO website (solver_id, name, url) VALUES (1, 'Documentation', 'http://www.cs.uiowa.edu');
-
-INSERT INTO website (space_id, user_id, solver_id, url, name) 
-	VALUES (1, 5, 1, 'http://www.google.com/', 'google');
-INSERT INTO website (space_id, user_id, solver_id, url, name) 
-	VALUES (1, 5, 1, 'http://www.bing.com/', 'bing');
-INSERT INTO website (space_id, user_id, solver_id, url, name) 
-	VALUES (1, 5, 1, 'http://www.uiowa.edu/', 'uiowa');
+INSERT INTO website (user_id, url, name) VALUES (5, 'http://www.google.com/', 'google');
+INSERT INTO website (user_id, url, name) VALUES (5, 'http://www.bing.com/', 'bing');
+INSERT INTO website (user_id, url, name) VALUES (5, 'http://www.uiowa.edu/', 'uiowa');
 
 -- More sample data to come!

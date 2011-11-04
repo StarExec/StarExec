@@ -21,9 +21,15 @@ tr th {
 	padding: 10px;		
 }
 
-tr td button {
+button {
 	height: 20px;
-	width: 20%;
+	width: 15%;
+	border-radius: 2px;
+}
+
+#password tr td button,
+#websites li button {
+	float: right;
 }
 
 fieldset h6 {
@@ -37,16 +43,28 @@ input {
 	height: 20px;
 }
 
-button.round {
-	float: right;
-}
-
 fieldset ul li {
 	list-style: none;
 	display: block;
 	margin: auto;
 	padding: 10px;
 	width: 95%;		
+}
+
+#new_website {
+	float: right;
+}
+
+#new_website input {
+	width: 30%;
+}
+
+li button {
+	display: none;
+}
+
+li:hover button {
+	display: block;
 }
 
 #editfirstname:hover, 

@@ -1,6 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <star:template title="edit account" css="edit_account" js="edit_account">
 	<p>review and edit your account details here.</p>
@@ -32,13 +31,17 @@
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
-		<ul id="websites">
-		</ul>
+		<ul id="websites"></ul>
+		<h6>add new website:</h6><br />
+		<div id="new_website">
+			name: <input type="text" id="website_name" /> 
+			url: <input type="text" id="website_url" /> 
+			<button id="addWebsite">add</button>
+		</div>
 	</fieldset>
 	<fieldset>
 		<legend>password</legend>
 		<table id="password">
-			<!--  doesn't do anything yet -->
 			<tr>
 				<td>current password</td>
 				<td><input type="password" id="current_pass" /></td>

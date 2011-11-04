@@ -250,15 +250,6 @@ public class Database {
 	}
 	
 	/**
-	 * Updates the first name of a user in the database with the 
-	 * given user ID
-	 * 
-	 * @param userId the user ID of the user we want to update
-	 * @param newValue what the first name will be updated to
-	 * @return true iff the update succeeds on exactly one entry
-	 * @author Skylar Stark
-	 */
-	/**
 	 * Retrieves a user from the database given the email address
 	 * 
 	 * @param email The email of the user to retrieve
@@ -458,6 +449,15 @@ public class Database {
 		return null;
 	}
 	
+	/**
+	 * Updates the first name of a user in the database with the 
+	 * given user ID
+	 * 
+	 * @param userId the user ID of the user we want to update
+	 * @param newValue what the first name will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Skylar Stark
+	 */
 	public static boolean updateFirstName(long userId, String newValue){
 		Connection con = null;			
 		
@@ -907,6 +907,62 @@ public class Database {
 		}
 		
 		return null;
+	}
+	
+	
+	/**
+	 * Adds a website associated with a user to the database.
+	 * 
+	 * @param userId the ID of the user
+	 * @param url the URL of the website
+	 * @param name the name to display with the website
+	 * @return true iff the add was successful
+	 */
+	public static boolean addUserWebsite(long userId, String url, String name) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL AddUserWebsite(?, ?, ?)}");
+			procedure.setLong(1, userId);
+			procedure.setString(2, url);
+			procedure.setString(3, name);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Deletes the website associated with the given website ID.
+	 * 
+	 * @param websiteId the ID of the website to delete
+	 * @return true iff the delete is successful
+	 */
+	public static boolean deleteUserWebsite(long websiteId, long userId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL DeleteUserWebsite(?, ?)}");
+			procedure.setLong(1, websiteId);
+			procedure.setLong(2, userId);
+			int result = procedure.executeUpdate();
+			
+			return result == 1;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
 	}
 	
 	/**
