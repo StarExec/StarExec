@@ -1,16 +1,28 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.User"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
-	long id = Long.parseLong(request.getParameter("id"));	
-	request.setAttribute("usr", Database.getUser(id));
-	request.setAttribute("sites", Database.getWebsitesByUserId(id));
+	try {
+		long id = Long.parseLong(request.getParameter("id"));			
+		User user = Database.getUser(id);
+		
+		if(user != null) {
+			request.setAttribute("usr", user);
+			request.setAttribute("sites", Database.getWebsitesByUserId(id));
+		} else {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
+		}
+	} catch (NumberFormatException nfe) {
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
+	} catch (Exception e) {
+		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+	}
 %>
 
 <star:template title="${usr.fullName}" js="details" css="details">				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/pages/edit_account.jsp">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit_account.jsp">edit</a>)</c:if></legend>
 		<table>
 			<tr>
 				<td>e-mail address</td>			
@@ -53,5 +65,5 @@
 	<fieldset>
 		<legend>jobs</legend>
 		<p>coming soon...</p>
-	</fieldset>
+	</fieldset>	
 </star:template>
