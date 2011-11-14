@@ -51,6 +51,35 @@ button:hover {
 	background-color: #3b0264;				
 }
 
+.button {
+	display: inline-block;
+	list-style-type: none;	
+	background-color: #666666;
+	min-width: 110px;
+	height: 35px;
+	text-align: center;	
+	position: relative;
+	padding: 0px 8px 0px 8px;
+}
+
+.button a {
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	display: block;
+	line-height: 100%;
+	margin-top: 8px;
+	text-shadow: black 0px 0px 12px;	
+}
+
+.button a:link {
+	text-decoration: none;
+}
+
+.button:hover {
+	background-color: #3b0264;
+}
+
 fieldset {	
 	border-width: 4px;
 	border-style: solid;
@@ -70,7 +99,7 @@ legend {
 	margin-left: 25px;
 }
 
-td.shade {
+.shade {
 	background-color: #111111;
 }
 
@@ -91,9 +120,12 @@ td.shade {
 	height: 40px;
 	padding: 8px;	
 	font-weight: bold;
-	position: relative;
+	position: fixed;
 	display: block;
 	line-height: 35px;
+	width: 100%;
+	z-index: 998;
+	top: 0px;
 }
 
 .message.error {	
@@ -116,8 +148,9 @@ td.shade {
 	cursor: pointer;
 	position: absolute;
 	top: -3px;
-	right: 5px;
+	right:23px;
 	font-weight: bold;
+	z-index: 999;
 }
 
 .message img:first-child {
@@ -128,6 +161,7 @@ td.shade {
 	position: relative;
 	top: 50%;	
 	float: left;
+	z-index: 999;
 }
 
 /******************** Page Content *************************/
@@ -148,11 +182,6 @@ td.shade {
 	display:block;
 	position: relative;
 	overflow: hidden;
-}
-
-
-#content a:link{
-	text-decoration: underline;	
 }
 
 #content h1 {

@@ -12,8 +12,10 @@ public class Validate {
     
     private static Pattern emailChecker;
     private static Pattern nameChecker;
+    private static Pattern alpaNumericChecker;
     private static Pattern passwordChecker;
   
+    private static final String ALPHA_NUMERIC_DASH = "[a-zA-Z0-9\\-\\s]+";    
     private static final String PASS_PATTERN_LETTERS = "[a-zA-Z]";
     private static final String PASS_PATTERN_NUMBERS = "[0-9]";
     private static final String PASS_PATTERN_PUNCT   = "[~!@#$%^&*()\\-_=+]";
@@ -26,6 +28,7 @@ public class Validate {
     static {
         emailChecker = Pattern.compile(EMAIL_PATTERN);
         nameChecker = Pattern.compile(NAME_PATTERN);
+        alpaNumericChecker = Pattern.compile(ALPHA_NUMERIC_DASH);
     }
         	
 	/**
@@ -105,5 +108,35 @@ public class Validate {
     	} else {
     		return nameChecker.matcher(name).matches();
     	}
+    }
+    
+    /**
+     * Validates a name and checks that it contains only letters and dashes
+     * 
+     * @param name the space's name to check
+     * @return true iff name isn't null, is 32 characters or shorter and
+     * contains only letters and dashes
+     */
+    public static boolean spaceName(String name){    	
+    	if(name.length() > 32 || Util.isNullOrEmpty(name)){
+    		return false;
+    	}
+    	
+    	return alpaNumericChecker.matcher(name).matches();    	
+    }
+    
+    /**
+     * Validates a generic description and checks that it contains content and is less than 1024
+     * characters long. ALL characters are allowed in descriptions.
+     * 
+     * @param desc the description to check
+     * @return true iff name isn't null or empty and is less than 1024 characters
+     */
+    public static boolean description(String desc){    	
+    	if(desc.length() > 1024 || Util.isNullOrEmpty(desc)){
+    		return false;
+    	}
+    	
+    	return true;
     }
 }

@@ -1,6 +1,5 @@
 package org.starexec.data.to;
 
-import java.io.File;
 import java.sql.Timestamp;
 
 import com.google.gson.annotations.Expose;

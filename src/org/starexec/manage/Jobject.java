@@ -1,9 +1,5 @@
 package org.starexec.manage;
 
-import java.util.HashMap;
-import java.util.Stack;
-
-import org.starexec.data.to.*;
 
 /**
  * This holds the paths to the solvers/benchmarks, and is passed to the job manager to begin a job.

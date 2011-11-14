@@ -11,12 +11,12 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Space extends Identifiable {
-	private long permissionId = -1;
+public class Space extends Identifiable {	
 	@Expose	private String name;
 	@Expose	private String description;
 	private boolean locked;
 	private Timestamp created;
+	private Permission defaultPermission;
 	@Expose	private List<Solver> solvers;
 	@Expose	private List<Benchmark> benchmarks;
 	@Expose	private List<Job> jobs;
@@ -30,17 +30,17 @@ public class Space extends Identifiable {
 	}
 	
 	/**
-	 * @return the id of the default permission entry that represents the permission newly added users have
+	 * @return the default permission entry that represents the permission newly added users have
 	 */
-	public long getPermissionId() {
-		return permissionId;
+	public Permission getPermission() {
+		return defaultPermission;
 	}
 	
 	/**
-	 * @param permissionId the default permission id to set for this space
+	 * @param permission the default permission to set for this space
 	 */
-	public void setPermissionId(long permissionId) {
-		this.permissionId = permissionId;
+	public void setPermission(Permission permission) {
+		this.defaultPermission = permission;
 	}
 	
 	/**

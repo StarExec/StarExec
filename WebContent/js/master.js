@@ -18,14 +18,10 @@ $(document).ready(function(){
 		// Remove the old message element from the DOM
 		$(".message").remove();
 		
-		// Show the message to the user (we do this programatically so we can re-use code)	
-		// defaults to 5 seconds
+		// Show the message to the user (we do this programatically so we can re-use code)
 		showMessage(messageClass, messageText, -1);			
 	}
-	
-	
-	
-	
+		
 	// Setup navigation submenus
 	$("#pageHeader nav ul li").hover(function() {
 		// When we hover over a menu item...

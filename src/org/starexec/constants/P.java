@@ -40,4 +40,5 @@ public class P {
 	public static String PAIR_END_TIME = "etime"; */
 	
 	public static String SESSION_USER = "user";
+	public static String PERMISSION_CACHE = "permissions";
 }

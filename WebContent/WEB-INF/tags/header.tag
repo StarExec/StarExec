@@ -22,14 +22,14 @@
 				<li class="round">
 					<a href="#">account</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="/starexec/pages/edit_account.jsp">edit</a></li>  
+			            <li class="round"><a href="/starexec/secure/edit_account.jsp">edit</a></li>  
 			            <li class="round"><a href="#" onclick="javascript:logout();">logout</a></li>  
 			        </ul>  
 				</li>
 				<li class="round">
 					<a href="#">spaces</a>  
 			        <ul class="subnav round">  
-			        	<li class="round"><a href="/starexec/pages/space_explorer.jsp">explore</a></li>  
+			        	<li class="round"><a href="/starexec/secure/space_explorer.jsp">explore</a></li>  
 			            <li class="round"><a href="#">historical</a></li>
 			            <li class="round"><a href="#">mine</a></li>    			            
 			        </ul>  

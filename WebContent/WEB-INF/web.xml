@@ -8,16 +8,16 @@
   </session-config>
   
   <!-- Filters -->
+  <!-- Filter that checks all requests and sets up session parameters -->
   <filter-mapping>
-    <filter-name>Session Filter</filter-name>
-    <url-pattern>/pages/*</url-pattern>    
-  </filter-mapping>
+    <filter-name>SessionFilter</filter-name>
+    <url-pattern>/secure/*</url-pattern>    
+  </filter-mapping>       
   <filter>
-    <!-- Filter that checks all requests and sets up session parameters -->
-    <filter-name>Session Filter</filter-name>
+  	<filter-name>SessionFilter</filter-name>
     <filter-class>org.starexec.app.SessionFilter</filter-class>    
   </filter>
-  
+
   <!-- Servlet Definitions -->
   <servlet>
     <servlet-name>Registration</servlet-name>
@@ -26,6 +26,15 @@
   <servlet-mapping>
     <servlet-name>Registration</servlet-name>
     <url-pattern>/Registration</url-pattern>
+  </servlet-mapping>
+    
+  <servlet>
+    <servlet-name>AddSpace</servlet-name>
+    <servlet-class>org.starexec.servlets.AddSpace</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AddSpace</servlet-name>
+    <url-pattern>/secure/add/space</url-pattern>
   </servlet-mapping>
     
   <servlet>
@@ -106,7 +115,7 @@
   <security-constraint>	
     <web-resource-collection>
 	  <web-resource-name>Users Only</web-resource-name>
-	  <url-pattern>/pages/*</url-pattern>
+	  <url-pattern>/secure/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
 	  <role-name>user</role-name>

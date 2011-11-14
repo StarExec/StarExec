@@ -3,7 +3,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 
-<star:template title="user registration" css="registration" js="jquery.validate.min, jquery.validate.password, registration">	
+<star:template title="user registration" css="registration" js="lib/jquery.validate.min, lib/jquery.validate.password, registration">	
 	<p>create a new user account</p>
 	<form method="POST" action="Registration" id="regForm">
 	<fieldset>			

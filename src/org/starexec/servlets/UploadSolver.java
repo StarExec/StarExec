@@ -1,21 +1,31 @@
 package org.starexec.servlets;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.*;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-
-import org.starexec.constants.*;
-import org.starexec.data.*;
-import org.starexec.data.to.*;
-import org.starexec.util.*;
+import org.starexec.constants.P;
+import org.starexec.constants.R;
+import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Solver;
+import org.starexec.util.ZipUtil;
 
 /**
  * @deprecated This class is out of date and needs to be re-implemented

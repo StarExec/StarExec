@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -42,6 +43,9 @@ public class SessionFilter implements Filter {
 				// And add it to their session to be used elsewhere
 				httpRequest.getSession().setAttribute(P.SESSION_USER, user);
 				
+				// Also add an empty permission's cache for the user
+				httpRequest.getSession().setAttribute(P.PERMISSION_CACHE, new HashMap<Long, Permission>());
+				
 				// Add the login to the database
 				this.logUserLogin(user, httpRequest);				
 			}
@@ -64,7 +68,7 @@ public class SessionFilter implements Filter {
 		String rawBrowser = request.getHeader("user-agent");
 		
 		// Also save in the database to maintain a historical record
-		// Database.addLoginRecord(user.getUserId(), ip, rawBrowser);
+		Database.addLoginRecord(user.getId(), ip, rawBrowser);
 	}
 
 	@Override

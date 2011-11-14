@@ -46,8 +46,7 @@ public class Starexec implements ServletContextListener {
 
 	/**
 	 * When the application starts, this method is called. Perform any initializations here
-	 */
-	@SuppressWarnings("unused")
+	 */	
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		// Called when the application starts		

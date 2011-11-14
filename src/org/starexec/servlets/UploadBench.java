@@ -18,10 +18,7 @@ import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-
 import org.starexec.constants.R;
-import org.starexec.data.Database;
-import org.starexec.util.XmlUtil;
 import org.starexec.util.ZipUtil;
 
 /**

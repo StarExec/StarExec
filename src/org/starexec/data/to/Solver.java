@@ -1,6 +1,5 @@
 package org.starexec.data.to;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;

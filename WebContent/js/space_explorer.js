@@ -34,8 +34,9 @@ $(document).ready(function(){
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
-		// When a node is clicked, get its ID and display the info in the details pane
+		// When a node is clicked, get its ID and display the info in the details pane		
         id = data.rslt.obj.attr("id");
+        updateAddId(id);
         getSpaceDetails(id);
     }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 });
@@ -64,10 +65,10 @@ function getSpaceDetails(id) {
 function populateDetails(jsonData) {
 	// Populate space defaults
 	$('#spaceName').fadeOut('fast', function(){
-		$('#spaceName').text(jsonData.name).fadeIn('fast');
+		$('#spaceName').text(jsonData.space.name).fadeIn('fast');
 	});
 	$('#spaceDesc').fadeOut('fast', function(){
-		$('#spaceDesc').text(jsonData.description).fadeIn('fast');
+		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
 	
 	// Populate job details (fadeout current jobs)
@@ -76,12 +77,12 @@ function populateDetails(jsonData) {
 		$('#jobs').html('');	
 		
 		// For each returned job, create a element and add it to the div
-		$.each(jsonData.jobs, function(i, job) {
+		$.each(jsonData.space.jobs, function(i, job) {
 			var jobElement = $('<a></a>').attr({
 				id: 'job_' + job.id,
 				class: 'job round',
 				title: job.description,
-				href: '/starexec/pages/details/job.jsp?id=' + job.id,
+				href: '/starexec/secure/details/job.jsp?id=' + job.id,
 				target: '_blank'
 			});		
 			var jobNameElement = $('<p></p>').text(job.name);
@@ -93,7 +94,7 @@ function populateDetails(jsonData) {
 		});
 		
 		// If there are no jobs, put 'none' in the div
-		if($(jsonData.jobs).length == 0) {
+		if($(jsonData.space.jobs).length == 0) {
 			$('#jobs').html('<p>none</p>');
 		}
 		
@@ -106,12 +107,12 @@ function populateDetails(jsonData) {
 	// Populate user details
 	$('#users').fadeOut('fast', function() {
 		$('#users').html('');			
-		$.each(jsonData.users, function(i, user) {
+		$.each(jsonData.space.users, function(i, user) {
 			var userElement = $('<a></a>').attr({
 				id: 'user_' + user.id,
 				class: 'user round',				
 				title: user.email,
-				href: '/starexec/pages/details/user.jsp?id=' + user.id,
+				href: '/starexec/secure/details/user.jsp?id=' + user.id,
 				target: '_blank'
 			});		
 			var userNameElement = $('<p></p>').text(user.firstName + ' ' + user.lastName);
@@ -121,7 +122,7 @@ function populateDetails(jsonData) {
 			$(userInstElement).appendTo(userElement);
 			$(userElement).appendTo('#users');
 		});
-		if($(jsonData.users).length == 0) {
+		if($(jsonData.space.users).length == 0) {
 			$('#users').html('<p>none</p>');
 		}
 		$('#users').fadeIn('fast');
@@ -130,12 +131,12 @@ function populateDetails(jsonData) {
 	// Populate solver details
 	$('#solvers').fadeOut('fast', function(){
 		$('#solvers').html('');
-		$.each(jsonData.solvers, function(i, solver) {
+		$.each(jsonData.space.solvers, function(i, solver) {
 			var solverElement = $('<a></a>').attr({
 				id: 'solver_' + solver.id,
 				class: 'solver round',
 				title: solver.description,
-				href: '/starexec/pages/details/solver.jsp?id=' + solver.id,
+				href: '/starexec/secure/details/solver.jsp?id=' + solver.id,
 				target: '_blank'
 			});		
 			var solverNameElement = $('<p></p>').text(solver.name);
@@ -143,7 +144,7 @@ function populateDetails(jsonData) {
 			$(solverNameElement).appendTo(solverElement);
 			$(solverElement).appendTo('#solvers');
 		});
-		if($(jsonData.solvers).length == 0) {
+		if($(jsonData.space.solvers).length == 0) {
 			$('#solvers').html('<p>none</p>');
 		}
 		$('#solvers').fadeIn('fast');
@@ -152,12 +153,12 @@ function populateDetails(jsonData) {
 	// Populate benchmark details
 	$('#benchmarks').fadeOut('fast', function(){
 		$('#benchmarks').html('');
-		$.each(jsonData.benchmarks, function(i, bench) {
+		$.each(jsonData.space.benchmarks, function(i, bench) {
 			var benchElement = $('<a></a>').attr({
 				id: 'bench_' + bench.id,
 				class: 'benchmark round',
 				title: bench.description,
-				href: '/starexec/pages/details/benchmark.jsp?id=' + bench.id,
+				href: '/starexec/secure/details/benchmark.jsp?id=' + bench.id,
 				target: '_blank'
 			});		
 			var benchNameElement = $('<p></p>').text(bench.name);
@@ -165,12 +166,53 @@ function populateDetails(jsonData) {
 			$(benchNameElement).appendTo(benchElement);
 			$(benchElement).appendTo('#benchmarks').hide().fadeIn('fast');
 		});
-		if($(jsonData.benchmarks).length == 0) {
+		if($(jsonData.space.benchmarks).length == 0) {
 			$('#benchmarks').html('<p>none</p>');
 		}	
 		$('#benchmarks').fadeIn('fast');
-	});			
+	});
+			
+	checkPermissions(jsonData.perm);
 	
 	// Done loading, hide the loader
 	$('#loader').hide();
+}
+
+/**
+ * Checks the permissions for the current space and hides/shows buttons based on
+ * the user's permissions
+ * @param perms The JSON permission object representing permissions for the current space
+ */
+function checkPermissions(perms) {
+	if(perms.addSpace) {		
+		$('#addSpace').parent().parent().fadeIn('fast');
+	} else {
+		$('#addSpace').parent().parent().fadeOut('fast');
+	}
+	
+	if(perms.removeSpace) {
+		$('#removeSpace').parent().parent().fadeIn('fast');
+	} else {
+		$('#removeSpace').parent().parent().fadeOut('fast');
+	}
+	
+	if(perms.addBenchmark) {
+		$('#uploadBench').parent().parent().fadeIn('fast');
+	} else {
+		$('#uploadBench').parent().parent().fadeOut('fast');
+	}
+	
+	if(perms.addSolver) {
+		$('#uploadSolver').parent().parent().fadeIn('fast');
+	} else {
+		$('#uploadSolver').parent().parent().fadeOut('fast');
+	}
+}
+
+/**
+ * Updates the URLs to perform actions on the current space
+ * @param id The id of the current space
+ */
+function updateAddId(id) {	
+	$('#addSpace').attr('href', "/starexec/secure/add/space.jsp?sid=" + id);
 }

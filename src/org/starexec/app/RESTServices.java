@@ -1,6 +1,9 @@
 package org.starexec.app;
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -10,6 +13,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
+import org.jboss.resteasy.annotations.ResponseObject;
+import org.jboss.resteasy.spi.UnauthorizedException;
 import org.starexec.constants.P;
 import org.starexec.data.Database;
 import org.starexec.data.to.*;
@@ -17,6 +22,7 @@ import org.starexec.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sun.mail.iap.Response;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -39,9 +45,11 @@ public class RESTServices {
 	@GET
 	@Path("/space/subspaces")
 	@Produces("application/json")	
-	public String getSubSpaces(@QueryParam("id") long id) {		
-		log.debug("getSubSpaces id=" + id);
-		return gson.toJson(RESTHelpers.toSpaceTree(Database.getSubSpaces(id)));
+	public String getSubSpaces(@QueryParam("id") long parentId, @Context HttpServletRequest request) {		
+		log.debug("getSubSpaces parentId=" + parentId);		
+		long userId = SessionUtil.getUserId(request);
+		
+		return gson.toJson(RESTHelpers.toSpaceTree(Database.getSubSpaces(parentId, userId)));
 	}	
 	
 	/**
@@ -49,12 +57,18 @@ public class RESTServices {
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen
 	 */
+	@SuppressWarnings("unchecked")
 	@POST
 	@Path("/space/{id}")
 	@Produces("application/json")	
-	public String getSpaceDetails(@PathParam("id") long id) {	
-		log.debug("getSpaceDetails id=" + id);
-		return limitGson.toJson(Database.getSpaceDetails(id));
+	public String getSpaceDetails(@PathParam("id") long spaceId, @Context HttpServletRequest request) {
+		log.debug("getSpaceDetails id=" + spaceId);		
+		long userId = SessionUtil.getUserId(request);
+		
+		Space s = Database.getSpaceDetails(spaceId, userId);
+		Permission p = SessionUtil.getPermission(request, spaceId);
+		
+		return limitGson.toJson(new RESTHelpers.SpacePermissionPair(s, p));				
 	}	
 	
 	/**
@@ -80,7 +94,7 @@ public class RESTServices {
 	@Path("/websites/user")
 	@Produces("application/json")
 	public String getWebsites(@Context HttpServletRequest request) {
-		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+		long userId = SessionUtil.getUserId(request);
 		return gson.toJson(Database.getWebsitesByUserId(userId));
 	}
 	
@@ -98,7 +112,7 @@ public class RESTServices {
 		boolean success = false;
 		
 		if (type.equals("user")) {
-			long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+			long userId = SessionUtil.getUserId(request);
 			String name = request.getParameter("name");
 			String url = request.getParameter("url");
 			
@@ -121,7 +135,7 @@ public class RESTServices {
 	@Path("/websites/delete/user/{val}")
 	@Produces("application/json")
 	public String deleteWebsite(@PathParam("val") long id, @Context HttpServletRequest request) {
-		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+		long userId = SessionUtil.getUserId(request);
 		boolean success = Database.deleteUserWebsite(id, userId);
 		
 		if (true == success) {
@@ -144,7 +158,7 @@ public class RESTServices {
 	@Path("/edit/user/{attr}/{val}")
 	@Produces("application/json")
 	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("val") String newValue, @Context HttpServletRequest request) {	
-		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+		long userId = SessionUtil.getUserId(request);
 		boolean success = false;
 		
 		// Go through all the cases, depending on what attribute we are changing.
@@ -154,28 +168,28 @@ public class RESTServices {
 			if (true == Validate.name(newValue)) {
 				success = Database.updateFirstName(userId, newValue);
 				if (true == success) {
-					((User)(request.getSession().getAttribute(P.SESSION_USER))).setFirstName(newValue);
+					SessionUtil.getUser(request).setFirstName(newValue);
 				}
 			}
 		} else if (attribute.equals("lastname")) {
 			if (true == Validate.name(newValue)) {
 				success = Database.updateLastName(userId, newValue);
 				if (true == success) {
-					((User)(request.getSession().getAttribute(P.SESSION_USER))).setLastName(newValue);
+					SessionUtil.getUser(request).setLastName(newValue);
 				}
 			}
 		} else if (attribute.equals("email")) {
 			if (true == Validate.email(newValue)) { 
 				success = Database.updateEmail(userId, newValue);
 				if (true == success) {
-					((User)(request.getSession().getAttribute(P.SESSION_USER))).setEmail(newValue);
+					SessionUtil.getUser(request).setEmail(newValue);
 				}
 			}
 		} else if (attribute.equals("institution")) {
 			if (true == Validate.institute(newValue)) {
 				success = Database.updateInstitution(userId, newValue);
 				if (true == success) {
-					((User)(request.getSession().getAttribute(P.SESSION_USER))).setInstitution(newValue);
+					SessionUtil.getUser(request).setInstitution(newValue);
 				}
 			}
 		}
@@ -202,7 +216,7 @@ public class RESTServices {
 	@Path("/edit/user/password/")
 	@Produces("application/json")
 	public String editUserPassword(@Context HttpServletRequest request) {
-		long userId = ((User)(request.getSession().getAttribute(P.SESSION_USER))).getId();
+		long userId = SessionUtil.getUserId(request);
 		String currentPass = request.getParameter("current");
 		String newPass = request.getParameter("newpass");
 		String confirmPass = request.getParameter("confirm");

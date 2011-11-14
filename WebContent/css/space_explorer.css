@@ -72,3 +72,12 @@ a.job:hover, a.user:hover {
 fieldset {	
 	margin-bottom: 35px;
 }
+
+#actionList {
+	list-style: none;
+}
+
+#actionList li {
+	float: left;
+	margin-right: 20px;
+}

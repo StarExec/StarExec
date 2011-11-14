@@ -3,14 +3,12 @@ package org.starexec.servlets;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.*;
-import org.starexec.data.*;
+import org.starexec.constants.P;
 import org.starexec.util.Util;
 
 /**
@@ -28,8 +26,7 @@ public class Verify extends HttpServlet {
     }
 	
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	// Don't accept POST, this could be a malicious request
-		log.warn("Illegal POST request to verification servlet from ip address: " + request.getRemoteHost());
+    	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

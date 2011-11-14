@@ -3,7 +3,10 @@ package org.starexec.app;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * Holds all helper methods and classes for our restful web services
@@ -64,5 +67,20 @@ public class RESTHelpers {
 			this.id = id;	
 			this.rel = type;
 		}			
+	}
+	
+	/**
+	 * Represents a space along with a user's permission for the space. Used so
+	 * the client side can determine what actions a user can take on a space.
+	 * @author Tyler Jensen
+	 */
+	protected static class SpacePermissionPair {
+		@Expose private Space space;
+		@Expose private Permission perm;
+		
+		public SpacePermissionPair(Space s, Permission p) {
+			this.space = s;
+			this.perm = p;
+		}
 	}
 }
