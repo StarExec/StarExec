@@ -1,3 +1,9 @@
+var userTable;
+var benchTable;
+var solverTable;
+var spaceTable;
+var jobTable;
+
 // When the document is ready to be executed on
 $(document).ready(function(){
 	// Set the path to the css theme fr the jstree plugin
@@ -39,6 +45,26 @@ $(document).ready(function(){
         updateAddId(id);
         getSpaceDetails(id);
     }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+	
+	userTable = $('#users').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
+	
+	solverTable = $('#solvers').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
+	
+	benchTable = $('#benchmarks').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
+	
+	jobTable = $('#jobs').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
+	
+	spaceTable = $('#spaces').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
 });
  
 /**
@@ -71,107 +97,44 @@ function populateDetails(jsonData) {
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
 	
-	// Populate job details (fadeout current jobs)
-	$('#jobs').fadeOut('fast', function(){
-		// Clear existing items in the jobs div
-		$('#jobs').html('');	
-		
-		// For each returned job, create a element and add it to the div
-		$.each(jsonData.space.jobs, function(i, job) {
-			var jobElement = $('<a></a>').attr({
-				id: 'job_' + job.id,
-				class: 'job round',
-				title: job.description,
-				href: '/starexec/secure/details/job.jsp?id=' + job.id,
-				target: '_blank'
-			});		
-			var jobNameElement = $('<p></p>').text(job.name);
-			var jobStatElement = $('<p></p>').text(job.status);
-			
-			$(jobNameElement).appendTo(jobElement);
-			$(jobStatElement).appendTo(jobElement);
-			$(jobElement).appendTo('#jobs');
-		});
-		
-		// If there are no jobs, put 'none' in the div
-		if($(jsonData.space.jobs).length == 0) {
-			$('#jobs').html('<p>none</p>');
-		}
-		
-		// Fade in new jobs
-		$('#jobs').fadeIn('fast');
-	});
-
-	// The following population methods follow the same form as the one commented above
-	
-	// Populate user details
-	$('#users').fadeOut('fast', function() {
-		$('#users').html('');			
-		$.each(jsonData.space.users, function(i, user) {
-			var userElement = $('<a></a>').attr({
-				id: 'user_' + user.id,
-				class: 'user round',				
-				title: user.email,
-				href: '/starexec/secure/details/user.jsp?id=' + user.id,
-				target: '_blank'
-			});		
-			var userNameElement = $('<p></p>').text(user.firstName + ' ' + user.lastName);
-			var userInstElement = $('<p></p>').text(user.institution);
-			
-			$(userNameElement).appendTo(userElement);
-			$(userInstElement).appendTo(userElement);
-			$(userElement).appendTo('#users');
-		});
-		if($(jsonData.space.users).length == 0) {
-			$('#users').html('<p>none</p>');
-		}
-		$('#users').fadeIn('fast');
+	// Populate job details	
+	jobTable.fnClearTable();	
+	$.each(jsonData.space.jobs, function(i, job) {		
+		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '</a>';		
+		jobTable.fnAddData([jobLink, job.status, job.description]);
 	});	
-			
+	
+	// Populate user details	
+	userTable.fnClearTable();	
+	$.each(jsonData.space.users, function(i, user) {
+		var fullName = user.firstName + ' ' + user.lastName;
+		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>';
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '</a>';				
+		userTable.fnAddData([userLink, user.institution, emailLink]);
+	});
+		
 	// Populate solver details
-	$('#solvers').fadeOut('fast', function(){
-		$('#solvers').html('');
-		$.each(jsonData.space.solvers, function(i, solver) {
-			var solverElement = $('<a></a>').attr({
-				id: 'solver_' + solver.id,
-				class: 'solver round',
-				title: solver.description,
-				href: '/starexec/secure/details/solver.jsp?id=' + solver.id,
-				target: '_blank'
-			});		
-			var solverNameElement = $('<p></p>').text(solver.name);
-			
-			$(solverNameElement).appendTo(solverElement);
-			$(solverElement).appendTo('#solvers');
-		});
-		if($(jsonData.space.solvers).length == 0) {
-			$('#solvers').html('<p>none</p>');
-		}
-		$('#solvers').fadeIn('fast');
+	solverTable.fnClearTable();
+	$.each(jsonData.space.solvers, function(i, solver) {
+		var solverLink = '<a href="/starexec/secure/details/solver.jsp?id=' + solver.id + '" target="blank">' + solver.name + '</a>';
+		solverTable.fnAddData([solverLink, solver.description]);		
 	});	
-	
+		
 	// Populate benchmark details
-	$('#benchmarks').fadeOut('fast', function(){
-		$('#benchmarks').html('');
-		$.each(jsonData.space.benchmarks, function(i, bench) {
-			var benchElement = $('<a></a>').attr({
-				id: 'bench_' + bench.id,
-				class: 'benchmark round',
-				title: bench.description,
-				href: '/starexec/secure/details/benchmark.jsp?id=' + bench.id,
-				target: '_blank'
-			});		
-			var benchNameElement = $('<p></p>').text(bench.name);
-			
-			$(benchNameElement).appendTo(benchElement);
-			$(benchElement).appendTo('#benchmarks').hide().fadeIn('fast');
-		});
-		if($(jsonData.space.benchmarks).length == 0) {
-			$('#benchmarks').html('<p>none</p>');
-		}	
-		$('#benchmarks').fadeIn('fast');
+	benchTable.fnClearTable();
+	$.each(jsonData.space.benchmarks, function(i, bench) {
+		var benchLink = '<a href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '</a>';
+		benchTable.fnAddData([benchLink, bench.description]);		
 	});
-			
+	
+	// Populate subspace details
+	spaceTable.fnClearTable();
+	$.each(jsonData.space.subspaces, function(i, subspace) {
+		var spaceLink = '<a href="/starexec/secure/details/space.jsp?id=' + subspace.id + '" target="blank">' + subspace.name + '</a>';
+		spaceTable.fnAddData([spaceLink, subspace.description]);		
+	});
+	
+	// Check the new permissions for the loaded space
 	checkPermissions(jsonData.perm);
 	
 	// Done loading, hide the loader

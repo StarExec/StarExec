@@ -21,12 +21,14 @@ public class Space extends Identifiable {
 	@Expose	private List<Benchmark> benchmarks;
 	@Expose	private List<Job> jobs;
 	@Expose	private List<User> users;
+	@Expose	private List<Space> subspaces;
 	
 	public Space() {
 		this.solvers = new LinkedList<Solver>();
 		this.benchmarks = new LinkedList<Benchmark>();
 		this.jobs = new LinkedList<Job>();
 		this.users = new LinkedList<User>();
+		this.subspaces = new LinkedList<Space>();
 	}
 	
 	/**
@@ -181,5 +183,19 @@ public class Space extends Identifiable {
 	 */
 	public void setUsers(List<User> users) {
 		this.users = users;
+	}
+
+	/**
+	 * @return the list of subspaces belonging to this space
+	 */
+	public List<Space> getSubspaces() {
+		return subspaces;
+	}
+
+	/**
+	 * @param subspaces the subspaces to set for this space
+	 */
+	public void setSubspaces(List<Space> subspaces) {
+		this.subspaces = subspaces;
 	}			
 }

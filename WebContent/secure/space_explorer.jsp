@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="lib/jquery.cookie, lib/jquery.jstree, space_explorer" css="space_explorer">			
+<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, space_explorer" css="table, space_explorer">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		<ul id="spaceList">
@@ -18,22 +18,64 @@
 			
 		<fieldset>
 			<legend>jobs</legend>
-			<div id="jobs"></div>
+			<table id="jobs">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>status</th>
+						<th style="width:270px;">description</th>
+					</tr>
+				</thead>			
+			</table>
 		</fieldset>	
 			
 		<fieldset>
 			<legend>solvers</legend>
-			<div id="solvers"></div>
+			<table id="solvers">
+				<thead>
+					<tr>
+						<th style="width:150px;">name</th>
+						<th>description</th>						
+					</tr>
+				</thead>			
+			</table>
 		</fieldset>						
 		
 		<fieldset>
 			<legend>benchmarks</legend>
-			<div id="benchmarks"></div>
+			<table id="benchmarks">
+				<thead>
+					<tr>
+						<th style="width:150px;">name</th>
+						<th>description</th>						
+					</tr>
+				</thead>		
+			</table>
 		</fieldset>											
 		
 		<fieldset>
 			<legend>users</legend>
-			<div id="users"></div>
+			<table id="users">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>institution</th>
+						<th style="width:270px;">email</th>
+					</tr>
+				</thead>			
+			</table>
+		</fieldset>		
+		
+		<fieldset>
+			<legend>subspaces</legend>
+			<table id="spaces">
+				<thead>
+					<tr>
+						<th style="width:150px;">name</th>
+						<th>description</th>
+					</tr>
+				</thead>			
+			</table>
 		</fieldset>		
 		
 		<fieldset>

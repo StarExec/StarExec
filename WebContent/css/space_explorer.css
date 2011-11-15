@@ -81,3 +81,7 @@ fieldset {
 	float: left;
 	margin-right: 20px;
 }
+
+#content table {
+	width: 100%;
+}

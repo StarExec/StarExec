@@ -770,6 +770,7 @@ public class Database {
 				s.setBenchmarks(Database.getSpaceBenchmarks(spaceId));
 				s.setSolvers(Database.getSpaceSolvers(spaceId));
 				s.setJobs(Database.getSpaceJobs(spaceId));
+				s.setSubspaces(Database.getSubSpaces(spaceId, userId));
 							
 				log.debug(String.format("getSpaceDetails returning %d record(s) for space id=%d", s == null ? 0 : 1, spaceId));			
 				return s;
