@@ -75,22 +75,24 @@
 		// use untrimmed value
 		var password = element.value;
 	
-			
 		var rating = $.validator.passwordRating(password);
 		// update message for this field
+		if($(element).attr("id") == "password"){
+			var meter = $(".password-meter", element.form);		
+			meter.find(".password-meter-bar").removeClass().addClass("password-meter-bar").addClass("password-meter-" + rating.messageKey);
+			meter.find(".password-meter-message")
+			.removeClass()
+			.addClass("password-meter-message")
+			.addClass("password-meter-message-" + rating.messageKey)
+			.text($.validator.passwordRating.messages[rating.messageKey]);
+			return rating.rate > 4;
+		}
 		
-		var meter = $(".password-meter", element.form);		
-		meter.find(".password-meter-bar").removeClass().addClass("password-meter-bar").addClass("password-meter-" + rating.messageKey);
-		meter.find(".password-meter-message")
-		.removeClass()
-		.addClass("password-meter-message")
-		.addClass("password-meter-message-" + rating.messageKey)
-		.text($.validator.passwordRating.messages[rating.messageKey]);
-		// display process bar instead of error message
-		
-		return rating.rate > 4;
+		// Prevents confirm_password's validation messages from being suppressed
+		return true;
 	}, "&nbsp;");
-	// manually add class rule, to make username param optional
+	
+	// manually add class rule
 	$.validator.classRuleSettings.password = { password: true };
 	
 })(jQuery);

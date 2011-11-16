@@ -81,7 +81,7 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId BIGINT, IN _userId BIGINT)
 			ORDER BY name;
 		END IF;
 	END //
-
+	
 -- Returns basic space information for the space with the given id
 -- Author: Tyler Jensen
 CREATE PROCEDURE GetSpaceById(IN _id BIGINT)
@@ -236,35 +236,103 @@ CREATE PROCEDURE UpdatePassword(IN _id BIGINT, IN _password VARCHAR(128))
 		WHERE users.id = _id;
 	END //
 	
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  OUT id BIGINT, OUT stamp TIMESTAMP)
+-- Begins the registration process by adding a user to the USERS table
+-- Author: Todd Elvers
+CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  OUT id BIGINT)
 	BEGIN		
-		SELECT SYSDATE() INTO stamp;
 		INSERT INTO users(first_name, last_name, email, institution, created, password)
-		VALUES (_first_name, _last_name, _email, _institute, stamp, _password);
+		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password);
 		SELECT LAST_INSERT_ID() INTO id;
-		INSERT INTO user_roles(email, role) 
-		VALUES(_email, 'user');
 	END //
 	
-CREATE PROCEDURE AddCode(IN _id BIGINT, IN _code VARCHAR(36), IN _created TIMESTAMP)
+	
+-- Adds an activation code for a specific user
+-- Author: Todd Elvers
+CREATE PROCEDURE AddCode(IN _id BIGINT, IN _code VARCHAR(36))
 	BEGIN
 		INSERT INTO verify(user_id, code, created)
-		VALUES (_id, _code, _created);
+		VALUES (_id, _code, SYSDATE());
 	END //
-		
-CREATE PROCEDURE GetCode(IN _id BIGINT)
+	
+-- Adds an invite to join a community, provided the user isn't already a part of that community
+-- Author: Todd Elvers
+CREATE PROCEDURE AddInvite(IN _id BIGINT, IN _community BIGINT, IN _code VARCHAR(36), IN _message VARCHAR(300))
 	BEGIN
-		SELECT code
-		FROM verify
+		IF NOT EXISTS(SELECT * FROM user_assoc WHERE user_id = _id AND space_id = _community) THEN
+			INSERT INTO invites(user_id, community, code, message, created)
+			VALUES (_id, _community, _code, _message, SYSDATE());
+		END IF;
+	END //
+
+-- Returns the invite record associated with given id
+-- Author: Todd Elvers
+CREATE PROCEDURE GetInviteById(IN _id BIGINT)
+	BEGIN
+		SELECT *
+		FROM invites
 		WHERE user_id = _id;
-	END //	
-			
-CREATE PROCEDURE VerifyUser(IN _id BIGINT)
-	BEGIN
-		UPDATE users
-		SET verified = 1
-		WHERE id = _id;
 	END //
+	
+-- Returns the invite record associated with the given code
+-- Author: Todd Elvers
+CREATE PROCEDURE GetInviteByCode(IN _code VARCHAR(36))
+	BEGIN
+		SELECT *
+		FROM invites
+		WHERE code = _code;
+	END //
+
+	
+-- Looks for an activation code, and if successful, removes it from VERIFY,
+-- then adds an entry to USER_ROLES
+-- Author: Todd Elvers
+CREATE PROCEDURE RedeemCode(IN _code VARCHAR(36), OUT _id BIGINT)
+	BEGIN
+		IF EXISTS(SELECT _code FROM verify WHERE code = _code) THEN
+			SELECT user_id INTO _id 
+			FROM verify
+			WHERE code = _code;
+			
+			DELETE FROM verify
+			WHERE code = _code;
+		
+			
+		END IF;
+	END // 
+	
+-- Gets all the leaders of a space
+-- Author: Todd Elvers
+CREATE PROCEDURE GetLeadersBySpaceId(IN _id BIGINT)
+	BEGIN
+		SELECT *
+		FROM users
+		WHERE email IN
+			(SELECT DISTINCT users.email
+			FROM spaces
+			JOIN user_assoc ON spaces.id=user_assoc.space_id
+			JOIN users ON user_assoc.user_id=users.id
+			JOIN permissions ON user_assoc.permission=permissions.id
+			WHERE spaces.id=_id AND permissions.is_leader=1);
+	END //
+
+	
+-- Adds a user to USER_ASSOC, USER_ROLES and deletes their entry in INVITES
+-- Author: Todd Elvers
+CREATE PROCEDURE ApproveUser(IN _id BIGINT, IN _community BIGINT)
+	BEGIN
+		IF EXISTS(SELECT * FROM invites WHERE user_id = _id AND community = _community) THEN
+			DELETE FROM invites 
+			WHERE user_id = _id and community = _community;
+			INSERT INTO user_assoc(user_id, space_id, proxy, permission)
+			VALUES(_id, _community, _community, 1);
+		END IF;
+		
+		IF NOT EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id)) THEN
+			INSERT INTO user_roles(email, role)
+				VALUES((SELECT email FROM users WHERE users.id = _id), 'user');
+		END IF;
+	END //
+
 	
 -- Returns 1 if the given user can somehow see the given solver, 0 otherwise
 -- Author: Tyler Jensen
@@ -277,6 +345,46 @@ CREATE PROCEDURE CanViewSolver(IN _solverId BIGINT, IN _userId BIGINT)
 			JOIN user_assoc ON user_assoc.space_id=spaces.id					-- Join on user_assoc to get all the users that belong to those spaces
 			WHERE solvers.id=_solverId AND user_assoc.user_id=_userId)			-- But only count those for the solver and user we're looking for
 		> 0, 1, 0) AS verified; 												-- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+	END //
+
+-- Returns all spaces that are a subspace of the root
+-- Author: Todd Elvers
+CREATE PROCEDURE GetSubSpacesOfRoot()
+	BEGIN
+		SELECT *
+		FROM spaces
+		WHERE id IN
+				(SELECT child_id
+				 FROM set_assoc)
+		ORDER BY name;
+	END //
+
+-- Returns unregistered user corresponding to the given id
+-- Author: Todd Elvers
+CREATE PROCEDURE GetUnregisteredUserById(IN _id BIGINT)
+	BEGIN
+		SELECT * 
+		FROM users 
+		WHERE users.id = _id 
+		AND users.email NOT IN
+			(SELECT email 
+			FROM user_roles);
+	END //
+	
+	
+-- Deletes a user's entry in INVITES, and if the user is unregistered
+-- (i.e. doesn't have an entry in USER_ROLES) then they are completely
+-- deleted from the system
+-- Author: Todd Elvers
+CREATE PROCEDURE DeclineUser(IN _id BIGINT, IN _community BIGINT)
+	BEGIN
+		DELETE FROM invites 
+		WHERE user_id = _id and community = _community;
+		DELETE FROM users
+		WHERE users.id = _id
+		AND users.email NOT IN
+			(SELECT email
+			FROM user_roles);
 	END //
 
 -- Adds a website that is associated with a user

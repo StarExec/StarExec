@@ -3,6 +3,8 @@ package org.starexec.util;
 
 import java.util.regex.Pattern;
 
+import org.starexec.data.Database;
+
 /**
  * Validation.java 
  * 
@@ -10,60 +12,64 @@ import java.util.regex.Pattern;
  */
 public class Validate {
     
+	private static Pattern nameChecker;
     private static Pattern emailChecker;
-    private static Pattern nameChecker;
-    private static Pattern alpaNumericChecker;
+    private static Pattern institutionChecker;
+    private static Pattern alphaNumericChecker;
     private static Pattern passwordChecker;
   
-    private static final String ALPHA_NUMERIC_DASH = "[a-zA-Z0-9\\-\\s]+";    
-    private static final String PASS_PATTERN_LETTERS = "[a-zA-Z]";
-    private static final String PASS_PATTERN_NUMBERS = "[0-9]";
-    private static final String PASS_PATTERN_PUNCT   = "[~!@#$%^&*()\\-_=+]";
-    private static final String PASS_PATTERN_ILLEGAL = "[^a-zA-Z0-9~!@#$%^&*()\\-_=+]";
-    private static final String NAME_PATTERN         = "[a-zA-Z\\-]+";
-    private static final String EMAIL_PATTERN        = 
-    	"^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";   
+    private static final String PASS_PATTERN = 
+        "^"											  	// Beginning of string
+        + "(?=.*[A-Za-z0-9\\Q~`!@#$%^&*()_-+=\\E]+$)" 	// Permit only numbers, letters and ~`!@#$%^&*()_-+=
+        + "(?=.*[0-9]{1,})"							  	// Require at least 1 digit
+        + "(?=.*[A-Za-z]{1,})"						  	// Require at least one character (ignore case)
+        + "(?=.*[\\Q~`!@#$%^&*()_-+=\\E]+{1,})"			// Require at least one special character
+        + ".{6,20}"										// Permit only 6-20 characters
+        + "$";											// End of string
+    
+    private static final String NAME_PATTERN = 
+    	"[a-zA-Z\\-'\\s]{2,32}"; 
+    
+    private static final String INSTITUTION_PATTERN = 
+    	"[a-zA-Z\\-\\s]{2,64}";
+    
+    
+    private static final String EMAIL_PATTERN = 
+    	"^[_A-Za-z0-9-]+" +
+    	"(\\.[_A-Za-z0-9-]+)" +
+    	"*@[A-Za-z0-9]+" +
+    	"(\\.[A-Za-z0-9]+)" +
+    	"*(\\.[A-Za-z]{2,})$";   
         
+    private static final String ALPHA_NUMERIC_DASH =
+    	"[a-zA-Z0-9\\-]{1,32}";
     
     static {
+    	nameChecker = Pattern.compile(NAME_PATTERN);
         emailChecker = Pattern.compile(EMAIL_PATTERN);
-        nameChecker = Pattern.compile(NAME_PATTERN);
-        alpaNumericChecker = Pattern.compile(ALPHA_NUMERIC_DASH);
+        institutionChecker = Pattern.compile(INSTITUTION_PATTERN);
+        passwordChecker = Pattern.compile(PASS_PATTERN);
+        alphaNumericChecker = Pattern.compile(ALPHA_NUMERIC_DASH);
     }
         	
 	/**
-	 * Checks if a password is between 6-16 characters, contains at least
+	 * Checks if a password is between 6-20 characters, contains at least
 	 * one character, one number, and one punctuation mark 
-	 * (acceptable punctuation: ~!@#$%^&*()-=_+)
+	 * (acceptable punctuation: `~!@#$%^&*()-=_+)
 	 * 
 	 * @param password the password to check
 	 * @return true iff password contains at least 1 character, 1 number and 1 punctuation
-	 * mark, and is between 6-16 characters
+	 * mark, and is between 6-20 characters
 	 */
-	public static boolean password(String password){
-		if(password.length() < 6 || password.length() > 16 || Util.isNullOrEmpty(password)){
+	public static boolean password(String password) {
+		if (Util.isNullOrEmpty(password)) {
 			return false;
 		} else {
-	        passwordChecker = Pattern.compile(PASS_PATTERN_LETTERS);
-	        // Check for at least 1 letter in the password
-	        if(passwordChecker.matcher(password).find()){
-	            passwordChecker = Pattern.compile(PASS_PATTERN_NUMBERS);
-		        // Check for at least 1 number in the password
-	            if(passwordChecker.matcher(password).find()){
-	                passwordChecker = Pattern.compile(PASS_PATTERN_PUNCT);
-			        // Check for at least 1 punctuation mark in the password
-	                if(passwordChecker.matcher(password).find()){
-	                    passwordChecker = Pattern.compile(PASS_PATTERN_ILLEGAL);
-	                    // Ensure no illegal characters exist in the password
-	                    if(!passwordChecker.matcher(password).find()){
-	                        return true;
-	                    }
-	                }
-	            }
-	        }
-	        return false;
+			return passwordChecker.matcher(password).matches();
 		}
+
 	}
+	
 
 	/**
 	 * Validates an institution field
@@ -72,11 +78,11 @@ public class Validate {
 	 * @return true iff institute is less than 64 characters 
 	 * and not null or the empty string
 	 */
-	public static boolean institute(String institute){
-		if(institute.length() > 64 || Util.isNullOrEmpty(institute)){
+	public static boolean institution(String institute){
+		if(Util.isNullOrEmpty(institute)){
 			return false;
 		} else {
-			return true;
+			return institutionChecker.matcher(institute).matches();
 		}
 	}
 	
@@ -103,7 +109,7 @@ public class Validate {
      * contains only letters and dashes
      */
     public static boolean name(String name){    	
-    	if(name.length() > 32 || Util.isNullOrEmpty(name)){
+    	if(Util.isNullOrEmpty(name)){
     		return false;
     	} else {
     		return nameChecker.matcher(name).matches();
@@ -111,18 +117,34 @@ public class Validate {
     }
     
     /**
-     * Validates a name and checks that it contains only letters and dashes
+     * Validates a message by checking that it's not null or the empty string, and
+     * that its between 1 and 300 characters in length
+     * 
+     * @param message the message to be checked
+     * @return true iff the message isn't empty and is between 
+     * 1 and 300 characters in length 
+     */
+    public static boolean message(String message){
+    	if(message.length() < 1 || message.length() > 300 || Util.isNullOrEmpty(message)){
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
+    
+    /**
+     * Validates a name and checks that it contains only letters, numbers and dashes
      * 
      * @param name the space's name to check
-     * @return true iff name isn't null, is 32 characters or shorter and
-     * contains only letters and dashes
+     * @return true iff name isn't null, is between 1 and 32 characters and
+     * contains only letters, numbers and dashes
      */
     public static boolean spaceName(String name){    	
-    	if(name.length() > 32 || Util.isNullOrEmpty(name)){
+    	if(Util.isNullOrEmpty(name)){
     		return false;
     	}
     	
-    	return alpaNumericChecker.matcher(name).matches();    	
+    	return alphaNumericChecker.matcher(name).matches();    	
     }
     
     /**

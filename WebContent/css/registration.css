@@ -1,22 +1,7 @@
-fieldset {	
-	border-width: 5px;
-	border-style: solid;
-	border-color: #111111;	
-	border-radius: 5px;					
+fieldset {				
 	width: 75%;
-	margin: auto;
-	margin-top: 70px;						
-	padding: 30px;r
-}
-
-legend {
-	border-width: 5px;
-	border-style: solid;
-	border-color: #111111;
-	border-radius: 10px;
-	background-color: #111111;
-	padding: 3px 10px;
-	margin-left: 25px;
+	margin-top: 50px;						
+	padding: 30px;
 }
 
 fieldset table {		
@@ -33,6 +18,7 @@ fieldset table tr td:first-child {
 
 table tr td:first-child.label {
 	padding-left: 10px;
+	vertical-align: middle;
 	
 }
 
@@ -48,9 +34,11 @@ input.error {
 	border: solid 1px #ae0000;
 }
 
+	
+
 label.error {
 	margin-left: 15px;	
-	display: none;
+	display: inline;
 	color: #ae0000;
 }
 
@@ -60,11 +48,40 @@ td button {
 										
 tr .label {
 	min-width: 120px;
+	float: top;
 }
 
-.shade td {
+.shade {
 	background-color: #111111;
 }
+
+table .styled {
+	width: 212px;	
+	height: 28px;
+	border: 1px solid #13a5e1;				
+	font-size: 16px;	
+}
+
+table .styled.error {
+	border: solid 1px #ae0000;
+}
+
+
+textarea#reason {
+	resize: none;
+	width: 99%;
+	max-width: 512px;
+	height: 50px;
+	border: 1px solid #13a5e1;
+	padding: 0px 5px 0px 5px;
+	font-family: Century Gothic, sans-serif;
+}
+
+textarea#reason.error{
+	border: solid 1px #ae0000;
+}
+
+/***************** Password-Meter Styles *******************/
 
 .password-meter {
 	position: right;
@@ -87,12 +104,8 @@ tr .label {
 	background: #e0e0e0;
 }
 
-.password-meter-message-illegal  {
-	color: #ae0000;
-}
-.password-meter-message-too-short {
-	color: #aa0000;
-}
+.password-meter-message-illegal,
+.password-meter-message-too-short,
 .password-meter-message-too-long {
 	color: #aa0000;
 }
@@ -109,18 +122,13 @@ tr .label {
 	color: #008000;
 }
 
-.password-meter-bg .password-meter-illegal {
-	background: #aa0000;
-	width: 0px;
-}
-.password-meter-bg .password-meter-too-short {
-	background: #aa0000;
-	width: 0px;
-}
+.password-meter-bg .password-meter-illegal,
+.password-meter-bg .password-meter-too-short,
 .password-meter-bg .password-meter-too-long {
 	background: #aa0000;
 	width: 0px;
 }
+
 .password-meter-bg .password-meter-very-weak {
 	background: #aa0033;
 	width: 30px;

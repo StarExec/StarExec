@@ -55,134 +55,422 @@ public class Database {
 	 * user's password for them, so it must be supplied in plaintext.
 	 * 
 	 * @param user The user to add
-	 * @return True if the user was successfully added, false if otherwise
+	 * @param communityId the id of the community to add this user wants to join
+	 * @param message the message from the user to the leaders of a community
+	 * @param code the unique code to add to the database for this user
+	 * @return true iff the user was added to USERS, VERIFY and INVITES
+	 * @author Todd Elvers
 	 */
-	public static boolean addUser(User user){
+	public static boolean addUser(User user, long communityId, String code, String message){
 		Connection con = null;
 		
 		try{
 			con = dataPool.getConnection();
-		
+			
+			
+			beginTransaction(con);
+			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			
-			// Insert data into IN parameters of the CallableStatment
-			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
 			
-			// Set the OUT parameters
 			procedure.registerOutParameter(6, java.sql.Types.BIGINT);
-			procedure.registerOutParameter(7, java.sql.Types.TIMESTAMP);
 			
-			// Apply update to database
-			procedure.executeUpdate();
-			
-			// Extract values from OUT parameters
-			user.setId(procedure.getLong(6));
-			user.setCreateDate(procedure.getTimestamp(7));
-			
-			// Generate a UUID code and add it to VERIFY database under new user's id
-			boolean added = addCode(user);
-			
-			if(added){
-				log.info(String.format("New user (id=%d) added to USERS, with name [%s] and email [%s]", user.getId(), user.getFullName(), user.getEmail()));
-				return true;				
-			} else {
+			// Add user to to USERS and check to be sure at least 1 row was modified
+			int rowsModified = procedure.executeUpdate();
+			if(rowsModified == 0){
+				doRollback(con);
 				return false;
 			}
 			
-		} catch (Exception e){					
+			// Extract id from OUT parameter
+			user.setId(procedure.getLong(6));
+			
+			boolean added = false;
+			// Add unique activation code to VERIFY database under new user's id
+			if(addCode(con, user, code)){
+				// Add user's request to join a community to INVITES
+				added = addInvite(con, user, communityId, message);
+			}
+			
+			if(added){
+				// Commit changes to database
+				endTransaction(con);
+				return true;				
+			} else {
+				// Don't commit changes to database
+				doRollback(con);
+				enableAutoCommit(con);
+				return false;
+			}
+		} catch (Exception e){	
+			doRollback(con);
+			enableAutoCommit(con);
 			log.error(e.getMessage(), e);
-			return false;
 		} finally {
 			Database.safeClose(con);
 		}
+		
+		return false;
 	}
 	
 	
 	/**
-	 * Adds a verification code to the database for a given user
+	 * Adds an activation code to the database for a given user
 	 * 
-	 * @param user the user to add a verification code to the database for
-	 * @return true iff the new verification code is added to the database
+	 * @param user the user to add an activation code to the database for
+	 * @param con the database connection maintaining the transaction
+	 * @param code the new activation code to add
+	 * @return true iff the new activation code is added to the database
+	 * @author Todd Elvers
 	 */
-	public static boolean addCode(User user) {
-		Connection con = null;
-		
-		// Generate unique verification code
-		String code = UUID.randomUUID().toString();
-
+	private static boolean addCode(Connection con, User user, String code) {
 		try {
-			con = dataPool.getConnection();
-
+			
 			// Add a new entry to the VERIFY table
-			CallableStatement procedure = con.prepareCall("{CALL AddCode(?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AddCode(?, ?)}");
 			procedure.setLong(1, user.getId());
 			procedure.setString(2, code);
-			procedure.setTimestamp(3, user.getCreateDate());
 
-			// Apply update to database
-			procedure.executeUpdate();
-
-			log.info(String.format("New email verification code [%s] added to VERIFY for user [%s]", code, user.getFullName()));
+			// Apply update to database and check to be sure at least 1 row was modified
+			int rowsModified = procedure.executeUpdate();
+			if(rowsModified == 0){
+				return false;
+			}
+			
+			log.info(String.format("New email activation code [%s] added to VERIFY for user [%s]", code, user.getFullName()));
 			
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			return false;
-		} finally {
-			Database.safeClose(con);
 		}
-
+		return false;
 	}
 	
 	/**
-	 * Retrieves a user's verification code and compares it to 'responseCode'. 
-	 * If they are the same, the 'verified' attribute for the given user in the USERS table
-	 * will be set to 1.
+	 * Adds an entry to the INVITES table in a transaction-safe manner, only used
+	 * when adding a new member to the database
 	 * 
-	 * @param user the user whose code need to be queried for
-	 * @param responseCode the response the user sent back
-	 * @return true iff the verification code matches 'responseCode'
+	 * @param con the connection maintaining the database transaction
+	 * @param user user initiating the invite
+	 * @param message the message to the leaders of the community
+	 * @param communityId the id of the community this invite is for
+	 * @return true iff an entry is added to the INVITES table
+	 * @author Todd Elvers
 	 */
-	public static boolean verifyCode(User user, String responseCode){
-		Connection con = null;
-		String initialCode = null;
-
+	private static boolean addInvite(Connection con, User user, long communityId, String message ) {
 		try {
-			con = dataPool.getConnection();
-
-			// Query VERIFY table for verification code associated with user
-			CallableStatement procedure = con.prepareCall("{CALL GetCode(?)}");
-			procedure.setLong(1, user.getId());
-			ResultSet result = procedure.executeQuery();
-			if(result.next()){
-				initialCode = result.getString("code");
-			}
 			
-			// IF the verification code from VERIFY matches 'responseCode'
-			// THEN set 'verified' attribute in USERS to 1
-			if(initialCode.equals(responseCode)){
-				procedure = con.prepareCall("{CALL VerifyUser(?)}");
-				procedure.setLong(1, user.getId());
-				procedure.executeUpdate();
-				System.out.println("initialCode  = " + initialCode);
-				System.out.println("responseCode = " + responseCode);
-				System.out.println("Code verification completed.");					
-				return true;
-			} else {
+			// Add a new entry to the VERIFY table
+			CallableStatement procedure = con.prepareCall("{CALL AddInvite(?, ?, ?, ?)}");
+			procedure.setLong(1, user.getId());
+			procedure.setLong(2, communityId);
+			procedure.setString(3, UUID.randomUUID().toString());
+			procedure.setString(4, message);
+
+			// Apply update to database and check to be sure at least 1 row was modified
+			int rowsModified = procedure.executeUpdate();
+			if(rowsModified == 0){
 				return false;
 			}
 			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return false;
+	}
+	
+	/**
+	 * Adds a request to join a community to INVITES for a given user and community
+	 * 
+	 * @param user the user who wants to join a community
+	 * @param communityId the id of the community the user wants to join
+	 * @param code the code used in hyperlinks to safely reference this invite
+	 * @param message the message the user wrote to the leaders of this community
+	 * @return true iff an entry is added to INVITES
+	 * @author Todd Elvers
+	 */
+	public static boolean addInvite(User user, long communityId, String code, String message) {
+		Connection con = null;
+		try {
+			con = dataPool.getConnection();
+			
+			CallableStatement procedure = con.prepareCall("{CALL AddInvite(?, ?, ?, ?)}");
+			procedure.setLong(1, user.getId());
+			procedure.setLong(2, communityId);
+			procedure.setString(3, code);
+			procedure.setString(4, message);
+
+			// Apply update to database and check to be sure at least 1 row was modified
+			int rowsModified = procedure.executeUpdate();
+			if(rowsModified == 0){
+				return false;
+			}
+			
+			log.debug(String.format("New entry for user [%s] added to INVITES", user.getFullName()));
+			
+			return true;
+
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Database.safeClose(con);
 		}
+	}
+	
+	
+	
+	/**
+	 * Checks an activation code provided by the user against the code in table VERIFY 
+	 * and if they match, removes that entry in VERIFY, and adds an entry to USER_ROLES
+	 * 
+	 * @param codeFromUser the activation code provided by the user
+	 * @author Todd Elvers
+	 */
+	public static long redeemCode(String codeFromUser){
+		Connection con = null;
+		try {
+			
+			con = dataPool.getConnection();
+
+			CallableStatement procedure = con.prepareCall("{CALL RedeemCode(?, ?)}");
+			procedure.setString(1, codeFromUser);
+			procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				return -1;
+			}
+			long user_id = procedure.getLong(2);
+			return user_id;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Database.safeClose(con);
+		}
+		return -1;
+	}
+	
+	/**
+	 * Retrieves an unregistered user from the database given their user_id.
+	 * This is a helper method for user registration and shouldn't be used
+	 * anywhere else.
+	 * 
+	 * @param id The id of the unregistered user to retrieve
+	 * @return the unregistered User object if one exists, null otherwise
+	 * @author Todd Elvers
+	 */
+	public static User getUnregisteredUser(long id) {
+		Connection con = null;
+
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con
+					.prepareCall("{CALL GetUnregisteredUserById(?)}");
+			procedure.setLong(1, id);
+			ResultSet results = procedure.executeQuery();
+			
+			if (results.next()) {
+				User u = new User();
+				u.setId(results.getLong("id"));
+				u.setEmail(results.getString("email"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setInstitution(results.getString("institution"));
+				u.setCreateDate(results.getTimestamp("created"));
+				return u;
+			}
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Database.safeClose(con);
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * Adds a user to their community and deletes their entry in INVITES
+	 *  
+	 * @param userId the user id of the newly registered user
+	 * @param communityId the community the newly registered user is joining
+	 * @return true iff the user was successfully added to USER_ROLES and USER_ASSOC
+	 * @author Todd Elvers
+	 */
+	public static boolean approveUser(long userId, long communityId){
+		Connection con = null;
+		try {
+			
+			con = dataPool.getConnection();
+
+			CallableStatement procedure = con.prepareCall("{CALL ApproveUser(?, ?)}");
+			procedure.setLong(1, userId);
+			procedure.setLong(2, communityId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				return false;
+			}
+			return true;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Database.safeClose(con);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Deletes an entry in INVITES given a user_id and community_id, and if
+	 * the user is unregistered, they are also removed from USERS
+	 * 
+	 * @param userId the user_id associated with the invite
+	 * @param communityId the communityId associated with the invite
+	 * @return true iff an entry was deleted in INVITES
+	 * @author Todd Elvers
+	 */
+	public static boolean declineUser(long userId, long communityId){
+		Connection con = null;
+		try {
+			
+			con = dataPool.getConnection();
+
+			CallableStatement procedure = con.prepareCall("{CALL DeclineUser(?, ?)}");
+			procedure.setLong(1, userId);
+			procedure.setLong(2, communityId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				return false;
+			}
+			return true;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Database.safeClose(con);
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the users that are the leaders of a given space
+	 * 
+	 * @param spaceId the id of the space to get the leaders of
+	 * @return a list of leaders of the given space
+	 * @author Todd Elvers
+	 */
+	public static List<User> getLeadersOfSpace(long spaceId){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetLeadersBySpaceId(?)}");
+			procedure.setLong(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+			List<User> leaders = new LinkedList<User>();
+			
+			while(results.next()){
+				User u = new User();
+				u.setId(results.getLong("id"));
+				u.setEmail(results.getString("email"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setInstitution(results.getString("institution"));
+				u.setCreateDate(results.getTimestamp("created"));
+				leaders.add(u);
+			}			
+			
+			return leaders;
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	
+	/**
+	 * Retrieves an invite from the database given the user_id
+	 * 
+	 * @param user_id the user_id of the invite to retrieve
+	 * @return The invite object associated with the user_id
+	 * @author Todd Elvers
+	 */
+	public static Invite getInvite(long user_id){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetInviteById(?)}");
+			procedure.setLong(1, user_id);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				Invite inv = new Invite();
+				inv.setUserId(results.getLong("user_id"));
+				inv.setCommunityId(results.getLong("community"));
+				inv.setCode(results.getString("code"));
+				inv.setMessage(results.getString("message"));
+				inv.setCreateDate(results.getTimestamp("created"));
+				return inv;
+			}			
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves an invite from the database given a code
+	 * 
+	 * @param user_id the user_id of the invite to retrieve
+	 * @return The invite object associated with the user_id
+	 * @author Todd Elvers
+	 */
+	public static Invite getInvite(String code){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetInviteByCode(?)}");
+			procedure.setString(1, code);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				Invite inv = new Invite();
+				inv.setUserId(results.getLong("user_id"));
+				inv.setCommunityId(results.getLong("community"));
+				inv.setCode(results.getString("code"));
+				inv.setMessage(results.getString("message"));
+				inv.setCreateDate(results.getTimestamp("created"));
+				return inv;
+			}			
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
 	}
 	
 	
@@ -222,6 +510,7 @@ public class Database {
 		return null;
 	}
 	
+		
 	/**
 	 * Returns the (hashed) password of the given user.
 	 * @param userId the user ID of the user to get the password of
@@ -250,9 +539,9 @@ public class Database {
 	}
 	
 	/**
-	 * Retrieves a user from the database given the email address
+	 * Retrieves a user from the database given the user's id
 	 * 
-	 * @param email The email of the user to retrieve
+	 * @param id the id of the user to get
 	 * @return The user object associated with the user
 	 */
 	public static User getUser(long id){
@@ -681,6 +970,47 @@ public class Database {
 	}
 	
 	/**
+	 * Gets spaces that are a child of the root space
+	 * 
+	 * @return A list of child spaces belonging to the root space.
+	 * @author Todd Elvers
+	 */
+	public static List<Space> getRootSpaces() {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
+			ResultSet results = procedure.executeQuery();
+			List<Space> subSpaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getLong("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				if(results.getLong("default_permission") == 0){
+					s.setPermission(new Permission(false));					
+				} else if (results.getLong("default_permission") == 1){
+					s.setPermission(new Permission(true));
+				}
+				subSpaces.add(s);
+			}			
+			
+			log.debug("getSubSpaces returning " + subSpaces.size() + " records");
+			return subSpaces;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	
+	/**
 	 * Gets all subspaces belonging to another space
 	 * @param spaceId The id of the parent space. Give an id <= 0 to get the root space
 	 * @param userId The id of the user requesting the subspaces. This is used to verify the user can see the space
@@ -745,6 +1075,36 @@ public class Database {
 					return s;
 				}											
 			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets the name of a community by Id - helper method to work around
+	 * permissions for this special case
+	 * 
+	 * @param spaceId the id of the community to get the name of
+	 * @return the name of the community
+	 * @author Todd Elvers
+	 */
+	public static String getSpaceName(long spaceId){
+		Connection con = null;			
+		
+		try {
+				con = dataPool.getConnection();		
+				CallableStatement procedure = con.prepareCall("{CALL GetSpaceById(?)}");
+				procedure.setLong(1, spaceId);					
+				ResultSet results = procedure.executeQuery();
+				String communityName = null;
+				if(results.next()){
+					communityName = results.getString("name");
+				}
+				return communityName;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

@@ -31,7 +31,8 @@
 			        <ul class="subnav round">  
 			        	<li class="round"><a href="/starexec/secure/space_explorer.jsp">explore</a></li>  
 			            <li class="round"><a href="#">historical</a></li>
-			            <li class="round"><a href="#">mine</a></li>    			            
+			            <li class="round"><a href="#">mine</a></li>
+			            <li class="round"><a href="/starexec/secure/make_invite.jsp">join</a></li>    			            
 			        </ul>  
 				</li>
 				<li class="round">

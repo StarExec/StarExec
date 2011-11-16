@@ -27,7 +27,27 @@
     <servlet-name>Registration</servlet-name>
     <url-pattern>/Registration</url-pattern>
   </servlet-mapping>
-    
+  
+  <servlet>
+
+    <servlet-name>Verify</servlet-name>
+    <servlet-class>org.starexec.servlets.Verify</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Verify</servlet-name>
+    <url-pattern>/Verify</url-pattern>  
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>Invitation</servlet-name>
+    <servlet-class>org.starexec.servlets.Invitation</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Invitation</servlet-name>
+    <url-pattern>/secure/Invitation</url-pattern>  
+  </servlet-mapping>
+
+  
   <servlet>
     <servlet-name>AddSpace</servlet-name>
     <servlet-class>org.starexec.servlets.AddSpace</servlet-class>

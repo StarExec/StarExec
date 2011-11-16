@@ -18,8 +18,10 @@ public class P {
 	public static String USER_EMAIL = "em";
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
+	public static String USER_MESSAGE = "msg";
 	
-	public static String VERIFY_EMAIL = "conf";
+	public static String EMAIL_CODE = "conf";
+	public static String LEADER_RESPONSE = "lead";
 	
 	public static String UPLOAD_FILE = "f";
 	

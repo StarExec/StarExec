@@ -188,18 +188,15 @@ CREATE TABLE closure (
 );
 
 -- The table that keeps track of verification codes that should
--- be redeemed when the user verifies their e-mail address (as well
--- as which community the user intends on joining)
+-- be redeemed when the user verifies their e-mail address
 CREATE TABLE verify (
 	user_id BIGINT NOT NULL,
 	code VARCHAR(36) NOT NULL,
-	community BIGINT NOT NULL,
 	created TIMESTAMP NOT NULL,	
 	PRIMARY KEY (user_id, code),
 	UNIQUE KEY (user_id),
 	UNIQUE KEY (code),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Websites which are associated with either a space, solver or user.
@@ -269,4 +266,17 @@ CREATE TABLE solver_assoc (
 	PRIMARY KEY (space_id, solver_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
+);
+
+-- Pending requests to join a community
+CREATE TABLE invites (
+	user_id BIGINT NOT NULL,
+	community BIGINT NOT NULL,
+	code VARCHAR(36) NOT NULL,
+	message VARCHAR(300) NOT NULL,
+	created TIMESTAMP NOT NULL,	
+	PRIMARY KEY (user_id, community),
+	UNIQUE KEY (code),
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );

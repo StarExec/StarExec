@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>	
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -22,7 +22,8 @@
 		</table>
 		</fieldset>					
 	</form>
-	<c:if test="${not empty param.result}">
+	<c:if test="${not empty param.result and param.result == 'failed'}">
 		<div class='error message'>invalid username or password</div>
 	</c:if>			
+	
 </star:template>
