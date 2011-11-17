@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Starexec production build script. Author: Tyler Jensen -->
+<project name="starexec" default="war" basedir=".">
+	<!-- Set up path information for use throughout this script -->
+	<property name="project-name" value="${ant.project.name}" />	
+	<property name="war-file-name" value="${project-name}.war" />
+	<property name="source-directory" value="src" />
+	<property name="build-directory" value="build" />
+	<property name="class-directory" value="${build-directory}/classes" />		
+	<property name="web-inf" value="WebContent/WEB-INF" />		
+	<property name="tomcat-dir" value="/project/tomcat/apache-tomcat-7" />
+	
+	<!-- Specify to java where to look for JAR files while compiling (our application lib and the apache lib) -->
+	<path id="classpath">
+        <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
+		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+    </path>
+
+	<!-- Action for compiling the project and building the WAR file -->
+	<target name="war" depends="">
+		<!-- Clear the build directory if it exists and re-make the dir -->
+		<delete dir="${build-directory}" />
+		<mkdir dir="${build-directory}" />
+		<mkdir dir="${class-directory}" />
+		
+		<!-- Compile the source code to get the java classes -->
+		<javac srcdir="src" destdir="${class-directory}" classpathref="classpath" />
+		
+		<!-- Copy over the org.starexec.config folder from source to classes -->
+		<mkdir dir="${class-directory}/org/starexec/config" />
+		<copy todir="${class-directory}/org/starexec/config">
+			<fileset dir="${source-directory}/org/starexec/config">
+				<include name="**/*" />
+			</fileset>
+		</copy>		
+		
+		<!-- Copy over SQL files to the WEB-INF directory -->
+		<mkdir dir="${web-inf}/sql" />
+		<copy todir="${web-inf}/sql">
+			<fileset dir="sql">
+				<include name="**/*" />
+			</fileset>
+		</copy>		
+		
+		<!-- Create the war file! -->		
+		<war warfile="${war-file-name}" webxml="${web-inf}/web.xml">
+			<classes dir="${class-directory}" />	
+			<fileset dir="WebContent"/>
+			<lib dir="${web-inf}/lib"/>			
+		</war>
+	</target>
+</project>

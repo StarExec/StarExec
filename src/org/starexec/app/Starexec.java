@@ -96,7 +96,7 @@ public class Starexec implements ServletContextListener {
 			Node defaultConfigNode = null;			
 			
 			// For each of the configuration nodes
-			for(int i = 1; i < configNodes.getLength(); i++) {
+			for(int i = 0; i < configNodes.getLength(); i++) {
 				Node currentConfig = configNodes.item(i);											
 				Node currentConfigNameAttr = currentConfig.getAttributes().getNamedItem(ATTR_NAME);
 				
