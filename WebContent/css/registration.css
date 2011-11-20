@@ -26,7 +26,7 @@ table tr td {
 	padding: 5px;	
 }
 
-input{
+input, select, textarea {
 	width: 200px;
 }
 
@@ -68,13 +68,10 @@ table .styled.error {
 
 
 textarea#reason {
-	resize: none;
-	width: 99%;
-	max-width: 512px;
+	resize: none;	
 	height: 50px;
 	border: 1px solid #13a5e1;
 	padding: 0px 5px 0px 5px;
-	font-family: Century Gothic, sans-serif;
 }
 
 textarea#reason.error{
@@ -145,4 +142,3 @@ textarea#reason.error{
 	background: #008000;
 	width: 210px;
 }
-

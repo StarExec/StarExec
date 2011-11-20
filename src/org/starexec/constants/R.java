@@ -24,7 +24,6 @@ public class R {
 	public static int EMAIL_SMTP_PORT = 25;
 	public static String EMAIL_USER = null;
 	public static String EMAIL_PWD = null;
-	public static String EMAIL_PARTICLE = "@divms.uiowa.edu";	
 	
 	// MySQL properties
 	public static String MYSQL_URL = null;									// MySQL connection string for JDBC

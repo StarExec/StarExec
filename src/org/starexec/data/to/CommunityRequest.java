@@ -3,11 +3,11 @@ package org.starexec.data.to;
 import java.sql.Timestamp;
 
 /**
- * Represents an invite in the database
+ * Represents an request to join a community in the database
  * 
- * @author Todd Elvers
+ * @author Todd Elvers & Tyler Jensen
  */
-public class Invite {
+public class CommunityRequest {
 	private Long communityId;
 	private String message;
 	private String code;
@@ -15,10 +15,10 @@ public class Invite {
 	private long userId;
 	
 	/**
-	 * @return the user_id of the user who created this invite (returns same as getId())
+	 * @return the user_id of the user who created the request
 	 */
 	public long getUserId(){
-		return userId;
+		return this.userId;
 	}
 	
 	/**
@@ -29,28 +29,28 @@ public class Invite {
 	}
 	
 	/**
-	 * @return the id of the community this invite is for
+	 * @return the id of the community this request is for
 	 */
 	public long getCommunityId() {
-		return communityId;
+		return this.communityId;
 	}
 
 	/**
-	 * @param communityId the id of the community to set for this invite
+	 * @param communityId the id of the community to set for this request
 	 */
 	public void setCommunityId(long communityId) {
 		this.communityId = communityId;
 	}
 
 	/**
-	 * @return the unique code for this invite (used for hyperlinking)
+	 * @return the unique code for this request (used for hyperlinking)
 	 */
 	public String getCode(){
-		return code;
+		return this.code;
 	}
 	
 	/**
-	 * @param code the unique code to set to this invite (used for hyperlinking)
+	 * @param code the unique code to set to this request (used for hyperlinking)
 	 */
 	public void setCode(String code){
 		this.code = code;
@@ -58,28 +58,28 @@ public class Invite {
 	
 	
 	/**
-	 * @return the message for this invite
+	 * @return the message the user attached to the request
 	 */
 	public String getMessage() {
-		return message;
+		return this.message;
 	}
 	
 	/**
-	 * @param message the message to set for this invite
+	 * @param message the message to set for this request
 	 */
 	public void setMessage(String message){
 		this.message = message;
 	}
 
 	/**
-	 * @return the date the invite was added to the system
+	 * @return the date the request was added to the system
 	 */
 	public Timestamp getCreateDate() {
-		return createDate;
+		return this.createDate;
 	}
 
 	/**
-	 * @param createDate the date to set when the invite was added to the system
+	 * @param createDate the date to set when the request was added to the system
 	 */
 	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;

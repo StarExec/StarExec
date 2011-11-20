@@ -58,32 +58,37 @@ public class Database {
 	 * @param communityId the id of the community to add this user wants to join
 	 * @param message the message from the user to the leaders of a community
 	 * @param code the unique code to add to the database for this user
-	 * @return true iff the user was added to USERS, VERIFY and INVITES
+	 * @return true iff the user was added to the users, verification, and community request table
 	 * @author Todd Elvers
 	 */
-	public static boolean addUser(User user, long communityId, String code, String message){
+	public static boolean registerUser(User user, long communityId, String code, String message){
 		Connection con = null;
 		
 		try{
-			con = dataPool.getConnection();
-			
-			
+			con = dataPool.getConnection();					
 			beginTransaction(con);
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			
-			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
 			
+			// Register output of ID the user is inserted under
 			procedure.registerOutParameter(6, java.sql.Types.BIGINT);
 			
-			// Add user to to USERS and check to be sure at least 1 row was modified
-			int rowsModified = procedure.executeUpdate();
-			if(rowsModified == 0){
+			// Register output of the affected row count for the insert
+			procedure.registerOutParameter(7, java.sql.Types.BIGINT);
+			
+			// Add user to the users table and check to be sure 1 row was modified
+			procedure.executeUpdate();
+			long rowsModified = procedure.getLong(7);			
+			log.debug(String.format("AddUser stored procedure call affected %d rows for user %s", rowsModified, user));						
+			
+			if(rowsModified == 0){				
 				doRollback(con);
 				return false;
 			}
@@ -92,20 +97,25 @@ public class Database {
 			user.setId(procedure.getLong(6));
 			
 			boolean added = false;
+			
 			// Add unique activation code to VERIFY database under new user's id
 			if(addCode(con, user, code)){
 				// Add user's request to join a community to INVITES
-				added = addInvite(con, user, communityId, message);
+				added = addCommunityRequest(con, user, communityId, message);
 			}
 			
 			if(added){
 				// Commit changes to database
 				endTransaction(con);
+				
+				log.info(String.format("New user [%s] successfully registered", user));
 				return true;				
 			} else {
 				// Don't commit changes to database
 				doRollback(con);
 				enableAutoCommit(con);
+				
+				log.info(String.format("New user [%s] failed to register", user));
 				return false;
 			}
 		} catch (Exception e){	
@@ -129,17 +139,17 @@ public class Database {
 	 * @return true iff the new activation code is added to the database
 	 * @author Todd Elvers
 	 */
-	private static boolean addCode(Connection con, User user, String code) {
-		try {
-			
+	protected static boolean addCode(Connection con, User user, String code) {
+		try {			
 			// Add a new entry to the VERIFY table
 			CallableStatement procedure = con.prepareCall("{CALL AddCode(?, ?)}");
 			procedure.setLong(1, user.getId());
 			procedure.setString(2, code);
 
 			// Apply update to database and check to be sure at least 1 row was modified
-			int rowsModified = procedure.executeUpdate();
+			int rowsModified = procedure.executeUpdate();						
 			if(rowsModified == 0){
+				log.debug(String.format("Adding activation record failed for [%s]", user.getFullName()));
 				return false;
 			}
 			
@@ -149,25 +159,26 @@ public class Database {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
+		
 		return false;
 	}
 	
 	/**
-	 * Adds an entry to the INVITES table in a transaction-safe manner, only used
+	 * Adds an entry to the community request table in a transaction-safe manner, only used
 	 * when adding a new member to the database
 	 * 
 	 * @param con the connection maintaining the database transaction
-	 * @param user user initiating the invite
+	 * @param user user initiating the request
 	 * @param message the message to the leaders of the community
-	 * @param communityId the id of the community this invite is for
-	 * @return true iff an entry is added to the INVITES table
+	 * @param communityId the id of the community this request is for
+	 * @return true iff an entry is added to the community request table
 	 * @author Todd Elvers
 	 */
-	private static boolean addInvite(Connection con, User user, long communityId, String message ) {
+	private static boolean addCommunityRequest(Connection con, User user, long communityId, String message ) {
 		try {
 			
 			// Add a new entry to the VERIFY table
-			CallableStatement procedure = con.prepareCall("{CALL AddInvite(?, ?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AddCommunityRequest(?, ?, ?, ?)}");
 			procedure.setLong(1, user.getId());
 			procedure.setLong(2, communityId);
 			procedure.setString(3, UUID.randomUUID().toString());
@@ -176,9 +187,11 @@ public class Database {
 			// Apply update to database and check to be sure at least 1 row was modified
 			int rowsModified = procedure.executeUpdate();
 			if(rowsModified == 0){
-				return false;
+				log.debug(String.format("Add invitation record failed for user [%s] on community %d", user, communityId));
+				return false;				
 			}
 			
+			log.debug(String.format("Added invitation record for user [%s] on community %d", user, communityId));			
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -187,45 +200,27 @@ public class Database {
 	}
 	
 	/**
-	 * Adds a request to join a community to INVITES for a given user and community
+	 * Adds a request to join a community for a given user and community
 	 * 
 	 * @param user the user who wants to join a community
 	 * @param communityId the id of the community the user wants to join
-	 * @param code the code used in hyperlinks to safely reference this invite
+	 * @param code the code used in hyperlinks to safely reference this request
 	 * @param message the message the user wrote to the leaders of this community
-	 * @return true iff an entry is added to INVITES
+	 * @return true iff an entry is added to the community request table
 	 * @author Todd Elvers
 	 */
-	public static boolean addInvite(User user, long communityId, String code, String message) {
+	public static boolean addCommunityRequest(User user, long communityId, String code, String message) {
 		Connection con = null;
 		try {
 			con = dataPool.getConnection();
-			
-			CallableStatement procedure = con.prepareCall("{CALL AddInvite(?, ?, ?, ?)}");
-			procedure.setLong(1, user.getId());
-			procedure.setLong(2, communityId);
-			procedure.setString(3, code);
-			procedure.setString(4, message);
-
-			// Apply update to database and check to be sure at least 1 row was modified
-			int rowsModified = procedure.executeUpdate();
-			if(rowsModified == 0){
-				return false;
-			}
-			
-			log.debug(String.format("New entry for user [%s] added to INVITES", user.getFullName()));
-			
-			return true;
-
+			return Database.addCommunityRequest(con, user, communityId, message); 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Database.safeClose(con);
 		}
-	}
-	
-	
+	}	
 	
 	/**
 	 * Checks an activation code provided by the user against the code in table VERIFY 
@@ -234,7 +229,7 @@ public class Database {
 	 * @param codeFromUser the activation code provided by the user
 	 * @author Todd Elvers
 	 */
-	public static long redeemCode(String codeFromUser){
+	public static long redeemActivationCode(String codeFromUser){
 		Connection con = null;
 		try {
 			
@@ -298,7 +293,7 @@ public class Database {
 	
 	
 	/**
-	 * Adds a user to their community and deletes their entry in INVITES
+	 * Adds a user to their community and deletes their entry in the community request table
 	 *  
 	 * @param userId the user id of the newly registered user
 	 * @param communityId the community the newly registered user is joining
@@ -331,12 +326,12 @@ public class Database {
 	
 	
 	/**
-	 * Deletes an entry in INVITES given a user_id and community_id, and if
-	 * the user is unregistered, they are also removed from USERS
+	 * Deletes a community request given a user id and community id, and if
+	 * the user is unregistered, they are also removed from the users table
 	 * 
-	 * @param userId the user_id associated with the invite
+	 * @param userId the user id associated with the invite
 	 * @param communityId the communityId associated with the invite
-	 * @return true iff an entry was deleted in INVITES
+	 * @return true iff an entry was deleted from the community request table
 	 * @author Todd Elvers
 	 */
 	public static boolean declineUser(long userId, long communityId){
@@ -404,29 +399,29 @@ public class Database {
 	
 	
 	/**
-	 * Retrieves an invite from the database given the user_id
+	 * Retrieves a community request from the database given the user id
 	 * 
-	 * @param user_id the user_id of the invite to retrieve
-	 * @return The invite object associated with the user_id
+	 * @param userId the user id of the request to retrieve
+	 * @return The request associated with the user id
 	 * @author Todd Elvers
 	 */
-	public static Invite getInvite(long user_id){
+	public static CommunityRequest getCommunityRequest(long userId){
 		Connection con = null;			
 		
 		try {
 			con = dataPool.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetInviteById(?)}");
-			procedure.setLong(1, user_id);					
+			CallableStatement procedure = con.prepareCall("{CALL GetCommunityRequestById(?)}");
+			procedure.setLong(1, userId);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
-				Invite inv = new Invite();
-				inv.setUserId(results.getLong("user_id"));
-				inv.setCommunityId(results.getLong("community"));
-				inv.setCode(results.getString("code"));
-				inv.setMessage(results.getString("message"));
-				inv.setCreateDate(results.getTimestamp("created"));
-				return inv;
+				CommunityRequest req = new CommunityRequest();
+				req.setUserId(results.getLong("user_id"));
+				req.setCommunityId(results.getLong("community"));
+				req.setCode(results.getString("code"));
+				req.setMessage(results.getString("message"));
+				req.setCreateDate(results.getTimestamp("created"));
+				return req;
 			}			
 			
 		} catch (Exception e){			
@@ -439,29 +434,29 @@ public class Database {
 	}
 	
 	/**
-	 * Retrieves an invite from the database given a code
+	 * Retrieves a community request from the database given a code
 	 * 
-	 * @param user_id the user_id of the invite to retrieve
-	 * @return The invite object associated with the user_id
+	 * @param code the code of the request to retrieve
+	 * @return The request object associated with the request code
 	 * @author Todd Elvers
 	 */
-	public static Invite getInvite(String code){
+	public static CommunityRequest getCommunityRequest(String code){
 		Connection con = null;			
 		
 		try {
 			con = dataPool.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetInviteByCode(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetCommunityRequestByCode(?)}");
 			procedure.setString(1, code);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
-				Invite inv = new Invite();
-				inv.setUserId(results.getLong("user_id"));
-				inv.setCommunityId(results.getLong("community"));
-				inv.setCode(results.getString("code"));
-				inv.setMessage(results.getString("message"));
-				inv.setCreateDate(results.getTimestamp("created"));
-				return inv;
+				CommunityRequest req = new CommunityRequest();
+				req.setUserId(results.getLong("user_id"));
+				req.setCommunityId(results.getLong("community"));
+				req.setCode(results.getString("code"));
+				req.setMessage(results.getString("message"));
+				req.setCreateDate(results.getTimestamp("created"));
+				return req;
 			}			
 			
 		} catch (Exception e){			

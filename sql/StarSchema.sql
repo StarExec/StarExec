@@ -1,4 +1,4 @@
--- Author: Tyler N Jensen (tylernjensen@gmail.com)
+-- Author: Tyler Jensen
 -- Description: This file is the schema used to create the starexec database in MySQL
 
 -- Drop and recreate the database to get a fresh slate
@@ -269,7 +269,7 @@ CREATE TABLE solver_assoc (
 );
 
 -- Pending requests to join a community
-CREATE TABLE invites (
+CREATE TABLE community_requests (
 	user_id BIGINT NOT NULL,
 	community BIGINT NOT NULL,
 	code VARCHAR(36) NOT NULL,

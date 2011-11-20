@@ -12,48 +12,40 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
 import org.starexec.data.Database;
-import org.starexec.data.to.Invite;
-import org.starexec.data.to.User;
-import org.starexec.util.Mail;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Validate;
-
+import org.starexec.data.to.*;
+import org.starexec.util.*;
 
 /**
  * @author Todd Elvers
  */
+@SuppressWarnings("serial")
 public class Invitation extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Invitation.class);
-	private static final long serialVersionUID = 1L;
-	
-    public Invitation() {
-        super();
-    }
+	private static final Logger log = Logger.getLogger(Invitation.class);	
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// Don't accept GET, this could be a malicious requested
-		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Illegal GET request!");
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
-
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		User user = SessionUtil.getUser(request);
+		
 		// Validate parameters of request & construct Invite object
-		Invite invite = constructInvite(user, request);
-		if(invite == null){
+		CommunityRequest comRequest = constructComRequest(user, request);
+		if(comRequest == null){
 			response.sendRedirect("/starexec/secure/make_invite.jsp?result=requestNotSent");
 			return;
 		}
-		boolean added = Database.addInvite(user, invite.getCommunityId(), invite.getCode(), invite.getMessage());
+		
+		boolean added = Database.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
 		if(added){
 			// Send the invite to the leaders of the community 
-			Mail.sendInvitesToLeaders(user, invite, request);
+			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
+			Mail.sendCommunityRequest(user, comRequest, serverName);
 			response.sendRedirect("/starexec/secure/make_invite.jsp?result=requestSent");
 		} else {
-			// Not adding this error message
-//			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "And what went wrong here");
+			// There was a problem
 			response.sendRedirect("/starexec/secure/make_invite.jsp?result=requestNotSent");
 		}
 	}
@@ -66,25 +58,29 @@ public class Invitation extends HttpServlet {
 	 * @param request the servlet containing the invite information
 	 * @return the invite constructed
 	 */
-	private Invite constructInvite(User user, HttpServletRequest request){
-		String message = request.getParameter(P.USER_MESSAGE);
-		long communityId = -1;
-		try{
-			communityId = Long.parseLong(request.getParameter(P.USER_COMMUNITY)); 
-		} catch (Exception NumberFormatException) {
-			// Do nothing
+	private CommunityRequest constructComRequest(User user, HttpServletRequest request){
+		try {
+			if(!Util.paramExists(P.USER_MESSAGE, request) ||
+			   !Util.paramExists(P.USER_COMMUNITY, request)) {
+				return null;
+			}
+			
+			String message = request.getParameter(P.USER_MESSAGE);
+			long communityId = Long.parseLong(request.getParameter(P.USER_COMMUNITY)); 		
+			
+			if(validateParameters(communityId, message)){
+				CommunityRequest req = new CommunityRequest();
+				req.setUserId(user.getId());
+				req.setCommunityId(communityId);
+				req.setCode(UUID.randomUUID().toString());
+				req.setMessage(message);
+				return req;	
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		}
 		
-		if(validateParameters(communityId, message)){
-			Invite invite = new Invite();
-			invite.setUserId(user.getId());
-			invite.setCommunityId(communityId);
-			invite.setCode(UUID.randomUUID().toString());
-			invite.setMessage(message);
-			return invite;	
-		} else {
-			return null;
-		}
+		return null;
 	}
 	
 	/**
@@ -104,9 +100,9 @@ public class Invitation extends HttpServlet {
 				|| communityId > numberOfCommunities
 				|| !Validate.message(message)){
 			return false;
-		} else {
-			return true;
 		}
+
+		return true;		
 	}
 
 }

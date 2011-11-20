@@ -9,37 +9,32 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
 import org.starexec.data.Database;
-import org.starexec.data.to.Invite;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.util.Mail;
 import org.starexec.util.Util;
 
 /**
  * @author Todd Elvers
  */
+@SuppressWarnings("serial")
 public class Verify extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Verify.class);
-	private static final long serialVersionUID = 1L;	
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public Verify() {
-        super();        
-    }
+	private static final Logger log = Logger.getLogger(Verify.class);     
 	
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	// Don't accept POST requests to this servlet
-    	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Illegal POST request");
+    	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
     
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	if(Util.paramExists(P.EMAIL_CODE, request) && !Util.paramExists(P.LEADER_RESPONSE, request)) {
+    		// Handle user activation request
     		handleActivation(request, response);
-    	} else if(Util.paramExists(P.LEADER_RESPONSE, request)) {
+    	} else if(Util.paramExists(P.EMAIL_CODE, request) && Util.paramExists(P.LEADER_RESPONSE, request)) {
+    		// Handle community request accept/decline
     		handleAcceptance(request, response);
+    	} else {
+    		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
     	}
     }
     
@@ -51,12 +46,12 @@ public class Verify extends HttpServlet {
      * @throws IOException if any of the redirects fail
      */
     private void handleAcceptance(HttpServletRequest request, HttpServletResponse response) throws IOException  {
-    	String code = request.getParameter(P.EMAIL_CODE).toString();
-		String verdict = request.getParameter(P.LEADER_RESPONSE).toString();
+    	String code = (String)request.getParameter(P.EMAIL_CODE);
+		String verdict = (String)request.getParameter(P.LEADER_RESPONSE);
 		
 		// Check if a leader has handled this acceptance email already
-		Invite invite = Database.getInvite(code);
-		if(invite == null){
+		CommunityRequest comRequest = Database.getCommunityRequest(code);
+		if(comRequest == null){
 			// If so, redirect them to the leader_response.jsp and tell them their response will be ignored
 			response.sendRedirect("/starexec/leader_response.jsp?result=dupLeaderResponse");
 			return;
@@ -66,37 +61,36 @@ public class Verify extends HttpServlet {
 		boolean isRegistered = false;
 		
 		// See if the user is registered or not
-		User user = Database.getUnregisteredUser(invite.getUserId());
+		User user = Database.getUnregisteredUser(comRequest.getUserId());
 		if(user == null){
-			user = Database.getUser(invite.getUserId());
+			user = Database.getUser(comRequest.getUserId());
 			isRegistered = true;
 		}
 		
 		// Get name of community user is trying to join
-		String communityName = Database.getSpaceName(invite.getCommunityId());
+		String communityName = Database.getSpaceName(comRequest.getCommunityId());
+		String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 		
-		if(verdict.equals("approve")){
-			
-			// Add them to the community & remove their entry in INVITES
-			wasApproved = Database.approveUser(invite.getUserId(), invite.getCommunityId());
+		if(verdict.equals("approve")){			
+			// Add them to the community & remove the request from the database
+			wasApproved = Database.approveUser(comRequest.getUserId(), comRequest.getCommunityId());
 			
 			if(wasApproved) {
-				// Notify user they've been approved
-				Mail.sendNotification(user, communityName, wasApproved, request);
+				// Notify user they've been approved				
+				Mail.sendRequestResults(user, communityName, wasApproved, false, serverName);
 				log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
 				response.sendRedirect("/starexec/leader_response.jsp");
 			} 
 		} else if(verdict.equals("decline")) {
 			// Remove their entry from INVITES
-			Database.declineUser(invite.getUserId(), invite.getCommunityId());
+			Database.declineUser(comRequest.getUserId(), comRequest.getCommunityId());
 
-			if(!isRegistered){
-				// Notify user they've been declined and deleted from our system
-				Mail.sendNotification(user, communityName, request);
+			// Notify user they've been declined
+			if(isRegistered) {
+				Mail.sendRequestResults(user, communityName, false, false, serverName);	
 			} else {
-				// Notify user they've been declined (but not deleted)
-				Mail.sendNotification(user, communityName, wasApproved, request);
-			}
+				Mail.sendRequestResults(user, communityName, false, true, serverName);
+			}					
 			
 			log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(), communityName));
 			response.sendRedirect("/starexec/leader_response.jsp");
@@ -114,29 +108,30 @@ public class Verify extends HttpServlet {
     private void handleActivation(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	String code = request.getParameter(P.EMAIL_CODE).toString();
 		
-    	// IF no code in VERIFY matches, then user_id = -1
-    	// ELSE user_id = the id of the user that was just activated
-    	long user_id = Database.redeemCode(code);
+    	// IF no code in VERIFY matches, then userId = -1
+    	// ELSE userId = the id of the user that was just activated
+    	long userId = Database.redeemActivationCode(code);
+    	
     	User newUser;
-    	if(user_id == -1) {
+    	if(userId == -1) {
     		log.info(String.format("email verification failed - likey a duplicate activation attempt"));
     		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This activation page has expired and no longer exists!");
     		return;
     	} else {
-    		newUser = Database.getUnregisteredUser(user_id);
+    		newUser = Database.getUnregisteredUser(userId);
     		log.info(String.format("User [%s] has been activated.", newUser.getFullName()));
     		response.sendRedirect("/starexec/email_activated.jsp");
     	}   
-    	Invite invite = Database.getInvite(user_id);
-    	if(invite == null){
-    		log.warn(String.format("No invite exists for user [%s].", newUser.getFullName()));
+    	
+    	CommunityRequest comReq = Database.getCommunityRequest(userId);
+    	if(comReq == null){
+    		log.warn(String.format("No community request exists for user [%s].", newUser.getFullName()));
     		return;
     	}
     	
-    	// Send the invite to the leaders of the community 
-    	Mail.sendInvitesToLeaders(newUser, invite, request);
-    	
-    
+    	// Send the invite to the leaders of the community
+    	String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
+    	Mail.sendCommunityRequest(newUser, comReq, serverName);    	   
     }
     
 

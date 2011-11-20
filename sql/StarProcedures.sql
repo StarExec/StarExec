@@ -238,11 +238,14 @@ CREATE PROCEDURE UpdatePassword(IN _id BIGINT, IN _password VARCHAR(128))
 	
 -- Begins the registration process by adding a user to the USERS table
 -- Author: Todd Elvers
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  OUT id BIGINT)
+CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), OUT _id BIGINT, OUT _affectedRows BIGINT)
 	BEGIN		
 		INSERT INTO users(first_name, last_name, email, institution, created, password)
 		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password);
-		SELECT LAST_INSERT_ID() INTO id;
+		
+		-- Have to pass affected row count back like this since the INSERT is not the last statement in the procedure
+		SELECT ROW_COUNT() INTO _affectedRows;
+		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	
 	
@@ -254,31 +257,31 @@ CREATE PROCEDURE AddCode(IN _id BIGINT, IN _code VARCHAR(36))
 		VALUES (_id, _code, SYSDATE());
 	END //
 	
--- Adds an invite to join a community, provided the user isn't already a part of that community
+-- Adds a request to join a community, provided the user isn't already a part of that community
 -- Author: Todd Elvers
-CREATE PROCEDURE AddInvite(IN _id BIGINT, IN _community BIGINT, IN _code VARCHAR(36), IN _message VARCHAR(300))
+CREATE PROCEDURE AddCommunityRequest(IN _id BIGINT, IN _community BIGINT, IN _code VARCHAR(36), IN _message VARCHAR(300))
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM user_assoc WHERE user_id = _id AND space_id = _community) THEN
-			INSERT INTO invites(user_id, community, code, message, created)
+			INSERT INTO community_requests(user_id, community, code, message, created)
 			VALUES (_id, _community, _code, _message, SYSDATE());
 		END IF;
 	END //
 
--- Returns the invite record associated with given id
+-- Returns the community request associated with given user id
 -- Author: Todd Elvers
-CREATE PROCEDURE GetInviteById(IN _id BIGINT)
+CREATE PROCEDURE GetCommunityRequestById(IN _id BIGINT)
 	BEGIN
 		SELECT *
-		FROM invites
+		FROM community_requests
 		WHERE user_id = _id;
 	END //
 	
--- Returns the invite record associated with the given code
+-- Returns the community request associated with the given activation code
 -- Author: Todd Elvers
-CREATE PROCEDURE GetInviteByCode(IN _code VARCHAR(36))
+CREATE PROCEDURE GetCommunityRequestByCode(IN _code VARCHAR(36))
 	BEGIN
 		SELECT *
-		FROM invites
+		FROM community_requests
 		WHERE code = _code;
 	END //
 
@@ -320,8 +323,8 @@ CREATE PROCEDURE GetLeadersBySpaceId(IN _id BIGINT)
 -- Author: Todd Elvers
 CREATE PROCEDURE ApproveUser(IN _id BIGINT, IN _community BIGINT)
 	BEGIN
-		IF EXISTS(SELECT * FROM invites WHERE user_id = _id AND community = _community) THEN
-			DELETE FROM invites 
+		IF EXISTS(SELECT * FROM community_requests WHERE user_id = _id AND community = _community) THEN
+			DELETE FROM community_requests 
 			WHERE user_id = _id and community = _community;
 			INSERT INTO user_assoc(user_id, space_id, proxy, permission)
 			VALUES(_id, _community, _community, 1);
@@ -378,7 +381,7 @@ CREATE PROCEDURE GetUnregisteredUserById(IN _id BIGINT)
 -- Author: Todd Elvers
 CREATE PROCEDURE DeclineUser(IN _id BIGINT, IN _community BIGINT)
 	BEGIN
-		DELETE FROM invites 
+		DELETE FROM community_requests 
 		WHERE user_id = _id and community = _community;
 		DELETE FROM users
 		WHERE users.id = _id

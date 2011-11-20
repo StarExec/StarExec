@@ -15,8 +15,9 @@
 			<property key="STAREXEC_ROOT" value="/project/tomcat-webapps/webapps/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
 			<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />
-			<property key="SOLVER_BIN_DIR" value="/bin" />
+			<property key="SOLVER_BIN_DIR" value="/bin" />									
 			<!-- Misc. Configuration -->
+			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 		</class>
@@ -39,7 +40,7 @@
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
-			<property key="LOG_TO_CONSOLE" value="true" />
+			<property key="LOG_TO_CONSOLE" value="true" />			
 		</class>
 	</configuration>
 	<configuration name="tyler_dev_cluster">

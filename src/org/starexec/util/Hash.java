@@ -16,7 +16,7 @@ public class Hash {
 	private static final Logger log = Logger.getLogger(Hash.class);
 	
 	// The hexidecimal alphabet
-	static final String HEXES = "0123456789ABCDEF";
+	static final String HEXES = "0123456789abcdef";
 	
 	/**
 	 * Hashes a password using a pre-specified hashing algorithm.

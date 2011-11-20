@@ -13,55 +13,47 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.P;
 import org.starexec.data.Database;
 import org.starexec.data.to.User;
-import org.starexec.util.Mail;
-import org.starexec.util.Validate;
+import org.starexec.util.*;
 
 
 /**
- * @author Tyler & CJ & Todd
- * @deprecated This sort of works, but needs to be cleaned out and re-implemented
+ * Servlet which handles requests for registration 
+ * @author Todd Elvers & Tyler Jensen
  */
-@Deprecated
+@SuppressWarnings("serial")
 public class Registration extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Registration.class);
-	private static final long serialVersionUID = 1L;
+	private static final Logger log = Logger.getLogger(Registration.class);	
 	
-    public Registration() {
-        super();
-    }
-
+	// Return codes for registration
+	private static final int SUCCESS = 0;
+	private static final int FAIL = 1;
+	private static final int MALFORMED = 2;
+	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	// Don't accept GET requests to this servlet
-		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Illegal GET request!");
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
-
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		// Begin registration for a new user
 		int result = register(request, response);
-		
-		
+				
 		switch (result) {
-		  case 0: 
+		  case SUCCESS: 
 			// Notify user of successful registration
 			response.sendRedirect("/starexec/registration.jsp?result=regSuccess");
 		    break;
-		  case 1: 
+		  case FAIL: 
 			// Notify user the email address they inputed is already in use
 			response.sendRedirect("/starexec/registration.jsp?result=regFail");
 		    break;
-		  default:
+		  case MALFORMED:
 			// Handle malformed urls
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parameter validation failed");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
 		    break;
 		}
-
 	}
-	
-
-	
 	
 	/**
 	 * Begins the registration process for a new user by adding them to the
@@ -70,76 +62,82 @@ public class Registration extends HttpServlet {
 	 * 
 	 * @param request the servlet containing the incoming POST
 	 * @return 0 if registration was successful, and 1 if the user already exists, and
-	 * -1 if parameter validation fails
+	 * 2 if parameter validation fails
 	 * @author Todd Elvers
 	 */
 	public static int register(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		// Validate parameters of the new user request
-		User user = validateParameters(request);
-		if(user == null){
+		if(!validateRequest(request)) {
 			log.info(String.format("Registration was unsuccessfully started for new user because parameter validation failed."));
-			return -1;
+			return MALFORMED;
 		}
+		
+		// Create the user to add to the database
+		User user = new User();
+		user.setFirstName(request.getParameter(P.USER_FIRSTNAME));
+		user.setLastName(request.getParameter(P.USER_LASTNAME));
+		user.setEmail(request.getParameter(P.USER_EMAIL));
+		user.setPassword(request.getParameter(P.USER_PASSWORD));
+		user.setInstitution(request.getParameter(P.USER_INSTITUTION));		
 		
 		long communityId = Long.parseLong(request.getParameter(P.USER_COMMUNITY));
 		
-		// Generate unique code to safely reference this user's entry in VERIFY from hyperlinks
+		// Generate unique code to safely reference this user's entry in verification hyperlinks
 		String code = UUID.randomUUID().toString();
 		
 		// Add user to the database and get the UUID that was created
-		boolean added = Database.addUser(user, communityId, code, request.getParameter(P.USER_MESSAGE));
+		boolean added = Database.registerUser(user, communityId, code, request.getParameter(P.USER_MESSAGE));
 		
 		// If the user was successfully added to the database, send an activation email
-		if(added){
+		if(added) {
 			log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
-			Mail.sendActivationCode(user, code, request);
-			return 0;
+			
+			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
+			Mail.sendActivationCode(user, code, serverName);
+			return SUCCESS;
 		} else {
-			log.info(String.format("Registration was unsuccessfully started for user [%s] because a user already exists with that email address.", user.getFullName()));
-			return 1;
+			log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
+			return FAIL;
 		} 
 	}
 	
 	
 	/**
-	 * Validates the parameters of a servlet request for user
-	 * registration
+	 * Validates the parameters of a servlet request for user registration
 	 * 
 	 * @param request the servlet containing the parameters to validate
-	 * @return a new User object if the parameters pass validation, null otherwise
+	 * @return true if the request is valid, false otherwise
 	 * @author Todd Elvers
 	 */
-    public static User validateParameters(HttpServletRequest request){
-    	User u = new User();
-		u.setFirstName(request.getParameter(P.USER_FIRSTNAME));
-		u.setLastName(request.getParameter(P.USER_LASTNAME));
-		u.setEmail(request.getParameter(P.USER_EMAIL));
-		u.setPassword(request.getParameter(P.USER_PASSWORD));
-		u.setInstitution(request.getParameter(P.USER_INSTITUTION));
-		
-		return (validateUser(u) ? u : null);
-    }
-    
-    
-    
-    /**
-     * Validates the parameters of a User object
-     * 
-     * @param u the User object to check the parameters of
-     * @return true iff all parameters of the User object pass validation
-     * @author Todd Elvers
-     */
-	public static boolean validateUser(User u) {
-		// Validate parameters of User object
-		if (!Validate.name(u.getFirstName()) 
-				|| !Validate.name(u.getLastName()) 
-				|| !Validate.email(u.getEmail())
-				|| !Validate.institution(u.getInstitution())
-				|| !Validate.password(u.getPassword())) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
+    public static boolean validateRequest(HttpServletRequest request) {
+    	try {
+    		// Ensure the necessary parameters exist
+	    	if(!Util.paramExists(P.USER_FIRSTNAME, request) ||
+	    	   !Util.paramExists(P.USER_LASTNAME, request) ||
+	    	   !Util.paramExists(P.USER_EMAIL, request) ||
+	    	   !Util.paramExists(P.USER_PASSWORD, request) ||
+	    	   !Util.paramExists(P.USER_INSTITUTION, request) ||
+	    	   !Util.paramExists(P.USER_COMMUNITY, request) ||
+	    	   !Util.paramExists(P.USER_MESSAGE, request)) {
+	    		return false;
+	    	}    	    	   
+		    
+	    	// Make sure community id is a valid long 
+	    	Long.parseLong(request.getParameter(P.USER_COMMUNITY));
+	    	
+	    	// Ensure the parameters are valid values
+	    	if (!Validate.name((String)request.getParameter(P.USER_FIRSTNAME)) 
+					|| !Validate.name((String)request.getParameter(P.USER_LASTNAME)) 
+					|| !Validate.email((String)request.getParameter(P.USER_EMAIL))
+					|| !Validate.institution((String)request.getParameter(P.USER_INSTITUTION))
+					|| !Validate.password((String)request.getParameter(P.USER_PASSWORD))) {
+				return false;
+			}
+	    	
+	    	return true;
+    	} catch (Exception e) {
+    		log.warn(e.getMessage(), e);
+    		return false;
+    	}
+    }        
 }

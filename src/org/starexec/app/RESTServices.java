@@ -186,7 +186,7 @@ public class RESTServices {
 				}
 			}
 		} else if (attribute.equals("institution")) {
-			if (true == Validate.institute(newValue)) {
+			if (true == Validate.institution(newValue)) {
 				success = Database.updateInstitution(userId, newValue);
 				if (true == success) {
 					SessionUtil.getUser(request).setInstitution(newValue);
