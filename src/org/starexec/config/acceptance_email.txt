@@ -12,4 +12,4 @@ Approve: $$APPROVE$$
 
 Decline: $$DECLINE$$
 
--Starexec Team
+-STAREXEC TEAM

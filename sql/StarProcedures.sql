@@ -390,6 +390,40 @@ CREATE PROCEDURE DeclineUser(IN _id BIGINT, IN _community BIGINT)
 			FROM user_roles);
 	END //
 
+-- Adds a new entry to PASS_RESET for a given user (also deletes previous
+-- entries for the same user)
+-- Author: Todd Elvers
+CREATE PROCEDURE AddPassResetRequest(IN _id BIGINT, IN _code VARCHAR(36))
+	BEGIN
+		IF EXISTS(SELECT * FROM pass_reset WHERE user_id = _id) THEN
+			DELETE FROM pass_reset
+			WHERE user_id = _id;
+		END IF;
+		INSERT INTO pass_reset(user_id, code, created)
+		VALUES(_id, _code, SYSDATE());
+	END //
+
+-- Redeems a given password reset code by deleting the corresponding entry
+-- in PASS_RESET and returning the user_id of that deleted entry
+-- Author: Todd Elvers
+CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id BIGINT)
+	BEGIN
+		SELECT user_id INTO _id
+		FROM pass_reset
+		WHERE code = _code;
+		DELETE FROM pass_reset
+		WHERE code = _code;
+	END //
+	
+-- Sets a new password for a given user
+-- Author: Todd Elvers
+CREATE PROCEDURE SetPasswordByUserId(IN _id BIGINT, IN _password VARCHAR(128))
+	BEGIN
+		UPDATE users
+		SET password = _password
+		WHERE users.id = _id;
+	END //
+	
 -- Adds a website that is associated with a user
 -- Author: Skylar Stark	
 CREATE PROCEDURE AddUserWebsite(IN _userId BIGINT, IN _url TEXT, IN _name VARCHAR(64))

@@ -40,12 +40,12 @@ $(document).ready(function() {
 		rules : {
 			fn : {
 				required : true,
-				regex : "^[a-zA-Z\\-']+$",
+				regex : "^[a-zA-Z\\-'\\s]+$",
 				minlength : 2
 			},
 			ln : {
 				required : true,
-				regex : "^[a-zA-Z\\-']+$",
+				regex : "^[a-zA-Z\\-'\\s]+$",
 				minlength : 2
 			},
 			em : {
@@ -106,4 +106,3 @@ $(document).ready(function() {
 	});
 
 });
-

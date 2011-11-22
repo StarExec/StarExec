@@ -137,7 +137,7 @@ public class Registration extends HttpServlet {
 	    	return true;
     	} catch (Exception e) {
     		log.warn(e.getMessage(), e);
-    		return false;
     	}
+    	return false;
     }        
 }

@@ -470,6 +470,107 @@ public class Database {
 	
 	
 	/**
+	 * Adds a request to have a user's password reset; prevents duplicate entries
+	 * in the password reset table by first deleting any previous entries for this
+	 * user_id
+	 * 
+	 * @param userId the id of the user requesting the password reset
+	 * @param code the code to add to the password reset table (for hyperlinking)
+	 * @return true iff the tuple (user_id, code) is added to the password reset table
+	 * @author Todd Elvers 
+	 */
+	public static boolean addPassResetRequest(long userId, String code){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL AddPassResetRequest(?, ?)}");
+			procedure.setLong(1, userId);
+			procedure.setString(2, code);
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				return false;
+			}
+
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	
+	/**
+	 * Gets the user_id associated with the given code and deletes
+	 * the corresponding entry in the password reset table
+	 * 
+	 * @param code the UUID to check the password reset table with
+	 * @return the id of the user requesting the password reset if the
+	 * code provided matches one in the password reset table, -1 otherwise
+	 * @author Todd Elvers
+	 */
+	public static long redeemPassResetRequest(String code){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL RedeemPassResetRequestByCode(?, ?)}");
+			procedure.setString(1, code);
+			procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				return -1;
+			} else {
+				return procedure.getLong(2);
+			}
+
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return -1;
+	}
+	
+	
+	/**
+	 * Sets the password of a user, given their user_id; this method requires
+	 * the password be supplied in plaintext
+	 * 
+	 * @param user_id the id of the user to set the new password for
+	 * @param password the new password
+	 * @return true iff the password was successfully updated
+	 * @author Todd Elvers
+	 */
+	public static boolean setPasswordByUserId(long user_id, String password){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL SetPasswordByUserId(?, ?)}");
+			procedure.setLong(1, user_id);
+			procedure.setString(2, Hash.hashPassword(password));
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				return false;
+			}
+
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Retrieves a user from the database given the email address
 	 * 
 	 * @param email The email of the user to retrieve

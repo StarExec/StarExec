@@ -76,7 +76,7 @@ public class Mail {
     	}
     	
     	// Configure pre-built message
-		String email = Util.readFile(new File(R.CONFIG_PATH, "acceptance_email"));
+		String email = Util.readFile(new File(R.CONFIG_PATH, "acceptance_email.txt"));
 		email = email.replace("$$COMMUNITY$$", communityName);
 		email = email.replace("$$NEWUSER$$", user.getFullName());
 		email = email.replace("$$INSTITUTION$$", user.getInstitution());
@@ -103,7 +103,7 @@ public class Mail {
 	 */
 	public static void sendActivationCode(User user, String code, String serverURL) throws IOException {		
 		// Configure pre-built message
-		String email = Util.readFile(new File(R.CONFIG_PATH, "activation_email"));
+		String email = Util.readFile(new File(R.CONFIG_PATH, "activation_email.txt"));
 		email = email.replace("$$USER$$", user.getFullName());
 		email = email.replace("$$LINK$$", String.format("%s/starexec/Verify?%s=%s", serverURL, P.EMAIL_CODE, code ));
 		
@@ -129,7 +129,7 @@ public class Mail {
     public static void sendRequestResults(User user, String communityName, boolean wasApproved, boolean wasDeleted, String serverURL) throws IOException{    	
     	if(wasApproved){
     		// Configure pre-built message
-    		String email = Util.readFile(new File(R.CONFIG_PATH, "approved_email"));
+    		String email = Util.readFile(new File(R.CONFIG_PATH, "approved_email.txt"));
     		email = email.replace("$$USER$$", user.getFullName());
     		email = email.replace("$$COMMUNITY$$", communityName);
     		email = email.replace("$$LINK$$", String.format("%s/starexec/secure/index.jsp", serverURL));
@@ -143,10 +143,10 @@ public class Mail {
     		String email;
     		
     		if(wasDeleted) {
-    			email = Util.readFile(new File(R.CONFIG_PATH, "declined_deleted_email"));
+    			email = Util.readFile(new File(R.CONFIG_PATH, "declined_deleted_email.txt"));
     			email = email.replace("$$LINK$$", String.format("%s/starexec/registration.jsp", serverURL));    			
     		} else {
-    			email = Util.readFile(new File(R.CONFIG_PATH, "declined_email"));    			
+    			email = Util.readFile(new File(R.CONFIG_PATH, "declined_email.txt"));    			
     			email = email.replace("$$LINK$$", String.format("%s/starexec/pages/make_invite.jsp", serverURL));
     		}
     		
@@ -158,5 +158,29 @@ public class Mail {
     		
     		log.info(String.format("Notification email sent to user [%s] - their request to join to the %s community was declined", user.getFullName(), communityName));
     	}
-    }              
+    }
+
+	
+    /**
+     * Sends an email to a user who has requested to reset their password containing
+     * a hyperlink to a page where a temporary password is generated
+     * 
+     * @param newUser the user requesting to reset their password
+     * @param code the UUID code used to create a safe hyperlink to email to the user
+     * @param request the servlet containing information used to create the hyperlink 
+     * @throws IOException if password_reset_email cannot be found
+     * @author Todd Elvers
+     */
+    public static void sendPasswordReset(User newUser, String code, String serverURL) throws IOException {
+    	
+		// Configure pre-built message
+		String email = Util.readFile(new File(R.CONFIG_PATH, "password_reset_email.txt"));
+		email = email.replace("$$USER$$", newUser.getFullName());
+		email = email.replace("$$LINK$$", String.format("%s/starexec/PasswordReset?%s=%s", serverURL, P.PASS_RESET, code));
+		
+		// Send email
+		Mail.mail(email, "STAREXEC - Password reset", new String[] { newUser.getEmail() });
+		
+		log.info(String.format("Password reset email sent to user [%s].", newUser.getFullName()));
+    }	
 }

@@ -29,13 +29,21 @@
   </servlet-mapping>
   
   <servlet>
-
     <servlet-name>Verify</servlet-name>
     <servlet-class>org.starexec.servlets.Verify</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>Verify</servlet-name>
     <url-pattern>/Verify</url-pattern>  
+  </servlet-mapping>
+  
+    <servlet>
+    <servlet-name>PasswordReset</servlet-name>
+    <servlet-class>org.starexec.servlets.PasswordReset</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PasswordReset</servlet-name>
+    <url-pattern>/PasswordReset</url-pattern>  
   </servlet-mapping>
   
   <servlet>

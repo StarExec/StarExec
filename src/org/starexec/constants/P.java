@@ -22,6 +22,7 @@ public class P {
 	
 	public static String EMAIL_CODE = "conf";
 	public static String LEADER_RESPONSE = "lead";
+	public static String PASS_RESET = "reset";
 	
 	public static String UPLOAD_FILE = "f";
 	

@@ -269,6 +269,7 @@ CREATE TABLE solver_assoc (
 );
 
 -- Pending requests to join a community
+-- Author: Todd Elvers
 CREATE TABLE community_requests (
 	user_id BIGINT NOT NULL,
 	community BIGINT NOT NULL,
@@ -279,4 +280,16 @@ CREATE TABLE community_requests (
 	UNIQUE KEY (code),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
+);
+
+-- Pending requests to reset a user's password
+-- Author: Todd Elvers
+CREATE TABLE pass_reset (
+	user_id BIGINT NOT NULL,
+	code VARCHAR(36) NOT NULL,
+	created TIMESTAMP NOT NULL,	
+	PRIMARY KEY (user_id, code),
+	UNIQUE KEY (user_id),
+	UNIQUE KEY (code),
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
