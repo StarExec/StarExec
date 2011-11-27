@@ -47,14 +47,22 @@
   </servlet-mapping>
   
   <servlet>
-    <servlet-name>Invitation</servlet-name>
-    <servlet-class>org.starexec.servlets.Invitation</servlet-class>
+    <servlet-name>CommunityRequest</servlet-name>
+    <servlet-class>org.starexec.servlets.CommunityRequester</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>Invitation</servlet-name>
-    <url-pattern>/secure/Invitation</url-pattern>  
+    <servlet-name>CommunityRequest</servlet-name>
+    <url-pattern>/secure/community/request</url-pattern>  
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>BenchTypeManager</servlet-name>
+    <servlet-class>org.starexec.servlets.BenchTypeManager</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BenchTypeManager</servlet-name>
+    <url-pattern>/secure/community/BenchTypeManager</url-pattern>  
+  </servlet-mapping>
   
   <servlet>
     <servlet-name>AddSpace</servlet-name>

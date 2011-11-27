@@ -30,11 +30,17 @@ a:link, a:visited  {
 	text-decoration: none;
 }
 
-input {
+input[type="text"],
+input[type="password"] {
 	height: 28px;
 	border: 1px solid #13a5e1;				
 	font-size: 16px;	
 	padding: 0px 5px 0px 5px;				
+}
+
+textarea {
+	resize: none;
+	padding: 5px;
 }
 
 button {
@@ -97,6 +103,20 @@ legend {
 	background-color: #111111;
 	padding: 5px 8px 5px 8px;
 	margin-left: 25px;
+}
+
+input.error {	
+	border: solid 1px #ae0000;
+}
+
+textarea.error {	
+	border: solid 1px #ae0000;
+}
+
+label.error {
+	margin-left: 15px;	
+	display: inline;
+	color: #ae0000;
 }
 
 .shade {

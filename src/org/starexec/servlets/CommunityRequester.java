@@ -19,8 +19,8 @@ import org.starexec.util.*;
  * @author Todd Elvers
  */
 @SuppressWarnings("serial")
-public class Invitation extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Invitation.class);	
+public class CommunityRequester extends HttpServlet {
+	private static final Logger log = Logger.getLogger(CommunityRequest.class);	
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -29,12 +29,12 @@ public class Invitation extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		User user = SessionUtil.getUser(request);
+		User user = SessionUtil.getUser(request);			
 		
 		// Validate parameters of request & construct Invite object
 		CommunityRequest comRequest = constructComRequest(user, request);
 		if(comRequest == null){
-			response.sendRedirect("/starexec/secure/make_invite.jsp?result=requestNotSent");
+			response.sendRedirect("/starexec/secure/community/join.jsp?result=requestNotSent&cid=-1");
 			return;
 		}
 		
@@ -43,10 +43,10 @@ public class Invitation extends HttpServlet {
 			// Send the invite to the leaders of the community 
 			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 			Mail.sendCommunityRequest(user, comRequest, serverName);
-			response.sendRedirect("/starexec/secure/make_invite.jsp?result=requestSent");
+			response.sendRedirect("/starexec/secure/community/join.jsp?result=requestSent&cid=" + comRequest.getCommunityId());
 		} else {
 			// There was a problem
-			response.sendRedirect("/starexec/secure/make_invite.jsp?result=requestNotSent");
+			response.sendRedirect("/starexec/secure/community/join.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId());
 		}
 	}
 	
@@ -95,7 +95,7 @@ public class Invitation extends HttpServlet {
 	 */
 	private boolean validateParameters(long communityId, String message){
 		// Gather the number of communities ( the +1 is for the root )
-		int numberOfCommunities = Database.getRootSpaces().size() + 1;
+		int numberOfCommunities = Database.getCommunities().size() + 1;
 		if(communityId < 0 
 				|| communityId > numberOfCommunities
 				|| !Validate.message(message)){

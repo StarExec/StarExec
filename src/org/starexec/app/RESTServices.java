@@ -1,9 +1,8 @@
 package org.starexec.app;
 
-import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -13,16 +12,17 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
-import org.jboss.resteasy.annotations.ResponseObject;
-import org.jboss.resteasy.spi.UnauthorizedException;
-import org.starexec.constants.P;
 import org.starexec.data.Database;
-import org.starexec.data.to.*;
-import org.starexec.util.*;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
+import org.starexec.data.to.Website;
+import org.starexec.util.Hash;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Validate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.mail.iap.Response;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -32,11 +32,7 @@ public class RESTServices {
 	private static final Logger log = Logger.getLogger(RESTServices.class);			
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-	
-	public RESTServices(){
 		
-	}
-
 	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
@@ -53,11 +49,42 @@ public class RESTServices {
 	}	
 	
 	/**
+	 * @return a json string representing all communities within starexec
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/communities/all")
+	@Produces("application/json")	
+	public String getAllCommunities() {								
+		return gson.toJson(RESTHelpers.toCommunityList(Database.getCommunities()));
+	}	
+	
+	/**
+	 * @return a json string representing all communities within starexec
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/communities/details/{id}")
+	@Produces("application/json")	
+	public String getCommunityDetails(@PathParam("id") long id, @Context HttpServletRequest request) {
+		Space community = Database.getCommunityDetails(id);
+		
+		if(community != null) {
+			community.setUsers(Database.getSpaceUsers(id));
+			Permission p = SessionUtil.getPermission(request, id);
+			List<User> leaders = Database.getLeadersOfSpace(id);
+			List<Website> sites = Database.getWebsites(id, Database.WebsiteType.SPACE);
+			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites));
+		}
+		
+		return gson.toJson(RESTHelpers.toCommunityList(Database.getCommunities()));
+	}	
+	
+	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen
 	 */
-	@SuppressWarnings("unchecked")
 	@POST
 	@Path("/space/{id}")
 	@Produces("application/json")	
@@ -95,7 +122,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getWebsites(@Context HttpServletRequest request) {
 		long userId = SessionUtil.getUserId(request);
-		return gson.toJson(Database.getWebsitesByUserId(userId));
+		return gson.toJson(Database.getWebsites(userId, Database.WebsiteType.USER));
 	}
 	
 	/**
@@ -106,17 +133,24 @@ public class RESTServices {
 	 * @return a json string containing '0' if the add was successful, '1' otherwise
 	 */
 	@POST
-	@Path("/website/add/{type}")
+	@Path("/website/add/{type}/{id}")
 	@Produces("application/json")
-	public String addWebsite(@PathParam("type") String type, @Context HttpServletRequest request) {
+	public String addWebsite(@PathParam("type") String type, @PathParam("id") long id, @Context HttpServletRequest request) {
 		boolean success = false;
 		
 		if (type.equals("user")) {
 			long userId = SessionUtil.getUserId(request);
 			String name = request.getParameter("name");
-			String url = request.getParameter("url");
-			
-			success = Database.addUserWebsite(userId, url, name);
+			String url = request.getParameter("url");			
+			success = Database.addWebsite(userId, url, name, Database.WebsiteType.USER);
+		} else if (type.equals("space")) {
+			// Make sure this user is capable of adding a website to the space
+			Permission perm = SessionUtil.getPermission(request, id);
+			if(perm != null && perm.isLeader()) {
+				String name = request.getParameter("name");
+				String url = request.getParameter("url");			
+				success = Database.addWebsite(id, url, name, Database.WebsiteType.SPACE);
+			}
 		}
 		
 		if (true == success) {
@@ -191,6 +225,47 @@ public class RESTServices {
 				if (true == success) {
 					SessionUtil.getUser(request).setInstitution(newValue);
 				}
+			}
+		}
+		
+		// Passed validation AND Database update successful
+		if(true == success) {
+			return gson.toJson(0);
+		}
+		
+		return gson.toJson(1);
+	}
+	
+	/** 
+	 * Updates information for a space in the database using a POST. Attribute and
+	 * new value are included in the path. First validates that the new value
+	 * is legal, then updates the database and session information accordingly.
+	 * 
+	 * @return a json string containing '0' if the update was successful, else 
+	 * a json string containing '1' if there was a failure. '2' for insufficient permissions
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/edit/space/{attr}/{id}")
+	@Produces("application/json")
+	public String editSpaceDetails(@PathParam("attr") String attribute, @PathParam("id") long id, @Context HttpServletRequest request) {	
+		Permission perm = SessionUtil.getPermission(request, id);		
+		if(perm == null || !perm.isLeader()) {
+			return gson.toJson(2);	
+		}
+		
+		boolean success = false;
+		
+		// Go through all the cases, depending on what attribute we are changing.
+		if (attribute.equals("name")) {
+			String newName = (String)request.getParameter("val");
+			if (true == Validate.spaceName(newName)) {
+				success = Database.updateSpaceName(id, newName);
+			}
+		} else if (attribute.equals("desc")) {
+			String newDesc = (String)request.getParameter("val");
+			if (true == Validate.description(newDesc)) {
+				success = Database.updateSpaceDescription(id, newDesc);				
 			}
 		}
 		

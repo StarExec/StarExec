@@ -124,7 +124,7 @@ function populateDetails(jsonData) {
 	benchTable.fnClearTable();
 	$.each(jsonData.space.benchmarks, function(i, bench) {
 		var benchLink = '<a href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '</a>';
-		benchTable.fnAddData([benchLink, bench.description]);		
+		benchTable.fnAddData([benchLink, bench.type.name, bench.description]);		
 	});
 	
 	// Populate subspace details

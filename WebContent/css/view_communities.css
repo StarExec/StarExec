@@ -1,0 +1,68 @@
+#communities {
+	margin-top: 15px;
+	float:left;
+	width: 28%;		
+	min-height: 90%;
+	height: 90%;
+	overflow: auto;	
+	position: absolute;
+}
+
+#communities a:link {
+	text-decoration: none;	
+}
+
+#detailPanel {
+	padding-left: 10px;
+	margin-top: 15px;
+	float:right;	
+	width: 70%;
+	border-left: solid 4px #111111;	
+}
+
+#detailPanel hr {
+	border-top: solid 1px #666666;
+}
+
+#webDiv ul {
+	list-style: none;
+}
+
+#webDiv ul li {
+	float: left;
+	margin-right: 20px;
+}
+
+#webDiv ul li a:link{
+	text-decoration: underline;
+}
+
+#commName {
+	color: #8C0000;
+}
+
+#communities h4 {
+	font-size: 22px;
+	margin-bottom: 5px;
+}
+
+#detailPanel h3 {
+	font-size: 24px;
+}
+
+fieldset {	
+	margin-bottom: 35px;
+}
+
+#actionList {
+	list-style: none;
+}
+
+#actionList li {
+	float: left;
+	margin-right: 20px;
+}
+
+#content table {
+	width: 100%;
+}

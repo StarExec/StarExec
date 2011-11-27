@@ -30,18 +30,6 @@ input, select, textarea {
 	width: 200px;
 }
 
-input.error {	
-	border: solid 1px #ae0000;
-}
-
-	
-
-label.error {
-	margin-left: 15px;	
-	display: inline;
-	color: #ae0000;
-}
-
 td button {
 	float: right;		
 }

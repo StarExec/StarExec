@@ -9,7 +9,7 @@
 		
 		if(user != null) {
 			request.setAttribute("usr", user);
-			request.setAttribute("sites", Database.getWebsitesByUserId(id));
+			request.setAttribute("sites", Database.getWebsites(id, Database.WebsiteType.USER));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}

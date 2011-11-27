@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-	request.setAttribute("coms", Database.getRootSpaces());
+	request.setAttribute("coms", Database.getCommunities());
 %>
 
 <star:template title="user registration" css="registration" js="lib/jquery.validate.min, lib/jquery.validate.password, registration">	

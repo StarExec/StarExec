@@ -43,13 +43,22 @@ CREATE PROCEDURE GetWebsitesByUserId(IN _userid BIGINT)
 
 -- Gets all websites that are associated with the solver with the given id
 -- Author: Tyler Jensen
-CREATE PROCEDURE GetSolverWebsitesById(IN _id BIGINT)
+CREATE PROCEDURE GetWebsitesBySolverId(IN _id BIGINT)
 	BEGIN
 		SELECT id, name, url
 		FROM website
 		WHERE website.solver_id = _id;
 	END //
 
+-- Gets all websites that are associated with the space with the given id
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetWebsitesBySpaceId(IN _id BIGINT)
+	BEGIN
+		SELECT id, name, url
+		FROM website
+		WHERE website.space_id = _id;
+	END //
+	
 -- Updates the email address of the user with the given user id to the
 -- given email address. The email address should already be validated
 -- Author: Skylar Stark
@@ -90,6 +99,20 @@ CREATE PROCEDURE GetSpaceById(IN _id BIGINT)
 		FROM spaces
 		WHERE id = _id;
 	END //
+
+-- Returns basic space information for the community with the given id
+-- This ensures security by preventing malicious users from getting details about ANY space
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetCommunityById(IN _id BIGINT)
+	BEGIN
+		SELECT *
+		FROM spaces
+		WHERE id IN
+			(SELECT child_id
+			 FROM set_assoc
+			 WHERE space_id=1
+			 AND child_id = _id);
+	END //
 	
 -- Retrieves all users belonging to a space
 -- Author: Tyler Jensen
@@ -109,11 +132,24 @@ CREATE PROCEDURE GetSpaceUsersById(IN _id BIGINT)
 CREATE PROCEDURE GetSpaceBenchmarksById(IN _id BIGINT)
 	BEGIN
 		SELECT *
-		FROM benchmarks
-		WHERE id IN
+		FROM benchmarks AS bench
+			LEFT OUTER JOIN bench_types AS types
+			ON bench.bench_type=types.id
+		WHERE bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
+		ORDER BY bench.name;
+	END //
+
+	
+-- Retrieves all benchmark types belonging to a community
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetBenchTypesByCommunity(IN _id BIGINT)
+	BEGIN
+		SELECT *
+		FROM bench_types
+		WHERE community=_id
 		ORDER BY name;
 	END //
 	
@@ -151,8 +187,10 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id BIGINT)
 CREATE PROCEDURE GetBenchmarkById(IN _id BIGINT)
 	BEGIN
 		SELECT *
-		FROM benchmarks
-		WHERE id = _id;
+		FROM benchmarks AS bench
+			LEFT OUTER JOIN bench_types AS types
+			ON bench.bench_type=types.id
+		WHERE bench.id = _id;
 	END //	
 	
 -- Retrieves the solver with the given id
@@ -234,6 +272,24 @@ CREATE PROCEDURE UpdatePassword(IN _id BIGINT, IN _password VARCHAR(128))
 		UPDATE users
 		SET password = _password
 		WHERE users.id = _id;
+	END //
+	
+-- Updates the name of the spacewith the given id
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateSpaceName(IN _id BIGINT, IN _name VARCHAR(32))
+	BEGIN
+		UPDATE spaces
+		SET name = _name
+		WHERE id = _id;
+	END //
+
+-- Updates the name of the spacewith the given id
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateSpaceDescription(IN _id BIGINT, IN _desc TEXT)
+	BEGIN
+		UPDATE spaces
+		SET description = _desc
+		WHERE id = _id;
 	END //
 	
 -- Begins the registration process by adding a user to the USERS table
@@ -358,7 +414,8 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 		FROM spaces
 		WHERE id IN
 				(SELECT child_id
-				 FROM set_assoc)
+				 FROM set_assoc
+				 WHERE space_id=1)
 		ORDER BY name;
 	END //
 
@@ -431,6 +488,22 @@ CREATE PROCEDURE AddUserWebsite(IN _userId BIGINT, IN _url TEXT, IN _name VARCHA
 		INSERT INTO website(user_id, url, name)
 		VALUES(_userId, _url, _name);
 	END //
+	
+-- Adds a website that is associated with a space (community)
+-- Author: Tyler Jensen
+CREATE PROCEDURE AddSpaceWebsite(IN _spaceId BIGINT, IN _url TEXT, IN _name VARCHAR(64))
+	BEGIN
+		INSERT INTO website(space_id, url, name)
+		VALUES(_spaceId, _url, _name);
+	END //
+	
+-- Adds a website that is associated with a solver
+-- Author: Tyler Jensen	
+CREATE PROCEDURE AddSolverWebsite(IN _solverId BIGINT, IN _url TEXT, IN _name VARCHAR(64))
+	BEGIN
+		INSERT INTO website(solver_id, url, name)
+		VALUES(_solverId, _url, _name);
+	END //
 
 -- Deletes the website with the given website id
 -- Author: Skylar Stark
@@ -471,6 +544,50 @@ IN _removeUser TINYINT(1), IN _isLeader TINYINT(1), OUT id BIGINT)
 			(_addSolver, _addBench, _addUser, _addSpace, _removeSolver, 
 			_removeBench, _removeSpace, _removeUser, _isLeader);	
 		SELECT LAST_INSERT_ID() INTO id;
+	END //
+	
+-- Adds a new benchmark type with the given information
+-- Author: Tyler Jensen
+CREATE PROCEDURE AddBenchmarkType(IN _name VARCHAR(32), IN _desc TEXT, IN _path TEXT, IN _comId BIGINT)
+	BEGIN		
+		INSERT INTO bench_types (name, description, processor_path, community)
+		VALUES (_name, _desc, _path, _comId);
+	END //
+	
+-- Gets the benchmark type with the given ID
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetBenchTypeById(IN _id BIGINT)
+	BEGIN		
+		SELECT *
+		FROM bench_types
+		WHERE id=_id;
+	END //
+	
+-- Updates a benchmark type's description
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateBenchTypeDescription(IN _id BIGINT, IN _desc TEXT)
+	BEGIN		
+		UPDATE bench_types
+		SET description=_desc
+		WHERE id=_id;
+	END //
+	
+-- Updates a benchmark type's name
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateBenchTypeName(IN _id BIGINT, IN _name VARCHAR(32))
+	BEGIN		
+		UPDATE bench_types
+		SET name=_name
+		WHERE id=_id;
+	END //
+	
+-- Updates a benchmark type's processor path
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateBenchTypePath(IN _id BIGINT, IN _path TEXT)
+	BEGIN		
+		UPDATE bench_types
+		SET processor_path=_path
+		WHERE id=_id;
 	END //
 	
 -- Adds a new space with the given information

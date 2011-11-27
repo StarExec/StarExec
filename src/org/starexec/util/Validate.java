@@ -3,8 +3,6 @@ package org.starexec.util;
 
 import java.util.regex.Pattern;
 
-import org.starexec.data.Database;
-
 /**
  * Validation.java 
  * 
@@ -16,6 +14,7 @@ public class Validate {
     private static Pattern emailChecker;
     private static Pattern institutionChecker;
     private static Pattern alphaNumericChecker;
+    private static Pattern safeTextChecker;
     private static Pattern passwordChecker;
   
     private static final String PASS_PATTERN = 
@@ -28,10 +27,10 @@ public class Validate {
         + "$";											// End of string
     
     private static final String NAME_PATTERN = 
-    	"[a-zA-Z\\-'\\s]{2,32}"; 
+    	"^[a-zA-Z\\-'\\s]{2,32}$"; 
     
     private static final String INSTITUTION_PATTERN = 
-    	"[a-zA-Z\\-\\s]{2,64}";
+    	"^[a-zA-Z\\-\\s]{2,64}$";
     
     
     private static final String EMAIL_PATTERN = 
@@ -42,7 +41,10 @@ public class Validate {
     	"*(\\.[A-Za-z]{2,})$";   
         
     private static final String ALPHA_NUMERIC_DASH =
-    	"[a-zA-Z0-9\\-]{1,32}";
+    	"^[a-zA-Z0-9\\-_]{1,32}$";
+    
+    private static final String SAFE_TEXT =
+        	"^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$";
     
     static {
     	nameChecker = Pattern.compile(NAME_PATTERN);
@@ -50,6 +52,7 @@ public class Validate {
         institutionChecker = Pattern.compile(INSTITUTION_PATTERN);
         passwordChecker = Pattern.compile(PASS_PATTERN);
         alphaNumericChecker = Pattern.compile(ALPHA_NUMERIC_DASH);
+        safeTextChecker = Pattern.compile(SAFE_TEXT);
     }
         	
 	/**
@@ -127,9 +130,9 @@ public class Validate {
     public static boolean message(String message){
     	if(message.length() < 1 || message.length() > 300 || Util.isNullOrEmpty(message)){
     		return false;
-    	} else {
-    		return true;
-    	}
+    	} 
+
+    	return safeTextChecker.matcher(message).matches();
     }
     
     /**
@@ -148,6 +151,21 @@ public class Validate {
     }
     
     /**
+     * Validates a name and checks that it contains only letters, numbers and dashes
+     * 
+     * @param name the bench type name to check
+     * @return true iff name isn't null, is between 1 and 32 characters and
+     * contains only letters, numbers and dashes
+     */
+    public static boolean benchTypeName(String name){    	
+    	if(Util.isNullOrEmpty(name)){
+    		return false;
+    	}
+    	
+    	return alphaNumericChecker.matcher(name).matches();    	
+    }
+    
+    /**
      * Validates a generic description and checks that it contains content and is less than 1024
      * characters long. ALL characters are allowed in descriptions.
      * 
@@ -155,10 +173,10 @@ public class Validate {
      * @return true iff name isn't null or empty and is less than 1024 characters
      */
     public static boolean description(String desc){    	
-    	if(desc.length() > 1024 || Util.isNullOrEmpty(desc)){
+    	if(desc.length() > 512 || Util.isNullOrEmpty(desc)){
     		return false;
     	}
     	
-    	return true;
+    	return safeTextChecker.matcher(desc).matches();
     }
 }

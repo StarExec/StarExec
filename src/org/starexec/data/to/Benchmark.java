@@ -13,6 +13,7 @@ public class Benchmark extends Identifiable {
 	private long userId = -1;	
 	@Expose private String name;	
 	@Expose private String description;	
+	@Expose private BenchmarkType type;
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;
@@ -99,5 +100,19 @@ public class Benchmark extends Identifiable {
 	 */
 	public void setDownloadable(boolean isDownloadable) {
 		this.isDownloadable = isDownloadable;
-	}	
+	}
+
+	/**
+	 * @return the type the benchmark is
+	 */
+	public BenchmarkType getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the benchmark type to set for this benchmark
+	 */
+	public void setType(BenchmarkType type) {
+		this.type = type;
+	}		
 }

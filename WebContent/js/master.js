@@ -19,7 +19,7 @@ $(document).ready(function(){
 		$(".message").remove();
 		
 		// Show the message to the user (we do this programatically so we can re-use code)
-		showMessage(messageClass, messageText, -1);			
+		showMessage(messageClass, messageText, 10000);			
 	}
 		
 	// Setup navigation submenus

@@ -37,7 +37,8 @@
 			<property key="STAREXEC_ROOT" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\" />
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobs" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\node" />
-			<property key="SOLVER_BIN_DIR" value="\\bin" />
+			<property key="BENCH_TYPE_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\types" />
+			<property key="SOLVER_BIN_DIR" value="\\bin" />			
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="true" />			

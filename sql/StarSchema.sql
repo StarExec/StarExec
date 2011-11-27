@@ -40,17 +40,62 @@ CREATE TABLE logins (
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
 
+-- A convienience table, this contains a specific set of
+-- permissions that can be associated with a user (or set as
+-- the default of a space so when a new user is added, they take on
+-- these permissions)
+CREATE TABLE permissions (
+	id BIGINT NOT NULL AUTO_INCREMENT, 
+	add_solver BOOLEAN DEFAULT 0,
+	add_bench BOOLEAN DEFAULT 0,
+	add_user BOOLEAN DEFAULT 0,
+	add_space BOOLEAN DEFAULT 0,
+	remove_solver BOOLEAN DEFAULT 0,
+	remove_bench BOOLEAN DEFAULT 0,
+	remove_user BOOLEAN DEFAULT 0,
+	remove_space BOOLEAN DEFAULT 0,
+	is_leader BOOLEAN DEFAULT 0,
+	PRIMARY KEY(id)
+);
+
+-- All of the spaces in starexec. A space is simply a set where
+-- solvers, benchmarks, users and jobs exist (I like to think of it
+-- as a folder)
+CREATE TABLE spaces (
+	id BIGINT NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(32) NOT NULL,
+	created TIMESTAMP DEFAULT 0,
+	description TEXT,
+	locked BOOLEAN DEFAULT 0,
+	default_permission BIGINT NOT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE CASCADE
+);
+
+-- All types of benchmarks in the system
+CREATE TABLE bench_types (
+	id BIGINT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(32) NOT NULL,
+	description TEXT,
+	processor_path TEXT NOT NULL,
+	community BIGINT NOT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE NO ACTION
+);
+
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
 	id BIGINT NOT NULL AUTO_INCREMENT,
 	user_id BIGINT NOT NULL,
 	name VARCHAR(32) NOT NULL,
+	bench_type BIGINT,
 	uploaded TIMESTAMP NOT NULL,
 	path TEXT NOT NULL,
 	description TEXT,
 	downloadable BOOLEAN DEFAULT 1,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	FOREIGN KEY (bench_type) REFERENCES bench_types(id) ON DELETE SET NULL
 );
 
 -- The record for an individual solver
@@ -143,38 +188,6 @@ CREATE TABLE job_pair_attr (
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE NO ACTION,
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION
-);
-
--- A convienience table, this contains a specific set of
--- permissions that can be associated with a user (or set as
--- the default of a space so when a new user is added, they take on
--- these permissions)
-CREATE TABLE permissions (
-	id BIGINT NOT NULL AUTO_INCREMENT, 
-	add_solver BOOLEAN DEFAULT 0,
-	add_bench BOOLEAN DEFAULT 0,
-	add_user BOOLEAN DEFAULT 0,
-	add_space BOOLEAN DEFAULT 0,
-	remove_solver BOOLEAN DEFAULT 0,
-	remove_bench BOOLEAN DEFAULT 0,
-	remove_user BOOLEAN DEFAULT 0,
-	remove_space BOOLEAN DEFAULT 0,
-	is_leader BOOLEAN DEFAULT 0,
-	PRIMARY KEY(id)
-);
-
--- All of the spaces in starexec. A space is simply a set where
--- solvers, benchmarks, users and jobs exist (I like to think of it
--- as a folder)
-CREATE TABLE spaces (
-	id BIGINT NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(32) NOT NULL,
-	created TIMESTAMP DEFAULT 0,
-	description TEXT,
-	locked BOOLEAN DEFAULT 0,
-	default_permission BIGINT NOT NULL,
-	PRIMARY KEY (id),
-	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE CASCADE
 );
 
 -- The set of all associations between each node and it's descendants
@@ -274,7 +287,7 @@ CREATE TABLE community_requests (
 	user_id BIGINT NOT NULL,
 	community BIGINT NOT NULL,
 	code VARCHAR(36) NOT NULL,
-	message VARCHAR(300) NOT NULL,
+	message TEXT NOT NULL,
 	created TIMESTAMP NOT NULL,	
 	PRIMARY KEY (user_id, community),
 	UNIQUE KEY (code),

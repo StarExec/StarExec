@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
+import org.starexec.data.to.Website;
 
 import com.google.gson.annotations.Expose;
 
@@ -32,10 +34,30 @@ public class RESTHelpers {
 	}
 	
 	/**
+	 * Takes in a list of spaces (communities) and converts it into
+	 * a list of JSTreeItems suitable for being displayed
+	 * on the client side with the jsTree plugin.
+	 * @param communities The list of communities to convert
+	 * @return List of JSTreeItems to be serialized and sent to client
+	 * @author Tyler Jensen
+	 */
+	protected static List<JSTreeItem> toCommunityList(List<Space> communities){
+		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		
+		for(Space space: communities){
+			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(), "leaf", "space");	
+			list.add(t);
+		}
+
+		return list;
+	}
+	
+	/**
 	 * Represents a node in jsTree tree with certain attributes
 	 * used for displaying the node and obtaining information about the node.
 	 * @author Tyler Jensen
 	 */	
+	@SuppressWarnings("unused")
 	protected static class JSTreeItem {		
 		private String data;
 		private JSTreeAttribute attr;
@@ -59,6 +81,7 @@ public class RESTHelpers {
 	 * that it can be passed along to other ajax methods.
 	 * @author Tyler Jensen
 	 */	
+	@SuppressWarnings("unused")
 	protected static class JSTreeAttribute {
 		private long id;		
 		private String rel;
@@ -74,6 +97,7 @@ public class RESTHelpers {
 	 * the client side can determine what actions a user can take on a space.
 	 * @author Tyler Jensen
 	 */
+	@SuppressWarnings("unused")
 	protected static class SpacePermissionPair {
 		@Expose private Space space;
 		@Expose private Permission perm;
@@ -81,6 +105,27 @@ public class RESTHelpers {
 		public SpacePermissionPair(Space s, Permission p) {
 			this.space = s;
 			this.perm = p;
+		}
+	}
+	
+	/**
+	 * Represents community details including the requesting user's permissions
+	 * for the community along with the community's leaders.
+	 * Permissions are used so the client side can determine what actions a user can take on the community
+	 * @author Tyler Jensen
+	 */
+	@SuppressWarnings("unused")
+	protected static class CommunityDetails {		
+		@Expose private Space space;
+		@Expose private Permission perm;
+		@Expose private List<User> leaders;
+		@Expose private List<Website> websites;
+		
+		public CommunityDetails(Space s, Permission p, List<User> leaders, List<Website> websites) {
+			this.space = s;
+			this.perm = p;
+			this.leaders = leaders;
+			this.websites = websites;
 		}
 	}
 }

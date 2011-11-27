@@ -28,7 +28,7 @@ $(document).ready(function() {
 	        }
 	});
 	
-	// Don't permit the defealt text as a message to the leaders by clearing it
+	// Don't permit the default text as a message to the leaders by clearing it
 	$("#submit").click(function(){
 		if ($("#reason").val() == $("#reason").data('default')){
 			$("#reason").val("");
@@ -65,14 +65,15 @@ $(document).ready(function() {
 				required: true
 			},
 			msg: {
-				required: true
-			}
-			
+				required: true,
+				regex : "^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$",
+				maxlength: 512
+			}			
 		},
 		messages : {
 			fn : {
 				required : "enter a first name",
-				minlength : "needs to be at least 2 characters",
+				minlength : "needs to be at least 2 characters",				
 				regex : "invalid characters"
 			},
 			ln : {
@@ -95,11 +96,16 @@ $(document).ready(function() {
 			},
 			cm : {
 				required : "select a community to join"
+			},
+			msg : {
+				maxlength : "must be less than 512 characters",
+				regex: "unsafe characters",
+				required : "enter your reason for joining"
 			}
 		},
 		// the errorPlacement ignores #password & #reason
 		errorPlacement : function(error, element) {
-			if($(element).attr("id") != "password" && $(element).attr("id") != "reason"){
+			if($(element).attr("id") != "password"){
 				error.insertAfter(element);
 			}
 		}

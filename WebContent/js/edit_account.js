@@ -12,7 +12,7 @@ $(document).ready(function(){
 		
 		var data = {name: name, url: url};
 		$.post(
-				"/starexec/services/website/add/user",
+				"/starexec/services/website/add/user/-1",
 				data,
 				function(returnCode) {
 			    	if(returnCode == '0') {

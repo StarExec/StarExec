@@ -12,7 +12,7 @@
 		if(s != null) {
 			request.setAttribute("usr", Database.getUser(s.getUserId()));
 			request.setAttribute("solver", s);
-			request.setAttribute("sites", Database.getWebsitesForSolver(solverId));
+			request.setAttribute("sites", Database.getWebsites(solverId, Database.WebsiteType.SOLVER));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}

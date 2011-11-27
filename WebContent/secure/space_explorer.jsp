@@ -47,6 +47,7 @@
 				<thead>
 					<tr>
 						<th style="width:150px;">name</th>
+						<th>type</th>	
 						<th>description</th>						
 					</tr>
 				</thead>		

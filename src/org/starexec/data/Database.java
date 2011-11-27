@@ -16,7 +16,8 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
  */
 public class Database {	
 	private static final Logger log = Logger.getLogger(Database.class);
-	private static DataSource dataPool = null;
+	private static DataSource dataPool = null;	
+	public static enum WebsiteType { USER, SOLVER, SPACE };
 	
 	/**
 	 * Static initialzer block which gets executed when this class is loaded.
@@ -85,8 +86,7 @@ public class Database {
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();
-			long rowsModified = procedure.getLong(7);			
-			log.debug(String.format("AddUser stored procedure call affected %d rows for user %s", rowsModified, user));						
+			long rowsModified = procedure.getLong(7);											
 			
 			if(rowsModified == 0){				
 				doRollback(con);
@@ -153,8 +153,7 @@ public class Database {
 				return false;
 			}
 			
-			log.info(String.format("New email activation code [%s] added to VERIFY for user [%s]", code, user.getFullName()));
-			
+			log.info(String.format("New email activation code [%s] added to VERIFY for user [%s]", code, user.getFullName()));			
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -238,13 +237,15 @@ public class Database {
 			CallableStatement procedure = con.prepareCall("{CALL RedeemCode(?, ?)}");
 			procedure.setString(1, codeFromUser);
 			procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+			
 			int rowsModified = procedure.executeUpdate();
 			if (rowsModified == 0) {
 				return -1;
 			}
-			long user_id = procedure.getLong(2);
-			return user_id;
-
+			
+			long userId = procedure.getLong(2);
+			log.info(String.format("Activation code %s redeemed by user %d", codeFromUser, userId));
+			return userId;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -311,11 +312,10 @@ public class Database {
 			procedure.setLong(2, communityId);
 			
 			int rowsModified = procedure.executeUpdate();
-			if (rowsModified == 0) {
-				return false;
-			}
-			return true;
-
+			if (rowsModified > 0) {
+				log.info(String.format("User [%d] approved for community [%d]", userId, communityId));
+				return true;
+			}			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -345,11 +345,10 @@ public class Database {
 			procedure.setLong(2, communityId);
 			
 			int rowsModified = procedure.executeUpdate();
-			if (rowsModified == 0) {
-				return false;
-			}
-			return true;
-
+			if (rowsModified > 0) {
+				log.info(String.format("User [%d] declined by community [%d]", userId, communityId));
+				return true;
+			}			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -689,16 +688,92 @@ public class Database {
 				
 				if(results.next()){
 					Benchmark b = new Benchmark();
-					b.setId(results.getLong("id"));
-					b.setUserId(results.getLong("user_id"));
-					b.setName(results.getString("name"));
-					b.setUploadDate(results.getTimestamp("uploaded"));
-					b.setPath(results.getString("path"));
-					b.setDescription(results.getString("description"));
-					b.setDownloadable(results.getBoolean("downloadable"));
+					b.setId(results.getLong("bench.id"));
+					b.setUserId(results.getLong("bench.user_id"));
+					b.setName(results.getString("bench.name"));
+					b.setUploadDate(results.getTimestamp("bench.uploaded"));
+					b.setPath(results.getString("bench.path"));
+					b.setDescription(results.getString("bench.description"));
+					b.setDownloadable(results.getBoolean("bench.downloadable"));
+					
+					BenchmarkType t = new BenchmarkType();
+					t.setId(results.getLong("types.id"));
+					t.setCommunityId(results.getLong("types.community"));
+					t.setDescription(results.getString("types.description"));
+					t.setName(results.getString("types.name"));
+					t.setProcessorPath(results.getString("types.processor_path"));
+					
+					b.setType(t);
 					return b;
 				}
 			}											
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**	 
+	 * @param communityId The id of the community to retrieve all types for
+	 * @return A list of all benchmark types the community owns
+	 * @author Tyler Jensen
+	 */
+	public static List<BenchmarkType> getBenchTypesForCommunity(long communityId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();					
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchTypesByCommunity(?)}");
+			procedure.setLong(1, communityId);
+			ResultSet results = procedure.executeQuery();
+			List<BenchmarkType> types = new LinkedList<BenchmarkType>();
+			
+			while(results.next()){							
+				BenchmarkType t = new BenchmarkType();
+				t.setId(results.getLong("id"));
+				t.setCommunityId(results.getLong("community"));
+				t.setDescription(results.getString("description"));
+				t.setName(results.getString("name"));
+				t.setProcessorPath(results.getString("processor_path"));
+				types.add(t);						
+			}				
+			
+			return types;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**	 
+	 * @param benchTypeId The id of the bentch type to retrieve
+	 * @return The corresponding benchmark type
+	 * @author Tyler Jensen
+	 */
+	public static BenchmarkType getBenchTypeById(long benchTypeId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();					
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchTypeById(?)}");
+			procedure.setLong(1, benchTypeId);
+			ResultSet results = procedure.executeQuery();			
+			
+			if(results.next()){							
+				BenchmarkType t = new BenchmarkType();
+				t.setId(results.getLong("id"));
+				t.setCommunityId(results.getLong("community"));
+				t.setDescription(results.getString("description"));
+				t.setName(results.getString("name"));
+				t.setProcessorPath(results.getString("processor_path"));
+				return t;					
+			}							
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -862,9 +937,12 @@ public class Database {
 			CallableStatement procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
 			procedure.setLong(1, userId);					
 			procedure.setString(2, newValue);
-			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			int result = procedure.executeUpdate();			
+			if(result == 1) {
+				log.info(String.format("User [%d] updated first name to [%s]", userId, newValue));
+				return true;
+			}				
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -891,9 +969,12 @@ public class Database {
 			CallableStatement procedure = con.prepareCall("{CALL UpdateLastName(?, ?)}");
 			procedure.setLong(1, userId);					
 			procedure.setString(2, newValue);
-			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("User [%d] updated last name to [%s]", userId, newValue));
+				return true;
+			}			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -920,9 +1001,12 @@ public class Database {
 			CallableStatement procedure = con.prepareCall("{CALL UpdateEmail(?, ?)}");
 			procedure.setLong(1, userId);					
 			procedure.setString(2, newValue);
-			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("User [%d] updated e-mail address to [%s]", userId, newValue));
+				return true;
+			}		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -949,9 +1033,12 @@ public class Database {
 			CallableStatement procedure = con.prepareCall("{CALL UpdateInstitution(?, ?)}");
 			procedure.setLong(1, userId);					
 			procedure.setString(2, newValue);
-			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("User [%d] updated institution to [%s]", userId, newValue));
+				return true;
+			}			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -980,9 +1067,12 @@ public class Database {
 			procedure.setLong(1, userId);
 			String hashedPassword = Hash.hashPassword(newValue);
 			procedure.setString(2, hashedPassword);
-			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("User [%d] updated password", userId));
+				return true;
+			}			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -993,54 +1083,188 @@ public class Database {
 	}
 	
 	/**
-	 * Get all websites associated with a given user.
+	 * Updates the name of a space with the given space id
 	 * 
-	 * @param userId the user ID of the user we want to find websites for
-	 * @return A list of websites associated with the user
-	 * @author Skylar Stark
+	 * @param spaceId the id of the space to update
+	 * @param newName the new name to update the space with
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Tyler Jensen
 	 */
-	public static List<Website> getWebsitesByUserId(long userId) {
-		Connection con = null;
+	public static boolean updateSpaceName(long spaceId, String newName){
+		Connection con = null;			
 		
 		try {
-			con = dataPool.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetWebsitesByUserId(?)}");
-			procedure.setLong(1, userId);
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceName(?, ?)}");
+			procedure.setLong(1, spaceId);					
+			procedure.setString(2, newName);
 			
-			ResultSet results = procedure.executeQuery();
-			List<Website> websites = new LinkedList<Website>();
-			
-			while (results.next()) {
-				Website w = new Website();
-				w.setId(results.getLong("id"));
-				w.setName(results.getString("name"));
-				w.setUrl(results.getString("url"));
-				websites.add(w);
-			}
-			
-			return websites;
-			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("Space [%d] updated name to [%s]", spaceId, newName));
+				return true;
+			}		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Database.safeClose(con);
 		}
 		
-		return null;
+		return false;
 	}
 	
 	/**
-	 * Returns a list of websites associated with the given solver id
-	 * @param id The id of the solver to get websites for
-	 * @return A list of websites associated with the solver
+	 * Updates the description of a space with the given space id
+	 * 
+	 * @param spaceId the id of the space to update
+	 * @param newDesc the new description to update the space with
+	 * @return true iff the update succeeds on exactly one entry
 	 * @author Tyler Jensen
 	 */
-	public static List<Website> getWebsitesForSolver(long id) {
+	public static boolean updateSpaceDescription(long spaceId, String newDesc){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceDescription(?, ?)}");
+			procedure.setLong(1, spaceId);					
+			procedure.setString(2, newDesc);
+			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("Space [%d] updated description to [%s]", spaceId, newDesc));
+				return true;
+			}		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Updates the name of a benchmark type with the given type id
+	 * 
+	 * @param typeId the id of the bench type to update
+	 * @param newName the new name to update the type with
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Tyler Jensen
+	 */
+	public static boolean updateBenchTypeName(long typeId, String newName){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateBenchTypeName(?, ?)}");
+			procedure.setLong(1, typeId);					
+			procedure.setString(2, newName);
+			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("BenchType [%d] updated name to [%s]", typeId, newName));
+				return true;
+			}		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Updates the description of a benchmark type with the given type id
+	 * 
+	 * @param typeId the id of the bench type to update
+	 * @param newDesc the new description to update the type with
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Tyler Jensen
+	 */
+	public static boolean updateBenchTypeDescription(long typeId, String newDesc){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateBenchTypeDescription(?, ?)}");
+			procedure.setLong(1, typeId);					
+			procedure.setString(2, newDesc);
+			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("Bench Type [%d] updated description to [%s]", typeId, newDesc));
+				return true;
+			}		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Updates the processor path of a benchmark type with the given type id
+	 * 
+	 * @param typeId the id of the bench type to update
+	 * @param newPath the new processor path to update the type with
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Tyler Jensen
+	 */
+	public static boolean updateBenchTypePath(long typeId, String newPath){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateBenchTypePath(?, ?)}");
+			procedure.setLong(1, typeId);					
+			procedure.setString(2, newPath);
+			
+			int result = procedure.executeUpdate();
+			if(result == 1) {
+				log.info(String.format("Bench Type [%d] updated processor path to [%s]", typeId, newPath));
+				return true;
+			}		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Returns a list of websites associated with the given entity based on its type
+	 * @param id The id of the entity to get websites for
+	 * @param webType The type of entity to get websites for (solver, user or space)
+	 * @return A list of websites associated with the entity
+	 * @author Tyler Jensen
+	 */
+	public static List<Website> getWebsites(long id, WebsiteType webType) {
 		Connection con = null;
 		
 		try {
 			con = dataPool.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSolverWebsitesById(?)}");
+			CallableStatement procedure = null;
+			
+			switch(webType) {
+				case USER:
+					procedure = con.prepareCall("{CALL GetWebsitesByUserId(?)}");
+					break;
+				case SPACE:
+					procedure = con.prepareCall("{CALL GetWebsitesBySpaceId(?)}");
+					break;
+				case SOLVER:
+					procedure = con.prepareCall("{CALL GetWebsitesBySolverId(?)}");
+					break;
+				default:
+					throw new Exception("Unhandled value for WebsiteType");
+			}
+			
 			procedure.setLong(1, id);
 			
 			ResultSet results = procedure.executeQuery();
@@ -1071,31 +1295,25 @@ public class Database {
 	 * @return A list of child spaces belonging to the root space.
 	 * @author Todd Elvers
 	 */
-	public static List<Space> getRootSpaces() {
+	public static List<Space> getCommunities() {
 		Connection con = null;			
 		
 		try {
 			con = dataPool.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
 			ResultSet results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
+			List<Space> commSpaces = new LinkedList<Space>();
 			
 			while(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
 				s.setId(results.getLong("id"));
 				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				if(results.getLong("default_permission") == 0){
-					s.setPermission(new Permission(false));					
-				} else if (results.getLong("default_permission") == 1){
-					s.setPermission(new Permission(true));
-				}
-				subSpaces.add(s);
+				s.setLocked(results.getBoolean("locked"));				
+				commSpaces.add(s);
 			}			
-			
-			log.debug("getSubSpaces returning " + subSpaces.size() + " records");
-			return subSpaces;
+						
+			return commSpaces;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1132,8 +1350,7 @@ public class Database {
 				s.setLocked(results.getBoolean("locked"));				
 				subSpaces.add(s);
 			}			
-			
-			log.debug("getSubSpaces returning " + subSpaces.size() + " records");
+						
 			return subSpaces;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1171,6 +1388,40 @@ public class Database {
 					return s;
 				}											
 			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a space with minimal information (only details about the space itself)
+	 * @param spaceId The id of the space to get information for
+	 * @param userId The id of the user requesting the space (used for permissions check)
+	 * @return A space object consisting of shallow information about the space
+	 * @author Tyler Jensen
+	 */
+	public static Space getCommunityDetails(long id) {
+		Connection con = null;			
+		
+		try {			
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetCommunityById(?)}");
+			procedure.setLong(1, id);					
+			ResultSet results = procedure.executeQuery();		
+			
+			if(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getLong("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				s.setCreated(results.getTimestamp("created"));										
+				return s;
+			}			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1227,8 +1478,7 @@ public class Database {
 				s.setSolvers(Database.getSpaceSolvers(spaceId));
 				s.setJobs(Database.getSpaceJobs(spaceId));
 				s.setSubspaces(Database.getSubSpaces(spaceId, userId));
-							
-				log.debug(String.format("getSpaceDetails returning %d record(s) for space id=%d", s == null ? 0 : 1, spaceId));			
+													
 				return s;
 			}
 		} catch (Exception e){			
@@ -1263,8 +1513,7 @@ public class Database {
 				u.setCreateDate(results.getTimestamp("created"));				
 				users.add(u);
 			}			
-			
-			log.debug(String.format("getSpaceUsers returning %d records for id=%d", users.size(), spaceId));
+						
 			return users;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1292,15 +1541,23 @@ public class Database {
 			
 			while(results.next()){
 				Benchmark b = new Benchmark();
-				b.setId(results.getLong("id"));
-				b.setName(results.getString("name"));
-				b.setUploadDate(results.getTimestamp("uploaded"));
-				b.setDescription(results.getString("description"));
-				b.setDownloadable(results.getBoolean("downloadable"));				
+				b.setId(results.getLong("bench.id"));
+				b.setName(results.getString("bench.name"));
+				b.setUploadDate(results.getTimestamp("bench.uploaded"));
+				b.setDescription(results.getString("bench.description"));
+				b.setDownloadable(results.getBoolean("bench.downloadable"));	
+				
+				BenchmarkType t = new BenchmarkType();
+				t.setId(results.getLong("types.id"));
+				t.setCommunityId(results.getLong("types.community"));
+				t.setDescription(results.getString("types.description"));
+				t.setName(results.getString("types.name"));
+				t.setProcessorPath(results.getString("types.processor_path"));
+				
+				b.setType(t);
 				benchmarks.add(b);
 			}			
-			
-			log.debug(String.format("getSpaceBenchmarks returning %d records for id=%d", benchmarks.size(), spaceId));
+						
 			return benchmarks;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1335,8 +1592,7 @@ public class Database {
 				j.setStatus(results.getString("status"));
 				jobs.add(j);
 			}			
-			
-			log.debug(String.format("getSpaceJobs returning %d records for id=%d", jobs.size(), spaceId));
+						
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1371,8 +1627,7 @@ public class Database {
 				s.setDownloadable(results.getBoolean("downloadable"));
 				solvers.add(s);
 			}			
-			
-			log.debug(String.format("getSpaceSolvers returning %d records for id=%d", solvers.size(), spaceId));
+						
 			return solvers;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1383,27 +1638,76 @@ public class Database {
 		return null;
 	}
 	
-	
 	/**
-	 * Adds a website associated with a user to the database.
-	 * 
-	 * @param userId the ID of the user
-	 * @param url the URL of the website
-	 * @param name the name to display with the website
-	 * @return true iff the add was successful
+	 * Inserts a benchmark type into the database
+	 * @param type The benchmark type to add to the database
+	 * @return True iff the operation was a success, false otherwise
 	 */
-	public static boolean addUserWebsite(long userId, String url, String name) {
+	public static boolean addBenchmarkType(BenchmarkType type) {
 		Connection con = null;			
 		
 		try {
 			con = dataPool.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL AddUserWebsite(?, ?, ?)}");
-			procedure.setLong(1, userId);
+			CallableStatement procedure = null;			
+			procedure = con.prepareCall("{CALL AddBenchmarkType(?, ?, ?, ?)}");			
+			procedure.setString(1, type.getName());
+			procedure.setString(2, type.getDescription());
+			procedure.setString(3, type.getProcessorPath());
+			procedure.setLong(4, type.getCommunityId());
+			int result = procedure.executeUpdate();
+			
+			if(result == 1) {
+				log.info(String.format("Added new benchmark type with name [%s] for community [%d]", type.getName(), type.getCommunityId()));
+				return true;
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Adds a new website associated with the specified entity
+	 * @param id The ID of the entity the website is associated with
+	 * @param url The URL for the website
+	 * @param name The display name of the website
+	 * @param type Which type of entity to associate the website with (space, solver, user)
+	 * @return True iff the addition was successful
+	 * @author Tyler Jensen
+	 */
+	public static boolean addWebsite(long id, String url, String name, WebsiteType type) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = null;
+			
+			switch(type) {
+				case USER:
+					procedure = con.prepareCall("{CALL AddUserWebsite(?, ?, ?)}");
+					break;
+				case SPACE:
+					procedure = con.prepareCall("{CALL AddSpaceWebsite(?, ?, ?)}");
+					break;
+				case SOLVER:
+					procedure = con.prepareCall("{CALL AddSolverWebsite(?, ?, ?)}");
+					break;			
+				default:
+					throw new Exception("Unhandled value for WebsiteType");				
+			}			
+			
+			procedure.setLong(1, id);
 			procedure.setString(2, url);
 			procedure.setString(3, name);
 			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			if(result == 1) {
+				log.info(String.format("Added new website of with [%s] id [%d] with name [%s] and url [%s]", type.toString(), id, name, url));
+				return true;
+			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1429,7 +1733,10 @@ public class Database {
 			procedure.setLong(2, userId);
 			int result = procedure.executeUpdate();
 			
-			return result == 1;			
+			if(result == 1) {
+				log.info(String.format("Website [%d] deleted by [%d]", websiteId, userId));
+				return true;
+			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1494,7 +1801,7 @@ public class Database {
 			endTransaction(con);
 			
 			// Log the new addition and ensure we return 3 affected rows (the two added permissions are self-checking)
-			log.info(String.format("New space with name %s added by user %d to space %d", s.getName(), userId, parentId));
+			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
 			return result == 3;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1530,7 +1837,7 @@ public class Database {
 		if (procDefaultPerm.executeUpdate() != 1) {
 			throw new Exception("No rows were affected. Expected 1 affected row");
 		}
-		
+				
 		return procDefaultPerm.getLong(10);		
 	}
 	
@@ -1550,7 +1857,7 @@ public class Database {
 			procedure.setLong(2, spaceId);
 			ResultSet results = procedure.executeQuery();
 		
-			if(results.first()) {
+			if(results.first()) {				
 				Permission p = new Permission();
 				p.setAddBenchmark(results.getBoolean("add_bench"));
 				p.setAddSolver(results.getBoolean("add_solver"));
@@ -1561,6 +1868,13 @@ public class Database {
 				p.setRemoveSpace(results.getBoolean("remove_space"));
 				p.setRemoveUser(results.getBoolean("remove_user"));
 				p.setLeader(results.getBoolean("is_leader"));
+				
+				if(results.wasNull()) {
+					/* If the permission doesn't exist we always get a result
+					but all of it's values are null, so here we check for a 
+					null result and return null */
+					return null;
+				}
 				
 				return p;
 			}

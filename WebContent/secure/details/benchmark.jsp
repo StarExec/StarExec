@@ -7,11 +7,14 @@
 		long userId = SessionUtil.getUserId(request);
 		long benchId = Long.parseLong(request.getParameter("id"));
 		
-		Benchmark b = Database.getBenchmark(benchId, userId);
+		Benchmark b = Database.getBenchmark(benchId, userId);		
 		
 		if(b != null) {
 			request.setAttribute("usr", Database.getUser(b.getUserId()));
 			request.setAttribute("bench", b);
+			
+			Space s = Database.getCommunityDetails(b.getType().getCommunityId());
+			request.setAttribute("com", s);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");			
 		}
@@ -37,9 +40,26 @@
 			<tr>
 				<td>uploaded</td>			
 				<td><fmt:formatDate pattern="MMM dd yyyy" value="${bench.uploadDate}" /></td>
-			</tr>					
+			</tr>			
 		</table>	
-	</fieldset>		
+	</fieldset>
+		<fieldset>
+		<legend>type</legend>
+		<table>
+			<tr>
+				<td>name</td>			
+				<td>${bench.type.name}</td>
+			</tr>
+			<tr>
+				<td>description</td>			
+				<td>${bench.type.description}</td>
+			</tr>
+			<tr>
+				<td>owning community</td>			
+				<td><star:community value="${com}" /></td>
+			</tr>		
+		</table>	
+	</fieldset>			
 	<fieldset>
 		<legend>related jobs</legend>
 		<p>coming soon...</p>
