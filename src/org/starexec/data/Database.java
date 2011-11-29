@@ -1769,15 +1769,16 @@ public class Database {
 			long defaultPermId = Database.addPermission(s.getPermission(), con);
 			
 			// Add the space with the default permissions
-			CallableStatement procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?)}");	
+			CallableStatement procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
 			procAddSpace.setString(1, s.getName());
 			procAddSpace.setString(2, s.getDescription());
 			procAddSpace.setBoolean(3, s.isLocked());
 			procAddSpace.setLong(4, defaultPermId);
-			procAddSpace.registerOutParameter(5, java.sql.Types.BIGINT);
+			procAddSpace.setLong(5, parentId);
+			procAddSpace.registerOutParameter(6, java.sql.Types.BIGINT);
 			
 			result += procAddSpace.executeUpdate();
-			long newSpaceId = procAddSpace.getLong(5);
+			long newSpaceId = procAddSpace.getLong(6);
 			
 			// Add the new space as a child space of the parent space
 			CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?, ?)}");	
@@ -1800,9 +1801,9 @@ public class Database {
 			result += procAddUser.executeUpdate();
 			endTransaction(con);
 			
-			// Log the new addition and ensure we return 3 affected rows (the two added permissions are self-checking)
+			// Log the new addition and ensure we return at least 3 affected rows (the two added permissions are self-checking)
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
-			return result == 3;
+			return result >= 3;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

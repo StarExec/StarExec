@@ -67,6 +67,7 @@ function populateDetails(jsonData) {
 	});	
 	
 	// Populate members table	
+	$('#memberField legend').children('span:first-child').text(jsonData.space.users.length);
 	memberTable.fnClearTable();	
 	$.each(jsonData.space.users, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
@@ -76,6 +77,7 @@ function populateDetails(jsonData) {
 	});
 	
 	// Populate leaders table
+	$('#leaderField legend').children('span:first-child').text(jsonData.leaders.length);
 	leaderTable.fnClearTable();	
 	$.each(jsonData.leaders, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
@@ -136,4 +138,14 @@ function updateActionId(id) {
 	$('#joinComm').attr('href', "/starexec/secure/community/join.jsp?cid=" + id);
 	$('#leaveComm').attr('href', "/starexec/secure/community/leave.jsp?cid=" + id);
 	$('#editComm').attr('href', "/starexec/secure/community/edit.jsp?cid=" + id);
+}
+
+function toggleTable(sender) {
+	$(sender).parent().children('.dataTables_wrapper').slideToggle('fast');	
+	
+	if($(sender).children('span:last-child').text() == '(+)') {
+		$(sender).children('span:last-child').text('(-)');
+	} else {
+		$(sender).children('span:last-child').text('(+)');
+	}
 }

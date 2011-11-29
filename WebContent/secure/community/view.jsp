@@ -19,8 +19,8 @@
 			</div>		
 		</fieldset>
 					
-		<fieldset>
-			<legend>leaders</legend>
+		<fieldset id="leaderField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> leaders <span>(+)</span></legend>
 			<table id="leaders">
 				<thead>
 					<tr>
@@ -32,8 +32,8 @@
 			</table>
 		</fieldset>
 											
-		<fieldset>
-			<legend>members</legend>
+		<fieldset id="memberField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> members <span>(+)</span></legend>
 			<table id="members">
 				<thead>
 					<tr>

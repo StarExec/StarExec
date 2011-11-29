@@ -592,11 +592,15 @@ CREATE PROCEDURE UpdateBenchTypePath(IN _id BIGINT, IN _path TEXT)
 	
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
-CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYINT(1), IN _permission BIGINT, OUT id BIGINT)
+CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYINT(1), IN _permission BIGINT, IN _parent BIGINT, OUT id BIGINT)
 	BEGIN		
 		INSERT INTO spaces (name, created, description, locked, default_permission)
 		VALUES (_name, SYSDATE(), _desc, _locked, _permission);
 		SELECT LAST_INSERT_ID() INTO id;
+		INSERT INTO closure (ancestor, descendant)	-- Update closure table
+			SELECT ancestor, id FROM closure
+			WHERE descendant = _parent
+			UNION ALL SELECT _parent, id; 
 	END //
 
 -- Adds an association between a user and a space

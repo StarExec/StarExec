@@ -65,6 +65,8 @@ $(document).ready(function(){
 	spaceTable = $('#spaces').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">'
     });
+	
+	$('.dataTables_wrapper').hide();
 });
  
 /**
@@ -97,7 +99,8 @@ function populateDetails(jsonData) {
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
 	
-	// Populate job details	
+	// Populate job details
+	$('#jobField legend').children('span:first-child').text(jsonData.space.jobs.length);
 	jobTable.fnClearTable();	
 	$.each(jsonData.space.jobs, function(i, job) {		
 		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '</a>';		
@@ -105,7 +108,8 @@ function populateDetails(jsonData) {
 	});	
 	
 	// Populate user details	
-	userTable.fnClearTable();	
+	$('#userField legend').children('span:first-child').text(jsonData.space.users.length);
+	userTable.fnClearTable();		
 	$.each(jsonData.space.users, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>';
@@ -114,6 +118,7 @@ function populateDetails(jsonData) {
 	});
 		
 	// Populate solver details
+	$('#solverField legend').children('span:first-child').text(jsonData.space.solvers.length);
 	solverTable.fnClearTable();
 	$.each(jsonData.space.solvers, function(i, solver) {
 		var solverLink = '<a href="/starexec/secure/details/solver.jsp?id=' + solver.id + '" target="blank">' + solver.name + '</a>';
@@ -121,6 +126,7 @@ function populateDetails(jsonData) {
 	});	
 		
 	// Populate benchmark details
+	$('#benchField legend').children('span:first-child').text(jsonData.space.benchmarks.length);
 	benchTable.fnClearTable();
 	$.each(jsonData.space.benchmarks, function(i, bench) {
 		var benchLink = '<a href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '</a>';
@@ -128,6 +134,7 @@ function populateDetails(jsonData) {
 	});
 	
 	// Populate subspace details
+	$('#spaceField legend').children('span:first-child').text(jsonData.space.subspaces.length);
 	spaceTable.fnClearTable();
 	$.each(jsonData.space.subspaces, function(i, subspace) {
 		var spaceLink = '<a href="/starexec/secure/details/space.jsp?id=' + subspace.id + '" target="blank">' + subspace.name + '</a>';
@@ -178,4 +185,14 @@ function checkPermissions(perms) {
  */
 function updateAddId(id) {	
 	$('#addSpace').attr('href', "/starexec/secure/add/space.jsp?sid=" + id);
+}
+
+function toggleTable(sender) {
+	$(sender).parent().children('.dataTables_wrapper').slideToggle('fast');	
+	
+	if($(sender).children('span:last-child').text() == '(+)') {
+		$(sender).children('span:last-child').text('(-)');
+	} else {
+		$(sender).children('span:last-child').text('(+)');
+	}
 }

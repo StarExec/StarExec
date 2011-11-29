@@ -16,8 +16,8 @@
 			<p id="spaceDesc"></p>			
 		</fieldset>
 			
-		<fieldset>
-			<legend>jobs</legend>
+		<fieldset id="jobField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> jobs <span>(+)</span></legend>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -29,8 +29,8 @@
 			</table>
 		</fieldset>	
 			
-		<fieldset>
-			<legend>solvers</legend>
+		<fieldset id="solverField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> solvers <span>(+)</span></legend>
 			<table id="solvers">
 				<thead>
 					<tr>
@@ -41,8 +41,8 @@
 			</table>
 		</fieldset>						
 		
-		<fieldset>
-			<legend>benchmarks</legend>
+		<fieldset id="benchField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> benchmarks <span>(+)</span></legend>
 			<table id="benchmarks">
 				<thead>
 					<tr>
@@ -54,8 +54,8 @@
 			</table>
 		</fieldset>											
 		
-		<fieldset>
-			<legend>users</legend>
+		<fieldset  id="userField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> users <span>(+)</span></legend>
 			<table id="users">
 				<thead>
 					<tr>
@@ -67,8 +67,8 @@
 			</table>
 		</fieldset>		
 		
-		<fieldset>
-			<legend>subspaces</legend>
+		<fieldset id="spaceField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> subspaces <span>(+)</span></legend>
 			<table id="spaces">
 				<thead>
 					<tr>

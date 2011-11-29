@@ -85,3 +85,7 @@ fieldset {
 #content table {
 	width: 100%;
 }
+
+.expd {	
+	cursor: pointer;
+}
