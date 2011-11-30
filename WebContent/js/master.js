@@ -91,3 +91,14 @@ function logout() {
 		alert("There was an error logging you out. Please try refreshing this page or restarting your browser");
 	});
 }
+
+
+/**
+ * Extracts parameters from the URL by name
+ * 
+ * @param name the name of the variable to extract from the URL
+ */
+function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}

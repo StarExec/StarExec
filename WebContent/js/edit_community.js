@@ -76,7 +76,7 @@ $(document).ready(function(){
 				maxlength: 300
 			},
 			typeFile : {
-				required : true,				
+				required : true				
 			}			
 		},
 		messages : {

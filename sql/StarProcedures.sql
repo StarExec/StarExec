@@ -447,28 +447,28 @@ CREATE PROCEDURE DeclineUser(IN _id BIGINT, IN _community BIGINT)
 			FROM user_roles);
 	END //
 
--- Adds a new entry to PASS_RESET for a given user (also deletes previous
+-- Adds a new entry to pass_reset_request for a given user (also deletes previous
 -- entries for the same user)
 -- Author: Todd Elvers
 CREATE PROCEDURE AddPassResetRequest(IN _id BIGINT, IN _code VARCHAR(36))
 	BEGIN
-		IF EXISTS(SELECT * FROM pass_reset WHERE user_id = _id) THEN
-			DELETE FROM pass_reset
+		IF EXISTS(SELECT * FROM pass_reset_request WHERE user_id = _id) THEN
+			DELETE FROM pass_reset_request
 			WHERE user_id = _id;
 		END IF;
-		INSERT INTO pass_reset(user_id, code, created)
+		INSERT INTO pass_reset_request(user_id, code, created)
 		VALUES(_id, _code, SYSDATE());
 	END //
 
 -- Redeems a given password reset code by deleting the corresponding entry
--- in PASS_RESET and returning the user_id of that deleted entry
+-- in pass_reset_request and returning the user_id of that deleted entry
 -- Author: Todd Elvers
 CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id BIGINT)
 	BEGIN
 		SELECT user_id INTO _id
-		FROM pass_reset
+		FROM pass_reset_request
 		WHERE code = _code;
-		DELETE FROM pass_reset
+		DELETE FROM pass_reset_request
 		WHERE code = _code;
 	END //
 	
@@ -663,5 +663,54 @@ CREATE PROCEDURE LoginRecord(IN _userId BIGINT, IN _ipAddress VARCHAR(15), IN _a
 		INSERT INTO logins (user_id, login_date, ip_address, browser_agent)
 		VALUES (_userId, SYSDATE(), _ipAddress, _agent);
 	END //
+	
+	
+-- Updates the details associated with a given solver
+-- Author: Todd Elvers
+CREATE PROCEDURE UpdateSolverDetails(IN _solverId BIGINT, IN _name VARCHAR(32), IN _description TEXT, IN _downloadable BOOLEAN)
+	BEGIN
+		UPDATE solvers
+		SET name = _name,
+		description = _description,
+		downloadable = _downloadable
+		WHERE id = _solverId;
+	END //
+	
+-- Deletes a solver given that solver's id
+-- Author: Todd Elvers	
+CREATE PROCEDURE DeleteSolverById(IN _solverId BIGINT)
+	BEGIN
+		DELETE FROM solvers
+		WHERE id = _solverId;
+	END //	
+	
+-- Updates the details associated with a given benchmark
+-- Author: Todd Elvers
+CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId BIGINT, IN _name VARCHAR(32), IN _description TEXT, IN _downloadable BOOLEAN, IN _type BIGINT)
+	BEGIN
+		UPDATE benchmarks
+		SET name = _name,
+		description = _description,
+		downloadable = _downloadable,
+		bench_type = _type
+		WHERE id = _benchmarkId;
+	END //
+	
+-- Deletes a benchmark given that benchmark's id
+-- Author: Todd Elvers	
+CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId BIGINT)
+	BEGIN
+		DELETE FROM benchmarks
+		WHERE id = _benchmarkId;
+	END //	
+	
+-- Gets all benchmark types
+-- Author: Todd Elvers
+CREATE PROCEDURE GetAllBenchTypes()
+	BEGIN		
+		SELECT *
+		FROM bench_types;
+	END //
+	
 	
 DELIMITER ; -- This should always be at the end of this file

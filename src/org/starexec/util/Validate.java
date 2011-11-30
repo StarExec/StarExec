@@ -3,6 +3,8 @@ package org.starexec.util;
 
 import java.util.regex.Pattern;
 
+import org.starexec.data.Database;
+
 /**
  * Validation.java 
  * 
@@ -16,6 +18,7 @@ public class Validate {
     private static Pattern alphaNumericChecker;
     private static Pattern safeTextChecker;
     private static Pattern passwordChecker;
+    private static Pattern booleanChecker;
   
     private static final String PASS_PATTERN = 
         "^"											  	// Beginning of string
@@ -43,6 +46,9 @@ public class Validate {
     private static final String ALPHA_NUMERIC_DASH =
     	"^[a-zA-Z0-9\\-_]{1,32}$";
     
+    private static final String BOOLEAN_PATTERN = 
+    	"true|false";
+    
     private static final String SAFE_TEXT =
         	"^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$";
     
@@ -53,6 +59,7 @@ public class Validate {
         passwordChecker = Pattern.compile(PASS_PATTERN);
         alphaNumericChecker = Pattern.compile(ALPHA_NUMERIC_DASH);
         safeTextChecker = Pattern.compile(SAFE_TEXT);
+        booleanChecker = Pattern.compile(BOOLEAN_PATTERN);
     }
         	
 	/**
@@ -70,10 +77,9 @@ public class Validate {
 		} else {
 			return passwordChecker.matcher(password).matches();
 		}
-
 	}
 	
-
+	
 	/**
 	 * Validates an institution field
 	 * 
@@ -166,6 +172,36 @@ public class Validate {
     }
     
     /**
+     * Validates a benchmark/solver's name and checks that it contains only letters, numbers and dashes
+     * 
+     * @param name the benchmark/solver's name to check
+     * @return true iff name isn't null, is between 1 and 32 characters and
+     * contains only letters, numbers and dashes
+     */
+    public static boolean solverBenchName(String name){
+    	if(Util.isNullOrEmpty(name)){
+    		return false;
+    	}
+    	
+    	return alphaNumericChecker.matcher(name).matches();
+    }
+    
+    /**
+     * Validates a boolean value by ensuring it is something Boolean.parseBoolean()
+     * can handle
+     * 
+     * @param boolString the string to check for a parse-able boolean value
+     * @return true iff boolString isn't null and is either "true" or "false"
+     */
+    public static boolean bool(String boolString){
+    	if(Util.isNullOrEmpty(boolString)){
+    		return false;
+    	}
+    	
+    	return booleanChecker.matcher(boolString).matches();
+    }
+    
+    /**
      * Validates a generic description and checks that it contains content and is less than 1024
      * characters long. ALL characters are allowed in descriptions.
      * 
@@ -179,4 +215,24 @@ public class Validate {
     	
     	return safeTextChecker.matcher(desc).matches();
     }
+    
+    
+    /**
+     * Validates a benchmark type by ensuring an entry exists in the database
+     * that shares the same id
+     * 
+     * @param typeId the typeId to check exists in the database
+     * @return true iff typeId is greater than zero and no greater than the 
+     * maximum type id value in the database
+     */
+    public static boolean benchmarkType(long typeId){
+    	int maxTypeId = Database.getBenchmarkTypes().size();
+    	// Valid typeId = (0 < typeId <= maxTypeId)
+    	if((int) typeId > 0 && (int) typeId <= maxTypeId){
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+    
 }

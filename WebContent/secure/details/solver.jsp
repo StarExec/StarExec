@@ -25,7 +25,7 @@
 
 <star:template title="${solver.name}" js="details" css="details">				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="#">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit_solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table>
 			<tr>
 				<td>description</td>			

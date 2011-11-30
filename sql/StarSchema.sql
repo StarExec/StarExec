@@ -152,7 +152,7 @@ CREATE TABLE jobs (
 -- us to run their solver.
 CREATE TABLE configurations (
 	id BIGINT NOT NULL AUTO_INCREMENT,
-	solver_id BIGINT NOT NULL,
+	solver_id BIGINT,
 	name VARCHAR(32) NOT NULL,
 	description TEXT,
 	PRIMARY KEY (id),
@@ -164,12 +164,12 @@ CREATE TABLE configurations (
 -- pair may be shared by different jobs, this is a sort of 'cache' or pre-made pairs
 CREATE TABLE job_pairs (
 	id BIGINT NOT NULL AUTO_INCREMENT, 
-	config_id BIGINT NOT NULL,
-	bench_id BIGINT NOT NULL,
+	config_id BIGINT,
+	bench_id BIGINT,
 	PRIMARY KEY (id),
 	UNIQUE KEY (config_id, bench_id),
-	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE NO ACTION,
-	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE NO ACTION
+	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL,
+	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE SET NULL
 );
 
 -- Table which contains specific information about a job pair run
@@ -178,7 +178,7 @@ CREATE TABLE job_pairs (
 CREATE TABLE job_pair_attr (
 	id BIGINT NOT NULL AUTO_INCREMENT,
 	job_id BIGINT NOT NULL,
-	pair_id BIGINT NOT NULL,
+	pair_id BIGINT,
 	node_id BIGINT NOT NULL,
 	start TIMESTAMP DEFAULT 0,
 	stop TIMESTAMP DEFAULT 0,
@@ -186,7 +186,7 @@ CREATE TABLE job_pair_attr (
 	status VARCHAR(64) DEFAULT "",
 	PRIMARY KEY(id),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE NO ACTION,
+	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE SET NULL,
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION
 );
 
@@ -297,7 +297,7 @@ CREATE TABLE community_requests (
 
 -- Pending requests to reset a user's password
 -- Author: Todd Elvers
-CREATE TABLE pass_reset (
+CREATE TABLE pass_reset_request (
 	user_id BIGINT NOT NULL,
 	code VARCHAR(36) NOT NULL,
 	created TIMESTAMP NOT NULL,	

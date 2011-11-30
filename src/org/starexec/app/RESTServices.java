@@ -13,12 +13,15 @@ import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.Database;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.util.Hash;
 import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
 import org.starexec.util.Validate;
 
 import com.google.gson.Gson;
@@ -178,7 +181,7 @@ public class RESTServices {
 		
 		return gson.toJson(1);
 	}
-	
+
 	/** 
 	 * Updates information in the database using a POST. Attribute and
 	 * new value are included in the path. First validates that the new value
@@ -278,6 +281,220 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Updates the details of a solver.  Solver id is required in the path.  First
+	 * checks if the parameters of the update are valid, then performs the update.
+	 * 
+	 * @param id the id of the solver to update the details for
+	 * @return 2 if parameters are not valid, 1 if updating the database failed, and
+	 * 0 if the update was successful 
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/edit/solver/{id}")
+	@Produces("application/json")
+	public String editSolverDetails(@PathParam("id") String id, @Context HttpServletRequest request) {
+		boolean isValidRequest = true;
+		long solverId = -1;
+		// Ensure the parameters exist
+		if(!Util.paramExists("name", request)
+				|| !Util.paramExists("description", request)
+				|| !Util.paramExists("downloadable", request)){
+			return gson.toJson(3);
+		}
+		
+		// Ensure the parameters are valid
+		if(!Validate.solverBenchName(request.getParameter("name"))
+				|| !Validate.description(request.getParameter("description"))
+				|| !Validate.bool(request.getParameter("downloadable"))){
+			return gson.toJson(3);
+		}
+		
+		
+		// Safely extract the solver's id
+		try{
+			solverId = Long.parseLong(id);
+		} catch (NumberFormatException nfe){
+			isValidRequest = false;
+		}
+		if(false == isValidRequest){
+			return gson.toJson(3);
+		}
+		
+		// Permissions check; if user is NOT the owner of the solver, deny update request
+		long userId = SessionUtil.getUserId(request);
+		Solver solver = Database.getSolver(solverId, userId);
+		if(solver == null || solver.getUserId() != userId){
+			gson.toJson(2);
+		}
+		
+		// Extract new solver details from request
+		String name = request.getParameter("name");
+		String description = request.getParameter("description");
+		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
+		
+		// Apply new solver details to database
+		boolean updated = Database.updateSolverDetails(solverId, name, description, isDownloadable);
+		if(updated){
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(1);
+		}
+	}
+	
+	/**
+	 * Deletes a solver given a solver's id.  The id of the solver to delete must be included
+	 * in the path.
+	 * 
+	 * @param id the id of the solver to delete
+	 * @return 2 if the parameters are invalid, 1 if the deletion isn't successful, 0 if the deletion
+	 * was successful
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/delete/solver/{id}")
+	@Produces("application/json")
+	public String deleteSolver(@PathParam("id") String id, @Context HttpServletRequest request) {
+		boolean isValidRequest = true;
+		long solverId = -1;
+		// Safely extract the solver's id
+		try{
+			solverId = Long.parseLong(id);
+		} catch (NumberFormatException nfe){
+			isValidRequest = false;
+		}
+		if(false == isValidRequest){
+			return gson.toJson(3);
+		}
+		
+		// Permissions check; if user is NOT the owner of the solver, deny deletion request
+		long userId = SessionUtil.getUserId(request);
+		Solver solver = Database.getSolver(solverId, userId);
+		if(solver == null || solver.getUserId() != userId){
+			gson.toJson(2);
+		}
+		
+		//TODO Need to check if the solver exists in historical space. If it does, we SHOULD NOT delete the solver
+		// Delete the solver from the database
+		boolean deleted = Database.deleteSolver(solverId);
+		if(deleted){
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(1);
+		}
+	}
+	
+	/**
+	 * Updates the details of a benchmark.  Benchmark id is required in the path.  First
+	 * checks if the parameters of the update are valid, then performs the update.
+	 * 
+	 * @param id the id of the benchmark to update the details for
+	 * @return 2 if parameters are not valid, 1 if updating the database failed, and
+	 * 0 if the update was successful 
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/delete/benchmark/{id}")
+	@Produces("application/json")
+	public String deleteBenchmark(@PathParam("id") String id, @Context HttpServletRequest request) {
+		boolean isValidRequest = true;
+		long benchId = -1;
+		
+		// Safely extract the benchmark's id
+		try{
+			benchId = Long.parseLong(id);
+		} catch (NumberFormatException nfe){
+			isValidRequest = false;
+		}
+		if(false == isValidRequest){
+			return gson.toJson(3);
+		}
+		
+		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
+		long userId = SessionUtil.getUserId(request);
+		Benchmark bench = Database.getBenchmark(benchId, userId);
+		if(bench == null || bench.getUserId() != userId){
+			gson.toJson(2);
+		}
+		
+		//TODO Need to check if the benchmark exists in historical space. If it does, we SHOULD NOT delete the benchmark
+		// Delete the benchmark from the database
+		boolean deleted = Database.deleteBenchmark(benchId);
+		if(deleted){
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(1);
+		}
+	}
+	
+	
+	/**
+	 * Deletes a benchmark given a benchmarks's id.  The id of the benchmark to delete must be included
+	 * in the path.
+	 * 
+	 * @param id the id of the benchmark to delete
+	 * @return 2 if the parameters are invalid, 1 if the deletion isn't successful, 0 if the deletion
+	 * was successful
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/edit/benchmark/{id}")
+	@Produces("application/json")
+	public String editBenchmarkDetails(@PathParam("id") String id, @Context HttpServletRequest request) {
+		boolean isValidRequest = true;
+		long benchId = -1;
+		long type = -1;
+		
+		// Ensure the parameters exist
+		if(!Util.paramExists("name", request)
+				|| !Util.paramExists("description", request)
+				|| !Util.paramExists("downloadable", request)
+				|| !Util.paramExists("type", request)){
+			return gson.toJson(3);
+		}
+		
+		// Safely extract the benchmark's id & type
+		try{
+			benchId = Long.parseLong(id);
+			type = Long.parseLong(request.getParameter("type"));
+		} catch (NumberFormatException nfe){
+			isValidRequest = false;
+		}
+		if(false == isValidRequest){
+			return gson.toJson(3);
+		}
+		
+		// Ensure the parameters are valid
+		if(!Validate.solverBenchName(request.getParameter("name"))
+				|| !Validate.description(request.getParameter("description"))
+				|| !Validate.bool(request.getParameter("downloadable"))
+				|| !Validate.benchmarkType(type)){
+			return gson.toJson(3);
+		}
+		
+		// Permissions check; if user is NOT the owner of the benchmark, deny update request
+		long userId = SessionUtil.getUserId(request);
+		Benchmark bench = Database.getBenchmark(benchId, userId);
+		if(bench == null || bench.getUserId() != userId){
+			gson.toJson(2);
+		}
+		
+		// Extract new benchmark details from request
+		String name = request.getParameter("name");
+		String description = request.getParameter("description");
+		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
+		
+		// Apply new benchmark details to database
+		boolean updated = Database.updateBenchmarkDetails(benchId, name, description, isDownloadable, type);
+		if(updated){
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(1);
+		}
+	}
+	
+	
+	
+	/**
 	 * Updates the current user's password. First verifies that it is in
 	 * the correct format, then hashes is and updates it to the database.
 	 * 
@@ -318,4 +535,6 @@ public class RESTServices {
 			return gson.toJson(4); //hashedPass != databasePass
 		}
 	}
+	
+	
 }

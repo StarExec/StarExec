@@ -63,6 +63,7 @@ textarea#reason {
 }
 
 textarea#reason.error{
+	vertical-align: middle;
 	border: solid 1px #ae0000;
 }
 

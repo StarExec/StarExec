@@ -12,7 +12,7 @@ $(document).ready(function() {
 	});
 	
 	// Set the default text
-	$("#reason").data('default', "Describe your motivation for joining this community and/or what you plan on using it for...");
+	$("#reason").data('default', "describe your motivation for joining this community");
 
 	// Clear the textarea when clicked on if the text in there == the default text
 	// and re-insert that default text if the user doesn't input anything

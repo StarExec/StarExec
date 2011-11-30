@@ -4,7 +4,7 @@ $(document).ready(function() {
 	$('#inviteForm tr:even').addClass('shade');
 	
 	// Set the default text
-	$("#reason").data('default', "Describe your motivation for joining this community and/or what you plan on using it for...");
+	$("#reason").data('default', "describe your motivation for joining this community");
 
 	
 	// Clear the textarea when clicked on if the text in there == the default text
@@ -40,15 +40,11 @@ $(document).ready(function() {
 		messages : {
 			cm : {
 				required : "select a community to join"
-			}
-		},
-		// the errorPlacement ignores #password
-		errorPlacement : function(error, element) {
-			if($(element).attr("id") != "reason"){
-				error.insertAfter(element);
+			},
+			msg: {
+				required : "enter your reason for joining"
 			}
 		}
 	});
-
 });
 

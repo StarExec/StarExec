@@ -29,7 +29,7 @@ try {
 				</tr>
 				<tr>
 					<td class="label">reason for joining </td>
-					<td><textarea name="msg" id="reason" maxlength="300">Describe your motivation for joining this community and/or what you plan on using it for...</textarea></td>
+					<td><textarea name="msg" id="reason" maxlength="300">describe your motivation for joining this community</textarea></td>
 				</tr>		
 				<tr>
 					<td class="label">notice </td>

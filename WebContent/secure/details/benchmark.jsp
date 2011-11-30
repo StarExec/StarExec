@@ -27,7 +27,7 @@
 
 <star:template title="${bench.name}" js="details" css="details">				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="#">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit_benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
 		<table>
 			<tr>
 				<td>description</td>			

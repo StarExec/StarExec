@@ -1113,8 +1113,160 @@ public class Database {
 		return false;
 	}
 	
+	
 	/**
-	 * Updates the description of a space with the given space id
+	 * Updates the details of a solver
+	 * 
+	 * @param id the id of the solver to update
+	 * @param name the new name to apply to the solver
+	 * @param description the new description to apply to the solver
+	 * @param isDownloadable boolean indicating whether or not this solver is downloadable
+	 * @return true iff the update was applied successfully and a row was modified, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean updateSolverDetails(long id, String name, String description, boolean isDownloadable){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL UpdateSolverDetails(?, ?, ?, ?)}");
+			procedure.setLong(1, id);
+			procedure.setString(2, name);
+			procedure.setString(3, description);
+			procedure.setBoolean(4, isDownloadable);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Solver [id=%d] failed to be updated.", id));
+				return false;
+			}
+			
+			log.info(String.format("Solver [id=%d] was successfully updated.", id));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		log.debug(String.format("Solver [id=%d] failed to be updated.", id));
+		return false;
+	}
+	
+	
+	/**
+	 * Deletes a solver from the database (cascading deletes handle all
+	 * dependencies)
+	 * 
+	 * @param id the id of the solver to delete
+	 * @return true iff the solver was deleted from the database, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean deleteSolver(long id){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL DeleteSolverById(?)}");
+			procedure.setLong(1, id);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Deletion of solver [id=%d] failed.", id));
+				return false;
+			}
+			
+			log.debug(String.format("Deletion of solver [id=%d] was successful.", id));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		log.debug(String.format("Deletion of solver [id=%d] failed.", id));
+		return false;
+	}
+	
+	
+	/**
+	 * Updates the details of a benchmark
+	 * 
+	 * @param id the id of the benchmark to update
+	 * @param name the new name to apply to the benchmark
+	 * @param description the new description to apply to the benchmark
+	 * @param isDownloadable boolean indicating whether or not this benchmark is downloadable
+	 * @param benchTypeId the new benchmark type to apply to the benchmark 
+	 * @return true iff the update was applied successfully and a row was modified, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean updateBenchmarkDetails(long id, String name, String description, boolean isDownloadable, long benchTypeId){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL UpdateBenchmarkDetails(?, ?, ?, ?, ?)}");
+			procedure.setLong(1, id);
+			procedure.setString(2, name);
+			procedure.setString(3, description);
+			procedure.setBoolean(4, isDownloadable);
+			procedure.setLong(5, benchTypeId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Benchmark [id=%d] failed to be updated.", id));
+				return false;
+			}
+			
+			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		log.debug(String.format("Benchmark [id=%d] failed to be updated.", id));
+		return false;
+	}
+	
+	
+	/**
+	 * Deletes a benchmark from the database (cascading deletes handle all
+	 * dependencies)
+	 * 
+	 * @param id the id of the benchmark to delete
+	 * @return true iff the benchmark was deleted from the database, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean deleteBenchmark(long id){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkById(?)}");
+			procedure.setLong(1, id);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
+				return false;
+			}
+			
+			log.debug(String.format("Deletion of benchmark [id=%d] was successful.", id));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
+		return false;
+	}
+	
+	
+	/**
+	 * Get all websites associated with a given user.
 	 * 
 	 * @param spaceId the id of the space to update
 	 * @param newDesc the new description to update the space with
@@ -1323,6 +1475,41 @@ public class Database {
 		return null;
 	}
 	
+	
+	/**
+	 * Gets the list of benchmark types
+	 * 
+	 * @return the list of benchmark types
+	 * @author Todd Elvers
+	 */
+	public static List<BenchmarkType> getBenchmarkTypes(){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetAllBenchTypes}");
+			ResultSet results = procedure.executeQuery();
+			List<BenchmarkType> benchTypes = new LinkedList<BenchmarkType>();
+			
+			while(results.next()){
+				BenchmarkType bt = new BenchmarkType();
+				bt.setId(results.getLong("id"));
+				bt.setName(results.getString("name"));
+				bt.setDescription(results.getString("description"));
+				bt.setProcessorPath((results.getString("processor_path")));
+				bt.setCommunityId((results.getLong("community")));
+				benchTypes.add(bt);
+			}
+			
+			return benchTypes;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return null;
+	}
 	
 	/**
 	 * Gets all subspaces belonging to another space
@@ -2091,4 +2278,6 @@ public class Database {
 			// Do nothing
 		}
 	}
+
+
 }
