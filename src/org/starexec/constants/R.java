@@ -57,4 +57,6 @@ public class R {
 	// Misc application properties
 	public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
 	public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
-}
+	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
+	public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
+}	
