@@ -84,7 +84,7 @@ public class AddSpace extends HttpServlet {
 		long userId = SessionUtil.getUserId(request);
 		
 		//Actually add the space to the system
-		if(!Database.addSpace(s, spaceId, userId)) {
+		if(Database.addSpace(s, spaceId, userId) <= 0) {
 			// If it failed, notify an error
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
 		} else {

@@ -1829,6 +1829,7 @@ public class Database {
 	 * Inserts a benchmark type into the database
 	 * @param type The benchmark type to add to the database
 	 * @return True iff the operation was a success, false otherwise
+	 * @author Tyler Jensen
 	 */
 	public static boolean addBenchmarkType(BenchmarkType type) {
 		Connection con = null;			
@@ -1847,6 +1848,158 @@ public class Database {
 				log.info(String.format("Added new benchmark type with name [%s] for community [%d]", type.getName(), type.getCommunityId()));
 				return true;
 			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Adds all subspaces and their benchmarks to the database. The first space given should be
+	 * an existing space (it must have an ID that will be the ancestor space of all subspaces) and
+	 * it can optionally contain NEW benchmarks to be added to the space. The method then traverses
+	 * into its subspaces recursively and adds them to the database along with their benchmarks.
+	 * @param parent The parent space that is the 'root' of the new subtree to be added
+	 * @param userId The user that will own the new spaces and benchmarks
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean addSpacesWithBenchmarks(Space parent, long userId) {
+		Connection con = null;
+		
+		try {
+			// We'll be doing everything with a single connection so we can roll back if needed
+			con = dataPool.getConnection();
+			beginTransaction(con);
+			
+			// For each subspace...
+			for(Space s : parent.getSubspaces()) {
+				// Apply the recursive algorithm to add each subspace
+				Database.traverseSpace(con, s, parent.getId(), userId);
+			}			
+			
+			// Add and new benchmarks in the space to the database
+			Database.addBenchmarks(parent.getBenchmarks(), parent.getId());
+			
+			// We're done (notice that 'parent' is never added because it should already exist)
+			endTransaction(con);			
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			doRollback(con);
+			enableAutoCommit(con);
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Internal recursive method that adds a space and it's benchmarks to the database
+	 * @param con The connection to perform the operations on
+	 * @param space The space to add to the database
+	 * @param parentId The id of the parent space that the given space will belong to
+	 * @param userId The user id of the owner of the new space and its benchmarks
+	 * @author Tyler Jensen
+	 */
+	private static void traverseSpace(Connection con, Space space, long parentId, long userId) throws Exception {
+		// Add the new space to the database and get it's ID		
+		long spaceId = Database.addSpace(con, space, parentId, userId);
+		
+		for(Space s : space.getSubspaces()) {
+			// Recursively go through and add all of it's subspaces with itself as the parent
+			Database.traverseSpace(con, s, spaceId, userId);
+		}			
+		
+		// Finally, add the benchmarks in the space to the database
+		Database.addBenchmarks(con, space.getBenchmarks(), spaceId);
+	}
+	
+	/**
+	 * Adds the list of benchmarks to the database and associates them with the given spaceId
+	 * @param benchmarks The list of benchmarks to add
+	 * @param spaceId The space the benchmarks will belong to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean addBenchmarks(List<Benchmark> benchmarks, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			Database.addBenchmarks(con, benchmarks, spaceId);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		
+		return false;
+	}
+		
+	/**
+	 * Internal method which adds the list of benchmarks to the database and associates them with the given spaceId
+	 * @param con The connection the operation will take place on
+	 * @param benchmarks The list of benchmarks to add
+	 * @param spaceId The space the benchmarks will belong to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	private static void addBenchmarks(Connection con, List<Benchmark> benchmarks, long spaceId) throws Exception {		
+		for(Benchmark b : benchmarks) {
+			if(!Database.addBenchmark(con, b, spaceId)) {
+				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+			}
+		}
+		
+		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+	}	
+	
+	/**
+	 * Internal method which adds a single benchmark to the database under the given spaceId
+	 * @param con The connection the operation will take place on
+	 * @param benchmark The benchmark to add to the database
+	 * @param spaceId The id of the space the benchmark will belong to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	private static boolean addBenchmark(Connection con, Benchmark benchmark, long spaceId) throws SQLException {				
+		CallableStatement procedure = null;			
+		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?)}");
+		procedure.setString(1, benchmark.getName());		
+		procedure.setString(2, benchmark.getPath());
+		procedure.setBoolean(3, benchmark.isDownloadable());
+		procedure.setLong(4, benchmark.getUserId());
+		procedure.setLong(5, benchmark.getType().getId());
+		procedure.setLong(6, spaceId);
+		int result = procedure.executeUpdate();
+		
+		if(result == 1) {
+			log.debug(String.format("Added new benchmark with name [%s] to space [%d]", benchmark.getName(), spaceId));
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Adds a single benchmark to the database under the given spaceId
+	 * @param benchmark The benchmark to add to the database
+	 * @param spaceId The id of the space the benchmark will belong to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean addBenchmark(Benchmark benchmark, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();		
+			return Database.addBenchmark(con, benchmark, spaceId);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1906,9 +2059,9 @@ public class Database {
 	
 	/**
 	 * Deletes the website associated with the given website ID.
-	 * 
 	 * @param websiteId the ID of the website to delete
 	 * @return true iff the delete is successful
+	 * @author Skylar Stark
 	 */
 	public static boolean deleteUserWebsite(long websiteId, long userId) {
 		Connection con = null;			
@@ -1940,57 +2093,21 @@ public class Database {
 	 * @param s The space to add (should have default permissions set)
 	 * @param parentId The parent space s is being added to
 	 * @param userId The user who is adding the space
-	 * @return True if the operation was a success, false otherwise
+	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	public static boolean addSpace(Space s, long parentId, long userId) {
+	public static long addSpace(Space s, long parentId, long userId) {
 		Connection con = null;			
 		
 		try {
-			// Keep track of affected rows as we go, we should affect 5 rows total
-			int result = 0;
-			con = dataPool.getConnection();				
-			beginTransaction(con);
+			con = dataPool.getConnection();
 			
-			// Add the default permission for the space to the database			
-			long defaultPermId = Database.addPermission(s.getPermission(), con);
+			beginTransaction(con);	
+			// Add space is a multi-step process, so we need to use a transaction
+			long newSpaceId = Database.addSpace(con, s, parentId, userId);
+			endTransaction(con);			
 			
-			// Add the space with the default permissions
-			CallableStatement procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
-			procAddSpace.setString(1, s.getName());
-			procAddSpace.setString(2, s.getDescription());
-			procAddSpace.setBoolean(3, s.isLocked());
-			procAddSpace.setLong(4, defaultPermId);
-			procAddSpace.setLong(5, parentId);
-			procAddSpace.registerOutParameter(6, java.sql.Types.BIGINT);
-			
-			result += procAddSpace.executeUpdate();
-			long newSpaceId = procAddSpace.getLong(6);
-			
-			// Add the new space as a child space of the parent space
-			CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?, ?)}");	
-			procSubspace.setLong(1, parentId);
-			procSubspace.setLong(2, newSpaceId);
-			procSubspace.setLong(3, defaultPermId);			
-			
-			result += procSubspace.executeUpdate();
-			
-			// Add a new set of maximal permissions for the user who added the space			
-			long userPermId = Database.addPermission(new Permission(true), con);
-			
-			// Add the adding user to the space with the maximal permissions
-			CallableStatement procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?, ?)}");			
-			procAddUser.setLong(1, userId);
-			procAddUser.setLong(2, newSpaceId);
-			procAddUser.setLong(3, newSpaceId);
-			procAddUser.setLong(4, userPermId);
-			
-			result += procAddUser.executeUpdate();
-			endTransaction(con);
-			
-			// Log the new addition and ensure we return at least 3 affected rows (the two added permissions are self-checking)
-			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
-			return result >= 3;
+			return newSpaceId;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1999,7 +2116,62 @@ public class Database {
 			Database.safeClose(con);
 		}
 		
-		return false;
+		return -1;
+	}
+	
+	/**
+	 * Adds a new space to the system. This action adds the space, adds a
+	 * default permission record for the space, and adds a new association
+	 * to the space with the given user with full leadership permissions. NOTE:
+	 * This is a multi-step process, use transactions to ensure it completes as
+	 * an atomic unit.
+	 * @param con The connection to perform the operation on
+	 * @param s The space to add (should have default permissions set)
+	 * @param parentId The parent space s is being added to
+	 * @param userId The user who is adding the space
+	 * @return The ID of the newly inserted space, -1 if the operation failed
+	 * @author Tyler Jensen
+	 */
+	private static long addSpace(Connection con, Space s, long parentId, long userId) throws Exception {			
+		// Add the default permission for the space to the database			
+		long defaultPermId = Database.addPermission(s.getPermission(), con);
+		
+		// Add the space with the default permissions
+		CallableStatement procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
+		procAddSpace.setString(1, s.getName());
+		procAddSpace.setString(2, s.getDescription());
+		procAddSpace.setBoolean(3, s.isLocked());
+		procAddSpace.setLong(4, defaultPermId);
+		procAddSpace.setLong(5, parentId);
+		procAddSpace.registerOutParameter(6, java.sql.Types.BIGINT);
+		
+		procAddSpace.executeUpdate();
+		long newSpaceId = procAddSpace.getLong(6);
+		
+		// Add the new space as a child space of the parent space
+		CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?, ?)}");	
+		procSubspace.setLong(1, parentId);
+		procSubspace.setLong(2, newSpaceId);
+		procSubspace.setLong(3, defaultPermId);			
+		
+		procSubspace.executeUpdate();
+		
+		// Add a new set of maximal permissions for the user who added the space			
+		long userPermId = Database.addPermission(new Permission(true), con);
+		
+		// Add the adding user to the space with the maximal permissions
+		CallableStatement procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?, ?)}");			
+		procAddUser.setLong(1, userId);
+		procAddUser.setLong(2, newSpaceId);
+		procAddUser.setLong(3, newSpaceId);
+		procAddUser.setLong(4, userPermId);
+		
+		procAddUser.executeUpdate();
+		endTransaction(con);
+		
+		// Log the new addition and ensure we return at least 3 affected rows (the two added permissions are self-checking)
+		log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
+		return newSpaceId;
 	}
 	
 	/**

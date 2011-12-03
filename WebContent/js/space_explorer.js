@@ -185,6 +185,7 @@ function checkPermissions(perms) {
  */
 function updateAddId(id) {	
 	$('#addSpace').attr('href', "/starexec/secure/add/space.jsp?sid=" + id);
+	$('#uploadBench').attr('href', "/starexec/secure/add/benchmarks.jsp?sid=" + id);
 }
 
 function toggleTable(sender) {

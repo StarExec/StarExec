@@ -2,6 +2,8 @@ package org.starexec.data.to;
 
 import java.io.File;
 
+import org.starexec.util.Util;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -11,7 +13,7 @@ import com.google.gson.annotations.Expose;
  */
 public class BenchmarkType extends Identifiable {
 	@Expose private String name;
-	@Expose private String description;
+	@Expose private String description = "none";
 	@Expose private String processorName;
 	private String processorPath;	
 	private long communityId;
@@ -41,7 +43,9 @@ public class BenchmarkType extends Identifiable {
 	 * @param description The description to set for this type
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}
 	
 	/**

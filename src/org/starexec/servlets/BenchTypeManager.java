@@ -35,7 +35,7 @@ public class BenchTypeManager extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchTypeManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
-	private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");
+	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	
 	// Request attributes
 	private static final String TYPE_NAME = "typeName";
@@ -80,7 +80,7 @@ public class BenchTypeManager extends HttpServlet {
 		try {
 			// If we're dealing with an update request...
 			if(ServletFileUpload.isMultipartContent(request)) {								
-				HashMap<String, Object> form = this.parseMultipartRequest(request);
+				HashMap<String, Object> form = Util.parseMultipartRequest(request);
 				
 				// Make sure the request is valid
 				if(!isValidUpdateRequest(form)) {
@@ -121,7 +121,7 @@ public class BenchTypeManager extends HttpServlet {
 		try {
 			// If we're dealing with an upload request...
 			if(ServletFileUpload.isMultipartContent(request)) { 		
-				HashMap<String, Object> form = this.parseMultipartRequest(request);
+				HashMap<String, Object> form = Util.parseMultipartRequest(request);
 				
 				// Make sure the request is valid
 				if(!isValidCreateRequest(form)) {
@@ -153,32 +153,6 @@ public class BenchTypeManager extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.error(e.getMessage(), e);
 		}	
-	}
-	
-	/**
-	 * Parses a multipart request and returns a hashmap of form parameters
-	 * @param request The request to parse
-	 * @return A hashmap containing the field name to field value mapping
-	 */
-	private HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
-		// Use Tomcat's multipart form utilities
-		FileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
-		List<FileItem> items = upload.parseRequest(request);
-		HashMap<String, Object> form = new HashMap<String, Object>();
-		
-		for(FileItem f : items) {
-			// If we're dealing with a regular form field...
-			if(f.isFormField()) {
-				// Add the field name and field value to the hashmap
-				form.put(f.getFieldName(), f.getString());				
-			} else {
-				// Else we've encountered a file, so add the FileItem to the hashmap
-				form.put(f.getFieldName(), f);					
-			}	
-		}
-		
-		return form;
 	}
 	
 	/**

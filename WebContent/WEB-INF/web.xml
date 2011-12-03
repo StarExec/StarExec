@@ -75,11 +75,11 @@
     
   <servlet>
     <servlet-name>BenchmarkUploader</servlet-name>
-    <servlet-class>org.starexec.servlets.UploadBench</servlet-class>
+    <servlet-class>org.starexec.servlets.BenchmarkUploader</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>BenchmarkUploader</servlet-name>
-    <url-pattern>/UploadBench</url-pattern>
+    <url-pattern>/secure/add/BenchmarkUploader</url-pattern>
   </servlet-mapping>
   
   <servlet>

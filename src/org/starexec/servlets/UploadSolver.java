@@ -25,7 +25,6 @@ import org.starexec.constants.P;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
-import org.starexec.util.ZipUtil;
 
 /**
  * @deprecated This class is out of date and needs to be re-implemented
@@ -95,7 +94,7 @@ public class UploadSolver extends HttpServlet {
 		item.write(zipFile);
 		
 		// Extract the downloaded solver zip file
-		ZipUtil.extractZip(zipFile.getAbsolutePath());
+		//ZipUtil.extractZip(zipFile.getAbsolutePath());
 		
 		// Delete the archive, we don't need it anymore!
 		zipFile.delete();

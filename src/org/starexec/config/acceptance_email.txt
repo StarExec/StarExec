@@ -1,6 +1,6 @@
-Greetings $$LEADER$$,
+Greetings,
 
-This is an automatically generated email from the Starexec team to all leaders of the $$COMMUNITY$$ community, because a user by the name of "$$NEWUSER$$" has requested to join your community.
+This is an automatically generated email from the Starexec team to all leaders of the $$COMMUNITY$$ community, because a user by the name of $$NEWUSER$$ ($$EMAIL$$) has requested to join your community.
 
 This is the message they included with their request:
 "$$MESSAGE$$"

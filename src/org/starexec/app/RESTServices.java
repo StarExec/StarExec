@@ -44,8 +44,7 @@ public class RESTServices {
 	@GET
 	@Path("/space/subspaces")
 	@Produces("application/json")	
-	public String getSubSpaces(@QueryParam("id") long parentId, @Context HttpServletRequest request) {		
-		log.debug("getSubSpaces parentId=" + parentId);		
+	public String getSubSpaces(@QueryParam("id") long parentId, @Context HttpServletRequest request) {					
 		long userId = SessionUtil.getUserId(request);
 		
 		return gson.toJson(RESTHelpers.toSpaceTree(Database.getSubSpaces(parentId, userId)));
@@ -91,8 +90,7 @@ public class RESTServices {
 	@POST
 	@Path("/space/{id}")
 	@Produces("application/json")	
-	public String getSpaceDetails(@PathParam("id") long spaceId, @Context HttpServletRequest request) {
-		log.debug("getSpaceDetails id=" + spaceId);		
+	public String getSpaceDetails(@PathParam("id") long spaceId, @Context HttpServletRequest request) {			
 		long userId = SessionUtil.getUserId(request);
 		
 		Space s = Database.getSpaceDetails(spaceId, userId);
@@ -110,7 +108,7 @@ public class RESTServices {
 	@Path("/session/logout")
 	@Produces("application/json")	
 	public String doInvalidateSession(@Context HttpServletRequest request) {	
-		log.debug("doInvalidateSession user=" + request.getSession().getAttribute("user"));
+		log.info(String.format("User [%s] manually logged out", SessionUtil.getUser(request).getEmail()));
 		request.getSession().invalidate();
 		return gson.toJson(0);
 	}	

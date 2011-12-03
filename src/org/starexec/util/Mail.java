@@ -79,6 +79,7 @@ public class Mail {
 		String email = Util.readFile(new File(R.CONFIG_PATH, "acceptance_email.txt"));
 		email = email.replace("$$COMMUNITY$$", communityName);
 		email = email.replace("$$NEWUSER$$", user.getFullName());
+		email = email.replace("$$EMAIL$$", user.getEmail());
 		email = email.replace("$$INSTITUTION$$", user.getInstitution());
 		email = email.replace("$$MESSAGE$$", comReq.getMessage());
 		email = email.replace("$$APPROVE$$", String.format("%s/starexec/Verify?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "approve"));

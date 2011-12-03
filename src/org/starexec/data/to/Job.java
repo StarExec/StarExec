@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.starexec.util.Util;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -19,7 +21,7 @@ public class Job extends Identifiable {
 	private Timestamp finished;
 	private long timeout;
 	@Expose	private String status;
-	@Expose	private String description;
+	@Expose private String description = "none";
 	private String runTime = "";
 	private List<JobPair> jobPairs;
 	
@@ -144,7 +146,9 @@ public class Job extends Identifiable {
 	 * @param description the description for the job
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}
 	
 	/**

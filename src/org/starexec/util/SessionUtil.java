@@ -123,7 +123,6 @@ public class SessionUtil {
 			
 			if(p != null) {
 				cache.put(spaceId, p);
-				log.debug("Cached permissions for space " + spaceId);
 			}
 		}
 	}

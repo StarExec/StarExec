@@ -4,10 +4,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 public class Util {		
 	/**
@@ -68,8 +75,7 @@ public class Util {
 	
 	public static boolean isNullOrEmpty(String s){
 		return (s == null || s.trim().length() <= 0);
-	}
-	
+	}	
 	
 	/**
 	 * Generates a temporary password consisting of 4 letters, 1 digit and 1 special
@@ -105,4 +111,29 @@ public class Util {
         return sb.toString();
     }
 
+	/**
+	 * Parses a multipart request and returns a hashmap of form parameters
+	 * @param request The request to parse
+	 * @return A hashmap containing the field name to field value mapping
+	 */
+	public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
+		// Use Tomcat's multipart form utilities
+		FileItemFactory factory = new DiskFileItemFactory();
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		List<FileItem> items = upload.parseRequest(request);
+		HashMap<String, Object> form = new HashMap<String, Object>();
+		
+		for(FileItem f : items) {
+			// If we're dealing with a regular form field...
+			if(f.isFormField()) {
+				// Add the field name and field value to the hashmap
+				form.put(f.getFieldName(), f.getString());				
+			} else {
+				// Else we've encountered a file, so add the FileItem to the hashmap
+				form.put(f.getFieldName(), f);					
+			}	
+		}
+		
+		return form;
+	}
 }

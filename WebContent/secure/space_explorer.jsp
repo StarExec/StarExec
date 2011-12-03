@@ -84,7 +84,7 @@
 			<ul id="actionList">
 				<li><span class="round button"><a id="addSpace" href="/starexec/secure/add/space.jsp">add space</a></span></li>
 				<li><span class="round button"><a id="removeSpace" href="/starexec/secure/remove/space.jsp">delete space</a></span></li>
-				<li><span class="round button"><a id="uploadBench" href="/starexec/secure/upload/bench.jsp">upload benchmarks</a></span></li>
+				<li><span class="round button"><a id="uploadBench" href="/starexec/secure/add/benchmarks.jsp">upload benchmarks</a></span></li>
 				<li><span class="round button"><a id="uploadSolver" href="/starexec/secure/upload/solver.jsp">upload solver</a></span></li>				
 			</ul>
 		</fieldset>				

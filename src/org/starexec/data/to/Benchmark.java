@@ -2,6 +2,8 @@ package org.starexec.data.to;
 
 import java.sql.Timestamp;
 
+import org.starexec.util.Util;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -12,7 +14,7 @@ import com.google.gson.annotations.Expose;
 public class Benchmark extends Identifiable {
 	private long userId = -1;	
 	@Expose private String name;	
-	@Expose private String description;	
+	@Expose private String description = "none";	
 	@Expose private BenchmarkType type;
 	private Timestamp uploadDate;	
 	private transient String path;
@@ -57,7 +59,9 @@ public class Benchmark extends Identifiable {
 	 * @param description the description to set for the benchmark
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}
 	
 	/**

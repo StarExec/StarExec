@@ -86,7 +86,7 @@ $(document).ready(function(){
 		rules : {
 			name : {
 				required : true,
-				regex : "^[a-zA-Z0-9\\-_]+$"
+				regex : "^[a-zA-Z0-9\\-_\\.]+$"
 			},
 			description : {
 				required : true

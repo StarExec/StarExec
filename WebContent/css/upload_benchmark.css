@@ -1,0 +1,30 @@
+#content fieldset {
+	width: 600px;
+	margin: 50px auto 30px auto;	
+}
+
+#tblUploadBench {
+	width: 100%;
+}
+
+#tblUploadBench tr td {
+	padding: 10px;
+}
+
+.label {
+	width: 160px;
+	vertical-align: middle;
+}
+
+button {
+	float: right;
+}
+
+#tblDefaultPerm tr td {
+	padding: 0px;
+	padding-right: 40px;	
+}
+
+#tblDefaultPerm tr th {
+	text-align: left;
+}

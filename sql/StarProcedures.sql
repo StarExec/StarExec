@@ -323,6 +323,19 @@ CREATE PROCEDURE AddCommunityRequest(IN _id BIGINT, IN _community BIGINT, IN _co
 		END IF;
 	END //
 
+-- Adds a benchmark into the system and associates it with a space
+-- Author: Tyler Jensen
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId BIGINT, IN _typeId BIGINT, IN _spaceId BIGINT)
+	BEGIN
+		DECLARE bid BIGINT DEFAULT -1;
+		
+		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable)
+		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable);
+		
+		SELECT LAST_INSERT_ID() INTO bid;
+		INSERT INTO bench_assoc VALUES (_spaceId, bid);
+	END //				
+
 -- Returns the community request associated with given user id
 -- Author: Todd Elvers
 CREATE PROCEDURE GetCommunityRequestById(IN _id BIGINT)

@@ -44,7 +44,7 @@ public class Validate {
     	"*(\\.[A-Za-z]{2,})$";   
         
     private static final String ALPHA_NUMERIC_DASH =
-    	"^[a-zA-Z0-9\\-_]{1,32}$";
+    	"^[a-zA-Z0-9\\-_\\.]{1,32}$";
     
     private static final String BOOLEAN_PATTERN = 
     	"true|false";
