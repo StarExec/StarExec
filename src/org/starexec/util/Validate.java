@@ -19,6 +19,7 @@ public class Validate {
     private static Pattern safeTextChecker;
     private static Pattern passwordChecker;
     private static Pattern booleanChecker;
+    private static Pattern websiteChecker;
   
     private static final String PASS_PATTERN = 
         "^"											  	// Beginning of string
@@ -52,6 +53,9 @@ public class Validate {
     private static final String SAFE_TEXT =
         	"^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$";
     
+    private static final String WEBSITE_PATTERN =
+    	"^https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]{1,128}";
+    
     static {
     	nameChecker = Pattern.compile(NAME_PATTERN);
         emailChecker = Pattern.compile(EMAIL_PATTERN);
@@ -60,6 +64,7 @@ public class Validate {
         alphaNumericChecker = Pattern.compile(ALPHA_NUMERIC_DASH);
         safeTextChecker = Pattern.compile(SAFE_TEXT);
         booleanChecker = Pattern.compile(BOOLEAN_PATTERN);
+        websiteChecker = Pattern.compile(WEBSITE_PATTERN);
     }
         	
 	/**
@@ -235,4 +240,18 @@ public class Validate {
     	}
     }
     
+    
+    /** 
+     * Validates a website URL and makes sure it begins with http(s) and is less
+     * than 128 characters.
+     * @param url the URL to check
+     * @return true iff the URL passes the check
+     */
+    public static boolean website(String url) {
+    	if(Util.isNullOrEmpty(url)) {
+    		return false;
+    	}
+    	
+    	return websiteChecker.matcher(url).matches();
+    }
 }

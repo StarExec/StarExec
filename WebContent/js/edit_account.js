@@ -17,9 +17,11 @@ $(document).ready(function(){
 				function(returnCode) {
 			    	if(returnCode == '0') {
 			    		showMessage('success', "website successfully added", 5000);
-			    		$('#websites').append('<li><a href="' + url + '">' + name + '</a></li>');
-			    		$('#websites li').removeClass('shade');
-			    		$('#websites li:even').addClass('shade');
+			    		$('#websites').children().remove();
+			    		$.getJSON('/starexec/services/websites/user', displayWebsites).error(function(){
+			    			alert('Session expired');
+			    			window.location.reload(true);
+			    		});
 			    	} else {
 			    		showMessage('error', "error: website not added. please try again", 5000);
 			    	}
@@ -31,7 +33,6 @@ $(document).ready(function(){
 	//make the various parts editable
 	editable("firstname");
 	editable("lastname");
-	editable("email");
 	editable("institution");
 	
 	//make the password updatable

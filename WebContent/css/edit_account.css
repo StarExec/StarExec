@@ -69,7 +69,6 @@ li:hover button {
 
 #editfirstname:hover, 
 #editlastname:hover, 
-#editinstitution:hover, 
-#editemail:hover {
+#editinstitution:hover {
 	cursor: pointer;	
 }

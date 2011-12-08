@@ -24,10 +24,10 @@
 			</tr>
 			<tr>
 				<td>email </td>
-				<td id="editemail">${user.email}</td>
+				<td>${user.email}</td>
 			</tr>
 		</table>
-		<h6>(click the current value of an attribute to edit it)</h6>
+		<h6>(click the current value of an attribute to edit it; email addresses are currently not editable)</h6>
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
