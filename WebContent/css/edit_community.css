@@ -32,9 +32,21 @@ button {
 	float: right;
 }
 
+.delWebsite {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
 #toggleType, 
 #toggleWebsite {	
 	cursor: pointer;	
+}
+
+.website {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
 }
 
 .caption {

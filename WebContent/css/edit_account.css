@@ -27,8 +27,7 @@ button {
 	border-radius: 2px;
 }
 
-#password tr td button,
-#websites li button {
+#password tr td button {
 	float: right;
 }
 
@@ -59,6 +58,12 @@ fieldset ul li {
 	width: 30%;
 }
 
+.website {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
 li button {
 	display: none;
 }
@@ -70,5 +75,29 @@ li:hover button {
 #editfirstname:hover, 
 #editlastname:hover, 
 #editinstitution:hover {
+	cursor: pointer;	
+}
+
+
+.caption {
+	text-align: right;
+	font-size: 14px;
+	display: block;
+	margin-top: 10px;
+}
+
+#new_website {
+	float: right;
+	margin-top: 10px;
+}
+
+
+input[type="text"] {
+	width: 50%;
+	height: 20px;	
+}
+
+
+#toggleWebsite {	
 	cursor: pointer;	
 }

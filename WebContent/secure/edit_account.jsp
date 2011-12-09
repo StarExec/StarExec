@@ -32,7 +32,7 @@
 	<fieldset>
 		<legend>associated websites</legend>
 		<ul id="websites"></ul>
-		<h6>add new website:</h6><br />
+		<span id="toggleWebsite" class="caption">+ add new</span>
 		<div id="new_website">
 			name: <input type="text" id="website_name" /> 
 			url: <input type="text" id="website_url" /> 

@@ -526,6 +526,57 @@ CREATE PROCEDURE DeleteUserWebsite(IN _id BIGINT, IN _userId BIGINT)
 		WHERE id = _id AND user_id = _userId;
 	END //
 
+-- Deletes a website associated with a space
+-- Author: Todd Elvers
+CREATE PROCEDURE DeleteSpaceWebsite(IN _id BIGINT, IN _spaceId BIGINT)
+	BEGIN
+		DELETE FROM website
+		WHERE id = _id AND space_id = _spaceId;
+	END //
+
+-- Deletes a benchmark type associated with a space
+-- Author: Todd Elvers
+CREATE PROCEDURE DeleteBenchmarkType(IN _id BIGINT, IN _community BIGINT)
+	BEGIN
+		DELETE FROM bench_types
+		WHERE id = _id AND community = _community;
+	END //
+	
+-- Removes the association a user has with a given space
+-- Author: Todd Elvers
+CREATE PROCEDURE LeaveCommunity(IN _userId BIGINT, IN _commId BIGINT)
+	BEGIN
+		DELETE FROM user_assoc
+		WHERE user_id = _userId
+		AND space_id = _commId;
+	END //
+	
+-- Removes the association between a benchmark and a given space
+-- Author: Todd Elvers
+CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId BIGINT, IN _spaceId BIGINT)
+	BEGIN
+		DELETE FROM bench_assoc
+		WHERE space_id = _spaceId
+		AND bench_id = _benchId;
+	END //
+	
+-- Removes the association between a solver and a given space
+-- Author: Todd Elvers
+CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId BIGINT, IN _spaceId BIGINT)
+	BEGIN
+		DELETE FROM solver_assoc
+		WHERE solver_id = _solverId
+		AND space_id = _spaceId;
+	END //
+
+-- Removes the association between a job and a given space
+-- Author: Todd Elvers
+CREATE PROCEDURE RemoveJobFromSpace(IN _jobId BIGINT, IN _spaceId BIGINT)
+BEGIN
+	DELETE FROM job_assoc
+	WHERE job_id = _jobId
+	AND space_id = _spaceId;
+END //
 
 -- Finds the maximal set of permissions for the given user on the given space
 -- Author: Tyler Jensen

@@ -57,6 +57,14 @@ a.job:hover, a.user:hover {
 	background-color: #dc6f04;
 }
 
+tbody .row_selected{
+	background-color: #dc6f04;
+}
+	
+.button{
+	margin-bottom:9px;
+}
+
 .solver p, .benchmark p {
 	margin-top: 9px;
 }
@@ -86,6 +94,7 @@ fieldset {
 	width: 100%;
 }
 
-.expd {	
+.expd, #removeUser, #removeBench,
+#removeSubspace, #removeSolver, #removeJob {	
 	cursor: pointer;
 }

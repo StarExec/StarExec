@@ -12,7 +12,7 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen 
  */
 public class BenchmarkType extends Identifiable {
-	@Expose private String name;
+	@Expose private String name = "none";
 	@Expose private String description = "none";
 	@Expose private String processorName;
 	private String processorPath;	
@@ -29,7 +29,9 @@ public class BenchmarkType extends Identifiable {
 	 * @param name The name to set for the type
 	 */
 	public void setName(String name) {
-		this.name = name;
+		if(!Util.isNullOrEmpty(name)) {
+			this.name = name;
+		}
 	}
 	
 	/**
@@ -66,10 +68,11 @@ public class BenchmarkType extends Identifiable {
 	 * @param processorPath The physical path to set for the processor for this type
 	 */
 	public void setProcessorPath(String processorPath) {
-		this.processorPath = processorPath;			
-		this.processorName = this.processorPath.substring(this.processorPath.lastIndexOf(File.separator) + 1);		
+		if (!Util.isNullOrEmpty(processorPath)) {
+			this.processorPath = processorPath;
+			this.processorName = this.processorPath.substring(this.processorPath.lastIndexOf(File.separator) + 1);
+		}
 	}
-	
 	/**
 	 * @return The id of the community this type belongs to 
 	 */

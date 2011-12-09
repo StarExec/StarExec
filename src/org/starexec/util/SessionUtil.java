@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.P;
 import org.starexec.data.Database;
 import org.starexec.data.to.*;
+import org.starexec.servlets.Registration;
 
 /**
  * Contains handy methods for accessing data within a user's session
@@ -125,5 +126,18 @@ public class SessionUtil {
 				cache.put(spaceId, p);
 			}
 		}
+	}
+	
+	/**
+	 * Removes a user's permission for a given space from cache; this prevents
+	 * the cached permissions and the actual permissions from becoming desynchronized 
+	 *  
+	 * @param request the session where the cache is located
+	 * @param spaceId the id of the space to remove permissions from cache for
+	 * @author Todd Elvers
+	 */
+	public static void removeCachePermission(HttpServletRequest request, long spaceId){
+		HashMap<Long, Permission> cache = SessionUtil.getPermissionCache(request.getSession());
+		cache.remove(spaceId);
 	}
 }

@@ -1,14 +1,19 @@
 $(document).ready(function(){
 	//get website information for the current user
-	$.getJSON('/starexec/services/websites/user', displayWebsites).error(function(){
+	$.getJSON('/starexec/services/websites/user/-1', displayWebsites).error(function(){
 		alert('Session expired');
 		window.location.reload(true);
 	});
 	
+	$('#toggleWebsite').click(function() {
+		$('#new_website').slideToggle('fast');	
+	});	
+	$('#new_website').hide();
+	
 	//how to add a new website
 	$("#addWebsite").click(function(){
-		var name = document.getElementById('website_name').value;
-		var url = document.getElementById('website_url').value;
+		var name = $("#website_name").val();
+		var url = $("#website_url").val();
 		
 		var data = {name: name, url: url};
 		$.post(
@@ -16,9 +21,9 @@ $(document).ready(function(){
 				data,
 				function(returnCode) {
 			    	if(returnCode == '0') {
-			    		showMessage('success', "website successfully added", 5000);
-			    		$('#websites').children().remove();
-			    		$.getJSON('/starexec/services/websites/user', displayWebsites).error(function(){
+//			    		showMessage('success', "website successfully added", 5000);
+			    		$('#websites li').remove();
+			    		$.getJSON('/starexec/services/websites/user/-1', displayWebsites).error(function(){
 			    			alert('Session expired');
 			    			window.location.reload(true);
 			    		});
@@ -28,6 +33,8 @@ $(document).ready(function(){
 				},
 				"json"
 		);
+		$("#website_name").val("");
+		$("#website_url").val("");
 	});
 	
 	//make the various parts editable
@@ -84,22 +91,24 @@ $(document).ready(function(){
 });
 
 function displayWebsites(data) {
+	// Injects the clickable delete button that's always present
 	$.each(data, function(i, site) {
-		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '</a><button class="website" id="' + site.id + '">delete</button></li>');
+		$('#websites tr').parent().remove();
+		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '</a><a class="website" id="' + site.id + '">delete</a></li>');
 		$('#websites li:even').addClass('shade');
 	});
 	
+	// Handles deletion of websites
 	$('.website').click(function(){
-		var element = this;
-		var id = element.getAttribute('id');
+		var id = $(this).attr('id');
 		var parent = $(this).parent();
-		var answer = confirm("really delete this website?");
+		var answer = confirm("are you sure you want to delete this website?");
 		if (true == answer) {
 			$.post(
-					"/starexec/services/websites/delete/user/" + id,
+					"/starexec/services/websites/delete/" + "user" + "/" + -1 + "/" + id,
 					function(returnData){
 						if (returnData == 0) {
-							showMessage('success', "website sucessfully deleted", 5000);
+//							showMessage('success', "website sucessfully deleted", 5000);
 							parent.remove();
 				    		$('#websites li').removeClass('shade');
 				    		$('#websites li:even').addClass('shade');

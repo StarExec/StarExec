@@ -1,4 +1,9 @@
 $(document).ready(function(){
+	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+	
 	// Add a new website functionality
 	$("#addWebsite").click(function(){
 		var name = document.getElementById('website_name').value;
@@ -21,10 +26,12 @@ $(document).ready(function(){
 				data,
 				function(returnCode) {
 			    	if(returnCode == '0') {
-			    		showMessage('success', "website successfully added", 5000);
-			    		$('#websites').append('<li><a href="' + url + '">' + name + '</a></li>');
-			    		$('#websites li').removeClass('shade');
-			    		$('#websites li:even').addClass('shade');
+//			    		showMessage('success', "website successfully added", 5000);
+			    		$('#websites li').remove();
+			    		$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
+			    			alert('Session expired');
+			    			window.location.reload(true);
+			    		});
 			    	} else {
 			    		showMessage('error', "error: website not added. please try again", 5000);
 			    	}
@@ -32,6 +39,7 @@ $(document).ready(function(){
 				"json"
 		);
 	});
+	
 	
 	// Make forms editable
 	editable("name");
@@ -97,6 +105,43 @@ $(document).ready(function(){
 	});
 });
 
+function displayWebsites(data) {
+	// Injects the clickable delete button that's always present
+	$.each(data, function(i, site) {
+		$('#websites tr').parent().remove();
+		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '</a><a class="delWebsite" id="' + site.id + '">delete</a></li>');
+		$('#websites li:even').addClass('shade');
+	});
+	
+	// Handles deletion of websites
+	$('.delWebsite').click(function(){
+		var answer = confirm("are you sure you want to delete this website?");
+		var websiteId = $(this).attr('id');
+		var parent = $(this).parent();
+		if (true == answer) {
+			$.post(
+					"/starexec/services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + websiteId,
+					function(returnData){
+						if (returnData == 0) {
+//							showMessage('success', "website sucessfully deleted", 5000);
+							parent.remove();
+				    		$('#websites li').removeClass('shade');
+				    		$('#websites li:even').addClass('shade');
+						} else {
+							showMessage('error', "error: website not deleted. please try again", 5000);
+						}
+					},
+					"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
+}
+
+
+
 function editable(attribute) {
 	$('#edit' + attribute).click(function(){
 		var old = $(this).html();
@@ -135,12 +180,14 @@ function typeEditable() {
 		$(this).append('<input type="hidden" name="typeId" value="' + $(this).attr('id').split('_')[1] + '" />');
 				
 		var saveBtn = $('<button type="submit">save</button><br/>');
-		var cancelBtn = $('<button type="button">cancel</button>');
-		var saveCol = $('<td></td>').append(saveBtn).append(cancelBtn);			
+		var cancelBtn = $('<button type="button">cancel</button><br/>');
+		var deleteBtn = $('<button type="button">delete</button>');
+		var saveCol = $('<td></td>').append(saveBtn).append(cancelBtn).append(deleteBtn);			
 		$(this).append(saveCol);
 		
 		$(saveBtn).click(function(){saveChanges(this, true, attribute);});
 		$(cancelBtn).click(function(){ restoreBenchTypeRow(old); });			
+		$(deleteBtn).click(function(){ deleteType($("[name=typeId]").val(), $(this).parent().parent()); });
 	});
 	
 	$('#benchTypes tr').css('cursor', 'pointer');
@@ -152,6 +199,28 @@ function restoreBenchTypeRow(old) {
 	$('#benchTypes tr.selected').removeClass('selected');	
 	typeEditable();
 }
+
+function deleteType(typeId, parent){
+	var answer = confirm("are you sure you want to delete this benchmark type?");
+	$.post(
+			"/starexec/services/edit/space/type/delete/" + $('#comId').val() + "/" + typeId,
+			function(returnCode) {
+		    	if(returnCode == '0') {
+//		    		showMessage('success', "type was successfully deleted", 5000);
+					parent.remove();
+		    		$('#benchTypes tr').removeClass('shade');
+		    		$('#benchTypes tr:even').addClass('shade');	
+		    	} else {
+		    		showMessage('error', "error: type not added. please try again", 5000);
+		    	}
+			},
+			"json"
+	).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+}
+
 
 function saveChanges(obj, save, attr) {
 	var t = save;

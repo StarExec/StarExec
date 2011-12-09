@@ -13,7 +13,6 @@ try {
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 	} else {
 		request.setAttribute("com", com);	
-		request.setAttribute("web", Database.getWebsites(id, Database.WebsiteType.SPACE));
 		request.setAttribute("types", Database.getBenchTypesForCommunity(id));
 	}
 } catch (Exception e) {
@@ -44,11 +43,7 @@ try {
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
-		<ul id="websites">
-			<c:forEach var="site" items="${web}">
-				<li><a href="${site.url}" target="_blank">${site.name}</a></li>
-			</c:forEach>
-		</ul>
+		<ul id="websites"></ul>
 		<span id="toggleWebsite" class="caption">+ add new</span>
 		<div id="new_website">
 			<label for="website_name">name </label><input type="text" id="website_name" /> 

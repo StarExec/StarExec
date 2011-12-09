@@ -1264,6 +1264,111 @@ public class Database {
 		return false;
 	}
 	
+	/**
+	 * Removes a benchmark's association from a given space, thereby removing the benchmark
+	 * from the space
+	 * 
+	 * @param benchId the id of the benchmark to remove
+	 * @param spaceId the id of the space to remove the benchmark from
+	 * @return true iff the benchmark was successfully removed from the given space
+	 * @author Todd Elvers
+	 */
+	public static boolean removeBenchFromSpace(long benchId, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
+			procedure.setLong(1, benchId);
+			procedure.setLong(2, spaceId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Removal of benchmark [id=%d] from space [id=%d] failed.", benchId, spaceId));
+				return false;
+			}
+			
+			log.debug(String.format("Removal of benchmark [id=%d] from space [id=%d] was successful.", benchId, spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("Removal of benchmark [id=%d] from space [id=%d] failed.", benchId, spaceId));
+		return false;
+	}
+	
+	/**
+	 * Removes a solver's association with a given space, thereby removing the solver
+	 * from the space
+	 * 
+	 * @param solverId the id of the solver to remove
+	 * @param spaceId the id of the space to remove the solver from
+	 * @return true iff the solver was successfully removed from the given space
+	 * @author Todd Elvers
+	 */
+	public static boolean removeSolverFromSpace(long solverId, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
+			procedure.setLong(1, solverId);
+			procedure.setLong(2, spaceId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Removal of solver [id=%d] from space [id=%d] failed.", solverId, spaceId));
+				return false;
+			}
+			
+			log.debug(String.format("Removal of solver [id=%d] from space [id=%d] was successful.", solverId, spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("Removal of solver [id=%d] from space [id=%d] failed.", solverId, spaceId));
+		return false;
+	}
+	
+	/**
+	 * Removes a job's association with a space, thereby removing the job from
+	 * the space
+	 * 
+	 * @param jobId the id of the job to remove
+	 * @param spaceId the id of the space to remove the job from
+	 * @return true iff the job was successfully removed from the given space
+	 * @author Todd Elvers
+	 * @deprecated has not been tested
+	 */
+	public static boolean removeJobFromSpace(long jobId, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
+			procedure.setLong(1, jobId);
+			procedure.setLong(2, spaceId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Removal of job [id=%d] from space [id=%d] failed.", jobId, spaceId));
+				return false;
+			}
+			
+			log.debug(String.format("Removal of job [id=%d] from space [id=%d] was successful.", jobId, spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("Removal of job [id=%d] from space [id=%d] failed.", jobId, spaceId));
+		return false;
+	}
 	
 	/**
 	 * Get all websites associated with a given user.
@@ -2084,7 +2189,111 @@ public class Database {
 		}
 		
 		return false;
-	}	
+	}
+	
+	/**
+	 * Deletes a website from a given space
+	 * 
+	 * @param websiteId the id of the website to delete
+	 * @param spaceId the id of the space to delete the website from
+	 * @return true iff the website was deleted from the given space
+	 * @author Todd Elvers
+	 */
+	public static boolean deleteSpaceWebsite(long websiteId, long spaceId){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?, ?)}");
+			procedure.setLong(1, websiteId);
+			procedure.setLong(2, spaceId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Deletion of website [id=%d] for space [id=%d] failed.", websiteId, spaceId));
+				return false;
+			}
+			
+			log.debug(String.format("Deletion of website [id=%d] for space [id=%d] was successful.", websiteId, spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("Deletion of website [id=%d] for space [id=%d] failed.", websiteId, spaceId));
+		return false;
+	}
+	
+	
+	/**
+	 * Deletes a given benchmark type from a space
+	 * 
+	 * @param typeId the id of the benchmark type to delete
+	 * @param spaceId the id of the space to delete the benchmark type from
+	 * @return true iff the benchmark type was deleted from the given space
+	 * @author Todd Elvers
+	 */
+	public static boolean deleteBenchmarkType(long typeId, long spaceId){
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkType(?, ?)}");
+			procedure.setLong(1, typeId);
+			procedure.setLong(2, spaceId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("Deletion of benchmark type [id=%d] for space [id=%d] failed.", typeId, spaceId));
+				return false;
+			}
+			
+			log.debug(String.format("Deletion of benchmark type [id=%d] for space [id=%d] was successful.", typeId, spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("Deletion of benchmark type [id=%d] for space [id=%d] failed.", typeId, spaceId));
+		return false;
+	}
+	
+	/**
+	 * Removes a user's association to a given space, thereby leaving that space
+	 * 
+	 * @param userId the id of the user to remove from the space
+	 * @param commId the id of the space to remove the user from
+	 * @return true iff the user was successfully removed from the given space
+	 * @author Todd Elvers
+	 */
+	public static boolean leaveCommunity(long userId, long commId) {
+		Connection con = null;			
+		
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			procedure.setLong(1, userId);
+			procedure.setLong(2, commId);
+			
+			int rowsModified = procedure.executeUpdate();
+			if (rowsModified == 0) {
+				log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
+				return false;
+			}
+			
+			log.debug(String.format("User [id=%d] successfully left community [id=%d].", userId, commId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}
+		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
+		return false;
+	}
+	
 	
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a
@@ -2450,6 +2659,4 @@ public class Database {
 			// Do nothing
 		}
 	}
-
-
 }

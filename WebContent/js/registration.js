@@ -11,6 +11,7 @@ $(document).ready(function() {
 				return this.optional(element) || re.test(value);
 	});
 	
+	
 	// Set the default text
 	$("#reason").data('default', "describe your motivation for joining this community");
 

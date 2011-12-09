@@ -67,6 +67,11 @@ fieldset {
 	width: 100%;
 }
 
-.expd {	
+
+.expd, #removeUser, #leaveComm {	
 	cursor: pointer;
+}
+
+tbody .row_selected{
+	background-color: #dc6f04;
 }

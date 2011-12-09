@@ -44,13 +44,15 @@
 				</thead>			
 			</table>
 		</fieldset>							
+			 	
 		
 		<fieldset>
 			<legend>actions</legend>
 			<ul id="actionList">
 				<li><span class="round button"><a id="joinComm" href="#">join</a></span></li>
-				<li><span class="round button"><a id="leaveComm" href="#">leave</a></span></li>
+				<li><span class="round button"><a id="leaveComm">leave</a></span></li>
 				<li><span class="round button"><a id="editComm" href="#">edit</a></span></li>							
+				<li><span class="round button"><a id="removeUser">remove user</a></span></li>
 			</ul>
 		</fieldset>				
 	</div>	

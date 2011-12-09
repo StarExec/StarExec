@@ -116,14 +116,19 @@ public class RESTServices {
 	/**
 	 * @return a json string representing all the websites associated with
 	 * the current user
-	 * @author Skylar Stark
+	 * @author Skylar Stark and Todd Elvers
 	 */
 	@GET
-	@Path("/websites/user")
+	@Path("/websites/{type}/{spaceId}")
 	@Produces("application/json")
-	public String getWebsites(@Context HttpServletRequest request) {
+	public String getWebsites(@PathParam("type") String type, @PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
 		long userId = SessionUtil.getUserId(request);
-		return gson.toJson(Database.getWebsites(userId, Database.WebsiteType.USER));
+		if(type.equals("user")){
+			return gson.toJson(Database.getWebsites(userId, Database.WebsiteType.USER));
+		} else if(type.equals("space")){
+			return gson.toJson(Database.getWebsites(spaceId, Database.WebsiteType.SPACE));
+		}
+		return gson.toJson(1);
 	}
 	
 	/**
@@ -160,21 +165,33 @@ public class RESTServices {
 		
 		return gson.toJson(1);
 	}
+
 	
 	/**
-	 * Deletes website information in the database. Website ID is included in the path.
-	 * 
-	 * @return a json string containing '0' if the delete is successful, '1' otherwise
+	 * Deletes a website from either a user's list of websites or a space's list of websites
+	 *
+	 * @param type the type the delete is for, can be either 'user' or 'space'
+	 * @param spaceId the id of the space to remove the website from
+	 * @param websiteId the id of the website to remove
+	 * @return 0 iff the website was successfully deleted for a space, 2 if the user lacks permissions,
+	 * and 1 otherwise
+	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/websites/delete/user/{val}")
+	@Path("/websites/delete/{type}/{spaceId}/{websiteId}")
 	@Produces("application/json")
-	public String deleteWebsite(@PathParam("val") long id, @Context HttpServletRequest request) {
-		long userId = SessionUtil.getUserId(request);
-		boolean success = Database.deleteUserWebsite(id, userId);
+	public String deleteWebsite(@PathParam("type") String type, @PathParam("spaceId") long spaceId, @PathParam("websiteId") long websiteId, @Context HttpServletRequest request) {
 		
-		if (true == success) {
-			return gson.toJson(0);
+		if(type.equals("user")){
+			return Database.deleteUserWebsite(websiteId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(1);
+		} else if (type.equals("space")){
+			// Permissions check; ensures the user deleting the website is a leader
+			Permission perm = SessionUtil.getPermission(request, spaceId);		
+			if(perm == null || !perm.isLeader()) {
+				return gson.toJson(2);	
+			}
+			
+			return Database.deleteSpaceWebsite(websiteId, spaceId) ? gson.toJson(0) : gson.toJson(1);
 		}
 		
 		return gson.toJson(1);
@@ -279,6 +296,163 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Removes a benchmark type from a given space
+	 *
+	 * @return a json string containing '0' if the deletion was successful, else
+	 * a json string containing '1' if there was a failure, '2' for insufficient permissions
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/edit/space/type/delete/{spaceId}/{typeId}")
+	@Produces("application/json")
+	public String deleteBenchmarkType(@PathParam("spaceId") long spaceId, @PathParam("typeId") long typeId, @Context HttpServletRequest request) {
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.isLeader()) {
+			return gson.toJson(2);	
+		}
+		
+		if(true == Database.deleteBenchmarkType(typeId, spaceId)) {
+			return gson.toJson(0);
+		}
+		
+		return gson.toJson(1);
+	}
+	
+	/**
+	 * Removes a user's association to a space
+	 * 
+	 * @return a json string containing '0' if the user successfully left the space, else
+	 * a json string containing '1' if there was a failure, '2' for insufficient permissions
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/leave/space/{spaceId}")
+	@Produces("application/json")
+	public String leaveCommunity(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Permissions check; ensures user is apart of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null) {
+			return gson.toJson(2);	
+		}
+		
+		if(true == Database.leaveCommunity(SessionUtil.getUserId(request), spaceId)) {
+			// Delete prior entry in user's permissions cache for this community
+			SessionUtil.removeCachePermission(request, spaceId);
+			return gson.toJson(0);
+		}
+		
+		
+		return gson.toJson(1);
+	}
+	
+	/**
+	 * Removes a benchmark's association to a space, thereby removing the benchmark
+	 * from the space
+	 * 
+	 * @return a json string containing '0' if the benchmark was successfully removed from the space, else
+	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
+	 * @author Todd Elvers 
+	 */
+	@POST
+	@Path("/remove/benchmark/{spaceId}/{benchId}")
+	@Produces("application/json")
+	public String removeBenchmarkFromSpace(@PathParam("spaceId") long spaceId, @PathParam("benchId") long benchId, @Context HttpServletRequest request) {
+		
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canRemoveBench()) {
+			return gson.toJson(2);	
+		}
+
+		// Remove the benchmark from the space
+		return Database.removeBenchFromSpace(benchId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	/**
+	 * Removes a user's association with a space, whereby removing them from
+	 * a space; this differs from leaveCommunity() in that the user is not allowed
+	 * to remove themselves from a space, only other users who aren't leaders themselves
+	 * 
+	 * @return a json string containing '0' if the user was successfully removed from the space, else
+	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
+	 * '4' if they try to remove themselves, '5' if they try to remove another leader
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/remove/user/{spaceId}/{userId}")
+	@Produces("application/json")
+	public String removeUserFromSpace(@PathParam("spaceId") long spaceId, @PathParam("userId") long userId, @Context HttpServletRequest request) {
+		
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canRemoveUser()) {
+			return gson.toJson(2);	
+		}
+		
+		// Don't allow the user to remove themselves from the space
+		if(userId == SessionUtil.getUserId(request)){
+			return gson.toJson(4);
+		}
+		
+		// Don't allow user to remove other leaders from the space
+		perm = Database.getUserPermissions(userId, spaceId);
+		if(perm.isLeader()){
+			return gson.toJson(5);
+		}
+
+		// Remove the user from the space
+		return Database.leaveCommunity(userId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+	}
+
+	/**
+	 * Removes a solver's association with a space, thereby removing the solver
+	 * from the space
+	 * 
+	 * @return a json string containing '0' if the solver was successfully removed from the space, else
+	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/remove/solver/{spaceId}/{solverId}")
+	@Produces("application/json")
+	public String removeSolverFromSpace(@PathParam("spaceId") long spaceId, @PathParam("solverId") long solverId, @Context HttpServletRequest request) {
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canRemoveSolver()) {
+			return gson.toJson(2);	
+		}
+
+		// Remove the solver from the space
+		return Database.removeSolverFromSpace(solverId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	
+	/**
+	 * Removes a job's association with a space, thereby removing the job from the
+	 * space
+	 * 
+	 * @return a json string containing '0' if the job was successfully removed from the space, else
+	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
+	 * @author Todd Elvers
+	 * @deprecated not yet tested
+	 */
+	@POST
+	@Path("/remove/job/{spaceId}/{jobId}")
+	@Produces("application/json")
+	public String removeJobFromSpace(@PathParam("spaceId") long spaceId, @PathParam("jobId") long jobId, @Context HttpServletRequest request) {
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.isLeader()) {
+			return gson.toJson(2);	
+		}
+
+		// Remove the job from the space
+		return Database.removeJobFromSpace(jobId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	
+	/**
 	 * Updates the details of a solver.  Solver id is required in the path.  First
 	 * checks if the parameters of the update are valid, then performs the update.
 	 * 
@@ -290,9 +464,7 @@ public class RESTServices {
 	@POST
 	@Path("/edit/solver/{id}")
 	@Produces("application/json")
-	public String editSolverDetails(@PathParam("id") String id, @Context HttpServletRequest request) {
-		boolean isValidRequest = true;
-		long solverId = -1;
+	public String editSolverDetails(@PathParam("id") long solverId, @Context HttpServletRequest request) {
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("description", request)
@@ -304,17 +476,6 @@ public class RESTServices {
 		if(!Validate.solverBenchName(request.getParameter("name"))
 				|| !Validate.description(request.getParameter("description"))
 				|| !Validate.bool(request.getParameter("downloadable"))){
-			return gson.toJson(3);
-		}
-		
-		
-		// Safely extract the solver's id
-		try{
-			solverId = Long.parseLong(id);
-		} catch (NumberFormatException nfe){
-			isValidRequest = false;
-		}
-		if(false == isValidRequest){
 			return gson.toJson(3);
 		}
 		
@@ -331,12 +492,7 @@ public class RESTServices {
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
 		// Apply new solver details to database
-		boolean updated = Database.updateSolverDetails(solverId, name, description, isDownloadable);
-		if(updated){
-			return gson.toJson(0);
-		} else {
-			return gson.toJson(1);
-		}
+		return Database.updateSolverDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -351,18 +507,7 @@ public class RESTServices {
 	@POST
 	@Path("/delete/solver/{id}")
 	@Produces("application/json")
-	public String deleteSolver(@PathParam("id") String id, @Context HttpServletRequest request) {
-		boolean isValidRequest = true;
-		long solverId = -1;
-		// Safely extract the solver's id
-		try{
-			solverId = Long.parseLong(id);
-		} catch (NumberFormatException nfe){
-			isValidRequest = false;
-		}
-		if(false == isValidRequest){
-			return gson.toJson(3);
-		}
+	public String deleteSolver(@PathParam("id") long solverId, @Context HttpServletRequest request) {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		long userId = SessionUtil.getUserId(request);
@@ -373,12 +518,7 @@ public class RESTServices {
 		
 		//TODO Need to check if the solver exists in historical space. If it does, we SHOULD NOT delete the solver
 		// Delete the solver from the database
-		boolean deleted = Database.deleteSolver(solverId);
-		if(deleted){
-			return gson.toJson(0);
-		} else {
-			return gson.toJson(1);
-		}
+		return Database.deleteSolver(solverId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -393,20 +533,7 @@ public class RESTServices {
 	@POST
 	@Path("/delete/benchmark/{id}")
 	@Produces("application/json")
-	public String deleteBenchmark(@PathParam("id") String id, @Context HttpServletRequest request) {
-		boolean isValidRequest = true;
-		long benchId = -1;
-		
-		// Safely extract the benchmark's id
-		try{
-			benchId = Long.parseLong(id);
-		} catch (NumberFormatException nfe){
-			isValidRequest = false;
-		}
-		if(false == isValidRequest){
-			return gson.toJson(3);
-		}
-		
+	public String deleteBenchmark(@PathParam("id") long benchId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
 		long userId = SessionUtil.getUserId(request);
 		Benchmark bench = Database.getBenchmark(benchId, userId);
@@ -416,12 +543,7 @@ public class RESTServices {
 		
 		//TODO Need to check if the benchmark exists in historical space. If it does, we SHOULD NOT delete the benchmark
 		// Delete the benchmark from the database
-		boolean deleted = Database.deleteBenchmark(benchId);
-		if(deleted){
-			return gson.toJson(0);
-		} else {
-			return gson.toJson(1);
-		}
+		return Database.deleteBenchmark(benchId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	
@@ -435,11 +557,10 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/edit/benchmark/{id}")
+	@Path("/edit/benchmark/{benchId}")
 	@Produces("application/json")
-	public String editBenchmarkDetails(@PathParam("id") String id, @Context HttpServletRequest request) {
+	public String editBenchmarkDetails(@PathParam("benchId") long benchId, @Context HttpServletRequest request) {
 		boolean isValidRequest = true;
-		long benchId = -1;
 		long type = -1;
 		
 		// Ensure the parameters exist
@@ -450,9 +571,8 @@ public class RESTServices {
 			return gson.toJson(3);
 		}
 		
-		// Safely extract the benchmark's id & type
+		// Safely extract the type
 		try{
-			benchId = Long.parseLong(id);
 			type = Long.parseLong(request.getParameter("type"));
 		} catch (NumberFormatException nfe){
 			isValidRequest = false;
@@ -482,12 +602,7 @@ public class RESTServices {
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
 		// Apply new benchmark details to database
-		boolean updated = Database.updateBenchmarkDetails(benchId, name, description, isDownloadable, type);
-		if(updated){
-			return gson.toJson(0);
-		} else {
-			return gson.toJson(1);
-		}
+		return Database.updateBenchmarkDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	

@@ -6,7 +6,8 @@ $(document).ready(function(){
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = "/starexec/css/jstree/";
 	 
-	 // Initialize the jstree plugin for the community list
+	 var id;
+	// Initialize the jstree plugin for the community list
 	jQuery("#commList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
@@ -34,6 +35,59 @@ $(document).ready(function(){
 	leaderTable = $('#leaders').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">'
     });	
+	
+	$("#members").delegate("tr", "click", function(){
+		$(this).toggleClass("row_selected");
+	});
+	
+	// Hide the 'remove user' button
+	$("#removeUser").parent().parent().fadeOut('fast');
+	
+	// Handles the removal of user(s) from a space
+	$("#removeUser").click(function(){
+		var selectedRows = getSelectedRows(memberTable);
+		var remove;
+		
+		if(selectedRows.length >= 2){
+			remove = window.confirm("are you sure you want remove these users?");
+		} else {
+			remove = window.confirm("are you sure you want remove this user?");
+		}
+		
+		if(remove){
+			for(var i = 0; i < selectedRows.length; i++){
+				$.post(  
+					"/starexec/services/remove/user/" + id + "/" + selectedRows[i],  
+					function(returnCode) {
+						switch (returnCode) {
+							case 0:
+								break;
+							case 4:
+								showMessage('error', "you can not remove yourself from this space in that way, " +
+										"instead use the 'leave' button to leave this community", 5000);
+								break;
+							case 5:
+								showMessage('error', "you can not remove other leaders of this space", 5000);
+								break;
+							default:
+								showMessage('error', "only the leader of a community can modify it", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			}
+			// Retrieve details about space again
+			getCommunityDetails(id);
+			// Redraw the table
+			memberTable.fnDraw();
+			// Hide the button
+			$("#removeUser").parent().parent().fadeOut("fast");
+		}
+	});
 });
  
 /**
@@ -70,8 +124,9 @@ function populateDetails(jsonData) {
 	$('#memberField legend').children('span:first-child').text(jsonData.space.users.length);
 	memberTable.fnClearTable();	
 	$.each(jsonData.space.users, function(i, user) {
+		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>';
+		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>' + hiddenUserId;
 		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '</a>';				
 		memberTable.fnAddData([userLink, user.institution, emailLink]);
 	});
@@ -125,6 +180,9 @@ function checkPermissions(perms) {
 	
 	if(perms.isLeader) {
 		$('#editComm').parent().parent().fadeIn('fast');
+		$("#members").delegate("tr", "click", function(){
+			updateButton(memberTable, $("#removeUser"));
+		});
 	} else {
 		$('#editComm').parent().parent().fadeOut('fast');
 	}
@@ -136,8 +194,12 @@ function checkPermissions(perms) {
  */
 function updateActionId(id) {	
 	$('#joinComm').attr('href', "/starexec/secure/community/join.jsp?cid=" + id);
-	$('#leaveComm').attr('href', "/starexec/secure/community/leave.jsp?cid=" + id);
 	$('#editComm').attr('href', "/starexec/secure/community/edit.jsp?cid=" + id);
+	$("#leaveComm").click(function(){
+		if(window.confirm("are you sure you want to leave this community?")){
+			leaveCommunity(id);
+		}
+	});
 }
 
 function toggleTable(sender) {
@@ -149,3 +211,77 @@ function toggleTable(sender) {
 		$(sender).children('span:last-child').text('(+)');
 	}
 }
+
+/**
+ * Sends an AJAX request for a user to leave a given community
+ * 
+ * @param id the id of the community the user wants to leave
+ */
+function leaveCommunity(id){
+	$.post(
+			"/starexec/services/leave/space/" + id,
+			function(returnCode) {
+				switch (returnCode) {
+					case 0:
+						// Repopulate data on the page to indicate to the user
+						// that they no longer are a member of that community
+						getCommunityDetails(id);
+						break;
+					default:
+						showMessage('error', "you are not a member of this community", 5000);
+						break;
+				}
+			},
+			"json"
+	).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+	
+	// Redraw the two tables to prevent the case where
+	// a member was removed but the tables weren't updated
+	leaderTable.fnDraw();
+	memberTable.fnDraw();
+}
+
+/**
+ * For a given dataTable, this extracts the id's of the rows that have been
+ * selected by the user
+ * 
+ * @param dataTable the particular dataTable to extract the id's from
+ * @returns {Array} list of id values for the selected rows
+ */
+function getSelectedRows(dataTable){
+	var idArray = new Array();
+    var rows = $(dataTable).children('tbody').children('tr.row_selected');
+    $.each(rows, function(i, row) {
+    	idArray.push($(this).children('td:first').children('input').val());
+    });
+    return idArray;
+}
+
+/**
+ * This handles the showing and hiding of selection-specific buttons
+ *  
+ * @param dataTable the dataTable to check for selected items
+ * @param button the button to handle
+ */
+function updateButton(dataTable, button){
+	var selectedRows = $(dataTable).children('tbody').children('tr.row_selected');
+    
+    if(selectedRows.length == 0){
+    	$(button).parent().parent().fadeOut('fast');
+    }
+    else if(selectedRows.length >= 2 ){
+    	$(button).parent().parent().fadeIn('fast');
+    	if($(button).text()[$(button).text().length - 1] != "s"){
+    		$(button).text($(button).text() + "s").append();
+    	}
+    } else {
+    	$(button).parent().parent().fadeIn('fast');
+    	if($(button).text()[$(button).text().length - 1] == "s"){
+    		$(button).text($(button).text().substring(0, $(button).text().length - 1)).append();
+    	}
+    }
+}
+
