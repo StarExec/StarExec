@@ -2600,6 +2600,94 @@ public class Database {
 	}
 	
 	/**
+	 * Adds a solver to the database. Solver association to a space and run configurations
+	 * for the solver are also added. Every insert must pass for any of them to be added.
+	 * @param s the Solver to be added
+	 * @param spaceId the ID of the space we associate this solver with
+	 * @return true iff the add succeeded
+	 * @author Skylar Stark
+	 */
+	public static boolean addSolver(Solver s, long spaceId) {
+		Connection con = null;
+		try {
+			con = dataPool.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?)}");
+			procedure.setLong(1, s.getUserId());
+			procedure.setString(2, s.getName());
+			procedure.setBoolean(3, s.isDownloadable());
+			procedure.setString(4, s.getPath());
+			procedure.setString(5, s.getDescription());
+			procedure.registerOutParameter(6, java.sql.Types.BIGINT);
+			
+			int result = procedure.executeUpdate();
+			
+			long solverId = procedure.getLong(6);
+			if (result == 1) {
+				if (!addSolverAssociation(con, spaceId, solverId)) {
+					throw new Exception(String.format("Failed to associate solver [%s] with space [%p]", s.getName(), spaceId));
+				}
+				for (Configuration c : s.getConfigurations()) {
+					c.setSolverId(solverId);
+					if (!addConfiguration(con, c)) {
+						throw new Exception(String.format("Failed to add configuration [%s] to solver [%d]", c.getName(), s.getName()));
+					}
+				}
+				return true;
+			}
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Database.safeClose(con);
+		}		
+		return false;
+	}
+	
+	/**
+	 * Adds a Space/Solver association
+	 * @param con the database connection associated with the whole process of adding the solver
+	 * @param spaceId the ID of the space we are making the association to
+	 * @param solverId the ID of the solver we are associating to the space
+	 * @return true iff the database update succeeded
+	 * @throws SQLException
+	 * @author Skylar Stark
+	 */
+	private static boolean addSolverAssociation(Connection con, long spaceId, long solverId) throws SQLException {
+		CallableStatement procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
+		procedure.setLong(1, spaceId);
+		procedure.setLong(2, solverId);
+		
+		int result = procedure.executeUpdate();
+
+		if (result == 1) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Adds a run configuration to the database
+	 * @param con the database connection associated with the whole process of adding the solver
+	 * @param c the configuration we are adding
+	 * @return true iff the database updated succeeds
+	 * @throws SQLException
+	 * @author Skylar Stark
+	 */
+	private static boolean addConfiguration(Connection con, Configuration c) throws SQLException {
+		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?)}");
+		procedure.setLong(1, c.getSolverId());
+		procedure.setString(2, c.getName());
+		
+		int result = procedure.executeUpdate();
+		if (result == 1) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Begins a transaction by turning off auto-commit
 	 */
 	protected static void beginTransaction(Connection con){

@@ -26,7 +26,6 @@ import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-import sun.jkernel.DownloadManager;
 
 /**
  * @deprecated This class is out of date and needs to be re-implemented

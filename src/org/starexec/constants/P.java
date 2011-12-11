@@ -31,7 +31,8 @@ public class P {
 	public static String FILE_REQUEST_TYPE = "type";
 	
 	public static String SUPPORT_DIV = "lvl";
-	public static String SOLVER_NAME = "n";
+	public static String SOLVER_NAME = "sn";
+	public static String SOLVER_RUN = "run";
 	
 	/* OUTDATED BUT KEPT FOR REFERENCE
 	public static String JOB_ID = "jid";

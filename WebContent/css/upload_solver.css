@@ -1,0 +1,21 @@
+fieldset {						
+	width: 75%;	
+	margin-top: 50px;
+}
+
+fieldset table {
+	width: 100%;
+}
+
+tr td {
+	padding: 10px;
+}
+
+#uploadFile {
+	border: none;
+}
+
+#submit {
+	margin-top: 25px;
+	float: right;
+}

@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -17,144 +17,180 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.P;
-import org.starexec.constants.R;
+import org.starexec.constants.*;
+import org.starexec.data.*;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.util.*;
 
 /**
- * @deprecated This class is out of date and needs to be re-implemented
- * (Make sure to support .zip and .tar.gz!)
+ * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
+ * .tar, or .tar.gz format, and configurations can be included in a top level
+ * "bin" directory. Each Solver is saved in a unique directory on the filesystem.
+ * 
+ * @author Skylar Stark
  */
+@SuppressWarnings("serial")
 public class UploadSolver extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(UploadSolver.class);	
-	private static final long serialVersionUID = 1L;
-    private DateFormat shortDate = new SimpleDateFormat("yyyyMMdd-kk.mm.ss");	// The unique date stamped file name format    
+    private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
+    private static final String[] extensions = {".tar", ".tar.gz", ".zip"};
+    
+    // Some constants to process the form
+    private static final String SOLVER_DESC = "desc";
+    private static final String SOLVER_DOWNLOADABLE = "dlable";
+    private static final String SPACE_ID = "space";
+
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	try {			
-    		// Create the helper objects to assist in getting the file and saving it
-			FileItemFactory factory = new DiskFileItemFactory();
-			ServletFileUpload upload = new ServletFileUpload(factory);						
-			List<FileItem> items = upload.parseRequest(request);				
+    	long userId = SessionUtil.getUserId(request);
+    	try {	
+    		// If we're dealing with an upload request...
+			if (ServletFileUpload.isMultipartContent(request)) {
+				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
+				
+				// Make sure the request is valid
+				if(!this.isValidRequest(form)) {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload solver request was malformed");
+					return;
+				} 
+				
+				// Parse the request as a solver
+				Solver result = handleSolver(userId, form);				
 			
-			// Create a new list of integers that will store the benchmark's supported divisions
-			List<Integer> supportedDivs = new LinkedList<Integer>();
-
-			// Get the level id's from the querystring, and split them.
-	    	for(String s : request.getParameter(P.SUPPORT_DIV).split(",")) {
-	    		// And convert each one to an integer and add it to the list
-	    		supportedDivs.add(Integer.parseInt(s));
-	    	}
-			
-	    	// Get the solver's name from the querystring
-	    	String solverName = request.getParameter(P.SOLVER_NAME);
-	    	
-	    	// For each file in the list
-			for(FileItem item : items) {
-				// If it's not a field...
-			   if (!item.isFormField()) {
-				   try {
-					   // Process the uploaded solver file
-					   handleSolver(item, response, supportedDivs, solverName);
-				   } catch (Exception e) {
-					   log.error(e.getMessage(), e);
-				   }			   
-			   }
+				// Redirect based on success/failure
+				if(result != null) {
+					response.sendRedirect("/starexec/secure/space_explorer.jsp");	
+				} else {
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");	
+				}									
+			} else {
+				// Got a non multi-part request, invalid
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			}
-		} catch (FileUploadException e) {
-			// Log any problems with the file upload process here
-			log.error(e.getMessage(), e);			
-		}
+    	} catch (Exception e) {
+    		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+    		log.error(e.getMessage(), e);
+    	}	
 	}
     
 	/**
 	 * This method is responsible for uploading a solver to
 	 * the appropriate location and updating the database to reflect
 	 * the solver's location.
-	 * @param response The response which we can re-direct to based on a result
+	 * @param userId the user ID of the user making the upload request
+	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	public void handleSolver(FileItem item, HttpServletResponse response, List<Integer> supportedDivs, String solverName) throws Exception {
-		// Create a unique path the zip file will be extracted to
-		File uniqueDir = new File(R.SOLVER_PATH, shortDate.format(new Date()));
-		
-		// Create the zip file object-to-be
-		File zipFile = new File(uniqueDir,  item.getName());
-		
-		// Create the directory the solver zip will be written to
-		new File(zipFile.getParent()).mkdir();
-						
-		// Copy the zolver zip to the server from the client
-		item.write(zipFile);
-		
-		// Extract the downloaded solver zip file
-		//ZipUtil.extractZip(zipFile.getAbsolutePath());
-		
-		// Delete the archive, we don't need it anymore!
-		zipFile.delete();
+	public Solver handleSolver(long userId, HashMap<String, Object> form) throws Exception {
+		try {
+			FileItem item = (FileItem)form.get(P.UPLOAD_FILE);
+			
+			//Set up a new solver with the submitted information
+			Solver newSolver = new Solver();
+			newSolver.setUserId(userId);
+			newSolver.setName((String)form.get(P.SOLVER_NAME));
+			newSolver.setDescription((String)form.get(SOLVER_DESC));
+			newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
+			
+			//Set up the unique directory to store the solver
+			//The directory is (base path)/user's ID/solver name/date/
+			String directory = R.SOLVER_PATH + File.pathSeparator + userId + File.pathSeparator + newSolver.getName() + File.pathSeparator + shortDate.format(new Date());
+			File uniqueDir = new File(directory);
 
-		// Create a new solver
-		Solver s = new Solver();
-		
-		// Set its path to where we extracted the zip to
-		s.setPath(uniqueDir.getAbsolutePath());
-		
-		// TODO use real username!
-		s.setUserId(1);
-		s.setName(solverName);
-		
-		// For each of the supported divs the user selected
-		for(Integer i : supportedDivs) {
-			// Add it to the solver
-			//s.addSupportedDiv(new Level(i));
+			newSolver.setPath(uniqueDir.getAbsolutePath());
+
+			uniqueDir.mkdirs();
+			
+			//Process the archive file and extract
+			File archiveFile = new File(uniqueDir,  item.getName());
+			new File(archiveFile.getParent()).mkdir();
+			item.write(archiveFile);
+			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
+			archiveFile.delete();
+
+			//Find configurations from the top-level "bin" directory
+			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
+				newSolver.addConfiguration(c);
+			}
+			
+			//Try adding the solver to the database
+			if (Database.addSolver(newSolver, Long.parseLong((String)form.get(SPACE_ID)))) {
+				return newSolver;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		}
 		
-		// For each configuration that was found in the bin directory
-		for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
-			//s.addConfig(c);
-		}
-				
-		// Add the solver to the database
-		//boolean success = Database.addSolver(s);
-		//response.sendRedirect("uploadsolver.jsp?s=" + success);
+		return null;
 	}	
 	
+	/**
+	 * Finds solver run configurations from a specified bin directory. Run configurations
+	 * must start with a certain string specified in the list of constants. If no configurations
+	 * are found, an empty list is returned.
+	 * @param fromPath the base directory to find the bin directory in
+	 * @return a list containing run configurations found in the bin directory
+	 */
 	private List<Configuration> findConfigs(String fromPath){		
-		// Get the path to the bin directory
 		File binDir = new File(fromPath, R.SOLVER_BIN_DIR);
-
-		// If the bin directory doesn't exist
 		if(!binDir.exists()) {
-			// Give back an empty list
 			return Collections.emptyList();
 		}
 		
-		// The list of configs we will give back
 		List<Configuration> returnList = new ArrayList<Configuration>();
 		
-		// For each file in the bin directory...
 		for(File f : binDir.listFiles()){
-			// Assume everything in bin is executable
 			f.setExecutable(true, false);
-		
-			// If the file is a file and it starts with run...
-			// TODO: Make this a configurable string
-			if(f.isFile() && f.getName().startsWith("run")){
-				
-				// Create a new configuration with that name of the file
+			if(f.isFile() && f.getName().startsWith(P.SOLVER_RUN)){
 				Configuration c = new Configuration();								
 				c.setName(f.getName());
 				returnList.add(c);
 			}				
 		}
-		
-		// Give back the results!
 		return returnList;
+	}
+	
+	/**
+	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.
+	 * Checks to see if it contains all the information needed and if the information
+	 * is in the right format.
+	 * @param form the HashMap representing the upload request.
+	 * @return true iff the request is valid
+	 */
+	private boolean isValidRequest(HashMap<String, Object> form) {
+		try {
+			if (!form.containsKey(P.UPLOAD_FILE) ||
+					!form.containsKey(SPACE_ID) ||
+					!form.containsKey(P.SOLVER_NAME) || 
+					!form.containsKey(SOLVER_DESC) ||
+					!form.containsKey(SOLVER_DOWNLOADABLE)) {
+				return false;
+			}
+			
+			Long.parseLong((String)form.get(SPACE_ID));
+			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
+			
+			if(!Validate.solverBenchName((String)form.get(P.SOLVER_NAME)) || 
+					!Validate.description((String)form.get(SOLVER_DESC))) {
+				return false;
+			}
+			
+			String fileName = ((FileItem)form.get(P.UPLOAD_FILE)).getName();
+			for(String ext : UploadSolver.extensions) {
+				if(fileName.endsWith(ext)) {
+					return true;
+				}
+			}
+			
+			
+			return false;
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+		
+		return false;
 	}
 }

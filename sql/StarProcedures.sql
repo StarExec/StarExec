@@ -237,6 +237,8 @@ CREATE PROCEDURE GetJobPairByJob(IN _id BIGINT)
 		WHERE job_pair_attr.job_id = _id;
 	END //
 	
+-- Updates the first name of the user with the given user id to the
+-- given first name. The first name should already be validated.	
 CREATE PROCEDURE UpdateFirstName(IN _id BIGINT, IN _firstname VARCHAR(32))
 	BEGIN
 		UPDATE users
@@ -776,5 +778,30 @@ CREATE PROCEDURE GetAllBenchTypes()
 		FROM bench_types;
 	END //
 	
+-- Adds a solver and returns the solver ID
+-- Author: Skylar Stark
+CREATE PROCEDURE AddSolver(IN _userId BIGINT, IN _name VARCHAR(32), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id BIGINT)
+	BEGIN
+		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable)
+		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable);
+		
+		SELECT LAST_INSERT_ID() INTO _id;
+	END //
+
+-- Adds a Space/Solver association
+-- Author: Skylar Stark
+CREATE PROCEDURE AddSolverAssociation(IN _spaceId BIGINT, IN _solverId BIGINT)
+	BEGIN
+		INSERT INTO solver_assoc(space_id, solver_id)
+		VALUES (_spaceId, _solverId);
+	END // 
+
+-- Adds a run configuration to the specified solver
+-- Author: Skylar Stark
+CREATE PROCEDURE AddConfiguration(IN _solverId BIGINT, IN _name VARCHAR(32))
+	BEGIN
+		INSERT INTO configurations (solver_id, name)
+		VALUES (_solverId, _name);
+	END // 
 	
 DELIMITER ; -- This should always be at the end of this file
