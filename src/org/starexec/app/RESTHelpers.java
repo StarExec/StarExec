@@ -7,6 +7,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.WorkerNode;
 
 import com.google.gson.annotations.Expose;
 
@@ -27,6 +28,25 @@ public class RESTHelpers {
 		
 		for(Space space: spaces){
 			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
+			list.add(t);
+		}
+
+		return list;
+	}
+	
+	/**
+	 * Takes in a list of worker nodes and converts it into
+	 * a list of JSTreeItems suitable for being displayed
+	 * on the client side with the jsTree plugin.
+	 * @param nodes The list of worker nodes to convert
+	 * @return List of JSTreeItems to be serialized and sent to client
+	 * @author Tyler Jensen
+	 */
+	protected static List<JSTreeItem> toNodeList(List<WorkerNode> nodes){
+		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		
+		for(WorkerNode n : nodes){
+			JSTreeItem t = new JSTreeItem(n.getName(), n.getId(), "leaf", "worker_node");	
 			list.add(t);
 		}
 

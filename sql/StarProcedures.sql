@@ -619,6 +619,24 @@ CREATE PROCEDURE AddBenchmarkType(IN _name VARCHAR(32), IN _desc TEXT, IN _path 
 		INSERT INTO bench_types (name, description, processor_path, community)
 		VALUES (_name, _desc, _path, _comId);
 	END //
+
+-- Gets the id and name of all nodes in the cluster
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetAllNodes()
+	BEGIN		
+		SELECT id, name
+		FROM nodes
+		ORDER BY name;	
+	END //
+
+-- Gets worker node with the given ID
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetNodeDetails(IN _id BIGINT)
+	BEGIN		
+		SELECT *
+		FROM nodes
+		WHERE id=_id;
+	END //
 	
 -- Gets the benchmark type with the given ID
 -- Author: Tyler Jensen
@@ -803,5 +821,39 @@ CREATE PROCEDURE AddConfiguration(IN _solverId BIGINT, IN _name VARCHAR(32))
 		INSERT INTO configurations (solver_id, name)
 		VALUES (_solverId, _name);
 	END // 
+
+-- Adds a worker node to the database and ignores duplicates
+-- Author: Tyler Jensen
+CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
+	BEGIN
+		INSERT IGNORE INTO nodes (name)
+		VALUES (_name);
+	END // 
+	
+-- Updates a node's attribute (assuming the column already exists)
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64), IN _fieldVal VARCHAR(64))
+	BEGIN	
+		SET @updateAttr = CONCAT('UPDATE nodes SET ', _fieldName, '="', _fieldVal,'" WHERE name="', _name, '"');
+		PREPARE stmt FROM @updateAttr;
+		EXECUTE stmt;		
+	END // 
+	
+-- Adds a new column to the specified table only if it doesn't already exist.
+-- Author: Tyler Jensen
+CREATE PROCEDURE AddColumnUnlessExists(IN dbName tinytext, IN tableName tinytext, IN fieldName tinytext, IN fieldDef text)
+	BEGIN
+		IF NOT EXISTS 
+			(SELECT * FROM information_schema.COLUMNS
+			WHERE column_name=fieldName
+			AND table_name=tableName
+			AND table_schema=dbName)
+		THEN
+			SET @addColumn = CONCAT('ALTER TABLE ', dbName, '.', tableName,
+			' ADD COLUMN ', fieldName, ' ', fieldDef);
+			PREPARE stmt FROM @addColumn;
+			EXECUTE stmt;
+		END IF;
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file

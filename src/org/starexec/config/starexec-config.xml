@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="skylar_dev_local">
+<starexec-configuration default="tyler_dev_local">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
-			<!-- MYSQL Configuration -->
+			<!-- MYSQL Configuration -->			
+			<property key="MYSQL_DATABASE" value="prod_starexec" />
 			<property key="MYSQL_USERNAME" value="prod_star_app" />
 			<property key="MYSQL_PASSWORD" value="g4qC867ByQ3736i7" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?zeroDateTimeBehavior=convertToNull" />
@@ -20,11 +21,15 @@
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
+			<property key="CONTACT_EMAIL" value="aaron-stump@uiowa.edu" />
+			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
+			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
 		</class>
 	</configuration>
 	<configuration name="tyler_dev_local">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
+			<property key="MYSQL_DATABASE" value="starexec" />
 			<property key="MYSQL_USERNAME" value="starexec_app" />
 			<property key="MYSQL_PASSWORD" value="starexec" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?zeroDateTimeBehavior=convertToNull" />
@@ -41,12 +46,16 @@
 			<property key="SOLVER_BIN_DIR" value="\\bin" />			
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
-			<property key="LOG_TO_CONSOLE" value="true" />			
+			<property key="LOG_TO_CONSOLE" value="true" />
+			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
+			<property key="NODE_LIST_COMMAND" value="cmdspoof C:\\Dll\\-se.txt" />
+			<property key="NODE_DETAILS_COMMAND" value="cmdspoof C:\\Dll\\-sel.txt " />						
 		</class>
 	</configuration>
 	<configuration name="tyler_dev_cluster">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
+			<property key="MYSQL_DATABASE" value="dev_tj_starexec" />
 			<property key="MYSQL_USERNAME" value="dev_star_app" />
 			<property key="MYSQL_PASSWORD" value="eo6UxpRSWffRK165" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/dev_tj_starexec?zeroDateTimeBehavior=convertToNull" />
@@ -63,11 +72,15 @@
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
+			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
+			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
+			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />	
 		</class>
 	</configuration>
 	<configuration name="todd_dev_local">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
+			<property key="MYSQL_DATABASE" value="starexec" />
 			<property key="MYSQL_USERNAME" value="root" />
 			<property key="MYSQL_PASSWORD" value="rooty" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true" />
@@ -89,6 +102,7 @@
 	<configuration name="skylar_dev_local">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
+			<property key="MYSQL_DATABASE" value="starexec" />
 			<property key="MYSQL_USERNAME" value="star_exec" />
 			<property key="MYSQL_PASSWORD" value="starexec" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?zeroDateTimeBehavior=convertToNull" />

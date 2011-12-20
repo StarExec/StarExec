@@ -26,6 +26,7 @@ public class R {
 	public static String EMAIL_PWD = null;
 	
 	// MySQL properties
+	public static String MYSQL_DATABASE = null;								// Name of the MySQL database
 	public static String MYSQL_URL = null;									// MySQL connection string for JDBC
 	public static String MYSQL_USERNAME = null;								// Starexec's username for the database
 	public static String MYSQL_PASSWORD = null;								// Starexec database password
@@ -59,4 +60,11 @@ public class R {
 	public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
 	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
 	public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
+	public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
+	
+	// SGE Configurations
+	public static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
+	public static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node
+	public static boolean USE_FULL_HOST_NAME = false;						// Whether or not to use the fully qualified host name when populating nodes
+	public static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's qconf output
 }	

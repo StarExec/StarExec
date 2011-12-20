@@ -122,11 +122,10 @@ CREATE TABLE node_class (
 -- All the worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
 CREATE TABLE nodes (
-	id BIGINT NOT NULL AUTO_INCREMENT, 
-	class_id BIGINT NOT NULL,
-	name VARCHAR(32) NOT NULL,
+	id BIGINT NOT NULL AUTO_INCREMENT, 	
+	name VARCHAR(64) NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (class_id) REFERENCES node_class(id) ON DELETE NO ACTION
+	UNIQUE KEY (name)	
 );
 
 -- All of the jobs within the system, this is the overarching entity

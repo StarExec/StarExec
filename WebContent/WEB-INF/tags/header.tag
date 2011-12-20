@@ -43,7 +43,7 @@
 				<li class="round">
 					<a href="#">cluster</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="#">status</a></li>  
+			            <li class="round"><a href="/starexec/secure/cluster/details.jsp">status</a></li>  
 			            <li class="round"><a href="#">availability</a></li>  
 			        </ul>  
 				</li>			

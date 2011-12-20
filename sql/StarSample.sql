@@ -24,11 +24,11 @@ INSERT INTO user_roles VALUES('skylar-stark@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('geoff@cs.miami.edu', 'user');
 
 INSERT INTO node_class (name) VALUES ("dev cluster");
-INSERT INTO nodes(class_id, name) VALUES (1, "starexec1.cs.uiowa.edu");
-INSERT INTO nodes(class_id, name) VALUES (1, "starexec2.cs.uiowa.edu");
-INSERT INTO nodes(class_id, name) VALUES (1, "starexec3.cs.uiowa.edu");
-INSERT INTO nodes(class_id, name) VALUES (1, "starexec4.cs.uiowa.edu");
-INSERT INTO nodes(class_id, name) VALUES (1, "starexec5.cs.uiowa.edu");
+INSERT INTO nodes(name) VALUES ("starexec1x.cs.uiowa.edu");
+INSERT INTO nodes(name) VALUES ("starexec2x.cs.uiowa.edu");
+INSERT INTO nodes(name) VALUES ("starexec3x.cs.uiowa.edu");
+INSERT INTO nodes(name) VALUES ("starexec4x.cs.uiowa.edu");
+INSERT INTO nodes(name) VALUES ("starexec5x.cs.uiowa.edu");
 	
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, remove_solver, remove_bench, remove_user, remove_space, is_leader) VALUES
 	(0, 0, 0, 0, 0, 0, 0, 0, 0);

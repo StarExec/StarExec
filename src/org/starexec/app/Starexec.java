@@ -1,7 +1,11 @@
 package org.starexec.app;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -10,10 +14,17 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.ggf.drmaa.Session;
+import org.ggf.drmaa.SessionFactory;
+import org.starexec.constants.R;
 import org.starexec.data.Database;
+import org.starexec.data.to.WorkerNode;
+import org.starexec.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.org.apache.xerces.internal.impl.xs.identity.Selector.Matcher;
 
 /**
  * Class which listens for application events (mainly startup/shutdown)
@@ -24,6 +35,9 @@ import org.w3c.dom.NodeList;
 public class Starexec implements ServletContextListener {
 	private static final Logger log = Logger.getLogger(Starexec.class);
 	private static String ROOT_APPLICATION_PATH = "";
+	
+	// The node detail attribute regex pattern to parse SGE output
+	private static Pattern keyValPattern;
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String CONFIG_PATH = "/WEB-INF/classes/org/starexec/config/starexec-config.xml";
@@ -64,6 +78,83 @@ public class Starexec implements ServletContextListener {
 		
 		// Add the database to the application scope to expose it to JSP's via EL
 		event.getServletContext().setAttribute("database", new Database());
+		
+		// Compile the SGE node detail parse pattern
+		keyValPattern = Pattern.compile(R.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);	
+		
+		// On a new thread, load the worker node data (this may take some time)
+		Runnable r = new Runnable() {			
+			@Override
+			public void run() {
+				Starexec.loadWorkerNodes();
+			}
+		};		
+		new Thread(r).start();		
+	}
+	
+	/**
+	 * Gets the worker nodes from SGE and adds them to the database if they don't already exist.
+	 */
+	public static void loadWorkerNodes() {
+		BufferedReader nodeResults = null;
+		
+		try {			
+			// Execute the SGE command to get the node list
+			nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
+			
+			if(nodeResults == null) {
+				// If the command failed, return now				
+				return;
+			}
+			
+			// Read the nodes one at a time
+			String line;		
+			while((line = nodeResults.readLine()) != null) {
+				String name = line;
+				if(!R.USE_FULL_HOST_NAME) {
+					// Just get the first part of the name if we're not using the full host name
+					int periodIndex = line.indexOf(".");					
+					if(periodIndex > 0) {						
+						name = line.substring(0, periodIndex);
+					}														
+				}
+				
+				// In the database, update the attributes for the node
+				Database.updateWorkerNode(name,  Starexec.getNodeDetails(name));
+			}
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		} finally {
+			// Try to close the result list if it is allowed
+			try { nodeResults.close(); } catch (Exception e) { }
+		}
+	}
+	
+	/**
+	 * Calls SGE to get details about the given node. 
+	 * @param name The name of the node to get details about
+	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
+	 */
+	private static HashMap<String, String> getNodeDetails(String name) {
+		// Make the results hashmap that will be returned		
+		HashMap<String, String> details = new HashMap<String, String>();
+		
+		// Call SGE to get details for the given node
+		String results = Util.bufferToString(Util.executeCommand(R.NODE_DETAILS_COMMAND + name));
+		
+		// Parse the output from the SGE call to get the key/value pairs for the node
+		java.util.regex.Matcher matcher = keyValPattern.matcher(results);
+		
+		// For each match...
+		while(matcher.find()) {
+			// Split apart the key from the value
+			String[] keyVal = matcher.group().split("=");
+			
+			// Add the results to the details hashmap
+			details.put(keyVal[0], keyVal[1]);
+		}
+		
+		return details;
 	}
 	
 	/**

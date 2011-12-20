@@ -12,6 +12,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
+import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
+import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.starexec.data.Database;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
@@ -19,6 +21,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Hash;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -35,7 +38,7 @@ public class RESTServices {
 	private static final Logger log = Logger.getLogger(RESTServices.class);			
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-		
+	
 	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
@@ -60,6 +63,29 @@ public class RESTServices {
 	public String getAllCommunities() {								
 		return gson.toJson(RESTHelpers.toCommunityList(Database.getCommunities()));
 	}	
+	
+	/**
+	 * @return a json string representing all nodes in the starexec cluster
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/cluster/nodes")
+	@Produces("application/json")	
+	public String getAllNodes() {								
+		return gson.toJson(RESTHelpers.toNodeList(Database.getAllNodes()));
+	}
+	
+	/**
+	 * @return a json string representing all the subspaces of the space with
+	 * the given id. If the given id is <= 0, then the root space is returned
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/cluster/nodes/details/{id}")
+	@Produces("application/json")	
+	public String getNodeDetails(@PathParam("id") long id) {		
+		return gson.toJson(Database.getNodeDetails(id));
+	}
 	
 	/**
 	 * @return a json string representing all communities within starexec
