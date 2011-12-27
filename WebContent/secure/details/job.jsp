@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,12 +7,15 @@
 		long userId = SessionUtil.getUserId(request);
 		long jobId = Long.parseLong(request.getParameter("id"));
 		
-		Job j = Database.getJob(jobId, userId);
+		Job j = null;
+		if(Permissions.canUserSeeJob(jobId, userId)) {
+			j = Jobs.get(jobId);
+		}
 		
 		if(j != null) {			
-			request.setAttribute("usr", Database.getUser(j.getUserId()));
+			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);	
-			request.setAttribute("pairs", Database.getPairsForJob(j.getId(), userId));
+			request.setAttribute("pairs", Jobs.getPairs(j.getId(), userId));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 		}
@@ -23,7 +26,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js="details" css="details, job_details">			
+<star:template title="${job.name}" js="details/shared" css="details/shared, details/job">			
 	<fieldset>
 		<legend>details</legend>
 		<table>

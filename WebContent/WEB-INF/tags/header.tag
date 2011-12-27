@@ -22,15 +22,15 @@
 				<li class="round">
 					<a href="#">account</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="/starexec/secure/edit_account.jsp">edit</a></li>  
+			            <li class="round"><a href="/starexec/secure/edit/account.jsp">edit</a></li>  
 			            <li class="round"><a href="#" onclick="javascript:logout();">logout</a></li>  
 			        </ul>  
 				</li>
 				<li class="round">
 					<a href="#">spaces</a>  
 			        <ul class="subnav round">  
-			        	<li class="round"><a href="/starexec/secure/space_explorer.jsp">explore</a></li>			            
-			            <li class="round"><a href="/starexec/secure/community/view.jsp">communities</a></li>    			            
+			        	<li class="round"><a href="/starexec/secure/explore/spaces.jsp">explore</a></li>			            
+			            <li class="round"><a href="/starexec/secure/explore/communities.jsp">communities</a></li>    			            
 			        </ul>  
 				</li>
 				<li class="round">
@@ -43,7 +43,7 @@
 				<li class="round">
 					<a href="#">cluster</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="/starexec/secure/cluster/details.jsp">status</a></li>  
+			            <li class="round"><a href="/starexec/secure/explore/cluster.jsp">status</a></li>  
 			            <li class="round"><a href="#">availability</a></li>  
 			        </ul>  
 				</li>			

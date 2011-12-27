@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -6,7 +6,7 @@
 		// Get parent space info for display
 		long spaceId = Long.parseLong(request.getParameter("sid"));
 		long userId = SessionUtil.getUserId(request);
-		request.setAttribute("space", Database.getSpace(spaceId, userId));
+		request.setAttribute("space", Spaces.get(spaceId));
 		
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
@@ -19,8 +19,8 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to upload solvers to this space or the space does not exist");		
 	}
 %>
-<star:template title="upload solver to ${space.name}" css="upload_solver" js="lib/jquery.validate.min, upload_solver">
-	<form method="POST" enctype="multipart/form-data" action="/starexec/UploadSolver" id="upForm">
+<star:template title="upload solver to ${space.name}" css="add/solver" js="lib/jquery.validate.min, add/solver">
+	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/solvers" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>solver information</legend>		

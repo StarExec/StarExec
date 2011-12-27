@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,12 +7,15 @@
 		long userId = SessionUtil.getUserId(request);
 		long solverId = Long.parseLong(request.getParameter("id"));
 		
-		Solver s = Database.getSolver(solverId, userId);
+		Solver s = null;
+		if(Permissions.canUserSeeSolver(solverId, userId)) {
+			s = Solvers.get(solverId);
+		}
 		
 		if(s != null) {
-			request.setAttribute("usr", Database.getUser(s.getUserId()));
+			request.setAttribute("usr", Users.get(s.getUserId()));
 			request.setAttribute("solver", s);
-			request.setAttribute("sites", Database.getWebsites(solverId, Database.WebsiteType.SOLVER));
+			request.setAttribute("sites", Websites.getAll(solverId, Websites.WebsiteType.SOLVER));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}
@@ -23,9 +26,9 @@
 	}
 %>
 
-<star:template title="${solver.name}" js="details" css="details">				
+<star:template title="${solver.name}" js="details/shared" css="details/shared">				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit_solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table>
 			<tr>
 				<td>description</td>			

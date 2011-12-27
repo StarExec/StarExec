@@ -19,7 +19,6 @@ import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.app.Starexec;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
@@ -100,7 +99,7 @@ public class Util {
         StringBuffer sb = new StringBuffer();
         
         // Hash to store which character sets have been used
-        HashSet setsUsed = new HashSet();
+        HashSet<Integer> setsUsed = new HashSet<Integer>();
         
         while (sb.length() != newPassLength) {
         	// Choose a random character set to use & get a random character from it

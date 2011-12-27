@@ -12,20 +12,25 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
-import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
-import org.jboss.resteasy.spi.ResteasyDeployment;
-import org.starexec.data.Database;
+import org.starexec.data.database.BenchTypes;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.database.Websites;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Hash;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
-import org.starexec.util.Validate;
+import org.starexec.util.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -50,7 +55,7 @@ public class RESTServices {
 	public String getSubSpaces(@QueryParam("id") long parentId, @Context HttpServletRequest request) {					
 		long userId = SessionUtil.getUserId(request);
 		
-		return gson.toJson(RESTHelpers.toSpaceTree(Database.getSubSpaces(parentId, userId)));
+		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId)));
 	}	
 	
 	/**
@@ -61,7 +66,7 @@ public class RESTServices {
 	@Path("/communities/all")
 	@Produces("application/json")	
 	public String getAllCommunities() {								
-		return gson.toJson(RESTHelpers.toCommunityList(Database.getCommunities()));
+		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
 	
 	/**
@@ -72,7 +77,7 @@ public class RESTServices {
 	@Path("/cluster/nodes")
 	@Produces("application/json")	
 	public String getAllNodes() {								
-		return gson.toJson(RESTHelpers.toNodeList(Database.getAllNodes()));
+		return gson.toJson(RESTHelpers.toNodeList(Cluster.getAllNodes()));
 	}
 	
 	/**
@@ -84,7 +89,7 @@ public class RESTServices {
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
 	public String getNodeDetails(@PathParam("id") long id) {		
-		return gson.toJson(Database.getNodeDetails(id));
+		return gson.toJson(Cluster.getNodeDetails(id));
 	}
 	
 	/**
@@ -95,17 +100,17 @@ public class RESTServices {
 	@Path("/communities/details/{id}")
 	@Produces("application/json")	
 	public String getCommunityDetails(@PathParam("id") long id, @Context HttpServletRequest request) {
-		Space community = Database.getCommunityDetails(id);
+		Space community = Communities.getDetails(id);
 		
 		if(community != null) {
-			community.setUsers(Database.getSpaceUsers(id));
+			community.setUsers(Spaces.getUsers(id));
 			Permission p = SessionUtil.getPermission(request, id);
-			List<User> leaders = Database.getLeadersOfSpace(id);
-			List<Website> sites = Database.getWebsites(id, Database.WebsiteType.SPACE);
+			List<User> leaders = Spaces.getLeaders(id);
+			List<Website> sites = Websites.getAll(id, Websites.WebsiteType.SPACE);
 			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites));
 		}
 		
-		return gson.toJson(RESTHelpers.toCommunityList(Database.getCommunities()));
+		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
 	
 	/**
@@ -119,8 +124,13 @@ public class RESTServices {
 	public String getSpaceDetails(@PathParam("id") long spaceId, @Context HttpServletRequest request) {			
 		long userId = SessionUtil.getUserId(request);
 		
-		Space s = Database.getSpaceDetails(spaceId, userId);
-		Permission p = SessionUtil.getPermission(request, spaceId);
+		Space s = null;
+		Permission p = null;
+		
+		if(Permissions.canUserSeeSpace(spaceId, userId)) {
+			s = Spaces.getDetails(spaceId, userId);
+			p = SessionUtil.getPermission(request, spaceId);
+		}					
 		
 		return limitGson.toJson(new RESTHelpers.SpacePermissionPair(s, p));				
 	}	
@@ -150,9 +160,9 @@ public class RESTServices {
 	public String getWebsites(@PathParam("type") String type, @PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
 		long userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
-			return gson.toJson(Database.getWebsites(userId, Database.WebsiteType.USER));
+			return gson.toJson(Websites.getAll(userId, Websites.WebsiteType.USER));
 		} else if(type.equals("space")){
-			return gson.toJson(Database.getWebsites(spaceId, Database.WebsiteType.SPACE));
+			return gson.toJson(Websites.getAll(spaceId, Websites.WebsiteType.SPACE));
 		}
 		return gson.toJson(1);
 	}
@@ -174,14 +184,14 @@ public class RESTServices {
 			long userId = SessionUtil.getUserId(request);
 			String name = request.getParameter("name");
 			String url = request.getParameter("url");			
-			success = Database.addWebsite(userId, url, name, Database.WebsiteType.USER);
+			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
 			Permission perm = SessionUtil.getPermission(request, id);
 			if(perm != null && perm.isLeader()) {
 				String name = request.getParameter("name");
 				String url = request.getParameter("url");			
-				success = Database.addWebsite(id, url, name, Database.WebsiteType.SPACE);
+				success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
 			}
 		}
 		
@@ -209,7 +219,7 @@ public class RESTServices {
 	public String deleteWebsite(@PathParam("type") String type, @PathParam("spaceId") long spaceId, @PathParam("websiteId") long websiteId, @Context HttpServletRequest request) {
 		
 		if(type.equals("user")){
-			return Database.deleteUserWebsite(websiteId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(1);
+			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(1);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader
 			Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -217,7 +227,7 @@ public class RESTServices {
 				return gson.toJson(2);	
 			}
 			
-			return Database.deleteSpaceWebsite(websiteId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+			return Websites.delete(websiteId, spaceId, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(1);
 		}
 		
 		return gson.toJson(1);
@@ -243,29 +253,29 @@ public class RESTServices {
 		// First, validate that it is in legal form. Then, try to update the database.
 		// Finally, update the current session data
 		if (attribute.equals("firstname")) {
-			if (true == Validate.name(newValue)) {
-				success = Database.updateFirstName(userId, newValue);
+			if (true == Validator.isValidUserName(newValue)) {
+				success = Users.updateFirstName(userId, newValue);
 				if (true == success) {
 					SessionUtil.getUser(request).setFirstName(newValue);
 				}
 			}
 		} else if (attribute.equals("lastname")) {
-			if (true == Validate.name(newValue)) {
-				success = Database.updateLastName(userId, newValue);
+			if (true == Validator.isValidUserName(newValue)) {
+				success = Users.updateLastName(userId, newValue);
 				if (true == success) {
 					SessionUtil.getUser(request).setLastName(newValue);
 				}
 			}
 		} else if (attribute.equals("email")) {
-			if (true == Validate.email(newValue)) { 
-				success = Database.updateEmail(userId, newValue);
+			if (true == Validator.isValidEmail(newValue)) { 
+				success = Users.updateEmail(userId, newValue);
 				if (true == success) {
 					SessionUtil.getUser(request).setEmail(newValue);
 				}
 			}
 		} else if (attribute.equals("institution")) {
-			if (true == Validate.institution(newValue)) {
-				success = Database.updateInstitution(userId, newValue);
+			if (true == Validator.isValidInstitution(newValue)) {
+				success = Users.updateInstitution(userId, newValue);
 				if (true == success) {
 					SessionUtil.getUser(request).setInstitution(newValue);
 				}
@@ -303,13 +313,13 @@ public class RESTServices {
 		// Go through all the cases, depending on what attribute we are changing.
 		if (attribute.equals("name")) {
 			String newName = (String)request.getParameter("val");
-			if (true == Validate.spaceName(newName)) {
-				success = Database.updateSpaceName(id, newName);
+			if (true == Validator.isValidPrimName(newName)) {
+				success = Spaces.updateName(id, newName);
 			}
 		} else if (attribute.equals("desc")) {
 			String newDesc = (String)request.getParameter("val");
-			if (true == Validate.description(newDesc)) {
-				success = Database.updateSpaceDescription(id, newDesc);				
+			if (true == Validator.isValidPrimDescription(newDesc)) {
+				success = Spaces.updateDescription(id, newDesc);				
 			}
 		}
 		
@@ -338,7 +348,7 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
-		if(true == Database.deleteBenchmarkType(typeId, spaceId)) {
+		if(true == BenchTypes.delete(typeId, spaceId)) {
 			return gson.toJson(0);
 		}
 		
@@ -362,7 +372,7 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
-		if(true == Database.leaveCommunity(SessionUtil.getUserId(request), spaceId)) {
+		if(true == Communities.leave(SessionUtil.getUserId(request), spaceId)) {
 			// Delete prior entry in user's permissions cache for this community
 			SessionUtil.removeCachePermission(request, spaceId);
 			return gson.toJson(0);
@@ -392,7 +402,7 @@ public class RESTServices {
 		}
 
 		// Remove the benchmark from the space
-		return Database.removeBenchFromSpace(benchId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeBench(benchId, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -422,13 +432,13 @@ public class RESTServices {
 		}
 		
 		// Don't allow user to remove other leaders from the space
-		perm = Database.getUserPermissions(userId, spaceId);
+		perm = Permissions.get(userId, spaceId);
 		if(perm.isLeader()){
 			return gson.toJson(5);
 		}
 
 		// Remove the user from the space
-		return Database.leaveCommunity(userId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Communities.leave(userId, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 
 	/**
@@ -450,7 +460,7 @@ public class RESTServices {
 		}
 
 		// Remove the solver from the space
-		return Database.removeSolverFromSpace(solverId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeSolver(solverId, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	
@@ -474,7 +484,7 @@ public class RESTServices {
 		}
 
 		// Remove the job from the space
-		return Database.removeJobFromSpace(jobId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeJob(jobId, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	
@@ -499,15 +509,15 @@ public class RESTServices {
 		}
 		
 		// Ensure the parameters are valid
-		if(!Validate.solverBenchName(request.getParameter("name"))
-				|| !Validate.description(request.getParameter("description"))
-				|| !Validate.bool(request.getParameter("downloadable"))){
+		if(!Validator.isValidPrimName(request.getParameter("name"))
+				|| !Validator.isValidPrimDescription(request.getParameter("description"))
+				|| !Validator.isValidBool(request.getParameter("downloadable"))){
 			return gson.toJson(3);
 		}
 		
 		// Permissions check; if user is NOT the owner of the solver, deny update request
 		long userId = SessionUtil.getUserId(request);
-		Solver solver = Database.getSolver(solverId, userId);
+		Solver solver = Solvers.get(solverId);
 		if(solver == null || solver.getUserId() != userId){
 			gson.toJson(2);
 		}
@@ -518,7 +528,7 @@ public class RESTServices {
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
 		// Apply new solver details to database
-		return Database.updateSolverDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(1);
+		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -537,14 +547,14 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		long userId = SessionUtil.getUserId(request);
-		Solver solver = Database.getSolver(solverId, userId);
+		Solver solver = Solvers.get(solverId);
 		if(solver == null || solver.getUserId() != userId){
 			gson.toJson(2);
 		}
 		
 		//TODO Need to check if the solver exists in historical space. If it does, we SHOULD NOT delete the solver
 		// Delete the solver from the database
-		return Database.deleteSolver(solverId) ? gson.toJson(0) : gson.toJson(1);
+		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -561,15 +571,15 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteBenchmark(@PathParam("id") long benchId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
-		long userId = SessionUtil.getUserId(request);
-		Benchmark bench = Database.getBenchmark(benchId, userId);
+		long userId = SessionUtil.getUserId(request);		
+		Benchmark bench = Benchmarks.get(benchId);
 		if(bench == null || bench.getUserId() != userId){
 			gson.toJson(2);
 		}
 		
 		//TODO Need to check if the benchmark exists in historical space. If it does, we SHOULD NOT delete the benchmark
 		// Delete the benchmark from the database
-		return Database.deleteBenchmark(benchId) ? gson.toJson(0) : gson.toJson(1);
+		return Benchmarks.delete(benchId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	
@@ -608,16 +618,15 @@ public class RESTServices {
 		}
 		
 		// Ensure the parameters are valid
-		if(!Validate.solverBenchName(request.getParameter("name"))
-				|| !Validate.description(request.getParameter("description"))
-				|| !Validate.bool(request.getParameter("downloadable"))
-				|| !Validate.benchmarkType(type)){
+		if(!Validator.isValidPrimName(request.getParameter("name"))
+				|| !Validator.isValidPrimDescription(request.getParameter("description"))
+				|| !Validator.isValidBool(request.getParameter("downloadable"))){
 			return gson.toJson(3);
 		}
 		
 		// Permissions check; if user is NOT the owner of the benchmark, deny update request
 		long userId = SessionUtil.getUserId(request);
-		Benchmark bench = Database.getBenchmark(benchId, userId);
+		Benchmark bench = Benchmarks.get(benchId);
 		if(bench == null || bench.getUserId() != userId){
 			gson.toJson(2);
 		}
@@ -628,7 +637,7 @@ public class RESTServices {
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
 		// Apply new benchmark details to database
-		return Database.updateBenchmarkDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(1);
+		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	
@@ -653,13 +662,13 @@ public class RESTServices {
 		String confirmPass = request.getParameter("confirm");
 				
 		String hashedPass = Hash.hashPassword(currentPass);
-		String databasePass = Database.getPassword(userId);
+		String databasePass = Users.getPassword(userId);
 		
 		if (hashedPass.equals(databasePass)) {
 			if (newPass.equals(confirmPass)) {
-				if (true == Validate.password(newPass)) {
+				if (true == Validator.isValidPassword(newPass)) {
 					//updatePassword requires the plaintext password
-					if (true == Database.updatePassword(userId, newPass)) {
+					if (true == Users.updatePassword(userId, newPass)) {
 						return gson.toJson(0);
 					} else {
 						return gson.toJson(1); //Database operation returned false
@@ -674,6 +683,4 @@ public class RESTServices {
 			return gson.toJson(4); //hashedPass != databasePass
 		}
 	}
-	
-	
 }

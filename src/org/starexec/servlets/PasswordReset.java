@@ -3,7 +3,6 @@ package org.starexec.servlets;
 import java.io.IOException;
 import java.util.UUID;
 
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,11 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
-import org.starexec.data.Database;
+import org.starexec.data.database.Requests;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
 import org.starexec.util.Util;
-import org.starexec.util.Validate;
+import org.starexec.util.Validator;
 
 
 /**
@@ -35,18 +35,18 @@ public class PasswordReset extends HttpServlet {
 		if(Util.paramExists(P.PASS_RESET, request)) {
 			// Try and redeem the code from the database
 			String code = request.getParameter(P.PASS_RESET);
-			long userId = Database.redeemPassResetRequest(code);
+			long userId = Requests.redeemPassResetRequest(code);
 			// If code is successfully redeemed, set a new temporary password and display it to the user
 			if(userId > 0){
 				String tempPass = Util.getTempPassword();
 				request.getSession().setAttribute("pwd", tempPass);
-				if(Database.setPasswordByUserId(userId, tempPass)){
+				if(Users.setPassword(userId, tempPass)){
 					log.debug(String.format("Temporary password successfully set for user id [%d]", userId));
-					response.sendRedirect("/starexec/temp_pass.jsp");
+					response.sendRedirect("/starexec/public/temp_pass.jsp");
 				}
 			} else {
 				// Hyperlinks can only be visited once; notify user this hyperlink has expired
-				response.sendRedirect("/starexec/password_reset.jsp?result=expired");
+				response.sendRedirect("/starexec/public/password_reset.jsp?result=expired");
 			}
 		} else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
@@ -59,11 +59,11 @@ public class PasswordReset extends HttpServlet {
 		if(isRequestValid(request)){
 			
 			// Check if the provided credentials match any in the database
-			User user = Database.getUser(request.getParameter(P.USER_EMAIL));
+			User user = Users.get(request.getParameter(P.USER_EMAIL));
 			if(user == null
 					|| !user.getFirstName().equalsIgnoreCase(request.getParameter(P.USER_FIRSTNAME))
 					|| !user.getLastName().equalsIgnoreCase(request.getParameter(P.USER_LASTNAME))){
-				response.sendRedirect("/starexec/password_reset.jsp?result=noUserFound");
+				response.sendRedirect("/starexec/public/password_reset.jsp?result=noUserFound");
 				return;
 			}
 			
@@ -71,7 +71,7 @@ public class PasswordReset extends HttpServlet {
 			String serverURL = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 			
 			// Add the reset request to the database
-			if(false == Database.addPassResetRequest(user.getId(), code)){
+			if(false == Requests.addPassResetRequest(user.getId(), code)){
 				log.info(String.format("Failed to add password reset request for user [%s]", user.getFullName()));
 				return;
 			}
@@ -79,7 +79,7 @@ public class PasswordReset extends HttpServlet {
 			// Email the password reset hyperlink to the user 
 			Mail.sendPasswordReset(user, code, serverURL);
 			
-			response.sendRedirect("/starexec/password_reset.jsp?result=success");
+			response.sendRedirect("/starexec/public/password_reset.jsp?result=success");
 		} else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
 		}
@@ -104,9 +104,9 @@ public class PasswordReset extends HttpServlet {
 			}
 			
 			// Ensure the parameters are valid values
-			if (!Validate.name((String) request.getParameter(P.USER_FIRSTNAME))
-					|| !Validate.name((String) request.getParameter(P.USER_LASTNAME))
-					|| !Validate.email((String) request.getParameter(P.USER_EMAIL))) {
+			if (!Validator.isValidUserName((String) request.getParameter(P.USER_FIRSTNAME))
+					|| !Validator.isValidUserName((String) request.getParameter(P.USER_LASTNAME))
+					|| !Validator.isValidEmail((String) request.getParameter(P.USER_EMAIL))) {
 				return false;
 			}
 		} catch (Exception e) {

@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -8,8 +9,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
-import org.starexec.data.Database;
-import org.starexec.data.to.*;
+import org.starexec.data.database.Requests;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.User;
 import org.starexec.util.Mail;
 import org.starexec.util.Util;
 
@@ -50,10 +54,10 @@ public class Verify extends HttpServlet {
 		String verdict = (String)request.getParameter(P.LEADER_RESPONSE);
 		
 		// Check if a leader has handled this acceptance email already
-		CommunityRequest comRequest = Database.getCommunityRequest(code);
+		CommunityRequest comRequest = Requests.getCommunityRequest(code);
 		if(comRequest == null){
 			// If so, redirect them to the leader_response.jsp and tell them their response will be ignored
-			response.sendRedirect("/starexec/leader_response.jsp?result=dupLeaderResponse");
+			response.sendRedirect("/starexec/public/messages/leader_response.jsp?result=dupLeaderResponse");
 			return;
 		}
 		
@@ -61,29 +65,29 @@ public class Verify extends HttpServlet {
 		boolean isRegistered = false;
 		
 		// See if the user is registered or not
-		User user = Database.getUnregisteredUser(comRequest.getUserId());
+		User user = Users.getUnregistered(comRequest.getUserId());
 		if(user == null){
-			user = Database.getUser(comRequest.getUserId());
+			user = Users.get(comRequest.getUserId());
 			isRegistered = true;
 		}
 		
 		// Get name of community user is trying to join
-		String communityName = Database.getSpaceName(comRequest.getCommunityId());
+		String communityName = Spaces.getName(comRequest.getCommunityId());
 		String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 		
 		if(verdict.equals("approve")){			
 			// Add them to the community & remove the request from the database
-			wasApproved = Database.approveUser(comRequest.getUserId(), comRequest.getCommunityId());
+			wasApproved = Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
 			
 			if(wasApproved) {
 				// Notify user they've been approved				
 				Mail.sendRequestResults(user, communityName, wasApproved, false, serverName);
 				log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
-				response.sendRedirect("/starexec/leader_response.jsp");
+				response.sendRedirect("/starexec/public/messages/leader_response.jsp");
 			} 
 		} else if(verdict.equals("decline")) {
 			// Remove their entry from INVITES
-			Database.declineUser(comRequest.getUserId(), comRequest.getCommunityId());
+			Requests.declineCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
 
 			// Notify user they've been declined
 			if(isRegistered) {
@@ -93,7 +97,7 @@ public class Verify extends HttpServlet {
 			}					
 			
 			log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(), communityName));
-			response.sendRedirect("/starexec/leader_response.jsp");
+			response.sendRedirect("/starexec/public/messages/leader_response.jsp");
 		}
     }
     
@@ -110,7 +114,7 @@ public class Verify extends HttpServlet {
 		
     	// IF no code in VERIFY matches, then userId = -1
     	// ELSE userId = the id of the user that was just activated
-    	long userId = Database.redeemActivationCode(code);
+    	long userId = Requests.redeemActivationCode(code);
     	
     	User newUser;
     	if(userId == -1) {
@@ -118,12 +122,12 @@ public class Verify extends HttpServlet {
     		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This activation page has expired and no longer exists!");
     		return;
     	} else {
-    		newUser = Database.getUnregisteredUser(userId);
+    		newUser = Users.getUnregistered(userId);
     		log.info(String.format("User [%s] has been activated.", newUser.getFullName()));
-    		response.sendRedirect("/starexec/email_activated.jsp");
+    		response.sendRedirect("/starexec/public/messages/email_activated.jsp");
     	}   
     	
-    	CommunityRequest comReq = Database.getCommunityRequest(userId);
+    	CommunityRequest comReq = Requests.getCommunityRequest(userId);
     	if(comReq == null){
     		log.warn(String.format("No community request exists for user [%s].", newUser.getFullName()));
     		return;

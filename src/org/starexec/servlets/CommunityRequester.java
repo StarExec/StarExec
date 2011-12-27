@@ -3,7 +3,6 @@ package org.starexec.servlets;
 import java.io.IOException;
 import java.util.UUID;
 
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,9 +10,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
-import org.starexec.data.Database;
-import org.starexec.data.to.*;
-import org.starexec.util.*;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Requests;
+import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.User;
+import org.starexec.util.Mail;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * @author Todd Elvers
@@ -34,19 +38,19 @@ public class CommunityRequester extends HttpServlet {
 		// Validate parameters of request & construct Invite object
 		CommunityRequest comRequest = constructComRequest(user, request);
 		if(comRequest == null){
-			response.sendRedirect("/starexec/secure/community/join.jsp?result=requestNotSent&cid=-1");
+			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestNotSent&cid=-1");
 			return;
 		}
 		
-		boolean added = Database.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
+		boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
 		if(added){
 			// Send the invite to the leaders of the community 
 			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 			Mail.sendCommunityRequest(user, comRequest, serverName);
-			response.sendRedirect("/starexec/secure/community/join.jsp?result=requestSent&cid=" + comRequest.getCommunityId());
+			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestSent&cid=" + comRequest.getCommunityId());
 		} else {
 			// There was a problem
-			response.sendRedirect("/starexec/secure/community/join.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId());
+			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId());
 		}
 	}
 	
@@ -95,10 +99,10 @@ public class CommunityRequester extends HttpServlet {
 	 */
 	private boolean validateParameters(long communityId, String message){
 		// Gather the number of communities ( the +1 is for the root )
-		int numberOfCommunities = Database.getCommunities().size() + 1;
+		int numberOfCommunities = Communities.getAll().size() + 1;
 		if(communityId < 0 
 				|| communityId > numberOfCommunities
-				|| !Validate.message(message)){
+				|| !Validator.isValidRequestMessage(message)){
 			return false;
 		}
 

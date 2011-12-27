@@ -3,13 +3,20 @@ package org.starexec.app;
 import java.io.IOException;
 import java.util.HashMap;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.*;
-import org.starexec.data.*;
-import org.starexec.data.to.*;
+import org.starexec.constants.P;
+import org.starexec.data.database.Common;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.User;
 
 /**
  * This class is responsible for intercepting all requests to protected resources
@@ -38,7 +45,7 @@ public class SessionFilter implements Filter {
 			if(httpRequest.getSession().getAttribute(P.SESSION_USER) == null) {
 				// If not, retrieve the user's information from the database
 				String userEmail = httpRequest.getUserPrincipal().getName();
-				User user = Database.getUser(userEmail);
+				User user = Users.get(userEmail);
 				
 				// And add it to their session to be used elsewhere
 				httpRequest.getSession().setAttribute(P.SESSION_USER, user);
@@ -68,7 +75,7 @@ public class SessionFilter implements Filter {
 		String rawBrowser = request.getHeader("user-agent");
 		
 		// Also save in the database to maintain a historical record
-		Database.addLoginRecord(user.getId(), ip, rawBrowser);
+		Common.addLoginRecord(user.getId(), ip, rawBrowser);
 	}
 
 	@Override

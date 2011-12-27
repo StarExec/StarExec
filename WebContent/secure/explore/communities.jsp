@@ -1,0 +1,58 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+
+<star:template title="view communities" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/communities" css="common/table, explore/common">			
+	<div id="explorer">
+		<h3>official</h3>
+		<ul id="exploreList">
+		</ul>
+	</div>
+	
+	<div id="detailPanel">
+		<h3 id="commName"></h3>
+		<p id="commDesc" class="accent"></p>
+						
+		<fieldset id="websiteField">
+			<legend><span>0</span> website(s)</legend>						
+			<div id="webDiv">				
+				<ul id="websites" class="horizontal"></ul>
+			</div>		
+		</fieldset>
+					
+		<fieldset id="leaderField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> leaders <span>(+)</span></legend>
+			<table id="leaders">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>institution</th>
+						<th style="width:270px;">email</th>
+					</tr>
+				</thead>			
+			</table>
+		</fieldset>
+											
+		<fieldset id="memberField">
+			<legend onclick="toggleTable(this)" class="expd"><span>0</span> members <span>(+)</span></legend>
+			<table id="members">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>institution</th>
+						<th style="width:270px;">email</th>
+					</tr>
+				</thead>			
+			</table>
+		</fieldset>										 	
+		
+		<fieldset>
+			<legend>actions</legend>
+			<ul id="actionList">
+				<li><span class="round button"><a id="joinComm" href="#">join</a></span></li>
+				<li><span class="round button"><a id="leaveComm">leave</a></span></li>
+				<li><span class="round button"><a id="editComm" href="#">edit</a></span></li>							
+				<li><span class="round button"><a id="removeUser">remove user</a></span></li>
+			</ul>
+		</fieldset>				
+	</div>	
+</star:template>

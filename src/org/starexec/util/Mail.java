@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.Email;
+import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
-import org.apache.commons.mail.*;
-import org.starexec.constants.*;
-import org.starexec.data.Database;
-import org.starexec.data.to.*;
+import org.starexec.constants.P;
+import org.starexec.constants.R;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.User;
 
 /**
  * Contains utilities for sending mail from the local SMTP server
@@ -65,10 +69,10 @@ public class Mail {
      * @author Todd Elvers
      */
     public static void sendCommunityRequest(User user, CommunityRequest comReq, String serverURL) throws IOException{    	
-    	String communityName = Database.getSpaceName(comReq.getCommunityId());
+    	String communityName = Spaces.getName(comReq.getCommunityId());
     	
     	// Figure out the email addresses of the leaders of the space
-    	List<User> leaders = Database.getLeadersOfSpace(comReq.getCommunityId());
+    	List<User> leaders = Spaces.getLeaders(comReq.getCommunityId());
     	String[] leaderEmails = new String[leaders.size()];
     	
     	for(int i = 0; i < leaders.size(); i++) {
@@ -76,14 +80,14 @@ public class Mail {
     	}
     	
     	// Configure pre-built message
-		String email = Util.readFile(new File(R.CONFIG_PATH, "acceptance_email.txt"));
+		String email = Util.readFile(new File(R.CONFIG_PATH, "/email/acceptance_email.txt"));
 		email = email.replace("$$COMMUNITY$$", communityName);
 		email = email.replace("$$NEWUSER$$", user.getFullName());
 		email = email.replace("$$EMAIL$$", user.getEmail());
 		email = email.replace("$$INSTITUTION$$", user.getInstitution());
 		email = email.replace("$$MESSAGE$$", comReq.getMessage());
-		email = email.replace("$$APPROVE$$", String.format("%s/starexec/Verify?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "approve"));
-		email = email.replace("$$DECLINE$$", String.format("%s/starexec/Verify?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "decline"));
+		email = email.replace("$$APPROVE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "approve"));
+		email = email.replace("$$DECLINE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "decline"));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Request to join " + communityName, leaderEmails);
@@ -104,9 +108,9 @@ public class Mail {
 	 */
 	public static void sendActivationCode(User user, String code, String serverURL) throws IOException {		
 		// Configure pre-built message
-		String email = Util.readFile(new File(R.CONFIG_PATH, "activation_email.txt"));
+		String email = Util.readFile(new File(R.CONFIG_PATH, "/email/activation_email.txt"));
 		email = email.replace("$$USER$$", user.getFullName());
-		email = email.replace("$$LINK$$", String.format("%s/starexec/Verify?%s=%s", serverURL, P.EMAIL_CODE, code ));
+		email = email.replace("$$LINK$$", String.format("%s/starexec/public/verification/email?%s=%s", serverURL, P.EMAIL_CODE, code ));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Verify your account", new String[] { user.getEmail() });
@@ -130,7 +134,7 @@ public class Mail {
     public static void sendRequestResults(User user, String communityName, boolean wasApproved, boolean wasDeleted, String serverURL) throws IOException{    	
     	if(wasApproved){
     		// Configure pre-built message
-    		String email = Util.readFile(new File(R.CONFIG_PATH, "approved_email.txt"));
+    		String email = Util.readFile(new File(R.CONFIG_PATH, "/email/approved_email.txt"));
     		email = email.replace("$$USER$$", user.getFullName());
     		email = email.replace("$$COMMUNITY$$", communityName);
     		email = email.replace("$$LINK$$", String.format("%s/starexec/secure/index.jsp", serverURL));
@@ -144,7 +148,7 @@ public class Mail {
     		String email;
     		
     		if(wasDeleted) {
-    			email = Util.readFile(new File(R.CONFIG_PATH, "declined_deleted_email.txt"));
+    			email = Util.readFile(new File(R.CONFIG_PATH, "/email/declined_deleted_email.txt"));
     			email = email.replace("$$LINK$$", String.format("%s/starexec/registration.jsp", serverURL));    			
     		} else {
     			email = Util.readFile(new File(R.CONFIG_PATH, "declined_email.txt"));    			
@@ -175,9 +179,9 @@ public class Mail {
     public static void sendPasswordReset(User newUser, String code, String serverURL) throws IOException {
     	
 		// Configure pre-built message
-		String email = Util.readFile(new File(R.CONFIG_PATH, "password_reset_email.txt"));
+		String email = Util.readFile(new File(R.CONFIG_PATH, "/email/password_reset_email.txt"));
 		email = email.replace("$$USER$$", newUser.getFullName());
-		email = email.replace("$$LINK$$", String.format("%s/starexec/PasswordReset?%s=%s", serverURL, P.PASS_RESET, code));
+		email = email.replace("$$LINK$$", String.format("%s/starexec/public/reset_password?%s=%s", serverURL, P.PASS_RESET, code));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Password reset", new String[] { newUser.getEmail() });

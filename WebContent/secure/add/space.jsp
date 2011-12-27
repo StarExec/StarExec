@@ -1,11 +1,11 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%	
 	try {		
 		// Get parent space info for display
 		long spaceId = Long.parseLong(request.getParameter("sid"));
 		long userId = SessionUtil.getUserId(request);
-		request.setAttribute("space", Database.getSpace(spaceId, userId));
+		request.setAttribute("space", Spaces.get(spaceId));
 		
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
@@ -19,7 +19,7 @@
 	}
 %>
 
-<star:template title="add subspace to ${space.name}" css="add_space" js="lib/jquery.validate.min, add_space">
+<star:template title="add subspace to ${space.name}" css="add/space" js="lib/jquery.validate.min, add/space">
 	<form id="addForm" method="post" action="/starexec/secure/add/space">	
 		<input type="hidden" name="parent" value="${space.id}"/>
 		<fieldset>

@@ -18,11 +18,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.*;
-import org.starexec.data.*;
+import org.starexec.constants.P;
+import org.starexec.constants.R;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
-import org.starexec.util.*;
+import org.starexec.util.ArchiveUtil;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
@@ -62,7 +66,7 @@ public class UploadSolver extends HttpServlet {
 			
 				// Redirect based on success/failure
 				if(result != null) {
-					response.sendRedirect("/starexec/secure/space_explorer.jsp");	
+					response.sendRedirect("/starexec/secure/explore/spaces.jsp");	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");	
 				}									
@@ -117,7 +121,7 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			//Try adding the solver to the database
-			if (Database.addSolver(newSolver, Long.parseLong((String)form.get(SPACE_ID)))) {
+			if (Solvers.add(newSolver, Long.parseLong((String)form.get(SPACE_ID)))) {
 				return newSolver;
 			}
 		} catch (Exception e) {
@@ -173,8 +177,8 @@ public class UploadSolver extends HttpServlet {
 			Long.parseLong((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
 			
-			if(!Validate.solverBenchName((String)form.get(P.SOLVER_NAME)) || 
-					!Validate.description((String)form.get(SOLVER_DESC))) {
+			if(!Validator.isValidPrimName((String)form.get(P.SOLVER_NAME)) || 
+					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC))) {
 				return false;
 			}
 			

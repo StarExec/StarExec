@@ -3,7 +3,6 @@ package org.starexec.servlets;
 import java.io.IOException;
 import java.util.UUID;
 
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,9 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
-import org.starexec.data.Database;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
-import org.starexec.util.*;
+import org.starexec.util.Mail;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 
 /**
@@ -42,11 +43,11 @@ public class Registration extends HttpServlet {
 		switch (result) {
 		  case SUCCESS: 
 			// Notify user of successful registration
-			response.sendRedirect("/starexec/registration.jsp?result=regSuccess");
+			response.sendRedirect("/starexec/public/registration.jsp?result=regSuccess");
 		    break;
 		  case FAIL: 
 			// Notify user the email address they inputed is already in use
-			response.sendRedirect("/starexec/registration.jsp?result=regFail");
+			response.sendRedirect("/starexec/public/registration.jsp?result=regFail");
 		    break;
 		  case MALFORMED:
 			// Handle malformed urls
@@ -86,7 +87,7 @@ public class Registration extends HttpServlet {
 		String code = UUID.randomUUID().toString();
 		
 		// Add user to the database and get the UUID that was created
-		boolean added = Database.registerUser(user, communityId, code, request.getParameter(P.USER_MESSAGE));
+		boolean added = Users.register(user, communityId, code, request.getParameter(P.USER_MESSAGE));
 		
 		// If the user was successfully added to the database, send an activation email
 		if(added) {
@@ -126,11 +127,11 @@ public class Registration extends HttpServlet {
 	    	Long.parseLong(request.getParameter(P.USER_COMMUNITY));
 	    	
 	    	// Ensure the parameters are valid values
-	    	if (!Validate.name((String)request.getParameter(P.USER_FIRSTNAME)) 
-					|| !Validate.name((String)request.getParameter(P.USER_LASTNAME)) 
-					|| !Validate.email((String)request.getParameter(P.USER_EMAIL))
-					|| !Validate.institution((String)request.getParameter(P.USER_INSTITUTION))
-					|| !Validate.password((String)request.getParameter(P.USER_PASSWORD))) {
+	    	if (!Validator.isValidUserName((String)request.getParameter(P.USER_FIRSTNAME)) 
+					|| !Validator.isValidUserName((String)request.getParameter(P.USER_LASTNAME)) 
+					|| !Validator.isValidEmail((String)request.getParameter(P.USER_EMAIL))
+					|| !Validator.isValidInstitution((String)request.getParameter(P.USER_INSTITUTION))
+					|| !Validator.isValidPassword((String)request.getParameter(P.USER_PASSWORD))) {
 				return false;
 			}
 	    	

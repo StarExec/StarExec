@@ -6,7 +6,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -15,15 +14,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.Database;
+import org.starexec.data.database.BenchTypes;
 import org.starexec.data.to.BenchmarkType;
 import org.starexec.util.SessionUtil;
-import org.starexec.util.Validate;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 
 /**
@@ -100,7 +97,7 @@ public class BenchTypeManager extends HttpServlet {
 				
 				// And redirect based on the results of the update
 				if(result != null) {
-					response.sendRedirect("edit.jsp?result=updatesuccess&cid=" + result.getCommunityId());	
+					response.sendRedirect("/starexec/secure/edit/community.jsp?result=updatesuccess&cid=" + result.getCommunityId());	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update the benchmark type. A partial update may have been applied");	
 				}												
@@ -141,7 +138,7 @@ public class BenchTypeManager extends HttpServlet {
 				
 				// Redirect based on the results of the addition
 				if(result != null) {
-					response.sendRedirect("edit.jsp?result=addsuccess&cid=" + result.getCommunityId());	
+					response.sendRedirect("/starexec/secure/edit/community.jsp?result=addsuccess&cid=" + result.getCommunityId());	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
 				}									
@@ -175,7 +172,7 @@ public class BenchTypeManager extends HttpServlet {
 			newType.setProcessorPath(newFile.getAbsolutePath());					
 			log.info(String.format("Wrote new benchmark type processor to %s for community %d", newFile.getAbsolutePath(), newType.getCommunityId()));					
 			
-			if(Database.addBenchmarkType(newType)) {
+			if(BenchTypes.add(newType)) {
 				return newType;					
 			}						
 		} catch (Exception e) {
@@ -209,22 +206,22 @@ public class BenchTypeManager extends HttpServlet {
 			}
 			
 			// Get the original type information from the database
-			BenchmarkType originalType = Database.getBenchTypeById(updatedType.getId());
+			BenchmarkType originalType = BenchTypes.get(updatedType.getId());
 			
 			// If there's a difference between names, update it
 			if(!originalType.getName().equals(updatedType.getName())) {
-				Database.updateBenchTypeName(originalType.getId(), updatedType.getName());
+				BenchTypes.updateName(originalType.getId(), updatedType.getName());
 			}
 
 			// If there's a difference between descriptions, update it
 			if(!originalType.getDescription().equals(updatedType.getDescription())) {
-				Database.updateBenchTypeDescription(originalType.getId(), updatedType.getDescription());
+				BenchTypes.updateDescription(originalType.getId(), updatedType.getDescription());
 			}
 			
 			// If the user specified a new processor script, update it
 			if(!org.starexec.util.Util.isNullOrEmpty(updatedType.getProcessorName())) {
 				// Update the new path
-				Database.updateBenchTypePath(originalType.getId(), updatedType.getProcessorPath());
+				BenchTypes.updatePath(originalType.getId(), updatedType.getProcessorPath());
 				
 				// And remove the old processor script from disk
 				File f = new File(originalType.getProcessorPath());
@@ -280,11 +277,11 @@ public class BenchTypeManager extends HttpServlet {
 				return false;
 			}
 										
-			if(!Validate.benchTypeName((String)form.get(TYPE_NAME))) {
+			if(!Validator.isValidPrimName((String)form.get(TYPE_NAME))) {
 				return false;
 			}
 																	
-			if(!Validate.description((String)form.get(TYPE_DESC))) {
+			if(!Validator.isValidPrimDescription((String)form.get(TYPE_DESC))) {
 				return false;
 			}
 						

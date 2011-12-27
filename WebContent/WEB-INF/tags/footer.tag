@@ -15,7 +15,7 @@
 		<ul>
 			<li><a id="loginLink" href="/starexec/secure/index.jsp">login</a></li>
 			<li>|</li>
-			<li><a href="/starexec/registration.jsp">register</a></li>
+			<li><a href="/starexec/public/registration.jsp">register</a></li>
 		</ul>		
 	</c:if>				
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">© 2011 the university of iowa</a>			

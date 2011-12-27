@@ -17,7 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
-import org.starexec.data.Database;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkType;
 import org.starexec.data.to.Permission;
@@ -122,13 +123,13 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
 			result.setId(spaceId);
-			Database.addSpacesWithBenchmarks(result, userId);
+			Spaces.addWithBenchmarks(result, userId);
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> results = this.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-			Database.addBenchmarks(results, spaceId);
+			Benchmarks.add(results, spaceId);
 		}
 						
-        response.sendRedirect("/starexec/secure/space_explorer.jsp"); 
+        response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
 	}		
 	
 	/**

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,13 +7,16 @@
 		long userId = SessionUtil.getUserId(request);
 		long benchId = Long.parseLong(request.getParameter("id"));
 		
-		Benchmark b = Database.getBenchmark(benchId, userId);		
+		Benchmark b = null;
+		if(Permissions.canUserSeeBench(benchId, userId)) {
+			b = Benchmarks.get(benchId);
+		}		
 		
 		if(b != null) {
-			request.setAttribute("usr", Database.getUser(b.getUserId()));
+			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
 			
-			Space s = Database.getCommunityDetails(b.getType().getCommunityId());
+			Space s = Communities.getDetails(b.getType().getCommunityId());
 			request.setAttribute("com", s);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");			
@@ -25,9 +28,9 @@
 	}
 %>
 
-<star:template title="${bench.name}" js="details" css="details">				
+<star:template title="${bench.name}" js="details/shared" css="details/shared">				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit_benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
 		<table>
 			<tr>
 				<td>description</td>			

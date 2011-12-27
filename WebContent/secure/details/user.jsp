@@ -1,15 +1,15 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
 		long id = Long.parseLong(request.getParameter("id"));			
-		User user = Database.getUser(id);
+		User user = Users.get(id);
 		
 		if(user != null) {
 			request.setAttribute("usr", user);
-			request.setAttribute("sites", Database.getWebsites(id, Database.WebsiteType.USER));
+			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}
@@ -20,9 +20,9 @@
 	}
 %>
 
-<star:template title="${usr.fullName}" js="details" css="details">				
+<star:template title="${usr.fullName}" js="details/shared" css="details/shared">				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit_account.jsp">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
 		<table>
 			<tr>
 				<td>e-mail address</td>			

@@ -1,23 +1,18 @@
 package org.starexec.servlets;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-
-import org.starexec.constants.*;
-import org.starexec.data.Database;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.util.SessionUtil;
-import org.starexec.util.Validate;
+import org.starexec.util.Validator;
 
 
 /**
@@ -84,12 +79,12 @@ public class AddSpace extends HttpServlet {
 		long userId = SessionUtil.getUserId(request);
 		
 		//Actually add the space to the system
-		if(Database.addSpace(s, spaceId, userId) <= 0) {
+		if(Spaces.add(s, spaceId, userId) <= 0) {
 			// If it failed, notify an error
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
 		} else {
 			// On success, redirect to the space explorer so they can see changes
-			response.sendRedirect("/starexec/secure/space_explorer.jsp");	
+			response.sendRedirect("/starexec/secure/explore/spaces.jsp");	
 		}		
 	}
 
@@ -105,12 +100,12 @@ public class AddSpace extends HttpServlet {
 			long spaceId = Long.parseLong((String)spaceRequest.getParameter(parentSpace));
 			
 			// Ensure the space name is valid (alphanumeric < 32 chars)
-			if(!Validate.spaceName((String)spaceRequest.getParameter(name))) {
+			if(!Validator.isValidPrimName((String)spaceRequest.getParameter(name))) {
 				return false;
 			}
 			
 			// Ensure the description is < 1024 characters
-			if(!Validate.description((String)spaceRequest.getParameter(description))) {
+			if(!Validator.isValidPrimDescription((String)spaceRequest.getParameter(description))) {
 				return false;
 			}
 			

@@ -25,8 +25,37 @@
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
 			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
 		</class>
+		<class name="org.starexec.util.Validator">					
+			<property key="BOOLEAN_PATTERN">
+				<value><![CDATA[^[true|false]$]]></value>
+			</property>										
+			<property key="USER_NAME_PATTERN">
+				<value><![CDATA[^[A-Z\-\s']{2,32}$]]></value>
+			</property>						
+			<property key="INSTITUTION_PATTERN">
+				<value><![CDATA[^[\w\-\s']{2,64}$]]></value>
+			</property>						
+			<property key="EMAIL_PATTERN">
+				<value><![CDATA[^[\w.%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$]]></value>
+			</property>						
+			<property key="URL_PATTERN">
+				<value><![CDATA[https?://([-\w\.]+)+(:\d+)?(/([\w/_\.]*(\?\S+)?)?){1,128}]]></value>
+			</property>						
+			<property key="PRIMITIVE_NAME_PATTERN">
+				<value><![CDATA[^[\w\-\. ]{1,32}$]]></value>
+			</property>									
+			<property key="PASSWORD_PATTERN">
+				<value><![CDATA[^(?=.*[A-Zz0-9\Q~`!@#$%^&*()_\-\+=\E]+$)(?=.*[0-9]{1,})(?=.*[A-Za-z]{1,})(?=.*[\Q~`!@#$%^&*()_\-\+=\E]+{1,}).{6,20}$]]></value>
+			</property>						
+			<property key="REQUEST_MESSAGE">				
+				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				
+			</property>						
+			<property key="PRIMITIVE_DESC_PATTERN">
+				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>
+			</property>						
+		</class>
 	</configuration>
-	<configuration name="tyler_dev_local">
+	<configuration name="tyler_dev_local" inherit="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
 			<property key="MYSQL_DATABASE" value="starexec" />
@@ -45,14 +74,13 @@
 			<property key="BENCH_TYPE_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\types" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />			
 			<!-- Misc. Configuration -->
-			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
-			<property key="LOG_TO_CONSOLE" value="true" />
+			<property key="LOG_TO_CONSOLE" value="true" />			
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
 			<property key="NODE_LIST_COMMAND" value="cmdspoof C:\\Dll\\-se.txt" />
 			<property key="NODE_DETAILS_COMMAND" value="cmdspoof C:\\Dll\\-sel.txt " />						
 		</class>
 	</configuration>
-	<configuration name="tyler_dev_cluster">
+	<configuration name="tyler_dev_cluster" inherit="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
 			<property key="MYSQL_DATABASE" value="dev_tj_starexec" />
@@ -69,15 +97,14 @@
 			<property key="JOB_INBOX_DIR" value="/home/tnjensen/stardev/data/jobin" />
 			<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
-			<!-- Misc. Configuration -->
-			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
+			<!-- Misc. Configuration -->			
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
 			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />	
 		</class>
 	</configuration>
-	<configuration name="todd_dev_local">
+	<configuration name="todd_dev_local" inherit="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
 			<property key="MYSQL_DATABASE" value="starexec" />
@@ -94,12 +121,11 @@
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\jobs\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\node\\" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
-			<!-- Misc. Configuration -->
-			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
+			<!-- Misc. Configuration -->			
 			<property key="LOG_TO_CONSOLE" value="true" />
 		</class>
 	</configuration>
-	<configuration name="skylar_dev_local">
+	<configuration name="skylar_dev_local" inherit="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
 			<property key="MYSQL_DATABASE" value="starexec" />

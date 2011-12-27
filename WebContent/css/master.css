@@ -133,6 +133,15 @@ label.error {
 	color: #666666;
 }
 
+ul.horizontal {
+	list-style: none;
+}
+
+ul.horizontal li {
+	float: left;
+	margin-right: 20px;
+}
+
 /***************** Message Styles *************************/
 
 .message {

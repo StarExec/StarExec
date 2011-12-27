@@ -7,15 +7,16 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.P;
-import org.starexec.data.Database;
-import org.starexec.data.to.*;
-import org.starexec.servlets.Registration;
+import org.starexec.data.database.Permissions;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.User;
 
 /**
  * Contains handy methods for accessing data within a user's session
  * @author Tyler Jensen
  */
-public class SessionUtil {
+@SuppressWarnings("unused")
+public class SessionUtil {	
 	private static final Logger log = Logger.getLogger(SessionUtil.class);
 	
 	/**
@@ -120,7 +121,7 @@ public class SessionUtil {
 		HashMap<Long, Permission> cache = SessionUtil.getPermissionCache(session);
 		if(!cache.containsKey(spaceId)) {
 			// If the cache does not have the permission, add it
-			Permission p = Database.getUserPermissions(SessionUtil.getUserId(session), spaceId);
+			Permission p = Permissions.get(SessionUtil.getUserId(session), spaceId);
 			
 			if(p != null) {
 				cache.put(spaceId, p);

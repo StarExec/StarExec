@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.Database, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -6,8 +6,8 @@
 		// Get parent space info for display
 		long spaceId = Long.parseLong(request.getParameter("sid"));
 		long userId = SessionUtil.getUserId(request);
-		request.setAttribute("space", Database.getSpace(spaceId, userId));
-		request.setAttribute("types", Database.getBenchmarkTypes());
+		request.setAttribute("space", Spaces.get(spaceId));
+		request.setAttribute("types", BenchTypes.getAll());
 		
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
@@ -21,8 +21,8 @@
 	}
 %>
 
-<star:template title="upload benchmarks to ${space.name}" css="upload_benchmark" js="lib/jquery.validate.min, upload_benchmark">
-	<form id="uploadForm" enctype="multipart/form-data" method="POST" action="BenchmarkUploader">
+<star:template title="upload benchmarks to ${space.name}" css="add/benchmark" js="lib/jquery.validate.min, add/benchmarks">
+	<form id="uploadForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/upload/solvers">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>upload benchmarks</legend>
