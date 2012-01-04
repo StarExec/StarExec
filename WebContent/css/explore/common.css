@@ -28,6 +28,7 @@
 	color: #FFFFFF;
 	font-size: 24px;
 	margin-bottom: 5px;
+	display: inline-block;
 }
 
 #detailPanel p.accent {
@@ -63,4 +64,8 @@
 #content table {
  width: 100%;	
 }
+
+#progressBar {
+	display: inline-block;
+	margin-left: 20px;
 }

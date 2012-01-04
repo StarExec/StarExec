@@ -12,10 +12,11 @@
 				<li class="round">
 					<a href="#">admin</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="#">remove user</a></li>  
-			            <li class="round"><a href="#">kill job</a></li>
-			            <li class="round"><a href="#">cluster</a></li>  
-			            <li class="round"><a href="#">take offline</a></li>
+			            <li class="round"><a href="#">users</a></li>  
+			            <li class="round"><a href="#">cluster</a></li>
+			            <li class="round"><a href="#">jobs</a></li>
+			            <li class="round"><a href="#">communities</a></li>  
+			            <li class="round"><a href="#">other</a></li>
 			        </ul>  
 				</li>
 				</c:if>
@@ -43,8 +44,7 @@
 				<li class="round">
 					<a href="#">cluster</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="/starexec/secure/explore/cluster.jsp">status</a></li>  
-			            <li class="round"><a href="#">availability</a></li>  
+			            <li class="round"><a href="/starexec/secure/explore/cluster.jsp">status</a></li>  			             
 			        </ul>  
 				</li>			
 			</ul>

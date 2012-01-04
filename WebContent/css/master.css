@@ -142,6 +142,11 @@ ul.horizontal li {
 	margin-right: 20px;
 }
 
+.extLink {
+	margin-left: 8px;
+	margin-bottom: 2px;
+}
+
 /***************** Message Styles *************************/
 
 .message {

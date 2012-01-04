@@ -23,7 +23,6 @@ INSERT INTO user_roles VALUES('tinelli.test@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('skylar-stark@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('geoff@cs.miami.edu', 'user');
 
-INSERT INTO node_class (name) VALUES ("dev cluster");
 INSERT INTO nodes(name) VALUES ("starexec1x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec2x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec3x.cs.uiowa.edu");

@@ -176,27 +176,75 @@ CREATE PROCEDURE UpdateBenchTypePath(IN _id BIGINT, IN _path TEXT)
 
 -- Adds a worker node to the database and ignores duplicates
 -- Author: Tyler Jensen
+CREATE PROCEDURE AssociateQueue(IN _queueName VARCHAR(64), IN _nodeName VARCHAR(64))
+	BEGIN
+		INSERT IGNORE INTO queue_assoc
+		VALUES(
+			(SELECT id FROM queues WHERE name=_queueName), 
+			(SELECT id FROM nodes WHERE name=_nodeName));
+	END //
+	
+-- Adds a worker node to the database and ignores duplicates
+-- Author: Tyler Jensen
 CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
 	BEGIN
 		INSERT IGNORE INTO nodes (name)
 		VALUES (_name);
 	END //
 	
--- Gets the id and name of all nodes in the cluster
+-- Adds a SGE queue to the database and ignores duplicates
+-- Author: Tyler Jensen
+CREATE PROCEDURE AddQueue(IN _name VARCHAR(64))
+	BEGIN
+		INSERT IGNORE INTO queues (name)
+		VALUES (_name);
+	END //
+	
+-- Gets the id, name and status of all nodes in the cluster
 -- Author: Tyler Jensen
 CREATE PROCEDURE GetAllNodes()
 	BEGIN		
-		SELECT id, name
+		SELECT id, name, status
 		FROM nodes
 		ORDER BY name;	
 	END //
+	
+-- Gets the id, name and status of all nodes in the cluster that are active
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetNodesForQueue(IN _id BIGINT)
+	BEGIN		
+		SELECT id, name, status
+		FROM nodes
+		WHERE id IN
+			(SELECT node_id FROM queue_assoc WHERE queue_id=_id)
+		ORDER BY name;	
+	END //
 
+-- Gets the id, name and status of all queues in the cluster that are active
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetAllQueues()
+	BEGIN		
+		SELECT id, name, status
+		FROM queues
+		WHERE status="ACTIVE"
+		ORDER BY name;	
+	END //
+	
 -- Gets worker node with the given ID
 -- Author: Tyler Jensen
 CREATE PROCEDURE GetNodeDetails(IN _id BIGINT)
 	BEGIN		
 		SELECT *
 		FROM nodes
+		WHERE id=_id;
+	END // 
+	
+-- Gets worker node with the given ID
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetQueueDetails(IN _id BIGINT)
+	BEGIN		
+		SELECT *
+		FROM queues
 		WHERE id=_id;
 	END // 
 	
@@ -209,12 +257,63 @@ CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64),
 		EXECUTE stmt;		
 	END // 
 	
+-- Updates a queues's attribute (assuming the column already exists)
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateQueueAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64), IN _fieldVal VARCHAR(64))
+	BEGIN	
+		SET @updateAttr = CONCAT('UPDATE queues SET ', _fieldName, '="', _fieldVal,'" WHERE name="', _name, '"');
+		PREPARE stmt FROM @updateAttr;
+		EXECUTE stmt;		
+	END // 
+	
+-- Updates a queues's usage stats
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateQueueUseage(IN _name VARCHAR(64), IN _total INTEGER, IN _free INTEGER, IN _used INTEGER, IN _reserved INTEGER)
+	BEGIN	
+		UPDATE queues
+		SET slots_total=_total, slots_free=_free, slots_used=_used, slots_reserved=_reserved
+		WHERE name=_name;
+	END // 
+
+-- Updates all queues status'
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateAllQueueStatus(IN _status VARCHAR(32))
+	BEGIN	
+		UPDATE queues
+		SET status=_status;
+	END // 
+	
+-- Updates a specific queues status
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateQueueStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
+	BEGIN	
+		UPDATE queues
+		SET status=_status
+		WHERE name=_name;
+	END // 
+
+-- Updates all nodes status'
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateAllNodeStatus(IN _status VARCHAR(32))
+	BEGIN	
+		UPDATE nodes
+		SET status=_status;
+	END // 
+	
+-- Updates a specific node's status
+-- Author: Tyler Jensen
+CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
+	BEGIN	
+		UPDATE nodes
+		SET status=_status
+		WHERE name=_name;
+	END // 
 
 	
 	
 	
 	
-
+	
 /*************************************************************************
 ********************* COMMUNITY STORED PROCEDURES ************************
 *************************************************************************/

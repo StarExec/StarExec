@@ -111,21 +111,36 @@ CREATE TABLE solvers (
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
 
--- All the classes of nodes on the system. A class is
--- a specific hardware configuration common across more than one node
-CREATE TABLE node_class (
-	id BIGINT NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(32) NOT NULL,
-	PRIMARY KEY (id)
+-- All the SGE node queues on the system
+CREATE TABLE queues (
+	id BIGINT NOT NULL AUTO_INCREMENT, 	
+	name VARCHAR(64) NOT NULL,
+	status VARCHAR(32),
+	slots_used INTEGER DEFAULT 0,
+	slots_reserved INTEGER DEFAULT 0,
+	slots_free INTEGER DEFAULT 0,
+	slots_total INTEGER DEFAULT 0,
+	PRIMARY KEY (id),
+	UNIQUE KEY (name)
 );
 
--- All the worker nodes that jobs can be executed on in the cluster.
+-- All the SGE worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
 CREATE TABLE nodes (
 	id BIGINT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(64) NOT NULL,
+	status VARCHAR(32),
 	PRIMARY KEY (id),
-	UNIQUE KEY (name)	
+	UNIQUE KEY (name)
+);
+
+-- All the SGE node queues on the system
+CREATE TABLE queue_assoc (
+	queue_id BIGINT NOT NULL, 	
+	node_id BIGINT NOT NULL,	
+	PRIMARY KEY (queue_id, node_id),
+	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
+	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
 );
 
 -- All of the jobs within the system, this is the overarching entity
@@ -133,7 +148,7 @@ CREATE TABLE nodes (
 CREATE TABLE jobs (
 	id BIGINT NOT NULL AUTO_INCREMENT,
 	user_id BIGINT NOT NULL,
-	node_class BIGINT,
+	node BIGINT,
 	name VARCHAR(32),
 	submitted TIMESTAMP DEFAULT 0,
 	finished TIMESTAMP DEFAULT 0,
@@ -142,7 +157,7 @@ CREATE TABLE jobs (
 	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	FOREIGN KEY (node_class) REFERENCES node_class(id) ON DELETE NO ACTION	
+	FOREIGN KEY (node) REFERENCES nodes(id) ON DELETE NO ACTION	
 );
 
 -- All the configurations that belong to a solver. A solver

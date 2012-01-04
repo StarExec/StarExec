@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Queue;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
@@ -46,7 +47,27 @@ public class RESTHelpers {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		
 		for(WorkerNode n : nodes){
-			JSTreeItem t = new JSTreeItem(n.getName(), n.getId(), "leaf", "worker_node");	
+			// Only take the first part of the host name, the full one is too long to display on the client
+			JSTreeItem t = new JSTreeItem(n.getName().split("\\.")[0], n.getId(), "leaf", n.getStatus().equals("ACTIVE") ? "enabled_node" : "disabled_node");	
+			list.add(t);
+		}
+
+		return list;
+	}
+	
+	/**
+	 * Takes in a list of queues and converts it into
+	 * a list of JSTreeItems suitable for being displayed
+	 * on the client side with the jsTree plugin.
+	 * @param queues The list of queues to convert
+	 * @return List of JSTreeItems to be serialized and sent to client
+	 * @author Tyler Jensen
+	 */
+	protected static List<JSTreeItem> toQueueList(List<Queue> queues){
+		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		
+		for(Queue q : queues){
+			JSTreeItem t = new JSTreeItem(q.getName(), q.getId(), "closed", "queue");	
 			list.add(t);
 		}
 

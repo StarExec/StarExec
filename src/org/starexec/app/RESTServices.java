@@ -70,19 +70,22 @@ public class RESTServices {
 	}	
 	
 	/**
-	 * @return a json string representing all nodes in the starexec cluster
+	 * @return a json string representing all queues in the starexec cluster
 	 * @author Tyler Jensen
 	 */
 	@GET
-	@Path("/cluster/nodes")
+	@Path("/cluster/queues")
 	@Produces("application/json")	
-	public String getAllNodes() {								
-		return gson.toJson(RESTHelpers.toNodeList(Cluster.getAllNodes()));
+	public String getAllQueues(@QueryParam("id") long id) {		
+		if(id <= 0) {
+			return gson.toJson(RESTHelpers.toQueueList(Cluster.getAllQueues()));
+		} else {
+			return gson.toJson(RESTHelpers.toNodeList(Cluster.getNodesForQueue(id)));
+		}
 	}
 	
 	/**
-	 * @return a json string representing all the subspaces of the space with
-	 * the given id. If the given id is <= 0, then the root space is returned
+	 * @return a json string representing all attributes of the node with the given id
 	 * @author Tyler Jensen
 	 */
 	@GET
@@ -90,6 +93,17 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getNodeDetails(@PathParam("id") long id) {		
 		return gson.toJson(Cluster.getNodeDetails(id));
+	}
+	
+	/**
+	 * @return a json string representing all attributes of the queue with the given id
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/cluster/queues/details/{id}")
+	@Produces("application/json")	
+	public String getQueueDetails(@PathParam("id") long id) {		
+		return gson.toJson(Cluster.getQueueDetails(id));
 	}
 	
 	/**

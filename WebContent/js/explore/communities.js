@@ -17,9 +17,22 @@ $(document).ready(function(){
 		"themes" : { 
 			"theme" : "default", 					
 			"dots" : false, 
-			"icons" : false
-		},				
-		"plugins" : ["themes", "json_data", "ui", "cookies"] ,
+			"icons" : true
+		},			
+		"types" : {				
+			"max_depth" : -2,
+			"max_children" : -2,					
+			"valid_children" : [ "space" ],
+			"types" : {						
+				"space" : {
+					"valid_children" : [ "space" ],
+					"icon" : {
+						"image" : "/starexec/images/jstree/users.png"
+					}
+				}
+			}
+		},
+		"plugins" : ["types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane		
@@ -88,6 +101,8 @@ $(document).ready(function(){
 			$("#removeUser").parent().parent().fadeOut("fast");
 		}
 	});
+	
+	$('.dataTables_wrapper').hide();
 });
  
 /**
@@ -126,8 +141,8 @@ function populateDetails(jsonData) {
 	$.each(jsonData.space.users, function(i, user) {
 		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '</a>';				
+		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';				
 		memberTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 	
@@ -136,8 +151,8 @@ function populateDetails(jsonData) {
 	leaderTable.fnClearTable();	
 	$.each(jsonData.leaders, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>';
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '</a>';				
+		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>';
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';				
 		leaderTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 
@@ -152,7 +167,7 @@ function populateDetails(jsonData) {
 	$('#websiteField legend').children('span:first-child').text(jsonData.websites.length);
 	$('#websites').html('');	
 	$.each(jsonData.websites, function(i, site) {		
-		var link = '<a href="' + site.url + '" target="blank">' + site.name+ '</a>';					
+		var link = '<a href="' + site.url + '" target="blank">' + site.name+ '<img class="extLink" src="/starexec/images/external.png"/></a>';					
 		$('#websites').append('<li>' + link + '</li>');
 	});
 	
@@ -160,8 +175,7 @@ function populateDetails(jsonData) {
 	checkPermissions(jsonData.perm);
 	
 	// Done loading, hide the loader
-	$('#loader').hide();
-	$('.dataTables_wrapper').hide();
+	$('#loader').hide();	
 }
 
 /**

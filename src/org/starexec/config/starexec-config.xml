@@ -22,8 +22,12 @@
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="aaron-stump@uiowa.edu" />
+			<!-- SGE Configuration -->
+			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
+			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />
+			<property key="QUEUE_DETAILS_COMMAND" value="qconf -sq " />
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
-			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
+			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />	
 		</class>
 		<class name="org.starexec.util.Validator">					
 			<property key="BOOLEAN_PATTERN">
@@ -76,8 +80,12 @@
 			<!-- Misc. Configuration -->
 			<property key="LOG_TO_CONSOLE" value="true" />			
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
-			<property key="NODE_LIST_COMMAND" value="cmdspoof C:\\Dll\\-se.txt" />
-			<property key="NODE_DETAILS_COMMAND" value="cmdspoof C:\\Dll\\-sel.txt " />						
+			<!-- SGE Configuration -->
+			<property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Global\\-sql.txt" />
+			<property key="QUEUE_USAGE_COMMAND" value="cmdspoof C:\\Global\\-gc.txt" />
+			<property key="QUEUE_DETAILS_COMMAND" value="cmdspoof C:\\Global\\-sq.txt " />
+			<property key="NODE_LIST_COMMAND" value="cmdspoof C:\\Global\\-se.txt" />
+			<property key="NODE_DETAILS_COMMAND" value="cmdspoof C:\\Global\\-sel.txt " />						
 		</class>
 	</configuration>
 	<configuration name="tyler_dev_cluster" inherit="production">

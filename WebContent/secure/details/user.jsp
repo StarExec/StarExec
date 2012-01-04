@@ -26,7 +26,7 @@
 		<table>
 			<tr>
 				<td>e-mail address</td>			
-				<td><a href="mailto:${usr.email}">${usr.email}</a></td>
+				<td><a href="mailto:${usr.email}">${usr.email}<img class="extLink" src="/starexec/images/external.png"/></a></td>
 			</tr>				
 			<tr>
 				<td>institution</td>			
@@ -46,7 +46,7 @@
 				<td>		
 					<ul>
 						<c:forEach var="site" items="${sites}">
-							<li>${site}</li>
+							<li>${site}<img class="extLink" src="/starexec/images/external.png"/></li>
 						</c:forEach>	
 					</ul>
 				</td>

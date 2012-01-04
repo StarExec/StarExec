@@ -32,7 +32,7 @@ $(document).ready(function(){
 				"space" : {
 					"valid_children" : [ "space" ],
 					"icon" : {
-						"image" : "/starexec/images/tree_level.png"
+						"image" : "/starexec/images/jstree/db.png"
 					}
 				}
 			}
@@ -281,7 +281,7 @@ function populateDetails(jsonData) {
 	jobTable.fnClearTable();	
 	$.each(jsonData.space.jobs, function(i, job) {	
 		var hiddenJobId = '<input type="hidden" value="' + job.id + '" >';
-		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '</a>' + hiddenJobId;		
+		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenJobId;		
 		jobTable.fnAddData([jobLink, job.status, job.description]);
 	});	
 	
@@ -291,8 +291,8 @@ function populateDetails(jsonData) {
 	$.each(jsonData.space.users, function(i, user) {
 		var hiddenUserId = '<input type="hidden" value="'+user.id+'" >';
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '</a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '</a>';
+		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';
 		userTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 		
@@ -301,7 +301,7 @@ function populateDetails(jsonData) {
 	solverTable.fnClearTable();
 	$.each(jsonData.space.solvers, function(i, solver) {
 		var hiddenSolverId = '<input type="hidden" value="' + solver.id + '" >';
-		var solverLink = '<a href="/starexec/secure/details/solver.jsp?id=' + solver.id + '" target="blank">' + solver.name + '</a>' + hiddenSolverId;
+		var solverLink = '<a href="/starexec/secure/details/solver.jsp?id=' + solver.id + '" target="blank">' + solver.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenSolverId;
 		solverTable.fnAddData([solverLink, solver.description]);		
 	});	
 		
@@ -310,7 +310,7 @@ function populateDetails(jsonData) {
 	benchTable.fnClearTable();
 	$.each(jsonData.space.benchmarks, function(i, bench) {
 		var hiddenBenchId = '<input type="hidden" value="' + bench.id + '" >';
-		var benchLink = '<a href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '</a>' + hiddenBenchId;
+		var benchLink = '<a href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenBenchId;
 		benchTable.fnAddData([benchLink, bench.type.name, bench.description]);		
 	});
 	
@@ -319,7 +319,7 @@ function populateDetails(jsonData) {
 	spaceTable.fnClearTable();
 	$.each(jsonData.space.subspaces, function(i, subspace) {
 		var hiddenSubspaceId = '<input type="hidden" value="' + subspace.id + '" >';
-		var spaceLink = '<a href="/starexec/secure/details/space.jsp?id=' + subspace.id + '" target="blank">' + subspace.name + '</a>' + hiddenSubspaceId;
+		var spaceLink = '<a href="/starexec/secure/details/space.jsp?id=' + subspace.id + '" target="blank">' + subspace.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenSubspaceId;
 		spaceTable.fnAddData([spaceLink, subspace.description]);		
 	});
 	

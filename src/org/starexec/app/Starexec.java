@@ -58,6 +58,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			public void run() {
 				GridEngineUtil.loadWorkerNodes();
+				GridEngineUtil.loadQueues();
 			}
 		};		
 		new Thread(r).start();		

@@ -10,6 +10,7 @@ import com.google.gson.annotations.Expose;
  */
 public class WorkerNode extends Identifiable {
 	@Expose private String name;
+	@Expose private String status;
 	@Expose private HashMap<String, String> attributes;
 	
 	public WorkerNode() {
@@ -37,7 +38,21 @@ public class WorkerNode extends Identifiable {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}	
+	}		
+
+	/**
+	 * @return the status of the node
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set for the node
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
 	
 	/**
 	 * @return The attributes for this worker node
