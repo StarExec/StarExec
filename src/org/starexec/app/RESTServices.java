@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,13 +15,13 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.BenchTypes;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
-import org.starexec.data.database.Cluster;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
@@ -344,12 +345,13 @@ public class RESTServices {
 		
 		return gson.toJson(1);
 	}
-	
+
 	/**
 	 * Removes a benchmark type from a given space
-	 *
+	 * 
 	 * @return a json string containing '0' if the deletion was successful, else
-	 * a json string containing '1' if there was a failure, '2' for insufficient permissions
+	 *         a json string containing '1' if there was a failure, '2' for
+	 *         insufficient permissions
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -372,8 +374,9 @@ public class RESTServices {
 	/**
 	 * Removes a user's association to a space
 	 * 
-	 * @return a json string containing '0' if the user successfully left the space, else
-	 * a json string containing '1' if there was a failure, '2' for insufficient permissions
+	 * @return a json string containing '0' if the user successfully left the
+	 *         space, else a json string containing '1' if there was a failure,
+	 *         '2' for insufficient permissions
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -397,17 +400,29 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Removes a benchmark's association to a space, thereby removing the benchmark
-	 * from the space
+	 * Removes a benchmark's association to a space, thereby removing the
+	 * benchmark from the space
 	 * 
-	 * @return a json string containing '0' if the benchmark was successfully removed from the space, else
-	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
-	 * @author Todd Elvers 
+	 * @return a json string containing '0' if the benchmark was successfully
+	 *         removed from the space, else a json string containing '1' if
+	 *         there was a failure on the database level/attempted 'empty' delete, 
+	 *         and '2' for insufficient permissions
+	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/remove/benchmark/{spaceId}/{benchId}")
+	@Path("/remove/benchmark/{spaceId}")
 	@Produces("application/json")
-	public String removeBenchmarkFromSpace(@PathParam("spaceId") long spaceId, @PathParam("benchId") long benchId, @Context HttpServletRequest request) {
+	public String removeBenchmarksFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedBenches[]")){
+			return gson.toJson(1);
+		}
+		
+		// Extract the String bench id's and convert them to Long
+		ArrayList<Long> selectedBenches = new ArrayList<Long>();
+		for(String id : request.getParameterValues("selectedBenches[]")){
+			selectedBenches.add(Long.parseLong(id));
+		}
 		
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -416,23 +431,39 @@ public class RESTServices {
 		}
 
 		// Remove the benchmark from the space
-		return Spaces.removeBench(benchId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
-	 * Removes a user's association with a space, whereby removing them from
-	 * a space; this differs from leaveCommunity() in that the user is not allowed
-	 * to remove themselves from a space, only other users who aren't leaders themselves
+	 * Removes a user's association with a space, whereby removing them from a
+	 * space; this differs from leaveCommunity() in that the user is not allowed
+	 * to remove themselves from a space or remove other leaders from a space
 	 * 
-	 * @return a json string containing '0' if the user was successfully removed from the space, else
-	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
-	 * '4' if they try to remove themselves, '5' if they try to remove another leader
+	 * @return a json string containing '0' if the user(s) were successfully
+	 *         removed from the space, else a json string containing '1' if
+	 *         there was a database level failure/attempted 'empty' delete, 
+	 *         '2' for insufficient permissions, '3' if the leader initiating 
+	 *         the removal is in the list of users to remove, and '4' if the 
+	 *         list of users to remove contains another leader of the space
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/remove/user/{spaceId}/{userId}")
+	@Path("/remove/user/{spaceId}")
 	@Produces("application/json")
-	public String removeUserFromSpace(@PathParam("spaceId") long spaceId, @PathParam("userId") long userId, @Context HttpServletRequest request) {
+	public String removeUsersFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedUsers[]")){
+			return gson.toJson(1);
+		}
+		
+		// Extract the String user id's and convert them to Long
+		ArrayList<Long> selectedUsers = new ArrayList<Long>();
+		for(String userId : request.getParameterValues("selectedUsers[]")){
+			selectedUsers.add(Long.parseLong(userId));
+		}
+		
+		// Get the id of the user who initiated the removal
+		long userIdOfRemover = SessionUtil.getUserId(request);
 		
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -440,33 +471,48 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
-		// Don't allow the user to remove themselves from the space
-		if(userId == SessionUtil.getUserId(request)){
-			return gson.toJson(4);
+		// Validate the list of users to remove by:
+		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
+		// 2 - Ensuring other leaders of the space aren't in the list of users to remove
+		for(long userId : selectedUsers){
+			if(userId == userIdOfRemover){
+				return gson.toJson(3);
+			}
+			perm = Permissions.get(userId, spaceId);
+			if(perm.isLeader()){
+				return gson.toJson(4);
+			}
 		}
 		
-		// Don't allow user to remove other leaders from the space
-		perm = Permissions.get(userId, spaceId);
-		if(perm.isLeader()){
-			return gson.toJson(5);
-		}
-
-		// Remove the user from the space
-		return Communities.leave(userId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		// If array of users to remove is valid, attempt to remove them from the space
+		return Spaces.removeUsers(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 
 	/**
 	 * Removes a solver's association with a space, thereby removing the solver
 	 * from the space
 	 * 
-	 * @return a json string containing '0' if the solver was successfully removed from the space, else
-	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
+	 * @return a json string containing '0' if the solver was successfully
+	 *         removed from the space, else a json string containing '1' if
+	 *         there was a database failure/attempted 'empty' delete, 
+	 *         '2' for insufficient permissions, '3' if the input was invalid,
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/remove/solver/{spaceId}/{solverId}")
+	@Path("/remove/solver/{spaceId}")
 	@Produces("application/json")
-	public String removeSolverFromSpace(@PathParam("spaceId") long spaceId, @PathParam("solverId") long solverId, @Context HttpServletRequest request) {
+	public String removeSolversFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedSolvers[]")){
+			return gson.toJson(1);
+		}
+		
+		// Extract the String solver id's and convert them to Long
+		ArrayList<Long> selectedSolvers = new ArrayList<Long>();
+		for(String id : request.getParameterValues("selectedSolvers[]")){
+			selectedSolvers.add(Long.parseLong(id));
+		}
+		
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canRemoveSolver()) {
@@ -474,41 +520,97 @@ public class RESTServices {
 		}
 
 		// Remove the solver from the space
-		return Spaces.removeSolver(solverId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	
 	/**
-	 * Removes a job's association with a space, thereby removing the job from the
-	 * space
+	 * Removes a job's association with a space, thereby removing the job from
+	 * the space
 	 * 
-	 * @return a json string containing '0' if the job was successfully removed from the space, else
-	 * a json string containing '1' if there was a failure, '2' for insufficient permissions, '3' if the input was invalid,
+	 * @return a json string containing '0' if the job was successfully removed
+	 *         from the space, else a json string containing '1' if there was a
+	 *         database level failure/attempted 'empty' delete, '2' for insufficient
+	 *         permissions, '3' if the input was invalid
 	 * @author Todd Elvers
 	 * @deprecated not yet tested
 	 */
 	@POST
-	@Path("/remove/job/{spaceId}/{jobId}")
+	@Path("/remove/job/{spaceId}")
 	@Produces("application/json")
-	public String removeJobFromSpace(@PathParam("spaceId") long spaceId, @PathParam("jobId") long jobId, @Context HttpServletRequest request) {
+	public String removeJobsFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedJobs[]")){
+			return gson.toJson(1);
+		}
+		
+		// Extract the String job id's and convert them to Long
+		ArrayList<Long> selectedJobs = new ArrayList<Long>();
+		for (String id : request.getParameterValues("selectedJobs[]")) {
+			selectedJobs.add(Long.parseLong(id));
+		}
+
 		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(2);	
+		Permission perm = SessionUtil.getPermission(request, spaceId);
+		if (perm == null || !perm.isLeader()) {
+			return gson.toJson(2);
 		}
 
 		// Remove the job from the space
-		return Spaces.removeJob(jobId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson
+				.toJson(1);
 	}
 	
-	
 	/**
-	 * Updates the details of a solver.  Solver id is required in the path.  First
-	 * checks if the parameters of the update are valid, then performs the update.
+	 * Removes a subspace's association with a space, thereby removing the subspace
+	 * from the space
+	 * 
+	 * @param spaceId the id the space to remove the subspace from
+	 * @return a json string containing '0' if the subspace was successfully removed,
+	 *		   a string containing '1' for a database level failure/attempted 'empty' delete,
+	 *		   '2' for insufficient privileges, and '3' if the subspace to remove is not a leaf subspace (i.e.
+	 *		   if it has descendants) 			
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/remove/subspace/{spaceId}")
+	@Produces("application/json")
+	public String removeSubspacesFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedSubspaces[]")){
+			return gson.toJson(1);
+		}
+		
+		// Extract the String subspace id's and convert them to Long
+		ArrayList<Long> selectedSubspaces = new ArrayList<Long>();
+		for(String id : request.getParameterValues("selectedSubspaces[]")){
+			selectedSubspaces.add(Long.parseLong(id));
+		}
+		
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(null == perm || !perm.isLeader()) {
+			return gson.toJson(2);	
+		}
+		
+		for(long subspaceId : selectedSubspaces){
+			if(!Spaces.isLeaf(subspaceId)){
+				return gson.toJson(3);
+			}
+		}
+
+		// Remove the subspace from the space
+		return Spaces.removeSubspaces(selectedSubspaces, spaceId) ? gson.toJson(0) : gson.toJson(1);
+	}
+
+	/**
+	 * Updates the details of a solver. Solver id is required in the path. First
+	 * checks if the parameters of the update are valid, then performs the
+	 * update.
 	 * 
 	 * @param id the id of the solver to update the details for
-	 * @return 2 if parameters are not valid, 1 if updating the database failed, and
-	 * 0 if the update was successful 
+	 * @return 2 if parameters are not valid, 1 if updating the database failed,
+	 *         and 0 if the update was successful
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -544,14 +646,14 @@ public class RESTServices {
 		// Apply new solver details to database
 		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(1);
 	}
-	
+
 	/**
-	 * Deletes a solver given a solver's id.  The id of the solver to delete must be included
-	 * in the path.
+	 * Deletes a solver given a solver's id. The id of the solver to delete must
+	 * be included in the path.
 	 * 
 	 * @param id the id of the solver to delete
-	 * @return 2 if the parameters are invalid, 1 if the deletion isn't successful, 0 if the deletion
-	 * was successful
+	 * @return 2 if the parameters are invalid, 1 if the deletion isn't
+	 *         successful, 0 if the deletion was successful
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -570,14 +672,15 @@ public class RESTServices {
 		// Delete the solver from the database
 		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(1);
 	}
-	
+
 	/**
-	 * Updates the details of a benchmark.  Benchmark id is required in the path.  First
-	 * checks if the parameters of the update are valid, then performs the update.
+	 * Updates the details of a benchmark. Benchmark id is required in the path.
+	 * First checks if the parameters of the update are valid, then performs the
+	 * update.
 	 * 
 	 * @param id the id of the benchmark to update the details for
-	 * @return 2 if parameters are not valid, 1 if updating the database failed, and
-	 * 0 if the update was successful 
+	 * @return 2 if parameters are not valid, 1 if updating the database failed,
+	 *         and 0 if the update was successful
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -595,15 +698,14 @@ public class RESTServices {
 		// Delete the benchmark from the database
 		return Benchmarks.delete(benchId) ? gson.toJson(0) : gson.toJson(1);
 	}
-	
-	
+
 	/**
-	 * Deletes a benchmark given a benchmarks's id.  The id of the benchmark to delete must be included
-	 * in the path.
+	 * Deletes a benchmark given a benchmarks's id. The id of the benchmark to
+	 * delete must be included in the path.
 	 * 
 	 * @param id the id of the benchmark to delete
-	 * @return 2 if the parameters are invalid, 1 if the deletion isn't successful, 0 if the deletion
-	 * was successful
+	 * @return 2 if the parameters are invalid, 1 if the deletion isn't
+	 *         successful, 0 if the deletion was successful
 	 * @author Todd Elvers
 	 */
 	@POST

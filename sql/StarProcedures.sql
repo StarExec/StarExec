@@ -765,6 +765,15 @@ CREATE PROCEDURE AssociateSpaces(IN _parentId BIGINT, IN _childId BIGINT, IN _pe
 		VALUES (_parentId, _childId, _permission);
 	END //
 	
+-- Gets all the descendants of a space
+-- Author: Todd Elvers
+CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId BIGINT)
+	BEGIN
+		SELECT descendant
+		FROM closure
+		WHERE ancestor = _spaceId;
+	END //
+	
 -- Gets all the leaders of a space
 -- Author: Todd Elvers
 CREATE PROCEDURE GetLeadersBySpaceId(IN _id BIGINT)
@@ -824,7 +833,15 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 		ORDER BY name;
 	END //
 	
--- Updates the name of the spacewith the given id
+-- Removes the association between a space and a subspace and deletes the subspace
+-- Author: Todd Elvers
+CREATE PROCEDURE RemoveSubspace(IN _subspaceId BIGINT)
+	BEGIN
+		DELETE FROM spaces
+		WHERE id = _subspaceId;
+	END //
+	
+-- Updates the name of the space with the given id
 -- Author: Tyler Jensen
 CREATE PROCEDURE UpdateSpaceName(IN _id BIGINT, IN _name VARCHAR(32))
 	BEGIN

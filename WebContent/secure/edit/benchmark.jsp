@@ -37,7 +37,7 @@
 	}
 %>
 
-<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit_benchmark" css="edit/benchmark">				
+<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/benchmark">				
 	<form id="editBenchmarkForm">
 		<fieldset>
 			<legend>benchmark details</legend>

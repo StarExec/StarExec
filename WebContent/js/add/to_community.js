@@ -21,12 +21,13 @@ $(document).ready(function() {
 	        }
 	});
 	
-	// Don't permit the defealt text as a message to the leaders by clearing it
+	// Don't permit the default text as a message to the leaders
 	$("#submit").click(function(){
 		if ($("#reason").val() == $("#reason").data('default')){
 			$("#reason").val("");
 	    }
 	});
+	
 	
 	$("#inviteForm").validate({
 		rules : {

@@ -12,7 +12,7 @@ $(document).ready(function(){
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/space_explorer.jsp';
+								window.location = '/starexec/secure/explore/spaces.jsp';
 								break;
 							case 1:
 								showMessage('error', "benchmark was not deleted; please try again", 5000);

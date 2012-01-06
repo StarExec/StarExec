@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="edit account" css="edit/account" js="edit/account">
+<star:template title="edit account" css="edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account">
 	<p>review and edit your account details here.</p>
 	<fieldset>
 		<legend>personal information</legend>
@@ -41,22 +41,32 @@
 	</fieldset>
 	<fieldset>
 		<legend>password</legend>
-		<table id="password">
-			<tr>
-				<td>current password</td>
-				<td><input type="password" id="current_pass" /></td>
-			</tr>
-			<tr>
-				<td>new password</td>
-				<td><input type="password" id="new_pass" /></td>
-			</tr>
-			<tr>
-				<td>re-enter new password</td>
-				<td><input type="password" id="confirm_pass" /></td>
-			</tr>
-			<tr>
-				<td colspan="2"><button class="round" id="changePass">change</button></td>
-			</tr>
-		</table>
+		<form id="changePassForm">
+			<table id="passwordTable">
+				<tr>
+					<td>current password</td>
+					<td><input type="password" id="current_pass" name="current_pass"/></td>
+				</tr>
+				<tr>
+					<td>new password</td>
+					<td>
+						<input type="password" id="password" name="pwd"/>
+						<div class="password-meter" id="pwd-meter" style="visibility:visibile">
+							<div class="password-meter-message"> </div>
+							<div class="password-meter-bg">
+								<div class="password-meter-bar"></div>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>re-enter new password</td>
+					<td><input type="password" id="confirm_pass" name="confirm_pass"/></td>
+				</tr>
+				<tr>
+					<td colspan="2"><button class="round" id="changePass">change</button></td>
+				</tr>
+			</table>
+		</form>
 	</fieldset>
 </star:template>

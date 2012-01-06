@@ -97,7 +97,7 @@ public class BenchTypeManager extends HttpServlet {
 				
 				// And redirect based on the results of the update
 				if(result != null) {
-					response.sendRedirect("/starexec/secure/edit/community.jsp?result=updatesuccess&cid=" + result.getCommunityId());	
+					response.sendRedirect("/starexec/secure/edit/community.jsp?cid=" + result.getCommunityId());	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update the benchmark type. A partial update may have been applied");	
 				}												
@@ -138,7 +138,7 @@ public class BenchTypeManager extends HttpServlet {
 				
 				// Redirect based on the results of the addition
 				if(result != null) {
-					response.sendRedirect("/starexec/secure/edit/community.jsp?result=addsuccess&cid=" + result.getCommunityId());	
+					response.sendRedirect("/starexec/secure/edit/community.jsp?cid=" + result.getCommunityId());	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
 				}									

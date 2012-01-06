@@ -4,43 +4,6 @@ $(document).ready(function(){
 		window.location.reload(true);
 	});
 	
-	// Add a new website functionality
-	$("#addWebsite").click(function(){
-		var name = document.getElementById('website_name').value;
-		var url = document.getElementById('website_url').value;
-		
-		if(name.trim().length == 0) {
-			showMessage('error', 'please enter a website name', 6000);
-			return;
-		} else if (url.indexOf("http://") != 0) {			
-			showMessage('error', 'url must start with http://', 6000);
-			return;
-		} else if (url.trim().length <= 12) {
-			showMessage('error', 'the given url is not long enough', 6000);
-			return;
-		}			
-		
-		var data = {name: name, url: url};
-		$.post(
-				"/starexec/services/website/add/space/" + $('#comId').val(),
-				data,
-				function(returnCode) {
-			    	if(returnCode == '0') {
-//			    		showMessage('success', "website successfully added", 5000);
-			    		$('#websites li').remove();
-			    		$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
-			    			alert('Session expired');
-			    			window.location.reload(true);
-			    		});
-			    	} else {
-			    		showMessage('error', "error: website not added. please try again", 5000);
-			    	}
-				},
-				"json"
-		);
-	});
-	
-	
 	// Make forms editable
 	editable("name");
 	editable("desc");	
@@ -53,10 +16,12 @@ $(document).ready(function(){
 	
 	// Add toggles for the "add new" buttons and hide them by default
 	$('#toggleWebsite').click(function() {
-		$('#new_website').slideToggle('fast');	
+		$('#new_website').slideToggle('fast');
+		togglePlusMinus(this);
 	});	
 	$('#toggleType').click(function() {
 		$('#newType').slideToggle('fast');
+		togglePlusMinus(this);
 	});	
 	$('#new_website').hide();
 	$('#newType').hide();
@@ -138,6 +103,44 @@ function displayWebsites(data) {
 			});
 		}
 	});
+	
+	// Add a new website functionality
+	$("#addWebsite").click(function(){
+		var name = $('#website_name').val();
+		var url = $('#website_url').val();
+		
+		if(name.trim().length == 0) {
+			showMessage('error', 'please enter a website name', 6000);
+			return;
+		} else if (url.indexOf("http://") != 0) {			
+			showMessage('error', 'url must start with http://', 6000);
+			return;
+		} else if (url.trim().length <= 12) {
+			showMessage('error', 'the given url is not long enough', 6000);
+			return;
+		}			
+		
+		var data = {name: name, url: url};
+		$.post(
+				"/starexec/services/website/add/space/" + $('#comId').val(),
+				data,
+				function(returnCode) {
+			    	if(returnCode == '0') {
+			    		$('#website_name').val("");
+			    		$('#website_url').val("");
+			    		$('#websites li').remove();
+			    		$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
+			    			alert('Session expired');
+			    			window.location.reload(true);
+			    		});
+			    	} else {
+			    		showMessage('error', "error: website not added. please try again", 5000);
+			    	}
+				},
+				"json"
+		);
+	});
+	
 }
 
 
@@ -152,8 +155,8 @@ function editable(attribute) {
 			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
 		}		
 		
-		$('#save' + attribute).click(function(){saveChanges(this, true, attribute);});
-		$('#cancel' + attribute).click(function(){saveChanges(this, old, attribute);});
+		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
+		$('#cancel' + attribute).click(function(){saveChanges(this, false, attribute, old);});
 	});
 	
 	$('#edit' + attribute).css('cursor', 'pointer');
@@ -201,45 +204,56 @@ function restoreBenchTypeRow(old) {
 }
 
 function deleteType(typeId, parent){
-	var answer = confirm("are you sure you want to delete this benchmark type?");
-	$.post(
-			"/starexec/services/edit/space/type/delete/" + $('#comId').val() + "/" + typeId,
-			function(returnCode) {
-		    	if(returnCode == '0') {
+	if(confirm("are you sure you want to delete this benchmark type?")){
+		$.post(
+				"/starexec/services/edit/space/type/delete/" + $('#comId').val() + "/" + typeId,
+				function(returnCode) {
+					if(returnCode == '0') {
 //		    		showMessage('success', "type was successfully deleted", 5000);
-					parent.remove();
-		    		$('#benchTypes tr').removeClass('shade');
-		    		$('#benchTypes tr:even').addClass('shade');	
-		    	} else {
-		    		showMessage('error', "error: type not added. please try again", 5000);
-		    	}
-			},
-			"json"
-	).error(function(){
-		alert('Session expired');
-		window.location.reload(true);
-	});
+						parent.remove();
+						$('#benchTypes tr').removeClass('shade');
+						$('#benchTypes tr:even').addClass('shade');	
+					} else {
+						showMessage('error', "error: type not added. please try again", 5000);
+					}
+				},
+				"json"
+		).error(function(){
+			alert('Session expired');
+			window.location.reload(true);
+		});
+	}
 }
 
 
-function saveChanges(obj, save, attr) {
-	var t = save;
+function saveChanges(obj, save, attr, old) {
 	if (true == save) {
-		t = $(obj).siblings('input:first').val();
-		if(t == null) {
-			t = $(obj).siblings('textarea:first').val();			
+		var newVal = $(obj).siblings('input:first').val();
+		if(newVal == null) {
+			newVal = $(obj).siblings('textarea:first').val();			
 		}		
 		
 		$.post(  
 			    "/starexec/services/edit/space/" + attr + "/" + $('#comId').val(),
-			    {val: t},
+			    {val: newVal},
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {
-			    		showMessage('success', "information successfully updated", 5000);
+			    		// Hide the input box and replace it with the table cell
+			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
+			    		// Make the value editable again
+			    		editable(attr);
 			    	} else if(returnCode == '2') {
 			    		showMessage('error', "insufficient permissions. only space leaders can update their space", 5000);
+			    		// Hide the input box and replace it with the table cell
+			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+			    		// Make the value editable again
+			    		editable(attr);
 			    	} else {
-			    		showMessage('error', "information not changed. please try again", 5000);
+			    		showMessage('error', "invalid characters; please try again", 5000);
+			    		// Hide the input box and replace it with the table cell
+			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+			    		// Make the value editable again
+			    		editable(attr);
 			    	}
 			     },  
 			     "json"  
@@ -247,11 +261,21 @@ function saveChanges(obj, save, attr) {
 			alert('Session expired');
 			window.location.reload(true);
 		});
+	} else {
+		// Hide the input box and replace it with the table cell
+		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+		// Make the value editable again
+		editable(attr);
 	}
-	
-	// Hide the input box and replace it with the table cell
-	$(obj).parent().after('<td id="edit' + attr + '">' + t + '</td>').remove();
-	
-	// Make the value editable again
-	editable(attr);
+}
+
+/**
+ * Toggles the plus-minus state of the "+ add new" website button
+ */
+function togglePlusMinus(addSiteButton){
+	if($(addSiteButton).text()[0] == "+"){
+		$(addSiteButton).text("- add new");
+	} else {
+		$(addSiteButton).text("+ add new");
+	}
 }

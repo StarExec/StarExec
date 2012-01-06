@@ -92,10 +92,4 @@ try {
 			</table>
 		</form>
 	</fieldset>
-	<c:if test="${not empty param.result and param.result == 'addsuccess'}">
-		<div class='success message'>the type was successfully added</div>
-	</c:if>
-	<c:if test="${not empty param.result and param.result == 'updatesuccess'}">
-		<div class='success message'>the type was successfully updated</div>
-	</c:if>		
 </star:template>

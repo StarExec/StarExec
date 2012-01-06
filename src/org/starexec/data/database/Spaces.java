@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -52,6 +53,7 @@ public class Spaces {
 	
 	/**
 	 * Gets the users that are the leaders of a given space
+	 * 
 	 * @param spaceId the id of the space to get the leaders of
 	 * @return a list of leaders of the given space
 	 * @author Todd Elvers
@@ -88,93 +90,206 @@ public class Spaces {
 	}
 	
 	/**
-	 * Removes a benchmark's association from a given space, thereby removing the benchmark
-	 * from the space
-	 * @param benchId the id of the benchmark to remove
-	 * @param spaceId the id of the space to remove the benchmark from
-	 * @return True if the operation was a success, false otherwise
+	 * Removes a list of users from a community in an all-or-none fashion (uses transactions)
+	 * 
+	 * @param userIds the list of userIds to be removed from a given community
+	 * @param commId the id of the community to remove the users from
+	 * @return true iff all users in userIds were removed from the community referenced by commId,
+	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeBench(long benchId, long spaceId) {
+	public static boolean removeUsers(ArrayList<Long> userIds, long commId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
+			// Instantiate a transaction so users in 'userIds' get removed in an all-or-none fashion
+			Common.beginTransaction(con);
+			
+			CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			for(long userId : userIds){
+				procedure.setLong(1, userId);
+				procedure.setLong(2, commId);
+				
+				procedure.executeUpdate();			
+			}
+			
+			// Commit changes to database
+			Common.endTransaction(con);
+			
+			log.debug(String.format("%d user(s) were successfully removed from a community [id=%d].", userIds.size(), commId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		log.debug(String.format("%d user(s) were unsuccessfully removed from a community [id=%d].", userIds.size(), commId));
+		return false;
+	}
+	
+	/**
+	 * Removes a list of benchmarks from a given space in an all-or-none fashion (uses transactions)
+	 * 
+	 * @param benchIds the id(s) of the benchmark(s) to remove from a given space
+	 * @param spaceId the id of the space to remove the benchmark(s) from
+	 * @return true iff all benchmarks in benchIds were successfully removed, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean removeBenches(ArrayList<Long> benchIds, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			// Instantiate a transaction so benchmarks in 'benchIds' get removed in an all-or-none fashion
+			Common.beginTransaction(con);
+			
 			CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
-			procedure.setLong(1, benchId);
-			procedure.setLong(2, spaceId);
+			for(long benchId : benchIds){
+				procedure.setLong(1, benchId);
+				procedure.setLong(2, spaceId);
+				
+				procedure.executeUpdate();			
+			}
 			
-			procedure.executeUpdate();			
-			log.debug(String.format("Removal of benchmark [id=%d] from space [id=%d] was successful.", benchId, spaceId));
+			// Commit changes to database
+			Common.endTransaction(con);
+			
+			log.debug(String.format("%d benchmark(s) were successfully removed from a space [id=%d].", benchIds.size(), spaceId));
 			return true;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 		}
-		log.debug(String.format("Removal of benchmark [id=%d] from space [id=%d] failed.", benchId, spaceId));
+		log.debug(String.format("%d benchmark(s) were unsuccessfully removed from a space [id=%d].", benchIds.size(), spaceId));
 		return false;
 	}
 	
 	/**
-	 * Removes a solver's association with a given space, thereby removing the solver
-	 * from the space
-	 * @param solverId the id of the solver to remove
+	 * Removes a list of solvers from a given space in an all-or-none fashion (uses transactions)
+	 * 
+	 * @param solverIds the list of solverIds to remove from a given space
 	 * @param spaceId the id of the space to remove the solver from
-	 * @return True if the operation was a success, false otherwise
+	 * @return true iff all solvers in 'solverIds' were removed from the space referenced by spaceId,
+	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeSolver(long solverId, long spaceId) {
+	public static boolean removeSolvers(ArrayList<Long> solverIds, long spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
-			procedure.setLong(1, solverId);
-			procedure.setLong(2, spaceId);
+			// Instantiate a transaction so solvers in 'solverIds' get removed in an all-or-none fashion
+			Common.beginTransaction(con);
 			
-			procedure.executeUpdate();			
-			log.debug(String.format("Removal of solver [id=%d] from space [id=%d] was successful.", solverId, spaceId));
+			CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
+			for(long solverId : solverIds){
+				procedure.setLong(1, solverId);
+				procedure.setLong(2, spaceId);
+				
+				procedure.executeUpdate();			
+			}
+			
+			// Commit changes to database
+			Common.endTransaction(con);
+			
+			log.debug(String.format("%d solver(s) were successfully removed from a space [id=%d].", solverIds.size(), spaceId));
 			return true;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 		}
-		log.debug(String.format("Removal of solver [id=%d] from space [id=%d] failed.", solverId, spaceId));
+		log.debug(String.format("%d solver(s) were unsuccessfully removed from a space [id=%d].", solverIds.size(), spaceId));
 		return false;
 	}
 	
 	/**
-	 * Removes a job's association with a space, thereby removing the job from
-	 * the space
-	 * @param jobId the id of the job to remove
+	 * Removes a list of jobs from a given space in an all-or-none fashion (uses transactions)
+	 * 
+	 * @param jobIds the list of jobIds to remove from a given space
 	 * @param spaceId the id of the space to remove the job from
-	 * @return True if the operation was a success, false otherwise
+	 * @return true iff all jobs in 'jobIds' were removed from the space referenced by 'spaceId',
+	 * false otherwise
 	 * @author Todd Elvers
 	 * @deprecated has not been tested
 	 */
-	public static boolean removeJob(long jobId, long spaceId) {
+	public static boolean removeJobs(ArrayList<Long> jobIds, long spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
-			procedure.setLong(1, jobId);
-			procedure.setLong(2, spaceId);
+			// Instantiate a transaction so jobs in 'jobIds' get removed in an all-or-none fashion
+			Common.beginTransaction(con);
 			
-			procedure.executeUpdate();			
-			log.debug(String.format("Removal of job [id=%d] from space [id=%d] was successful.", jobId, spaceId));
+			CallableStatement procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
+			for(long jobId : jobIds){
+				procedure.setLong(1, jobId);
+				procedure.setLong(2, spaceId);
+				
+				procedure.executeUpdate();			
+			}
+			
+			// Commit changes to database
+			Common.endTransaction(con);
+			
+			log.debug(String.format("%d jobs were successfully removed from a space [id=%d].", jobIds.size(), spaceId));
 			return true;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 		}
-		log.debug(String.format("Removal of job [id=%d] from space [id=%d] failed.", jobId, spaceId));
+		log.debug(String.format("%d jobs were unsuccessfully removed from a space [id=%d].", jobIds.size(), spaceId));
 		return false;
 	}
 	
+	
+	/**
+	 * Removes a list of subspaces from a given space in an all-or-none fashion (uses transactions)
+	 * 
+	 * @param subspaceIds the list of subspaces to remove
+	 * @param spaceId the id of the space to remove the subspaces from
+	 * @return true iff all subspaces in 'subspaceIds' are removed from the space referenced by 'spaceId',
+	 * false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean removeSubspaces(ArrayList<Long> subspaceIds, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			// Instantiate a transaction so subspaces in 'subspaceIds' get removed in an all-or-none fashion
+			Common.beginTransaction(con);
+			
+			CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
+			for(long subspaceId : subspaceIds){
+				procedure.setLong(1, subspaceId);
+				
+				procedure.executeUpdate();			
+			}
+			
+			// Commit changes to database
+			Common.endTransaction(con);
+			
+			log.debug(String.format("%d subspaces were successfully removed from a space [id=%d].", subspaceIds.size(), spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		log.debug(String.format("%d subspaces were unsuccessfully removed from a space [id=%d].", subspaceIds.size(), spaceId));
+		return false;
+	}
+
 	/**
 	 * Get all websites associated with a given user.
 	 * @param spaceId the id of the space to update
@@ -505,5 +620,29 @@ public class Spaces {
 		// Log the new addition and ensure we return at least 3 affected rows (the two added permissions are self-checking)
 		log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
 		return newSpaceId;
+	}
+	
+	/**
+	 * Determines whether or not a given space has any descendants (i.e. if it has any subspaces)
+	 * 
+	 * @param spaceId the id of the space to check for descendants
+	 * @return true iff the space is a leaf-space (i.e. if it has no descendants), false otherwise
+	 */
+	public static boolean isLeaf(long spaceId){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetDescendantsOfSpace(?)}");
+			procedure.setLong(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+			
+			return !results.next();			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
 	}
 }

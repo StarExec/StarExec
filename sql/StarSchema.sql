@@ -211,7 +211,7 @@ CREATE TABLE closure (
 	descendant BIGINT NOT NULL,
 	UNIQUE KEY (ancestor, descendant),
 	FOREIGN KEY (ancestor) REFERENCES spaces(id),
-	FOREIGN KEY (descendant) REFERENCES spaces(id)
+	FOREIGN KEY (descendant) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- The table that keeps track of verification codes that should

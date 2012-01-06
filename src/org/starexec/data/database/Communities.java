@@ -86,7 +86,8 @@ public class Communities {
 	 * Removes a user's association to a given space, thereby leaving that space
 	 * @param userId the id of the user to remove from the space
 	 * @param commId the id of the space to remove the user from
-	 * @return True if the operation was a success, false otherwise
+	 * @return true iff the user was successfully removed from the community referenced by 'commId',
+	 * false otherwise
 	 * @author Todd Elvers
 	 */
 	public static boolean leave(long userId, long commId) {
@@ -110,4 +111,5 @@ public class Communities {
 		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
 		return false;
 	}
+
 }

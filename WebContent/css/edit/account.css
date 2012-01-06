@@ -27,8 +27,13 @@ button {
 	border-radius: 2px;
 }
 
-#password tr td button {
+#passwordTable tr td button {
 	float: right;
+}
+
+
+#passwordTable td:first-child{
+	width: 35%;
 }
 
 fieldset h6 {
@@ -78,7 +83,6 @@ li:hover button {
 	cursor: pointer;	
 }
 
-
 .caption {
 	text-align: right;
 	font-size: 14px;
@@ -91,13 +95,76 @@ li:hover button {
 	margin-top: 10px;
 }
 
-
 input[type="text"] {
 	width: 50%;
 	height: 20px;	
 }
 
-
 #toggleWebsite {	
 	cursor: pointer;	
+}
+
+/***************** Password-Meter Styles *******************/
+
+.password-meter {
+	position: right;
+	margin-left: 13px;
+	display: inline-block;
+	width: 180px;
+}
+.password-meter-message {
+	text-align: left;
+	font-weight: bold;
+	color: #676767;
+}
+.password-meter-bg, .password-meter-bar {
+	height: 4px;
+	background-color: #222222;
+}
+
+.password-meter-bg {
+	top: 8px;
+	background: #e0e0e0;
+}
+
+.password-meter-message-illegal,
+.password-meter-message-too-short,
+.password-meter-message-too-long {
+	color: #aa0000;
+}
+.password-meter-message-very-weak {
+	color: #aa0033;
+}
+.password-meter-message-weak {
+	color: #f5ac00;
+}
+.password-meter-message-good {
+	color: #6699cc;
+}
+.password-meter-message-strong {
+	color: #008000;
+}
+
+.password-meter-bg .password-meter-illegal,
+.password-meter-bg .password-meter-too-short,
+.password-meter-bg .password-meter-too-long {
+	background: #aa0000;
+	width: 0px;
+}
+
+.password-meter-bg .password-meter-very-weak {
+	background: #aa0033;
+	width: 45px;
+}
+.password-meter-bg .password-meter-weak {
+	background: #f5ac00;
+	width: 90px;
+}
+.password-meter-bg .password-meter-good {
+	background: #6699cc;
+	width: 135px;
+}
+.password-meter-bg .password-meter-strong {
+	background: #008000;
+	width: 180px;
 }

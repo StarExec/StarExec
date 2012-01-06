@@ -130,16 +130,16 @@ public class Websites {
 			CallableStatement procedure = null;			
 			
 			switch(webType) {
-			case USER:
-				procedure = con.prepareCall("{CALL DeleteUserWebsite(?, ?)}");
-				break;
-			case SPACE:
-				procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?)}");
-				break;
-			case SOLVER:
-				throw new Exception("Not implemented");				
-			default:
-				throw new Exception("Unhandled value for WebsiteType");
+				case USER:
+					procedure = con.prepareCall("{CALL DeleteUserWebsite(?, ?)}");
+					break;
+				case SPACE:
+					procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?, ?)}");
+					break;
+				case SOLVER:
+					throw new Exception("Not implemented");				
+				default:
+					throw new Exception("Unhandled value for WebsiteType");
 			}
 			
 			procedure.setLong(1, websiteId);

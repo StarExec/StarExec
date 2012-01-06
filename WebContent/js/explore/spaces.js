@@ -4,11 +4,24 @@ var solverTable;
 var spaceTable;
 var jobTable;
 
-// When the document is ready to be executed on
 $(document).ready(function(){
-	// Set the path to the css theme fr the jstree plugin
+	// Builds the space explorer tree and attaches click listeners to the 'action' buttons
+	initTree();
+	
+	// Builds the DataTable objects and enables multi-select on them
+	initDataTables();
+	
+	$('.dataTables_wrapper').hide();
+});
+ 
+/**
+ * Creates the space explorer tree and adds click listeners to the 'action' buttons
+ */
+function initTree(){
+	var id = -1;
+	// Set the path to the css theme for the jstree plugin
 	 $.jstree._themes = "/starexec/css/jstree/";
-	 var id;
+	 
 	 // Initialize the jstree plugin for the explorer list
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
@@ -44,11 +57,218 @@ $(document).ready(function(){
         id = data.rslt.obj.attr("id");
         updateAddId(id);
         getSpaceDetails(id);
+        
+        // Hide all buttons that are selection-dependent
+        initButtons();
     }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 	
-	// Hide all buttons that are selection-dependent
-	initButtons();
 	
+	// Handles removal of benchmark(s) from a space
+	$("#removeBench").click(function(){
+		var selectedBenches = getSelectedRows(benchTable);
+		var remove;
+		
+		if(selectedBenches.length >= 2){
+			remove = window.confirm("are you sure you want remove these benchmarks?");
+		} else {
+			remove = window.confirm("are you sure you want remove this benchmark?");
+		}
+		
+		if(remove){
+			$.post(  
+				"/starexec/services/remove/benchmark/" + id,
+				{selectedBenches : selectedBenches},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							// Remove the rows from the page and update the table size in the legend
+							updateTable(benchTable);
+							$("#removeBench").parent().parent().fadeOut("fast");
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+							break;
+						case 2:
+							showMessage('error', "you do not have sufficient privileges to remove benchmarks from this space", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
+	
+	// Handles removal of user(s) from a space
+	$("#removeUser").click(function(){
+		var selectedUsers = getSelectedRows(userTable);
+		var remove;
+		
+		if(selectedUsers.length >= 2){
+			remove = window.confirm("are you sure you want remove these users?");
+		} else {
+			remove = window.confirm("are you sure you want remove this user?");
+		}
+		
+		if(remove){
+			$.post(  
+				"/starexec/services/remove/user/" + id,
+				{selectedUsers : selectedUsers},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							// Remove the rows from the page and update the table size in the legend
+							updateTable(userTable);
+							$("#removeUser").parent().parent().fadeOut("fast");
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+							break;
+						case 2:
+							showMessage('error', "you do not have sufficient privileges to remove other users from this space", 5000);
+							break;
+						case 3:
+							showMessage('error', "you can not remove yourself from this space in that way, " +
+									"instead use the 'leave' button to leave this community", 5000);
+							break;
+						case 4:
+							showMessage('error', "you can not remove other leaders of this space", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
+	
+	// Handles removal of solver(s) from a space
+	$("#removeSolver").click(function(){
+		var selectedSolvers = getSelectedRows(solverTable);
+		var remove;
+		
+		if(selectedSolvers.length >= 2){
+			remove = window.confirm("are you sure you want remove these solvers?");
+		} else {
+			remove = window.confirm("are you sure you want remove this solver?");
+		}
+		
+		if(remove){
+			$.post(  
+				"/starexec/services/remove/solver/" + id,
+				{selectedSolvers : selectedSolvers},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							// Remove the rows from the page and update the table size in the legend
+							updateTable(solverTable);
+							$("#removeSolver").parent().parent().fadeOut("fast");
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+							break;
+						case 2:
+							showMessage('error', "you do not have sufficient privileges to remove solvers from this space", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
+	
+	// Handles removal of job(s) from a space
+	$("#removeJob").click(function(){
+		var selectedJobs = getSelectedRows(jobTable);
+		var remove;
+		
+		if(selectedJobs.length >= 2){
+			remove = window.confirm("are you sure you want remove these jobs?");
+		} else {
+			remove = window.confirm("are you sure you want remove this job?");
+		}
+		
+		if(remove){
+			$.post(  
+				"/starexec/services/remove/job/" + id,
+				{selectedJobs : selectedJobs},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							// Remove the rows from the page and update the table size in the legend
+							updateTable(jobTable);
+							$("#removeJob").parent().parent().fadeOut("fast");
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+							break;
+						case 2:
+							showMessage('error', "you do not have sufficient privileges to remove jobs from this space", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
+	
+	// Handles removal of subspace(s) from a space
+	$("#removeSubspace").click(function(){
+		var selectedSubspaces = getSelectedRows(spaceTable);
+		var remove;
+		
+		if(selectedSubspaces.length >= 2){
+			remove = window.confirm("are you sure you want remove these subspaces?");
+		} else {
+			remove = window.confirm("are you sure you want remove this subspace?");
+		}
+		
+		if(remove){
+			$.post(  
+				"/starexec/services/remove/subspace/" + id,
+				{selectedSubspaces : selectedSubspaces},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							// Remove the rows from the page and update the table size in the legend
+							updateTable(spaceTable);
+							$("#removeSubspace").parent().parent().fadeOut("fast");
+							initTree();
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+							break;
+						case 2:
+							showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
+							break;
+						case 3:
+							showMessage('error', "you can only delete subspaces that themselves have no subspaces", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
+}
+
+/**
+ * Initializes the DataTable objects and adds multi-select to them
+ */
+function initDataTables(){
 	// DataTables setup
 	userTable = $('#users').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">'
@@ -82,170 +302,8 @@ $(document).ready(function(){
 	$("#spaces").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
 	});
-	
-	// Handles removal of benchmark(s) from a space
-	$("#removeBench").click(function(){
-		var selectedRows = getSelectedRows(benchTable);
-		var remove;
-		
-		if(selectedRows.length >= 2){
-			remove = window.confirm("are you sure you want remove these benchmarks?");
-		} else {
-			remove = window.confirm("are you sure you want remove this benchmark?");
-		}
-		
-		if(remove){
-			for(var i = 0; i < selectedRows.length; i++){
-				$.post(  
-					"/starexec/services/remove/benchmark/" + id + "/" + selectedRows[i],  
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								break;
-							default:
-								showMessage('error', "only the leader of a community can modify it", 5000);
-								break;
-						}
-					},
-					"json"
-				).error(function(){
-					alert('Session expired');
-					window.location.reload(true);
-				});
-			}
-			updateAddId(id);
-	        getSpaceDetails(id);
-	        fadeOutAll();
-		}
-	});
-	
-	// Handles removal of user(s) from a space
-	$("#removeUser").click(function(){
-		var selectedRows = getSelectedRows(userTable);
-		var remove;
-		
-		if(selectedRows.length >= 2){
-			remove = window.confirm("are you sure you want remove these users?");
-		} else {
-			remove = window.confirm("are you sure you want remove this user?");
-		}
-		
-		if(remove){
-			for(var i = 0; i < selectedRows.length; i++){
-				$.post(  
-					"/starexec/services/remove/user/" + id + "/" + selectedRows[i],  
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								break;
-							case 4:
-								showMessage('error', "you can not remove yourself from a space on this page, " +
-										"instead use the 'leave' button on the communities page", 5000);
-								break;
-							case 5:
-								showMessage('error', "you can not remove other leaders of this space", 5000);
-								break;
-							default:
-								showMessage('error', "only the leader of a community can modify it", 5000);
-								break;
-						}
-					},
-					"json"
-				).error(function(){
-					alert('Session expired');
-					window.location.reload(true);
-				});
-			}
-			// Retrieve data for this space
-			getSpaceDetails(id);
-			// Redraw the table
-			userTable.fnDraw();
-			// Hide the all selection-dependent buttons
-			fadeOutAll();
-		}
-	});
-	
-	// Handles removal of solver(s) from a space
-	$("#removeSolver").click(function(){
-		var selectedRows = getSelectedRows(solverTable);
-		var remove;
-		
-		if(selectedRows.length >= 2){
-			remove = window.confirm("are you sure you want remove these solvers?");
-		} else {
-			remove = window.confirm("are you sure you want remove this solver?");
-		}
-		
-		if(remove){
-			for(var i = 0; i < selectedRows.length; i++){
-				$.post(  
-					"/starexec/services/remove/solver/" + id + "/" + selectedRows[i],  
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								break;
-							default:
-								showMessage('error', "only the leader of a community can modify it", 5000);
-								break;
-						}
-					},
-					"json"
-				).error(function(){
-					alert('Session expired');
-					window.location.reload(true);
-				});
-			}
-			// Retrieve data for this space
-			getSpaceDetails(id);
-			// Redraw the table
-			solverTable.fnDraw();
-			// Hide the all selection-dependent buttons
-			fadeOutAll();
-		}
-	});
-	
-	// Handles removal of job(s) from a space
-	$("#removeJob").click(function(){
-		var selectedRows = getSelectedRows(jobTable);
-		var remove;
-		
-		if(selectedRows.length >= 2){
-			remove = window.confirm("are you sure you want remove these jobs?");
-		} else {
-			remove = window.confirm("are you sure you want remove this job?");
-		}
-		
-		if(remove){
-			for(var i = 0; i < selectedRows.length; i++){
-				$.post(  
-					"/starexec/services/remove/job/" + id + "/" + selectedRows[i],  
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								break;
-							default:
-								showMessage('error', "only the leader of a community can modify it", 5000);
-								break;
-						}
-					},
-					"json"
-				).error(function(){
-					alert('Session expired');
-					window.location.reload(true);
-				});
-			}
-			// Retrieve data for this space
-			getSpaceDetails(id);
-			// Redraw the table
-			jobTable.fnDraw();
-			// Hide the all selection-dependent buttons
-			fadeOutAll();
-		}
-	});
-	
-	$('.dataTables_wrapper').hide();
-});
- 
+}
+
 /**
  * Populates the space details panel with information on the given space
  */
@@ -427,13 +485,6 @@ function initButtons(){
 	$('#removeSubspace').parent().parent().hide();
 }
 
-function fadeOutAll(){
-	$("#removeBench").parent().parent().fadeOut('fast');
-	$("#removeSolver").parent().parent().fadeOut('fast');
-	$("#removeUser").parent().parent().fadeOut('fast');
-	$("#removeJob").parent().parent().fadeOut('fast');
-	$('#removeSubspace').parent().parent().fadeOut('fast');	
-}
 
 /**
  * For a given dataTable, this extracts the id's of the rows that have been
@@ -474,4 +525,22 @@ function updateButton(dataTable, button){
     		$(button).text($(button).text().substring(0, $(button).text().length - 1)).append();
     	}
     }
+}
+
+
+/**
+ * Updates a table by removing selected rows and updating the table's legend to match the new table size.
+ * NOTE: This way of updating a given table is preferable to re-querying the database for the space's details
+ * (i.e. calling getCommunityDetails(id)) because:
+ * - The fields don't minimize
+ * - Doesn't ever desync (sometimes re-querying the database for a space's details didn't show that users had been removed)
+ * @param dataTable the dataTable to update
+ */
+function updateTable(dataTable){
+	var rowsToRemove = $(dataTable).children('tbody').children('tr.row_selected');
+	var rowsRemaining = $(dataTable).children('tbody').children(':not(tr.row_selected)');
+	$(dataTable).parent().parent().children('legend').children('span:first-child').text(rowsRemaining.length);
+    $.each(rowsToRemove, function(i, row) {
+    	dataTable.fnDeleteRow(row);
+    });
 }

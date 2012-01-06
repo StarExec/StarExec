@@ -6,7 +6,8 @@ $(document).ready(function(){
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = "/starexec/css/jstree/";
 	 
-	 var id;
+	 var id = -1;
+	 
 	// Initialize the jstree plugin for the community list
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
@@ -58,53 +59,51 @@ $(document).ready(function(){
 	
 	// Handles the removal of user(s) from a space
 	$("#removeUser").click(function(){
-		var selectedRows = getSelectedRows(memberTable);
+		var selectedUsers = getSelectedRows(memberTable);
 		var remove;
 		
-		if(selectedRows.length >= 2){
+		if(selectedUsers.length >= 2){
 			remove = window.confirm("are you sure you want remove these users?");
 		} else {
 			remove = window.confirm("are you sure you want remove this user?");
 		}
-		
 		if(remove){
-			for(var i = 0; i < selectedRows.length; i++){
-				$.post(  
-					"/starexec/services/remove/user/" + id + "/" + selectedRows[i],  
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								break;
-							case 4:
-								showMessage('error', "you can not remove yourself from this space in that way, " +
-										"instead use the 'leave' button to leave this community", 5000);
-								break;
-							case 5:
-								showMessage('error', "you can not remove other leaders of this space", 5000);
-								break;
-							default:
-								showMessage('error', "only the leader of a community can modify it", 5000);
-								break;
-						}
-					},
-					"json"
-				).error(function(){
-					alert('Session expired');
-					window.location.reload(true);
-				});
-			}
-			// Retrieve details about space again
-			getCommunityDetails(id);
-			// Redraw the table
-			memberTable.fnDraw();
-			// Hide the button
-			$("#removeUser").parent().parent().fadeOut("fast");
+			$.post(  
+				"/starexec/services/remove/user/" + id,
+				{selectedUsers : selectedUsers},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							// Remove the rows from the page and update the table size in the legend
+							updateTable(memberTable);
+							$("#removeUser").parent().parent().fadeOut("fast");
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+						case 2:
+							showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
+							break;
+						case 3:
+							showMessage('error', "you can not remove yourself from this space in that way, " +
+									"instead use the 'leave' button to leave this community", 5000);
+							break;
+						case 4:
+							showMessage('error', "you can not remove other leaders of this space", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
 		}
 	});
 	
 	$('.dataTables_wrapper').hide();
 });
- 
+
+
 /**
  * Populates the community details panel with information on the given community
  */
@@ -209,8 +208,8 @@ function checkPermissions(perms) {
  * @param id The id of the current community
  */
 function updateActionId(id) {	
-	$('#joinComm').attr('href', "/starexec/secure/community/join.jsp?cid=" + id);
-	$('#editComm').attr('href', "/starexec/secure/community/edit.jsp?cid=" + id);
+	$('#joinComm').attr('href', "/starexec/secure/add/to_community.jsp?cid=" + id);
+	$('#editComm').attr('href', "/starexec/secure/edit/community.jsp?cid=" + id);
 	$("#leaveComm").click(function(){
 		if(window.confirm("are you sure you want to leave this community?")){
 			leaveCommunity(id);
@@ -230,7 +229,6 @@ function toggleTable(sender) {
 
 /**
  * Sends an AJAX request for a user to leave a given community
- * 
  * @param id the id of the community the user wants to leave
  */
 function leaveCommunity(id){
@@ -301,3 +299,20 @@ function updateButton(dataTable, button){
     }
 }
 
+
+/**
+ * Updates a table by removing selected rows and updating the table's legend to match the new table size.
+ * NOTE: This way of updating a given table is preferable to re-querying the database for the space's details
+ * (i.e. calling getCommunityDetails(id)) because:
+ * - The fields don't minimize
+ * - Doesn't ever desync (sometimes re-querying the database for a space's details didn't show that users had been removed)
+ * @param dataTable the dataTable to update
+ */
+function updateTable(dataTable){
+	var rowsToRemove = $(dataTable).children('tbody').children('tr.row_selected');
+	var rowsRemaining = $(dataTable).children('tbody').children(':not(tr.row_selected)');
+	$(dataTable).parent().parent().children('legend').children('span:first-child').text(rowsRemaining.length);
+    $.each(rowsToRemove, function(i, row) {
+    	dataTable.fnDeleteRow(row);
+    });
+}

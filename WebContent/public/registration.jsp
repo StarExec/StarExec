@@ -32,7 +32,7 @@
 				<td class="label">password: </td>
 				<td>
 					<input id="password" type="password" name="pwd" maxlength="20"/>
-					<div class="password-meter">
+					<div class="password-meter" id="pwd-meter">
 						<div class="password-meter-message"> </div>
 						<div class="password-meter-bg">
 							<div class="password-meter-bar"></div>

@@ -301,7 +301,7 @@ public class Requests {
 						
 			return procedure.getLong(2);
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);	
 		} finally {
 			Common.safeClose(con);
 		}

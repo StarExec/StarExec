@@ -36,21 +36,18 @@
 	}
 	
 	$.validator.passwordRating = function(password) {
-		if (!password || password.length < 6)
-			return rating(1, "too-short");
-		if (password.length > 16)
-			return rating(2, "too-long");
-		
 		var lower = LOWER.test(password),
 			upper = UPPER.test(uncapitalize(password)),
 			digit = DIGIT.test(password),
 			punct = PUNCT.test(password),
 			special = SPECIAL.test(password);
 		
-		if (special){
-			
+		if(special)
 			return rating(0, "illegal");
-		}
+		if (!password || password.length < 6)
+			return rating(1, "too-short");
+		if (password.length > 16)
+			return rating(2, "too-long");
 		if (lower && upper && digit && punct)
 			return rating(6, "strong");
 		if (lower && digit && punct || upper && digit && punct)
@@ -59,7 +56,7 @@
 			return rating(4, "weak");
 		if (lower || upper || digits || punct)
 			return rating(3, "very-weak");
-	}
+	};
 	
 	$.validator.passwordRating.messages = {
 		"illegal"  : "Illegal Characters",
@@ -69,7 +66,7 @@
 		"weak"     : "Weak",
 		"good"     : "Good",
 		"strong"   : "Strong"
-	}
+	};
 	
 	$.validator.addMethod("password", function(value, element) {
 		// use untrimmed value
