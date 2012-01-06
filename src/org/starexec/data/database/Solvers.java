@@ -216,4 +216,14 @@ public class Solvers {
 		procedure.executeUpdate();		
 		return true;
 	}
+
+	/**
+	 * Gets a particular Configuration
+	 * @param confId
+	 * @return The configuration if it is found, null if it is not.
+	 */
+	public static Configuration getConfiguration(long confId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

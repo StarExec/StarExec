@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,6 +55,11 @@ public class Jobs {
 		}
 		
 		return null;
+	}
+	
+	public static List<Long> getSGEJobIds(long jid) {
+		// TODO: Instantiate method
+		return new ArrayList<Long>();
 	}
 	
 	/**
@@ -109,6 +115,8 @@ public class Jobs {
 				ResultSet results = procedure.executeQuery();
 				List<JobPair> returnList = new LinkedList<JobPair>();
 				
+				
+				// TODO: differentiate JobPairs and job_pair_attrs
 				while(results.next()){
 					JobPair jp = new JobPair();
 					jp.setId(results.getLong("id"));
@@ -148,6 +156,16 @@ public class Jobs {
 			Common.safeClose(con);
 		}
 		
+		return null;
+	}
+
+	/**
+	 * For retrieval.
+	 * @param pid
+	 * @return A particular jobpair
+	 */
+	public static JobPair getPair(long pid) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }
