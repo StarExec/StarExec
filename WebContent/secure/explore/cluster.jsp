@@ -24,8 +24,7 @@
 		
 		<fieldset>
 			<legend>actions</legend>
-			<ul id="actionList">
-				<li><span class="round button"><a id="addSpace" href="#">take offline</a></span></li>				
+			<ul id="actionList">							
 			</ul>
 		</fieldset>				
 	</div>	

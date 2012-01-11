@@ -52,7 +52,7 @@ function showMessage(type, message, duration) {
 	var messageSpan = $("<div></div>").html(message);
 	
 	// Create a new DOM element to insert to display the message, and inject its classes and message
-	var msg = $("<div><img src='/starexec/images/icons/exclaim.svg' /></div>").attr('class', type + " message");
+	var msg = $("<div><img src='/starexec/images/icons/exclaim.png' /></div>").attr('class', type + " message");
 	$(msg).append(messageSpan);
 	$(msg).append(closeMessage);
 	

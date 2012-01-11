@@ -1,5 +1,6 @@
 $(document).ready(function(){
-	$('tr:even').addClass('shade');
+	$('#tblSolver tr:even').addClass('shade');
+	$('#tblSolver tr:last-child').removeClass('shade');	
 	
 	$.validator.addMethod(
 			"regex", 
@@ -23,4 +24,8 @@ $(document).ready(function(){
 		}
 	});
 	
+	$('#btnUpload').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-n"
+    }});
 });

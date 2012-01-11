@@ -10,7 +10,8 @@
 <head>
 	<title>${title} - starexec</title>
 	<meta charset="utf-8" />
-	<link rel="stylesheet" href="/starexec/css/html5.css" />
+	<link rel="stylesheet" href="/starexec/css/html5.css" />	
+	<link rel="stylesheet" href="/starexec/css/jqueryui/jquery-ui-1.8.16.starexec.css" />
 	<link rel="stylesheet" href="/starexec/css/master.css" />
 	<c:if test="${not empty css}">	
 		<c:forEach var="cssFile" items="${fn:split(css, ',')}">
@@ -21,6 +22,7 @@
 	<!--[if lt IE 9]> 
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script> 
 	<![endif]-->
+	<script src="/starexec/js/lib/jquery-ui-1.8.16.custom.min.js"></script>
 	<script src="/starexec/js/master.js"></script>
 	<c:if test="${not empty js}">	
 		<c:forEach var="jsFile" items="${fn:split(js, ',')}">

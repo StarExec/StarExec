@@ -17,6 +17,7 @@ import org.starexec.data.database.BenchTypes;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -435,6 +436,232 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Associates (i.e. 'copies') a user from one space into another
+	 * @param spaceId
+	 * @param request The request that contains data about the operation including a 'selectedIds'
+	 * attribute that contains a list of users to copy as well as a 'fromSpace' parameter that is the
+	 * space the users are being copied from.
+	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add user permission in destination space
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/spaces/{spaceId}/add/user")
+	@Produces("application/json")
+	public String addUsersFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Make sure we have a list of users to add and the space it's coming from
+		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+			return gson.toJson(2);
+		}
+		
+		// Get the id of the user who initiated the request
+		long requestUserId = SessionUtil.getUserId(request);
+		
+		// Get the space the user is being copied from
+		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		
+		// Check permissions, the user must have add user permissions in the destination space
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canAddUser()) {
+			return gson.toJson(3);	
+		}
+		
+		// TODO: Possible security risk here, the user could spoof ID's of users that they cannot really see and
+		// end up adding them to the destination space.
+		
+		// Verify the user can at least see the space they claim to be copying from
+		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
+			return gson.toJson(4);
+		}			
+		
+		// And the space the user is being copied from must not be locked
+		if(Spaces.get(fromSpace).isLocked()) {
+			return gson.toJson(5);
+		}
+		
+		// Convert the users to copy to a long list
+		List<Long> selectedUsers = Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		boolean success = Users.associate(selectedUsers, spaceId);
+		
+		// Return a value based on results from database operation
+		return success ? gson.toJson(0) : gson.toJson(1);
+	}
+
+	/**
+	 * Associates (i.e. 'copies') a solver from one space into another
+	 * @param spaceId
+	 * @param request The request that contains data about the operation including a 'selectedIds'
+	 * attribute that contains a list of solvers to copy as well as a 'fromSpace' parameter that is the
+	 * space the solvers are being copied from.
+	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/spaces/{spaceId}/add/solver")
+	@Produces("application/json")
+	public String addSolverFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Make sure we have a list of solvers to add and the space it's coming from
+		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+			return gson.toJson(2);
+		}
+		
+		// Get the id of the user who initiated the request
+		long requestUserId = SessionUtil.getUserId(request);
+		
+		// Get the space the solver is being copied from
+		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		
+		// Check permissions, the user must have add solver permissions in the destination space
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canAddSolver()) {
+			return gson.toJson(3);	
+		}			
+		
+		// Verify the user can at least see the space they claim to be copying from
+		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
+			return gson.toJson(4);
+		}			
+		
+		// And the space the solvers are being copied from must not be locked
+		if(Spaces.get(fromSpace).isLocked()) {
+			return gson.toJson(5);
+		}
+		
+		// Convert the solvers to copy to a long list
+		List<Long> selectedSolvers = Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		
+		// Make sure the user can see the solver they're trying to copy
+		for(long id : selectedSolvers) {
+			if(!Permissions.canUserSeeSolver(id, requestUserId)) {
+				return gson.toJson(4);
+			}
+		}		
+		
+		// Make the associations
+		boolean success = Solvers.associate(selectedSolvers, spaceId);
+		
+		// Return a value based on results from database operation
+		return success ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	/**
+	 * Associates (i.e. 'copies') a benchmark from one space into another
+	 * @param spaceId
+	 * @param request The request that contains data about the operation including a 'selectedIds'
+	 * attribute that contains a list of benchmarks to copy as well as a 'fromSpace' parameter that is the
+	 * space the benchmarks are being copied from.
+	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/spaces/{spaceId}/add/benchmark")
+	@Produces("application/json")
+	public String addBenchFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Make sure we have a list of benchmarks to add and the space it's coming from
+		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+			return gson.toJson(2);
+		}
+		
+		// Get the id of the user who initiated the request
+		long requestUserId = SessionUtil.getUserId(request);
+		
+		// Get the space the benchmark is being copied from
+		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		
+		// Check permissions, the user must have add benchmark permissions in the destination space
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canAddBenchmark()) {
+			return gson.toJson(3);	
+		}			
+		
+		// Verify the user can at least see the space they claim to be copying from
+		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
+			return gson.toJson(4);
+		}			
+		
+		// And the space the solvers are being copied from must not be locked
+		if(Spaces.get(fromSpace).isLocked()) {
+			return gson.toJson(5);
+		}
+		
+		// Convert the benchmarks to copy to a long list
+		List<Long> selectedBenchs= Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		
+		// Make sure the user can see the benchmarks they're trying to copy
+		for(long id : selectedBenchs) {
+			if(!Permissions.canUserSeeBench(id, requestUserId)) {
+				return gson.toJson(4);
+			}
+		}		
+		
+		// Make the associations
+		boolean success = Benchmarks.associate(selectedBenchs, spaceId);
+		
+		// Return a value based on results from database operation
+		return success ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	/**
+	 * Associates (i.e. 'copies') a job from one space into another
+	 * @param spaceId
+	 * @param request The request that contains data about the operation including a 'selectedIds'
+	 * attribute that contains a list of jobs to copy as well as a 'fromSpace' parameter that is the
+	 * space the jobs are being copied from.
+	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @author Tyler Jensen
+	 */
+	@POST
+	@Path("/spaces/{spaceId}/add/job")
+	@Produces("application/json")
+	public String addJobFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+		// Make sure we have a list of benchmarks to add and the space it's coming from
+		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+			return gson.toJson(2);
+		}
+		
+		// Get the id of the user who initiated the request
+		long requestUserId = SessionUtil.getUserId(request);
+		
+		// Get the space the benchmark is being copied from
+		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		
+		// Check permissions, the user must have add benchmark permissions in the destination space
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canAddJob()) {
+			return gson.toJson(3);	
+		}			
+		
+		// Verify the user can at least see the space they claim to be copying from
+		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
+			return gson.toJson(4);
+		}			
+		
+		// And the space the solvers are being copied from must not be locked
+		if(Spaces.get(fromSpace).isLocked()) {
+			return gson.toJson(5);
+		}
+		
+		// Convert the benchmarks to copy to a long list
+		List<Long> selectedJobs = Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		
+		// Make sure the user can see the benchmarks they're trying to copy
+		for(long id : selectedJobs) {
+			if(!Permissions.canUserSeeJob(id, requestUserId)) {
+				return gson.toJson(4);
+			}
+		}		
+		
+		// Make the associations
+		boolean success = Jobs.associate(selectedJobs, spaceId);
+		
+		// Return a value based on results from database operation
+		return success ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	/**
 	 * Removes a user's association with a space, whereby removing them from a
 	 * space; this differs from leaveCommunity() in that the user is not allowed
 	 * to remove themselves from a space or remove other leaders from a space
@@ -454,13 +681,7 @@ public class RESTServices {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedUsers[]")){
 			return gson.toJson(1);
-		}
-		
-		// Extract the String user id's and convert them to Long
-		ArrayList<Long> selectedUsers = new ArrayList<Long>();
-		for(String userId : request.getParameterValues("selectedUsers[]")){
-			selectedUsers.add(Long.parseLong(userId));
-		}
+		}		
 		
 		// Get the id of the user who initiated the removal
 		long userIdOfRemover = SessionUtil.getUserId(request);
@@ -470,6 +691,9 @@ public class RESTServices {
 		if(perm == null || !perm.canRemoveUser()) {
 			return gson.toJson(2);	
 		}
+		
+		// Extract the String user id's and convert them to Long
+		List<Long> selectedUsers = Util.toLongList(request.getParameterValues("selectedUsers[]"));
 		
 		// Validate the list of users to remove by:
 		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove

@@ -48,4 +48,8 @@ $(document).ready(function() {
 		}
 	});
 
+	$('#submit').button({
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-s"
+    }});
 });

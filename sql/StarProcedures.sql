@@ -23,9 +23,16 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloada
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable);
 		
-		SELECT LAST_INSERT_ID() INTO bid;
-		INSERT INTO bench_assoc VALUES (_spaceId, bid);
+		SELECT LAST_INSERT_ID() INTO bid;		
+		INSERT INTO bench_assoc VALUES (_spaceId, _benchId);
 	END //	
+	
+-- Associates the given benchmark with the given space
+-- Author: Tyler Jensen
+CREATE PROCEDURE AssociateBench(IN _benchId BIGINT, IN _spaceId BIGINT)
+	BEGIN		
+		INSERT IGNORE INTO bench_assoc VALUES (_spaceId, _benchId);
+	END //
 
 -- Deletes a benchmark given that benchmark's id
 -- Author: Todd Elvers	
@@ -350,6 +357,13 @@ CREATE PROCEDURE LeaveCommunity(IN _userId BIGINT, IN _commId BIGINT)
 ************************ JOB STORED PROCEDURES ***************************
 *************************************************************************/
 
+-- Adds an association between the given job and space
+-- Author: Tyler Jensen
+CREATE PROCEDURE AssociateJob(IN _jobId BIGINT, IN _spaceId BIGINT)
+	BEGIN
+		INSERT IGNORE INTO job_assoc VALUES (_spaceId, _jobId);
+	END //
+	
 -- Retrieves basic info about a job from the jobs table
 -- Author: Tyler Jensen
 CREATE PROCEDURE GetJobById(IN _id BIGINT)
@@ -454,15 +468,15 @@ CREATE PROCEDURE LoginRecord(IN _userId BIGINT, IN _ipAddress VARCHAR(15), IN _a
 -- Adds a new permissions record with the given permissions
 -- Author: Tyler Jensen
 CREATE PROCEDURE AddPermissions(IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1), 
-IN _addSpace TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1), 
-IN _removeUser TINYINT(1), IN _isLeader TINYINT(1), OUT id BIGINT)
+IN _addSpace TINYINT(1), IN _addJob TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1), 
+IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1), OUT id BIGINT)
 	BEGIN		
 		INSERT INTO permissions 
-			(add_solver, add_bench, add_user, add_space, remove_solver, 
-			remove_bench, remove_space, remove_user, is_leader)
+			(add_solver, add_bench, add_user, add_space, add_job, remove_solver, 
+			remove_bench, remove_space, remove_user, remove_job, is_leader)
 		VALUES
-			(_addSolver, _addBench, _addUser, _addSpace, _removeSolver, 
-			_removeBench, _removeSpace, _removeUser, _isLeader);	
+			(_addSolver, _addBench, _addUser, _addSpace, _addJob, _removeSolver, 
+			_removeBench, _removeSpace, _removeUser, _removeJob, _isLeader);	
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 	
@@ -524,16 +538,25 @@ CREATE PROCEDURE GetUserPermissions(IN _userId BIGINT, IN _spaceId BIGINT)
 			MAX(add_bench) AS add_bench, 
 			MAX(add_user) AS add_user, 
 			MAX(add_space) AS add_space, 
+			MAX(add_job) AS add_job,
 			MAX(remove_solver) AS remove_solver, 
 			MAX(remove_bench) AS remove_bench, 
 			MAX(remove_space) AS remove_space, 
-			MAX(remove_user) AS remove_user, 
+			MAX(remove_user) AS remove_user,
+			MAX(remove_job) AS remove_job,
 			MAX(is_leader) AS is_leader
 		FROM permissions JOIN user_assoc ON user_assoc.permission=permissions.id
 		WHERE user_assoc.user_id=_userId AND user_assoc.space_id=_spaceId;
 	END //
 	
-	
+-- Finds the default user permissions for the given space
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetSpacePermissions(IN _spaceId BIGINT)
+	BEGIN		
+		SELECT permissions.*
+		FROM permissions JOIN spaces ON spaces.default_permission=permissions.id
+		WHERE spaces.id=_spaceId;
+	END //	
 	
 
 /*************************************************************************
@@ -673,8 +696,7 @@ CREATE PROCEDURE AddSolver(IN _userId BIGINT, IN _name VARCHAR(32), IN _download
 -- Author: Skylar Stark
 CREATE PROCEDURE AddSolverAssociation(IN _spaceId BIGINT, IN _solverId BIGINT)
 	BEGIN
-		INSERT INTO solver_assoc(space_id, solver_id)
-		VALUES (_spaceId, _solverId);
+		INSERT IGNORE INTO solver_assoc VALUES (_spaceId, _solverId);
 	END // 
 	
 -- Adds a run configuration to the specified solver
@@ -713,6 +735,15 @@ CREATE PROCEDURE GetSolverById(IN _id BIGINT)
 		SELECT *
 		FROM solvers
 		WHERE id = _id;
+	END //
+
+-- Retrieves the configurations that belong to a solver with the given id
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetConfigsForSolver(IN _id BIGINT)
+	BEGIN
+		SELECT *
+		FROM configurations
+		WHERE solver_id = _id;
 	END //
 	
 -- Removes the association between a solver and a given space
@@ -761,7 +792,7 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYIN
 -- Author: Tyler Jensen
 CREATE PROCEDURE AssociateSpaces(IN _parentId BIGINT, IN _childId BIGINT, IN _permission BIGINT)
 	BEGIN		
-		INSERT INTO set_assoc
+		INSERT IGNORE INTO set_assoc
 		VALUES (_parentId, _childId, _permission);
 	END //
 	
@@ -882,7 +913,7 @@ CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), 
 -- Author: Tyler Jensen
 CREATE PROCEDURE AddUserToSpace(IN _userId BIGINT, IN _spaceId BIGINT, IN _proxy BIGINT, IN _permission BIGINT)
 	BEGIN		
-		INSERT INTO user_assoc (user_id, space_id, proxy, permission)
+		INSERT IGNORE INTO user_assoc (user_id, space_id, proxy, permission)
 		VALUES (_userId, _spaceId, _proxy, _permission);		
 	END //
 	

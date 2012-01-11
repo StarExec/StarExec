@@ -68,13 +68,23 @@ $(document).ready(function(){
 			}
 		}		
 	});
+	
+	$('#addType').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-n"
+    }});	
+	
+	$('#addWebsite').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});		
 });
 
 function displayWebsites(data) {
 	// Injects the clickable delete button that's always present
 	$.each(data, function(i, site) {
 		$('#websites tr').parent().remove();
-		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '</a><a class="delWebsite" id="' + site.id + '">delete</a></li>');
+		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a><a class="delWebsite" id="' + site.id + '">delete</a></li>');
 		$('#websites li:even').addClass('shade');
 	});
 	
@@ -157,6 +167,16 @@ function editable(attribute) {
 		
 		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
 		$('#cancel' + attribute).click(function(){saveChanges(this, false, attribute, old);});
+		
+		$('#save' + attribute).button({
+			icons: {
+				secondary: "ui-icon-check"
+	    }});
+		
+		$('#cancel' + attribute).button({
+			icons: {
+				secondary: "ui-icon-close"
+	    }});
 	});
 	
 	$('#edit' + attribute).css('cursor', 'pointer');
@@ -191,6 +211,21 @@ function typeEditable() {
 		$(saveBtn).click(function(){saveChanges(this, true, attribute);});
 		$(cancelBtn).click(function(){ restoreBenchTypeRow(old); });			
 		$(deleteBtn).click(function(){ deleteType($("[name=typeId]").val(), $(this).parent().parent()); });
+		
+		$(saveBtn).button({
+			icons: {
+				secondary: "ui-icon-check"
+	    }});
+		
+		$(cancelBtn).button({
+			icons: {
+				secondary: "ui-icon-close"
+	    }});
+		
+		$(deleteBtn).button({
+			icons: {
+				secondary: "ui-icon-minus"
+	    }});
 	});
 	
 	$('#benchTypes tr').css('cursor', 'pointer');

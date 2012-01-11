@@ -24,7 +24,7 @@
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>solver information</legend>		
-			<table>
+			<table id="tblSolver">
 				<tr>
 					<td>solver location</td>
 					<td><input name="f" type="file" /></td>
@@ -43,8 +43,10 @@
 						<input name="dlable" type="radio" value="true" checked="checked" /><label>yes</label>
 						<input name="dlable" type="radio" value="false" /><label>no</label>
 					</td>
-			</table>														
-			<button id="submit" type="submit" class="round">submit</button>
+				<tr>
+					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
+				</tr>
+			</table>																	
 		</fieldset>
 	</form>
 </star:template>

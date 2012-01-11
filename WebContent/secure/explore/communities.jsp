@@ -48,11 +48,18 @@
 		<fieldset>
 			<legend>actions</legend>
 			<ul id="actionList">
-				<li><span class="round button"><a id="joinComm" href="#">join</a></span></li>
-				<li><span class="round button"><a id="leaveComm">leave</a></span></li>
-				<li><span class="round button"><a id="editComm" href="#">edit</a></span></li>							
-				<li><span class="round button"><a id="removeUser">remove user</a></span></li>
+				<li><a id="joinComm" href="#">join</a></li>
+				<li><a id="leaveComm">leave</a></li>
+				<li><a id="editComm" href="#">edit</a></li>							
+				<li><a id="removeUser">remove user</a></li>
 			</ul>
 		</fieldset>				
 	</div>	
+	
+	<div id="dialog-confirm-delete" title="confirm delete">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>
+	<div id="dialog-confirm-leave" title="leave community">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-leave-txt"></span></p>
+	</div>
 </star:template>

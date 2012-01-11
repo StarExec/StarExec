@@ -86,6 +86,33 @@ public class Solvers {
 	}
 	
 	/**
+	 * @param spaceId The id of the space to get solvers for
+	 * @return A list of all solvers belonging directly to the space, including their configurations
+	 * @author Tyler Jensen
+	 */
+	public static List<Solver> getBySpaceDetailed(long spaceId) {
+		
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			List<Solver> solvers = Solvers.getBySpace(spaceId);
+			
+			for(Solver s : solvers) {
+				s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
+			}
+						
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Updates the details of a solver
 	 * @param id the id of the solver to update
 	 * @param name the new name to apply to the solver
@@ -216,6 +243,36 @@ public class Solvers {
 		procedure.executeUpdate();		
 		return true;
 	}
+	
+	/**
+	 * Adds an association between all the given solver ids and the given space
+	 * @param solverIds the ids of the solvers we are associating to the space
+	 * @param spaceId the ID of the space we are making the association to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean associate(List<Long> solverIds, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			for(long sid : solverIds) {
+				Solvers.associate(con, spaceId, sid);
+			}
+			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
 
 	/**
 	 * Gets a particular Configuration
@@ -225,5 +282,37 @@ public class Solvers {
 	public static Configuration getConfiguration(long confId) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	/**
+	 * Gets all configurations for the given solver
+	 * @param solverId The solver id to get configurations for
+	 * @return A list of configurations that belong to the solver
+	 */
+	public static List<Configuration> getConfigsForSolver(long solverId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetConfigsForSolver(?)}");
+			procedure.setLong(1, solverId);					
+			ResultSet results = procedure.executeQuery();
+			List<Configuration> configs = new LinkedList<Configuration>();
+			
+			while(results.next()){
+				Configuration c = new Configuration();
+				c.setId(results.getLong("id"));
+				c.setName(results.getString("name"));							
+				configs.add(c);
+			}			
+						
+			return configs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;		
 	}
 }

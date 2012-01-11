@@ -7,15 +7,15 @@ fieldset table {
 	width: 100%;
 }
 
-tr td {
+#tblSolver tr td {
 	padding: 10px;
+	vertical-align: middle;
 }
 
 #uploadFile {
 	border: none;
 }
 
-#submit {
-	margin-top: 25px;
+#btnUpload {	
 	float: right;
 }

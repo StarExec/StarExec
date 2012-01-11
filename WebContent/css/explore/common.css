@@ -17,7 +17,7 @@
 	margin-top: 15px;
 	float:right;	
 	width: 70%;
-	border-left: solid 4px #111111;	
+	border-left: solid 3px #111111;	
 }
 
 #detailPanel hr {
@@ -54,7 +54,7 @@
 
 #actionList li {
 	float: left;
-	margin-right: 20px;
+	margin: 5px;
 }
 
 .expd, #actionList li a {	
@@ -68,4 +68,33 @@
 #progressBar {
 	display: inline-block;
 	margin-left: 20px;
+}
+
+.dragClone {
+	max-width: 150px;
+	overflow: hidden;	
+	position: fixed;
+	background-color: #fff;
+	color: #111;
+	z-index: 999;
+	text-align: center;	
+	padding: 14px;
+	border-radius: 3px;
+	box-shadow: 4px 4px 5px #111;
+	opacity: 0.8;
+}
+
+.dragClone span {
+	float: left;
+	margin-right: 5px;
+}
+
+#exploreList a.active {
+	border: 1px dashed #008d03;
+	border-radius:2px;
+}
+
+#exploreList a.hover {
+	background-color: #008d03;
+	border-radius:2px;
 }

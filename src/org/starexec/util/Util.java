@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -197,5 +198,20 @@ public class Util {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Converts a list of strings into a list of longs
+	 * @param stringList The list of numeric strings to convert to longs
+	 * @return A list of longs parsed from the string list
+	 */
+	public static List<Long> toLongList(String[] stringList) {
+		ArrayList<Long> retList = new ArrayList<Long>(stringList.length);
+		
+		for(String s : stringList){
+			retList.add(Long.parseLong(s));
+		}
+		
+		return retList;
 	}
 }

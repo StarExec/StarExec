@@ -3,8 +3,10 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
 
@@ -13,6 +15,84 @@ import org.starexec.util.Hash;
  */
 public class Users {
 	private static final Logger log = Logger.getLogger(Users.class);
+		
+	/**
+	 * Associates a user with a space (i.e. adds the user to the space)
+	 * @param con The connection to perform the database operation on
+	 * @param userId The id of the user to add to the space
+	 * @param spaceId The space to add the user to
+	 * @param permId The permissions the user should have on the space
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	protected static boolean associate(Connection con, long userId, long spaceId, long permId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL AddUserToSpace(?, ?, ?, ?)}");			
+		procedure.setLong(1, userId);
+		procedure.setLong(2, spaceId);
+		procedure.setLong(3, spaceId);
+		procedure.setLong(4, permId);
+			
+		procedure.executeUpdate();						
+		log.info(String.format("User [%d] added to space [%d]", userId, spaceId));	
+		return true;
+	}
+	
+	/**
+	 * Associates a user with a space (i.e. adds the user to the space)
+	 * @param userId The id of the user to add to the space
+	 * @param spaceId The space to add the user to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean associate(long userId, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			Permission p = Permissions.getSpaceDefault(spaceId);			
+			Users.associate(con, userId, spaceId, p.getId());
+			
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Associates a group of users user with a space (i.e. adds the user to the space)
+	 * @param userIds The id's of the users to add to the space
+	 * @param spaceId The space to add the users to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean associate(List<Long> userIds, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			Permission p = Permissions.getSpaceDefault(spaceId);
+			
+			Common.beginTransaction(con);					
+			
+			for(long user : userIds) {
+				Users.associate(con, user, spaceId, p.getId());	
+			}
+			
+			Common.endTransaction(con);									
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
 	
 	/**
 	 * Retrieves a user from the database given the email address

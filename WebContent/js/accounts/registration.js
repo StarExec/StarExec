@@ -111,5 +111,9 @@ $(document).ready(function() {
 			}
 		}
 	});
-
+	
+	$('#submit').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-e"
+    }});
 });

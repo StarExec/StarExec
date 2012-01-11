@@ -38,7 +38,7 @@ try {
 				<tr>					
 					<td colspan="3">
 						<input type="hidden" name="cm" value="${com.id}"/>
-						<button type="submit" id="submit" value="Submit" class="round">send request</button>
+						<button type="submit" id="btnSubmit" value="Submit">send request</button>
 					</td>
 				</tr>
 			</table>

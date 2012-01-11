@@ -20,7 +20,7 @@
 				<td><input id="email" type="text" name="em" maxlength="64"/></td>
 			</tr>
 			<tr>
-				<td colspan="2"><button type="submit" id="submit" value="Submit" class="round">reset</button></td>
+				<td colspan="2"><button type="submit" id="submit" value="Submit">reset</button></td>
 			</tr>
 		</table>		
 	</fieldset>	

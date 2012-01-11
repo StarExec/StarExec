@@ -32,10 +32,12 @@ public class AddSpace extends HttpServlet {
 	private static final String addBench = "addBench";
 	private static final String addUser = "addUser";
 	private static final String addSpace = "addSpace";
+	private static final String addJob = "addJob";
 	private static final String removeSolver = "removeSolver";
 	private static final String removeBench = "removeBench";
 	private static final String removeUser = "removeUser";
 	private static final String removeSpace = "removeSpace";
+	private static final String removeJob = "removeJob";
 	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -66,11 +68,13 @@ public class AddSpace extends HttpServlet {
 		p.setAddSolver(request.getParameter(addSolver) != null);
 		p.setAddSpace(request.getParameter(addSpace) != null);
 		p.setAddUser(request.getParameter(addUser) != null);
+		p.setAddJob(request.getParameter(addJob) != null);
 		
 		p.setRemoveBench(request.getParameter(removeBench) != null);
 		p.setRemoveSolver(request.getParameter(removeSolver) != null);
 		p.setRemoveSpace(request.getParameter(removeSpace) != null);
 		p.setRemoveUser(request.getParameter(removeUser) != null);
+		p.setRemoveJob(request.getParameter(removeJob) != null);
 		
 		// Set the default permission on the space
 		s.setPermission(p);

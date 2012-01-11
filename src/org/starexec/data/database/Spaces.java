@@ -98,7 +98,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeUsers(ArrayList<Long> userIds, long commId) {
+	public static boolean removeUsers(List<Long> userIds, long commId) {
 		Connection con = null;			
 		
 		try {

@@ -1,5 +1,6 @@
 var leaderTable;
 var memberTable;
+var commName; // Current community's name
 
 // When the document is ready to be executed on
 $(document).ready(function(){
@@ -55,54 +56,90 @@ $(document).ready(function(){
 	});
 	
 	// Hide the 'remove user' button
-	$("#removeUser").parent().parent().fadeOut('fast');
+	$("#removeUser").fadeOut('fast');
 	
 	// Handles the removal of user(s) from a space
 	$("#removeUser").click(function(){
 		var selectedUsers = getSelectedRows(memberTable);
-		var remove;
+		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected user(s) from ' + commName + '?');
 		
-		if(selectedUsers.length >= 2){
-			remove = window.confirm("are you sure you want remove these users?");
-		} else {
-			remove = window.confirm("are you sure you want remove this user?");
-		}
-		if(remove){
-			$.post(  
-				"/starexec/services/remove/user/" + id,
-				{selectedUsers : selectedUsers},
-				function(returnCode) {
-					switch (returnCode) {
-						case 0:
-							// Remove the rows from the page and update the table size in the legend
-							updateTable(memberTable);
-							$("#removeUser").parent().parent().fadeOut("fast");
-							break;
-						case 1:
-							showMessage('error', "an error occurred while processing your request; please try again", 5000);
-						case 2:
-							showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
-							break;
-						case 3:
-							showMessage('error', "you can not remove yourself from this space in that way, " +
-									"instead use the 'leave' button to leave this community", 5000);
-							break;
-						case 4:
-							showMessage('error', "you can not remove other leaders of this space", 5000);
-							break;
-					}
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			buttons: {
+				'yes': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
+					
+					$.post(  
+						"/starexec/services/remove/user/" + id,
+						{selectedUsers : selectedUsers},
+						function(returnCode) {
+							switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(memberTable);
+									$("#removeUser").fadeOut("fast");
+									break;
+								case 1:
+									showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								case 2:
+									showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
+									break;
+								case 3:
+									showMessage('error', "you can not remove yourself from this space in that way, " +
+											"instead use the 'leave' button to leave this community", 5000);
+									break;
+								case 4:
+									showMessage('error', "you can not remove other leaders of this space", 5000);
+									break;
+							}
+						},
+						"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});
 				},
-				"json"
-			).error(function(){
-				alert('Session expired');
-				window.location.reload(true);
-			});
-		}
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}		
+		});				
 	});
 	
 	$('.dataTables_wrapper').hide();
+	
+	$('#joinComm').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});
+	
+	$('#leaveComm').button({
+		icons: {
+			secondary: "ui-icon-close"
+    }});
+	
+	$('#editComm').button({
+		icons: {
+			secondary: "ui-icon-pencil"
+    }});
+	
+	$('#removeUser').button({
+		icons: {
+			secondary: "ui-icon-minus"
+    }});
+	
+	initDialogs();
 });
 
+/**
+ * Hides all jquery ui dialogs for page startup
+ */
+function initDialogs() {
+	$( "#dialog-confirm-leave" ).hide();
+	$( "#dialog-confirm-delete" ).hide();
+}
 
 /**
  * Populates the community details panel with information on the given community
@@ -126,6 +163,8 @@ function getCommunityDetails(id) {
  * @param jsonData the json data to populate the details page with
  */
 function populateDetails(jsonData) {
+	commName = jsonData.space.name;
+	
 	// Populate space defaults
 	$('#commName').fadeOut('fast', function(){
 		$('#commName').text(jsonData.space.name).fadeIn('fast');
@@ -184,22 +223,22 @@ function populateDetails(jsonData) {
  */
 function checkPermissions(perms) {	
 	if(perms == null) {
-		$('#joinComm').parent().parent().fadeIn('fast');
-		$('#leaveComm').parent().parent().fadeOut('fast');
-		$('#editComm').parent().parent().fadeOut('fast');
+		$('#joinComm').fadeIn('fast');
+		$('#leaveComm').fadeOut('fast');
+		$('#editComm').fadeOut('fast');
 		return;
 	} else {
-		$('#joinComm').parent().parent().fadeOut('fast');
-		$('#leaveComm').parent().parent().fadeIn('fast');
+		$('#joinComm').fadeOut('fast');
+		$('#leaveComm').fadeIn('fast');
 	}
 	
 	if(perms.isLeader) {
-		$('#editComm').parent().parent().fadeIn('fast');
+		$('#editComm').fadeIn('fast');
 		$("#members").delegate("tr", "click", function(){
 			updateButton(memberTable, $("#removeUser"));
 		});
 	} else {
-		$('#editComm').parent().parent().fadeOut('fast');
+		$('#editComm').fadeOut('fast');
 	}
 }
 
@@ -211,9 +250,22 @@ function updateActionId(id) {
 	$('#joinComm').attr('href', "/starexec/secure/add/to_community.jsp?cid=" + id);
 	$('#editComm').attr('href', "/starexec/secure/edit/community.jsp?cid=" + id);
 	$("#leaveComm").click(function(){
-		if(window.confirm("are you sure you want to leave this community?")){
-			leaveCommunity(id);
-		}
+		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
+			
+		// Display the confirmation dialog
+		$('#dialog-confirm-leave').dialog({
+			modal: true,
+			buttons: {
+				'yes': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-leave').dialog('close');
+					leaveCommunity(id);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}		
+		});
 	});
 }
 
@@ -282,19 +334,20 @@ function getSelectedRows(dataTable){
  */
 function updateButton(dataTable, button){
 	var selectedRows = $(dataTable).children('tbody').children('tr.row_selected');
-    
+	var btnTxt = $(button).children('.ui-button-text');
+	
     if(selectedRows.length == 0){
-    	$(button).parent().parent().fadeOut('fast');
+    	$(button).fadeOut('fast');
     }
     else if(selectedRows.length >= 2 ){
-    	$(button).parent().parent().fadeIn('fast');
-    	if($(button).text()[$(button).text().length - 1] != "s"){
-    		$(button).text($(button).text() + "s").append();
+    	$(button).fadeIn('fast');
+    	if($(btnTxt).text()[$(btnTxt).text().length - 1] != "s"){
+    		$(btnTxt).text($(btnTxt).text() + "s").append();
     	}
     } else {
-    	$(button).parent().parent().fadeIn('fast');
-    	if($(button).text()[$(button).text().length - 1] == "s"){
-    		$(button).text($(button).text().substring(0, $(button).text().length - 1)).append();
+    	$(button).fadeIn('fast');
+    	if($(btnTxt).text()[$(btnTxt).text().length - 1] == "s"){
+    		$(btnTxt).text($(btnTxt).text().substring(0, $(btnTxt).text().length - 1)).append();
     	}
     }
 }

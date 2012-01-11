@@ -1,7 +1,7 @@
 fieldset {				
 	width: 75%;
-	margin-top: 50px;						
-	padding: 30px;
+	margin-top: 25px;
+	margin-bottom: 25px;
 }
 
 fieldset table {		
@@ -45,8 +45,7 @@ tr .label {
 
 table .styled {
 	width: 212px;	
-	height: 28px;
-	border: 1px solid #13a5e1;				
+	height: 28px;			
 	font-size: 16px;	
 }
 
@@ -55,11 +54,8 @@ table .styled.error {
 }
 
 
-textarea#reason {
-	resize: none;	
-	height: 50px;
-	border: 1px solid #13a5e1;
-	padding: 0px 5px 0px 5px;
+textarea#reason {	
+	height: 80px;	
 }
 
 textarea#reason.error{

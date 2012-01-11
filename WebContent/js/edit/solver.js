@@ -40,6 +40,16 @@ $(document).ready(function(){
 			}
 		}
 	});
+	
+	$('#delete').button({
+		icons: {
+			secondary: "ui-icon-minus"
+    }});
+	
+	$('#update').button({
+		icons: {
+			secondary: "ui-icon-check"
+    }});
 });
 
 function initButtons(){

@@ -13,23 +13,23 @@
 		<legend>user information</legend>
 		<table>								
 			<tr>
-				<td class="label">first name: </td>
+				<td class="label">first name</td>
 				<td><input id="firstname" type="text" name="fn" maxlength="32"/></td>
 			</tr>
 			<tr>
-				<td class="label">last name: </td>
+				<td class="label">last name</td>
 				<td><input id="lastname" type="text" name="ln" maxlength="32"/></td>
 			</tr>
 			<tr>
-				<td class="label">email: </td>
+				<td class="label">email</td>
 				<td><input id="email" type="text" name="em" maxlength="64"/></td>
 			</tr>
 			<tr>
-				<td class="label">institution: </td>
+				<td class="label">institution</td>
 				<td><input id="institution" type="text" name="inst" maxlength="64"/></td>
 			</tr>
 			<tr>
-				<td class="label">password: </td>
+				<td class="label">password</td>
 				<td>
 					<input id="password" type="password" name="pwd" maxlength="20"/>
 					<div class="password-meter" id="pwd-meter">
@@ -41,7 +41,7 @@
 				</td>				
 			</tr>
 			<tr>
-				<td class="label">confirm password: </td>
+				<td class="label">confirm password</td>
 				<td><input id="confirm_password" type="password" name="confirm_password" maxlength="16"/></td>
 			</tr>
 
@@ -51,7 +51,7 @@
 		<legend>community information</legend>
 			<table>
 				<tr>
-					<td class="label">community: </td>
+					<td class="label">community</td>
 					<td>
 						<select id="community" name="cm" class="styled">
 							<option> </option>
@@ -62,11 +62,11 @@
 					</td>
 				</tr>
 				<tr>
-					<td class="label">reason for joining: </td>
+					<td class="label">reason for joining</td>
 					<td><textarea name="msg" id="reason" maxlength="300">describe your motivation for joining this community</textarea></td>
 				</tr>		
 				<tr>
-					<td colspan="3"><button type="submit" id="submit" value="Submit" class="round">create user</button></td>
+					<td colspan="3"><button type="submit" id="submit" value="Submit">register</button></td>
 				</tr>
 			</table>
 	</fieldset>	

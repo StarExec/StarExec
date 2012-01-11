@@ -13,10 +13,12 @@ public class Permission extends Identifiable {
 	@Expose private boolean addBenchmark = false;
 	@Expose private boolean addUser = false;
 	@Expose private boolean addSpace = false;
+	@Expose private boolean addJob = false;
 	@Expose private boolean removeSolver = false;
 	@Expose private boolean removeBench = false;
 	@Expose private boolean removeUser = false;
 	@Expose private boolean removeSpace = false;
+	@Expose private boolean removeJob = false;
 	@Expose private boolean isLeader = false;
 	
 	public Permission() {
@@ -32,10 +34,12 @@ public class Permission extends Identifiable {
 		this.addBenchmark = defaultPerm;
 		this.addUser = defaultPerm;
 		this.addSpace = defaultPerm;
+		this.addJob = defaultPerm;
 		this.removeSolver = defaultPerm;
 		this.removeBench = defaultPerm;
 		this.removeUser = defaultPerm;
 		this.removeSpace = defaultPerm;
+		this.removeJob = defaultPerm;
 		this.isLeader = defaultPerm;
 	}
 	
@@ -134,17 +138,47 @@ public class Permission extends Identifiable {
 	 */
 	public void setRemoveSpace(boolean removeSpace) {
 		this.removeSpace = removeSpace;
+	}	
+
+	/**
+	 * @return if the user has the the add job permission
+	 */
+	public boolean canAddJob() {
+		return addJob;
 	}
+
+	/**
+	 * @param addJob the add job permission to set
+	 */
+	public void setAddJob(boolean addJob) {
+		this.addJob = addJob;
+	}
+
+	/**
+	 * @return if the user has the the remove job permission
+	 */
+	public boolean canRemoveJob() {
+		return removeJob;
+	}
+
+	/**
+	 * @param removeJob the remove job permission to set
+	 */
+	public void setRemoveJob(boolean removeJob) {
+		this.removeJob = removeJob;
+	}	
+	
 	/**
 	 * @return if the user is a space leader
 	 */
 	public boolean isLeader() {
 		return isLeader;
 	}
+	
 	/**
 	 * @param isLeader indicates if the user is a space leader
 	 */
 	public void setLeader(boolean isLeader) {
 		this.isLeader = isLeader;
-	}	
+	}
 }

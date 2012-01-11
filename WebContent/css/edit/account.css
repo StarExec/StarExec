@@ -21,12 +21,6 @@ tr th {
 	padding: 10px;		
 }
 
-button {
-	height: 20px;
-	width: 15%;
-	border-radius: 2px;
-}
-
 #passwordTable tr td button {
 	float: right;
 }
@@ -44,7 +38,6 @@ fieldset h6 {
 
 input {
 	width: 50%;
-	height: 20px;
 }
 
 fieldset ul li {
@@ -96,8 +89,7 @@ li:hover button {
 }
 
 input[type="text"] {
-	width: 50%;
-	height: 20px;	
+	width: 50%;	
 }
 
 #toggleWebsite {	

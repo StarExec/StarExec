@@ -50,10 +50,12 @@ CREATE TABLE permissions (
 	add_bench BOOLEAN DEFAULT 0,
 	add_user BOOLEAN DEFAULT 0,
 	add_space BOOLEAN DEFAULT 0,
+	add_job BOOLEAN DEFAULT 0,
 	remove_solver BOOLEAN DEFAULT 0,
 	remove_bench BOOLEAN DEFAULT 0,
 	remove_user BOOLEAN DEFAULT 0,
 	remove_space BOOLEAN DEFAULT 0,
+	remove_job BOOLEAN DEFAULT 0,
 	is_leader BOOLEAN DEFAULT 0,
 	PRIMARY KEY(id)
 );

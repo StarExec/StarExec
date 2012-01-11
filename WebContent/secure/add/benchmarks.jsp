@@ -84,7 +84,7 @@
 					</td>
 				</tr>				
 				<tr>
-					<td colspan="2"><button type="submit" class="round">upload</button></td>
+					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 				</tr>
 			</table>		
 		</fieldset>

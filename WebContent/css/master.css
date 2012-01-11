@@ -30,67 +30,38 @@ a:link, a:visited  {
 	text-decoration: none;
 }
 
+input, textarea, select {
+	background-color: #333333;
+	border: 1px solid #333333;
+	border-radius: 2px;			
+	color: #ffffff;
+	font-size: 16px;
+	font-family: Century Gothic, sans-serif; 
+}
+
+input:focus, textarea:focus, select:focus {
+	border-color: #dc6f04;		
+	background-color: #666666;	
+}
+
 input[type="text"],
 input[type="password"] {
-	height: 28px;
-	border: 1px solid #13a5e1;				
-	font-size: 16px;	
-	padding: 0px 5px 0px 5px;				
+	height: 26px;					
+	padding: 0px 5px 0px 5px;	
 }
+
+
 
 textarea {
 	resize: none;
 	padding: 5px;
 }
 
-button {
-	width: 100px;
-	height: 30px;
-	background-color: #666666;
-	color: #ffffff;
-	border: none;
-	cursor: pointer;
-	font-family: Century Gothic, sans-serif;
-}
-
-button:hover {				
-	background-color: #3b0264;				
-}
-
-.button {
-	display: inline-block;
-	list-style-type: none;	
-	background-color: #666666;
-	min-width: 110px;
-	height: 35px;
-	text-align: center;	
-	position: relative;
-	padding: 0px 8px 0px 8px;
-}
-
-.button a {
-	width: 100%;
-	height: 100%;
-	text-align: center;
-	display: block;
-	line-height: 100%;
-	margin-top: 8px;
-	text-shadow: black 0px 0px 12px;	
-}
-
-.button a:link {
-	text-decoration: none;
-}
-
-.button:hover {
-	background-color: #3b0264;
-}
-
 fieldset {	
-	border-width: 4px;
+	border-width: 3px;
 	border-style: solid;
 	border-color: #111111;	
-	border-radius: 4px;						
+	border-radius: 3px;						
 	margin: auto;	
 	padding: 10px;
 }
@@ -99,7 +70,7 @@ legend {
 	border-width: 2px;
 	border-style: solid;
 	border-color: #111111;
-	border-radius: 5px;
+	border-radius: 3px;
 	background-color: #111111;
 	padding: 5px 8px 5px 8px;
 	margin-left: 25px;

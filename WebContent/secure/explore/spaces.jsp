@@ -78,15 +78,23 @@
 		<fieldset>
 			<legend>actions</legend>
 			<ul id="actionList">
-				<li><span class="round button"><a id="addSpace" href="/starexec/secure/add/space.jsp">add subspace</a></span></li>
-				<li><span class="round button"><a id="uploadBench" href="/starexec/secure/add/benchmarks.jsp">upload benchmarks</a></span></li>
-				<li><span class="round button"><a id="uploadSolver" href="/starexec/secure/add/solver.jsp">upload solver</a></span></li>				
-				<li><span class="round button"><a id="removeSubspace">remove subspace</a></span></li>
-				<li><span class="round button"><a id="removeUser">remove user</a></span></li>
-				<li><span class="round button"><a id="removeBench">remove benchmark</a></span></li>
-				<li><span class="round button"><a id="removeSolver">remove solver</a></span></li>
-				<li><span class="round button"><a id="removeJob">remove job</a></span></li>
+				<li><a class="btnAdd" id="addSpace" href="/starexec/secure/add/space.jsp">add subspace</a></li>
+				<li><a class="btnUp" id="uploadBench" href="/starexec/secure/add/benchmarks.jsp">upload benchmarks</a></li>
+				<li><a class="btnUp" id="uploadSolver" href="/starexec/secure/add/solver.jsp">upload solver</a></li>
+				<li><a class="btnRun" id="addJob" href="/starexec/secure/add/job.jsp">run as job</a></li>				
+				<li><a class="btnRemove" id="removeSubspace">remove subspace</a></li>
+				<li><a class="btnRemove" id="removeUser">remove user</a></li>
+				<li><a class="btnRemove" id="removeBench">remove benchmark</a></li>
+				<li><a class="btnRemove" id="removeSolver">remove solver</a></li>
+				<li><a class="btnRemove" id="removeJob">remove job</a></li>				
 			</ul>
 		</fieldset>				
 	</div>	
+	
+	<div id="dialog-confirm-copy" title="confirm copy">
+		<p><span class="ui-icon ui-icon-info" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-copy-txt"></span></p>
+	</div>
+	<div id="dialog-confirm-delete" title="confirm delete">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>
 </star:template>

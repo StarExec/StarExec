@@ -29,12 +29,12 @@ INSERT INTO nodes(name) VALUES ("starexec3x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec4x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec5x.cs.uiowa.edu");
 	
-INSERT INTO permissions(add_solver, add_bench, add_user, add_space, remove_solver, remove_bench, remove_user, remove_space, is_leader) VALUES
-	(0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO permissions(add_solver, add_bench, add_user, add_space, remove_solver, remove_bench, remove_user, remove_space, is_leader) VALUES
-	(1, 1, 1, 1, 1, 1, 1, 1, 1);
-INSERT INTO permissions(add_solver, add_bench, add_user, add_space, remove_solver, remove_bench, remove_user, remove_space, is_leader) VALUES
-	(1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
 	
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('root', SYSDATE(), 'this is the mother of all spaces', 1, 1);
@@ -126,6 +126,7 @@ INSERT INTO user_assoc VALUES (6, 5, 5, 3);
 
 INSERT INTO bench_assoc VALUES (2, 1);
 INSERT INTO bench_assoc VALUES (2, 2);
+INSERT INTO bench_assoc VALUES (3, 1);
 INSERT INTO bench_assoc VALUES (3, 2);
 INSERT INTO bench_assoc VALUES (5, 3);
 INSERT INTO bench_assoc VALUES (5, 4);
@@ -133,10 +134,13 @@ INSERT INTO bench_assoc VALUES (5, 4);
 INSERT INTO solver_assoc VALUES (2, 1);
 INSERT INTO solver_assoc VALUES (2, 2);
 INSERT INTO solver_assoc VALUES (3, 1);
+INSERT INTO solver_assoc VALUES (3, 2);
 INSERT INTO solver_assoc VALUES (5, 2);
 
 INSERT INTO job_assoc VALUES (2, 1);
 INSERT INTO job_assoc VALUES (2, 2);
+INSERT INTO job_assoc VALUES (3, 1);
+INSERT INTO job_assoc VALUES (3, 2);
 INSERT INTO job_assoc VALUES (5, 3);
 INSERT INTO job_assoc VALUES (5, 4);
 

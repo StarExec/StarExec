@@ -21,23 +21,22 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	protected static long add(Permission p, Connection con) throws Exception {
-		CallableStatement procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+		CallableStatement procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 		procDefaultPerm.setBoolean(1, p.canAddSolver());
 		procDefaultPerm.setBoolean(2, p.canAddBenchmark());
 		procDefaultPerm.setBoolean(3, p.canAddUser());
 		procDefaultPerm.setBoolean(4, p.canAddSpace());
-		procDefaultPerm.setBoolean(5, p.canRemoveSolver());
-		procDefaultPerm.setBoolean(6, p.canRemoveBench());
-		procDefaultPerm.setBoolean(7, p.canRemoveSpace());
-		procDefaultPerm.setBoolean(8, p.canRemoveUser());
-		procDefaultPerm.setBoolean(9, p.isLeader());
-		procDefaultPerm.registerOutParameter(10, java.sql.Types.BIGINT);
-		
-		if (procDefaultPerm.executeUpdate() != 1) {
-			throw new Exception("No rows were affected. Expected 1 affected row");
-		}
+		procDefaultPerm.setBoolean(5, p.canAddJob());
+		procDefaultPerm.setBoolean(6, p.canRemoveSolver());
+		procDefaultPerm.setBoolean(7, p.canRemoveBench());
+		procDefaultPerm.setBoolean(8, p.canRemoveSpace());
+		procDefaultPerm.setBoolean(9, p.canRemoveUser());
+		procDefaultPerm.setBoolean(10, p.canRemoveJob());
+		procDefaultPerm.setBoolean(11, p.isLeader());
+		procDefaultPerm.registerOutParameter(12, java.sql.Types.BIGINT);			
 				
-		return procDefaultPerm.getLong(10);		
+		procDefaultPerm.execute();
+		return procDefaultPerm.getLong(12);
 	}	
 	
 	/**
@@ -187,10 +186,12 @@ public class Permissions {
 				p.setAddSolver(results.getBoolean("add_solver"));
 				p.setAddSpace(results.getBoolean("add_space"));
 				p.setAddUser(results.getBoolean("add_user"));
+				p.setAddJob(results.getBoolean("add_job"));
 				p.setRemoveBench(results.getBoolean("remove_bench"));
 				p.setRemoveSolver(results.getBoolean("remove_solver"));
 				p.setRemoveSpace(results.getBoolean("remove_space"));
 				p.setRemoveUser(results.getBoolean("remove_user"));
+				p.setRemoveJob(results.getBoolean("remove_job"));
 				p.setLeader(results.getBoolean("is_leader"));
 				
 				if(results.wasNull()) {
@@ -200,6 +201,47 @@ public class Permissions {
 					return null;
 				}
 				
+				return p;
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;		
+	}
+	
+	/**
+	 * Retrieves the default permissions applied to a user when they are added to a space
+	 * @param spaceId The id of the space to get the default user's permission
+	 * @return A permission object containing the space's default user permissionsuser's permission on the space.
+	 * @author Tyler Jensen
+	 */
+	public static Permission getSpaceDefault(long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpacePermissions(?)}");			
+			procedure.setLong(1, spaceId);
+			ResultSet results = procedure.executeQuery();
+		
+			if(results.first()) {				
+				Permission p = new Permission();
+				p.setId(results.getLong("id"));
+				p.setAddBenchmark(results.getBoolean("add_bench"));
+				p.setAddSolver(results.getBoolean("add_solver"));
+				p.setAddSpace(results.getBoolean("add_space"));
+				p.setAddUser(results.getBoolean("add_user"));
+				p.setAddJob(results.getBoolean("add_job"));
+				p.setRemoveBench(results.getBoolean("remove_bench"));
+				p.setRemoveSolver(results.getBoolean("remove_solver"));
+				p.setRemoveSpace(results.getBoolean("remove_space"));
+				p.setRemoveUser(results.getBoolean("remove_user"));
+				p.setRemoveJob(results.getBoolean("remove_job"));
+				p.setLeader(results.getBoolean("is_leader"));
+												
 				return p;
 			}
 		} catch (Exception e){			

@@ -22,7 +22,7 @@ $(document).ready(function() {
 	});
 	
 	// Don't permit the default text as a message to the leaders
-	$("#submit").click(function(){
+	$("#btnSubmit").click(function(){
 		if ($("#reason").val() == $("#reason").data('default')){
 			$("#reason").val("");
 	    }
@@ -47,5 +47,10 @@ $(document).ready(function() {
 			}
 		}
 	});
+	
+	$('#btnSubmit').button({
+		icons: {
+			secondary: "ui-icon-mail-closed"
+    }});
 });
 

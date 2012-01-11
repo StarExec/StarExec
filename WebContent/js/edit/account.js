@@ -63,6 +63,15 @@ $(document).ready(function(){
 		}
 	});
 	
+	$('#addWebsite').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});
+	
+	$('#changePass').button({
+		icons: {
+			secondary: "ui-icon-check"
+    }});
 });
 
 
@@ -177,7 +186,7 @@ function displayWebsites(data) {
 	// Injects the clickable delete button that's always present
 	$.each(data, function(i, site) {
 		$('#websites tr').parent().remove();
-		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '</a><a class="website" id="' + site.id + '">delete</a></li>');
+		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a><a class="website" id="' + site.id + '">delete</a></li>');
 		$('#websites li:even').addClass('shade');
 	});
 	
@@ -213,7 +222,17 @@ function editable(attribute) {
 		$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
 		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
 		$('#cancel' + attribute).click(function(){saveChanges(this, false, attribute, old);});
-	});
+		
+		$('#save' + attribute).button({
+			icons: {
+				secondary: "ui-icon-check"
+	    }});
+		
+		$('#cancel' + attribute).button({
+			icons: {
+				secondary: "ui-icon-close"
+	    }});
+	});	
 }
 
 

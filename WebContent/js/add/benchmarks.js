@@ -35,4 +35,9 @@ $(document).ready(function(){
 			  $('#permRow').fadeOut('fast');
 		  }
 	});
+	
+	$('#btnUpload').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-n"
+    }});
 });

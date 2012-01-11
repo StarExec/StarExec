@@ -21,6 +21,41 @@ public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 	
 	/**
+	 * Adds an association between all the given job ids and the given space
+	 * @param jobIds the ids of the jobs we are associating to the space
+	 * @param spaceId the ID of the space we are making the association to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean associate(List<Long> jobIds, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+						
+			CallableStatement procedure = null;						
+			procedure = con.prepareCall("{CALL AssociateJob(?, ?)}");
+			
+			for(long jid : jobIds) {
+				procedure.setLong(1, jid);
+				procedure.setLong(2, spaceId);			
+				procedure.executeUpdate();			
+			}			
+			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Gets very basic information about a job (but not about
 	 * any of its pairs) use getPairsForJob for those details
 	 * @param jobId The id of the job to get information for 

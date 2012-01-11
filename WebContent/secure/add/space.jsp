@@ -43,6 +43,7 @@
 								<th>bench</th>
 								<th>users</th>
 								<th>space</th>
+								<th>jobs</th>
 							</tr>
 							<tr>
 								<td>add</td>
@@ -50,6 +51,7 @@
 								<td><input type="checkbox" name="addBench"/></td>
 								<td><input type="checkbox" name="addUser"/></td>
 								<td><input type="checkbox" name="addSpace"/></td>
+								<td><input type="checkbox" name="addJob"/></td>
 							</tr>
 							<tr>
 								<td>remove</td>
@@ -57,6 +59,7 @@
 								<td><input type="checkbox" name="removeBench"/></td>
 								<td><input type="checkbox" name="removeUser"/></td>
 								<td><input type="checkbox" name="removeSpace"/></td>
+								<td><input type="checkbox" name="removeJob"/></td>
 							</tr>
 						</table>
 					</td>
@@ -69,7 +72,7 @@
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2"><button type="submit" class="round">create</button></td>
+					<td colspan="2"><button id="btnCreate">create</button></td>
 				</tr>
 			</table>		
 		</fieldset>

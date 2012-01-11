@@ -25,4 +25,9 @@ $(document).ready(function(){
 			}
 		}
 	});
+	
+	$('#btnCreate').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});
 });

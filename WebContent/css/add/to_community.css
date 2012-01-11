@@ -23,11 +23,11 @@ table tr td:first-child.label {
 }
 
 table tr td {
-	padding: 5px;	
+	padding: 10px;	
 }
 
 input, select, textarea {
-	width: 200px;
+	width: 99%;	
 }
 
 td button {

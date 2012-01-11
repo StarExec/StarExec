@@ -22,10 +22,8 @@ tr th {
 	vertical-align: middle;
 }
 
-button {
-	height: 20px;
-	width: 15%;
-	border-radius: 2px;
+#benchTypes button {
+	width: 90px;
 }
 
 #websites li button {
@@ -58,7 +56,6 @@ button {
 
 input[type="text"] {
 	width: 50%;
-	height: 20px;	
 }
 
 #typeFile {
@@ -97,8 +94,7 @@ fieldset ul li {
 }
 
 #newType button {
-	float: right;	
-	width: 80px;
+	float: right;		
 }
 
 #new_website {
@@ -133,9 +129,4 @@ li:hover button {
 
 #updateForm td {
 	vertical-align: top;
-}
-
-#updateForm button {
-	width: 80px;
-	margin: auto;	
 }

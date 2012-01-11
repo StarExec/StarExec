@@ -64,7 +64,7 @@
 					<td><input type="password" id="confirm_pass" name="confirm_pass"/></td>
 				</tr>
 				<tr>
-					<td colspan="2"><button class="round" id="changePass">change</button></td>
+					<td colspan="2"><button id="changePass">change</button></td>
 				</tr>
 			</table>
 		</form>

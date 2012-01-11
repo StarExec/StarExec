@@ -18,6 +18,41 @@ public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
 	
 	/**
+	 * Associates the benchmarks with the given ids to the given space
+	 * @param benchIds The list of benchmark ids to associate with the space
+	 * @param spaceId The id of the space the benchmarks will be associated with
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean associate(List<Long> benchIds, long spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+			
+			CallableStatement procedure = null;						
+			procedure = con.prepareCall("{CALL AssociateBench(?, ?)}");
+			
+			for(long bid : benchIds) {
+				procedure.setLong(1, bid);
+				procedure.setLong(2, spaceId);			
+				procedure.executeUpdate();			
+			}			
+			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Adds a single benchmark to the database under the given spaceId
 	 * @param benchmark The benchmark to add to the database
 	 * @param spaceId The id of the space the benchmark will belong to

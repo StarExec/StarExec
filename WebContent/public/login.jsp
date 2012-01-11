@@ -3,6 +3,11 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <star:template title="login" css="accounts/login">	
+	<script>
+		$(document).ready(function(){
+			$('button').button();
+		});
+	</script>
 	<form method="POST" action="j_security_check" id="loginForm">			
 		<fieldset>
 			<legend>credentials</legend>
@@ -17,7 +22,7 @@
 			</tr>												
 			<tr>
 				<td><a href="/starexec/public/password_reset.jsp">forgot password?</a></td>
-				<td><button type="submit" class="round">login</button></td>
+				<td><button type="submit">login</button></td>
 			</tr>
 		</table>
 		</fieldset>					

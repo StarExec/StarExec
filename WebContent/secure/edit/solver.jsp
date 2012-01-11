@@ -58,8 +58,8 @@
 				</tr>
 				<tr>
 					<td colspan="2">
-						<button type="button" id="delete" class="round" >delete</button>
-						<button type="button" id="update" class="round" >update</button>
+						<button type="button" id="delete">delete</button>
+						<button type="button" id="update">update</button>
 					</td>
 				</tr>						
 			</table>	
