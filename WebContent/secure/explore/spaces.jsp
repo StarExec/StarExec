@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces" css="common/table, explore/common">			
+<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min" css="common/table, explore/common">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		<ul id="exploreList">
@@ -13,7 +13,7 @@
 		<p id="spaceDesc" class="accent"></p>
 			
 		<fieldset id="jobField">
-			<legend onclick="toggleTable(this)" class="expd"><span>0</span> jobs <span>(+)</span></legend>
+			<legend onclick="toggleTable(this)" class="expd" id="jobExpd"><span>0</span> jobs <span>(+)</span></legend>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -26,7 +26,7 @@
 		</fieldset>	
 			
 		<fieldset id="solverField">
-			<legend onclick="toggleTable(this)" class="expd"><span>0</span> solvers <span>(+)</span></legend>
+			<legend onclick="toggleTable(this)" class="expd" id="solverExpd"><span>0</span> solvers <span>(+)</span></legend>
 			<table id="solvers">
 				<thead>
 					<tr>
@@ -38,7 +38,7 @@
 		</fieldset>						
 		
 		<fieldset id="benchField">
-			<legend onclick="toggleTable(this)" class="expd"><span>0</span> benchmarks <span>(+)</span></legend>
+			<legend onclick="toggleTable(this)" class="expd" id="benchExpd"><span>0</span> benchmarks <span>(+)</span></legend>
 			<table id="benchmarks">
 				<thead>
 					<tr>
@@ -51,7 +51,7 @@
 		</fieldset>											
 		
 		<fieldset  id="userField">
-			<legend onclick="toggleTable(this)" class="expd"><span>0</span> users <span>(+)</span></legend>
+			<legend onclick="toggleTable(this)" class="expd" id="userExpd"><span>0</span> users <span>(+)</span></legend>
 			<table id="users">
 				<thead>
 					<tr>
@@ -64,7 +64,7 @@
 		</fieldset>		
 		
 		<fieldset id="spaceField">
-			<legend onclick="toggleTable(this)" class="expd"><span>0</span> subspaces <span>(+)</span></legend>
+			<legend onclick="toggleTable(this)" class="expd" id="spaceExpd"><span>0</span> subspaces <span>(+)</span></legend>
 			<table id="spaces">
 				<thead>
 					<tr>

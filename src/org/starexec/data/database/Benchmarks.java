@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -150,14 +151,24 @@ public class Benchmarks {
 	 */
 	public static boolean delete(long id){
 		Connection con = null;			
-		
+		File benchToDelete = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkById(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
 			procedure.setLong(1, id);
+			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
+			procedure.executeUpdate();
 			
-			procedure.executeUpdate();						
-			log.debug(String.format("Deletion of benchmark [id=%d] was successful.", id));
+			// Delete benchmark file from disk, and the parent directory if it's empty
+			benchToDelete = new File(procedure.getString(2));
+			if(benchToDelete.delete()){
+				log.debug(String.format("Benchmark file [%s] was successfully deleted from disk at [%s].", benchToDelete.getName(), benchToDelete.getAbsolutePath()));
+			}
+			if(benchToDelete.getParentFile().delete()){
+				log.debug(String.format("Directory [%s] was deleted because it was empty.", benchToDelete.getParentFile().getAbsolutePath()));
+			}
+			
+			log.debug(String.format("Deletion of benchmark [id=%d] in directory [%s] was successful.", id, benchToDelete.getAbsolutePath()));					
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

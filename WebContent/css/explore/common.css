@@ -57,12 +57,13 @@
 	margin: 5px;
 }
 
-.expd, #actionList li a {	
+.expd, #actionList li a ,
+.qtip-nonPermanentLeader a.tooltipButton, img {	
 	cursor: pointer;
 }
 
 #content table {
- width: 100%;	
+ 	width: 100%;	
 }
 
 #progressBar {
@@ -97,4 +98,8 @@
 #exploreList a.hover {
 	background-color: #008d03;
 	border-radius:2px;
+}
+
+.qtip-nonPermanentLeader a {
+	color: #ae0000;	
 }

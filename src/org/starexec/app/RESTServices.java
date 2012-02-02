@@ -152,6 +152,22 @@ public class RESTServices {
 	}	
 	
 	/**
+	 * Gets the permissions a given user has in a given space
+	 * 
+	 * @param spaceId the id of the space to check a user's permissions in
+	 * @param userId the id of the user to check the permissions of
+	 * @return a json string representing the user's permissions in the given space
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/space/{spaceId}/perm/{userId}")
+	@Produces("application/json")	
+	public String getUserSpacePermissions(@PathParam("spaceId") long spaceId, @PathParam("userId") long userId, @Context HttpServletRequest request) {
+		return gson.toJson(Permissions.get(userId, spaceId));
+	}	
+		
+	
+	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen
@@ -211,11 +227,8 @@ public class RESTServices {
 			}
 		}
 		
-		if (true == success) {
-			return gson.toJson(0);
-		}
-		
-		return gson.toJson(1);
+		// Passed validation AND Database update successful	
+		return success ? gson.toJson(0) : gson.toJson(1);
 	}
 
 	
@@ -299,11 +312,7 @@ public class RESTServices {
 		}
 		
 		// Passed validation AND Database update successful
-		if(true == success) {
-			return gson.toJson(0);
-		}
-		
-		return gson.toJson(1);
+		return success ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/** 
@@ -340,11 +349,7 @@ public class RESTServices {
 		}
 		
 		// Passed validation AND Database update successful
-		if(true == success) {
-			return gson.toJson(0);
-		}
-		
-		return gson.toJson(1);
+		return success ? gson.toJson(0) : gson.toJson(1);
 	}
 
 	/**
@@ -365,11 +370,7 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
-		if(true == BenchTypes.delete(typeId, spaceId)) {
-			return gson.toJson(0);
-		}
-		
-		return gson.toJson(1);
+		return BenchTypes.delete(typeId, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -781,8 +782,7 @@ public class RESTServices {
 		}
 
 		// Remove the job from the space
-		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson
-				.toJson(1);
+		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -817,11 +817,13 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
+		// Ensures the space to remove is a leaf-space (i.e. has no descendants)
 		for(long subspaceId : selectedSubspaces){
 			if(!Spaces.isLeaf(subspaceId)){
 				return gson.toJson(3);
 			}
 		}
+		
 
 		// Remove the subspace from the space
 		return Spaces.removeSubspaces(selectedSubspaces, spaceId) ? gson.toJson(0) : gson.toJson(1);
@@ -1023,4 +1025,86 @@ public class RESTServices {
 			return gson.toJson(4); //hashedPass != databasePass
 		}
 	}
+	
+	
+	/**
+	 * Changes the permissions of a given user for a given space
+	 * 
+	 * @return 0 if the permissions were successfully changed, 1 if there
+	 * was an error on the database level, 2 if the user changing the permissions
+	 * isn't a leader, and 3 if the user whos permissions are to be changed is 
+	 * a leader
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/space/{spaceId}/edit/perm/{userId}")
+	@Produces("application/json")
+	public String editUserPermissions(@PathParam("spaceId") long spaceId, @PathParam("userId") long userId, @Context HttpServletRequest request) {
+		
+		// Ensure the user attempting to edit permissions is a leader
+		Permission perm = SessionUtil.getPermission(request, spaceId);
+		if(perm == null || !perm.isLeader()) {
+			return gson.toJson(2);	
+		}
+		
+		// Ensure the user to edit the permissions of isn't themselves a leader
+		perm = Permissions.get(userId, spaceId);
+		if(perm.isLeader()){
+			return gson.toJson(3);
+		}
+		
+		// Extract the new permissions
+		String users      = request.getParameter("users");
+		String solvers    = request.getParameter("solvers");
+		String benchmarks = request.getParameter("benchmarks");
+		String subspaces  = request.getParameter("subspaces");
+		String jobs       = request.getParameter("jobs");
+		
+		// Configure a new permission object
+		Permission newPerm = new Permission(false);
+		if(users.equals("a")) {
+			newPerm.setAddUser(true);
+		} else if(users.equals("r")) {
+			newPerm.setRemoveUser(true);
+		} else if(users.equals("ar")) {
+			newPerm.setAddUser(true);
+			newPerm.setRemoveUser(true);
+		}
+		if(solvers.equals("a")){
+			newPerm.setAddSolver(true);
+		} else if(solvers.equals("r")){
+			newPerm.setRemoveSolver(true);
+		} else if(solvers.equals("ar")){
+			newPerm.setAddSolver(true);
+			newPerm.setRemoveSolver(true);
+		}
+		if(benchmarks.equals("a")){
+			newPerm.setAddBenchmark(true);
+		} else if(benchmarks.equals("r")){
+			newPerm.setRemoveBench(true);
+		} else if(benchmarks.equals("ar")){
+			newPerm.setAddBenchmark(true);
+			newPerm.setRemoveBench(true);
+		}
+		if(subspaces.equals("a")){
+			newPerm.setAddSpace(true);
+		} else if(subspaces.equals("r")){
+			newPerm.setRemoveSpace(true);
+		} else if(subspaces.equals("ar")){
+			newPerm.setAddSpace(true);
+			newPerm.setRemoveSpace(true);
+		}
+		if(jobs.equals("a")){
+			newPerm.setAddJob(true);
+		} else if(jobs.equals("r")){
+			newPerm.setRemoveJob(true);
+		} else if(jobs.equals("ar")){
+			newPerm.setAddJob(true);
+			newPerm.setRemoveJob(true);
+		}
+		
+		// Update database with new permissions
+		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
 }

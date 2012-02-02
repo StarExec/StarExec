@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -147,19 +148,31 @@ public class Solvers {
 	
 	/**
 	 * Deletes a solver from the database (cascading deletes handle all dependencies)
+	 * 
 	 * @param id the id of the solver to delete
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
 	public static boolean delete(long id){
 		Connection con = null;			
-		
+		File solverToDelete = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL DeleteSolverById(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
 			procedure.setLong(1, id);
+			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
+			procedure.executeUpdate();
 			
-			procedure.executeUpdate();					
+			// Delete solver file from disk, and the parent directory if it's empty
+			solverToDelete = new File(procedure.getString(2));
+			if(solverToDelete.delete()){
+				log.debug(String.format("Solver file [%s] was successfully deleted from disk at [%s].", solverToDelete.getName(), solverToDelete.getAbsolutePath()));
+			}
+			if(solverToDelete.getParentFile().delete()){
+				log.debug(String.format("Directory [%s] was deleted because it was empty.", solverToDelete.getParentFile().getAbsolutePath()));
+			}
+			
+			log.debug(String.format("Deletion of solver [id=%d] in directory [%s] was successful.", id, solverToDelete.getAbsolutePath()));
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

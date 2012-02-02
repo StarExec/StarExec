@@ -174,13 +174,10 @@ public class Users {
 			}
 			
 			if(added){
-				// Commit changes to database
 				Common.endTransaction(con);
-				
 				log.info(String.format("New user [%s] successfully registered", user));
 				return true;				
 			} else {
-				// Don't commit changes to database
 				Common.doRollback(con);				
 				log.info(String.format("New user [%s] failed to register", user));
 				return false;

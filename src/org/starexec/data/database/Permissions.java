@@ -193,6 +193,7 @@ public class Permissions {
 				p.setRemoveUser(results.getBoolean("remove_user"));
 				p.setRemoveJob(results.getBoolean("remove_job"));
 				p.setLeader(results.getBoolean("is_leader"));
+				p.setId(userId);
 				
 				if(results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
@@ -251,5 +252,47 @@ public class Permissions {
 		}
 		
 		return null;		
+	}
+	
+	
+	/**
+	 * Sets the permissions of a given user in a given space
+	 * 
+	 * @param userId the id of the user to set the permissions of
+	 * @param spaceId the id of the space where the permissions will effect
+	 * @param newPerm the new set of permissions to set
+	 * @return true iff the permissions were successfully set, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean set(long userId, long spaceId, Permission newPerm) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL SetUserPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure.setLong(1, userId);					
+			procedure.setLong(2, spaceId);
+			procedure.setBoolean(3, newPerm.canAddSolver());
+			procedure.setBoolean(4, newPerm.canAddBenchmark());
+			procedure.setBoolean(5, newPerm.canAddUser());
+			procedure.setBoolean(6, newPerm.canAddSpace());
+			procedure.setBoolean(7, newPerm.canAddJob());
+			procedure.setBoolean(8, newPerm.canRemoveSolver());
+			procedure.setBoolean(9, newPerm.canRemoveBench());
+			procedure.setBoolean(10, newPerm.canRemoveSpace());
+			procedure.setBoolean(11, newPerm.canRemoveUser());
+			procedure.setBoolean(12, newPerm.canRemoveJob());
+			procedure.setBoolean(13, newPerm.isLeader());
+			
+			procedure.executeUpdate();
+			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+			log.error(String.format("Changing permissions failed for user [%d] in space [%d]", userId, spaceId));
+		return false;
 	}
 }

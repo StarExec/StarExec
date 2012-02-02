@@ -31,7 +31,7 @@
 		</class>
 		<class name="org.starexec.util.Validator">					
 			<property key="BOOLEAN_PATTERN">
-				<value><![CDATA[^[true|false]$]]></value>
+				<value><![CDATA[true|false]]></value>
 			</property>										
 			<property key="USER_NAME_PATTERN">
 				<value><![CDATA[^[A-Z\-\s']{2,32}$]]></value>
@@ -124,8 +124,8 @@
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\benchmarks\\" />
 			<property key="SOLVER_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\solvers\\" />				
-			<property key="CONFIG_PATH" value="C:\\Users\\Todd\\workspace\\starexec_proj\\build\\classes\\org\\starexec\\config\\" />
-			<property key="STAREXEC_ROOT" value="C:\\Users\\Todd\\workspace\\starexec_proj\\" />
+			<property key="CONFIG_PATH" value="C:\\Users\\Todd\\workspace\\starexec\\build\\classes\\org\\starexec\\config\\" />
+			<property key="STAREXEC_ROOT" value="C:\\Users\\Todd\\workspace\\starexec\\" />
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\jobs\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\node\\" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />

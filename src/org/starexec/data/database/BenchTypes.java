@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -53,15 +54,28 @@ public class BenchTypes {
 	 */
 	public static boolean delete(long typeId, long spaceId){
 		Connection con = null;			
-		
+		File benchTypeFile = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkType(?, ?)}");
+			
+			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkType(?, ?, ?)}");
 			procedure.setLong(1, typeId);
 			procedure.setLong(2, spaceId);
+			procedure.registerOutParameter(3, java.sql.Types.LONGNVARCHAR);
+			procedure.executeUpdate();
 			
-			procedure.executeUpdate();						
-			log.debug(String.format("Deletion of benchmark type [id=%d] for space [id=%d] was successful.", typeId, spaceId));
+			// Get processor_path of benchmark type
+			benchTypeFile = new File(procedure.getString(3));
+			log.debug(String.format("Removal of benchmark type [id=%d] from space [id=%d] was successful.", typeId, spaceId));
+			
+			// Try and delete file referenced by processor_path and its parent directory
+			if(benchTypeFile.delete()){
+				log.debug(String.format("File [%s] was deleted at [%s] because it was no longer referenced anywhere.", benchTypeFile.getName(), benchTypeFile.getAbsolutePath()));
+			}
+			if(benchTypeFile.getParentFile().delete()){
+				log.debug(String.format("Directory [%s] was deleted because it was empty.", benchTypeFile.getParentFile().getAbsolutePath()));
+			}
+			
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -69,7 +83,7 @@ public class BenchTypes {
 			Common.safeClose(con);
 		}
 		
-		log.debug(String.format("Deletion of benchmark type [id=%d] for space [id=%d] failed.", typeId, spaceId));
+		log.debug(String.format("Removal of benchmark type [id=%d] from space [id=%d] failed.", typeId, spaceId));
 		return false;
 	}
 	

@@ -178,7 +178,7 @@ public class Util {
 	 * Takes in a string buffer and produces a single string out of its contents. This method
 	 * will attempt to close the reader when finished.
 	 * @param reader The reader to convert
-	 * @return The string value that is the result of appending all lines within the buffer. 
+	 * @return The string value that is the result of appending all lines within the buffer.
 	 */
 	public static String bufferToString(BufferedReader reader) {
 		try {
@@ -199,7 +199,7 @@ public class Util {
 		
 		return null;
 	}
-	
+
 	/**
 	 * Converts a list of strings into a list of longs
 	 * @param stringList The list of numeric strings to convert to longs

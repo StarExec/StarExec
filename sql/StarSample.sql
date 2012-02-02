@@ -15,13 +15,17 @@ INSERT INTO users (email, first_name, last_name, institution, created, password)
 	VALUES ('skylar-stark@uiowa.edu', 'Skylar', 'Stark', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
 INSERT INTO users (email, first_name, last_name, institution, created, password)
 	VALUES ('geoff@cs.miami.edu', 'Geoff', 'Sutcliffe', 'The University of Miami', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');		
+INSERT INTO users (email, first_name, last_name, institution, created, password)
+	VALUES ('todd.elvers@gmail.com', 'Todd', 'Elvers', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
 
+	
 INSERT INTO user_roles VALUES('tyler-jensen@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('clifton-palmer@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('aaron.stump.test@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('tinelli.test@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('skylar-stark@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('geoff@cs.miami.edu', 'user');
+INSERT INTO user_roles VALUES('todd.elvers@gmail.com', 'user');
 
 INSERT INTO nodes(name) VALUES ("starexec1x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec2x.cs.uiowa.edu");
@@ -30,11 +34,21 @@ INSERT INTO nodes(name) VALUES ("starexec4x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec5x.cs.uiowa.edu");
 	
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
 	(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
 	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
-	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+	(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 	
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('root', SYSDATE(), 'this is the mother of all spaces', 1, 1);
@@ -117,12 +131,15 @@ INSERT INTO closure VALUES (1, 4);
 INSERT INTO closure VALUES (1, 5);
 INSERT INTO closure VALUES (3, 4);
 
-INSERT INTO user_assoc VALUES (3, 2, 2, 1);
-INSERT INTO user_assoc VALUES (4, 2, 2, 1);
-INSERT INTO user_assoc VALUES (1, 3, 3, 2);
+
+INSERT INTO user_assoc VALUES (1, 3, 3, 1);
 INSERT INTO user_assoc VALUES (1, 4, 3, 2);
-INSERT INTO user_assoc VALUES (2, 3, 3, 1);
-INSERT INTO user_assoc VALUES (6, 5, 5, 3);
+INSERT INTO user_assoc VALUES (2, 3, 3, 3);
+INSERT INTO user_assoc VALUES (3, 2, 2, 4);
+INSERT INTO user_assoc VALUES (4, 2, 2, 5);
+INSERT INTO user_assoc VALUES (5, 3, 3, 8);
+INSERT INTO user_assoc VALUES (6, 5, 5, 6);
+INSERT INTO user_assoc VALUES (7, 3, 3, 7);
 
 INSERT INTO bench_assoc VALUES (2, 1);
 INSERT INTO bench_assoc VALUES (2, 2);

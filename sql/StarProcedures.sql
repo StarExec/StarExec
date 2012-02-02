@@ -36,15 +36,13 @@ CREATE PROCEDURE AssociateBench(IN _benchId BIGINT, IN _spaceId BIGINT)
 
 -- Deletes a benchmark given that benchmark's id
 -- Author: Todd Elvers	
-CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId BIGINT)
+CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId BIGINT, OUT _path TEXT)
 	BEGIN
+		SELECT path INTO _path FROM benchmarks WHERE id = _benchmarkId;
 		DELETE FROM benchmarks
 		WHERE id = _benchmarkId;
 	END //	
 	
--- Updates the first name of the user with the given user id to the
--- given first name. The first name should already be validated
--- Author: Skylar Stark
 -- Retrieves the benchmark with the given id
 -- Author: Tyler Jensen
 CREATE PROCEDURE GetBenchmarkById(IN _id BIGINT)
@@ -71,13 +69,23 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id BIGINT)
 		ORDER BY bench.name;
 	END //
 	
--- Removes the association between a benchmark and a given space
+-- Removes the association between a benchmark and a given space;
+-- places the path of the benchmark in _path if it has no other
+-- associations in bench_assoc, otherwise places NULL in _path
 -- Author: Todd Elvers
-CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId BIGINT, IN _spaceId BIGINT)
+CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId BIGINT, IN _spaceId BIGINT, OUT _path TEXT)
 	BEGIN
 		DELETE FROM bench_assoc
 		WHERE space_id = _spaceId
 		AND bench_id = _benchId;
+		
+		IF NOT EXISTS (SELECT * FROM bench_assoc WHERE bench_id = _benchId) THEN
+			SELECT path INTO _path FROM benchmarks WHERE id = _benchId;
+			DELETE FROM benchmarks
+			WHERE id = _benchId;
+		ELSE
+			SELECT NULL INTO _path;
+		END IF;
 	END //
 	
 -- Updates the details associated with a given benchmark
@@ -109,10 +117,13 @@ CREATE PROCEDURE AddBenchmarkType(IN _name VARCHAR(32), IN _desc TEXT, IN _path 
 		VALUES (_name, _desc, _path, _comId);
 	END //
 	
--- Deletes a benchmark type associated with a space
+-- Removes the association between a benchmark type and a given space,
+-- and inserts the processor_path into _path, so the physical file(s) can
+-- be removed from disk
 -- Author: Todd Elvers
-CREATE PROCEDURE DeleteBenchmarkType(IN _id BIGINT, IN _community BIGINT)
+CREATE PROCEDURE DeleteBenchmarkType(IN _id BIGINT, IN _community BIGINT, OUT _path TEXT)
 	BEGIN
+		SELECT processor_path INTO _path FROM bench_types WHERE id = _id;
 		DELETE FROM bench_types
 		WHERE id = _id AND community = _community;
 	END //
@@ -558,7 +569,33 @@ CREATE PROCEDURE GetSpacePermissions(IN _spaceId BIGINT)
 		WHERE spaces.id=_spaceId;
 	END //	
 	
-
+-- Sets a user's permissions for a given space
+-- Author: Todd Elvers
+CREATE PROCEDURE SetUserPermissions(IN _userId BIGINT, IN _spaceId BIGINT,IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1), 
+IN _addSpace TINYINT(1), IN _addJob TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1), 
+IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1))
+	BEGIN
+		UPDATE permissions JOIN user_assoc ON permissions.id=user_assoc.permission
+		SET add_user      = _addUser,
+			add_solver    = _addSolver, 
+			add_bench     = _addBench,
+			add_job       = _addJob,
+			add_space     = _addSpace,
+			remove_user   = _removeUser,
+			remove_solver = _removeSolver,
+			remove_bench  = _removeBench,
+			remove_job    = _removeJob,
+			remove_space  = _removeSpace,
+			is_leader     = _isLeader			
+		WHERE user_id = _userId
+		AND space_id = _spaceId;
+	END //
+	
+	
+	
+	
+	
+	
 /*************************************************************************
 ********************** REQUEST STORED PROCEDURES *************************
 *************************************************************************/
@@ -656,8 +693,6 @@ CREATE PROCEDURE RedeemActivationCode(IN _code VARCHAR(36), OUT _id BIGINT)
 			
 			DELETE FROM verify
 			WHERE code = _code;
-		
-			
 		END IF;
 	END // 
 
@@ -709,8 +744,9 @@ CREATE PROCEDURE AddConfiguration(IN _solverId BIGINT, IN _name VARCHAR(32))
 	
 -- Deletes a solver given that solver's id
 -- Author: Todd Elvers	
-CREATE PROCEDURE DeleteSolverById(IN _solverId BIGINT)
+CREATE PROCEDURE DeleteSolverById(IN _solverId BIGINT, OUT _path TEXT)
 	BEGIN
+		SELECT path INTO _path FROM solvers WHERE id = _solverId;
 		DELETE FROM solvers
 		WHERE id = _solverId;
 	END //	
@@ -746,13 +782,24 @@ CREATE PROCEDURE GetConfigsForSolver(IN _id BIGINT)
 		WHERE solver_id = _id;
 	END //
 	
--- Removes the association between a solver and a given space
+-- Removes the association between a solver and a given space;
+-- places the path of the solver in _path if it has no other
+-- associations in solver_assoc, otherwise places NULL in _path
 -- Author: Todd Elvers
-CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId BIGINT, IN _spaceId BIGINT)
+CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId BIGINT, IN _spaceId BIGINT, OUT _path TEXT)
 	BEGIN
 		DELETE FROM solver_assoc
 		WHERE solver_id = _solverId
 		AND space_id = _spaceId;
+		
+		IF NOT EXISTS(SELECT * FROM solver_assoc WHERE solver_id =_solverId) THEN
+			SELECT path INTO _path FROM solvers WHERE id = _solverId;
+			DELETE FROM solvers
+			WHERE id = _solverId;
+		ELSE
+			SELECT NULL INTO _path;
+		END IF;
+			
 	END // 
 
 -- Updates the details associated with a given solver
@@ -870,6 +917,7 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId BIGINT)
 	BEGIN
 		DELETE FROM spaces
 		WHERE id = _subspaceId;
+		
 	END //
 	
 -- Updates the name of the space with the given id
@@ -979,10 +1027,9 @@ CREATE PROCEDURE UpdateEmail(IN _id BIGINT, IN _email VARCHAR(64))
 		WHERE users.id = _id;
 	END //
 	
-
-	
 -- Updates the first name of the user with the given user id to the
 -- given first name. The first name should already be validated.	
+-- Author: Skylar Stark
 CREATE PROCEDURE UpdateFirstName(IN _id BIGINT, IN _firstname VARCHAR(32))
 	BEGIN
 		UPDATE users
