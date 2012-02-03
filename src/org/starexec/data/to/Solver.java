@@ -1,9 +1,12 @@
 package org.starexec.data.to;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.starexec.util.Util;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * Represents a solver in the database
@@ -12,8 +15,8 @@ import java.util.List;
  */
 public class Solver extends Identifiable {
 	private long userId = -1;
-	private String name;	
-	private String description;	
+	@Expose	private String name;
+	@Expose private String description = "none";
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;	
@@ -62,7 +65,9 @@ public class Solver extends Identifiable {
 	 * @param description the description to set for the solver
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}	
 	
 	/**

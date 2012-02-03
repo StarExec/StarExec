@@ -1,8 +1,10 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 public class Website extends Identifiable {
-	private String url;
-	private String name;
+	@Expose private String url;
+	@Expose private String name;
 	
 	/**
 	 * @return the url of the website
@@ -34,6 +36,6 @@ public class Website extends Identifiable {
 	
 	@Override
 	public String toString() {
-		return String.format("<a href='%s'>%s</a>", url, name);
+		return String.format("<a target='_blank' href='%s'>%s</a>", url, name);
 	}
 }

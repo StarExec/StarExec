@@ -1,6 +1,10 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * Represents a user in the database
@@ -8,13 +12,14 @@ import java.sql.Timestamp;
  * @author Tyler Jensen
  */
 public class User extends Identifiable {
-	private String email;
-	private String firstName;
-	private String lastName;
-	private String institution;	
+	@Expose	private String email;
+	@Expose	private String firstName;
+	@Expose	private String lastName;
+	@Expose	private String institution;	
 	private String role;
 	private Timestamp createDate;	
 	private transient String password;		
+	private List<Website> websites;
 	
 	/**
 	 * @return the user's registered email address
@@ -119,6 +124,28 @@ public class User extends Identifiable {
 	 */
 	public String getFullName() {
 		return firstName + " " + lastName;
+	}
+	
+	/**
+	 * @return A list of websites associated with the user
+	 */
+	public List<Website> getWebsites() {
+		if(websites == null) {
+			this.websites = new LinkedList<Website>();
+		}
+		
+		return websites;
+	}
+
+	/**
+	 * @param website A website to associate with the user
+	 */
+	public void addWebsite(Website website) {
+		if(this.websites == null) {
+			websites = new LinkedList<Website>();
+		}
+		
+		this.websites.add(website);
 	}
 	
 	@Override

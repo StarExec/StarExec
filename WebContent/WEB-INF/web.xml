@@ -8,15 +8,37 @@
   </session-config>
   
   <!-- Filters -->
+  <!-- Filter that checks all requests and sets up session parameters -->
   <filter-mapping>
-    <filter-name>Session Filter</filter-name>
-    <url-pattern>/pages/*</url-pattern>    
-  </filter-mapping>
+    <filter-name>SessionFilter</filter-name>
+    <url-pattern>/secure/*</url-pattern>    
+  </filter-mapping>       
   <filter>
-    <!-- Filter that checks all requests and sets up session parameters -->
-    <filter-name>Session Filter</filter-name>
+  	<filter-name>SessionFilter</filter-name>
     <filter-class>org.starexec.app.SessionFilter</filter-class>    
   </filter>
+  
+  <!-- Error Pages -->
+  <error-page> 
+    <error-code>400</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>403</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>404</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>405</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>500</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>  
   
   <!-- Servlet Definitions -->
   <servlet>
@@ -25,16 +47,70 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>Registration</servlet-name>
-    <url-pattern>/Registration</url-pattern>
+    <url-pattern>/public/registration/manager</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>Verify</servlet-name>
+    <servlet-class>org.starexec.servlets.Verify</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Verify</servlet-name>
+    <url-pattern>/public/verification/email</url-pattern>  
+  </servlet-mapping>
+  
+    <servlet>
+    <servlet-name>PasswordReset</servlet-name>
+    <servlet-class>org.starexec.servlets.PasswordReset</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PasswordReset</servlet-name>
+    <url-pattern>/public/reset_password</url-pattern>  
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>CommunityRequest</servlet-name>
+    <servlet-class>org.starexec.servlets.CommunityRequester</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CommunityRequest</servlet-name>
+    <url-pattern>/secure/community/request</url-pattern>  
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>JobCreator</servlet-name>
+    <servlet-class>org.starexec.servlets.CreateJob</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobCreator</servlet-name>
+    <url-pattern>/secure/add/job</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>BenchTypeManager</servlet-name>
+    <servlet-class>org.starexec.servlets.BenchTypeManager</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BenchTypeManager</servlet-name>
+    <url-pattern>/secure/benchtype/manager</url-pattern>  
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>AddSpace</servlet-name>
+    <servlet-class>org.starexec.servlets.AddSpace</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AddSpace</servlet-name>
+    <url-pattern>/secure/add/space</url-pattern>
   </servlet-mapping>
     
   <servlet>
     <servlet-name>BenchmarkUploader</servlet-name>
-    <servlet-class>org.starexec.servlets.UploadBench</servlet-class>
+    <servlet-class>org.starexec.servlets.BenchmarkUploader</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>BenchmarkUploader</servlet-name>
-    <url-pattern>/UploadBench</url-pattern>
+    <url-pattern>/secure/upload/benchmarks</url-pattern>
   </servlet-mapping>
   
   <servlet>
@@ -43,16 +119,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>SolverUploader</servlet-name>
-    <url-pattern>/UploadSolver</url-pattern>
-  </servlet-mapping>
-  
-  <servlet>
-    <servlet-name>JobCreator</servlet-name>
-    <servlet-class>org.starexec.servlets.SubmitJob</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>JobCreator</servlet-name>
-    <url-pattern>/SubmitJob</url-pattern>
+    <url-pattern>/secure/upload/solver</url-pattern>
   </servlet-mapping>
   
   <servlet>
@@ -61,7 +128,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>JobResults</servlet-name>
-    <url-pattern>/Results</url-pattern>
+    <url-pattern>/add/to_community.jsp</url-pattern>
   </servlet-mapping>
   
   <!-- RESTEasy webservice framework configuration -->
@@ -97,8 +164,8 @@
   <login-config>
     <auth-method>FORM</auth-method>
     <form-login-config>
-      <form-login-page>/login.jsp</form-login-page>
-      <form-error-page>/login.jsp?result=failed</form-error-page>
+      <form-login-page>/public/login.jsp</form-login-page>
+      <form-error-page>/public/login.jsp?result=failed</form-error-page>
     </form-login-config>	  
   </login-config>  
   
@@ -106,7 +173,7 @@
   <security-constraint>	
     <web-resource-collection>
 	  <web-resource-name>Users Only</web-resource-name>
-	  <url-pattern>/pages/*</url-pattern>
+	  <url-pattern>/secure/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
 	  <role-name>user</role-name>

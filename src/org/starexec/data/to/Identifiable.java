@@ -1,5 +1,7 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * Base class for all transfer objects that have a unique
  * identifier in the database.
@@ -7,7 +9,7 @@ package org.starexec.data.to;
  * @author Tyler Jensen
  */
 public class Identifiable {
-	private long id = -1;
+	@Expose private long id = -1;
 
 	/**
 	 * @return the unique ID of the object in the database

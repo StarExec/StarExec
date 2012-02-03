@@ -2,16 +2,8 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.PrintWriter;
-import java.util.Properties;
-
-import org.xml.sax.helpers.XMLReaderFactory;
-import org.xml.sax.*;
 
 import com.jamesmurty.utils.XMLBuilder;
-import org.starexec.constants.R;
 
 /**
  * @author Tyler Jensen

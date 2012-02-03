@@ -24,9 +24,9 @@ public class R {
 	public static int EMAIL_SMTP_PORT = 25;
 	public static String EMAIL_USER = null;
 	public static String EMAIL_PWD = null;
-	public static String EMAIL_PARTICLE = "@divms.uiowa.edu";	
 	
 	// MySQL properties
+	public static String MYSQL_DATABASE = null;								// Name of the MySQL database
 	public static String MYSQL_URL = null;									// MySQL connection string for JDBC
 	public static String MYSQL_USERNAME = null;								// Starexec's username for the database
 	public static String MYSQL_PASSWORD = null;								// Starexec database password
@@ -41,6 +41,7 @@ public class R {
 	public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
 	public static String NODE_WORKING_DIR = null;							// The directory on the local nodes where they can use for scratch space (read/write)
 	public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node    	
+	public static String BENCH_TYPE_DIR = null;								// Where to deposit new benchmark type processor scripts
 	
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
@@ -57,4 +58,24 @@ public class R {
 	// Misc application properties
 	public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
 	public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
-}
+	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
+	public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
+	public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
+	public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
+
+	// Queue and node status strings
+	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)
+	public static String QUEUE_STATUS_INACTIVE = "INACTIVE";				// Inactive status for an SGE queue (indicates the queue is not currently live)
+	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for an SGE node (indicates the node is live)
+	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
+	
+	// SGE Configurations
+	public static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
+	public static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
+	public static String QUEUE_USAGE_COMMAND = "qstat -g c";				// The SGE command to get USAGE details about all queues
+	public static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
+	public static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
+	public static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
+	public static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
+	public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that belong to a queue from SGE's queue detail output
+}	

@@ -1,19 +1,21 @@
 package org.starexec.app;
 
 import java.io.File;
-import java.lang.reflect.Field;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.starexec.data.Database;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.starexec.constants.R;
+import org.starexec.data.database.Common;
+import org.starexec.util.ConfigUtil;
+import org.starexec.util.GridEngineUtil;
+import org.starexec.util.Validator;
 
 /**
  * Class which listens for application events (mainly startup/shutdown)
@@ -23,20 +25,13 @@ import org.w3c.dom.NodeList;
  */
 public class Starexec implements ServletContextListener {
 	private static final Logger log = Logger.getLogger(Starexec.class);
-	private static String ROOT_APPLICATION_PATH = "";
+	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(1);
+	
+	private static String ROOT_APPLICATION_PATH = "";	
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String CONFIG_PATH = "/WEB-INF/classes/org/starexec/config/starexec-config.xml";
-	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
-	
-	// XML Metadata to parse starexec's config file	
-	private static String NODE_CLASS = "class";
-	private static String NODE_PROP = "property";
-	private static String NODE_CONFIG = "configuration";
-	private static String ATTR_KEY = "key";
-	private static String ATTR_VALUE = "value";
-	private static String ATTR_NAME = "name";
-	private static String ATTR_DEFAULT = "default";
+	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";	
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -46,134 +41,35 @@ public class Starexec implements ServletContextListener {
 
 	/**
 	 * When the application starts, this method is called. Perform any initializations here
-	 */
-	@SuppressWarnings("unused")
+	 */	
 	@Override
-	public void contextInitialized(ServletContextEvent event) {
-		// Called when the application starts		
-				
+	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
 		Starexec.ROOT_APPLICATION_PATH = event.getServletContext().getRealPath("/");
+		log.info(String.format("Application started at [%s]", ROOT_APPLICATION_PATH));
 		
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(ROOT_APPLICATION_PATH, LOG4J_PATH).getAbsolutePath());
-		
-		log.info(String.format("Application started at [%s]", ROOT_APPLICATION_PATH));
-						
+										
 		// Load all properties from the starexec-config file
-		Starexec.loadProperties();
+		ConfigUtil.loadProperties(new File(ROOT_APPLICATION_PATH, CONFIG_PATH));
 		
-		// Add the database to the application scope to expose it to JSP's via EL
-		event.getServletContext().setAttribute("database", new Database());
-	}
-	
-	/**
-	 * Loads resources from the starexec-config.xml file into the static resource classes
-	 * specified in the config file using reflection. The property file keys must match the
-	 * corresponding field name in the specified resource class.
-	 */
-	@SuppressWarnings("rawtypes")
-	public static void loadProperties(){
-		try {
-			// Open the starexec-config xml file and parse it into a dom
-			File statementFile = new File(ROOT_APPLICATION_PATH, CONFIG_PATH);
-			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();			 
-			
-			Document starexecConfigDoc = db.parse(statementFile);
-			starexecConfigDoc.getDocumentElement().normalize();			   			
-			
-			if(starexecConfigDoc.getDocumentElement().getAttributes().getNamedItem(ATTR_DEFAULT) == null) {
-				// Check if the default configuration is specified! We explicitly require it
-				throw new Exception(String.format("starexec-config parsing error: the root element must define an attribute \"%s\"", ATTR_DEFAULT));
+		// Initialize the datapool after properties are loaded
+		Common.initialize();
+		
+		// Initialize the validator (compile regexes) after properties are loaded
+		Validator.initialize();		
+		
+		// Create a task that updates the cluster usage info (this may take some time)
+		final Runnable updateClusterTask = new Runnable() {			
+			@Override
+			public void run() {
+				GridEngineUtil.loadWorkerNodes();
+				GridEngineUtil.loadQueues();
 			}
-			
-			// Find the name of the configuration to use
-			String defaultConfigName = starexecConfigDoc.getDocumentElement().getAttributes().getNamedItem(ATTR_DEFAULT).getNodeValue();
-			
-			// Get all configuration nodes
-			NodeList configNodes = starexecConfigDoc.getDocumentElement().getElementsByTagName(NODE_CONFIG);
-			
-			// The default configuration node
-			Node defaultConfigNode = null;			
-			
-			// For each of the configuration nodes
-			for(int i = 1; i < configNodes.getLength(); i++) {
-				Node currentConfig = configNodes.item(i);											
-				Node currentConfigNameAttr = currentConfig.getAttributes().getNamedItem(ATTR_NAME);
-				
-				if(currentConfigNameAttr == null) {
-					// If the current node doesn't have a name attribute, skip it
-					continue;					
-				} else if(currentConfigNameAttr.getNodeValue().equals(defaultConfigName)) {
-					// Otherwise if we've found a config with the name that matches the one to use, keep it and break
-					defaultConfigNode = currentConfig;
-					log.debug(String.format("Using configuration [%s] for properties specification", defaultConfigName));					
-					break;
-				}
-			}
-			
-			if(defaultConfigNode == null) {
-				// If we didn't find a node that matched the specified name, then that's an error!
-				throw new Exception(String.format("The default configuration \"%s\" was not found.", defaultConfigName));
-			}
-			
-			// Get all class nodes from the document
-			NodeList classNodes = defaultConfigNode.getChildNodes();
-			log.debug("Parsing starexec-config XML file resulted in " + classNodes.getLength() + " nodes.");
-			
-			// For each class node in the configuration file...
-			for(int i = 0; i < classNodes.getLength(); i++) {
-				// Get that class node and it's child nodes
-				Node currentClassNode = classNodes.item(i);				
-				
-				if(!currentClassNode.getNodeName().equals(NODE_CLASS)){
-					// If we're not looking at class node (most likely an attribute) skip
-					continue;
-				}
-				
-				NodeList classNodeChildren = currentClassNode.getChildNodes();
-				
-				// Parse the class name from XML attribute and load that class via reflection
-				String className = currentClassNode.getAttributes().getNamedItem(ATTR_NAME).getNodeValue();
-				Class currentClass = Class.forName(className);
-				
-				// For each property node under the current class node...
-				for(int j = 0; j < classNodeChildren.getLength(); j++) {
-					// Get the property node and parse out the key/value from its attributes
-					Node currentPropNode = classNodeChildren.item(j);
-					
-					if(!currentPropNode.getNodeName().equals(NODE_PROP)){
-						// If we're not looking at property node (most likely a comment) skip
-						continue;
-					}
-					
-					String key = currentPropNode.getAttributes().getNamedItem(ATTR_KEY).getNodeValue();
-					String value = currentPropNode.getAttributes().getNamedItem(ATTR_VALUE).getNodeValue();
-					
-					try {
-						// Get the field from the current class that matches the XML specified key
-						Field field = currentClass.getField(key);
-						
-						// Force the field to be accessible in case it's private or final
-						field.setAccessible(true);
-						
-						// Based on the type of field we're expecting, set that field's value to the property's value
-						if(field.getType().equals(String.class)){
-							field.set(null, value);
-						} else if(field.getType().equals(int.class)){
-							field.setInt(null, Integer.parseInt(value));
-						} else if(field.getType().equals(boolean.class)){
-							field.set(null,Boolean.parseBoolean(value));
-						}	            
-						
-						log.debug(String.format("Loaded property [%s = %s] into class %s", key, field.get(null), className));
-					} catch (Exception e){
-						log.error(String.format("Failed to load property [%s]. Error [%s]", key, e.getMessage()));
-					}
-				}				
-			}			 
-		} catch (Exception e) {
-			log.fatal(e.getMessage(), e);
-		}
-	}
+		};		
+		
+		// Schedule the cluster update task to be run every so often as specified in the config file
+		taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);			
+	}	
 }

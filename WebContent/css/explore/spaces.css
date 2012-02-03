@@ -1,0 +1,29 @@
+.dragClone {
+	max-width: 150px;
+	overflow: hidden;	
+	position: fixed;
+	background-color: #fff;
+	color: #111;
+	z-index: 999;
+	text-align: center;	
+	padding: 14px;
+	border-radius: 3px;
+	box-shadow: 4px 4px 5px #111;
+	opacity: 0.8;
+}
+
+.dragClone span {
+	float: left;
+	margin-right: 5px;
+}
+
+#exploreList a.active {
+	border: 1px dashed #008d03;
+	border-radius:2px;
+	padding: 10px;	
+}
+
+#exploreList a.hover {
+	background-color: #008d03;
+	border-radius:2px;
+}

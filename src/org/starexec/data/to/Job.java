@@ -4,6 +4,10 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.starexec.util.Util;
+
+import com.google.gson.annotations.Expose;
+
 /**
  * Represents a job in the database
  * 
@@ -12,13 +16,13 @@ import java.util.List;
 public class Job extends Identifiable {
 	private long userId = -1;
 	private long nodeClassId = -1;
-	private String name;
+	@Expose private String name;
 	private Timestamp submitted;
 	private Timestamp finished;
 	private long timeout;
-	private String status;
-	private String description;
-	private String runTime = "N/A";
+	@Expose	private String status;
+	@Expose private String description = "none";
+	private String runTime = "";
 	private List<JobPair> jobPairs;
 	
 	public Job() {
@@ -79,6 +83,10 @@ public class Job extends Identifiable {
 	 */
 	public void setSubmitted(Timestamp submitted) {
 		this.submitted = submitted;
+		
+		if(this.finished!= null && this.submitted != null) {
+			this.setRunTime(finished.getTime() - submitted.getTime());
+		}
 	}
 
 	/**
@@ -92,7 +100,11 @@ public class Job extends Identifiable {
 	 * @param finished the finish date to set for the job
 	 */
 	public void setFinished(Timestamp finished) {
-		this.finished = finished;
+		this.finished = finished;	
+		
+		if(this.finished!= null && this.submitted != null) {
+			this.setRunTime(finished.getTime() - submitted.getTime());
+		}
 	}
 
 	/**
@@ -134,7 +146,9 @@ public class Job extends Identifiable {
 	 * @param description the description for the job
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}
 	
 	/**
@@ -159,14 +173,20 @@ public class Job extends Identifiable {
 	}
 
 	/**
-	 * @param runTime The run time in total seconds (which is converted to a time string)
+	 * @param runTime The run time in total milliseconds (which is converted to a time string)
 	 */
-	public void setRunTime(int runTime) {
-		runTime = Math.abs(runTime);
-		int minutes = runTime / 60;
-		int hours = runTime / (3600);
-		int days = runTime / (86400);
-		int seconds = runTime - (minutes * 60) - (hours * 3600) - (days * 86400);			
-		this.runTime = String.format("%sd %sh %sm %ss", days, hours, minutes, seconds);
+	public void setRunTime(long runTime) {
+		runTime = Math.abs(runTime);	
+		long days = runTime / (86400000);		
+		runTime -= (days * 86400000);
+		long hours = runTime / 3600000;
+		runTime -= (hours * 3600000);
+		long minutes = runTime / 60000;	
+		runTime -= (minutes * 60000);
+		long seconds = runTime / 1000;
+		runTime -= (seconds * 1000);
+		long ms = runTime;
+		
+		this.runTime = String.format("%sd %sh %sm %s.%ss", days, hours, minutes, seconds, ms);
 	}
 }

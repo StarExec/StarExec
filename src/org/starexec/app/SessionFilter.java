@@ -1,14 +1,22 @@
 package org.starexec.app;
 
 import java.io.IOException;
+import java.util.HashMap;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.*;
-import org.starexec.data.*;
-import org.starexec.data.to.*;
+import org.starexec.data.database.Common;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.User;
+import org.starexec.util.SessionUtil;
 
 /**
  * This class is responsible for intercepting all requests to protected resources
@@ -20,7 +28,8 @@ import org.starexec.data.to.*;
  */
 public class SessionFilter implements Filter {
 	private static final Logger log = Logger.getLogger(SessionFilter.class);
-
+	private static final String USER_PARAM = "user";
+	
 	@Override
 	public void destroy() {
 		// Do nothing
@@ -33,14 +42,17 @@ public class SessionFilter implements Filter {
 		
 		// If the user is logged in...
 		if(httpRequest.getUserPrincipal() != null) {
-			// Check if they have the necessary user object stored in their session
-			if(httpRequest.getSession().getAttribute(P.SESSION_USER) == null) {
-				// If not, retreive the user's information from the database
+			// Check if they have the necessary user SessionUtil stored in their session
+			if(SessionUtil.getUser((HttpServletRequest)request) == null) {
+				// If not, retrieve the user's information from the database
 				String userEmail = httpRequest.getUserPrincipal().getName();
-				User user = Database.getUser(userEmail);
+				User user = Users.get(userEmail);
 				
 				// And add it to their session to be used elsewhere
-				httpRequest.getSession().setAttribute(P.SESSION_USER, user);
+				httpRequest.getSession().setAttribute(SessionUtil.USER, user);
+				
+				// Also add an empty permission's cache for the user
+				httpRequest.getSession().setAttribute(SessionUtil.PERMISSION_CACHE, new HashMap<Long, Permission>());
 				
 				// Add the login to the database
 				this.logUserLogin(user, httpRequest);				
@@ -64,7 +76,7 @@ public class SessionFilter implements Filter {
 		String rawBrowser = request.getHeader("user-agent");
 		
 		// Also save in the database to maintain a historical record
-		// Database.addLoginRecord(user.getUserId(), ip, rawBrowser);
+		Common.addLoginRecord(user.getId(), ip, rawBrowser);
 	}
 
 	@Override

@@ -1,7 +1,10 @@
 package org.starexec.data.to;
 
-import java.io.File;
 import java.sql.Timestamp;
+
+import org.starexec.util.Util;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * Represents a benchmark in the database
@@ -9,16 +12,17 @@ import java.sql.Timestamp;
  * @author Tyler Jensen
  */
 public class Benchmark extends Identifiable {
-	private long userId = -1;
-	private String name;	
-	private String description;	
+	private long userId = -1;	
+	@Expose private String name;	
+	@Expose private String description = "none";	
+	@Expose private BenchmarkType type;
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;
 	
 	/**
 	 * @return the user id of the user who uploaded the solver
-	 */
+	 */	
 	public long getUserId() {
 		return userId;
 	}
@@ -55,7 +59,9 @@ public class Benchmark extends Identifiable {
 	 * @param description the description to set for the benchmark
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}
 	
 	/**
@@ -98,5 +104,19 @@ public class Benchmark extends Identifiable {
 	 */
 	public void setDownloadable(boolean isDownloadable) {
 		this.isDownloadable = isDownloadable;
-	}	
+	}
+
+	/**
+	 * @return the type the benchmark is
+	 */
+	public BenchmarkType getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the benchmark type to set for this benchmark
+	 */
+	public void setType(BenchmarkType type) {
+		this.type = type;
+	}		
 }

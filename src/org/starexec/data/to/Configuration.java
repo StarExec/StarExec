@@ -1,14 +1,19 @@
 package org.starexec.data.to;
 
+import org.starexec.util.Util;
+
+import com.google.gson.annotations.Expose;
+
 /**
  * Represents a configuration, which is a run script to execute a solver with specific parameters
  * 
  * @author Tyler Jensen
  */
-public class Configuration extends Identifiable {	
+public class Configuration extends Identifiable {		
 	private long solverId = -1;
-	private String name;
-	private String description;
+	@Expose private String name;
+	@Expose private String description = "none";
+	
 	/**
 	 * @return the id of the solver the configuration belongs to
 	 */
@@ -43,6 +48,8 @@ public class Configuration extends Identifiable {
 	 * @param description the description to set for the configuration
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		if(!Util.isNullOrEmpty(description)) {
+			this.description = description;
+		}
 	}	
 }

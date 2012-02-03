@@ -1,0 +1,132 @@
+fieldset {						
+	width: 75%;	
+	margin-top: 50px;
+}
+
+fieldset table,
+fieldset ul {
+	width: 100%;
+}
+
+tr .label {
+	width: 25%;
+}
+
+.shade {
+	background-color: #111111;
+}
+
+tr td,
+tr th {
+	padding: 10px;		
+	vertical-align: middle;
+}
+
+#benchTypes button {
+	width: 90px;
+}
+
+#websites li button {
+	float: right;
+}
+
+.delWebsite {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
+#toggleType, 
+#toggleWebsite {	
+	cursor: pointer;	
+}
+
+.website {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
+.caption {
+	text-align: right;
+	font-size: 14px;
+	display: block;
+	margin-top: 10px;
+}
+
+input[type="text"] {
+	width: 50%;
+}
+
+#typeFile {
+	padding-right: 10px;
+}
+
+label {
+	margin-left: 10px;	
+}
+
+textarea {
+	width: 50%;
+	height: 200px;
+}
+
+fieldset ul li {
+	list-style: none;
+	display: block;
+	margin: auto;
+	padding: 10px;
+	width: 97%;		
+}
+
+#newType input,
+#newType textarea {
+	width: 270px;
+}
+
+#newType textarea {
+	height: 100px;
+}
+
+#newType {
+	background-color: #111111;
+	border-radius: 6px;	
+}
+
+#newType button {
+	float: right;		
+}
+
+#new_website {
+	float: right;
+}
+
+#new_website,
+#newType {
+	margin-top: 10px;
+}
+
+#new_website input {
+	width: 30%;
+}
+
+li button {
+	display: none;
+}
+
+li:hover button {
+	display: block;
+}
+
+#updateForm input,
+#updateForm textarea {
+	width: 100%;
+}
+
+#updateForm textarea {
+	height: 50px;
+}
+
+#updateForm td {
+	vertical-align: top;
+}

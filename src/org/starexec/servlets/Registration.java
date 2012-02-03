@@ -1,6 +1,5 @@
 package org.starexec.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -10,63 +9,144 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-
-import org.starexec.constants.*;
-import org.starexec.data.Database;
-import org.starexec.data.to.*;
-import org.starexec.util.*;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.User;
+import org.starexec.util.Mail;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 
 /**
- * @author Tyler & CJ
- * @deprecated This sort of works, but needs to be cleaned out and re-implemented
+ * Servlet which handles requests for registration 
+ * @author Todd Elvers & Tyler Jensen
  */
+@SuppressWarnings("serial")
 public class Registration extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Registration.class);
-	private static final long serialVersionUID = 1L;
-       
-    public Registration() {
-        super();
-    }
-
+	private static final Logger log = Logger.getLogger(Registration.class);	
+	
+	// Return codes for registration
+	private static final int SUCCESS = 0;
+	private static final int FAIL = 1;
+	private static final int MALFORMED = 2;
+	
+	// Param strings for processing
+	public static String USER_COMMUNITY = "cm";
+	public static String USER_PASSWORD = "pwd";
+	public static String USER_INSTITUTION = "inst";
+	public static String USER_EMAIL = "em";
+	public static String USER_FIRSTNAME = "fn";
+	public static String USER_LASTNAME = "ln";
+	public static String USER_MESSAGE = "msg";
+	
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// Don't accept GET, this could be a malicious request
-		log.warn("Illegal GET request to registration servlet from ip address: " + request.getRemoteHost());
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		User u = new User();
-		u.setInstitution(request.getParameter(P.USER_INSTITUTION));
-		u.setEmail(request.getParameter(P.USER_EMAIL));
-		u.setFirstName(request.getParameter(P.USER_FIRSTNAME));
-		u.setLastName(request.getParameter(P.USER_LASTNAME));
-		u.setPassword(request.getParameter(P.USER_PASSWORD));
-		
-		boolean added = Database.addUser(u);
-		
-		response.setContentType("text/plain");
-		response.getWriter().print(added);
-		response.getWriter().close();
-		//u.setCommunityId(Integer.parseInt(request.getParameter(P.USER_COMMUNITY)));
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
+		// Begin registration for a new user
+		int result = register(request, response);
 				
-		if(Database.addUser(u)) {
-			response.sendRedirect("/starexec/registration?result=ok");
-		} else {
-			response.sendRedirect("/starexec/registration?result=fail");
-		}
-		
-		// If the user has been added, send a verification email.
-		if(added) {
-			String conf = UUID.randomUUID().toString();
-			//Database.addCode(u.getEmail(), conf);
-			String email = Util.readFile(new File(R.CONFIG_PATH, "verification_email"));
-			email = email.replace("$$USER$$", u.getFullName());
-			email = email.replace("$$LINK$$", 
-					String.format("http://starexec.cs.uiowa.edu/starexec/Verify?%s=%s", P.VERIFY_EMAIL, conf));
-			Mail.mail(email, "Verify your Starexec Account", "STAREXEC", new String[] { u.getEmail() });
-			log.info("Sent verification email to user " + u.getFullName() + " at " + u.getEmail());
-		} else {
-			log.warn("Unable to add user " + u.getEmail());
+		switch (result) {
+		  case SUCCESS: 
+			// Notify user of successful registration
+			response.sendRedirect("/starexec/public/registration.jsp?result=regSuccess");
+		    break;
+		  case FAIL: 
+			// Notify user the email address they inputed is already in use
+			response.sendRedirect("/starexec/public/registration.jsp?result=regFail");
+		    break;
+		  case MALFORMED:
+			// Handle malformed urls
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+		    break;
 		}
 	}
+	
+	/**
+	 * Begins the registration process for a new user by adding them to the
+	 * database as not-activated & not-approved, and sends them an activation
+	 * email
+	 * 
+	 * @param request the servlet containing the incoming POST
+	 * @return 0 if registration was successful, and 1 if the user already exists, and
+	 * 2 if parameter validation fails
+	 * @author Todd Elvers
+	 */
+	public static int register(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		// Validate parameters of the new user request
+		if(!validateRequest(request)) {
+			log.info(String.format("Registration was unsuccessfully started for new user because parameter validation failed."));
+			return MALFORMED;
+		}
+		
+		// Create the user to add to the database
+		User user = new User();
+		user.setFirstName(request.getParameter(Registration.USER_FIRSTNAME));
+		user.setLastName(request.getParameter(Registration.USER_LASTNAME));
+		user.setEmail(request.getParameter(Registration.USER_EMAIL));
+		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
+		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));		
+		
+		long communityId = Long.parseLong(request.getParameter(Registration.USER_COMMUNITY));
+		
+		// Generate unique code to safely reference this user's entry in verification hyperlinks
+		String code = UUID.randomUUID().toString();
+		
+		// Add user to the database and get the UUID that was created
+		boolean added = Users.register(user, communityId, code, request.getParameter(Registration.USER_MESSAGE));
+		
+		// If the user was successfully added to the database, send an activation email
+		if(added) {
+			log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
+			
+			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
+			Mail.sendActivationCode(user, code, serverName);
+			return SUCCESS;
+		} else {
+			log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
+			return FAIL;
+		} 
+	}
+	
+	
+	/**
+	 * Validates the parameters of a servlet request for user registration
+	 * 
+	 * @param request the servlet containing the parameters to validate
+	 * @return true if the request is valid, false otherwise
+	 * @author Todd Elvers
+	 */
+    public static boolean validateRequest(HttpServletRequest request) {
+    	try {
+    		// Ensure the necessary parameters exist
+	    	if(!Util.paramExists(Registration.USER_FIRSTNAME, request) ||
+	    	   !Util.paramExists(Registration.USER_LASTNAME, request) ||
+	    	   !Util.paramExists(Registration.USER_EMAIL, request) ||
+	    	   !Util.paramExists(Registration.USER_PASSWORD, request) ||
+	    	   !Util.paramExists(Registration.USER_INSTITUTION, request) ||
+	    	   !Util.paramExists(Registration.USER_COMMUNITY, request) ||
+	    	   !Util.paramExists(Registration.USER_MESSAGE, request)) {
+	    		return false;
+	    	}    	    	   
+		    
+	    	// Make sure community id is a valid long 
+	    	Long.parseLong(request.getParameter(Registration.USER_COMMUNITY));
+	    	
+	    	// Ensure the parameters are valid values
+	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_FIRSTNAME)) 
+					|| !Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME)) 
+					|| !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))
+					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))
+					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
+				return false;
+			}
+	    	
+	    	return true;
+    	} catch (Exception e) {
+    		log.warn(e.getMessage(), e);
+    	}
+    	return false;
+    }        
 }
