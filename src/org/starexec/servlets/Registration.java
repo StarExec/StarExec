@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
@@ -29,6 +28,15 @@ public class Registration extends HttpServlet {
 	private static final int SUCCESS = 0;
 	private static final int FAIL = 1;
 	private static final int MALFORMED = 2;
+	
+	// Param strings for processing
+	public static String USER_COMMUNITY = "cm";
+	public static String USER_PASSWORD = "pwd";
+	public static String USER_INSTITUTION = "inst";
+	public static String USER_EMAIL = "em";
+	public static String USER_FIRSTNAME = "fn";
+	public static String USER_LASTNAME = "ln";
+	public static String USER_MESSAGE = "msg";
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -75,19 +83,19 @@ public class Registration extends HttpServlet {
 		
 		// Create the user to add to the database
 		User user = new User();
-		user.setFirstName(request.getParameter(P.USER_FIRSTNAME));
-		user.setLastName(request.getParameter(P.USER_LASTNAME));
-		user.setEmail(request.getParameter(P.USER_EMAIL));
-		user.setPassword(request.getParameter(P.USER_PASSWORD));
-		user.setInstitution(request.getParameter(P.USER_INSTITUTION));		
+		user.setFirstName(request.getParameter(Registration.USER_FIRSTNAME));
+		user.setLastName(request.getParameter(Registration.USER_LASTNAME));
+		user.setEmail(request.getParameter(Registration.USER_EMAIL));
+		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
+		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));		
 		
-		long communityId = Long.parseLong(request.getParameter(P.USER_COMMUNITY));
+		long communityId = Long.parseLong(request.getParameter(Registration.USER_COMMUNITY));
 		
 		// Generate unique code to safely reference this user's entry in verification hyperlinks
 		String code = UUID.randomUUID().toString();
 		
 		// Add user to the database and get the UUID that was created
-		boolean added = Users.register(user, communityId, code, request.getParameter(P.USER_MESSAGE));
+		boolean added = Users.register(user, communityId, code, request.getParameter(Registration.USER_MESSAGE));
 		
 		// If the user was successfully added to the database, send an activation email
 		if(added) {
@@ -113,25 +121,25 @@ public class Registration extends HttpServlet {
     public static boolean validateRequest(HttpServletRequest request) {
     	try {
     		// Ensure the necessary parameters exist
-	    	if(!Util.paramExists(P.USER_FIRSTNAME, request) ||
-	    	   !Util.paramExists(P.USER_LASTNAME, request) ||
-	    	   !Util.paramExists(P.USER_EMAIL, request) ||
-	    	   !Util.paramExists(P.USER_PASSWORD, request) ||
-	    	   !Util.paramExists(P.USER_INSTITUTION, request) ||
-	    	   !Util.paramExists(P.USER_COMMUNITY, request) ||
-	    	   !Util.paramExists(P.USER_MESSAGE, request)) {
+	    	if(!Util.paramExists(Registration.USER_FIRSTNAME, request) ||
+	    	   !Util.paramExists(Registration.USER_LASTNAME, request) ||
+	    	   !Util.paramExists(Registration.USER_EMAIL, request) ||
+	    	   !Util.paramExists(Registration.USER_PASSWORD, request) ||
+	    	   !Util.paramExists(Registration.USER_INSTITUTION, request) ||
+	    	   !Util.paramExists(Registration.USER_COMMUNITY, request) ||
+	    	   !Util.paramExists(Registration.USER_MESSAGE, request)) {
 	    		return false;
 	    	}    	    	   
 		    
 	    	// Make sure community id is a valid long 
-	    	Long.parseLong(request.getParameter(P.USER_COMMUNITY));
+	    	Long.parseLong(request.getParameter(Registration.USER_COMMUNITY));
 	    	
 	    	// Ensure the parameters are valid values
-	    	if (!Validator.isValidUserName((String)request.getParameter(P.USER_FIRSTNAME)) 
-					|| !Validator.isValidUserName((String)request.getParameter(P.USER_LASTNAME)) 
-					|| !Validator.isValidEmail((String)request.getParameter(P.USER_EMAIL))
-					|| !Validator.isValidInstitution((String)request.getParameter(P.USER_INSTITUTION))
-					|| !Validator.isValidPassword((String)request.getParameter(P.USER_PASSWORD))) {
+	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_FIRSTNAME)) 
+					|| !Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME)) 
+					|| !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))
+					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))
+					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
 				return false;
 			}
 	    	

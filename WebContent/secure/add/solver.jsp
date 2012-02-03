@@ -24,7 +24,7 @@
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>solver information</legend>		
-			<table id="tblSolver">
+			<table id="tblSolver" class="shaded">
 				<tr>
 					<td>solver location</td>
 					<td><input name="f" type="file" /></td>

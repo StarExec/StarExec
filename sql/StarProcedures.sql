@@ -354,6 +354,11 @@ CREATE PROCEDURE GetCommunityById(IN _id BIGINT)
 -- Author: Todd Elvers
 CREATE PROCEDURE LeaveCommunity(IN _userId BIGINT, IN _commId BIGINT)
 	BEGIN
+		-- Remove the permission associated with this user/community
+		DELETE FROM permissions
+			WHERE id=(SELECT permission FROM user_assoc WHERE user_id = _userId	AND space_id = _commId);
+		
+		-- Delete the association	
 		DELETE FROM user_assoc
 		WHERE user_id = _userId
 		AND space_id = _commId;
@@ -569,6 +574,18 @@ CREATE PROCEDURE GetSpacePermissions(IN _spaceId BIGINT)
 		WHERE spaces.id=_spaceId;
 	END //	
 	
+-- Copies one set of permissions into another with a new ID
+-- Author: Tyler Jensen
+CREATE PROCEDURE CopyPermissions(IN _permId BIGINT, OUT _newId BIGINT)
+	BEGIN
+		INSERT INTO permissions (add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader)
+		(SELECT add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader
+		FROM permissions
+		WHERE id=_permId);
+		SELECT LAST_INSERT_ID() INTO _newId;
+	END //	
+	
+
 -- Sets a user's permissions for a given space
 -- Author: Todd Elvers
 CREATE PROCEDURE SetUserPermissions(IN _userId BIGINT, IN _spaceId BIGINT,IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1), 
@@ -622,11 +639,19 @@ CREATE PROCEDURE AddCommunityRequest(IN _id BIGINT, IN _community BIGINT, IN _co
 -- Author: Todd Elvers
 CREATE PROCEDURE ApproveCommunityRequest(IN _id BIGINT, IN _community BIGINT)
 	BEGIN
+		DECLARE _newPermId BIGINT;
+		DECLARE _pid BIGINT;	
+		
 		IF EXISTS(SELECT * FROM community_requests WHERE user_id = _id AND community = _community) THEN
 			DELETE FROM community_requests 
-			WHERE user_id = _id and community = _community;
+			WHERE user_id = _id and community = _community;			
+			
+			-- Copy the default permission for the community 					
+			SELECT default_permission FROM spaces WHERE id=_community INTO _pid;
+			CALL CopyPermissions(_pid, _newPermId);
+			
 			INSERT INTO user_assoc(user_id, space_id, proxy, permission)
-			VALUES(_id, _community, _community, 1);
+			VALUES(_id, _community, _community, _newPermId);
 		END IF;
 		
 		IF NOT EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id)) THEN
@@ -915,6 +940,10 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 -- Author: Todd Elvers
 CREATE PROCEDURE RemoveSubspace(IN _subspaceId BIGINT)
 	BEGIN
+		-- Remove that space's default permission
+		DELETE FROM permissions 
+			WHERE id=(SELECT default_permission FROM spaces WHERE id=_subspaceId);
+		-- Remove the space
 		DELETE FROM spaces
 		WHERE id = _subspaceId;
 		
@@ -961,8 +990,16 @@ CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), 
 -- Author: Tyler Jensen
 CREATE PROCEDURE AddUserToSpace(IN _userId BIGINT, IN _spaceId BIGINT, IN _proxy BIGINT, IN _permission BIGINT)
 	BEGIN		
-		INSERT IGNORE INTO user_assoc (user_id, space_id, proxy, permission)
-		VALUES (_userId, _spaceId, _proxy, _permission);		
+		DECLARE _newPermId BIGINT;
+		DECLARE _pid BIGINT;
+		IF NOT EXISTS(SELECT * FROM user_assoc WHERE user_id = _userId AND space_id = _spaceId) THEN			
+			-- Copy the default permission for the community 					
+			SELECT default_permission FROM spaces WHERE id=_spaceId INTO _pid;
+			CALL CopyPermissions(_pid, _newPermId);
+			
+			INSERT INTO user_assoc (user_id, space_id, proxy, permission)
+			VALUES (_userId, _spaceId, _proxy, _newPermId);
+		END IF;
 	END //
 	
 -- Returns the (hashed) password of the user with the given user id

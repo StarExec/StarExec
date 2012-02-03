@@ -1,3 +1,4 @@
+/** Global Variables */
 var userTable;
 var benchTable;
 var solverTable;
@@ -67,7 +68,7 @@ function initDraggable(table) {
 	// Using jQuery UI, make the first column in each row draggable
 	$(table).children('tbody').children('tr').draggable({
 		cursorAt: { cursor: 'move', bottom: 10, left: 34},	// Set the cursor to the move icon and make it start in the corner of the helper		
-		containment: '#content',	// Allow the element to be dragged anywhere in the browser window
+		containment: 'window',	// Allow the element to be dragged anywhere in the browser window
 		distance: 20,			// Only trigger a drag when the distanced dragged is > 20 pixels
 		scroll: true,			// Scroll with the page as the item is dragged if needed
 		helper: getDragClone,	// The method that returns the 'cloned' element that is dragged
@@ -78,7 +79,7 @@ function initDraggable(table) {
 	// Make each space in the explorer list be a droppable target
 	$('#exploreList').find('a').droppable( {
 		// Function which is called when an item is dropped on a space
-	    drop: onDrop,
+	    drop: onSpaceDrop,
 	    hoverClass: 'hover',	// Class applied to the space element when something is being dragged over it
 	    activeClass: 'active'	// Class applied to the space element when something is being dragged
 	});
@@ -88,22 +89,20 @@ function initDraggable(table) {
  * Called when any item is starting to be dragged within the browser
  */
 function onDragStart(event, ui) {
-	// Alter our droppable components when a drag starts to they appear bigger
-	$('#exploreList').find('a').css('padding', '10px');	
+	
 }
 
 /**
  * Called when there is no longer anything being dragged
  */
 function onDragStop(event, ui) {
-	// Return the droppable components to their normal state so they go back to normal	
-	$('#exploreList').find('a').css('padding', '0px');
+
 }
 
 /**
  * Called when a draggable item (primitive) is dropped on a space
  */
-function onDrop(event, ui) {
+function onSpaceDrop(event, ui) {
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));	    	
 	

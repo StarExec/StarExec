@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Permission;
@@ -38,6 +39,43 @@ public class Permissions {
 		procDefaultPerm.execute();
 		return procDefaultPerm.getLong(12);
 	}	
+	
+	/**
+	 * Checks to see if the user has access to the given solvers in some way. More specifically,
+	 * this checks if the user belongs to all the spaces the solvers belong to.
+	 * @param solverIds The solvers to check if the user can see
+	 * @param userId The user that is requesting to view the given solvers	
+	 * @return True if the user can somehow see the solvers, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean canUserSeeSolvers(List<Long> solverIds, long userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
+			
+			for(long id : solverIds) {				
+				procedure.setLong(1, id);					
+				procedure.setLong(2, userId);
+				ResultSet results = procedure.executeQuery();
+			
+				if(results.first()) {
+					if(false == results.getBoolean(1)) {
+						return false;
+					}
+				}
+			}
+			
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;		
+	}
 	
 	/**
 	 * Checks to see if the user has access to the solver in some way. More specifically,
@@ -90,6 +128,43 @@ public class Permissions {
 			if(results.first()) {
 				return results.getBoolean(1);
 			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;				
+	}
+	
+	/**
+	 * Checks to see if the user has access to the benchmarks in some way. More specifically,
+	 * this checks if the user belongs to all spaces the benchmarks belong to.
+	 * @param benchIds The benchmarks to check if the user can see
+	 * @param userId The user that is requesting to view the given benchmarks 
+	 * @return True if the user can somehow see all benchmarks, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean canUserSeeBenchs(List<Long> benchIds, long userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
+			
+			for(long id : benchIds) {
+				procedure.setLong(1, id);					
+				procedure.setLong(2, userId);
+				ResultSet results = procedure.executeQuery();
+				
+				if(results.first()) {
+					if(false == results.getBoolean(1)) {
+						return false;
+					}
+				}
+			}			
+				
+			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

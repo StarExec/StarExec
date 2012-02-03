@@ -8,18 +8,20 @@ import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.constants.R;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.User;
+import org.starexec.servlets.PasswordReset;
 
 /**
  * Contains utilities for sending mail from the local SMTP server
  */
 public class Mail {
 	private static final Logger log = Logger.getLogger(Mail.class);
-
+	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
+	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
+	
 	/**
 	 * Sends an e-mail from the configured SMTP server
 	 * @param message The body of the message
@@ -86,8 +88,8 @@ public class Mail {
 		email = email.replace("$$EMAIL$$", user.getEmail());
 		email = email.replace("$$INSTITUTION$$", user.getInstitution());
 		email = email.replace("$$MESSAGE$$", comReq.getMessage());
-		email = email.replace("$$APPROVE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "approve"));
-		email = email.replace("$$DECLINE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, P.EMAIL_CODE, comReq.getCode(), P.LEADER_RESPONSE, "decline"));
+		email = email.replace("$$APPROVE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "approve"));
+		email = email.replace("$$DECLINE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "decline"));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Request to join " + communityName, leaderEmails);
@@ -110,7 +112,7 @@ public class Mail {
 		// Configure pre-built message
 		String email = Util.readFile(new File(R.CONFIG_PATH, "/email/activation_email.txt"));
 		email = email.replace("$$USER$$", user.getFullName());
-		email = email.replace("$$LINK$$", String.format("%s/starexec/public/verification/email?%s=%s", serverURL, P.EMAIL_CODE, code ));
+		email = email.replace("$$LINK$$", String.format("%s/starexec/public/verification/email?%s=%s", serverURL, Mail.EMAIL_CODE, code ));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Verify your account", new String[] { user.getEmail() });
@@ -181,7 +183,7 @@ public class Mail {
 		// Configure pre-built message
 		String email = Util.readFile(new File(R.CONFIG_PATH, "/email/password_reset_email.txt"));
 		email = email.replace("$$USER$$", newUser.getFullName());
-		email = email.replace("$$LINK$$", String.format("%s/starexec/public/reset_password?%s=%s", serverURL, P.PASS_RESET, code));
+		email = email.replace("$$LINK$$", String.format("%s/starexec/public/reset_password?%s=%s", serverURL, PasswordReset.PASS_RESET, code));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Password reset", new String[] { newUser.getEmail() });

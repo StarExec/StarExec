@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
@@ -18,13 +17,15 @@ import org.starexec.data.to.User;
 @SuppressWarnings("unused")
 public class SessionUtil {	
 	private static final Logger log = Logger.getLogger(SessionUtil.class);
+	public static final String USER = "user";	// The string we store the user's User object under
+	public static final String PERMISSION_CACHE = "perm";	// The string we store the user's permission cache object under
 	
 	/**
 	 * @param request The request to retrieve the user object from
 	 * @return The user object representing the currently logged in user
 	 */
 	public static User getUser(HttpServletRequest request) {
-		return (User)request.getSession().getAttribute(P.SESSION_USER);
+		return (User)request.getSession().getAttribute(SessionUtil.USER);
 	}
 	
 	/**
@@ -32,7 +33,7 @@ public class SessionUtil {
 	 * @return The user object representing the currently logged in user
 	 */
 	public static User getUser(HttpSession session) {
-		return (User)session.getAttribute(P.SESSION_USER);
+		return (User)session.getAttribute(SessionUtil.USER);
 	}	
 	
 	/**
@@ -48,7 +49,7 @@ public class SessionUtil {
 	 * @return The current user's id
 	 */
 	public static long getUserId(HttpSession session) {
-		 return ((User)session.getAttribute(P.SESSION_USER)).getId();
+		 return ((User)session.getAttribute(SessionUtil.USER)).getId();
 	}
 	
 	/**
@@ -65,7 +66,7 @@ public class SessionUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public static HashMap<Long, Permission> getPermissionCache(HttpSession session) {
-		return (HashMap<Long, Permission>)session.getAttribute(P.PERMISSION_CACHE);
+		return (HashMap<Long, Permission>)session.getAttribute(SessionUtil.PERMISSION_CACHE);
 	}
 	
 	/**

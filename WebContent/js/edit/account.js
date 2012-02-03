@@ -31,10 +31,6 @@ $(document).ready(function(){
 		$('#pwd-meter').show();
 	});
 	
-	//styling
-	$('#personal tr:even').addClass('shade');
-	$('#passwordTable tr:even').addClass('shade');
-	
 	// Validates change-password fields
 	$("#changePassForm").validate({
 		rules : {
@@ -187,7 +183,6 @@ function displayWebsites(data) {
 	$.each(data, function(i, site) {
 		$('#websites tr').parent().remove();
 		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a><a class="website" id="' + site.id + '">delete</a></li>');
-		$('#websites li:even').addClass('shade');
 	});
 	
 	// Handles deletion of websites
@@ -201,8 +196,6 @@ function displayWebsites(data) {
 					function(returnData){
 						if (returnData == 0) {
 							parent.remove();
-				    		$('#websites li').removeClass('shade');
-				    		$('#websites li:even').addClass('shade');
 						} else {
 							showMessage('error', "error: website not deleted. please try again", 5000);
 						}

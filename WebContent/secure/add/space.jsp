@@ -24,7 +24,7 @@
 		<input type="hidden" name="parent" value="${space.id}"/>
 		<fieldset>
 			<legend>new space</legend>
-			<table id="tblSpace">
+			<table id="tblSpace" class="shaded">
 				<tr>
 					<td class="label"><p>name</p></td>
 					<td><input id="txtName" name="name" type="text"/></td>

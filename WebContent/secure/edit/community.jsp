@@ -25,7 +25,7 @@ try {
 	<input type="hidden" value="${com.id}" id="comId"/>
 	<fieldset>
 		<legend>community details</legend>
-		<table id="details">
+		<table id="details" class="shaded">
 			<tr>
 				<th class="label">attribute</th>
 				<th>current value</th>

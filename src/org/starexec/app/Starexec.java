@@ -1,12 +1,17 @@
 package org.starexec.app;
 
 import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
@@ -20,6 +25,8 @@ import org.starexec.util.Validator;
  */
 public class Starexec implements ServletContextListener {
 	private static final Logger log = Logger.getLogger(Starexec.class);
+	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(1);
+	
 	private static String ROOT_APPLICATION_PATH = "";	
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
@@ -53,14 +60,16 @@ public class Starexec implements ServletContextListener {
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();		
 		
-		// On a new thread, load the worker node data (this may take some time)
-		Runnable r = new Runnable() {			
+		// Create a task that updates the cluster usage info (this may take some time)
+		final Runnable updateClusterTask = new Runnable() {			
 			@Override
 			public void run() {
 				GridEngineUtil.loadWorkerNodes();
 				GridEngineUtil.loadQueues();
 			}
 		};		
-		new Thread(r).start();		
+		
+		// Schedule the cluster update task to be run every so often as specified in the config file
+		taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);			
 	}	
 }

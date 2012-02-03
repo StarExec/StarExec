@@ -1,7 +1,4 @@
 $(document).ready(function(){
-	$('table tr:even').addClass('shade');	
-	
-	
 	// Prompts user to confirm deletion and, if they confirm, 
 	// deletes the benchmark via AJAX and redirects to space_explorer.jsp
 	$("#delete").click(function(){

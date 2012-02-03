@@ -23,7 +23,7 @@
 <star:template title="${usr.fullName}" js="details/shared" css="details/shared">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
-		<table>
+		<table class="shaded">
 			<tr>
 				<td>e-mail address</td>			
 				<td><a href="mailto:${usr.email}">${usr.email}<img class="extLink" src="/starexec/images/external.png"/></a></td>

@@ -1,8 +1,5 @@
 // When the document is ready to be executed on
 $(document).ready(function(){
-	$('#tblSpace tbody').children('tr:even').addClass('shade');
-	$('#tblSpace tbody').children('tr:last-child').removeClass('shade');
-	
 	$("#addForm").validate({
 		rules: {
 			name: {

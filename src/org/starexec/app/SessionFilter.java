@@ -12,11 +12,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
+import org.starexec.util.SessionUtil;
 
 /**
  * This class is responsible for intercepting all requests to protected resources
@@ -28,7 +28,8 @@ import org.starexec.data.to.User;
  */
 public class SessionFilter implements Filter {
 	private static final Logger log = Logger.getLogger(SessionFilter.class);
-
+	private static final String USER_PARAM = "user";
+	
 	@Override
 	public void destroy() {
 		// Do nothing
@@ -41,17 +42,17 @@ public class SessionFilter implements Filter {
 		
 		// If the user is logged in...
 		if(httpRequest.getUserPrincipal() != null) {
-			// Check if they have the necessary user object stored in their session
-			if(httpRequest.getSession().getAttribute(P.SESSION_USER) == null) {
+			// Check if they have the necessary user SessionUtil stored in their session
+			if(SessionUtil.getUser((HttpServletRequest)request) == null) {
 				// If not, retrieve the user's information from the database
 				String userEmail = httpRequest.getUserPrincipal().getName();
 				User user = Users.get(userEmail);
 				
 				// And add it to their session to be used elsewhere
-				httpRequest.getSession().setAttribute(P.SESSION_USER, user);
+				httpRequest.getSession().setAttribute(SessionUtil.USER, user);
 				
 				// Also add an empty permission's cache for the user
-				httpRequest.getSession().setAttribute(P.PERMISSION_CACHE, new HashMap<Long, Permission>());
+				httpRequest.getSession().setAttribute(SessionUtil.PERMISSION_CACHE, new HashMap<Long, Permission>());
 				
 				// Add the login to the database
 				this.logUserLogin(user, httpRequest);				

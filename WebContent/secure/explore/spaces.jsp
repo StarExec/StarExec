@@ -80,8 +80,8 @@
 			<ul id="actionList">
 				<li><a class="btnAdd" id="addSpace" href="/starexec/secure/add/space.jsp">add subspace</a></li>
 				<li><a class="btnUp" id="uploadBench" href="/starexec/secure/add/benchmarks.jsp">upload benchmarks</a></li>
-				<li><a class="btnUp" id="uploadSolver" href="/starexec/secure/add/solver.jsp">upload solver</a></li>
-				<li><a class="btnRun" id="addJob" href="/starexec/secure/add/job.jsp">run as job</a></li>				
+				<li><a class="btnUp" id="uploadSolver" href="/starexec/secure/add/solver.jsp">upload solver</a></li>				
+				<li><a class="btnRun" id="addJob" href="/starexec/secure/add/job.jsp">create job</a></li>				
 				<li><a class="btnRemove" id="removeSubspace">remove subspace</a></li>
 				<li><a class="btnRemove" id="removeUser">remove user</a></li>
 				<li><a class="btnRemove" id="removeBench">remove benchmark</a></li>

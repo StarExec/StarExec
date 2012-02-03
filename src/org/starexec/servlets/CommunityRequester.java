@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
 import org.starexec.data.to.CommunityRequest;
@@ -64,13 +63,13 @@ public class CommunityRequester extends HttpServlet {
 	 */
 	private CommunityRequest constructComRequest(User user, HttpServletRequest request){
 		try {
-			if(!Util.paramExists(P.USER_MESSAGE, request) ||
-			   !Util.paramExists(P.USER_COMMUNITY, request)) {
+			if(!Util.paramExists(Registration.USER_MESSAGE, request) ||
+			   !Util.paramExists(Registration.USER_COMMUNITY, request)) {
 				return null;
 			}
 			
-			String message = request.getParameter(P.USER_MESSAGE);
-			long communityId = Long.parseLong(request.getParameter(P.USER_COMMUNITY)); 		
+			String message = request.getParameter(Registration.USER_MESSAGE);
+			long communityId = Long.parseLong(request.getParameter(Registration.USER_COMMUNITY)); 		
 			
 			if(validateParameters(communityId, message)){
 				CommunityRequest req = new CommunityRequest();

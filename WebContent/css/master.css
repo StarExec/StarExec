@@ -90,7 +90,8 @@ label.error {
 	color: #ae0000;
 }
 
-.shade {
+.shaded tbody tr:nth-child(even),
+.shaded tr:nth-child(even) {
 	background-color: #111111;
 }
 

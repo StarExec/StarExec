@@ -61,6 +61,7 @@ public class R {
 	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
 	public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
 	public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
+	public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
 
 	// Queue and node status strings
 	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)

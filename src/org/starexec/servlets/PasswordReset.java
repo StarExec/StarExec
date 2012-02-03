@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
@@ -23,18 +22,17 @@ import org.starexec.util.Validator;
  * takes them to a page where they receive a temporary password
  * 
  * @author Todd Elvers
- * @deprecated doesn't fully function yet; needs more testing
  */
 @SuppressWarnings("serial")
-@Deprecated
 public class PasswordReset extends HttpServlet {
 	private static final Logger log = Logger.getLogger(PasswordReset.class);
-
+	public static final String PASS_RESET = "reset";		// Param string for password reset codes
+	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if(Util.paramExists(P.PASS_RESET, request)) {
+		if(Util.paramExists(PasswordReset.PASS_RESET, request)) {
 			// Try and redeem the code from the database
-			String code = request.getParameter(P.PASS_RESET);
+			String code = request.getParameter(PasswordReset.PASS_RESET);
 			long userId = Requests.redeemPassResetRequest(code);
 			// If code is successfully redeemed, set a new temporary password and display it to the user
 			if(userId > 0){
@@ -59,10 +57,10 @@ public class PasswordReset extends HttpServlet {
 		if(isRequestValid(request)){
 			
 			// Check if the provided credentials match any in the database
-			User user = Users.get(request.getParameter(P.USER_EMAIL));
+			User user = Users.get(request.getParameter(Registration.USER_EMAIL));
 			if(user == null
-					|| !user.getFirstName().equalsIgnoreCase(request.getParameter(P.USER_FIRSTNAME))
-					|| !user.getLastName().equalsIgnoreCase(request.getParameter(P.USER_LASTNAME))){
+					|| !user.getFirstName().equalsIgnoreCase(request.getParameter(Registration.USER_FIRSTNAME))
+					|| !user.getLastName().equalsIgnoreCase(request.getParameter(Registration.USER_LASTNAME))){
 				response.sendRedirect("/starexec/public/password_reset.jsp?result=noUserFound");
 				return;
 			}
@@ -97,16 +95,16 @@ public class PasswordReset extends HttpServlet {
 	private static boolean isRequestValid(HttpServletRequest request) {
 		try {
 			// Ensure the necessary parameters exist
-			if (!Util.paramExists(P.USER_FIRSTNAME, request)
-					|| !Util.paramExists(P.USER_LASTNAME, request)
-					|| !Util.paramExists(P.USER_EMAIL, request)) {
+			if (!Util.paramExists(Registration.USER_FIRSTNAME, request)
+					|| !Util.paramExists(Registration.USER_LASTNAME, request)
+					|| !Util.paramExists(Registration.USER_EMAIL, request)) {
 				return false;
 			}
 			
 			// Ensure the parameters are valid values
-			if (!Validator.isValidUserName((String) request.getParameter(P.USER_FIRSTNAME))
-					|| !Validator.isValidUserName((String) request.getParameter(P.USER_LASTNAME))
-					|| !Validator.isValidEmail((String) request.getParameter(P.USER_EMAIL))) {
+			if (!Validator.isValidUserName((String) request.getParameter(Registration.USER_FIRSTNAME))
+					|| !Validator.isValidUserName((String) request.getParameter(Registration.USER_LASTNAME))
+					|| !Validator.isValidEmail((String) request.getParameter(Registration.USER_EMAIL))) {
 				return false;
 			}
 		} catch (Exception e) {

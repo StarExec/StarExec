@@ -1,8 +1,4 @@
 $(document).ready(function() {
-
-	// Shade even rows of the table
-	$('#inviteForm tr:even').addClass('shade');
-	
 	// Set the default text
 	$("#reason").data('default', "describe your motivation for joining this community");
 

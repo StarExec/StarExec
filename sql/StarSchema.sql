@@ -69,9 +69,9 @@ CREATE TABLE spaces (
 	created TIMESTAMP DEFAULT 0,
 	description TEXT,
 	locked BOOLEAN DEFAULT 0,
-	default_permission BIGINT NOT NULL,
+	default_permission BIGINT,
 	PRIMARY KEY (id),
-	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE CASCADE
+	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
 -- All types of benchmarks in the system
@@ -82,7 +82,7 @@ CREATE TABLE bench_types (
 	processor_path TEXT NOT NULL,
 	community BIGINT NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE NO ACTION
+	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- The record for an individual benchmark
@@ -97,7 +97,7 @@ CREATE TABLE benchmarks (
 	downloadable BOOLEAN DEFAULT 1,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	FOREIGN KEY (bench_type) REFERENCES bench_types(id) ON DELETE SET NULL
+	FOREIGN KEY (bench_type) REFERENCES bench_types(id) ON DELETE NO ACTION
 );
 
 -- The record for an individual solver
@@ -251,11 +251,11 @@ CREATE TABLE user_assoc (
 	user_id BIGINT NOT NULL,
 	space_id BIGINT NOT NULL,	
 	proxy BIGINT NOT NULL,
-	permission BIGINT NOT NULL,
+	permission BIGINT,
 	PRIMARY KEY (user_id, space_id, proxy),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE CASCADE,
+	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL,
 	FOREIGN KEY (proxy) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
@@ -263,11 +263,11 @@ CREATE TABLE user_assoc (
 CREATE TABLE set_assoc (
 	space_id BIGINT NOT NULL, 
 	child_id BIGINT NOT NULL,
-	permission BIGINT NOT NULL,
+	permission BIGINT,
 	PRIMARY KEY (space_id, child_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (child_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE CASCADE
+	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
 -- Which benchmarks belong to which spaces

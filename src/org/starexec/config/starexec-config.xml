@@ -22,6 +22,7 @@
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="aaron-stump@uiowa.edu" />
+			<property key="CLUSTER_UPDATE_PERIOD" value="30" />
 			<!-- SGE Configuration -->
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />
@@ -32,7 +33,10 @@
 		<class name="org.starexec.util.Validator">					
 			<property key="BOOLEAN_PATTERN">
 				<value><![CDATA[true|false]]></value>
-			</property>										
+			</property>		
+			<property key="LONG_PATTERN">
+				<value><![CDATA[^\d+$]]></value>
+			</property>									
 			<property key="USER_NAME_PATTERN">
 				<value><![CDATA[^[A-Z\-\s']{2,32}$]]></value>
 			</property>						
@@ -55,7 +59,7 @@
 				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				
 			</property>						
 			<property key="PRIMITIVE_DESC_PATTERN">
-				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>
+				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{0,512}$]]></value>
 			</property>						
 		</class>
 	</configuration>
@@ -80,6 +84,11 @@
 			<!-- Misc. Configuration -->
 			<property key="LOG_TO_CONSOLE" value="true" />			
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
+			<property key="EMAIL_SMTP" value="smtp.gmail.com" />
+			<property key="EMAIL_SMTP_PORT" value="587" />
+			<property key="EMAIL_USER" value="tylernjensen@gmail.com" />
+			<property key="EMAIL_PWD" value="PASSWORD" />
+			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />
 			<!-- SGE Configuration -->
 			<property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Global\\-sql.txt" />
 			<property key="QUEUE_USAGE_COMMAND" value="cmdspoof C:\\Global\\-gc.txt" />
@@ -109,7 +118,8 @@
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
-			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />	
+			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />
+			<property key="CLUSTER_UPDATE_PERIOD" value="30" />	
 		</class>
 	</configuration>
 	<configuration name="todd_dev_local" inherit="production">
@@ -131,6 +141,7 @@
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
 			<!-- Misc. Configuration -->			
 			<property key="LOG_TO_CONSOLE" value="true" />
+			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />
 		</class>
 	</configuration>
 	<configuration name="skylar_dev_local" inherit="production">
@@ -153,6 +164,7 @@
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="true" />
+			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />
 		</class>
 	</configuration>
 </starexec-configuration>

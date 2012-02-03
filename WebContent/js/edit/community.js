@@ -9,11 +9,6 @@ $(document).ready(function(){
 	editable("desc");	
 	typeEditable();
 	
-	// Style the table with alternate rows
-	$('#details tr:even').addClass('shade');
-	$('#websites li:even').addClass('shade');
-	$('#benchTypes tr:even').addClass('shade');	
-	
 	// Add toggles for the "add new" buttons and hide them by default
 	$('#toggleWebsite').click(function() {
 		$('#new_website').slideToggle('fast');
@@ -85,7 +80,6 @@ function displayWebsites(data) {
 	$.each(data, function(i, site) {
 		$('#websites tr').parent().remove();
 		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a><a class="delWebsite" id="' + site.id + '">delete</a></li>');
-		$('#websites li:even').addClass('shade');
 	});
 	
 	// Handles deletion of websites
@@ -100,8 +94,6 @@ function displayWebsites(data) {
 						if (returnData == 0) {
 //							showMessage('success', "website sucessfully deleted", 5000);
 							parent.remove();
-				    		$('#websites li').removeClass('shade');
-				    		$('#websites li:even').addClass('shade');
 						} else {
 							showMessage('error', "error: website not deleted. please try again", 5000);
 						}
@@ -246,8 +238,6 @@ function deleteType(typeId, parent){
 					if(returnCode == '0') {
 //		    		showMessage('success', "type was successfully deleted", 5000);
 						parent.remove();
-						$('#benchTypes tr').removeClass('shade');
-						$('#benchTypes tr:even').addClass('shade');	
 					} else {
 						showMessage('error', "error: type not added. please try again", 5000);
 					}

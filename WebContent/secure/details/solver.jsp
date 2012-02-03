@@ -29,7 +29,7 @@
 <star:template title="${solver.name}" js="details/shared" css="details/shared">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
-		<table>
+		<table class="shaded">
 			<tr>
 				<td>description</td>			
 				<td>${solver.description}</td>

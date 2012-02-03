@@ -1,6 +1,4 @@
 $(document).ready(function(){
-	$('table tr:even').addClass('shade');	
-	
 	// Attach click listeners to both buttons
 	initButtons();
 	

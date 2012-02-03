@@ -14,6 +14,7 @@ public class Validator {
 	
 	// Regex patterns loaded from configuration
 	public static String BOOLEAN_PATTERN;										
+	public static String LONG_PATTERN;
 	public static String USER_NAME_PATTERN;
 	public static String INSTITUTION_PATTERN;
 	public static String EMAIL_PATTERN;
@@ -24,7 +25,8 @@ public class Validator {
 	public static String REQUEST_MESSAGE;
 
 	// Compiled patterns used for validation	
-	private static Pattern patternBoolean;										
+	private static Pattern patternBoolean;
+	private static Pattern patternLong;	
 	private static Pattern patternUserName;
 	private static Pattern patternInstitution;
 	private static Pattern patternEmail;
@@ -40,6 +42,7 @@ public class Validator {
     		log.error("Validator was initialized before patterns were loaded from configuration");    		
     	} else {    		
 	    	patternBoolean = Pattern.compile(BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
+	    	patternLong = Pattern.compile(LONG_PATTERN);
 	    	patternUserName = Pattern.compile(USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternInstitution = Pattern.compile(INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternEmail = Pattern.compile(EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
@@ -151,5 +154,29 @@ public class Validator {
      */
     public static boolean isValidWebsite(String url) {    	
     	return patternUrl.matcher(url).matches();
+    }
+    
+    /**
+     * Validates a string to ensure it can be treated as a long 
+     * @param s The string to validate as a long
+     * @return True if the string is numeric, false otherwise
+     */
+    public static boolean isValidLong(String s) {
+    	return patternLong.matcher(s).matches();
+    }
+    
+    /**
+     * Validates a list of strings to ensure every one is a valid long
+     * @param list The list of strings to validate
+     * @return True if every string in the array can be parsed as a long
+     */
+    public static boolean isValidLongList(String[] list) {
+    	for(String s : list) {
+    		if(false == patternLong.matcher(s).matches()) {
+    			return false;
+    		}
+    	}
+    	
+    	return true;
     }
 }

@@ -5,7 +5,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 		<legend>personal information</legend>
-		<table id="personal">
+		<table id="personal" class="shaded">
 			<tr>
 				<th class="label">attribute</th>
 				<th>current value</th>

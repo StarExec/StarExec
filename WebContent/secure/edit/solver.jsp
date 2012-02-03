@@ -40,7 +40,7 @@
 	<form id="editSolverForm">
 		<fieldset>
 			<legend>solver details</legend>
-			<table>
+			<table class="shaded">
 				<tr>
 					<td class="label">solver name</td>			
 					<td><input id="name" type="text" name="name" value="${solver.name}" maxlength="32"/></td>

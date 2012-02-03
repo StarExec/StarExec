@@ -16,7 +16,10 @@ import org.starexec.data.to.Solver;
 
 /**
  * Handles all database interaction for jobs
+ * @author Tyler Jensen
+ * TODO: Implement this functionality. NOTE: This doesn't work yet!
  */
+@Deprecated
 public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 	
@@ -140,7 +143,7 @@ public class Jobs {
 	 * @author Tyler Jensen
 	 */
 	public static List<JobPair> getPairs(long jobId, long userId) {
-		Connection con = null;			
+		/*Connection con = null;			
 		
 		try {
 			if(Permissions.canUserSeeJob(jobId, userId)) {
@@ -190,8 +193,8 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
-		return null;
+		*/
+		return null;		
 	}
 
 	/**

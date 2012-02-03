@@ -26,7 +26,7 @@
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>upload benchmarks</legend>
-			<table id="tblUploadBench">
+			<table id="tblUploadBench" class="shaded">
 				<tr>
 					<td><label for="typeFile">benchmarks</label></td>
 					<td><input name="benchFile" type="file" id="benchFile"/></td>

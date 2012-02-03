@@ -449,7 +449,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/user")
 	@Produces("application/json")
-	public String addUsersFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copyUserToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of users to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
@@ -501,7 +501,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
-	public String addSolverFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copySolverToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of solvers to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
@@ -559,7 +559,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
-	public String addBenchFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copyBenchToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
@@ -617,7 +617,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/job")
 	@Produces("application/json")
-	public String addJobFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copyJobToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);

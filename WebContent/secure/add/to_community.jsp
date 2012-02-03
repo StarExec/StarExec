@@ -20,7 +20,7 @@ try {
 	<form method="POST" action="request" id="inviteForm">
 	<fieldset>
 		<legend>community information</legend>
-			<table>
+			<table class="shaded">
 				<tr>
 					<td class="label">community </td>
 					<td>

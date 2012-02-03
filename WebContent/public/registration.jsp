@@ -11,7 +11,7 @@
 
 	<fieldset>			
 		<legend>user information</legend>
-		<table>								
+		<table class="shaded">								
 			<tr>
 				<td class="label">first name</td>
 				<td><input id="firstname" type="text" name="fn" maxlength="32"/></td>

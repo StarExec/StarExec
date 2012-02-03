@@ -1,8 +1,4 @@
 $(document).ready(function() {
-
-	// Shade even rows of the table
-	$('#regForm tr:even').addClass('shade');
-
 	// Adds 'regex' function to validator
 	$.validator.addMethod(
 			"regex", 

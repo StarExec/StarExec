@@ -12,7 +12,7 @@
 		<h3 id="workerName"></h3> <span id="progressBar"></span> <span id="activeStatus"></span>		
 		<fieldset id="detailField">
 			<legend>details</legend>
-			<table id="details">
+			<table id="details" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>

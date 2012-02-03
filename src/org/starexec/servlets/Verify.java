@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.P;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -31,10 +30,10 @@ public class Verify extends HttpServlet {
     
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	if(Util.paramExists(P.EMAIL_CODE, request) && !Util.paramExists(P.LEADER_RESPONSE, request)) {
+    	if(Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
     		// Handle user activation request
     		handleActivation(request, response);
-    	} else if(Util.paramExists(P.EMAIL_CODE, request) && Util.paramExists(P.LEADER_RESPONSE, request)) {
+    	} else if(Util.paramExists(Mail.EMAIL_CODE, request) && Util.paramExists(Mail.LEADER_RESPONSE, request)) {
     		// Handle community request accept/decline
     		handleAcceptance(request, response);
     	} else {
@@ -50,8 +49,8 @@ public class Verify extends HttpServlet {
      * @throws IOException if any of the redirects fail
      */
     private void handleAcceptance(HttpServletRequest request, HttpServletResponse response) throws IOException  {
-    	String code = (String)request.getParameter(P.EMAIL_CODE);
-		String verdict = (String)request.getParameter(P.LEADER_RESPONSE);
+    	String code = (String)request.getParameter(Mail.EMAIL_CODE);
+		String verdict = (String)request.getParameter(Mail.LEADER_RESPONSE);
 		
 		// Check if a leader has handled this acceptance email already
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
@@ -110,7 +109,7 @@ public class Verify extends HttpServlet {
      * @throws IOException if any of the redirects fail
      */
     private void handleActivation(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    	String code = request.getParameter(P.EMAIL_CODE).toString();
+    	String code = request.getParameter(Mail.EMAIL_CODE).toString();
 		
     	// IF no code in VERIFY matches, then userId = -1
     	// ELSE userId = the id of the user that was just activated

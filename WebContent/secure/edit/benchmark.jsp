@@ -41,7 +41,7 @@
 	<form id="editBenchmarkForm">
 		<fieldset>
 			<legend>benchmark details</legend>
-			<table>
+			<table class="shaded">
 				<tr>
 					<td class="label">benchmark name</td>			
 					<td><input id="name" type="text" name="name" value="${bench.name}" maxlength="32"/></td>

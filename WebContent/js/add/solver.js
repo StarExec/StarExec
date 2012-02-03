@@ -1,7 +1,4 @@
 $(document).ready(function(){
-	$('#tblSolver tr:even').addClass('shade');
-	$('#tblSolver tr:last-child').removeClass('shade');	
-	
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {

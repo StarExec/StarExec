@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.P;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.to.Configuration;
@@ -42,11 +41,13 @@ public class UploadSolver extends HttpServlet {
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".zip"};
     
-    // Some constants to process the form
+    // Some param constants to process the form
     private static final String SOLVER_DESC = "desc";
     private static final String SOLVER_DOWNLOADABLE = "dlable";
     private static final String SPACE_ID = "space";
-
+    private static final String UPLOAD_FILE = "f";
+    private static final String SOLVER_NAME = "sn";    		
+    private static final String SOLVER_RUN = "run";
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	long userId = SessionUtil.getUserId(request);
@@ -90,12 +91,12 @@ public class UploadSolver extends HttpServlet {
 	 */
 	public Solver handleSolver(long userId, HashMap<String, Object> form) throws Exception {
 		try {
-			FileItem item = (FileItem)form.get(P.UPLOAD_FILE);
+			FileItem item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);
 			
 			//Set up a new solver with the submitted information
 			Solver newSolver = new Solver();
 			newSolver.setUserId(userId);
-			newSolver.setName((String)form.get(P.SOLVER_NAME));
+			newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
 			newSolver.setDescription((String)form.get(SOLVER_DESC));
 			newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
 			
@@ -148,7 +149,7 @@ public class UploadSolver extends HttpServlet {
 		
 		for(File f : binDir.listFiles()){
 			f.setExecutable(true, false);
-			if(f.isFile() && f.getName().startsWith(P.SOLVER_RUN)){
+			if(f.isFile() && f.getName().startsWith(UploadSolver.SOLVER_RUN)){
 				Configuration c = new Configuration();								
 				c.setName(f.getName());
 				returnList.add(c);
@@ -166,9 +167,9 @@ public class UploadSolver extends HttpServlet {
 	 */
 	private boolean isValidRequest(HashMap<String, Object> form) {
 		try {
-			if (!form.containsKey(P.UPLOAD_FILE) ||
+			if (!form.containsKey(UploadSolver.UPLOAD_FILE) ||
 					!form.containsKey(SPACE_ID) ||
-					!form.containsKey(P.SOLVER_NAME) || 
+					!form.containsKey(UploadSolver.SOLVER_NAME) || 
 					!form.containsKey(SOLVER_DESC) ||
 					!form.containsKey(SOLVER_DOWNLOADABLE)) {
 				return false;
@@ -177,12 +178,12 @@ public class UploadSolver extends HttpServlet {
 			Long.parseLong((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
 			
-			if(!Validator.isValidPrimName((String)form.get(P.SOLVER_NAME)) || 
+			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) || 
 					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC))) {
 				return false;
 			}
 			
-			String fileName = ((FileItem)form.get(P.UPLOAD_FILE)).getName();
+			String fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
 			for(String ext : UploadSolver.extensions) {
 				if(fileName.endsWith(ext)) {
 					return true;

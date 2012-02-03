@@ -31,7 +31,7 @@
 <star:template title="${bench.name}" js="details/shared" css="details/shared">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
-		<table>
+		<table class="shaded">
 			<tr>
 				<td>description</td>			
 				<td>${bench.description}</td>
@@ -48,7 +48,7 @@
 	</fieldset>
 		<fieldset>
 		<legend>type</legend>
-		<table>
+		<table class="shaded">
 			<tr>
 				<td>name</td>			
 				<td>${bench.type.name}</td>

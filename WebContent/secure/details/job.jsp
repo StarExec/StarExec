@@ -29,7 +29,7 @@
 <star:template title="${job.name}" js="details/shared" css="details/shared, details/job">			
 	<fieldset>
 		<legend>details</legend>
-		<table>
+		<table class="shaded">
 			<tr>
 				<td>status</td>			
 				<td>${job.status}</td>
@@ -59,7 +59,7 @@
 	<fieldset>
 	<legend>job pairs</legend>
 	<c:if test="${not empty pairs}">		
-		<table>
+		<table class="shaded">
 			<tr>
 				<th>benchmark</th>
 				<th>solver</th>

@@ -1,7 +1,5 @@
 // When the document is ready to be executed on
 $(document).ready(function(){
-	$('#tblUploadBench tbody').children('tr:even').addClass('shade');	
-	
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
