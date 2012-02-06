@@ -35,8 +35,22 @@ public class Starexec implements ServletContextListener {
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-		// Called when the application ends
-		log.info("Starexec Shutdown");
+		try {
+			// Stop the task scheduler since it freezes in an unorderly shutdown...
+			log.debug("Stopping starexec task scheduler...");
+			taskScheduler.shutdown();
+			
+			// Make sure to clean up database resources
+			log.debug("Releasing database connections...");
+			Common.release();
+			
+			// Wait for the task scheduler to finish
+			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
+			log.info("Starexec successfully shutdown");
+		} catch (Exception e) {
+			log.error(e);
+			log.error("Starexec unclean shutdown");
+		}		
 	}
 
 	/**

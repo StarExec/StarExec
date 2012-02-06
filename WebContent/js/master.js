@@ -34,7 +34,14 @@ $(document).ready(function(){
 				// When I'm hovered out of, slide up my submenu 
 	           	$(this).find("ul.subnav").slideUp('fast');  
 	        });
-		}, function () {});	    
+		}, function () {});	 
+
+	// Extend jquery functions here
+	$.fn.extend({
+		toHTMLString: function() {
+			return $("<div>").append(this.clone()).html();
+		}
+	});
 });
 
 
