@@ -60,6 +60,15 @@ public class Common {
 	}
 	
 	/**
+	 * Cleans up the database connection pool. This class must be reinitialized after this is called. 
+	 */
+	public static void release() {
+		if(dataPool != null) {
+			dataPool.close();
+		}
+	}
+	
+	/**
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */

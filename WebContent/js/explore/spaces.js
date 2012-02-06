@@ -7,7 +7,9 @@ var jobTable;
 var spaceId; // id of the current space
 var spaceName; // name of the current space
 
-$(document).ready(function(){		
+$(document).ready(function(){	
+	console.log('page ready!');
+	
 	// initializes custom tooltip styles
 	initTooltipStyles();
 	
@@ -24,15 +26,19 @@ $(document).ready(function(){
 	// Set up jQuery UI dialog boxes
 	initDialogs();
 	
+	// Enable/disable buttons based on permissions
+	initButtons();
+	
 	$('.dataTables_wrapper').hide();
 });
 
 /**
  * Hides all jquery ui dialogs for page startup
  */
-function initDialogs() {
+function initDialogs() {	
 	$( "#dialog-confirm-copy" ).hide();
 	$( "#dialog-confirm-delete" ).hide();
+	console.log('all confirmation dialogs hidden');
 }
 
 /**
@@ -58,6 +64,8 @@ function initButtonUI() {
 		icons: {
 			secondary: "ui-icon-minus"
     }});	
+	
+	console.log('jQuery UI buttons initialized');
 }
 
 /**
@@ -83,20 +91,22 @@ function initDraggable(table) {
 	    hoverClass: 'hover',	// Class applied to the space element when something is being dragged over it
 	    activeClass: 'active'	// Class applied to the space element when something is being dragged
 	});
+	
+	console.log('table initialized as draggable');
 }
  
 /**
  * Called when any item is starting to be dragged within the browser
  */
 function onDragStart(event, ui) {
-	
+	console.log('drag started');
 }
 
 /**
  * Called when there is no longer anything being dragged
  */
 function onDragStop(event, ui) {
-
+	console.log('drag stopped');
 }
 
 /**
@@ -109,6 +119,8 @@ function onSpaceDrop(event, ui) {
 	// Get the destination space id and name
 	var destSpace = $(event.target).parent().attr('id');
 	var destName = $(event.target).text();
+	
+	console.log(ids.length + ' rows dropped onto ' + destName);
 	
 	if(ids.length < 2) {
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
@@ -125,14 +137,17 @@ function onSpaceDrop(event, ui) {
 		modal: true,
 		buttons: {
 			'yes': function() {
+				console.log('user confirmed copy action');
+				
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-copy').dialog('close');
 				
-				// Make the request to the server
+				// Make the request to the server				
 				$.post(  	    		
 					'/starexec/services/spaces/' + destSpace + '/add/' + ui.draggable.data('type'), // We use the type to denote copying a user/solver/benchmark/job
 					{selectedIds : ids, fromSpace : spaceId},	// Attach the selected items to the data of the post along with the space it's coming from
 					function(returnCode) {
+						console.log('AJAX response recieved with code ' + returnCode);
 						switch (returnCode) {
 							case 0:	// Success
 								if(ids.length > 1) {								
@@ -167,6 +182,7 @@ function onSpaceDrop(event, ui) {
 				});	 									
 			},
 			"cancel": function() {
+				console.log('user canceled copy action');
 				$(this).dialog("close");
 			}
 		}		
@@ -243,7 +259,9 @@ function initSpaceExplorer(){
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
         id = data.rslt.obj.attr("id");
-        updateAddId(id);
+        console.log('Space explorer node ' + id + ' was clicked');
+        
+        updateButtonIds(id);
         getSpaceDetails(id);
         
         // Remove all non-permanent tooltips from the page; helps keep
@@ -254,6 +272,8 @@ function initSpaceExplorer(){
         // Hide all buttons that are selection-dependent
         hideButtons();
     }).delegate("a", "click", function (event, data) { event.preventDefault(); });// This just disable's links in the node title
+	
+	console.log('Space explorer node list initialized');
 	
 	// Create the space tooltips on <a> elements that are children of $(#exploreList)
 	createTooltip($('#exploreList'), 'a', 'space');
@@ -274,6 +294,7 @@ function initButtons(){
 			modal: true,
 			buttons: {
 				'yes': function() {
+					console.log('user confirmed benchmark deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 					
@@ -281,6 +302,7 @@ function initButtons(){
 						"/starexec/services/remove/benchmark/" + spaceId,
 						{selectedBenches : selectedBenches},
 						function(returnCode) {
+							console.log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
 								case 0:
 									// Remove the rows from the page and update the table size in the legend
@@ -302,6 +324,7 @@ function initButtons(){
 					});		
 				},
 				"cancel": function() {
+					console.log('user canceled benchmark deletion');
 					$(this).dialog("close");
 				}
 			}		
@@ -318,6 +341,7 @@ function initButtons(){
 			modal: true,
 			buttons: {
 				'yes': function() {
+					console.log('user confirmed user deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 					
@@ -325,6 +349,7 @@ function initButtons(){
 						"/starexec/services/remove/user/" + spaceId,
 						{selectedUsers : selectedUsers},
 						function(returnCode) {
+							console.log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
 								case 0:
 									// Remove the rows from the page and update the table size in the legend
@@ -353,6 +378,7 @@ function initButtons(){
 					});	
 				},
 				"cancel": function() {
+					console.log('user canceled user deletion');
 					$(this).dialog("close");
 				}
 			}		
@@ -369,6 +395,7 @@ function initButtons(){
 			modal: true,
 			buttons: {
 				'yes': function() {
+					console.log('user confirmed solver deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 					
@@ -376,6 +403,7 @@ function initButtons(){
 						"/starexec/services/remove/solver/" + spaceId,
 						{selectedSolvers : selectedSolvers},
 						function(returnCode) {
+							console.log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
 								case 0:
 									// Remove the rows from the page and update the table size in the legend
@@ -397,6 +425,7 @@ function initButtons(){
 					});
 				},
 				"cancel": function() {
+					console.log('user canceled solver deletion');
 					$(this).dialog("close");
 				}
 			}		
@@ -413,6 +442,7 @@ function initButtons(){
 			modal: true,
 			buttons: {
 				'yes': function() {
+					console.log('user confirmed job deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 					
@@ -420,6 +450,7 @@ function initButtons(){
 						"/starexec/services/remove/job/" + spaceId,
 						{selectedJobs : selectedJobs},
 						function(returnCode) {
+							console.log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
 								case 0:
 									// Remove the rows from the page and update the table size in the legend
@@ -441,6 +472,7 @@ function initButtons(){
 					});
 				},
 				"cancel": function() {
+					console.log('user canceled job deletion');
 					$(this).dialog("close");
 				}
 			}		
@@ -458,6 +490,7 @@ function initButtons(){
 			modal: true,
 			buttons: {
 				'yes': function() {
+					console.log('user confirmed subspace deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 					
@@ -465,6 +498,7 @@ function initButtons(){
 						"/starexec/services/remove/subspace/" + spaceId,
 						{selectedSubspaces : selectedSubspaces},
 						function(returnCode) {
+							console.log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
 								case 0:
 									// Remove the rows from the page and update the table size in the legend
@@ -490,11 +524,14 @@ function initButtons(){
 					});
 				},
 				"cancel": function() {
+					console.log('user canceled subspace deletion');
 					$(this).dialog("close");
 				}
 			}		
 		});		
 	});
+	
+	console.log('action buttons initialized');
 }
 
 /**
@@ -539,6 +576,8 @@ function initDataTables(){
 	$("#users tbody").delegate("tr", "hover", function(){
 		$(this).toggleClass("hovered");
 	});
+	
+	console.log('all datatables initialized');
 }
 
 /**
@@ -548,7 +587,8 @@ function getSpaceDetails(id) {
 	$('#loader').show();
 	$.post(  
 		"/starexec/services/space/" + id,  
-		function(data){  			
+		function(data){ 
+			console.log('AJAX response received for details of space ' + id);
 			populateDetails(data);			
 		},  
 		"json"
@@ -652,16 +692,15 @@ function populateDetails(jsonData) {
 	
 	// Done loading, hide the loader
 	$('#loader').hide();
+	
+	console.log('Client side UI updated with details for ' + spaceName);
 }
 
 
 /**
  * Creates either a leader tooltip, a personal tooltip, a space tooltip, or a expd tooltip for a given element
  */
-function createTooltip(element, selector, type, message){
-	// If the message wasn't specified, use the loading icon instead
-	message = !message ? '<center><img src="/starexec/images/loader.gif" alt="loading..." /></center>' : message;
-	
+function createTooltip(element, selector, type, message){	
 	/**
 	 * Tooltips for displaying to a leader what a particular user's permissions are in a given space; 
 	 * these persist until a new space is selected in the space explorer
@@ -679,7 +718,7 @@ function createTooltip(element, selector, type, message){
 	 * Tooltips for displaying to a user what their permission are for a given space in the space explorer; 
 	 * these persist forever and are never removed from the page
 	 */
-	else if(type[0] == 's'){
+	else if(type[0] == 's' || type[0] == 'p'){
 		$(element).delegate(selector, 'hover', function(){
 			if(!$(this).data("qtip")){
 				$(this).qtip(getTooltipConfig(type, message));
@@ -695,34 +734,19 @@ function createTooltip(element, selector, type, message){
 			$(element).qtip(getTooltipConfig(type, message));
 		}
 	}
-	/**
-	 * Tooltip for displaying to a non-leader what a their particular permissions are in the current space, shown
-	 * from their entry in the userTable; these persist until a new space is selected in the space explorer
-	 */
-	else if(type[0] == 'p'){
-		$(element).delegate(selector, 'hover', function(){
-			if(!$(this).data("qtip")){
-				$(this).qtip(getTooltipConfig(type, message));
-			}
-		});
-	}
+	
+	console.log('tooltip created of type ' + type);
 }
-
 
 /**
  * Checks the permissions for the current space and hides/shows buttons based on
  * the user's permissions
  * @param perms The JSON permission object representing permissions for the current space
  */
-function checkPermissions(perms) {
-	var userPerm = "";
-	var solverPerm = "";
-	var benchPerm = "";
-	var spacePerm = "";
-	var jobPerm = "";
-	
+function checkPermissions(perms) {	
 	// Check for no permission and hide entire action list if not present
 	if(perms == null) {
+		console.log('no permissions found, hiding action bar');
 		$('#actionList').hide();		
 		return;
 	} else {
@@ -734,24 +758,17 @@ function checkPermissions(perms) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 	} else {
 		// otherwise only attach a personal tooltip to the current user's entry in the userTable
-//		createTooltip($("#users tbody tr").find('td:first input[name="currentUser"]').parent().parent(), 'td:first', 'personal');
 		createTooltip($('#users tbody'), 'tr', 'personal');
-	}
-	
-	if(perms.addUser) {
-		userPerm = "a";
-	}
+	}	
 	
 	if(perms.removeUser){
 		$("#users").delegate("tr", "click", function(){
 			updateButton(userTable, $("#removeUser"));
 		});
-		userPerm = !userPerm ? "r" : "ar"; 
 	}
 	
 	if(perms.addSpace) {		
-		$('#addSpace').fadeIn('fast');
-		spacePerm = "a";  
+		$('#addSpace').fadeIn('fast');		
 	} else {
 		$('#addSpace').fadeOut('fast');
 	}
@@ -759,13 +776,11 @@ function checkPermissions(perms) {
 	if(perms.removeSpace) {
 		$("#spaces").delegate("tr", "click", function(){
 			updateButton(spaceTable, $("#removeSubspace"));
-		});
-		spacePerm = !spacePerm ? "r" : "ar";
+		});		
 	}
 	
 	if(perms.addBenchmark) {
-		$('#uploadBench').fadeIn('fast');
-		benchPerm = "a";
+		$('#uploadBench').fadeIn('fast');		
 	} else {
 		$('#uploadBench').fadeOut('fast');
 	}
@@ -773,20 +788,17 @@ function checkPermissions(perms) {
 	if(perms.removeBench){
 		$("#benchmarks").delegate("tr", "click", function(){
 			updateButton(benchTable, $("#removeBench"));
-		});
-		benchPerm = !benchPerm ? "r" : "ar";
+		});		
 	}
 	
 	if(perms.addSolver) {
-		$('#uploadSolver').fadeIn('fast');
-		solverPerm = "a";
+		$('#uploadSolver').fadeIn('fast');		
 	} else {
 		$('#uploadSolver').fadeOut('fast');
 	}
 	
 	if(perms.addJob) {
-		$('#addJob').fadeIn('fast');
-		jobPerm = "a";
+		$('#addJob').fadeIn('fast');		
 	} else {
 		$('#addJob').fadeOut('fast');
 	}
@@ -800,23 +812,23 @@ function checkPermissions(perms) {
 	if(perms.removeSolver){
 		$("#solvers").delegate("tr", "click", function(){
 			updateButton(solverTable, $("#removeSolver"));
-		});
-		solverPerm = !solverPerm ? "r" : "ar";
+		});		
 	}
 	
 	if(perms.removeJob){
 		$("#jobs").delegate("tr", "click", function(){
 			updateButton(jobTable, $("#removeJob"));
-		});
-		jobPerm = !jobPerm ? "r" : "ar";
+		});		
 	}
 	
 	// Create tooltips for the expd class
-	createTooltip($("#userExpd"), null, 'expd', getImagePath("users", !userPerm ? "n" : userPerm));
-	createTooltip($("#benchExpd"), null, 'expd', getImagePath("benchmarks", !benchPerm ? "n" : benchPerm));
-	createTooltip($("#solverExpd"), null, 'expd', getImagePath("solvers", !solverPerm ? "n" : solverPerm));
-	createTooltip($("#spaceExpd"), null, 'expd', getImagePath("subspaces", !spacePerm ? "n" : spacePerm));
-	createTooltip($("#jobExpd"), null, 'expd', getImagePath("jobs", !jobPerm ? "n" : jobPerm));
+	createTooltip($("#userExpd"), null, 'expd', getSinglePermTable('user', perms.addUser, perms.removeUser));
+	createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBench, perms.removeBench));
+	createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
+	createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
+	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));
+	
+	console.log('permissions checked and processed');
 }
 
 
@@ -824,11 +836,12 @@ function checkPermissions(perms) {
  * Updates the URLs to perform actions on the current space
  * @param id The id of the current space
  */
-function updateAddId(id) {	
+function updateButtonIds(id) {	
 	$('#addSpace').attr('href', "/starexec/secure/add/space.jsp?sid=" + id);
 	$('#uploadBench').attr('href', "/starexec/secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', "/starexec/secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
+	console.log('updated action button space ids to ' + id);
 }
 
 
@@ -836,9 +849,9 @@ function toggleTable(sender) {
 	$(sender).parent().children('.dataTables_wrapper').slideToggle('fast');	
 	
 	if($(sender).children('span:last-child').text() == '(+)') {
-		$(sender).children('span:last-child').text('(-)');
+		$(sender).children('span:last-child').text('(-)');		
 	} else {
-		$(sender).children('span:last-child').text('(+)');
+		$(sender).children('span:last-child').text('(+)');		
 	}
 }
 
@@ -851,6 +864,7 @@ function hideButtons(){
 	$("#removeUser").hide();
 	$("#removeJob").hide();
 	$('#removeSubspace').hide();
+	console.log('all remove buttons hidden');
 }
 
 
@@ -910,50 +924,123 @@ function updateTable(dataTable){
     $.each(rowsToRemove, function(i, row) {
     	dataTable.fnDeleteRow(row);
     });
+    
+    console.log('table updated. rows removed: ' + rowsToRemove + ' rows remaining: ' + rowsRemaining);
 }
 
 /**
- * Given a set of permissions, this chooses the appropriate permissions 
- * png's to display in the tooltip
- * 
- * @param perms a set of permissions to choose the permissions png's for
- * @param id the id of the user to whom this tooltip will refer to if the tooltip
- * being created is a leader tooltip, -1 otherwise
- * @returns the html to place in the tooltip so that the proper permission png's are displayed
+ * Takes in a set of permissions and builds a pretty table to display to the user
+ * @param perms The set of permissions to display in a table
+ * @returns A jQuery object that is the table to display in the UI for the given permissions
  */
-function buildPermTooltip(perms, id){
-	// Sets the variables to "a" for add, "r" for remove, "ar" for add/remove, and "n" for none
-	var userPerm = perms.addUser ? "a" : "n";
-	userPerm = perms.removeUser ? ("n" == userPerm ? "r" : "ar") : userPerm;
-	var benchPerm = perms.addBenchmark ? "a" : "n";
-	benchPerm = perms.removeBench ? ("n" == benchPerm ? "r" : "ar") : benchPerm;
-	var solverPerm = perms.addSolver ? "a" : "n";
-	solverPerm = perms.removeSolver ? ("n" == solverPerm ? "r" : "ar") : solverPerm; 
-	var spacePerm = perms.addSpace ? "a" : "n";
-	spacePerm = perms.removeSpace ? ("n" == spacePerm ? "r" : "ar") : spacePerm;
-	var jobPerm = perms.addJob ? "a" : "n";
-	jobPerm = perms.removeJob ? ("n" == jobPerm ? "r" : "ar") : jobPerm;
+function getPermTable(perms, type) {	
+	var permWrap = $('<div>');	// A wrapper for the table and leader info
+	var table = $('<table>');	// The table where the permissions are displayed
+	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
 	
-	// Gets the absolute path to the given permissions image
-	jobPerm    = getImagePath("jobs", jobPerm, id);
-	solverPerm = getImagePath("solvers", solverPerm, id);
-	benchPerm  = getImagePath("benchmarks", benchPerm, id);
-	userPerm   = getImagePath("users", userPerm, id);
-	spacePerm  = getImagePath("subspaces", spacePerm, id);
+	// Build a row for each permission
+	$(table).append(wrapPermRow('job', perms.addJob, perms.removeJob));
+	$(table).append(wrapPermRow('solver', perms.addSolver, perms.removeSolver));
+	$(table).append(wrapPermRow('bench', perms.addBenchmark, perms.removeBench));
+	$(table).append(wrapPermRow('user', perms.addUser, perms.removeUser));
+	$(table).append(wrapPermRow('space', perms.addSpace, perms.removeSpace));
 	
-	return jobPerm + solverPerm + benchPerm + userPerm + spacePerm;
+	// Save the data on the table for use throughout the page
+	table.data('perms', perms);
+	
+	// Add the table to the wrapper
+	$(permWrap).append(table);
+	
+	// HTML to add to the wrapper to indicate someone is a leader
+	var leaderDiv = '<div class="leaderWrap"><span class="ui-icon ui-icon-star"></span><h2 class="leaderTitle">leader</h2></div>';
+	
+	if(perms.isLeader) {
+		// If this person is a leader, add the leader div to the wrapper
+		$(permWrap).append(leaderDiv);
+	} else if (type == 'leader') {		
+		// If they're not a leader but the caller has specified to display the 'leader' button...
+		
+		// Create a button to make the user a leader
+		var leadBtn = $('<span class="leaderBtn">make leader</span>').button({
+			icons: {
+				secondary: "ui-icon-star"
+			}
+		}).click(function(){
+			// Update the title to save/cancel
+			$(this).parents('.qtip').qtip('api').updateTitle('<center><a class="tooltipButton" onclick="saveChanges(this,true);">save</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a class="tooltipButton" onclick="saveChanges(this,false);">cancel</a></center>');
+			
+			// Add the leader div to indicate they are now a leader
+			$(this).parents('div:first').append(leaderDiv);			
+			
+			// Update their permissions and permission icons
+			makeLeader(this);
+			
+			// Get rid of the button
+			$(this).remove();
+		});
+		
+		// Add the leader button to the wrapper
+		$(permWrap).append(leadBtn);
+	}
+		
+	// Return the resulting DOM element to be inserted
+	return permWrap;
 }
-
 
 /**
- * Given a primitive's type (users/benchmarks/solvers/subspaces) and a permission string (a/r/ar/n)
- * this returns the full path to the relevant permission png
+ * Changes the data on the user's permission table to make the user a leader
+ * and changes the UI to show all "true" values for all permissions
+ * @param e The button element that was clicked to make the user a leader
  */
-function getImagePath(primType, perm, id){
-	id = !id ? -1 : id;
-	return '<img class="perm '+primType+'" id='+id+' src="/starexec/images/permissions/' + primType + "_" + perm + '.png" perm="'+perm+'" onclick="togglePermImage(this);">';
+function makeLeader(e) {		
+	var icons = $(e).siblings('table').find('span');
+	$(icons).removeClass('ui-icon-closethick');
+	$(icons).removeClass('ui-icon-check');
+	$(icons).addClass('ui-icon-check');
+	
+	var permData = $(e).siblings('table').data('perms');
+	permData.isLeader = true;
+	permData.addSpace = true;
+	permData.addJob = true;
+	permData.addUser = true;
+	permData.addSolver = true;
+	permData.addBenchmark = true;
+	permData.removeSpace = true;
+	permData.removeJob = true;
+	permData.removeUser = true;
+	permData.removeSolver = true;
+	permData.removeBench = true;	
+		
+	console.log('user marked as leader');	
 }
 
+/**
+ * Gives back HTML for a table containing only one permission
+ * @param name The name of the single permission to display
+ * @param add The permission's add value
+ * @param remove The permission's remove value
+ * @returns HTML representing a table to be displayed in a qtip for the table
+ */
+function getSinglePermTable(name, add, remove) {
+	var table = $('<table></table>');
+	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');	
+	$(table).append(wrapPermRow(name, add, remove));
+	
+	return $(table).toHTMLString();
+}
+
+/**
+ * Wraps up a permission and it's value for display in a table. Includes onclicks for the images.
+ * @param perm The permission type to display (job, user, solver, bench, space)
+ * @param add The value for the add permission for the type
+ * @param remove The value for the remove permission for the type
+ * @returns HTML representing a row in a table display the type and it's permission values
+ */
+function wrapPermRow(perm, add, remove){
+	var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();
+	var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();	
+	return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>"; 
+}
 
 /**
  * Initializes custom tooltip styles; used to differentiate and customize
@@ -966,10 +1053,10 @@ function initTooltipStyles(){
 	 * (i.e. tooltips on the spaces in #exploreList)
 	 */
 	$.fn.qtip.styles.permanentTooltip = {
-			background: '#222222',
-			padding: 0,
+			background: '#E1E1E1',
+			padding: 10,
 			height: 144,
-			width: 187,
+			width: 220,
 			title : {
 				color : '#ae0000'
 			}
@@ -980,21 +1067,25 @@ function initTooltipStyles(){
 	 * a new space is selected
 	 */
 	$.fn.qtip.styles.nonPermanentLeader = {
-			background: '#222222',
+			background: '#E1E1E1',
 			height: 144,
-			width: 187,
-			padding: 0,
-			title : {
-				color : '#CCC'
-			}
-	};
-	$.fn.qtip.styles.nonPermanentExpd = {
-			background: '#dc6f04',
-			padding: 0,
+			width: 220,
+			padding: 10,
 			title : {
 				color : '#ae0000'
 			}
 	};
+	
+	$.fn.qtip.styles.nonPermanentExpd = {
+			background: '#E1E1E1',
+			width: 220,
+			padding: 10,
+			title : {
+				color : '#ae0000'
+			}
+	};
+	
+	console.log('tooltip styles initialized');
 }
 
 
@@ -1044,9 +1135,8 @@ function getTooltipConfig(type, message){
 								self.show();
 								return;
 						    }
-						    self.css('visibility','hidden').data('ready',1);
-						    var userId = $("#users").children('tbody').children('tr.hovered').children('td:first').children('input').val();
-						    
+						    self.css('visibility','hidden').data('ready',1);						    						    
+						    var userId = $(this.qtip('api').elements.target).children('td:first').children('input').val();						    
 						    // Uses a timer to simulate the first delay=1000 that would occur here
 						    // if ready=false
 							setTimeout(function(){
@@ -1071,21 +1161,22 @@ function getTooltipConfig(type, message){
 					name: "nonPermanentLeader",
 					// Add a tip to the right middle portion of the tooltip
 					tip: 'rightMiddle',
-			   },
+			   },			   
 			   api:{
 				   // Before rendering the tooltip, get the user's permissions for the given space
 				   onRender: function(){
-						var self = this;
-						var userId = $("#users").children('tbody').children('tr.hovered').children('td:first').children('input').val();
+						var self = this;						
+						var userId = $(this.elements.target).children('td:first').children('input').val();
 						var url = '/starexec/services/space/' + spaceId + '/perm/' + userId;
 						$.post(
 								url,
 								function(theResponse){
+									console.log('AJAX response for permission tooltip received');
 									if(1 == theResponse){
 										showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
 									} else {
-										// Replace current content (current = loader.gif)
-										self.updateContent(buildPermTooltip(theResponse, userId), true);  
+										// Replace current content (current = loader.gif)										
+										self.updateContent(getPermTable(theResponse, 'leader'), true);										
 									}
 									return true;
 								}
@@ -1100,18 +1191,20 @@ function getTooltipConfig(type, message){
 					   var self = this;
 					   if('p' != $(self.elements.title).text()[0]){
 						   self.updateTitle('<center><a>permissions</a></center>');
-						   var userId = $($(self.elements.content).children('.perm')[0]).attr('id');
+						   var userId = $(this.elements.target).children('td:first').children('input').val();
 						   $.post(
 								   '/starexec/services/space/' + spaceId + '/perm/' + userId,
 								   function(theResponse){
-									   self.updateContent(buildPermTooltip(theResponse, userId), true);  
-									   self.updateTitle('<center><a>permissions</a></center>');
+									   console.log('AJAX response for permission tooltip received');
+									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
+									   self.updateContent(getPermTable(theResponse, 'leader'), true);  
+									   self.updateTitle('<center><a>permissions</a></center>');									   
 									   return true;
 								   }	
 						   ).error(function(){
 								alert('Session expired');
 								window.location.reload(true);
-							});		
+						   });		
 					   }
 				   }
 		      }
@@ -1185,7 +1278,9 @@ function getTooltipConfig(type, message){
 						$.post(
 								'/starexec/services/space/' + hoveredSpaceId,
 								function(theResponse){
-									self.updateContent(buildPermTooltip(theResponse.perm), true);
+									console.log('AJAX response for permission tooltip received');
+									self.updateContent("");
+									self.updateContent(getPermTable(theResponse.perm), true);
 									return true;
 								}
 						).error(function(){
@@ -1277,15 +1372,16 @@ function getTooltipConfig(type, message){
 				   onRender: function(){
 						var self = this;
 						var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
-						if($("#users").children('tbody').children('tr.hovered').children('td:first').children('input').val() != userId){
+						if($(this.elements.target).children('td:first').children('input').val() != userId){
 							self.destroy();
 						} else {
 							var url = '/starexec/services/space/' + spaceId + '/perm/' + userId;
 							$.post(
 									url,
 									function(theResponse){
+										console.log('AJAX response for permission tooltip received');
 										// Replace current content (current = loader.gif)
-										self.updateContent(buildPermTooltip(theResponse, userId), true);  
+										self.updateContent(getPermTable(theResponse), true);
 										return true;
 									}
 							).error(function(){
@@ -1296,37 +1392,59 @@ function getTooltipConfig(type, message){
 				   }
 		      }
 		};
-	}
+	}	
 }
 
 /**
- * When a leader tooltip permissions png is clicked, this cycles to the next png in order: 
+ * When a leader tooltip permissions icon is clicked, this cycles to the next png in order: 
  * none->add->remove->add/remove->none
  * 
- * @param image the <img> DOM element containing the png that triggered this method when it was clicked
+ * @param image the icon span DOM element containing the png that triggered this method when it was clicked
+ * @param perm the string name of the permission being toggled (user, solver, bench, job, space)
  */
-function togglePermImage(image){
-	// Change the title to 'save | cancel'
-	$(image).parent().parent().parent().parent().qtip('api').updateTitle('<center><a class="tooltipButton" onclick="saveChanges(this,true,'+$(image).attr("id")+');">save</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a class="tooltipButton" onclick="saveChanges(this,false,'+$(image).attr("id")+');">cancel</a></center>');
+function togglePermImage(image, perm){
+	// If the user is a leader, you can't edit their permissions, return
+	if($(image).parents('table').data('perms').isLeader) {
+		showMessage('warn', 'you cannot edit a leader\'s permission', 1500);
+		return;
+	}	
 	
-	// Switch out the current .png for the next .png
-	switch ($(image).attr("perm")) {
-		case "n":
-			$(image).attr("src", $(image).attr("src").replace("_n","_a"));
-			$(image).attr("perm", "a");
-			break;
-		case "a":
-			$(image).attr("src", $(image).attr("src").replace("_a","_r"));
-			$(image).attr("perm", "r");
-			break;
-		case "r":
-			$(image).attr("src", $(image).attr("src").replace("_r","_ar"));
-			$(image).attr("perm", "ar");
-			break;
-		case "ar":
-			$(image).attr("src", $(image).attr("src").replace("_ar","_n"));
-			$(image).attr("perm", "n");
-			break;
+	// Change the title to 'save | cancel'
+	$(image).parents('.qtip').qtip('api').updateTitle('<center><a class="tooltipButton" onclick="saveChanges(this,true);">save</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a class="tooltipButton" onclick="saveChanges(this,false);">cancel</a></center>');
+	
+	// Get the current permissions associated with the table
+	var permData = $(image).parents('table').data('perms');	
+	
+	// Determine if this is an add or remove permission being toggled
+	var isAddPerm = $(image).parent().attr('class').indexOf('add') >= 0;
+	var newVal = false;
+	
+	// Toggle the permission icon and update the new value to be set
+	if($(image).attr('class').indexOf('ui-icon-check') >= 0) {
+		$(image).removeClass('ui-icon-check');
+		$(image).addClass('ui-icon-closethick');
+		newVal = false;
+	} else {
+		$(image).removeClass('ui-icon-closethick');
+		$(image).addClass('ui-icon-check');
+		newVal = true;
+	}
+	
+	// Set the new value based on the permission name and whether it's add/remove
+	if(isAddPerm) {
+		if(perm == "space") { permData.addSpace = newVal; }
+		else if(perm == "job") { permData.addJob = newVal; }
+		else if(perm == "user") { permData.addUser = newVal; }
+		else if(perm == "solver") { permData.addSolver = newVal; }
+		else if(perm == "bench") { permData.addBenchmark = newVal; }
+		console.log('Updated add permission to ' + newVal + ' for ' + perm);
+	} else {		
+		if(perm == "space") { permData.removeSpace = newVal; }
+		else if(perm == "job") { permData.removeJob = newVal; }
+		else if(perm == "user") { permData.removeUser = newVal; }
+		else if(perm == "solver") { permData.removeSolver = newVal; }
+		else if(perm == "bench") { permData.removeBench = newVal; }
+		console.log('Updated remove permission to ' + newVal + ' for ' + perm);
 	}
 }
 
@@ -1338,35 +1456,36 @@ function togglePermImage(image){
  * @param save true = save button, false = cancel button
  * @param userId the id of the user to save the new permissions for
  */
-function saveChanges(obj, save, userId){
+function saveChanges(obj, save){
+	// Get the currently hovered user
+	var userId = $($(obj).parents('.qtip').qtip('api').elements.target).children('td:first').children('input').val();
+	console.log('saving permissions for user ' + userId);
+	
 	// 'SAVE' option
 	if(true == save){  
 		// Collect the permission images from the tooltip
-		var tooltip = $(obj).parent().parent().parent().parent().parent().qtip('api');
-		var perms = $(obj).parent().parent().parent().children('.qtip-content').children('.perm');
-		var users="",solvers="",benchmarks="",subspaces="",jobs="";
+		var tooltip = $(obj).parents('.qtip').qtip('api');
 		
-		// Determine the new permissions from the permission images that were collected
-		$.each(perms, function(index, perm){
-			if($(perm).hasClass("users")){
-				users = $(perm).attr("perm");
-			} else if($(perm).hasClass("solvers")){
-				solvers = $(perm).attr("perm");
-			} else if($(perm).hasClass("benchmarks")){
-				benchmarks = $(perm).attr("perm");
-			} else if($(perm).hasClass("subspaces")){
-				subspaces = $(perm).attr("perm");
-			} else if($(perm).hasClass("jobs")){
-				jobs = $(perm).attr("perm");
-			}
-		});
+		// Get the stored permissions from the DOM for this table
+		var perms = $(obj).parents('.qtip').find('table').data('perms');
 		
 		// Update database to reflect new permissions
 		$.post(
 				'/starexec/services/space/' + spaceId + '/edit/perm/' + userId,
-				{users: users, solvers: solvers, benchmarks: benchmarks, subspaces: subspaces, jobs: jobs},
+				{ addUser: perms.addUser,
+				  removeUser: perms.removeUser,
+				  addSolver: perms.addSolver,
+				  removeSolver: perms.removeSolver,
+				  addBench: perms.addBenchmark,
+				  removeBench: perms.removeBench,
+				  addJob: perms.addJob,
+				  removeJob: perms.removeJob,
+				  addSpace: perms.addSpace,
+				  removeSpace: perms.removeSpace,
+				  isLeader: perms.isLeader },
 				function(theResponse){
-					switch(theResponse){
+					console.log('AJAX response received for permission edit request with code ' + theResponse);
+					switch(theResponse){					
 						case 0:
 							// Change the title to 'permissions'
 							tooltip.updateTitle('<center><a>permissions</a></center>');  
@@ -1387,21 +1506,8 @@ function saveChanges(obj, save, userId){
 			alert('Session expired');
 			window.location.reload(true);
 		});	
-	}
-	
-	// 'CANCEL' option
-	else {  
-		// Query database and rebuild the tooltip with the old data
-		$.post(
-				'/starexec/services/space/' + spaceId + '/perm/' + userId,
-				function(theResponse){
-					$(obj).parent().parent().parent().parent().parent().qtip('api').updateContent(buildPermTooltip(theResponse, userId), true);  
-					$(obj).parent().parent().parent().parent().parent().qtip('api').updateTitle('<center><a>permissions</a></center>');
-					return true;
-				}
-	    ).error(function(){
-			alert('Session expired');
-			window.location.reload(true);
-		});	
+	} else {  
+		console.log('user canceled edit permission action');
+		$(obj).parents('.qtip').qtip('api').hide();
 	}
 }

@@ -1051,57 +1051,21 @@ public class RESTServices {
 		perm = Permissions.get(userId, spaceId);
 		if(perm.isLeader()){
 			return gson.toJson(3);
-		}
-		
-		// Extract the new permissions
-		String users      = request.getParameter("users");
-		String solvers    = request.getParameter("solvers");
-		String benchmarks = request.getParameter("benchmarks");
-		String subspaces  = request.getParameter("subspaces");
-		String jobs       = request.getParameter("jobs");
+		}		
 		
 		// Configure a new permission object
 		Permission newPerm = new Permission(false);
-		if(users.equals("a")) {
-			newPerm.setAddUser(true);
-		} else if(users.equals("r")) {
-			newPerm.setRemoveUser(true);
-		} else if(users.equals("ar")) {
-			newPerm.setAddUser(true);
-			newPerm.setRemoveUser(true);
-		}
-		if(solvers.equals("a")){
-			newPerm.setAddSolver(true);
-		} else if(solvers.equals("r")){
-			newPerm.setRemoveSolver(true);
-		} else if(solvers.equals("ar")){
-			newPerm.setAddSolver(true);
-			newPerm.setRemoveSolver(true);
-		}
-		if(benchmarks.equals("a")){
-			newPerm.setAddBenchmark(true);
-		} else if(benchmarks.equals("r")){
-			newPerm.setRemoveBench(true);
-		} else if(benchmarks.equals("ar")){
-			newPerm.setAddBenchmark(true);
-			newPerm.setRemoveBench(true);
-		}
-		if(subspaces.equals("a")){
-			newPerm.setAddSpace(true);
-		} else if(subspaces.equals("r")){
-			newPerm.setRemoveSpace(true);
-		} else if(subspaces.equals("ar")){
-			newPerm.setAddSpace(true);
-			newPerm.setRemoveSpace(true);
-		}
-		if(jobs.equals("a")){
-			newPerm.setAddJob(true);
-		} else if(jobs.equals("r")){
-			newPerm.setRemoveJob(true);
-		} else if(jobs.equals("ar")){
-			newPerm.setAddJob(true);
-			newPerm.setRemoveJob(true);
-		}
+		newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
+		newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+		newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));		
+		newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+		newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));		
+		newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+		newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
+		newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+		newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));		
+		newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+		newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));				
 		
 		// Update database with new permissions
 		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(1);

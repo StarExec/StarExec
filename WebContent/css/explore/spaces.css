@@ -27,3 +27,46 @@
 	background-color: #008d03;
 	border-radius:2px;
 }
+
+.qtip-content table {
+	width: 100%;
+}
+
+.qtip-content table th {
+	padding-bottom: 10px;
+	border-bottom: 1px solid gray;
+}
+
+.qtip-content table td {
+	padding: 0 10 0 10;
+}
+
+.qtip-content table td span {
+	cursor: pointer;
+}
+
+.leaderWrap {		
+	position: absolute;
+	
+	bottom: 10px;
+	left: 72px;
+	width: 70px;	
+}
+
+.leaderWrap h2 {
+	text-align: right;
+	font-weight: bold;
+	color: #008d03;
+}
+
+.leaderWrap span {	
+	display: block;
+	position:absolute;
+}
+
+.leaderBtn {
+	width: 150px;
+	position: relative;
+	left: 24px;
+	top: 6px;
+}
