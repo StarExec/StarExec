@@ -6,6 +6,7 @@
 	<property name="project-name" value="${ant.project.name}" />	
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-directory" value="src" />
+	<property name="config-directory" value="${source-directory}/org/starexec/config" />
 	<property name="build-directory" value="build" />
 	<property name="class-directory" value="${build-directory}/classes" />		
 	<property name="web-inf" value="WebContent/WEB-INF" />		
@@ -16,9 +17,31 @@
         <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
     </path>
-
+	
 	<!-- Action for compiling the project and building the WAR file -->
-	<target name="war" depends="">
+	<target name="war" depends="">		
+		<!-- Register commands and create build timestamp for build properties file -->
+		<tstamp>
+	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
+	    </tstamp>        
+	    <exec executable="svnversion" outputproperty="svnversion"/>
+	    <exec executable="whoami" outputproperty="whoami"/>
+		
+		<!-- Create/update the build property file -->
+	    <propertyfile file="${config-directory}/build.properties"
+	        comment="This file contains automatically generated build metadata. DO NOT EDIT!">        
+	        <entry key="buildtime" value="${builtat}"/>
+	        <entry key="build" value="${svnversion}"/>
+	        <entry key="builder" value="${whoami}"/>
+	    </propertyfile>
+		
+		<!-- Update the starexec-config file to use the production configuration -->
+		<replaceregexp file="${config-directory}/starexec-config.xml"
+		               match="default=(.+)"
+		               replace="default=&quot;production&quot;&gt;"
+		               byline="false"
+		/>
+		
 		<!-- Clear the build directory if it exists and re-make the dir -->
 		<delete dir="${build-directory}" />
 		<mkdir dir="${build-directory}" />
@@ -49,5 +72,5 @@
 			<fileset dir="WebContent"/>
 			<lib dir="${web-inf}/lib"/>			
 		</war>
-	</target>
+	</target>		
 </project>
