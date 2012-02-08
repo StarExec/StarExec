@@ -17,7 +17,7 @@ public class Communities {
 	private static final Logger log = Logger.getLogger(Communities.class);
 	
 	/**
-	 * @return A list of child spaces belonging to the root space (community spaces)
+	 * @return A list of child spaces beinting to the root space (community spaces)
 	 * @author Todd Elvers
 	 */
 	public static List<Space> getAll() {
@@ -32,7 +32,7 @@ public class Communities {
 			while(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
-				s.setId(results.getLong("id"));
+				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));				
 				commSpaces.add(s);
@@ -55,19 +55,19 @@ public class Communities {
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
-	public static Space getDetails(long id) {
+	public static Space getDetails(int id) {
 		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetCommunityById(?)}");
-			procedure.setLong(1, id);					
+			procedure.setInt(1, id);					
 			ResultSet results = procedure.executeQuery();		
 			
 			if(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
-				s.setId(results.getLong("id"));
+				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));
 				s.setCreated(results.getTimestamp("created"));										
@@ -90,14 +90,14 @@ public class Communities {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean leave(long userId, long commId) {
+	public static boolean leave(int userId, int commId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
-			procedure.setLong(1, userId);
-			procedure.setLong(2, commId);
+			procedure.setInt(1, userId);
+			procedure.setInt(2, commId);
 			
 			procedure.executeUpdate();			
 			log.debug(String.format("User [id=%d] successfully left community [id=%d].", userId, commId));

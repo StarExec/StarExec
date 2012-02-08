@@ -61,12 +61,16 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('TPTP', SYSDATE(), 'this is Geoffs example space', 0, 3);
 	
-INSERT INTO bench_types (name, description, processor_path, community) VALUES
-	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3);
-INSERT INTO bench_types (name, description, processor_path, community) VALUES
-	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2);
-INSERT INTO bench_types (name, description, processor_path, community) VALUES
-	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5);
+INSERT INTO processors (name, description, path, community, processor_type) VALUES
+	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3, 3);
+INSERT INTO processors (name, description, path, community, processor_type) VALUES
+	('SAT_LIB_PRE', 'This is a sample SAT pre processor', 'C:\\SATPPREROCESSOR', 3, 1);
+INSERT INTO processors (name, description, path, community, processor_type) VALUES
+	('SAT_LIB_POST', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2);
+INSERT INTO processors (name, description, path, community, processor_type) VALUES
+	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 3);
+INSERT INTO processors (name, description, path, community, processor_type) VALUES
+	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3);
 
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable) VALUES
 	(1, 'Napalm', SYSDATE(), 'C:\\Benchmark.smt2', 'This is a sample benchmark that is downloadable', 1);

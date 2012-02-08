@@ -22,19 +22,19 @@ public class Solvers {
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	public static Solver get(long solverId) {
+	public static Solver get(int solverId) {
 		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSolverById(?)}");
-			procedure.setLong(1, solverId);					
+			procedure.setInt(1, solverId);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				Solver s = new Solver();
-				s.setId(results.getLong("id"));
-				s.setUserId(results.getLong("user_id"));
+				s.setId(results.getInt("id"));
+				s.setUserId(results.getInt("user_id"));
 				s.setName(results.getString("name"));
 				s.setUploadDate(results.getTimestamp("uploaded"));
 				s.setPath(results.getString("path"));
@@ -53,22 +53,22 @@ public class Solvers {
 	
 	/**
 	 * @param spaceId The id of the space to get solvers for
-	 * @return A list of all solvers belonging directly to the space
+	 * @return A list of all solvers beinting directly to the space
 	 * @author Tyler Jensen
 	 */
-	public static List<Solver> getBySpace(long spaceId) {
+	public static List<Solver> getBySpace(int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceSolversById(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			while(results.next()){
 				Solver s = new Solver();
-				s.setId(results.getLong("id"));
+				s.setId(results.getInt("id"));
 				s.setName(results.getString("name"));				
 				s.setUploadDate(results.getTimestamp("uploaded"));
 				s.setDescription(results.getString("description"));
@@ -88,10 +88,10 @@ public class Solvers {
 	
 	/**
 	 * @param spaceId The id of the space to get solvers for
-	 * @return A list of all solvers belonging directly to the space, including their configurations
+	 * @return A list of all solvers beinting directly to the space, including their configurations
 	 * @author Tyler Jensen
 	 */
-	public static List<Solver> getBySpaceDetailed(long spaceId) {
+	public static List<Solver> getBySpaceDetailed(int spaceId) {
 		
 		Connection con = null;			
 		
@@ -122,13 +122,13 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean updateDetails(long id, String name, String description, boolean isDownloadable){
+	public static boolean updateDetails(int id, String name, String description, boolean isDownloadable){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL UpdateSolverDetails(?, ?, ?, ?)}");
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			procedure.setString(2, name);
 			procedure.setString(3, description);
 			procedure.setBoolean(4, isDownloadable);
@@ -153,13 +153,13 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean delete(long id){
+	public static boolean delete(int id){
 		Connection con = null;			
 		File solverToDelete = null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 			
@@ -193,7 +193,7 @@ public class Solvers {
 	 */
 	protected static boolean addConfiguration(Connection con, Configuration c) throws Exception {
 		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?)}");
-		procedure.setLong(1, c.getSolverId());
+		procedure.setInt(1, c.getSolverId());
 		procedure.setString(2, c.getName());
 		
 		procedure.executeUpdate();		
@@ -208,21 +208,21 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean add(Solver s, long spaceId) {
+	public static boolean add(Solver s, int spaceId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?)}");
-			procedure.setLong(1, s.getUserId());
+			procedure.setInt(1, s.getUserId());
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
 			procedure.setString(4, s.getPath());
 			procedure.setString(5, s.getDescription());
-			procedure.registerOutParameter(6, java.sql.Types.BIGINT);
+			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			
 			procedure.executeUpdate();
 			
-			long solverId = procedure.getLong(6);			
+			int solverId = procedure.getInt(6);			
 			Solvers.associate(con, spaceId, solverId);
 			
 			for (Configuration c : s.getConfigurations()) {
@@ -248,10 +248,10 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	protected static boolean associate(Connection con, long spaceId, long solverId) throws Exception {
+	protected static boolean associate(Connection con, int spaceId, int solverId) throws Exception {
 		CallableStatement procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
-		procedure.setLong(1, spaceId);
-		procedure.setLong(2, solverId);
+		procedure.setInt(1, spaceId);
+		procedure.setInt(2, solverId);
 		
 		procedure.executeUpdate();		
 		return true;
@@ -264,14 +264,14 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean associate(List<Long> solverIds, long spaceId) {
+	public static boolean associate(List<Integer> solverIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 			
-			for(long sid : solverIds) {
+			for(int sid : solverIds) {
 				Solvers.associate(con, spaceId, sid);
 			}
 			
@@ -292,7 +292,7 @@ public class Solvers {
 	 * @param confId
 	 * @return The configuration if it is found, null if it is not.
 	 */
-	public static Configuration getConfiguration(long confId) {
+	public static Configuration getConfiguration(int confId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -300,21 +300,21 @@ public class Solvers {
 	/**
 	 * Gets all configurations for the given solver
 	 * @param solverId The solver id to get configurations for
-	 * @return A list of configurations that belong to the solver
+	 * @return A list of configurations that beint to the solver
 	 */
-	public static List<Configuration> getConfigsForSolver(long solverId) {
+	public static List<Configuration> getConfigsForSolver(int solverId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetConfigsForSolver(?)}");
-			procedure.setLong(1, solverId);					
+			procedure.setInt(1, solverId);					
 			ResultSet results = procedure.executeQuery();
 			List<Configuration> configs = new LinkedList<Configuration>();
 			
 			while(results.next()){
 				Configuration c = new Configuration();
-				c.setId(results.getLong("id"));
+				c.setId(results.getInt("id"));
 				c.setName(results.getString("name"));							
 				configs.add(c);
 			}			

@@ -14,9 +14,9 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Solver extends Identifiable {
-	private long userId = -1;
+	private int userId = -1;
 	@Expose	private String name;
-	@Expose private String description = "none";
+	@Expose private String description = "no description";
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;	
@@ -29,14 +29,14 @@ public class Solver extends Identifiable {
 	/**
 	 * @return the user id of the user who uploaded the solver
 	 */
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 
 	/**
 	 * @param userId the user id to set as the uploader
 	 */
-	public void setUserId(long userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
 
@@ -113,7 +113,7 @@ public class Solver extends Identifiable {
 	}
 
 	/**
-	 * @return the configurations that belong to the job
+	 * @return the configurations that beint to the job
 	 */
 	public List<Configuration> getConfigurations() {
 		return configurations;

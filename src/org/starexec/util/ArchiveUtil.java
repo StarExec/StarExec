@@ -96,7 +96,7 @@ public class ArchiveUtil {
 				// If it's not a directory...
 				File fileToCreate = new File(destination, entry.getName());
 				
-				// Get the dir the file b elongs to
+				// Get the dir the file b eints to
 				File dir = new File(fileToCreate.getParent());
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
@@ -132,7 +132,7 @@ public class ArchiveUtil {
 				// If it's not a directory...
 				File fileToCreate = new File(destination, entry.getName());
 				
-				// Get the dir the file b elongs to
+				// Get the dir the file b eints to
 				File dir = new File(fileToCreate.getParent());
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it

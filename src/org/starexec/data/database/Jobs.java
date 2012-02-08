@@ -30,7 +30,7 @@ public class Jobs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean associate(List<Long> jobIds, long spaceId) {
+	public static boolean associate(List<Integer> jobIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -40,9 +40,9 @@ public class Jobs {
 			CallableStatement procedure = null;						
 			procedure = con.prepareCall("{CALL AssociateJob(?, ?)}");
 			
-			for(long jid : jobIds) {
-				procedure.setLong(1, jid);
-				procedure.setLong(2, spaceId);			
+			for(int jid : jobIds) {
+				procedure.setInt(1, jid);
+				procedure.setInt(2, spaceId);			
 				procedure.executeUpdate();			
 			}			
 			
@@ -65,25 +65,25 @@ public class Jobs {
 	 * @return A job object containing information about the requested job
 	 * @author Tyler Jensen
 	 */
-	public static Job get(long jobId) {
+	public static Job get(int jobId) {
 		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
-			procedure.setLong(1, jobId);					
+			procedure.setInt(1, jobId);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				Job j = new Job();
-				j.setId(results.getLong("id"));
-				j.setUserId(results.getLong("user_id"));
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));								
 				j.setDescription(results.getString("description"));	
 				j.setSubmitted(results.getTimestamp("submitted"));
 				j.setFinished(results.getTimestamp("finished"));
 				j.setStatus(results.getString("status"));
-				j.setTimeout(results.getLong("timeout"));
+				j.setTimeout(results.getInt("timeout"));
 				return j;
 			}						
 		} catch (Exception e){			
@@ -95,9 +95,9 @@ public class Jobs {
 		return null;
 	}
 	
-	public static List<Long> getSGEJobIds(long jid) {
+	public static List<Integer> getSGEJobIds(int jid) {
 		// TODO: Instantiate method
-		return new ArrayList<Long>();
+		return new ArrayList<Integer>();
 	}
 	
 	/**
@@ -105,19 +105,19 @@ public class Jobs {
 	 * @return A list of jobs existing directly in the space
 	 * @author Tyler Jensen
 	 */
-	public static List<Job> getBySpace(long spaceId) {
+	public static List<Job> getBySpace(int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceJobsById(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
 			
 			while(results.next()){
 				Job j = new Job();
-				j.setId(results.getLong("id"));
+				j.setId(results.getInt("id"));
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));
 				j.setSubmitted(results.getTimestamp("submitted"));
@@ -139,17 +139,17 @@ public class Jobs {
 	 * Gets all job pairs for the given job 
 	 * @param jobId The id of the job to get pairs for
 	 * @param userId The id of the user requesting the pairs (used for permission check)
-	 * @return A list of job pair objects that belong to the given job.
+	 * @return A list of job pair objects that beint to the given job.
 	 * @author Tyler Jensen
 	 */
-	public static List<JobPair> getPairs(long jobId, long userId) {
+	public static List<JobPair> getPairs(int jobId, int userId) {
 		/*Connection con = null;			
 		
 		try {
 			if(Permissions.canUserSeeJob(jobId, userId)) {
 				con = Common.getConnection();		
 				CallableStatement procedure = con.prepareCall("{CALL GetJobPairByJob(?)}");
-				procedure.setLong(1, jobId);					
+				procedure.setInt(1, jobId);					
 				ResultSet results = procedure.executeQuery();
 				List<JobPair> returnList = new LinkedList<JobPair>();
 				
@@ -157,24 +157,24 @@ public class Jobs {
 				// TODO: differentiate JobPairs and job_pair_attrs
 				while(results.next()){
 					JobPair jp = new JobPair();
-					jp.setId(results.getLong("id"));
+					jp.setId(results.setInt("id"));
 					jp.setResult(results.getString("result"));
 					jp.setStatus(results.getString("status"));
 					jp.setStartDate(results.getTimestamp("start"));
 					jp.setEndDate(results.getTimestamp("stop"));
 					
 					Configuration c = new Configuration();
-					c.setId(results.getLong("config_id"));
+					c.setId(results.setInt("config_id"));
 					c.setDescription(results.getString("config_desc"));
 					c.setName(results.getString("config_name"));
 					
 					Benchmark b = new Benchmark();
-					b.setId(results.getLong("bench_id"));
+					b.setId(results.setInt("bench_id"));
 					b.setDescription(results.getString("bench_desc"));
 					b.setName(results.getString("bench_name"));
 					
 					Solver s = new Solver();
-					s.setId(results.getLong("solver_id"));
+					s.setId(results.setInt("solver_id"));
 					s.setDescription(results.getString("solver_desc"));
 					s.setName(results.getString("solver_name"));	
 					s.addConfiguration(c);
@@ -202,7 +202,7 @@ public class Jobs {
 	 * @param pid
 	 * @return A particular jobpair
 	 */
-	public static JobPair getPair(long pid) {
+	public static JobPair getPair(int pid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

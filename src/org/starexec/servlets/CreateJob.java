@@ -28,7 +28,8 @@ public class CreateJob extends HttpServlet {
 	// Request attributes	
 	private static final String name = "name";
 	private static final String description = "desc";
-	private static final String postProcessor = "process";	
+	private static final String postProcessor = "postProcess";
+	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
 	private static final String solvers = "solver";
 	private static final String benchmarks = "bench";
@@ -62,18 +63,26 @@ public class CreateJob extends HttpServlet {
 	 */
 	private boolean isValid(HttpServletRequest spaceRequest) {
 		try {
-			// Make sure the parent space id is a long
-			if(!Validator.isValidLong((String)spaceRequest.getParameter(spaceId))) {
+			// Make sure the parent space id is a int
+			if(!Validator.isValidInteger((String)spaceRequest.getParameter(spaceId))) {
 				return false;
 			}
 						
-			// TODO: Enable this (and in javascript) when post processors are implemented
-			// Make sure the processor and queue IDs are valid
-			/*if(!Validator.isValidLong((String)spaceRequest.getParameter(postProcessor))) {
-				return false;
-			}*/
+			// If processors are specified, make sure they're valid ints
+			if(Util.paramExists(postProcessor, spaceRequest)) {
+				if(!Validator.isValidInteger((String)spaceRequest.getParameter(postProcessor))) {
+					return false;
+				}
+			}
+
+			if(Util.paramExists(preProcessor, spaceRequest)) {
+				if(!Validator.isValidInteger((String)spaceRequest.getParameter(preProcessor))) {
+					return false;
+				}
+			}
 			
-			if(!Validator.isValidLong((String)spaceRequest.getParameter(workerQueue))) {
+			// Make sure the queue is a valid integer
+			if(!Validator.isValidInteger((String)spaceRequest.getParameter(workerQueue))) {
 				return false;
 			}
 		
@@ -88,16 +97,16 @@ public class CreateJob extends HttpServlet {
 			}		
 			
 			// Check to see if we have a valid list of solver ids
-			if(!Validator.isValidLongList(spaceRequest.getParameterValues(solvers))) {
+			if(!Validator.isValidIntegerList(spaceRequest.getParameterValues(solvers))) {
 				return false;
 			}
 
 			// Check to see if we have a valid list of benchmark ids
-			if(!Validator.isValidLongList(spaceRequest.getParameterValues(benchmarks))) {
+			if(!Validator.isValidIntegerList(spaceRequest.getParameterValues(benchmarks))) {
 				return false;
 			}
 			
-			long sid = Long.parseLong((String)spaceRequest.getParameter(spaceId));
+			int sid = Integer.parseInt((String)spaceRequest.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(spaceRequest, sid);
 			
 			// Make sure the user has access to the space
@@ -106,13 +115,13 @@ public class CreateJob extends HttpServlet {
 			}
 			
 			// Make sure the user is using benchmarks and solvers that they can see
-			long userId = SessionUtil.getUserId(spaceRequest);
+			int userId = SessionUtil.getUserId(spaceRequest);
 			
-			if(!Permissions.canUserSeeSolvers(Util.toLongList(spaceRequest.getParameterValues(solvers)), userId)) {
+			if(!Permissions.canUserSeeSolvers(Util.toIntegerList(spaceRequest.getParameterValues(solvers)), userId)) {
 				return false;
 			}
 			
-			if(!Permissions.canUserSeeBenchs(Util.toLongList(spaceRequest.getParameterValues(benchmarks)), userId)) {
+			if(!Permissions.canUserSeeBenchs(Util.toIntegerList(spaceRequest.getParameterValues(benchmarks)), userId)) {
 				return false;
 			}
 			

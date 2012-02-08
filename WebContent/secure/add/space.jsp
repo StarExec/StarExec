@@ -3,8 +3,8 @@
 <%	
 	try {		
 		// Get parent space info for display
-		long spaceId = Long.parseLong(request.getParameter("sid"));
-		long userId = SessionUtil.getUserId(request);
+		int spaceId = Integer.parseInt(request.getParameter("sid"));
+		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
 		
 		// Verify this user can add spaces to this space

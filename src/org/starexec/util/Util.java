@@ -201,15 +201,15 @@ public class Util {
 	}
 
 	/**
-	 * Converts a list of strings into a list of longs
-	 * @param stringList The list of numeric strings to convert to longs
-	 * @return A list of longs parsed from the string list
+	 * Converts a list of strings into a list of ints
+	 * @param stringList The list of numeric strings to convert to ints
+	 * @return A list of ints parsed from the string list
 	 */
-	public static List<Long> toLongList(String[] stringList) {
-		ArrayList<Long> retList = new ArrayList<Long>(stringList.length);
+	public static List<Integer> toIntegerList(String[] stringList) {
+		ArrayList<Integer> retList = new ArrayList<Integer>(stringList.length);
 		
 		for(String s : stringList){
-			retList.add(Long.parseLong(s));
+			retList.add(Integer.parseInt(s));
 		}
 		
 		return retList;

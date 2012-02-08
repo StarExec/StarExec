@@ -69,7 +69,7 @@ public class CommunityRequester extends HttpServlet {
 			}
 			
 			String message = request.getParameter(Registration.USER_MESSAGE);
-			long communityId = Long.parseLong(request.getParameter(Registration.USER_COMMUNITY)); 		
+			int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY)); 		
 			
 			if(validateParameters(communityId, message)){
 				CommunityRequest req = new CommunityRequest();
@@ -96,7 +96,7 @@ public class CommunityRequester extends HttpServlet {
 	 * @return true iff communityId is a valid space_id and that the user's message is
 	 * between 1 and 300 characters in length
 	 */
-	private boolean validateParameters(long communityId, String message){
+	private boolean validateParameters(int communityId, String message){
 		// Gather the number of communities ( the +1 is for the root )
 		int numberOfCommunities = Communities.getAll().size() + 1;
 		if(communityId < 0 

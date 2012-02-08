@@ -19,8 +19,8 @@ public class JobTuple {
 	 * @param pid : pair id
 	 * @param qid : queue id
 	 */
-	public JobTuple(long pid, long qid) {
-		long confId, benchmarkId, solverId = -1;
+	public JobTuple(int pid, int qid) {
+		int confId, benchmarkId, solverId = -1;
 		
 		// Retrieve job_pair to get confId, benchmarkId
 		jobPair = Jobs.getPair(pid);

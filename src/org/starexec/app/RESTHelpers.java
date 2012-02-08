@@ -47,7 +47,7 @@ public class RESTHelpers {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		
 		for(WorkerNode n : nodes){
-			// Only take the first part of the host name, the full one is too long to display on the client
+			// Only take the first part of the host name, the full one is too int to display on the client
 			JSTreeItem t = new JSTreeItem(n.getName().split("\\.")[0], n.getId(), "leaf", n.getStatus().equals("ACTIVE") ? "enabled_node" : "disabled_node");	
 			list.add(t);
 		}
@@ -105,7 +105,7 @@ public class RESTHelpers {
 		private List<JSTreeItem> children;
 		private String state;
 				
-		public JSTreeItem(String name, long id, String state, String type){
+		public JSTreeItem(String name, int id, String state, String type){
 			this.data = name;
 			this.attr = new JSTreeAttribute(id, type);
 			this.state = state;
@@ -119,22 +119,22 @@ public class RESTHelpers {
 	
 	/**
 	 * An attribute of a jsTree node which holds the node's id so
-	 * that it can be passed along to other ajax methods.
+	 * that it can be passed aint to other ajax methods.
 	 * @author Tyler Jensen
 	 */	
 	@SuppressWarnings("unused")
 	protected static class JSTreeAttribute {
-		private long id;		
+		private int id;		
 		private String rel;
 		
-		public JSTreeAttribute(long id, String type){
+		public JSTreeAttribute(int id, String type){
 			this.id = id;	
 			this.rel = type;
 		}			
 	}
 	
 	/**
-	 * Represents a space along with a user's permission for the space. Used so
+	 * Represents a space aint with a user's permission for the space. Used so
 	 * the client side can determine what actions a user can take on a space.
 	 * @author Tyler Jensen
 	 */
@@ -151,7 +151,7 @@ public class RESTHelpers {
 	
 	/**
 	 * Represents community details including the requesting user's permissions
-	 * for the community along with the community's leaders.
+	 * for the community aint with the community's leaders.
 	 * Permissions are used so the client side can determine what actions a user can take on the community
 	 * @author Tyler Jensen
 	 */

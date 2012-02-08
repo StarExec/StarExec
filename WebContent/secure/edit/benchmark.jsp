@@ -1,34 +1,34 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%		
+<%
 	try {
-		long userId = SessionUtil.getUserId(request);
-		long benchId = Long.parseLong(request.getParameter("id"));
+		int userId = SessionUtil.getUserId(request);
+		int benchId = Integer.parseInt(request.getParameter("id"));
 		
 		Benchmark b = null;
 		if(Permissions.canUserSeeBench(benchId, userId)) {
-			b = Benchmarks.get(benchId);
+	b = Benchmarks.get(benchId);
 		}
 
 		if(b != null) {
-			// Ensure the user visiting this page is the owner of the benchmark
-			if(userId != b.getUserId()){
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
-			} else {
-				request.setAttribute("bench", b);
-				if(b.isDownloadable()){
-					request.setAttribute("isDownloadable", "checked");
-					request.setAttribute("isNotDownloadable", "");
-				} else {
-					request.setAttribute("isDownloadable", "");
-					request.setAttribute("isNotDownloadable", "checked");
-				}
-				request.setAttribute("types", BenchTypes.getAll());
-			}
+	// Ensure the user visiting this page is the owner of the benchmark
+	if(userId != b.getUserId()){
+		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
+	} else {
+		request.setAttribute("bench", b);
+		if(b.isDownloadable()){
+			request.setAttribute("isDownloadable", "checked");
+			request.setAttribute("isNotDownloadable", "");
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
+			request.setAttribute("isDownloadable", "");
+			request.setAttribute("isNotDownloadable", "checked");
+		}
+		request.setAttribute("types", Processors.getAll(ProcessorType.BENCH);
+	}
+		} else {
+	response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");

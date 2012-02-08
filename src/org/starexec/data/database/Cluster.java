@@ -20,10 +20,10 @@ public class Cluster {
 	private static final Logger log = Logger.getLogger(Cluster.class);
 	
 	/**
-	 * Associates a queue and a worker node to indicate the node belongs to the queue.
+	 * Associates a queue and a worker node to indicate the node beints to the queue.
 	 * If the association already exists, any errors are ignored.
 	 * @param queueName The FULL name of the owning queue
-	 * @param nodeName The FULL name of the worker node that belongs to the queue
+	 * @param nodeName The FULL name of the worker node that beints to the queue
 	 * @return True if the operation was a success, false otherwise. 
 	 */
 	public static boolean associateQueue(String queueName, String nodeName) {
@@ -47,24 +47,24 @@ public class Cluster {
 	}
 	
 	/**
-	 * Gets a worker node with detailed information (Id and name along with all attributes)
+	 * Gets a worker node with detailed information (Id and name aint with all attributes)
 	 * @param id The id of the node to get detailed information for
 	 * @return A node object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
-	public static WorkerNode getNodeDetails(long id) {
+	public static WorkerNode getNodeDetails(int id) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetNodeDetails(?)}");
-			procedure.setLong(1, id);			
+			procedure.setInt(1, id);			
 			ResultSet results = procedure.executeQuery();
 			WorkerNode node = new WorkerNode();
 			
 			if(results.next()){
 				node.setName(results.getString("name"));
-				node.setId(results.getLong("id"));
+				node.setId(results.getInt("id"));
 				node.setStatus(results.getString("status"));
 				
 				// Start from 4 (first three are ID, name and status)
@@ -85,24 +85,24 @@ public class Cluster {
 	}
 
 	/**
-	 * Gets a queue with detailed information (Id and name along with all attributes)
+	 * Gets a queue with detailed information (Id and name aint with all attributes)
 	 * @param id The id of the queue to get detailed information for
 	 * @return A queue object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
-	public static Queue getQueueDetails(long id) {
+	public static Queue getQueueDetails(int id) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetQueueDetails(?)}");
-			procedure.setLong(1, id);			
+			procedure.setInt(1, id);			
 			ResultSet results = procedure.executeQuery();
 			Queue queue = new Queue();
 			
 			if(results.next()){
 				queue.setName(results.getString("name"));
-				queue.setId(results.getLong("id"));
+				queue.setId(results.getInt("id"));
 				queue.setStatus(results.getString("status"));
 				queue.setSlotsTotal(results.getInt("slots_total"));
 				queue.setSlotsAvailable(results.getInt("slots_free"));
@@ -143,7 +143,7 @@ public class Cluster {
 			while(results.next()){
 				WorkerNode n = new WorkerNode();
 				n.setName(results.getString("name"));
-				n.setId(results.getLong("id"));
+				n.setId(results.getInt("id"));
 				n.setStatus(results.getString("status"));
 				nodes.add(n);
 			}			
@@ -159,25 +159,25 @@ public class Cluster {
 	}
 	
 	/**
-	 * Gets all nodes in the cluster that belong to the queue
+	 * Gets all nodes in the cluster that beint to the queue
 	 * @param id The id of the queue to get nodes for
-	 * @return A list of nodes that belong to the queue
+	 * @return A list of nodes that beint to the queue
 	 * @author Tyler Jensen
 	 */
-	public static List<WorkerNode> getNodesForQueue(long id) {
+	public static List<WorkerNode> getNodesForQueue(int id) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetNodesForQueue(?)}");
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			ResultSet results = procedure.executeQuery();
 			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 			
 			while(results.next()){
 				WorkerNode n = new WorkerNode();
 				n.setName(results.getString("name"));
-				n.setId(results.getLong("id"));
+				n.setId(results.getInt("id"));
 				n.setStatus(results.getString("status"));
 				nodes.add(n);
 			}			
@@ -209,7 +209,7 @@ public class Cluster {
 			while(results.next()){
 				Queue q = new Queue();
 				q.setName(results.getString("name"));
-				q.setId(results.getLong("id"));	
+				q.setId(results.getInt("id"));	
 				q.setStatus(results.getString("status"));
 				queues.add(q);
 			}			
@@ -271,7 +271,6 @@ public class Cluster {
 						
 			// Done, commit the changes
 			Common.endTransaction(con);
-			log.debug(String.format("Updated [%d] attributes for queue [%s] successfully.", attributes.size(), name));
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -363,8 +362,7 @@ public class Cluster {
 			}
 						
 			// Done, commit the changes
-			Common.endTransaction(con);
-			log.debug(String.format("Updated [%d] attributes for node [%s] successfully.", attributes.size(), name));
+			Common.endTransaction(con);			
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -410,7 +408,6 @@ public class Cluster {
 				procedure.setString(2, status);
 			}
 						
-			log.debug(String.format("Status for queue [%s] set to [%s]", (name == null) ? "ALL" : name, status));
 			procedure.executeUpdate();			
 			return true;
 		} catch (Exception e){			
@@ -457,7 +454,7 @@ public class Cluster {
 				procedure.setString(2, status);
 			}
 						
-			log.debug(String.format("Status for node [%s] set to [%s]", (name == null) ? "ALL" : name, status));
+			log.debug(String.format("Status for node [%s] set to [%s]", (name == null) ? "<ALL>" : name, status));
 			procedure.executeUpdate();			
 			return true;
 		} catch (Exception e){			

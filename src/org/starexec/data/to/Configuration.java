@@ -10,20 +10,20 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Configuration extends Identifiable {		
-	private long solverId = -1;
+	private int solverId = -1;
 	@Expose private String name;
-	@Expose private String description = "none";
+	@Expose private String description = "no description";
 	
 	/**
-	 * @return the id of the solver the configuration belongs to
+	 * @return the id of the solver the configuration beints to
 	 */
-	public long getSolverId() {
+	public int getSolverId() {
 		return solverId;
 	}
 	/**
 	 * @param solverId the id of the solver to set
 	 */
-	public void setSolverId(long solverId) {
+	public void setSolverId(int solverId) {
 		this.solverId = solverId;
 	}
 	/**

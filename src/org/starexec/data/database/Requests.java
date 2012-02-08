@@ -28,7 +28,7 @@ public class Requests {
 		try {			
 			// Add a new entry to the VERIFY table
 			CallableStatement procedure = con.prepareCall("{CALL AddCode(?, ?)}");
-			procedure.setLong(1, user.getId());
+			procedure.setInt(1, user.getId());
 			procedure.setString(2, code);
 
 			// Apply update to database and check to be sure at least 1 row was modified
@@ -53,12 +53,12 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	protected static boolean addCommunityRequest(Connection con, User user, long communityId, String message ) {
+	protected static boolean addCommunityRequest(Connection con, User user, int communityId, String message ) {
 		try {		
 			// Add a new entry to the VERIFY table
 			CallableStatement procedure = con.prepareCall("{CALL AddCommunityRequest(?, ?, ?, ?)}");
-			procedure.setLong(1, user.getId());
-			procedure.setLong(2, communityId);
+			procedure.setInt(1, user.getId());
+			procedure.setInt(2, communityId);
 			procedure.setString(3, UUID.randomUUID().toString());
 			procedure.setString(4, message);
 
@@ -82,7 +82,7 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean addCommunityRequest(User user, long communityId, String code, String message) {
+	public static boolean addCommunityRequest(User user, int communityId, String code, String message) {
 		Connection con = null;
 		
 		try {
@@ -103,7 +103,7 @@ public class Requests {
 	 * @param codeFromUser the activation code provided by the user
 	 * @author Todd Elvers
 	 */
-	public static long redeemActivationCode(String codeFromUser){
+	public static int redeemActivationCode(String codeFromUser){
 		Connection con = null;
 		try {
 			
@@ -111,10 +111,10 @@ public class Requests {
 
 			CallableStatement procedure = con.prepareCall("{CALL RedeemActivationCode(?, ?)}");
 			procedure.setString(1, codeFromUser);
-			procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+			procedure.registerOutParameter(2, java.sql.Types.INTEGER);
 			
 			procedure.executeUpdate();			
-			long userId = procedure.getLong(2);
+			int userId = procedure.getInt(2);
 			log.info(String.format("Activation code %s redeemed by user %d", codeFromUser, userId));
 			return userId;
 		} catch (Exception e) {
@@ -134,14 +134,14 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean approveCommunityRequest(long userId, long communityId){
+	public static boolean approveCommunityRequest(int userId, int communityId){
 		Connection con = null;
 		try {		
 			con = Common.getConnection();
 
 			CallableStatement procedure = con.prepareCall("{CALL ApproveCommunityRequest(?, ?)}");
-			procedure.setLong(1, userId);
-			procedure.setLong(2, communityId);
+			procedure.setInt(1, userId);
+			procedure.setInt(2, communityId);
 			
 			procedure.executeUpdate();			
 			return true;					
@@ -162,15 +162,15 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean declineCommunityRequest(long userId, long communityId){
+	public static boolean declineCommunityRequest(int userId, int communityId){
 		Connection con = null;
 		
 		try {			
 			con = Common.getConnection();
 
 			CallableStatement procedure = con.prepareCall("{CALL DeclineCommunityRequest(?, ?)}");
-			procedure.setLong(1, userId);
-			procedure.setLong(2, communityId);
+			procedure.setInt(1, userId);
+			procedure.setInt(2, communityId);
 			
 			procedure.executeUpdate();			
 			return true;			
@@ -189,19 +189,19 @@ public class Requests {
 	 * @return The request associated with the user id
 	 * @author Todd Elvers
 	 */
-	public static CommunityRequest getCommunityRequest(long userId){
+	public static CommunityRequest getCommunityRequest(int userId){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetCommunityRequestById(?)}");
-			procedure.setLong(1, userId);					
+			procedure.setInt(1, userId);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				CommunityRequest req = new CommunityRequest();
-				req.setUserId(results.getLong("user_id"));
-				req.setCommunityId(results.getLong("community"));
+				req.setUserId(results.getInt("user_id"));
+				req.setCommunityId(results.getInt("community"));
 				req.setCode(results.getString("code"));
 				req.setMessage(results.getString("message"));
 				req.setCreateDate(results.getTimestamp("created"));
@@ -233,8 +233,8 @@ public class Requests {
 			
 			if(results.next()){
 				CommunityRequest req = new CommunityRequest();
-				req.setUserId(results.getLong("user_id"));
-				req.setCommunityId(results.getLong("community"));
+				req.setUserId(results.getInt("user_id"));
+				req.setCommunityId(results.getInt("community"));
 				req.setCode(results.getString("code"));
 				req.setMessage(results.getString("message"));
 				req.setCreateDate(results.getTimestamp("created"));
@@ -260,13 +260,13 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers 
 	 */
-	public static boolean addPassResetRequest(long userId, String code){
+	public static boolean addPassResetRequest(int userId, String code){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL AddPassResetRequest(?, ?)}");
-			procedure.setLong(1, userId);
+			procedure.setInt(1, userId);
 			procedure.setString(2, code);
 			
 			procedure.executeUpdate();			
@@ -289,17 +289,17 @@ public class Requests {
 	 * code provided matches one in the password reset table, -1 otherwise
 	 * @author Todd Elvers
 	 */
-	public static long redeemPassResetRequest(String code){
+	public static int redeemPassResetRequest(String code){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL RedeemPassResetRequestByCode(?, ?)}");
 			procedure.setString(1, code);
-			procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+			procedure.registerOutParameter(2, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
 						
-			return procedure.getLong(2);
+			return procedure.getInt(2);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
 		} finally {

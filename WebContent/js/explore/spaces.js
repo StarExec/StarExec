@@ -755,7 +755,7 @@ function checkPermissions(perms) {
 	
 	if(perms.isLeader){
 		// attach leader tooltips to every entry in the userTable 
-		createTooltip($('#users tbody'), 'tr', 'leader');
+		createTooltip($('#users tbody'), 'tr', 'leader');		
 	} else {
 		// otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');

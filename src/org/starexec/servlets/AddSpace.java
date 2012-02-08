@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
@@ -79,11 +80,11 @@ public class AddSpace extends HttpServlet {
 		// Set the default permission on the space
 		s.setPermission(p);
 		
-		long spaceId = Long.parseLong((String)request.getParameter(parentSpace));
-		long userId = SessionUtil.getUserId(request);
+		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
+		int userId = SessionUtil.getUserId(request);
+		int newSpaceId = Spaces.add(s, spaceId, userId);
 		
-		//Actually add the space to the system
-		if(Spaces.add(s, spaceId, userId) <= 0) {
+		if(newSpaceId <= 0) {			
 			// If it failed, notify an error
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
 		} else {
@@ -100,8 +101,8 @@ public class AddSpace extends HttpServlet {
 	 */
 	private boolean isValid(HttpServletRequest spaceRequest) {
 		try {
-			// Make sure the parent space id is a long
-			long spaceId = Long.parseLong((String)spaceRequest.getParameter(parentSpace));
+			// Make sure the parent space id is a int
+			int spaceId = Integer.parseInt((String)spaceRequest.getParameter(parentSpace));
 			
 			// Ensure the space name is valid (alphanumeric < 32 chars)
 			if(!Validator.isValidPrimName((String)spaceRequest.getParameter(name))) {

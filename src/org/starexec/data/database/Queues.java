@@ -13,7 +13,7 @@ public abstract class Queues {
 	 * @param qid
 	 * @return a Queue TO
 	 */
-	public static Queue get(long qid) {
+	public static Queue get(int qid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

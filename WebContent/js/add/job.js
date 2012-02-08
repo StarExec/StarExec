@@ -26,9 +26,6 @@ $(document).ready(function(){
 				maxlength: 512,
 				regex: "^[\\w\\]\\[!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"
 			},
-			process: {
-				required: false,
-			},
 			queue: {
 				required: true,
 			}
@@ -44,9 +41,6 @@ $(document).ready(function(){
 				maxlength: "< 512 characters",
 				regex: "invalid character(s)"
 			},
-			process: {
-				required: "select a post processor",
-			} ,
 			queue: {
 				required: "select a worker queue",
 			}

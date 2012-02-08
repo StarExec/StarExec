@@ -29,19 +29,19 @@ public class Spaces {
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
-	public static Space get(long spaceId) {
+	public static Space get(int spaceId) {
 		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceById(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();		
 			
 			if(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
-				s.setId(results.getLong("id"));
+				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));
 				s.setCreated(results.getTimestamp("created"));										
@@ -63,19 +63,19 @@ public class Spaces {
 	 * @return a list of leaders of the given space
 	 * @author Todd Elvers
 	 */
-	public static List<User> getLeaders(long spaceId){
+	public static List<User> getLeaders(int spaceId){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetLeadersBySpaceId(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			List<User> leaders = new LinkedList<User>();
 			
 			while(results.next()){
 				User u = new User();
-				u.setId(results.getLong("id"));
+				u.setId(results.getInt("id"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
@@ -103,7 +103,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeUsers(List<Long> userIds, long commId) {
+	public static boolean removeUsers(List<Integer> userIds, int commId) {
 		Connection con = null;			
 		
 		try {
@@ -112,9 +112,9 @@ public class Spaces {
 			Common.beginTransaction(con);
 			
 			CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
-			for(long userId : userIds){
-				procedure.setLong(1, userId);
-				procedure.setLong(2, commId);
+			for(int userId : userIds){
+				procedure.setInt(1, userId);
+				procedure.setInt(2, commId);
 				
 				procedure.executeUpdate();			
 			}
@@ -143,7 +143,7 @@ public class Spaces {
 	 * @return true iff all benchmarks in benchIds were successfully removed, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeBenches(List<Long> benchIds, long spaceId) {
+	public static boolean removeBenches(List<Integer> benchIds, int spaceId) {
 		Connection con = null;	
 		
 		try {
@@ -181,13 +181,13 @@ public class Spaces {
 	 * @throws SQLException if an error occurs while removing benchmarks from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeBenches(List<Long> benchIds, long spaceId, Connection con) throws SQLException {
+	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?, ?)}");
 		List<File> filesToDelete = new ArrayList<File>();
 		
-		for(long benchId : benchIds){
-			procedure.setLong(1, benchId);
-			procedure.setLong(2, spaceId);
+		for(int benchId : benchIds){
+			procedure.setInt(1, benchId);
+			procedure.setInt(2, spaceId);
 			procedure.registerOutParameter(3, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 			
@@ -203,7 +203,7 @@ public class Spaces {
 		// Remove files from disk
 		for(File file : filesToDelete){
 			if(file.delete()){
-				log.debug(String.format("File [%s] was deleted at [%s] because it was no longer referenced anywhere.", file.getName(), file.getAbsolutePath()));
+				log.debug(String.format("File [%s] was deleted at [%s] because it was no inter referenced anywhere.", file.getName(), file.getAbsolutePath()));
 			}
 			if(file.getParentFile().delete()){
 				log.debug(String.format("Directory [%s] was deleted because it was empty.", file.getParentFile().getAbsolutePath()));
@@ -222,7 +222,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeSolvers(List<Long> solverIds, long spaceId) {
+	public static boolean removeSolvers(List<Integer> solverIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -258,13 +258,13 @@ public class Spaces {
 	 * @throws SQLException if an error occurs while removing solvers from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeSolvers(List<Long> solverIds, long spaceId, Connection con) throws SQLException {
+	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?, ?)}");
 		List<File> filesToDelete = new ArrayList<File>();
 
-		for(long solverId : solverIds){
-			procedure.setLong(1, solverId);
-			procedure.setLong(2, spaceId);
+		for(int solverId : solverIds){
+			procedure.setInt(1, solverId);
+			procedure.setInt(2, spaceId);
 			procedure.registerOutParameter(3, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 			
@@ -279,7 +279,7 @@ public class Spaces {
 		// Remove files from disk
 		for(File file : filesToDelete){
 			if(file.delete()){
-				log.debug(String.format("File [%s] was deleted at [%s] because it was no longer referenced anywhere.", file.getName(), file.getAbsolutePath()));
+				log.debug(String.format("File [%s] was deleted at [%s] because it was no inter referenced anywhere.", file.getName(), file.getAbsolutePath()));
 			}
 			if(file.getParentFile().delete()){
 				log.debug(String.format("Directory [%s] was deleted because it was empty.", file.getParentFile().getAbsolutePath()));
@@ -298,7 +298,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeJobs(ArrayList<Long> jobIds, long spaceId) {
+	public static boolean removeJobs(ArrayList<Integer> jobIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -334,11 +334,11 @@ public class Spaces {
 	 * @throws SQLException if an error occurs while removing jobs from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeJobs(ArrayList<Long> jobIds, long spaceId, Connection con) throws SQLException {
+	protected static boolean removeJobs(ArrayList<Integer> jobIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
-		for(long jobId : jobIds){
-			procedure.setLong(1, jobId);
-			procedure.setLong(2, spaceId);
+		for(int jobId : jobIds){
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, spaceId);
 			
 			procedure.executeUpdate();			
 		}
@@ -357,7 +357,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeSubspaces(ArrayList<Long> subspaceIds, long spaceId) {
+	public static boolean removeSubspaces(ArrayList<Integer> subspaceIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -366,12 +366,12 @@ public class Spaces {
 			Common.beginTransaction(con);
 			
 			CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
-			for(long subspaceId : subspaceIds){
+			for(int subspaceId : subspaceIds){
 				// Checks the solvers, benchmarks, and jobs to see if any
 				// are safe to be deleted from disk
 				smartDelete(subspaceId, con);
 				
-				procedure.setLong(1, subspaceId);
+				procedure.setInt(1, subspaceId);
 				procedure.executeUpdate();			
 			}
 			
@@ -397,13 +397,13 @@ public class Spaces {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean updateDescription(long spaceId, String newDesc){
+	public static boolean updateDescription(int spaceId, String newDesc){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceDescription(?, ?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			procedure.setString(2, newDesc);
 			
 			procedure.executeUpdate();			
@@ -419,27 +419,27 @@ public class Spaces {
 	}
 	
 	/**
-	 * Gets all subspaces belonging to another space
+	 * Gets all subspaces beinting to another space
 	 * @param spaceId The id of the parent space. Give an id <= 0 to get the root space
 	 * @param userId The id of the user requesting the subspaces. This is used to verify the user can see the space
-	 * @return A list of child spaces belonging to the parent space that the given user can see
+	 * @return A list of child spaces beinting to the parent space that the given user can see
 	 * @author Tyler Jensen
 	 */
-	public static List<Space> getSubSpaces(long spaceId, long userId) {
+	public static List<Space> getSubSpaces(int spaceId, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
-			procedure.setLong(1, spaceId);
-			procedure.setLong(2, userId);
+			procedure.setInt(1, spaceId);
+			procedure.setInt(2, userId);
 			ResultSet results = procedure.executeQuery();
 			List<Space> subSpaces = new LinkedList<Space>();
 			
 			while(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
-				s.setId(results.getLong("id"));
+				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));				
 				subSpaces.add(s);
@@ -461,13 +461,13 @@ public class Spaces {
 	 * @return the name of the community
 	 * @author Todd Elvers
 	 */
-	public static String getName(long spaceId){
+	public static String getName(int spaceId){
 		Connection con = null;			
 		
 		try {
 				con = Common.getConnection();		
 				CallableStatement procedure = con.prepareCall("{CALL GetSpaceById(?)}");
-				procedure.setLong(1, spaceId);					
+				procedure.setInt(1, spaceId);					
 				ResultSet results = procedure.executeQuery();
 				String communityName = null;
 				
@@ -486,14 +486,14 @@ public class Spaces {
 	}
 	
 	/**
-	 * Gets a space with detailed information (solvers, benchmarks, jobs and user belonging
+	 * Gets a space with detailed information (solvers, benchmarks, jobs and user beinting
 	 * to the space are also populated)
 	 * @param spaceId The id of the space to get information for
 	 * @param userId The id of user requesting the space used to view details from their perspective
 	 * @return A space object consisting of detailed information about the space
 	 * @author Tyler Jensen
 	 */
-	public static Space getDetails(long spaceId, long userId) {		
+	public static Space getDetails(int spaceId, int userId) {		
 		try {			
 			Space s = Spaces.get(spaceId);
 			s.setUsers(Spaces.getUsers(spaceId));
@@ -512,22 +512,22 @@ public class Spaces {
 	
 	/**
 	 * @param spaceId The id of the space to get users for
-	 * @return A list of users belonging directly to the space
+	 * @return A list of users beinting directly to the space
 	 * @author Tyler Jensen
 	 */
-	public static List<User> getUsers(long spaceId) {
+	public static List<User> getUsers(int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceUsersById(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			List<User> users= new LinkedList<User>();
 			
 			while(results.next()){
 				User u = new User();
-				u.setId(results.getLong("id"));
+				u.setId(results.getInt("id"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
@@ -550,13 +550,13 @@ public class Spaces {
 	 * Adds all subspaces and their benchmarks to the database. The first space given should be
 	 * an existing space (it must have an ID that will be the ancestor space of all subspaces) and
 	 * it can optionally contain NEW benchmarks to be added to the space. The method then traverses
-	 * into its subspaces recursively and adds them to the database along with their benchmarks.
+	 * into its subspaces recursively and adds them to the database aint with their benchmarks.
 	 * @param parent The parent space that is the 'root' of the new subtree to be added
 	 * @param userId The user that will own the new spaces and benchmarks
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean addWithBenchmarks(Space parent, long userId) {
+	public static boolean addWithBenchmarks(Space parent, int userId) {
 		Connection con = null;
 		
 		try {
@@ -590,13 +590,13 @@ public class Spaces {
 	 * Internal recursive method that adds a space and it's benchmarks to the database
 	 * @param con The connection to perform the operations on
 	 * @param space The space to add to the database
-	 * @param parentId The id of the parent space that the given space will belong to
+	 * @param parentId The id of the parent space that the given space will beint to
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Tyler Jensen
 	 */
-	protected static void traverse(Connection con, Space space, long parentId, long userId) throws Exception {
+	protected static void traverse(Connection con, Space space, int parentId, int userId) throws Exception {
 		// Add the new space to the database and get it's ID		
-		long spaceId = Spaces.add(con, space, parentId, userId);
+		int spaceId = Spaces.add(con, space, parentId, userId);
 		
 		for(Space s : space.getSubspaces()) {
 			// Recursively go through and add all of it's subspaces with itself as the parent
@@ -614,13 +614,13 @@ public class Spaces {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean updateName(long spaceId, String newName){
+	public static boolean updateName(int spaceId, String newName){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceName(?, ?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			procedure.setString(2, newName);
 			
 			procedure.executeUpdate();			
@@ -645,7 +645,7 @@ public class Spaces {
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	public static long add(Space s, long parentId, long userId) {
+	public static int add(Space s, int parentId, int userId) {
 		Connection con = null;			
 		
 		try {
@@ -653,7 +653,7 @@ public class Spaces {
 			
 			Common.beginTransaction(con);	
 			// Add space is a multi-step process, so we need to use a transaction
-			long newSpaceId = Spaces.add(con, s, parentId, userId);
+			int newSpaceId = Spaces.add(con, s, parentId, userId);
 			Common.endTransaction(con);			
 			
 			return newSpaceId;
@@ -680,44 +680,39 @@ public class Spaces {
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	protected static long add(Connection con, Space s, long parentId, long userId) throws Exception {			
+	protected static int add(Connection con, Space s, int parentId, int userId) throws Exception {			
 		// Add the default permission for the space to the database			
-		long defaultPermId = Permissions.add(s.getPermission(), con);
+		int defaultPermId = Permissions.add(s.getPermission(), con);
 		
 		// Add the space with the default permissions
 		CallableStatement procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
 		procAddSpace.setString(1, s.getName());
 		procAddSpace.setString(2, s.getDescription());
 		procAddSpace.setBoolean(3, s.isLocked());
-		procAddSpace.setLong(4, defaultPermId);
-		procAddSpace.setLong(5, parentId);
-		procAddSpace.registerOutParameter(6, java.sql.Types.BIGINT);
-		
+		procAddSpace.setInt(4, defaultPermId);
+		procAddSpace.setInt(5, parentId);
+		procAddSpace.registerOutParameter(6, java.sql.Types.INTEGER);		
 		procAddSpace.executeUpdate();
-		long newSpaceId = procAddSpace.getLong(6);
+		int newSpaceId = procAddSpace.getInt(6);
 		
 		// Add the new space as a child space of the parent space
 		CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?, ?)}");	
-		procSubspace.setLong(1, parentId);
-		procSubspace.setLong(2, newSpaceId);
-		procSubspace.setLong(3, defaultPermId);			
-		
-		procSubspace.executeUpdate();
-		
-		// Add a new set of maximal permissions for the user who added the space			
-		long userPermId = Permissions.add(new Permission(true), con);
+		procSubspace.setInt(1, parentId);
+		procSubspace.setInt(2, newSpaceId);
+		procSubspace.setInt(3, defaultPermId);					
+		procSubspace.executeUpdate();		
 		
 		// Add the adding user to the space with the maximal permissions
-		CallableStatement procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?, ?)}");			
-		procAddUser.setLong(1, userId);
-		procAddUser.setLong(2, newSpaceId);
-		procAddUser.setLong(3, newSpaceId);
-		procAddUser.setLong(4, userPermId);
-		
+		CallableStatement procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
+		procAddUser.setInt(1, userId);
+		procAddUser.setInt(2, newSpaceId);
+		procAddUser.setInt(3, newSpaceId);				
 		procAddUser.executeUpdate();
-		Common.endTransaction(con);
 		
-		// Log the new addition and ensure we return at least 3 affected rows (the two added permissions are self-checking)
+		// Set maximal permissions for the user who added the space	
+		Permissions.set(userId, newSpaceId, new Permission(true), con);
+		
+		Common.endTransaction(con);
 		log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
 		return newSpaceId;
 	}
@@ -730,13 +725,13 @@ public class Spaces {
 	 * @return true iff the space is a leaf-space (i.e. if it has no descendants), false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean isLeaf(long spaceId){
+	public static boolean isLeaf(int spaceId){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetDescendantsOfSpace(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			
 			return !results.next();			
@@ -759,10 +754,10 @@ public class Spaces {
 	 * @throws SQLException if an error occurs while removing primitives from the database
 	 * @author Todd Elvers
 	 */
-	protected static void smartDelete(long spaceId, Connection con) throws SQLException{
-		ArrayList<Long> benches = new ArrayList<Long>();
-		ArrayList<Long> solvers = new ArrayList<Long>();
-		ArrayList<Long> jobs = new ArrayList<Long>();
+	protected static void smartDelete(int spaceId, Connection con) throws SQLException{
+		ArrayList<Integer> benches = new ArrayList<Integer>();
+		ArrayList<Integer> solvers = new ArrayList<Integer>();
+		ArrayList<Integer> jobs = new ArrayList<Integer>();
 		
 		// Collect the space's benchmarks, solvers, and jobs
 		for(Benchmark b : Benchmarks.getBySpace(spaceId)){

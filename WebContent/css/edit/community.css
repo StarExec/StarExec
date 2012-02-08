@@ -1,19 +1,15 @@
 fieldset {						
 	width: 75%;	
-	margin-top: 50px;
+	margin-bottom: 30px;
+	margin-top: 30px;
 }
 
 fieldset table,
 fieldset ul {
 	width: 100%;
 }
-
 tr .label {
 	width: 25%;
-}
-
-.shade {
-	background-color: #111111;
 }
 
 tr td,
@@ -22,11 +18,16 @@ tr th {
 	vertical-align: middle;
 }
 
-#benchTypes button {
-	width: 90px;
+#detailsTbl tr td:first-child {
+	width: 40%;
 }
 
-#websites li button {
+#detailsTbl tr td textarea{
+	height: 125px;
+}
+
+.newForm button {
+	width: 90px;
 	float: right;
 }
 
@@ -36,15 +37,38 @@ tr th {
 	font-size: smaller;
 }
 
-#toggleType, 
-#toggleWebsite {	
-	cursor: pointer;	
+#websiteList li {
+	list-style: none;
+	display: block;
+	margin: auto;
+	padding: 10px;
+	width: 97%;		
+	margin-bottom: 10px;
 }
 
-.website {
+#newWebsite {	
+	margin-top: 10px;
+	background-color: #111111;
+	border-radius: 6px;	
+	padding: 10px;
+	width: 97%;
+}
+
+#newWebsite input {
+	width: 36%;
+}
+
+#newWebsite button {
 	float: right;
-	cursor: pointer;
-	font-size: smaller;
+	position: relative;
+	bottom: 4px;
+}
+
+#toggleBenchType, 
+#toggleWebsite,
+#togglePreProcessor,
+#togglePostProcessor {	
+	cursor: pointer;	
 }
 
 .caption {
@@ -54,79 +78,49 @@ tr th {
 	margin-top: 10px;
 }
 
-input[type="text"] {
+.newForm input[type="text"],
+.newForm input[type="file"] {
 	width: 50%;
 }
 
-#typeFile {
+.newForm input[type="file"] {
 	padding-right: 10px;
 }
 
-label {
-	margin-left: 10px;	
+.updateForm button {
+	width: 90px;
 }
 
-textarea {
+.updateForm textarea,
+.newForm textarea {
 	width: 50%;
-	height: 200px;
-}
-
-fieldset ul li {
-	list-style: none;
-	display: block;
-	margin: auto;
-	padding: 10px;
-	width: 97%;		
-}
-
-#newType input,
-#newType textarea {
-	width: 270px;
-}
-
-#newType textarea {
 	height: 100px;
 }
 
-#newType {
+.updateForm input,
+.updateForm textarea {
+	width: 270px;
+}
+
+.newForm {
 	background-color: #111111;
 	border-radius: 6px;	
-}
-
-#newType button {
-	float: right;		
-}
-
-#new_website {
-	float: right;
-}
-
-#new_website,
-#newType {
 	margin-top: 10px;
 }
 
-#new_website input {
-	width: 30%;
+.newForm button  {
+	float: right;		
 }
 
-li button {
-	display: none;
-}
-
-li:hover button {
-	display: block;
-}
-
-#updateForm input,
-#updateForm textarea {
+.updateForm input,
+.updateForm textarea {
 	width: 100%;
 }
 
-#updateForm textarea {
+.updateForm textarea {
 	height: 50px;
 }
 
-#updateForm td {
+.updateForm td {
 	vertical-align: top;
 }

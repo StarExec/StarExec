@@ -64,7 +64,7 @@ public class User extends Identifiable {
 	}
 
 	/**
-	 * @return the institution the user belongs to
+	 * @return the institution the user beints to
 	 */
 	public String getInstitution() {
 		return institution;

@@ -9,12 +9,12 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Identifiable {
-	@Expose private long id = -1;
+	@Expose private int id = -1;
 
 	/**
 	 * @return the unique ID of the object in the database
 	 */
-	public long getId() {
+	public int getId() {
 		return this.id;
 	}
 
@@ -22,7 +22,7 @@ public class Identifiable {
 	 * DO NOT set the ID of an identifiable outside of the database layer!
 	 * @param the unique ID of the object in the database.
 	 */
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}	
 }

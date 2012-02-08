@@ -4,8 +4,8 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		long userId = SessionUtil.getUserId(request);
-		long jobId = Long.parseLong(request.getParameter("id"));
+		int userId = SessionUtil.getUserId(request);
+		int jobId = Integer.parseInt(request.getParameter("id"));
 		
 		Job j = null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {

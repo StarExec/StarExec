@@ -25,13 +25,12 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean associate(Connection con, long userId, long spaceId, long permId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddUserToSpace(?, ?, ?, ?)}");			
-		procedure.setLong(1, userId);
-		procedure.setLong(2, spaceId);
-		procedure.setLong(3, spaceId);
-		procedure.setLong(4, permId);
-			
+	protected static boolean associate(Connection con, int userId, int spaceId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
+		procedure.setInt(1, userId);
+		procedure.setInt(2, spaceId);
+		procedure.setInt(3, spaceId);
+
 		procedure.executeUpdate();						
 		log.info(String.format("User [%d] added to space [%d]", userId, spaceId));	
 		return true;
@@ -44,13 +43,12 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean associate(long userId, long spaceId) {
+	public static boolean associate(int userId, int spaceId) {
 		Connection con = null;			
 		
 		try {
-			con = Common.getConnection();
-			Permission p = Permissions.getSpaceDefault(spaceId);			
-			Users.associate(con, userId, spaceId, p.getId());
+			con = Common.getConnection();		
+			Users.associate(con, userId, spaceId);
 			
 			return true;			
 		} catch (Exception e){			
@@ -69,17 +67,15 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean associate(List<Long> userIds, long spaceId) {
+	public static boolean associate(List<Integer> userIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
-			Permission p = Permissions.getSpaceDefault(spaceId);
-			
 			Common.beginTransaction(con);					
 			
-			for(long user : userIds) {
-				Users.associate(con, user, spaceId, p.getId());	
+			for(int user : userIds) {
+				Users.associate(con, user, spaceId);	
 			}
 			
 			Common.endTransaction(con);									
@@ -111,7 +107,7 @@ public class Users {
 			
 			if(results.next()){
 				User u = new User();
-				u.setId(results.getLong("id"));
+				u.setId(results.getInt("id"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
@@ -140,7 +136,7 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean register(User user, long communityId, String code, String message){
+	public static boolean register(User user, int communityId, String code, String message){
 		Connection con = null;
 		
 		try{
@@ -157,13 +153,13 @@ public class Users {
 			procedure.setString(5, hashedPass);
 			
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(6, java.sql.Types.BIGINT);
+			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();			
 			
 			// Extract id from OUT parameter
-			user.setId(procedure.getLong(6));
+			user.setId(procedure.getInt(6));
 			
 			boolean added = false;
 			
@@ -200,18 +196,18 @@ public class Users {
 	 * @return the unregistered User object if one exists, null otherwise
 	 * @author Todd Elvers
 	 */
-	public static User getUnregistered(long id) {
+	public static User getUnregistered(int id) {
 		Connection con = null;
 
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			ResultSet results = procedure.executeQuery();
 			
 			if (results.next()) {
 				User u = new User();
-				u.setId(results.getLong("id"));
+				u.setId(results.getInt("id"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
@@ -235,18 +231,18 @@ public class Users {
 	 * @return The user object associated with the user
 	 * @author Tyler Jensen
 	 */
-	public static User get(long id){
+	public static User get(int id){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetUserById(?)}");
-			procedure.setLong(1, id);					
+			procedure.setInt(1, id);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				User u = new User();
-				u.setId(results.getLong("id"));
+				u.setId(results.getInt("id"));
 				u.setEmail(results.getString("email"));
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
@@ -271,13 +267,13 @@ public class Users {
 	 * @return The (hashed) password for the user
 	 * @author Skylar Stark
 	 */
-	public static String getPassword(long userId) {
+	public static String getPassword(int userId) {
 		Connection con = null;
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetPasswordById(?)}");
-			procedure.setLong(1, userId);
+			procedure.setInt(1, userId);
 			ResultSet results = procedure.executeQuery();
 			
 			if (results.next()) {
@@ -302,13 +298,13 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean updateFirstName(long userId, String newValue){
+	public static boolean updateFirstName(int userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
-			procedure.setLong(1, userId);					
+			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
 			procedure.executeUpdate();						
@@ -332,13 +328,13 @@ public class Users {
 	 * @return true iff the update succeeds on exactly one entry
 	 * @author Skylar Stark
 	 */
-	public static boolean updateLastName(long userId, String newValue){
+	public static boolean updateLastName(int userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdateLastName(?, ?)}");
-			procedure.setLong(1, userId);					
+			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
 			procedure.executeUpdate();			
@@ -361,13 +357,13 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean updateEmail(long userId, String newValue){
+	public static boolean updateEmail(int userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdateEmail(?, ?)}");
-			procedure.setLong(1, userId);					
+			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
 			procedure.executeUpdate();			
@@ -390,13 +386,13 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean updateInstitution(long userId, String newValue){
+	public static boolean updateInstitution(int userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdateInstitution(?, ?)}");
-			procedure.setLong(1, userId);					
+			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
 			procedure.executeUpdate();			
@@ -420,13 +416,13 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean updatePassword(long userId, String newValue){
+	public static boolean updatePassword(int userId, String newValue){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL UpdatePassword(?, ?)}");
-			procedure.setLong(1, userId);
+			procedure.setInt(1, userId);
 			String hashedPassword = Hash.hashPassword(newValue);
 			procedure.setString(2, hashedPassword);
 			
@@ -450,13 +446,13 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean setPassword(long user_id, String password){
+	public static boolean setPassword(int user_id, String password){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL SetPasswordByUserId(?, ?)}");
-			procedure.setLong(1, user_id);
+			procedure.setInt(1, user_id);
 			procedure.setString(2, Hash.hashPassword(password));
 			
 			procedure.executeUpdate();

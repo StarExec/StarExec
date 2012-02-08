@@ -87,13 +87,13 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>BenchTypeManager</servlet-name>
-    <servlet-class>org.starexec.servlets.BenchTypeManager</servlet-class>
+    <servlet-name>ProcessorManager</servlet-name>
+    <servlet-class>org.starexec.servlets.ProcessorManager</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>BenchTypeManager</servlet-name>
-    <url-pattern>/secure/benchtype/manager</url-pattern>  
-  </servlet-mapping>
+    <servlet-name>ProcessorManager</servlet-name>
+    <url-pattern>/secure/processors/manager</url-pattern>  
+  </servlet-mapping>  
   
   <servlet>
     <servlet-name>AddSpace</servlet-name>

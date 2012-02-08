@@ -9,10 +9,10 @@ import java.util.Iterator;
  *
  */
 public class Jobject implements Iterable<JobTuple>{
-	private long userId = -1;
+	private int userId = -1;
 	private ArrayList<JobTuple> tuples;
 	
-	public Jobject(long userId) {
+	public Jobject(int userId) {
 		tuples = new ArrayList<JobTuple>();
 		this.userId = userId;
 	}
@@ -26,7 +26,7 @@ public class Jobject implements Iterable<JobTuple>{
 		return tuples.iterator();
 	}
 
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 }

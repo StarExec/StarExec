@@ -25,7 +25,7 @@ public class Websites {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(long id, String url, String name, WebsiteType type) {
+	public static boolean add(int id, String url, String name, WebsiteType type) {
 		Connection con = null;			
 		
 		try {
@@ -46,7 +46,7 @@ public class Websites {
 					throw new Exception("Unhandled value for WebsiteType");				
 			}			
 			
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			procedure.setString(2, url);
 			procedure.setString(3, name);
 			
@@ -69,7 +69,7 @@ public class Websites {
 	 * @return A list of websites associated with the entity
 	 * @author Tyler Jensen
 	 */
-	public static List<Website> getAll(long id, WebsiteType webType) {
+	public static List<Website> getAll(int id, WebsiteType webType) {
 		Connection con = null;
 		
 		try {
@@ -90,14 +90,14 @@ public class Websites {
 					throw new Exception("Unhandled value for WebsiteType");
 			}
 			
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			
 			ResultSet results = procedure.executeQuery();
 			List<Website> websites = new LinkedList<Website>();
 			
 			while (results.next()) {
 				Website w = new Website();
-				w.setId(results.getLong("id"));
+				w.setId(results.getInt("id"));
 				w.setName(results.getString("name"));
 				w.setUrl(results.getString("url"));
 				websites.add(w);				
@@ -117,12 +117,12 @@ public class Websites {
 	/**
 	 * Deletes the website associated with the given website ID.
 	 * @param websiteId the ID of the website to delete
-	 * @param entityId the ID of the entity that the website belongs to (user, solver, space)
-	 * @param webType the type of entity the website belongs to
+	 * @param entityId the ID of the entity that the website beints to (user, solver, space)
+	 * @param webType the type of entity the website beints to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean delete(long websiteId, long entityId, WebsiteType webType) {
+	public static boolean delete(int websiteId, int entityId, WebsiteType webType) {
 		Connection con = null;			
 		
 		try {
@@ -142,8 +142,8 @@ public class Websites {
 					throw new Exception("Unhandled value for WebsiteType");
 			}
 			
-			procedure.setLong(1, websiteId);
-			procedure.setLong(2, entityId);
+			procedure.setInt(1, websiteId);
+			procedure.setInt(2, entityId);
 			
 			procedure.executeUpdate();					
 			log.info(String.format("Website [%d] deleted from entity [%d]", websiteId, entityId));

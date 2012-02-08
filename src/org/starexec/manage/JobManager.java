@@ -99,12 +99,12 @@ public abstract class JobManager {
 		}
 	}
 	
-	public static void stopJob(long jid) {
+	public static void stopJob(int jid) {
 		// TODO: To stop a StarExec job, which might be composed of multiple SGE jobs, we need
 		// an associative table in the DB that gives us StarExecJob -> List<SGEJob>
 		try{
 	        Session session = SessionFactory.getFactory().getSession();
-			for(long sgeid : Jobs.getSGEJobIds(jid)) {
+			for(int sgeid : Jobs.getSGEJobIds(jid)) {
 	                session.control("" + sgeid, Session.TERMINATE);
 			}
 		} catch(DrmaaException e) {

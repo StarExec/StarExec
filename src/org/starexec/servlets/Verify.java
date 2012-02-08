@@ -113,12 +113,12 @@ public class Verify extends HttpServlet {
 		
     	// IF no code in VERIFY matches, then userId = -1
     	// ELSE userId = the id of the user that was just activated
-    	long userId = Requests.redeemActivationCode(code);
+    	int userId = Requests.redeemActivationCode(code);
     	
     	User newUser;
     	if(userId == -1) {
     		log.info(String.format("email verification failed - likey a duplicate activation attempt"));
-    		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This activation page has expired and no longer exists!");
+    		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This activation page has expired and no inter exists!");
     		return;
     	} else {
     		newUser = Users.getUnregistered(userId);

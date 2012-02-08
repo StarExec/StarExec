@@ -3,7 +3,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 try {
-	long id = Long.parseLong((String)request.getParameter("cid"));
+	int id = Integer.parseInt((String)request.getParameter("cid"));
 	Space com = Communities.getDetails(id);
 	
 	if(com == null) {

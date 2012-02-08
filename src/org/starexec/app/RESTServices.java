@@ -13,7 +13,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
-import org.starexec.data.database.BenchTypes;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
@@ -25,6 +25,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -54,8 +55,8 @@ public class RESTServices {
 	@GET
 	@Path("/space/subspaces")
 	@Produces("application/json")	
-	public String getSubSpaces(@QueryParam("id") long parentId, @Context HttpServletRequest request) {					
-		long userId = SessionUtil.getUserId(request);
+	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {					
+		int userId = SessionUtil.getUserId(request);
 		
 		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId)));
 	}	
@@ -78,7 +79,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues")
 	@Produces("application/json")	
-	public String getAllQueues(@QueryParam("id") long id) {		
+	public String getAllQueues(@QueryParam("id") int id) {		
 		if(id <= 0) {
 			return gson.toJson(RESTHelpers.toQueueList(Cluster.getAllQueues()));
 		} else {
@@ -93,7 +94,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
-	public String getNodeDetails(@PathParam("id") long id) {		
+	public String getNodeDetails(@PathParam("id") int id) {		
 		return gson.toJson(Cluster.getNodeDetails(id));
 	}
 	
@@ -104,7 +105,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
-	public String getQueueDetails(@PathParam("id") long id) {		
+	public String getQueueDetails(@PathParam("id") int id) {		
 		return gson.toJson(Cluster.getQueueDetails(id));
 	}
 	
@@ -115,7 +116,7 @@ public class RESTServices {
 	@GET
 	@Path("/communities/details/{id}")
 	@Produces("application/json")	
-	public String getCommunityDetails(@PathParam("id") long id, @Context HttpServletRequest request) {
+	public String getCommunityDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
 		Space community = Communities.getDetails(id);
 		
 		if(community != null) {
@@ -137,8 +138,8 @@ public class RESTServices {
 	@POST
 	@Path("/space/{id}")
 	@Produces("application/json")	
-	public String getSpaceDetails(@PathParam("id") long spaceId, @Context HttpServletRequest request) {			
-		long userId = SessionUtil.getUserId(request);
+	public String getSpaceDetails(@PathParam("id") int spaceId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
 		
 		Space s = null;
 		Permission p = null;
@@ -162,8 +163,13 @@ public class RESTServices {
 	@POST
 	@Path("/space/{spaceId}/perm/{userId}")
 	@Produces("application/json")	
-	public String getUserSpacePermissions(@PathParam("spaceId") long spaceId, @PathParam("userId") long userId, @Context HttpServletRequest request) {
-		return gson.toJson(Permissions.get(userId, spaceId));
+	public String getUserSpacePermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
+		Permission p = SessionUtil.getPermission(request, spaceId);
+		if(p != null && (p.isLeader() || SessionUtil.getUserId(request) == userId)) {
+			return gson.toJson(Permissions.get(userId, spaceId));
+		}
+		
+		return null;
 	}	
 		
 	
@@ -189,8 +195,8 @@ public class RESTServices {
 	@GET
 	@Path("/websites/{type}/{spaceId}")
 	@Produces("application/json")
-	public String getWebsites(@PathParam("type") String type, @PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
-		long userId = SessionUtil.getUserId(request);
+	public String getWebsites(@PathParam("type") String type, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
 			return gson.toJson(Websites.getAll(userId, Websites.WebsiteType.USER));
 		} else if(type.equals("space")){
@@ -209,11 +215,11 @@ public class RESTServices {
 	@POST
 	@Path("/website/add/{type}/{id}")
 	@Produces("application/json")
-	public String addWebsite(@PathParam("type") String type, @PathParam("id") long id, @Context HttpServletRequest request) {
+	public String addWebsite(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		boolean success = false;
 		
 		if (type.equals("user")) {
-			long userId = SessionUtil.getUserId(request);
+			int userId = SessionUtil.getUserId(request);
 			String name = request.getParameter("name");
 			String url = request.getParameter("url");			
 			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
@@ -245,7 +251,7 @@ public class RESTServices {
 	@POST
 	@Path("/websites/delete/{type}/{spaceId}/{websiteId}")
 	@Produces("application/json")
-	public String deleteWebsite(@PathParam("type") String type, @PathParam("spaceId") long spaceId, @PathParam("websiteId") long websiteId, @Context HttpServletRequest request) {
+	public String deleteWebsite(@PathParam("type") String type, @PathParam("spaceId") int spaceId, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		
 		if(type.equals("user")){
 			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(1);
@@ -275,7 +281,7 @@ public class RESTServices {
 	@Path("/edit/user/{attr}/{val}")
 	@Produces("application/json")
 	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("val") String newValue, @Context HttpServletRequest request) {	
-		long userId = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		boolean success = false;
 		
 		// Go through all the cases, depending on what attribute we are changing.
@@ -327,7 +333,7 @@ public class RESTServices {
 	@POST
 	@Path("/edit/space/{attr}/{id}")
 	@Produces("application/json")
-	public String editSpaceDetails(@PathParam("attr") String attribute, @PathParam("id") long id, @Context HttpServletRequest request) {	
+	public String editSpaceDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
 		Permission perm = SessionUtil.getPermission(request, id);		
 		if(perm == null || !perm.isLeader()) {
 			return gson.toJson(2);	
@@ -361,16 +367,18 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/edit/space/type/delete/{spaceId}/{typeId}")
+	@Path("/processors/delete/{procId}")
 	@Produces("application/json")
-	public String deleteBenchmarkType(@PathParam("spaceId") long spaceId, @PathParam("typeId") long typeId, @Context HttpServletRequest request) {
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
+	public String deleteProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
+		Processor p = Processors.get(pid);
+		
+		// Permissions check; ensures user is the leader of the community that owns the processor
+		Permission perm = SessionUtil.getPermission(request, p.getCommunityId());		
 		if(perm == null || !perm.isLeader()) {
 			return gson.toJson(2);	
 		}
 		
-		return BenchTypes.delete(typeId, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Processors.delete(pid) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**
@@ -384,7 +392,7 @@ public class RESTServices {
 	@POST
 	@Path("/leave/space/{spaceId}")
 	@Produces("application/json")
-	public String leaveCommunity(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String leaveCommunity(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Permissions check; ensures user is apart of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null) {
@@ -414,16 +422,16 @@ public class RESTServices {
 	@POST
 	@Path("/remove/benchmark/{spaceId}")
 	@Produces("application/json")
-	public String removeBenchmarksFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String removeBenchmarksFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedBenches[]")){
 			return gson.toJson(1);
 		}
 		
-		// Extract the String bench id's and convert them to Long
-		ArrayList<Long> selectedBenches = new ArrayList<Long>();
+		// Extract the String bench id's and convert them to Integer
+		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedBenches[]")){
-			selectedBenches.add(Long.parseLong(id));
+			selectedBenches.add(Integer.parseInt(id));
 		}
 		
 		// Permissions check; ensures user is the leader of the community
@@ -443,23 +451,23 @@ public class RESTServices {
 	 * attribute that contains a list of users to copy as well as a 'fromSpace' parameter that is the
 	 * space the users are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add user permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/user")
 	@Produces("application/json")
-	public String copyUserToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copyUserToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of users to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
 		}
 		
 		// Get the id of the user who initiated the request
-		long requestUserId = SessionUtil.getUserId(request);
+		int requestUserId = SessionUtil.getUserId(request);
 		
 		// Get the space the user is being copied from
-		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
 		// Check permissions, the user must have add user permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -480,8 +488,8 @@ public class RESTServices {
 			return gson.toJson(5);
 		}
 		
-		// Convert the users to copy to a long list
-		List<Long> selectedUsers = Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		// Convert the users to copy to a int list
+		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 		boolean success = Users.associate(selectedUsers, spaceId);
 		
 		// Return a value based on results from database operation
@@ -495,23 +503,23 @@ public class RESTServices {
 	 * attribute that contains a list of solvers to copy as well as a 'fromSpace' parameter that is the
 	 * space the solvers are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
-	public String copySolverToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of solvers to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
 		}
 		
 		// Get the id of the user who initiated the request
-		long requestUserId = SessionUtil.getUserId(request);
+		int requestUserId = SessionUtil.getUserId(request);
 		
 		// Get the space the solver is being copied from
-		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
 		// Check permissions, the user must have add solver permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -529,11 +537,11 @@ public class RESTServices {
 			return gson.toJson(5);
 		}
 		
-		// Convert the solvers to copy to a long list
-		List<Long> selectedSolvers = Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		// Convert the solvers to copy to a int list
+		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 		
 		// Make sure the user can see the solver they're trying to copy
-		for(long id : selectedSolvers) {
+		for(int id : selectedSolvers) {
 			if(!Permissions.canUserSeeSolver(id, requestUserId)) {
 				return gson.toJson(4);
 			}
@@ -553,23 +561,23 @@ public class RESTServices {
 	 * attribute that contains a list of benchmarks to copy as well as a 'fromSpace' parameter that is the
 	 * space the benchmarks are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
-	public String copyBenchToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
 		}
 		
 		// Get the id of the user who initiated the request
-		long requestUserId = SessionUtil.getUserId(request);
+		int requestUserId = SessionUtil.getUserId(request);
 		
 		// Get the space the benchmark is being copied from
-		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
 		// Check permissions, the user must have add benchmark permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -587,11 +595,11 @@ public class RESTServices {
 			return gson.toJson(5);
 		}
 		
-		// Convert the benchmarks to copy to a long list
-		List<Long> selectedBenchs= Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		// Convert the benchmarks to copy to a int list
+		List<Integer> selectedBenchs= Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 		
 		// Make sure the user can see the benchmarks they're trying to copy
-		for(long id : selectedBenchs) {
+		for(int id : selectedBenchs) {
 			if(!Permissions.canUserSeeBench(id, requestUserId)) {
 				return gson.toJson(4);
 			}
@@ -611,23 +619,23 @@ public class RESTServices {
 	 * attribute that contains a list of jobs to copy as well as a 'fromSpace' parameter that is the
 	 * space the jobs are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/job")
 	@Produces("application/json")
-	public String copyJobToSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String copyJobToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
 		}
 		
 		// Get the id of the user who initiated the request
-		long requestUserId = SessionUtil.getUserId(request);
+		int requestUserId = SessionUtil.getUserId(request);
 		
 		// Get the space the benchmark is being copied from
-		long fromSpace = Long.parseLong(request.getParameter("fromSpace"));
+		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
 		// Check permissions, the user must have add benchmark permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -645,11 +653,11 @@ public class RESTServices {
 			return gson.toJson(5);
 		}
 		
-		// Convert the benchmarks to copy to a long list
-		List<Long> selectedJobs = Util.toLongList(request.getParameterValues("selectedIds[]"));		
+		// Convert the benchmarks to copy to a int list
+		List<Integer> selectedJobs = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 		
 		// Make sure the user can see the benchmarks they're trying to copy
-		for(long id : selectedJobs) {
+		for(int id : selectedJobs) {
 			if(!Permissions.canUserSeeJob(id, requestUserId)) {
 				return gson.toJson(4);
 			}
@@ -678,14 +686,14 @@ public class RESTServices {
 	@POST
 	@Path("/remove/user/{spaceId}")
 	@Produces("application/json")
-	public String removeUsersFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String removeUsersFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedUsers[]")){
 			return gson.toJson(1);
 		}		
 		
 		// Get the id of the user who initiated the removal
-		long userIdOfRemover = SessionUtil.getUserId(request);
+		int userIdOfRemover = SessionUtil.getUserId(request);
 		
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -693,13 +701,13 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
-		// Extract the String user id's and convert them to Long
-		List<Long> selectedUsers = Util.toLongList(request.getParameterValues("selectedUsers[]"));
+		// Extract the String user id's and convert them to Integer
+		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedUsers[]"));
 		
 		// Validate the list of users to remove by:
 		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
 		// 2 - Ensuring other leaders of the space aren't in the list of users to remove
-		for(long userId : selectedUsers){
+		for(int userId : selectedUsers){
 			if(userId == userIdOfRemover){
 				return gson.toJson(3);
 			}
@@ -726,16 +734,16 @@ public class RESTServices {
 	@POST
 	@Path("/remove/solver/{spaceId}")
 	@Produces("application/json")
-	public String removeSolversFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String removeSolversFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedSolvers[]")){
 			return gson.toJson(1);
 		}
 		
-		// Extract the String solver id's and convert them to Long
-		ArrayList<Long> selectedSolvers = new ArrayList<Long>();
+		// Extract the String solver id's and convert them to Integer
+		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedSolvers[]")){
-			selectedSolvers.add(Long.parseLong(id));
+			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
 		// Permissions check; ensures user is the leader of the community
@@ -763,16 +771,16 @@ public class RESTServices {
 	@POST
 	@Path("/remove/job/{spaceId}")
 	@Produces("application/json")
-	public String removeJobsFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String removeJobsFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedJobs[]")){
 			return gson.toJson(1);
 		}
 		
-		// Extract the String job id's and convert them to Long
-		ArrayList<Long> selectedJobs = new ArrayList<Long>();
+		// Extract the String job id's and convert them to Integer
+		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
 		for (String id : request.getParameterValues("selectedJobs[]")) {
-			selectedJobs.add(Long.parseLong(id));
+			selectedJobs.add(Integer.parseInt(id));
 		}
 
 		// Permissions check; ensures user is the leader of the community
@@ -799,16 +807,16 @@ public class RESTServices {
 	@POST
 	@Path("/remove/subspace/{spaceId}")
 	@Produces("application/json")
-	public String removeSubspacesFromSpace(@PathParam("spaceId") long spaceId, @Context HttpServletRequest request) {
+	public String removeSubspacesFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedSubspaces[]")){
 			return gson.toJson(1);
 		}
 		
-		// Extract the String subspace id's and convert them to Long
-		ArrayList<Long> selectedSubspaces = new ArrayList<Long>();
+		// Extract the String subspace id's and convert them to Integer
+		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedSubspaces[]")){
-			selectedSubspaces.add(Long.parseLong(id));
+			selectedSubspaces.add(Integer.parseInt(id));
 		}
 		
 		// Permissions check; ensures user is the leader of the community
@@ -818,7 +826,7 @@ public class RESTServices {
 		}
 		
 		// Ensures the space to remove is a leaf-space (i.e. has no descendants)
-		for(long subspaceId : selectedSubspaces){
+		for(int subspaceId : selectedSubspaces){
 			if(!Spaces.isLeaf(subspaceId)){
 				return gson.toJson(3);
 			}
@@ -842,7 +850,7 @@ public class RESTServices {
 	@POST
 	@Path("/edit/solver/{id}")
 	@Produces("application/json")
-	public String editSolverDetails(@PathParam("id") long solverId, @Context HttpServletRequest request) {
+	public String editSolverDetails(@PathParam("id") int solverId, @Context HttpServletRequest request) {
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("description", request)
@@ -858,7 +866,7 @@ public class RESTServices {
 		}
 		
 		// Permissions check; if user is NOT the owner of the solver, deny update request
-		long userId = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
 		if(solver == null || solver.getUserId() != userId){
 			gson.toJson(2);
@@ -885,10 +893,10 @@ public class RESTServices {
 	@POST
 	@Path("/delete/solver/{id}")
 	@Produces("application/json")
-	public String deleteSolver(@PathParam("id") long solverId, @Context HttpServletRequest request) {
+	public String deleteSolver(@PathParam("id") int solverId, @Context HttpServletRequest request) {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
-		long userId = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
 		if(solver == null || solver.getUserId() != userId){
 			gson.toJson(2);
@@ -912,9 +920,9 @@ public class RESTServices {
 	@POST
 	@Path("/delete/benchmark/{id}")
 	@Produces("application/json")
-	public String deleteBenchmark(@PathParam("id") long benchId, @Context HttpServletRequest request) {
+	public String deleteBenchmark(@PathParam("id") int benchId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
-		long userId = SessionUtil.getUserId(request);		
+		int userId = SessionUtil.getUserId(request);		
 		Benchmark bench = Benchmarks.get(benchId);
 		if(bench == null || bench.getUserId() != userId){
 			gson.toJson(2);
@@ -937,9 +945,9 @@ public class RESTServices {
 	@POST
 	@Path("/edit/benchmark/{benchId}")
 	@Produces("application/json")
-	public String editBenchmarkDetails(@PathParam("benchId") long benchId, @Context HttpServletRequest request) {
+	public String editBenchmarkDetails(@PathParam("benchId") int benchId, @Context HttpServletRequest request) {
 		boolean isValidRequest = true;
-		long type = -1;
+		int type = -1;
 		
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
@@ -951,7 +959,7 @@ public class RESTServices {
 		
 		// Safely extract the type
 		try{
-			type = Long.parseLong(request.getParameter("type"));
+			type = Integer.parseInt(request.getParameter("type"));
 		} catch (NumberFormatException nfe){
 			isValidRequest = false;
 		}
@@ -967,7 +975,7 @@ public class RESTServices {
 		}
 		
 		// Permissions check; if user is NOT the owner of the benchmark, deny update request
-		long userId = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		Benchmark bench = Benchmarks.get(benchId);
 		if(bench == null || bench.getUserId() != userId){
 			gson.toJson(2);
@@ -998,7 +1006,7 @@ public class RESTServices {
 	@Path("/edit/user/password/")
 	@Produces("application/json")
 	public String editUserPassword(@Context HttpServletRequest request) {
-		long userId = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		String currentPass = request.getParameter("current");
 		String newPass = request.getParameter("newpass");
 		String confirmPass = request.getParameter("confirm");
@@ -1039,7 +1047,7 @@ public class RESTServices {
 	@POST
 	@Path("/space/{spaceId}/edit/perm/{userId}")
 	@Produces("application/json")
-	public String editUserPermissions(@PathParam("spaceId") long spaceId, @PathParam("userId") long userId, @Context HttpServletRequest request) {
+	public String editUserPermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
 		
 		// Ensure the user attempting to edit permissions is a leader
 		Permission perm = SessionUtil.getPermission(request, spaceId);

@@ -48,8 +48,8 @@ public class Common {
 			poolProp.setMinIdle(R.MYSQL_POOL_MIN_SIZE);					// The minimum number of connections to keep "ready to go"
 			poolProp.setDefaultAutoCommit(true);						// Turn autocommit on (turn transactions off by default)
 			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
-			poolProp.setRemoveAbandonedTimeout(30);						// How long to wait (seconds) before reclaiming an open connection (should be the time of longest query)
-			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too long
+			poolProp.setRemoveAbandonedTimeout(30);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
+			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too int
 			
 			log.debug("Creating new datapool with supplied properties");		
 			dataPool = new DataSource(poolProp);						// Create the connection pool with the supplied properties
@@ -82,13 +82,13 @@ public class Common {
 	 * @param ipAddress The IP address the user logged in from
 	 * @param browser The browser/agent information about the browser the user logged in with
 	 */
-	public static void addLoginRecord(long userId, String ipAddress, String browser) {
+	public static void addLoginRecord(int userId, String ipAddress, String browser) {
 		Connection con = null;		
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
-			procedure.setLong(1, userId);
+			procedure.setInt(1, userId);
 			procedure.setString(2, ipAddress);
 			procedure.setString(3, browser);			
 			procedure.executeUpdate();		

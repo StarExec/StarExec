@@ -4,8 +4,8 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		long userId = SessionUtil.getUserId(request);
-		long benchId = Long.parseLong(request.getParameter("id"));
+		int userId = SessionUtil.getUserId(request);
+		int benchId = Integer.parseInt(request.getParameter("id"));
 		
 		Benchmark b = null;
 		if(Permissions.canUserSeeBench(benchId, userId)) {

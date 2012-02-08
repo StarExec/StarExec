@@ -4,7 +4,7 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		long id = Long.parseLong(request.getParameter("id"));			
+		int id = Integer.parseInt(request.getParameter("id"));			
 		User user = Users.get(id);
 		
 		if(user != null) {

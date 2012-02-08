@@ -12,10 +12,10 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Benchmark extends Identifiable {
-	private long userId = -1;	
+	private int userId = -1;	
 	@Expose private String name;	
-	@Expose private String description = "none";	
-	@Expose private BenchmarkType type;
+	@Expose private String description = "no description";	
+	@Expose private Processor type;
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;
@@ -23,14 +23,14 @@ public class Benchmark extends Identifiable {
 	/**
 	 * @return the user id of the user who uploaded the solver
 	 */	
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 
 	/**
 	 * @param userId the user id to set as the uploader
 	 */
-	public void setUserId(long userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
 	
@@ -109,14 +109,14 @@ public class Benchmark extends Identifiable {
 	/**
 	 * @return the type the benchmark is
 	 */
-	public BenchmarkType getType() {
+	public Processor getType() {
 		return type;
 	}
 
 	/**
 	 * @param type the benchmark type to set for this benchmark
 	 */
-	public void setType(BenchmarkType type) {
+	public void setType(Processor type) {
 		this.type = type;
 	}		
 }

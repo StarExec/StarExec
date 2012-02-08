@@ -33,7 +33,7 @@ public class PasswordReset extends HttpServlet {
 		if(Util.paramExists(PasswordReset.PASS_RESET, request)) {
 			// Try and redeem the code from the database
 			String code = request.getParameter(PasswordReset.PASS_RESET);
-			long userId = Requests.redeemPassResetRequest(code);
+			int userId = Requests.redeemPassResetRequest(code);
 			// If code is successfully redeemed, set a new temporary password and display it to the user
 			if(userId > 0){
 				String tempPass = Util.getTempPassword();

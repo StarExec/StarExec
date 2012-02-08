@@ -52,7 +52,7 @@ public class SessionFilter implements Filter {
 				httpRequest.getSession().setAttribute(SessionUtil.USER, user);
 				
 				// Also add an empty permission's cache for the user
-				httpRequest.getSession().setAttribute(SessionUtil.PERMISSION_CACHE, new HashMap<Long, Permission>());
+				httpRequest.getSession().setAttribute(SessionUtil.PERMISSION_CACHE, new HashMap<Integer, Permission>());
 				
 				// Add the login to the database
 				this.logUserLogin(user, httpRequest);				

@@ -4,8 +4,8 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		long userId = SessionUtil.getUserId(request);
-		long solverId = Long.parseLong(request.getParameter("id"));
+		int userId = SessionUtil.getUserId(request);
+		int solverId = Integer.parseInt(request.getParameter("id"));
 		
 		Solver s = null;
 		if(Permissions.canUserSeeSolver(solverId, userId)) {

@@ -20,7 +20,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkType;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.util.ArchiveUtil;
@@ -68,7 +68,7 @@ public class BenchmarkUploader extends HttpServlet {
 			// If the request is valid to act on...
 			if(this.isRequestValid(form)) {
 				// If the user has benchmark adding permissions
-				Permission perm = SessionUtil.getPermission(request, Long.parseLong((String)form.get("space")));
+				Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
 				String uploadMethod = (String)form.get(UPLOAD_METHOD);
 				if(uploadMethod.equals("dump") && !perm.canAddBenchmark()) {
 					// They don't have permissions, send forbidden error
@@ -91,8 +91,8 @@ public class BenchmarkUploader extends HttpServlet {
     	
 	private void handleUploadRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		FileItem fileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
-		long userId = SessionUtil.getUserId(request);
-		long spaceId = Long.parseLong((String)form.get(SPACE_ID));
+		int userId = SessionUtil.getUserId(request);
+		int spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 		
 		// Create a unique path the zip file will be extracted to
 		File uniqueDir = new File(R.BENCHMARK_PATH, "" + SessionUtil.getUserId(request));
@@ -115,7 +115,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		// Get some required data from the form
 		String uploadMethod = (String)form.get(UPLOAD_METHOD);
-		long typeId = Long.parseLong((String)form.get(BENCHMARK_TYPE));
+		int typeId = Integer.parseInt((String)form.get(BENCHMARK_TYPE));
 		boolean downloadable = Boolean.parseBoolean((String)form.get(BENCH_DOWNLOADABLE));				
 		
 		if(uploadMethod.equals("convert")) {
@@ -140,7 +140,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
 	 * @return A flat list of benchmarks containing all the benchmarks found under the given directory and it's subdirectories and so on
 	 */
-	private List<Benchmark> extractBenchmarks(File directory, long typeId, long userId, boolean downloadable) {
+	private List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
 		// Initialize the list we will return at the end...
 		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 		
@@ -151,7 +151,7 @@ public class BenchmarkUploader extends HttpServlet {
 				benchmarks.addAll(this.extractBenchmarks(f, typeId, userId, downloadable));
 			} else {
 				// Or else it's just a benchmark, create an object for it and add it to the list
-				BenchmarkType t = new BenchmarkType();
+				Processor t = new Processor();
 				t.setId(typeId);
 				
 				Benchmark b = new Benchmark();
@@ -178,7 +178,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param perm The default permissions to set for this space
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given directory.
 	 */
-	private Space extractSpacesAndBenchmarks(File directory, long typeId, long userId, boolean downloadable, Permission perm) {
+	private Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm) {
 		// Create a space for the current directory and set it's name		
 		Space space = new Space();
 		space.setName(directory.getName());
@@ -192,7 +192,7 @@ public class BenchmarkUploader extends HttpServlet {
 				space.getSubspaces().add(this.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm));
 			} else {
 				// Or else we're just a file, so assume it's a benchmark and create an object for it
-				BenchmarkType t = new BenchmarkType();
+				Processor t = new Processor();
 				t.setId(typeId);
 				
 				Benchmark b = new Benchmark();
@@ -243,8 +243,8 @@ public class BenchmarkUploader extends HttpServlet {
 			}													
 						
 			// Try parsing to ensure we have valid numbers
-			Long.parseLong((String)form.get(BENCHMARK_TYPE));			
-			Long.parseLong((String)form.get(SPACE_ID));
+			Integer.parseInt((String)form.get(BENCHMARK_TYPE));			
+			Integer.parseInt((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(BENCH_DOWNLOADABLE));
 			
 			// Make sure we have a valid upload method

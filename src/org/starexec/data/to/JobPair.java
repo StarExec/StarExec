@@ -6,22 +6,22 @@ package org.starexec.data.to;
  * @author Clifton Palmer
  */
 public class JobPair extends Identifiable {	
-	private long configId;
-	private long benchmarkId;
+	private int configId;
+	private int benchmarkId;
 	
-	public void setConfigId(long configId) {
+	public void setConfigId(int configId) {
 		this.configId = configId;
 	}
 	
-	public long getConfigId() {
+	public int getConfigId() {
 		return configId;
 	}
 	
-	public void setBenchmarkId(long benchmarkId) {
+	public void setBenchmarkId(int benchmarkId) {
 		this.benchmarkId = benchmarkId;
 	}
 	
-	public long getBenchmarkId() {
+	public int getBenchmarkId() {
 		return benchmarkId;
 	}
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkType;
+import org.starexec.data.to.Processor;
 
 /**
  * Handles all database interaction for benchmarks.
@@ -25,7 +25,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean associate(List<Long> benchIds, long spaceId) {
+	public static boolean associate(List<Integer> benchIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -35,9 +35,9 @@ public class Benchmarks {
 			CallableStatement procedure = null;						
 			procedure = con.prepareCall("{CALL AssociateBench(?, ?)}");
 			
-			for(long bid : benchIds) {
-				procedure.setLong(1, bid);
-				procedure.setLong(2, spaceId);			
+			for(int bid : benchIds) {
+				procedure.setInt(1, bid);
+				procedure.setInt(2, spaceId);			
 				procedure.executeUpdate();			
 			}			
 			
@@ -56,11 +56,11 @@ public class Benchmarks {
 	/**
 	 * Adds a single benchmark to the database under the given spaceId
 	 * @param benchmark The benchmark to add to the database
-	 * @param spaceId The id of the space the benchmark will belong to
+	 * @param spaceId The id of the space the benchmark will beint to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(Benchmark benchmark, long spaceId) {
+	public static boolean add(Benchmark benchmark, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -78,11 +78,11 @@ public class Benchmarks {
 	/**
 	 * Adds the list of benchmarks to the database and associates them with the given spaceId
 	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to
+	 * @param spaceId The space the benchmarks will beint to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(List<Benchmark> benchmarks, long spaceId) {
+	public static boolean add(List<Benchmark> benchmarks, int spaceId) {
 		Connection con = null;			
 		
 		try {			
@@ -107,19 +107,19 @@ public class Benchmarks {
 	 * Internal method which adds a single benchmark to the database under the given spaceId
 	 * @param con The connection the operation will take place on
 	 * @param benchmark The benchmark to add to the database
-	 * @param spaceId The id of the space the benchmark will belong to
+	 * @param spaceId The id of the space the benchmark will beint to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean add(Connection con, Benchmark benchmark, long spaceId) throws SQLException {				
+	protected static boolean add(Connection con, Benchmark benchmark, int spaceId) throws SQLException {				
 		CallableStatement procedure = null;			
 		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?)}");
 		procedure.setString(1, benchmark.getName());		
 		procedure.setString(2, benchmark.getPath());
 		procedure.setBoolean(3, benchmark.isDownloadable());
-		procedure.setLong(4, benchmark.getUserId());
-		procedure.setLong(5, benchmark.getType().getId());
-		procedure.setLong(6, spaceId);
+		procedure.setInt(4, benchmark.getUserId());
+		procedure.setInt(5, benchmark.getType().getId());
+		procedure.setInt(6, spaceId);
 		
 		procedure.executeUpdate();		
 		return true;
@@ -129,11 +129,11 @@ public class Benchmarks {
 	 * Internal method which adds the list of benchmarks to the database and associates them with the given spaceId
 	 * @param con The connection the operation will take place on
 	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to
+	 * @param spaceId The space the benchmarks will beint to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static void add(Connection con, List<Benchmark> benchmarks, long spaceId) throws Exception {		
+	protected static void add(Connection con, List<Benchmark> benchmarks, int spaceId) throws Exception {		
 		for(Benchmark b : benchmarks) {
 			if(!Benchmarks.add(con, b, spaceId)) {
 				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
@@ -149,13 +149,13 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean delete(long id){
+	public static boolean delete(int id){
 		Connection con = null;			
 		File benchToDelete = null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 			
@@ -185,32 +185,32 @@ public class Benchmarks {
 	 * @return A benchmark object representing the benchmark with the given ID
 	 * @author Tyler Jensen
 	 */
-	public static Benchmark get(long benchId) {
+	public static Benchmark get(int benchId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			
 			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
-			procedure.setLong(1, benchId);					
+			procedure.setInt(1, benchId);					
 			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				Benchmark b = new Benchmark();
-				b.setId(results.getLong("bench.id"));
-				b.setUserId(results.getLong("bench.user_id"));
+				b.setId(results.getInt("bench.id"));
+				b.setUserId(results.getInt("bench.user_id"));
 				b.setName(results.getString("bench.name"));
 				b.setUploadDate(results.getTimestamp("bench.uploaded"));
 				b.setPath(results.getString("bench.path"));
 				b.setDescription(results.getString("bench.description"));
 				b.setDownloadable(results.getBoolean("bench.downloadable"));
 				
-				BenchmarkType t = new BenchmarkType();
-				t.setId(results.getLong("types.id"));
-				t.setCommunityId(results.getLong("types.community"));
+				Processor t = new Processor();
+				t.setId(results.getInt("types.id"));
+				t.setCommunityId(results.getInt("types.community"));
 				t.setDescription(results.getString("types.description"));
 				t.setName(results.getString("types.name"));
-				t.setProcessorPath(results.getString("types.processor_path"));
+				t.setFilePath(results.getString("types.path"));
 				
 				b.setType(t);
 				return b;				
@@ -226,33 +226,33 @@ public class Benchmarks {
 	
 	/**
 	 * @param spaceId The id of the space to get benchmarks for
-	 * @return A list of all benchmarks belonging to the space
+	 * @return A list of all benchmarks beinting to the space
 	 * @author Tyler Jensen
 	 */
-	public static List<Benchmark> getBySpace(long spaceId) {
+	public static List<Benchmark> getBySpace(int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
-			procedure.setLong(1, spaceId);					
+			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 			
 			while(results.next()){
 				Benchmark b = new Benchmark();
-				b.setId(results.getLong("bench.id"));
+				b.setId(results.getInt("bench.id"));
 				b.setName(results.getString("bench.name"));
 				b.setUploadDate(results.getTimestamp("bench.uploaded"));
 				b.setDescription(results.getString("bench.description"));
 				b.setDownloadable(results.getBoolean("bench.downloadable"));	
 				
-				BenchmarkType t = new BenchmarkType();
-				t.setId(results.getLong("types.id"));
-				t.setCommunityId(results.getLong("types.community"));
+				Processor t = new Processor();
+				t.setId(results.getInt("types.id"));
+				t.setCommunityId(results.getInt("types.community"));
 				t.setDescription(results.getString("types.description"));
 				t.setName(results.getString("types.name"));
-				t.setProcessorPath(results.getString("types.processor_path"));
+				t.setFilePath(results.getString("types.path"));
 				
 				b.setType(t);
 				benchmarks.add(b);
@@ -278,17 +278,17 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean updateDetails(long id, String name, String description, boolean isDownloadable, long benchTypeId){
+	public static boolean updateDetails(int id, String name, String description, boolean isDownloadable, int benchTypeId){
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL UpdateBenchmarkDetails(?, ?, ?, ?, ?)}");
-			procedure.setLong(1, id);
+			procedure.setInt(1, id);
 			procedure.setString(2, name);
 			procedure.setString(3, description);
 			procedure.setBoolean(4, isDownloadable);
-			procedure.setLong(5, benchTypeId);
+			procedure.setInt(5, benchTypeId);
 			
 			procedure.executeUpdate();					
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));

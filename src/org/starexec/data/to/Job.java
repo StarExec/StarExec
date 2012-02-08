@@ -14,12 +14,12 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Job extends Identifiable {
-	private long userId = -1;
-	private long nodeClassId = -1;
+	private int userId = -1;
+	private int nodeClassId = -1;
 	@Expose private String name;
 	private Timestamp submitted;
 	private Timestamp finished;
-	private long timeout;
+	private int timeout;
 	@Expose	private String status;
 	@Expose private String description = "none";
 	private String runTime = "";
@@ -32,28 +32,28 @@ public class Job extends Identifiable {
 	/**
 	 * @return the user id of the user who created the job
 	 */
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 
 	/**
 	 * @param userId the user id to set as the creator
 	 */
-	public void setUserId(long userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
 
 	/**
 	 * @return the id of the node class the job was intended to run on
 	 */
-	public long getNodeClassId() {
+	public int getNodeClassId() {
 		return nodeClassId;
 	}
 
 	/**
 	 * @param nodeClassId the id of the node class to set for the job
 	 */
-	public void setNodeClassId(long nodeClassId) {
+	public void setNodeClassId(int nodeClassId) {
 		this.nodeClassId = nodeClassId;
 	}
 
@@ -110,14 +110,14 @@ public class Job extends Identifiable {
 	/**
 	 * @return the maximum amount of time (in seconds) a job can run
 	 */
-	public long getTimeout() {
+	public int getTimeout() {
 		return timeout;
 	}
 
 	/**
 	 * @param timeout the timeout for the job
 	 */
-	public void setTimeout(long timeout) {
+	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
 
@@ -152,7 +152,7 @@ public class Job extends Identifiable {
 	}
 	
 	/**
-	 * @return the list of job pairs belonging to this job
+	 * @return the list of job pairs beinting to this job
 	 */
 	public List<JobPair> getJobPairs() {
 		return jobPairs;
@@ -173,19 +173,19 @@ public class Job extends Identifiable {
 	}
 
 	/**
-	 * @param runTime The run time in total milliseconds (which is converted to a time string)
+	 * @param l The run time in total milliseconds (which is converted to a time string)
 	 */
-	public void setRunTime(long runTime) {
-		runTime = Math.abs(runTime);	
-		long days = runTime / (86400000);		
-		runTime -= (days * 86400000);
-		long hours = runTime / 3600000;
-		runTime -= (hours * 3600000);
-		long minutes = runTime / 60000;	
-		runTime -= (minutes * 60000);
-		long seconds = runTime / 1000;
-		runTime -= (seconds * 1000);
-		long ms = runTime;
+	public void setRunTime(long l) {
+		l = Math.abs(l);	
+		long days = l / (86400000);		
+		l -= (days * 86400000);
+		long hours = l / 3600000;
+		l -= (hours * 3600000);
+		long minutes = l / 60000;	
+		l -= (minutes * 60000);
+		long seconds = l / 1000;
+		l -= (seconds * 1000);
+		long ms = l;
 		
 		this.runTime = String.format("%sd %sh %sm %s.%ss", days, hours, minutes, seconds, ms);
 	}

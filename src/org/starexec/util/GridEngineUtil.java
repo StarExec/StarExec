@@ -44,7 +44,7 @@ public class GridEngineUtil {
 	
 	/**
 	 * Loads the list of active queues on the system, loads their attributes into the database
-	 * as well as their associations to worker nodes that belong to each queue.
+	 * as well as their associations to worker nodes that beint to each queue.
 	 */
 	private static void loadQueueDetails() {
 		BufferedReader queueResults = null;
@@ -121,9 +121,9 @@ public class GridEngineUtil {
 	}
 	
 	/**
-	 * Gets all of the worker nodes that belong to a queue 
+	 * Gets all of the worker nodes that beint to a queue 
 	 * @param name The name of the queue to find worker nodes for
-	 * @return A list of worker nodes that belong to the given queue
+	 * @return A list of worker nodes that beint to the given queue
 	 */
 	public static List<WorkerNode> getQueueAssociations(String name) {
 		// Create the list of nodes that will be returned		

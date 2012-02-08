@@ -1,12 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%	
 	try {		
 		// Get parent space info for display
-		long spaceId = Long.parseLong(request.getParameter("sid"));
-		long userId = SessionUtil.getUserId(request);
+		int spaceId = Integer.parseInt(request.getParameter("sid"));
+		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
 		
 		// Verify this user can add jobs to this space
@@ -17,6 +17,8 @@
 			request.setAttribute("queues", Cluster.getAllQueues());
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
+			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
+			request.setAttribute("postProcs", Processors.getAll(ProcessorType.POST));
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
@@ -41,9 +43,24 @@
 					<td><textarea id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
 				</tr>
 				<tr>
-					<td class="label"><p>post processor</p></td>
+					<td class="label"><p>pre processor</p></td>
 					<td>
+						<select id="preProcess" name="preProcess">
+						<option value=""></option>
+						<c:forEach var="proc" items="${preProcs}">
+								<option value="${proc.id}">${proc.name}</option>
+						</c:forEach>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td class="label"><p>post processor</p></td>
+					<td>					
 						<select id="postProcess" name="process">
+						<option value=""></option>
+						<c:forEach var="proc" items="${postProcs}">
+								<option value="${proc.id}">${proc.name}</option>
+						</c:forEach>
 						</select>
 					</td>
 				</tr>

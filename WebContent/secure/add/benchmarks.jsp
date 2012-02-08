@@ -1,18 +1,18 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%	
+<%
 	try {		
 		// Get parent space info for display
-		long spaceId = Long.parseLong(request.getParameter("sid"));
-		long userId = SessionUtil.getUserId(request);
+		int spaceId = Integer.parseInt(request.getParameter("sid"));
+		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
-		request.setAttribute("types", BenchTypes.getAll());
+		request.setAttribute("types", Processors.getAll(ProcessorType.BENCH));
 		
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if(!p.canAddBenchmark()) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add benchmarks here");
+	response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add benchmarks here");
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The parent space id was not in the correct format");

@@ -7,7 +7,7 @@ import java.util.List;
 import com.google.gson.annotations.Expose;
 
 /**
- * Represents an SGE queue which has a collection of worker nodes that belong to it
+ * Represents an SGE queue which has a collection of worker nodes that beint to it
  * @author Tyler Jensen
  */
 public class Queue extends Identifiable {
@@ -107,7 +107,7 @@ public class Queue extends Identifiable {
 	}
 
 	/**
-	 * @return the worker nodes that belong to the queue
+	 * @return the worker nodes that beint to the queue
 	 */
 	public List<WorkerNode> getNodes() {
 		return nodes;

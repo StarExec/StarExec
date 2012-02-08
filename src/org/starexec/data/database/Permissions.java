@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -21,7 +22,7 @@ public class Permissions {
 	 * @return The ID of the inserted record
 	 * @author Tyler Jensen
 	 */
-	protected static long add(Permission p, Connection con) throws Exception {
+	protected static int add(Permission p, Connection con) throws Exception {
 		CallableStatement procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 		procDefaultPerm.setBoolean(1, p.canAddSolver());
 		procDefaultPerm.setBoolean(2, p.canAddBenchmark());
@@ -34,30 +35,30 @@ public class Permissions {
 		procDefaultPerm.setBoolean(9, p.canRemoveUser());
 		procDefaultPerm.setBoolean(10, p.canRemoveJob());
 		procDefaultPerm.setBoolean(11, p.isLeader());
-		procDefaultPerm.registerOutParameter(12, java.sql.Types.BIGINT);			
+		procDefaultPerm.registerOutParameter(12, java.sql.Types.INTEGER);			
 				
 		procDefaultPerm.execute();
-		return procDefaultPerm.getLong(12);
+		return procDefaultPerm.getInt(12);
 	}	
 	
 	/**
 	 * Checks to see if the user has access to the given solvers in some way. More specifically,
-	 * this checks if the user belongs to all the spaces the solvers belong to.
+	 * this checks if the user beints to all the spaces the solvers beint to.
 	 * @param solverIds The solvers to check if the user can see
 	 * @param userId The user that is requesting to view the given solvers	
 	 * @return True if the user can somehow see the solvers, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeSolvers(List<Long> solverIds, long userId) {
+	public static boolean canUserSeeSolvers(List<Integer> solverIds, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
 			
-			for(long id : solverIds) {				
-				procedure.setLong(1, id);					
-				procedure.setLong(2, userId);
+			for(int id : solverIds) {				
+				procedure.setInt(1, id);					
+				procedure.setInt(2, userId);
 				ResultSet results = procedure.executeQuery();
 			
 				if(results.first()) {
@@ -79,20 +80,20 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the solver in some way. More specifically,
-	 * this checks if the user belongs to any space the solver belongs to.
+	 * this checks if the user beints to any space the solver beints to.
 	 * @param solverId The solver to check if the user can see
 	 * @param userId The user that is requesting to view the given solver	
 	 * @return True if the user can somehow see the solver, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeSolver(long solverId, long userId) {
+	public static boolean canUserSeeSolver(int solverId, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
-			procedure.setLong(1, solverId);					
-			procedure.setLong(2, userId);
+			procedure.setInt(1, solverId);					
+			procedure.setInt(2, userId);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {
@@ -109,20 +110,20 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the benchmark in some way. More specifically,
-	 * this checks if the user belongs to any space the benchmark belongs to.
+	 * this checks if the user beints to any space the benchmark beints to.
 	 * @param benchId The benchmark to check if the user can see
 	 * @param userId The user that is requesting to view the given benchmark	 * 
 	 * @return True if the user can somehow see the benchmark, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeBench(long benchId, long userId) {
+	public static boolean canUserSeeBench(int benchId, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
-			procedure.setLong(1, benchId);					
-			procedure.setLong(2, userId);
+			procedure.setInt(1, benchId);					
+			procedure.setInt(2, userId);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {
@@ -139,22 +140,22 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the benchmarks in some way. More specifically,
-	 * this checks if the user belongs to all spaces the benchmarks belong to.
+	 * this checks if the user beints to all spaces the benchmarks beint to.
 	 * @param benchIds The benchmarks to check if the user can see
 	 * @param userId The user that is requesting to view the given benchmarks 
 	 * @return True if the user can somehow see all benchmarks, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeBenchs(List<Long> benchIds, long userId) {
+	public static boolean canUserSeeBenchs(List<Integer> benchIds, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
 			
-			for(long id : benchIds) {
-				procedure.setLong(1, id);					
-				procedure.setLong(2, userId);
+			for(int id : benchIds) {
+				procedure.setInt(1, id);					
+				procedure.setInt(2, userId);
 				ResultSet results = procedure.executeQuery();
 				
 				if(results.first()) {
@@ -176,20 +177,20 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the job in some way. More specifically,
-	 * this checks if the user belongs to any space the job belongs to.
+	 * this checks if the user beints to any space the job beints to.
 	 * @param jobId The job to check if the user can see
 	 * @param userId The user that is requesting to view the given job 
 	 * @return True if the user can somehow see the job, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeJob(long jobId, long userId){		
+	public static boolean canUserSeeJob(int jobId, int userId){		
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
-			procedure.setLong(1, jobId);					
-			procedure.setLong(2, userId);
+			procedure.setInt(1, jobId);					
+			procedure.setInt(2, userId);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {
@@ -205,13 +206,13 @@ public class Permissions {
 	}
 	
 	/**
-	 * Checks to see if the user belongs to the given space.
+	 * Checks to see if the user beints to the given space.
 	 * @param spaceId The space to check if the user can see
 	 * @param userId The user that is requesting to view the given space
-	 * @return True if the user belongs to the space, false otherwise
+	 * @return True if the user beints to the space, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeSpace(long spaceId, long userId) {		
+	public static boolean canUserSeeSpace(int spaceId, int userId) {		
 		if(spaceId <= 1) {
 			// Can always see root space
 			return true;
@@ -222,8 +223,8 @@ public class Permissions {
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewSpace(?, ?)}");
-			procedure.setLong(1, spaceId);					
-			procedure.setLong(2, userId);
+			procedure.setInt(1, spaceId);					
+			procedure.setInt(2, userId);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {
@@ -245,14 +246,14 @@ public class Permissions {
 	 * @return A permission object containing the user's permission on the space. Null if the user is not apart of the space.
 	 * @author Tyler Jensen
 	 */
-	public static Permission get(long userId, long spaceId) {
+	public static Permission get(int userId, int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetUserPermissions(?, ?)}");
-			procedure.setLong(1, userId);					
-			procedure.setLong(2, spaceId);
+			procedure.setInt(1, userId);					
+			procedure.setInt(2, spaceId);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {				
@@ -294,18 +295,18 @@ public class Permissions {
 	 * @return A permission object containing the space's default user permissionsuser's permission on the space.
 	 * @author Tyler Jensen
 	 */
-	public static Permission getSpaceDefault(long spaceId) {
+	public static Permission getSpaceDefault(int spaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpacePermissions(?)}");			
-			procedure.setLong(1, spaceId);
+			procedure.setInt(1, spaceId);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {				
 				Permission p = new Permission();
-				p.setId(results.getLong("id"));
+				p.setId(results.getInt("id"));
 				p.setAddBenchmark(results.getBoolean("add_bench"));
 				p.setAddSolver(results.getBoolean("add_solver"));
 				p.setAddSpace(results.getBoolean("add_space"));
@@ -339,35 +340,55 @@ public class Permissions {
 	 * @return true iff the permissions were successfully set, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean set(long userId, long spaceId, Permission newPerm) {
+	/**
+	 * @param userId
+	 * @param spaceId
+	 * @param newPerm
+	 * @return
+	 */
+	public static boolean set(int userId, int spaceId, Permission newPerm) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL SetUserPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-			procedure.setLong(1, userId);					
-			procedure.setLong(2, spaceId);
-			procedure.setBoolean(3, newPerm.canAddSolver());
-			procedure.setBoolean(4, newPerm.canAddBenchmark());
-			procedure.setBoolean(5, newPerm.canAddUser());
-			procedure.setBoolean(6, newPerm.canAddSpace());
-			procedure.setBoolean(7, newPerm.canAddJob());
-			procedure.setBoolean(8, newPerm.canRemoveSolver());
-			procedure.setBoolean(9, newPerm.canRemoveBench());
-			procedure.setBoolean(10, newPerm.canRemoveSpace());
-			procedure.setBoolean(11, newPerm.canRemoveUser());
-			procedure.setBoolean(12, newPerm.canRemoveJob());
-			procedure.setBoolean(13, newPerm.isLeader());
-			
-			procedure.executeUpdate();
-			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
-			return true;
+			return Permissions.set(userId, spaceId, newPerm, con);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
-			log.error(String.format("Changing permissions failed for user [%d] in space [%d]", userId, spaceId));
+		
+		log.error(String.format("Changing permissions failed for user [%d] in space [%d]", userId, spaceId));
 		return false;
+	}
+	
+	/**
+	 * Sets the permissions of a given user in a given space
+	 * 
+	 * @param userId the id of the user to set the permissions of
+	 * @param spaceId the id of the space where the permissions will effect
+	 * @param newPerm the new set of permissions to set
+	 * @return true iff the permissions were successfully set, false otherwise
+	 * @author Todd Elvers
+	 */
+	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) throws Exception {				
+		CallableStatement procedure = con.prepareCall("{CALL SetUserPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+		procedure.setInt(1, userId);					
+		procedure.setInt(2, spaceId);
+		procedure.setBoolean(3, newPerm.canAddSolver());
+		procedure.setBoolean(4, newPerm.canAddBenchmark());
+		procedure.setBoolean(5, newPerm.canAddUser());
+		procedure.setBoolean(6, newPerm.canAddSpace());
+		procedure.setBoolean(7, newPerm.canAddJob());
+		procedure.setBoolean(8, newPerm.canRemoveSolver());
+		procedure.setBoolean(9, newPerm.canRemoveBench());
+		procedure.setBoolean(10, newPerm.canRemoveSpace());
+		procedure.setBoolean(11, newPerm.canRemoveUser());
+		procedure.setBoolean(12, newPerm.canRemoveJob());
+		procedure.setBoolean(13, newPerm.isLeader());
+		
+		procedure.executeUpdate();
+		log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
+		return true;		
 	}
 }

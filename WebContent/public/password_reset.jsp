@@ -32,6 +32,6 @@
 		<div class='error message'>sorry, those credentials do not match our records</div>
 	</c:if>
 	<c:if test="${not empty param.result and param.result == 'expired'}">			
-		<div class='error message'>sorry, the link you are trying to access has expired and no longer exists</div>
+		<div class='error message'>sorry, the link you are trying to access has expired and no inter exists</div>
 	</c:if>
 </star:template>

@@ -50,7 +50,7 @@ public class UploadSolver extends HttpServlet {
     private static final String SOLVER_RUN = "run";
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	long userId = SessionUtil.getUserId(request);
+    	int userId = SessionUtil.getUserId(request);
     	try {	
     		// If we're dealing with an upload request...
 			if (ServletFileUpload.isMultipartContent(request)) {
@@ -89,7 +89,7 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	public Solver handleSolver(long userId, HashMap<String, Object> form) throws Exception {
+	public Solver handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			FileItem item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);
 			
@@ -122,7 +122,7 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			//Try adding the solver to the database
-			if (Solvers.add(newSolver, Long.parseLong((String)form.get(SPACE_ID)))) {
+			if (Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)))) {
 				return newSolver;
 			}
 		} catch (Exception e) {
@@ -175,7 +175,7 @@ public class UploadSolver extends HttpServlet {
 				return false;
 			}
 			
-			Long.parseLong((String)form.get(SPACE_ID));
+			Integer.parseInt((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
 			
 			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) || 

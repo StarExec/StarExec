@@ -1,9 +1,9 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-try {
-	long id = Long.parseLong((String)request.getParameter("cid"));
+	try {
+	int id = Integer.parseInt((String)request.getParameter("cid"));
 	Space com = Communities.getDetails(id);
 	Permission perm = SessionUtil.getPermission(request, id);
 	
@@ -13,7 +13,9 @@ try {
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 	} else {
 		request.setAttribute("com", com);	
-		request.setAttribute("types", BenchTypes.getByCommunity(id));
+		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
+		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
+		request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
 	}
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -25,7 +27,7 @@ try {
 	<input type="hidden" value="${com.id}" id="comId"/>
 	<fieldset>
 		<legend>community details</legend>
-		<table id="details" class="shaded">
+		<table id="detailsTbl" class="shaded">
 			<tr>
 				<th class="label">attribute</th>
 				<th>current value</th>
@@ -43,9 +45,9 @@ try {
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
-		<ul id="websites"></ul>
+		<ul id="websiteList"></ul>
 		<span id="toggleWebsite" class="caption">+ add new</span>
-		<div id="new_website">
+		<div id="newWebsite">
 			<label for="website_name">name </label><input type="text" id="website_name" /> 
 			<label for="website_url">url </label><input type="text" id="website_url" /> 
 			<button id="addWebsite">add</button>
@@ -53,38 +55,42 @@ try {
 	</fieldset>
 	<fieldset>
 		<legend>benchmark types</legend>
-		<form id="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/benchtype/manager?action=update">			
+		<form id="updateBenchTypeForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
-			<table id="benchTypes">
+			<input type="hidden" name="action" value="update"/>
+			<input type="hidden" name="type" value="bench"/>
+			<table id="benchTypeTbl" class="shaded">
 				<tr>
 					<th>name</th>				
 					<th>description</th>
-					<th>processor</th>
+					<th>file name</th>
 				</tr>
-				<c:forEach var="type" items="${types}">
-					<tr id="type_${type.id}">
-						<td>${type.name}</td>
-						<td>${type.description}</td>
-						<td>${type.processorName}</td>
+				<c:forEach var="proc" items="${bench_proc}">
+					<tr id="proc_${proc.id}">
+						<td>${proc.name}</td>
+						<td>${proc.description}</td>
+						<td>${proc.fileName}</td>
 					</tr>
 				</c:forEach>									
 			</table>
 		</form>
-		<span id="toggleType" class="caption">+ add new</span>
-		<form id="typeForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/benchtype/manager?action=add">			
+		<span id="toggleBenchType" class="caption">+ add new</span>
+		<form id=newTypeForm class="newForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
-			<table id="newType">			
+			<input type="hidden" name="action" value="add"/>
+			<input type="hidden" name="type" value="bench"/>
+			<table id="newTypeTbl">			
 				<tr>
 					<td><label for="typeName">name</label></td>
-					<td><input name="typeName" type="text" id="typeName"/></td>
+					<td><input name="name" type="text" id="typeName"/></td>
 				</tr>
 				<tr>
 					<td><label for="typeDesc">description</label></td>
-					<td><textarea name="typeDesc" id="typeDesc"></textarea></td>
+					<td><textarea name="desc" id="typeDesc"></textarea></td>
 				</tr>
 				<tr>
 					<td><label for="typeFile">processor</label></td>
-					<td><input name="typeFile" type="file" id="typeFile"/></td>
+					<td><input name="file" type="file" id="typeFile"/></td>
 				</tr>
 				<tr>
 					<td colspan="2"><button id="addType" type="submit">add</button></td>				
@@ -92,4 +98,97 @@ try {
 			</table>
 		</form>
 	</fieldset>
+	<fieldset>
+		<legend>pre processors</legend>
+		<form id="updatePrePrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			
+			<input type="hidden" name="com" value="${com.id}"/>
+			<input type="hidden" name="action" value="update"/>
+			<input type="hidden" name="type" value="pre"/>
+			<table id="preProcessorTbl" class="shaded">
+				<tr>
+					<th>name</th>				
+					<th>description</th>
+					<th>file name</th>
+				</tr>
+				<c:forEach var="proc" items="${pre_proc}">
+					<tr id="proc_${proc.id}">
+						<td>${proc.name}</td>
+						<td>${proc.description}</td>
+						<td>${proc.fileName}</td>
+					</tr>
+				</c:forEach>																				
+			</table>
+		</form>
+		<span id="togglePreProcessor" class="caption">+ add new</span>
+		<form id="addPreProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/processors/manager">			
+			<input type="hidden" name="com" value="${com.id}"/>
+			<input type="hidden" name="action" value="add"/>
+			<input type="hidden" name="type" value="pre"/>
+			<table id="newPreProcessTbl">			
+				<tr>
+					<td><label for="processorName">name</label></td>
+					<td><input name="name" type="text" id="processorName"/></td>
+				</tr>
+				<tr>
+					<td><label for="processorDesc">description</label></td>
+					<td><textarea name="desc" id="processorDesc"></textarea></td>
+				</tr>
+				<tr>
+					<td><label for="processorFile">processor</label></td>
+					<td><input name="file" type="file" id="processorFile"/></td>
+				</tr>
+				<tr>
+					<td colspan="2"><button id="addPreProcessor" type="submit">add</button></td>				
+				</tr>			 			 			
+			</table>
+		</form>
+	</fieldset>
+	<fieldset>
+		<legend>post processors</legend>
+		<form id="updatePstPrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			
+			<input type="hidden" name="com" value="${com.id}"/>
+			<input type="hidden" name="action" value="update"/>
+			<input type="hidden" name="type" value="post"/>
+			<table id="postProcessorTbl" class="shaded">
+				<tr>
+					<th>name</th>				
+					<th>description</th>
+					<th>file name</th>
+				</tr>								
+				<c:forEach var="proc" items="${post_proc}">
+					<tr id="proc_${proc.id}">
+						<td>${proc.name}</td>
+						<td>${proc.description}</td>
+						<td>${proc.fileName}</td>
+					</tr>
+				</c:forEach>					
+			</table>
+		</form>
+		<span id="togglePostProcessor" class="caption">+ add new</span>
+		<form id="addPostProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/processors/manager">			
+			<input type="hidden" name="com" value="${com.id}"/>
+			<input type="hidden" name="action" value="add"/>
+			<input type="hidden" name="type" value="post"/>
+			<table id="newPostProcessTbl">			
+				<tr>
+					<td><label for="processorName">name</label></td>
+					<td><input name="name" type="text" id="processorName"/></td>
+				</tr>
+				<tr>
+					<td><label for="processorDesc">description</label></td>
+					<td><textarea name="desc" id="processorDesc"></textarea></td>
+				</tr>
+				<tr>
+					<td><label for="processorFile">processor</label></td>
+					<td><input name="file" type="file" id="processorFile"/></td>
+				</tr>
+				<tr>
+					<td colspan="2"><button id="addPostProcessor" type="submit">add</button></td>				
+				</tr>			 			 			
+			</table>
+		</form>
+	</fieldset>
+	<div id="dialog-confirm-delete" title="confirm delete">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>
 </star:template>

@@ -77,5 +77,5 @@ public class R {
 	public static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
 	public static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
 	public static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
-	public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that belong to a queue from SGE's queue detail output
+	public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that beint to a queue from SGE's queue detail output
 }	

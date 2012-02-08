@@ -40,7 +40,7 @@ public class SessionUtil {
 	 * @param request The request to get the user's id from
 	 * @return The current user's id
 	 */
-	public static long getUserId(HttpServletRequest request) {
+	public static int getUserId(HttpServletRequest request) {
 		 return SessionUtil.getUserId(request.getSession());
 	}
 	
@@ -48,7 +48,7 @@ public class SessionUtil {
 	 * @param session The session to get the user's id from
 	 * @return The current user's id
 	 */
-	public static long getUserId(HttpSession session) {
+	public static int getUserId(HttpSession session) {
 		 return ((User)session.getAttribute(SessionUtil.USER)).getId();
 	}
 	
@@ -56,7 +56,7 @@ public class SessionUtil {
 	 * @param request The request to get the user's cache from
 	 * @return The current user's permission cache
 	 */
-	public static HashMap<Long, Permission> getPermissionCache(HttpServletRequest request) {
+	public static HashMap<Integer, Permission> getPermissionCache(HttpServletRequest request) {
 		return SessionUtil.getPermissionCache(request.getSession());
 	}
 		
@@ -65,8 +65,8 @@ public class SessionUtil {
 	 * @return The current user's permission cache
 	 */
 	@SuppressWarnings("unchecked")
-	public static HashMap<Long, Permission> getPermissionCache(HttpSession session) {
-		return (HashMap<Long, Permission>)session.getAttribute(SessionUtil.PERMISSION_CACHE);
+	public static HashMap<Integer, Permission> getPermissionCache(HttpSession session) {
+		return (HashMap<Integer, Permission>)session.getAttribute(SessionUtil.PERMISSION_CACHE);
 	}
 	
 	/**
@@ -74,7 +74,7 @@ public class SessionUtil {
 	 * @param spaceId The space to get the current user's permissions for
 	 * @return The permission associated with the given space
 	 */
-	public static Permission getPermission(HttpServletRequest request, long spaceId) {
+	public static Permission getPermission(HttpServletRequest request, int spaceId) {
 		return SessionUtil.getPermission(request.getSession(), spaceId);
 	}
 	
@@ -83,8 +83,8 @@ public class SessionUtil {
 	 * @param spaceId The space to get the current user's permissions for
 	 * @return The permission associated with the given space
 	 */
-	public static Permission getPermission(HttpSession session, long spaceId) {
-		HashMap<Long, Permission> cache = SessionUtil.getPermissionCache(session);
+	public static Permission getPermission(HttpSession session, int spaceId) {
+		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
 		
 		// If the cache doesn't contain the requested permission...
 		if(!cache.containsKey(spaceId)) {
@@ -107,7 +107,7 @@ public class SessionUtil {
 	 * @param request The request where the cache is located
 	 * @param spaceId The id of the space to cache the permission for
 	 */
-	public static void cachePermission(HttpServletRequest request, long spaceId) {
+	public static void cachePermission(HttpServletRequest request, int spaceId) {
 		SessionUtil.cachePermission(request.getSession(), spaceId);
 	}
 	
@@ -117,9 +117,9 @@ public class SessionUtil {
 	 * @param session The session where the cache is located
 	 * @param spaceId The id of the space to cache the permission for
 	 */
-	public static void cachePermission(HttpSession session, long spaceId) {
+	public static void cachePermission(HttpSession session, int spaceId) {
 		// Make sure we cache the permission for this space for the user
-		HashMap<Long, Permission> cache = SessionUtil.getPermissionCache(session);
+		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
 		if(!cache.containsKey(spaceId)) {
 			// If the cache does not have the permission, add it
 			Permission p = Permissions.get(SessionUtil.getUserId(session), spaceId);
@@ -138,8 +138,8 @@ public class SessionUtil {
 	 * @param spaceId the id of the space to remove permissions from cache for
 	 * @author Todd Elvers
 	 */
-	public static void removeCachePermission(HttpServletRequest request, long spaceId){
-		HashMap<Long, Permission> cache = SessionUtil.getPermissionCache(request.getSession());
+	public static void removeCachePermission(HttpServletRequest request, int spaceId){
+		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(request.getSession());
 		cache.remove(spaceId);
 	}
 }

@@ -89,7 +89,7 @@ public class Registration extends HttpServlet {
 		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
 		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));		
 		
-		long communityId = Long.parseLong(request.getParameter(Registration.USER_COMMUNITY));
+		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		
 		// Generate unique code to safely reference this user's entry in verification hyperlinks
 		String code = UUID.randomUUID().toString();
@@ -131,8 +131,8 @@ public class Registration extends HttpServlet {
 	    		return false;
 	    	}    	    	   
 		    
-	    	// Make sure community id is a valid long 
-	    	Long.parseLong(request.getParameter(Registration.USER_COMMUNITY));
+	    	// Make sure community id is a valid int 
+	    	Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 	    	
 	    	// Ensure the parameters are valid values
 	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_FIRSTNAME)) 
