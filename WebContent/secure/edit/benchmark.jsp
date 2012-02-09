@@ -25,7 +25,7 @@
 			request.setAttribute("isDownloadable", "");
 			request.setAttribute("isNotDownloadable", "checked");
 		}
-		request.setAttribute("types", Processors.getAll(ProcessorType.BENCH);
+		request.setAttribute("types", Processors.getAll(ProcessorType.BENCH));
 	}
 		} else {
 	response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");

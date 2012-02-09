@@ -84,6 +84,12 @@ public class Starexec implements ServletContextListener {
 		};		
 		
 		// Schedule the cluster update task to be run every so often as specified in the config file
-		taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);			
+		taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);
+		
+		// Set any application variables to be used on JSP's with EL
+		event.getServletContext().setAttribute("buildVersion", ConfigUtil.getBuildVersion());
+		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
+		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
+		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);
 	}	
 }

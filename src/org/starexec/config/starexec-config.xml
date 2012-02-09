@@ -21,8 +21,8 @@
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
-			<property key="CONTACT_EMAIL" value="aaron-stump@uiowa.edu" />
-			<property key="CLUSTER_UPDATE_PERIOD" value="30" />
+			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
+			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<!-- SGE Configuration -->
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />

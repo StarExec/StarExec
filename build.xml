@@ -42,13 +42,20 @@
 		               byline="false"
 		/>
 		
+		<!-- Update the log4j config file to only record INFO level events -->
+		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
+	        <entry key="log4j.rootLogger" value="INFO, STAREXEC"/>
+	    </propertyfile>
+		
 		<!-- Clear the build directory if it exists and re-make the dir -->
 		<delete dir="${build-directory}" />
 		<mkdir dir="${build-directory}" />
 		<mkdir dir="${class-directory}" />
 		
 		<!-- Compile the source code to get the java classes -->
-		<javac srcdir="src" destdir="${class-directory}" classpathref="classpath" />
+		<javac srcdir="src" destdir="${class-directory}" classpathref="classpath" nowarn="on">
+			<compilerarg value="-Xlint:unchecked"/>
+		</javac>
 		
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-directory}/org/starexec/config" />

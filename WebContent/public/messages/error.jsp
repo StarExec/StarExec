@@ -2,7 +2,6 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-	request.setAttribute("email", R.CONTACT_EMAIL);
 	String desc = "";
 	
 	switch(pageContext.getErrorData().getStatusCode()) {
@@ -35,6 +34,6 @@
 	<p>this error has been logged and will be reviewed by a developer and or administrator</p>
 	</c:if>
 	<div id="actions">
-		<a href="#" onclick="history.go(-1);return false;">try again</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:${email}?subject=[Starexec] Error Report">report error</a>
+		<a href="#" onclick="history.go(-1);return false;">try again</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:${contactEmail}?subject=[Starexec] Error Report">report error</a>
 	</div>		
 </star:template>

@@ -1,12 +1,19 @@
 package org.starexec.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,6 +38,11 @@ public class ConfigUtil {
 	private static String ATTR_NAME = "name";
 	private static String ATTR_DEFAULT = "default";
 	private static String ATTR_INHERIT = "inherit";
+	
+	// Build property information
+	private static String buildVersion = null;
+	private static String buildUser = null;
+	private static Date buildDate = null;
 	
 	/**
 	 * Loads resources from the starexec-config.xml file into the static resource classes
@@ -199,5 +211,60 @@ public class ConfigUtil {
 				}
 			}				
 		}	
+	}
+	
+	/**
+	 * @return The SVN revision number of the build
+	 */
+	public static String getBuildVersion() {		
+		if(buildVersion == null) {
+			ConfigUtil.loadBuildProperties();
+		}
+		
+		return ConfigUtil.buildVersion;
+	}
+	
+	/**
+	 * @return The user who created the last build
+	 */
+	public static String getBuildUser() {		
+		if(buildUser == null) {
+			ConfigUtil.loadBuildProperties();
+		}
+		
+		return ConfigUtil.buildUser;
+	}
+	
+	/**
+	 * @return The date the build was created
+	 */
+	public static Date getBuildDate() {		
+		if(buildDate == null) {
+			ConfigUtil.loadBuildProperties();
+		}
+		
+		return ConfigUtil.buildDate;
+	}
+	
+	/**
+	 * Loads the build properties file and reads in it's values for use throughout the application
+	 */
+	private static void loadBuildProperties() {
+		try {
+			SimpleDateFormat buildDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
+			
+			Properties propFile = new Properties();
+			propFile.load(new FileInputStream(new File(R.CONFIG_PATH, "build.properties")));
+			
+			ConfigUtil.buildVersion = propFile.getProperty("build");
+			ConfigUtil.buildDate = buildDateFormat.parse(propFile.getProperty("buildtime"));
+			ConfigUtil.buildUser = propFile.getProperty("builder");
+			
+			log.debug("Loaded build version: " + ConfigUtil.buildVersion);
+			log.debug("Loaded build user: " + ConfigUtil.buildUser);
+			log.debug("Loaded build date: " + buildDateFormat.format(ConfigUtil.buildDate));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 }

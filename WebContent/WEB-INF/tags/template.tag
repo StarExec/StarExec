@@ -1,5 +1,5 @@
 <%@tag description="Template tag for all starexec pages"%>
-<%@tag import="org.starexec.data.to.*, org.starexec.constants.*"%>
+<%@tag import="org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
@@ -19,6 +19,7 @@
 				<jsp:doBody/>
 			</div>		
 		<star:footer />
+		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})">starexec alpha build ${buildVersion}</div>
 		</div>
 	</body>
 </html>
