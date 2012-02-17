@@ -504,7 +504,7 @@ function initButtons(){
 									// Remove the rows from the page and update the table size in the legend
 									updateTable(spaceTable);
 									$("#removeSubspace").fadeOut("fast");
-									initTree();
+									initSpaceExplorer();
 									break;
 								case 1:
 									showMessage('error', "an error occurred while processing your request; please try again", 5000);
@@ -573,8 +573,8 @@ function initDataTables(){
 	});
 	
 	// User permission tooltip setup
-	$("#users tbody").delegate("tr", "hover", function(){
-		$(this).toggleClass("hovered");
+	$('#users tbody').delegate('tr', 'hover', function(){
+		$(this).toggleClass('hovered');
 	});
 	
 	console.log('all datatables initialized');
@@ -635,9 +635,9 @@ function populateDetails(jsonData) {
 	$.each(jsonData.space.users, function(i, user) {
 		var hiddenUserId;
 		if(user.id == jsonData.perm.id){
-			hiddenUserId = '<input type="hidden" value="'+user.id+'" name="currentUser">';
+			hiddenUserId = '<input type="hidden" value="'+user.id+'" name="currentUser" id="uid'+user.id+'">';
 		} else {
-			hiddenUserId = '<input type="hidden" value="'+user.id+'">';
+			hiddenUserId = '<input type="hidden" value="'+user.id+'" id="uid'+user.id+'">';
 		}
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
@@ -1142,7 +1142,7 @@ function getTooltipConfig(type, message){
 							setTimeout(function(){
 									self.show('fast', function(){
 										// If element is not being hovered over anymore when the timer ends, don't display it
-										if($("#users").children('tbody').children('tr.hovered').children('td:first').children('input').val() == userId){
+										if($("#users tbody tr.hovered td:first").children('input').val() == userId){
 											self.css('visibility','visible');
 					        			} else {
 					        				// Fixes bug where elements that were initially hovered, but didn't stay long enough
@@ -1167,9 +1167,8 @@ function getTooltipConfig(type, message){
 				   onRender: function(){
 						var self = this;						
 						var userId = $(this.elements.target).children('td:first').children('input').val();
-						var url = '/starexec/services/space/' + spaceId + '/perm/' + userId;
 						$.post(
-								url,
+								'/starexec/services/space/' + spaceId + '/perm/' + userId,
 								function(theResponse){
 									console.log('AJAX response for permission tooltip received');
 									if(1 == theResponse){
@@ -1184,6 +1183,7 @@ function getTooltipConfig(type, message){
 							alert('Session expired');
 							window.location.reload(true);
 						});	
+						
 				   },
 				   // If a user modifies a tooltip but does not press the 'save' or 'cancel' button
 				   // then this resets the tooltip once it loses focus and fades from view
@@ -1196,7 +1196,7 @@ function getTooltipConfig(type, message){
 								   '/starexec/services/space/' + spaceId + '/perm/' + userId,
 								   function(theResponse){
 									   console.log('AJAX response for permission tooltip received');
-									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
+//									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
 									   self.updateContent(getPermTable(theResponse, 'leader'), true);  
 									   self.updateTitle('<center><a>permissions</a></center>');									   
 									   return true;
@@ -1206,7 +1206,12 @@ function getTooltipConfig(type, message){
 								window.location.reload(true);
 						   });		
 					   }
+					   
+					   // Fixes bug where 'hovered' class doesn't get removed from the no-longer-hovered tr element
+					   var userId = $(self.elements.target).children('td:first').children('input').val();
+					   $('#uid'+userId).parent().parent().removeClass('hovered');
 				   }
+				   
 		      }
 		};
 	}

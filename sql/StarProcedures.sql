@@ -16,12 +16,12 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 	
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
-CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT)
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT)
 	BEGIN
 		DECLARE bid INT DEFAULT -1;
 		
-		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable)
-		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable);
+		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
+		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
 		
 		SELECT LAST_INSERT_ID() INTO bid;		
 		INSERT INTO bench_assoc VALUES (_spaceId, _benchId);
@@ -53,6 +53,16 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 			ON bench.bench_type=types.id
 		WHERE bench.id = _id;
 	END //
+	
+-- Retrieves all benchmarks owned by a given user id
+-- Author: Todd Elvers
+CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
+	BEGIN
+		SELECT *
+		FROM benchmarks
+		WHERE user_id = _userId;
+	END //
+	
 	
 -- Retrieves all benchmarks belonging to a space
 -- Author: Tyler Jensen
@@ -101,6 +111,7 @@ CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(32
 	END //
 	
 	
+
 	
 	
 	
@@ -177,10 +188,11 @@ CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(32))
 	
 -- Updates a processor's processor path
 -- Author: Tyler Jensen
-CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT)
+CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIGINT)
 	BEGIN		
 		UPDATE processors
-		SET path=_path
+		SET path=_path,
+			disk_size=_diskSize
 		WHERE id=_id;
 	END //
 	
@@ -746,10 +758,10 @@ CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id INT)
 
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
-CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(32), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT)
+CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(32), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT)
 	BEGIN
-		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable)
-		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable);
+		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size)
+		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
@@ -778,6 +790,15 @@ CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
 		WHERE id = _solverId;
 	END //	
 	
+-- Retrieves the configurations that belong to a solver with the given id
+-- Author: Tyler Jensen
+CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM configurations
+		WHERE solver_id = _id;
+	END //
+	
 -- Retrieves all solvers belonging to a space
 -- Author: Tyler Jensen
 CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
@@ -800,14 +821,15 @@ CREATE PROCEDURE GetSolverById(IN _id INT)
 		WHERE id = _id;
 	END //
 
--- Retrieves the configurations that belong to a solver with the given id
--- Author: Tyler Jensen
-CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
+-- Retrieves the solvers owned by a given user id
+-- Todd Elvers
+CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
-		FROM configurations
-		WHERE solver_id = _id;
+		FROM solvers
+		WHERE user_id = _userId;
 	END //
+	
 	
 -- Removes the association between a solver and a given space;
 -- places the path of the solver in _path if it has no other
@@ -973,18 +995,16 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 	
 	
 	
-	
-
 /*************************************************************************
 *********************** USER STORED PROCEDURES ***************************
 *************************************************************************/
 
 -- Begins the registration process by adding a user to the USERS table
 -- Author: Todd Elvers
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), OUT _id INT)
+CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, OUT _id INT)
 	BEGIN		
-		INSERT INTO users(first_name, last_name, email, institution, created, password)
-		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password);
+		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota)
+		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
@@ -1115,9 +1135,25 @@ CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
 		WHERE users.id = _id;
 	END //
 
+-- Increments the disk_quota attribute of the users table by the value of _newBytes
+-- for the given user
+-- Author: Todd Elvers
+CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
+	BEGIN
+		UPDATE users
+		SET disk_quota = _newQuota
+		WHERE id = _userId;
+	END //
 	
-	
-	
+-- Returns the number of bytes a given user is consuming on disk
+-- Author: Todd Elvers
+CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
+	BEGIN
+		SELECT sum(benchmarks.disk_size + solvers.disk_size) AS disk_usage
+		FROM   benchmarks,solvers
+		WHERE  benchmarks.user_id = _userId
+		AND    solvers.user_id = _userId;
+	END //
 	
 	
 

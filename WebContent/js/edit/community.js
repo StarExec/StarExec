@@ -108,16 +108,16 @@ $(document).ready(function(){
 
 function displayWebsites(data) {
 	// Injects the clickable delete button that's always present
+	$('#websiteTable tr').remove();
 	$.each(data, function(i, site) {
-		$('#websiteList tr').parent().remove();
-		$('#websiteList').append('<li><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a><a class="delWebsite" id="' + site.id + '">delete</a></li>');
+		$('#websiteTable').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
 	
 	// Handles deletion of websites
 	$('.delWebsite').click(function(){
 		var answer = confirm("are you sure you want to delete this website?");
 		var websiteId = $(this).attr('id');
-		var parent = $(this).parent();
+		var parent = $(this).parent().parent();
 		if (true == answer) {
 			$.post(
 					"/starexec/services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + websiteId,
@@ -161,7 +161,7 @@ function displayWebsites(data) {
 			    	if(returnCode == '0') {
 			    		$('#website_name').val("");
 			    		$('#website_url').val("");
-			    		$('#websiteList li').remove();
+			    		$('#websiteTable tr').remove();
 			    		$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
 			    			alert('Session expired');
 			    			window.location.reload(true);

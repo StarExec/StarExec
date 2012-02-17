@@ -21,6 +21,7 @@ public class Solver extends Identifiable {
 	private transient String path;
 	private boolean isDownloadable;	
 	private List<Configuration> configurations;
+	private long diskSize;
 	
 	public Solver() {
 		this.configurations = new LinkedList<Configuration>();
@@ -125,4 +126,18 @@ public class Solver extends Identifiable {
 	public void addConfiguration(Configuration configuration) {
 		this.configurations.add(configuration);
 	}	
+	
+	/**
+	 * @param diskSize the number of bytes this solver consumes on disk
+	 */
+	public void setDiskSize(long diskSize){
+		this.diskSize = diskSize;
+	}
+	
+	/**
+	 * @return the number of bytes this solver consumes on disk
+	 */
+	public long getDiskSize(){
+		return diskSize;
+	}
 }

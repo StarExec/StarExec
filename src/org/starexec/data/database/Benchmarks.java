@@ -4,10 +4,10 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Processor;
@@ -64,9 +64,21 @@ public class Benchmarks {
 		Connection con = null;			
 		
 		try {
-			con = Common.getConnection();		
-			return Benchmarks.add(con, benchmark, spaceId);
-		} catch (Exception e){			
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			// Add benchmark to database
+			boolean benchAdded = Benchmarks.add(con, benchmark, spaceId);
+			
+			if(benchAdded){
+				Common.endTransaction(con);
+				return true;
+			} else {
+				Common.doRollback(con);
+				return false;
+			}
+		} catch (Exception e){
+			Common.doRollback(con);
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
@@ -111,17 +123,20 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean add(Connection con, Benchmark benchmark, int spaceId) throws SQLException {				
+	protected static boolean add(Connection con, Benchmark benchmark, int spaceId) throws Exception {				
 		CallableStatement procedure = null;			
-		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?)}");
+		
+		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setString(1, benchmark.getName());		
 		procedure.setString(2, benchmark.getPath());
 		procedure.setBoolean(3, benchmark.isDownloadable());
 		procedure.setInt(4, benchmark.getUserId());
 		procedure.setInt(5, benchmark.getType().getId());
 		procedure.setInt(6, spaceId);
+		procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
 		
 		procedure.executeUpdate();		
+		
 		return true;
 	}
 	
@@ -140,7 +155,7 @@ public class Benchmarks {
 			}
 		}
 		
-		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+		log.debug(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 	
 	/**
@@ -154,6 +169,7 @@ public class Benchmarks {
 		File benchToDelete = null;
 		try {
 			con = Common.getConnection();
+			
 			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
@@ -170,7 +186,7 @@ public class Benchmarks {
 			
 			log.debug(String.format("Deletion of benchmark [id=%d] in directory [%s] was successful.", id, benchToDelete.getAbsolutePath()));					
 			return true;
-		} catch (Exception e){			
+		} catch (Exception e){		
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
@@ -204,6 +220,7 @@ public class Benchmarks {
 				b.setPath(results.getString("bench.path"));
 				b.setDescription(results.getString("bench.description"));
 				b.setDownloadable(results.getBoolean("bench.downloadable"));
+				b.setDiskSize(results.getLong("bench.disk_size"));
 				
 				Processor t = new Processor();
 				t.setId(results.getInt("types.id"));
@@ -211,6 +228,7 @@ public class Benchmarks {
 				t.setDescription(results.getString("types.description"));
 				t.setName(results.getString("types.name"));
 				t.setFilePath(results.getString("types.path"));
+				t.setDiskSize(results.getLong("types.disk_size"));
 				
 				b.setType(t);
 				return b;				
@@ -246,6 +264,7 @@ public class Benchmarks {
 				b.setUploadDate(results.getTimestamp("bench.uploaded"));
 				b.setDescription(results.getString("bench.description"));
 				b.setDownloadable(results.getBoolean("bench.downloadable"));	
+				b.setDiskSize(results.getLong("bench.disk_size"));
 				
 				Processor t = new Processor();
 				t.setId(results.getInt("types.id"));
@@ -253,6 +272,7 @@ public class Benchmarks {
 				t.setDescription(results.getString("types.description"));
 				t.setName(results.getString("types.name"));
 				t.setFilePath(results.getString("types.path"));
+				t.setDiskSize(results.getLong("types.disk_size"));
 				
 				b.setType(t);
 				benchmarks.add(b);
@@ -265,6 +285,52 @@ public class Benchmarks {
 			Common.safeClose(con);
 		}
 		
+		return null;
+	}
+	
+	/**
+	 * Returns a list of benchmarks owned by a given user
+	 * 
+	 * @param userId the id of the user who is the owner of the benchmarks we are to retrieve
+	 * @return a list of benchmarks owned by a given user, may be empty
+	 * @author Todd Elvers
+	 */
+	public static List<Benchmark> getByOwner(int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
+			procedure.setInt(1, userId);					
+			ResultSet results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			
+			
+			while(results.next()){
+				// Build benchmark object
+				Benchmark b = new Benchmark();
+				b.setId(results.getInt("id"));
+				b.setName(results.getString("name"));
+				b.setPath(results.getString("path"));
+				b.setUploadDate(results.getTimestamp("uploaded"));
+				b.setDescription(results.getString("description"));
+				b.setDownloadable(results.getBoolean("downloadable"));
+				b.setDiskSize(results.getLong("disk_size"));
+				
+				// Add benchmark object to listOfBenchmarks
+				benchmarks.add(b);
+			}			
+			
+			log.debug(String.format("%d benchmarks were returned as being owned by user %d.", benchmarks.size(), userId));
+			
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
 		return null;
 	}
 	

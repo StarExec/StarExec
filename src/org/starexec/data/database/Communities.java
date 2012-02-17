@@ -70,7 +70,7 @@ public class Communities {
 				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));
-				s.setCreated(results.getTimestamp("created"));										
+				s.setCreated(results.getTimestamp("created"));	
 				return s;
 			}			
 		} catch (Exception e){			

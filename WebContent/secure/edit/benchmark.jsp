@@ -9,32 +9,32 @@
 		
 		Benchmark b = null;
 		if(Permissions.canUserSeeBench(benchId, userId)) {
-	b = Benchmarks.get(benchId);
+			b = Benchmarks.get(benchId);
 		}
 
 		if(b != null) {
-	// Ensure the user visiting this page is the owner of the benchmark
-	if(userId != b.getUserId()){
-		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
-	} else {
-		request.setAttribute("bench", b);
-		if(b.isDownloadable()){
-			request.setAttribute("isDownloadable", "checked");
-			request.setAttribute("isNotDownloadable", "");
+			// Ensure the user visiting this page is the owner of the benchmark
+			if(userId != b.getUserId()){
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
+			} else {
+				request.setAttribute("bench", b);
+				if(b.isDownloadable()){
+					request.setAttribute("isDownloadable", "checked");
+					request.setAttribute("isNotDownloadable", "");
+				} else {
+					request.setAttribute("isDownloadable", "");
+					request.setAttribute("isNotDownloadable", "checked");
+				}
+				request.setAttribute("types", Processors.getAll(ProcessorType.BENCH));
+			}
 		} else {
-			request.setAttribute("isDownloadable", "");
-			request.setAttribute("isNotDownloadable", "checked");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
 		}
-		request.setAttribute("types", Processors.getAll(ProcessorType.BENCH));
-	}
-		} else {
-	response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
+		} catch (NumberFormatException nfe) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");
+		} catch (Exception e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		}
-	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");
-	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-	}
 %>
 
 <star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/benchmark">				

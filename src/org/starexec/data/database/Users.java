@@ -5,8 +5,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.starexec.data.to.Permission;
+import org.starexec.constants.R;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
 
@@ -113,7 +114,8 @@ public class Users {
 				u.setLastName(results.getString("last_name"));
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));
-				u.setRole(results.getString("role"));							
+				u.setRole(results.getString("role"));		
+				u.setDiskQuota(results.getLong("disk_quota"));
 				return u;
 			}			
 			
@@ -145,21 +147,22 @@ public class Users {
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			
-			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
+			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
 			
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();			
 			
 			// Extract id from OUT parameter
-			user.setId(procedure.getInt(6));
+			user.setId(procedure.getInt(7));
 			
 			boolean added = false;
 			
@@ -213,6 +216,7 @@ public class Users {
 				u.setLastName(results.getString("last_name"));
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));
+				u.setDiskQuota(results.getLong("disk_quota"));
 				return u;
 			}
 
@@ -248,7 +252,8 @@ public class Users {
 				u.setLastName(results.getString("last_name"));
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));
-				u.setRole(results.getString("role"));							
+				u.setRole(results.getString("role"));					
+				u.setDiskQuota(results.getLong("disk_quota"));
 				return u;
 			}			
 			
@@ -406,6 +411,68 @@ public class Users {
 		
 		return false;
 	}
+
+	
+	/**
+	 * Sets a new disk quota for a given user (input should always be bytes)
+	 * 
+	 * @param userId the user to set the new disk quota for
+	 * @param newDiskQuota the new disk quota, in bytes, to set for the given user
+	 * @return true iff the new disk quota is successfully set, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean setDiskQuota(int userId, long newDiskQuota) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL UpdateUserDiskQuota(?, ?)}");
+			procedure.setInt(1, userId);					
+			procedure.setLong(2, newDiskQuota);
+			
+			procedure.executeUpdate();	
+			
+			log.info(String.format("Disk quota changed to [%s] for user [%d]", FileUtils.byteCountToDisplaySize(newDiskQuota), userId));
+			
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		
+		log.warn(String.format("Failed to change disk quota to [%s] for user [%d]", FileUtils.byteCountToDisplaySize(newDiskQuota), userId));
+		return false;
+	}
+
+	/**
+	 * Gets the number of bytes a user is consuming on disk
+	 * 
+	 * @param userId the id of the user to get the disk usage of
+	 * @return the disk usage of the given user
+	 * @author Todd Elvers
+	 */
+	public static long getDiskUsage(int userId) {
+		Connection con = null;
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetUserDiskUsage(?)}");
+			procedure.setInt(1, userId);
+
+			ResultSet results = procedure.executeQuery();
+			while(results.next()){
+				return results.getLong("disk_usage");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;
+	}
 	
 	/**
 	 * Updates the password of a user in the database with the 
@@ -465,4 +532,5 @@ public class Users {
 		
 		return false;
 	}
+	
 }

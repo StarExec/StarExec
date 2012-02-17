@@ -39,13 +39,13 @@
 			<tr>
 				<td>description</td>
 				<td id="editdesc">${com.description}</td>
-			</tr>			
+			</tr>		
 		</table>
 		<span class="caption">(click the current value of an attribute to edit it)</span>
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
-		<ul id="websiteList"></ul>
+		<table id="websiteTable" class="shaded"></table>
 		<span id="toggleWebsite" class="caption">+ add new</span>
 		<div id="newWebsite">
 			<label for="website_name">name </label><input type="text" id="website_name" /> 

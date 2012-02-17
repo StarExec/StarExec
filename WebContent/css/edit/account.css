@@ -12,10 +12,6 @@ tr .label {
 	width: 25%;
 }
 
-.shade {
-	background-color: #111111;
-}
-
 tr td,
 tr th {
 	padding: 10px;		
@@ -25,8 +21,8 @@ tr th {
 	float: right;
 }
 
-
-#passwordTable td:first-child{
+#passwordTable td:first-child, 
+#diskUsageTable td:first-child{
 	width: 35%;
 }
 
@@ -111,7 +107,7 @@ input[type="text"] {
 }
 .password-meter-bg, .password-meter-bar {
 	height: 4px;
-	background-color: #222222;
+	background-color: #111111;
 }
 
 .password-meter-bg {

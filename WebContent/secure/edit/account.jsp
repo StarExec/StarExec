@@ -1,7 +1,18 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-
-<star:template title="edit account" css="edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account">
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+	try {
+		User user = SessionUtil.getUser(request);
+		long disk_usage = Users.getDiskUsage(user.getId());
+		
+		request.setAttribute("diskQuota", FileUtils.byteCountToDisplaySize(user.getDiskQuota()));
+		request.setAttribute("diskUsage", FileUtils.byteCountToDisplaySize(disk_usage));
+	} catch (Exception e) {
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+	}
+%>
+<star:template title="edit account" css="edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<p>review and edit your account details here.</p>
 	<fieldset>
 		<legend>personal information</legend>
@@ -31,8 +42,8 @@
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
-		<ul id="websites"></ul>
-		<span id="toggleWebsite" class="caption">+ add new</span>
+		<table id="websites" class="shaded"></table>
+		<span id="toggleWebsite" class="caption"><span>+</span> add new</span>
 		<div id="new_website">
 			name: <input type="text" id="website_name" /> 
 			url: <input type="text" id="website_url" /> 
@@ -40,9 +51,22 @@
 		</div>
 	</fieldset>
 	<fieldset>
+		<legend>user disk quota</legend>
+		<table id="diskUsageTable" class="shaded">
+			<tr>
+				<td>disk quota</td>
+				<td><input type="text" readonly="readonly" value="${diskQuota}"/></td>
+			</tr>
+			<tr>
+				<td>current disk usage</td>
+				<td><input type="text" readonly="readonly" value="${diskUsage}"/></td>
+			</tr>
+		</table>
+	</fieldset>
+	<fieldset>
 		<legend>password</legend>
 		<form id="changePassForm">
-			<table id="passwordTable">
+			<table id="passwordTable" class="shaded">
 				<tr>
 					<td>current password</td>
 					<td><input type="password" id="current_pass" name="current_pass"/></td>
@@ -63,6 +87,7 @@
 					<td>re-enter new password</td>
 					<td><input type="password" id="confirm_pass" name="confirm_pass"/></td>
 				</tr>
+				<tr></tr>
 				<tr>
 					<td colspan="2"><button id="changePass">change</button></td>
 				</tr>

@@ -11,7 +11,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Benchmark extends Identifiable {
+public class Benchmark extends Identifiable{
 	private int userId = -1;	
 	@Expose private String name;	
 	@Expose private String description = "no description";	
@@ -19,6 +19,7 @@ public class Benchmark extends Identifiable {
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;
+	private long diskSize;
 	
 	/**
 	 * @return the user id of the user who uploaded the solver
@@ -118,5 +119,19 @@ public class Benchmark extends Identifiable {
 	 */
 	public void setType(Processor type) {
 		this.type = type;
-	}		
+	}
+	
+	/**
+	 * @param diskSize the number of bytes this benchmark consumes on disk
+	 */
+	public void setDiskSize(long diskSize){
+		this.diskSize = diskSize;
+	}
+	
+	/**
+	 * @return the number of bytes this benchmark consumes on disk
+	 */
+	public long getDiskSize(){
+		return diskSize;
+	}
 }

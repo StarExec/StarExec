@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -28,15 +29,18 @@ public class Processors {
 		
 		try {
 			con = Common.getConnection();		
+			
 			CallableStatement procedure = null;			
-			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?)}");			
+			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?, ?)}");			
 			procedure.setString(1, processor.getName());
 			procedure.setString(2, processor.getDescription());
 			procedure.setString(3, processor.getFilePath());
 			procedure.setInt(4, processor.getCommunityId());
 			procedure.setInt(5, processor.getType().getVal());
+			procedure.setLong(6, FileUtils.sizeOf(new File(processor.getFilePath())));
+			procedure.executeUpdate();
 			
-			procedure.executeUpdate();			
+			
 			return true;			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -109,6 +113,7 @@ public class Processors {
 				t.setName(results.getString("name"));
 				t.setFilePath(results.getString("path"));
 				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+				t.setDiskSize(results.getLong("disk_size"));
 				return t;					
 			}							
 		} catch (Exception e){			
@@ -144,6 +149,7 @@ public class Processors {
 				bt.setFilePath((results.getString("path")));
 				bt.setCommunityId((results.getInt("community")));
 				bt.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+				bt.setDiskSize(results.getLong("disk_size"));
 				processors.add(bt);
 			}
 			
@@ -182,6 +188,7 @@ public class Processors {
 				t.setName(results.getString("name"));
 				t.setFilePath(results.getString("path"));
 				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+				t.setDiskSize(results.getLong("disk_size"));
 				processors.add(t);						
 			}				
 			
@@ -263,9 +270,12 @@ public class Processors {
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateProcessorPath(?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL UpdateProcessorPath(?, ?, ?)}");
 			procedure.setInt(1, processorId);					
 			procedure.setString(2, newPath);
+			// Also update the disk_size for this processor with the new path's disk size
+			procedure.setLong(3, FileUtils.sizeOf(new File(newPath)));
+			
 			
 			procedure.executeUpdate();			
 			return true;				

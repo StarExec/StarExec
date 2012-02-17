@@ -8,11 +8,13 @@ $(document).ready(function(){
 	// Setup the 'add website' and 'change password' buttons
 	initButtons();
 	
+	// Setup '+ add new' animation
 	$('#toggleWebsite').click(function() {
 		$('#new_website').slideToggle('fast');
 		togglePlusMinus(this);
 	});	
 	$('#new_website').hide();
+
 	
 	
 	//make the various parts editable
@@ -170,25 +172,29 @@ function initButtons(){
  * Toggles the plus-minus text of the "+ add new" website button
  */
 function togglePlusMinus(addSiteButton){
-	if($(addSiteButton).text()[0] == "+"){
-		$(addSiteButton).text("- add new");
+	if($(addSiteButton).children('span:first-child').text() == "+"){
+		$(addSiteButton).children('span:first-child').text("-");
 	} else {
-		$(addSiteButton).text("+ add new");
+		$(addSiteButton).children('span:first-child').text("+");
 	}
 }
 
 
+
 function displayWebsites(data) {
+	
+	// Ensures the websites table is empty
+	$('#websites tr').parent().remove();
+	
 	// Injects the clickable delete button that's always present
 	$.each(data, function(i, site) {
-		$('#websites tr').parent().remove();
-		$('#websites').append('<li><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a><a class="website" id="' + site.id + '">delete</a></li>');
+		$('#websites').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="website" id="' + site.id + '">delete</a></td></tr>');
 	});
 	
 	// Handles deletion of websites
 	$('.website').click(function(){
 		var id = $(this).attr('id');
-		var parent = $(this).parent();
+		var parent = $(this).parent().parent();
 		var answer = confirm("are you sure you want to delete this website?");
 		if (true == answer) {
 			$.post(

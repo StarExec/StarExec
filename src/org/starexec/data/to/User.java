@@ -20,6 +20,21 @@ public class User extends Identifiable {
 	private Timestamp createDate;	
 	private transient String password;		
 	private List<Website> websites;
+	private long diskQuota;
+	
+	/**
+	 * @return the user's disk quota (in bytes)
+	 */
+	public long getDiskQuota(){
+		return diskQuota;
+	}
+	
+	/**
+	 * @param diskQuota the disk quota to set
+	 */
+	public void setDiskQuota(long diskQuota){
+		this.diskQuota = diskQuota;
+	}
 	
 	/**
 	 * @return the user's registered email address

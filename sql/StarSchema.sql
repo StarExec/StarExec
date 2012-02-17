@@ -16,6 +16,7 @@ CREATE TABLE users (
 	institution VARCHAR(64) NOT NULL,
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
+	disk_quota BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY (email)
 );
@@ -82,6 +83,7 @@ CREATE TABLE processors (
 	path TEXT NOT NULL,
 	community INT NOT NULL,
 	processor_type TINYINT DEFAULT 0,
+	disk_size BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
@@ -96,6 +98,7 @@ CREATE TABLE benchmarks (
 	path TEXT NOT NULL,
 	description TEXT,
 	downloadable BOOLEAN DEFAULT 1,
+	disk_size BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE NO ACTION
@@ -110,6 +113,7 @@ CREATE TABLE solvers (
 	path TEXT NOT NULL,
 	description TEXT,
 	downloadable BOOLEAN DEFAULT 0,
+	disk_size BIGINT NOT NULL,
 	PRIMARY KEY (id),	
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );

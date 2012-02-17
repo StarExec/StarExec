@@ -33,14 +33,14 @@ public class Processor extends Identifiable {
 		
 		public static ProcessorType valueOf(int val) {
 			switch(val) {			
-			case 1:
-				return PRE;
-			case 2:
-				return POST;
-			case 3:
-				return BENCH;
-			default:
-				return DEFAULT;				
+				case 1:
+					return PRE;
+				case 2:
+					return POST;
+				case 3:
+					return BENCH;
+				default:
+					return DEFAULT;				
 			}
 		}
 	}
@@ -50,6 +50,7 @@ public class Processor extends Identifiable {
 	@Expose private String fileName;
 	@Expose private ProcessorType type = Processor.ProcessorType.DEFAULT;	
 	private String filePath;	
+	private long diskSize;
 	private int communityId;
 	
 	/**
@@ -134,4 +135,18 @@ public class Processor extends Identifiable {
 	public void setCommunityId(int communityId) {
 		this.communityId = communityId;
 	}		
+	
+	/**
+	 * @return the number of bytes this processor consumes on disk
+	 */
+	public long getDiskSize(){
+		return diskSize;
+	}
+	
+	/**
+	 * @param diskSize the number of bytes this processor consumes on disk
+	 */
+	public void setDiskSize(long diskSize){
+		this.diskSize = diskSize;
+	}
 }

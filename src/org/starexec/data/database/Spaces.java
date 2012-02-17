@@ -44,7 +44,7 @@ public class Spaces {
 				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));
-				s.setCreated(results.getTimestamp("created"));										
+				s.setCreated(results.getTimestamp("created"));	
 				return s;
 			}														
 		} catch (Exception e){			
@@ -81,6 +81,7 @@ public class Spaces {
 				u.setLastName(results.getString("last_name"));
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));
+				u.setDiskQuota(results.getLong("disk_quota"));
 				leaders.add(u);
 			}			
 			
@@ -533,6 +534,7 @@ public class Spaces {
 				u.setLastName(results.getString("last_name"));
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));				
+				u.setDiskQuota(results.getLong("disk_quota"));
 				users.add(u);
 			}			
 						
@@ -652,8 +654,10 @@ public class Spaces {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);	
+			
 			// Add space is a multi-step process, so we need to use a transaction
 			int newSpaceId = Spaces.add(con, s, parentId, userId);
+			
 			Common.endTransaction(con);			
 			
 			return newSpaceId;

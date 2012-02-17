@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -40,6 +41,8 @@ public class Solvers {
 				s.setPath(results.getString("path"));
 				s.setDescription(results.getString("description"));
 				s.setDownloadable(results.getBoolean("downloadable"));
+				s.setDiskSize(results.getLong("disk_size"));
+				
 				return s;
 			}						
 		} catch (Exception e){			
@@ -73,6 +76,7 @@ public class Solvers {
 				s.setUploadDate(results.getTimestamp("uploaded"));
 				s.setDescription(results.getString("description"));
 				s.setDownloadable(results.getBoolean("downloadable"));
+				s.setDiskSize(results.getLong("disk_size"));
 				solvers.add(s);
 			}			
 						
@@ -134,7 +138,7 @@ public class Solvers {
 			procedure.setBoolean(4, isDownloadable);
 			
 			procedure.executeUpdate();						
-			log.info(String.format("Solver [id=%d] was successfully updated.", id));
+			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -158,6 +162,7 @@ public class Solvers {
 		File solverToDelete = null;
 		try {
 			con = Common.getConnection();
+			
 			CallableStatement procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
@@ -212,19 +217,24 @@ public class Solvers {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?)}");
+			
+			// Add the solver
+			CallableStatement procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, s.getUserId());
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
 			procedure.setString(4, s.getPath());
 			procedure.setString(5, s.getDescription());
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
+			procedure.setLong(7, FileUtils.sizeOf(new File(s.getPath())));
 			
 			procedure.executeUpdate();
 			
+			// Associate the solver with the given space
 			int solverId = procedure.getInt(6);			
 			Solvers.associate(con, spaceId, solverId);
 			
+			// Add solver configurations
 			for (Configuration c : s.getConfigurations()) {
 				c.setSolverId(solverId);
 				addConfiguration(con, c);
@@ -327,5 +337,52 @@ public class Solvers {
 		}
 		
 		return null;		
+	}
+	
+	
+	/**
+	 * Returns a list of solvers owned by a given user
+	 * 
+	 * @param userId the id of the user who is the owner of the solvers we are to retrieve
+	 * @return a list of solvers owned by a given user, may be empty
+	 * @author Todd Elvers
+	 */
+	public static List<Solver> getByOwner(int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSolversByOwner(?)}");
+			procedure.setInt(1, userId);					
+			ResultSet results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+			
+			
+			while(results.next()){
+				// Build solver object
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));
+				s.setPath(results.getString("path"));
+				s.setUploadDate(results.getTimestamp("uploaded"));
+				s.setDescription(results.getString("description"));
+				s.setDownloadable(results.getBoolean("downloadable"));
+				s.setDiskSize(results.getLong("disk_size"));
+				
+				// Add solver object to list
+				solvers.add(s);
+			}			
+			
+			log.debug(String.format("%d solvers were returned as being owned by user %d.", solvers.size(), userId));
+			
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		log.debug(String.format("Getting the solvers owned by user %d failed.", userId));
+		return null;
 	}
 }

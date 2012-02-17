@@ -3,20 +3,20 @@
 
 USE starexec;
 
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('tyler-jensen@uiowa.edu', 'Tyler', 'Jensen', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('clifton-palmer@uiowa.edu', 'CJ', 'Palmer', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('aaron.stump.test@uiowa.edu', 'Aaron', 'Stump', 'University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('tinelli.test@uiowa.edu', 'Cesare', 'Tinelli', 'University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('skylar-stark@uiowa.edu', 'Skylar', 'Stark', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('geoff@cs.miami.edu', 'Geoff', 'Sutcliffe', 'The University of Miami', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');		
-INSERT INTO users (email, first_name, last_name, institution, created, password)
-	VALUES ('todd.elvers@gmail.com', 'Todd', 'Elvers', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86');
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('tyler-jensen@uiowa.edu', 'Tyler', 'Jensen', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('clifton-palmer@uiowa.edu', 'CJ', 'Palmer', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('aaron.stump.test@uiowa.edu', 'Aaron', 'Stump', 'University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('tinelli.test@uiowa.edu', 'Cesare', 'Tinelli', 'University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('skylar-stark@uiowa.edu', 'Skylar', 'Stark', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('geoff@cs.miami.edu', 'Geoff', 'Sutcliffe', 'The University of Miami', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);		
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('todd.elvers@gmail.com', 'Todd', 'Elvers', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
 
 	
 INSERT INTO user_roles VALUES('tyler-jensen@uiowa.edu', 'user');
@@ -61,30 +61,30 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('TPTP', SYSDATE(), 'this is Geoffs example space', 0, 3);
 	
-INSERT INTO processors (name, description, path, community, processor_type) VALUES
-	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3, 3);
-INSERT INTO processors (name, description, path, community, processor_type) VALUES
-	('SAT_LIB_PRE', 'This is a sample SAT pre processor', 'C:\\SATPPREROCESSOR', 3, 1);
-INSERT INTO processors (name, description, path, community, processor_type) VALUES
-	('SAT_LIB_POST', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2);
-INSERT INTO processors (name, description, path, community, processor_type) VALUES
-	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 3);
-INSERT INTO processors (name, description, path, community, processor_type) VALUES
-	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3, 3, 1024);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_PRE', 'This is a sample SAT pre processor', 'C:\\SATPPREROCESSOR', 3, 1, 10240);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_POST', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 3, 1024000);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3, 10240000);
 
-INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable) VALUES
-	(1, 'Napalm', SYSDATE(), 'C:\\Benchmark.smt2', 'This is a sample benchmark that is downloadable', 1);
-INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type) VALUES
-	(2, 'Roadrunner', SYSDATE(), 'C:\\CJBenchmark.smt2', 'This is another sample benchmark that cant be downloaded', 0, 1);
-INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable) VALUES
-	(6, 'TPTP1', SYSDATE(), 'C:\\TPBenchmark.tptp', 'This is a sample benchmark that is downloadable', 1);
-INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable) VALUES
-	(6, 'TPTP2', SYSDATE(), 'C:\\TPBenchmark2.tptp', 'This is another sample benchmark that cant be downloaded', 0);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(1, 'Napalm', SYSDATE(), 'C:\\Benchmark.smt2', 'This is a sample benchmark that is downloadable', 1, 1048576);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
+	(2, 'Roadrunner', SYSDATE(), 'C:\\CJBenchmark.smt2', 'This is another sample benchmark that cant be downloaded', 0, 1, 262144000);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(6, 'TPTP1', SYSDATE(), 'C:\\TPBenchmark.tptp', 'This is a sample benchmark that is downloadable', 1, 2621440);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(6, 'TPTP2', SYSDATE(), 'C:\\TPBenchmark2.tptp', 'This is another sample benchmark that cant be downloaded', 0, 26214400);
 	
-INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable) VALUES
-	(1, 'CVC3', SYSDATE(), 'C:\\z3\\', 'This is a downloadable solver', 1);
-INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable) VALUES
-	(6, 'Vampire', SYSDATE(), 'C:\\vamp\\', 'This is a non-downloadable solver', 0);
+INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(1, 'CVC3', SYSDATE(), 'C:\\z3\\', 'This is a downloadable solver', 1, 26214400);
+INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(6, 'Vampire', SYSDATE(), 'C:\\vamp\\', 'This is a non-downloadable solver', 0, 157286400);
 
 INSERT INTO configurations(solver_id, name, description) VALUES
 	(1, "Default", "This is a default configuration for CVC3");
