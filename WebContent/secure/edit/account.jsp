@@ -16,7 +16,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 		<legend>personal information</legend>
-		<table id="personal" class="shaded">
+		<table id="personal">
 			<tr>
 				<th class="label">attribute</th>
 				<th>current value</th>
@@ -94,4 +94,19 @@
 			</table>
 		</form>
 	</fieldset>
+	<!--   <fieldset>
+		<legend>misc.</legend>
+		<table id="misc">
+			<tr>
+				<td>preferred archive type</td>
+				<td>
+					<select id="selectArchive">
+						<option value=".zip">.zip</option>
+						<option value=".tar">.tar</option>
+						<option value=".tar.gz">.tar.gz</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+	</fieldset> -->
 </star:template>

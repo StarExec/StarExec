@@ -16,6 +16,7 @@ CREATE TABLE users (
 	institution VARCHAR(64) NOT NULL,
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
+	pref_archive_type VARCHAR(8) NOT NULL DEFAULT ".zip",
 	disk_quota BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY (email)

@@ -61,7 +61,6 @@ public class Starexec implements ServletContextListener {
 		// Remember the application's root so we can load properties from it later
 		Starexec.ROOT_APPLICATION_PATH = event.getServletContext().getRealPath("/");
 		log.info(String.format("Application started at [%s]", ROOT_APPLICATION_PATH));
-		
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(ROOT_APPLICATION_PATH, LOG4J_PATH).getAbsolutePath());
 										
@@ -91,5 +90,5 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);
-	}	
+	}
 }

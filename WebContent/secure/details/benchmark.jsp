@@ -72,7 +72,7 @@
 		<fieldset>
 			<legend>actions</legend>		
 				<ul>
-					<li><a id="downloadLink" href="#">download</a></li>
+					<li><a id="downloadLink" href="/starexec/secure/download?type=bench&id=${benchmark.id}">download</a></li>
 				</ul>					
 		</fieldset>
 	</c:if>			

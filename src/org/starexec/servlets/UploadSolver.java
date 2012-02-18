@@ -63,11 +63,11 @@ public class UploadSolver extends HttpServlet {
 				} 
 				
 				// Parse the request as a solver
-				Solver result = handleSolver(userId, form);				
+				int result = handleSolver(userId, form);				
 			
 				// Redirect based on success/failure
-				if(result != null) {
-					response.sendRedirect("/starexec/secure/explore/spaces.jsp");	
+				if(result != -1) {
+					response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + result);	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");	
 				}									
@@ -89,7 +89,7 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	public Solver handleSolver(int userId, HashMap<String, Object> form) throws Exception {
+	public int handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			FileItem item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);
 			
@@ -102,8 +102,9 @@ public class UploadSolver extends HttpServlet {
 			
 			//Set up the unique directory to store the solver
 			//The directory is (base path)/user's ID/solver name/date/
-			String directory = R.SOLVER_PATH + File.pathSeparator + userId + File.pathSeparator + newSolver.getName() + File.pathSeparator + shortDate.format(new Date());
-			File uniqueDir = new File(directory);
+			File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+			uniqueDir = new File(uniqueDir, newSolver.getName());
+			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 
 			newSolver.setPath(uniqueDir.getAbsolutePath());
 
@@ -122,14 +123,12 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			//Try adding the solver to the database
-			if (Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)))) {
-				return newSolver;
-			}
+			return Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		
-		return null;
+		return -1;
 	}	
 	
 	/**

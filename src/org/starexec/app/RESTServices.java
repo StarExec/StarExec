@@ -1078,5 +1078,4 @@ public class RESTServices {
 		// Update database with new permissions
 		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(1);
 	}
-	
 }

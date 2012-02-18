@@ -44,7 +44,16 @@
 				<td class="label">confirm password</td>
 				<td><input id="confirm_password" type="password" name="confirm_password" maxlength="16"/></td>
 			</tr>
-
+			<tr>
+				<td class="label">preferred archive type</td>
+				<td>
+					<select name="pat">
+						<option value=".zip" selected="selected">.zip</option>
+						<option value=".tar">.tar</option>
+						<option value=".tar.gz">.tar.gz</option>
+					</select>
+				</td>
+			</tr>
 		</table>		
 	</fieldset>	
 	<fieldset>

@@ -213,7 +213,7 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean add(Solver s, int spaceId) {
+	public static int add(Solver s, int spaceId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -240,14 +240,14 @@ public class Solvers {
 				addConfiguration(con, c);
 			}
 			
-			return true;						
+			return solverId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}		
 		
-		return false;
+		return -1;
 	}
 	
 	/**

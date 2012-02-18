@@ -119,7 +119,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>SolverUploader</servlet-name>
-    <url-pattern>/secure/upload/solver</url-pattern>
+    <url-pattern>/secure/upload/solvers</url-pattern>
   </servlet-mapping>
   
   <servlet>
@@ -130,6 +130,16 @@
     <servlet-name>JobResults</servlet-name>
     <url-pattern>/add/to_community.jsp</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>Downloads</servlet-name>
+    <servlet-class>org.starexec.servlets.Download</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Downloads</servlet-name>
+    <url-pattern>/secure/download</url-pattern>
+  </servlet-mapping>
+
   
   <!-- RESTEasy webservice framework configuration -->
   <servlet>  	

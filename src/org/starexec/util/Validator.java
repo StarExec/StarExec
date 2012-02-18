@@ -179,4 +179,18 @@ public class Validator {
     	
     	return true;
     }
+    
+    /**
+     * Validates an archive type. Archives must be either .zip, .tar, or .tar.gz
+     * @param format the archive type to check
+     * @return true iff the format is of supported type
+     */
+    public static boolean isValidArchiveType(String format) {
+    	//TODO make this a configurable list?
+    	if (format.equals(".zip") || format.equals(".tar") || format.equals(".tar.gz")) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
 }

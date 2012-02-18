@@ -112,8 +112,8 @@ INSERT INTO job_pairs(config_id, bench_id) VALUES (4, 4);
 
 INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
 	(1, 1, 2, SYSDATE(), SYSDATE(), "SAT", "Success");
-INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
-	(1, 2, 3, SYSDATE(), SYSDATE(), "Error", "Error");
+-- INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
+--	(1, 2, 3, SYSDATE(), SYSDATE(), "Error", "Error");
 	
 INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
 	(3, 3, 3, SYSDATE(), SYSDATE(), "Yes", "Success");

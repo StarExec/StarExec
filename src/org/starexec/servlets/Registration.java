@@ -37,6 +37,7 @@ public class Registration extends HttpServlet {
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
 	public static String USER_MESSAGE = "msg";
+	public static String USER_ARCHIVE_TYPE = "pat";
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -87,7 +88,8 @@ public class Registration extends HttpServlet {
 		user.setLastName(request.getParameter(Registration.USER_LASTNAME));
 		user.setEmail(request.getParameter(Registration.USER_EMAIL));
 		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
-		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));		
+		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));
+		user.setArchiveType(request.getParameter(Registration.USER_ARCHIVE_TYPE));
 		
 		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		
@@ -127,7 +129,8 @@ public class Registration extends HttpServlet {
 	    	   !Util.paramExists(Registration.USER_PASSWORD, request) ||
 	    	   !Util.paramExists(Registration.USER_INSTITUTION, request) ||
 	    	   !Util.paramExists(Registration.USER_COMMUNITY, request) ||
-	    	   !Util.paramExists(Registration.USER_MESSAGE, request)) {
+	    	   !Util.paramExists(Registration.USER_MESSAGE, request) ||
+	    	   !Util.paramExists(Registration.USER_ARCHIVE_TYPE, request)) {
 	    		return false;
 	    	}    	    	   
 		    
@@ -139,7 +142,8 @@ public class Registration extends HttpServlet {
 					|| !Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME)) 
 					|| !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))
 					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))
-					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
+					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))
+					|| !Validator.isValidArchiveType((String)request.getParameter(Registration.USER_ARCHIVE_TYPE))) {
 				return false;
 			}
 	    	

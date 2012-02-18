@@ -1001,10 +1001,10 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 
 -- Begins the registration process by adding a user to the USERS table
 -- Author: Todd Elvers
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, OUT _id INT)
+CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, IN _archiveType VARCHAR(8), OUT _id INT)
 	BEGIN		
-		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota)
-		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota);
+		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota, preferred_archive_type)
+		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota, _archiveType);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
@@ -1075,6 +1075,18 @@ CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 				WHERE space_id = _id)
 		ORDER BY first_name;
 	END //
+	
+	
+-- Updates the preferred archive type of the user with the given user
+-- id to the given archive type.
+-- Author: Skylar Stark
+CREATE PROCEDURE UpdateArchiveType(IN _id INT, IN _archiveType VARCHAR(8))
+	BEGIN
+		UPDATE users
+		SET pref_archive_type = _archiveType
+		WHERE users.id = id;
+	END //
+
 	
 -- Updates the email address of the user with the given user id to the
 -- given email address. The email address should already be validated

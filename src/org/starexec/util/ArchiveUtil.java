@@ -1,18 +1,21 @@
 package org.starexec.util;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.tar.*;
+import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.compress.compressors.gzip.*;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -181,5 +184,205 @@ public class ArchiveUtil {
 				log.debug("Cleaned up archive file: " + fileName);
 			}
 		}
+	}
+	
+	/**
+	 * Creates an archive in the specified format (between .zip, .tar, and .tar.gz) of the folder
+	 * in directory "path", and saves it in the File "destination"
+	 * @param path the path to the folder to be archived
+	 * @param destination the path to the output folder
+	 * @param format the preferred archive type
+	 * @author Skylar Stark
+	 */
+	public static void createArchive(File path, File destination, String format) {
+		try {
+			if (format.equals(".zip")) {
+				ArchiveUtil.createZip(path, destination);
+			} else if (format.equals(".tar")) {
+				ArchiveUtil.createTar(path, destination);
+			} else if (format.equals(".tar.gz")) {
+				ArchiveUtil.createTarGz(path, destination);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * Creates a .zip file of the specified directory "path" and saves it to "destination"
+	 * @param path the path to be zipped
+	 * @param destination where to save the .zip file created
+	 * @author Skylar Stark
+	 */
+	public static void createZip(File path, File destination) throws Exception {
+		FileOutputStream fOut = null;
+		BufferedOutputStream bOut = null;
+		ZipArchiveOutputStream zOut = null;
+ 
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			zOut = new ZipArchiveOutputStream(bOut);
+ 
+			addFileToZip(zOut, path, "");
+		} finally {
+			zOut.finish();
+ 
+			zOut.close();
+			bOut.close();
+			fOut.close();
+		}
+	}
+	
+	/**
+	 * Adds a file to the .zip archive. If the file is a folder, recursively adds the contents of the
+	 * folder to the archive
+	 * @param zOut the zip file we are creating
+	 * @param path the path of the file we are adding
+	 * @param base the base prefix for the name of the zip file entry
+	 * @author Skylar Stark
+	 */
+	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base) throws IOException {
+		String entryName = base + path.getName();
+		ZipArchiveEntry zipEntry = new ZipArchiveEntry(path, entryName);
+ 
+		zOut.putArchiveEntry(zipEntry);
+ 
+		if (path.isFile()) {
+			IOUtils.copy(new FileInputStream(path), zOut);
+ 
+			zOut.closeArchiveEntry();
+		} else {
+			zOut.closeArchiveEntry();
+ 
+			File[] children = path.listFiles();
+ 
+			if (children != null) {
+				for (File child : children) {
+					addFileToZip(zOut, new File(child.getAbsolutePath()), entryName + "/");
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Creates a .tar file of the specified directory "path" and saves it to "destination"
+	 * @param path the path to be tarred
+	 * @param destination where to save the .tar file created
+	 * @author Skylar Stark
+	 */
+	public static void createTar(File path, File destination) throws Exception {
+		FileOutputStream fOut = null;
+		BufferedOutputStream bOut = null;
+		TarArchiveOutputStream tOut = null;
+ 
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			tOut = new TarArchiveOutputStream(bOut);
+ 
+			addFileToTar(tOut, path, "");
+		} finally {
+			tOut.finish();
+ 
+			tOut.close();
+			bOut.close();
+			fOut.close();
+		}
+	}
+	
+	/**
+	 * Adds a file to a .tar archive. If the file is a folder, recursively adds the contents of the
+	 * folder to the archive
+	 * @param tOut the tar file we are adding to
+	 * @param path the path of the file we are adding
+	 * @param base the base prefix for the name of the tar file entry
+	 * @author Skylar Stark
+	 */
+	private static void addFileToTar(TarArchiveOutputStream tOut, File path, String base) throws IOException {
+		String entryName = base + path.getName();
+		TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
+ 
+		tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+		tOut.putArchiveEntry(tarEntry);
+ 
+		if (path.isFile()) {
+			IOUtils.copy(new FileInputStream(path), tOut);
+ 
+			tOut.closeArchiveEntry();
+		} else {
+			tOut.closeArchiveEntry();
+ 
+			File[] children = path.listFiles();
+ 
+			if (children != null) {
+				for (File child : children) {
+					addFileToTar(tOut, new File(child.getAbsolutePath()), entryName + "/");
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Creates a .tar.gz file of the specified directory "path" and saves it to "destination"
+	 * @param path the path to be tar.gz'ed
+	 * @param destination where to save the .tar.gz file created
+	 * @author Skylar Stark
+	 */
+	public static void createTarGz(File path, File destination) throws Exception {
+		FileOutputStream fOut = null;
+	    BufferedOutputStream bOut = null;
+	    GzipCompressorOutputStream gzOut = null;
+	    TarArchiveOutputStream tOut = null;
+	 
+	    try {
+	        fOut = new FileOutputStream(destination);
+	        bOut = new BufferedOutputStream(fOut);
+	        gzOut = new GzipCompressorOutputStream(bOut);
+	        tOut = new TarArchiveOutputStream(gzOut);
+	 
+	        addFileToTarGz(tOut, path, "");
+	    } catch (Exception e) {
+	    	log.error(e.getMessage(), e);
+	    } finally {
+	        tOut.finish();
+	 
+	        tOut.close();
+	        gzOut.close();
+	        bOut.close();
+	        fOut.close();
+	    }
+	}
+	
+	/**
+	 * Adds a file to a .tar.gz archive. If the file is a folder, recursively adds the contents of the
+	 * folder to the archive
+	 * @param tOut the tar.gz file we are adding to
+	 * @param path the path of the file we are adding
+	 * @param base the base prefix for the name of the tar.gz file entry
+	 * @author Skylar Stark
+	 */
+	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base) throws IOException {
+	    String entryName = base + path.getName();
+	    TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
+	 
+	    tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+	    tOut.putArchiveEntry(tarEntry);
+	 
+	    if (path.isFile()) {
+	        IOUtils.copy(new FileInputStream(path), tOut);
+	 
+	        tOut.closeArchiveEntry();
+	    } else {
+	        tOut.closeArchiveEntry();
+	 
+	        File[] children = path.listFiles();
+	 
+	        if (children != null) {
+	            for (File child : children) {
+	                addFileToTarGz(tOut, new File(child.getAbsolutePath()), entryName + "/");
+	            }
+	        }
+	    }
 	}
 }

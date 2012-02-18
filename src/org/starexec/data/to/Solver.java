@@ -114,7 +114,7 @@ public class Solver extends Identifiable {
 	}
 
 	/**
-	 * @return the configurations that beint to the job
+	 * @return the configurations that belong to the job
 	 */
 	public List<Configuration> getConfigurations() {
 		return configurations;

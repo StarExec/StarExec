@@ -65,7 +65,7 @@
 		<fieldset>
 			<legend>actions</legend>		
 				<ul>
-					<li><a id="downloadLink" href="#">download</a></li>
+					<li><a href="/starexec/secure/download?type=solver&id=${solver.id}">download</a></li>
 				</ul>					
 		</fieldset>
 	</c:if>		
