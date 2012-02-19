@@ -94,19 +94,19 @@
 			</table>
 		</form>
 	</fieldset>
-	<!--   <fieldset>
+	<fieldset>
 		<legend>misc.</legend>
 		<table id="misc">
 			<tr>
 				<td>preferred archive type</td>
 				<td>
 					<select id="selectArchive">
-						<option value=".zip">.zip</option>
-						<option value=".tar">.tar</option>
-						<option value=".tar.gz">.tar.gz</option>
+						<option value="zip"<c:if test="${user.archiveType == '.zip'}"> selected="selected"</c:if>>.zip</option>
+						<option value="tar"<c:if test="${user.archiveType == '.tar'}"> selected="selected"</c:if>>.tar</option>
+						<option value="tar.gz"<c:if test="${user.archiveType == '.tar.gz'}"> selected="selected"</c:if>>.tar.gz</option>
 					</select>
 				</td>
 			</tr>
 		</table>
-	</fieldset> -->
+	</fieldset>
 </star:template>

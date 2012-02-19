@@ -19,6 +19,9 @@ import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
+/**
+ * @author Skylar Stark
+ */
 @SuppressWarnings("serial")
 public class Download extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Download.class);	 

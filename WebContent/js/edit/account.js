@@ -70,6 +70,25 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-check"
     }});
+	
+	//handle changing of preferred archive type
+	$("#selectArchive").change(function() {
+		var value = $("#selectArchive").val();
+		$.post(  
+				"/starexec/services/edit/user/archivetype/" + value,
+			    function(returnCode){  			        
+			    	if(returnCode == '0') {
+			    		showMessage('success', "preferred archive type successfully updated", 5000);
+			    	} else {
+			    		showMessage('error', "preferred archive type not changed; please try again", 5000);
+			    	}
+			     },  
+			     "json"  
+		).error(function(){
+			alert('Session expired');
+			window.location.reload(true);
+		});
+	});
 });
 
 
