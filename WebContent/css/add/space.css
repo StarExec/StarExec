@@ -1,0 +1,39 @@
+#content fieldset {
+	width: 600px;
+	margin: 50px auto 30px auto;	
+}
+
+#tblSpace {
+	width: 100%;
+}
+
+#tblSpace tr td {
+	padding: 10px;
+}
+
+#tblSpace input[type="text"], #tblSpace textarea {
+	width: 200px;
+	margin-right: 10px;
+}
+
+#tblSpace input[type="radio"]:last-child {
+	margin-left: 15px;
+}
+
+#tblDefaultPerm tr td {
+	padding: 0px;
+	padding-right: 40px;	
+}
+
+#tblDefaultPerm tr th {
+	text-align: left;
+}
+
+.label {
+	width: 160px;
+	vertical-align: middle;
+}
+
+button {
+	float: right;
+}

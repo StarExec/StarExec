@@ -1,0 +1,39 @@
+#!/bin/bash
+#==========================================================================
+# Standard SGE job script setup
+#==========================================================================
+
+# The queue to submit to
+#$ -q $$QUEUE$$
+
+# Request exclusive access
+#$ -l excl=true
+
+# Default shell is bash
+#$ -S /bin/bash
+
+# Merge stdout and stderr streams
+#$ -j y
+
+# Variables in local environment
+#$ -v JOB_STAR_ID=$$JOBID$$,USER_ID=$$USERID$$,SOLVER_PATH=$$SOLVER_PATH$$,SOLVER_NAME=$$SOLVER_NAME$$,CONFIG_NAME=$$CONFIG$$,BENCH_PATH=$$BENCH$$,PAIR_ID=$$PAIRID$$,STAREXEC_OUT_DIR=$$OUT_DIR$$,REPORT_HOST=starexec.cs.uiowa.edu,DB_NAME=$$DB_NAME$$
+
+#==========================================================================
+# Execute (prolog will take care of data staging)
+# NOTE: Keep things in here to a MINIMUM. Anything below this line counts
+# against the user's execution time
+#==========================================================================
+
+# Change directory to the workspace just in case
+cd /export/starexec/workspace/solver/bin
+
+# Compute local worker node path to resources
+NODE_SOLVER_PATH=/export/starexec/workspace/solver/bin/run_${CONFIG_NAME}
+NODE_BENCH_PATH=/export/starexec/workspace/benchmarks/${BENCH_PATH##*/}
+
+# Execute the solver on the benchmark
+$NODE_SOLVER_PATH $NODE_BENCH_PATH &> $STAREXEC_OUT_DIR/stdout.txt
+
+#==========================================================================
+# Complete (epilog will take care or reporting and data saving) 
+#==========================================================================

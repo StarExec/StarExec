@@ -1,0 +1,126 @@
+fieldset {						
+	width: 75%;	
+	margin-bottom: 30px;
+	margin-top: 30px;
+}
+
+fieldset table,
+fieldset ul {
+	width: 100%;
+}
+tr .label {
+	width: 25%;
+}
+
+tr td,
+tr th {
+	padding: 10px;		
+	vertical-align: middle;
+}
+
+#detailsTbl tr td:first-child {
+	width: 40%;
+}
+
+#detailsTbl tr td textarea{
+	height: 125px;
+}
+
+.newForm button {
+	width: 90px;
+	float: right;
+}
+
+.delWebsite {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
+#websiteList li {
+	list-style: none;
+	display: block;
+	margin: auto;
+	padding: 10px;
+	width: 97%;		
+	margin-bottom: 10px;
+}
+
+#newWebsite {	
+	margin-top: 10px;
+	background-color: #111111;
+	border-radius: 6px;	
+	padding: 10px;
+	width: 97%;
+}
+
+#newWebsite input {
+	width: 36%;
+}
+
+#newWebsite button {
+	float: right;
+	position: relative;
+	bottom: 4px;
+}
+
+#toggleBenchType, 
+#toggleWebsite,
+#togglePreProcessor,
+#togglePostProcessor {	
+	cursor: pointer;	
+}
+
+.caption {
+	text-align: right;
+	font-size: 14px;
+	display: block;
+	margin-top: 10px;
+}
+
+.newForm input[type="text"],
+.newForm input[type="file"] {
+	width: 50%;
+}
+
+.newForm input[type="file"] {
+	padding-right: 10px;
+}
+
+.updateForm button {
+	width: 90px;
+}
+
+.updateForm textarea,
+.newForm textarea {
+	width: 50%;
+	height: 100px;
+}
+
+.updateForm input,
+.updateForm textarea {
+	width: 270px;
+}
+
+.newForm {
+	background-color: #111111;
+	border-radius: 6px;	
+	margin-top: 10px;
+}
+
+.newForm button  {
+	float: right;		
+}
+
+.updateForm input,
+.updateForm textarea {
+	width: 100%;
+}
+
+.updateForm textarea {
+	height: 50px;
+}
+
+.updateForm td {
+	vertical-align: top;
+}

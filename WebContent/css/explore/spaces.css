@@ -1,0 +1,83 @@
+.dragClone {
+	max-width: 150px;
+	overflow: hidden;	
+	position: fixed;
+	background-color: #fff;
+	color: #111;
+	z-index: 999;
+	text-align: center;	
+	padding: 14px;
+	border-radius: 3px;
+	box-shadow: 4px 4px 5px #111;
+	opacity: 0.8;
+}
+
+.dragClone span {
+	float: left;
+	margin-right: 5px;
+}
+
+#exploreList a.active {
+	border: 1px dashed #008d03;
+	border-radius:2px;
+	padding: 10px;	
+}
+
+#exploreList a.hover {
+	background-color: #008d03;
+	border-radius:2px;
+}
+
+.qtip-content table {
+	width: 100%;
+}
+
+.qtip-content table th {
+	padding-bottom: 10px;
+	border-bottom: 1px solid gray;
+}
+
+.qtip-content table td {
+	padding: 0 10 0 10;
+}
+
+.qtip-content table td span {
+	cursor: pointer;
+}
+
+.leaderWrap {		
+	position: absolute;
+	
+	bottom: 10px;
+	left: 72px;
+	width: 70px;	
+}
+
+.leaderWrap h2 {
+	text-align: right;
+	font-weight: bold;
+	color: #008d03;
+}
+
+.leaderWrap span {	
+	display: block;
+	position:absolute;
+}
+
+.leaderBtn {
+	width: 150px;
+	position: relative;
+	left: 24px;
+	top: 6px;
+}
+
+#jobs p.stat {
+	margin: auto;
+	text-align: center;
+	width: 80px;
+	height: 30px;
+	padding-top: 10px;
+	color: #111;
+	display: block;
+	border: 1px solid #111;
+}

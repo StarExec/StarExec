@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+  <!-- Application Configuration -->
+  <display-name>STAREXEC</display-name>
+  <description>Logic solver collaboration tool</description>
+  <session-config>
+    <session-timeout>60</session-timeout>
+  </session-config>
+  
+  <!-- Filters -->
+  <!-- Filter that checks all requests and sets up session parameters -->
+  <filter-mapping>
+    <filter-name>SessionFilter</filter-name>
+    <url-pattern>/secure/*</url-pattern>    
+  </filter-mapping>       
+  <filter>
+  	<filter-name>SessionFilter</filter-name>
+    <filter-class>org.starexec.app.SessionFilter</filter-class>    
+  </filter>
+  
+  <!-- Error Pages -->
+  <error-page> 
+    <error-code>400</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>403</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>404</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>405</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
+    <error-code>500</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>  
+  
+  <!-- Servlet Definitions -->
+  <servlet>
+    <servlet-name>Registration</servlet-name>
+    <servlet-class>org.starexec.servlets.Registration</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Registration</servlet-name>
+    <url-pattern>/public/registration/manager</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>Verify</servlet-name>
+    <servlet-class>org.starexec.servlets.Verify</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Verify</servlet-name>
+    <url-pattern>/public/verification/email</url-pattern>  
+  </servlet-mapping>
+  
+    <servlet>
+    <servlet-name>PasswordReset</servlet-name>
+    <servlet-class>org.starexec.servlets.PasswordReset</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PasswordReset</servlet-name>
+    <url-pattern>/public/reset_password</url-pattern>  
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>CommunityRequest</servlet-name>
+    <servlet-class>org.starexec.servlets.CommunityRequester</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CommunityRequest</servlet-name>
+    <url-pattern>/secure/community/request</url-pattern>  
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>JobCreator</servlet-name>
+    <servlet-class>org.starexec.servlets.CreateJob</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobCreator</servlet-name>
+    <url-pattern>/secure/add/job</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ProcessorManager</servlet-name>
+    <servlet-class>org.starexec.servlets.ProcessorManager</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProcessorManager</servlet-name>
+    <url-pattern>/secure/processors/manager</url-pattern>  
+  </servlet-mapping>  
+  
+  <servlet>
+    <servlet-name>AddSpace</servlet-name>
+    <servlet-class>org.starexec.servlets.AddSpace</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AddSpace</servlet-name>
+    <url-pattern>/secure/add/space</url-pattern>
+  </servlet-mapping>
+    
+  <servlet>
+    <servlet-name>BenchmarkUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.BenchmarkUploader</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BenchmarkUploader</servlet-name>
+    <url-pattern>/secure/upload/benchmarks</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>SolverUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadSolver</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SolverUploader</servlet-name>
+    <url-pattern>/secure/upload/solver</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>JobResults</servlet-name>
+    <servlet-class>org.starexec.servlets.Results</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobResults</servlet-name>
+    <url-pattern>/add/to_community.jsp</url-pattern>
+  </servlet-mapping>
+  
+  <!-- RESTEasy webservice framework configuration -->
+  <servlet>  	
+    <servlet-name>Resteasy</servlet-name>
+    <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Resteasy</servlet-name>
+    <url-pattern>/services/*</url-pattern>
+  </servlet-mapping>
+  <context-param>
+    <param-name>resteasy.resources</param-name>
+    <param-value>org.starexec.app.RESTServices</param-value>
+  </context-param>
+  <context-param>
+    <param-name>resteasy.servlet.mapping.prefix</param-name>
+    <param-value>/services</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+  </listener>  
+  
+  <!-- Security Roles -->  
+  <security-role>
+    <role-name>admin</role-name>    
+  </security-role>  
+  <security-role>
+    <role-name>user</role-name>    
+  </security-role>
+  
+  <!-- Form based authentication configuration -->
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/public/login.jsp</form-login-page>
+      <form-error-page>/public/login.jsp?result=failed</form-error-page>
+    </form-login-config>	  
+  </login-config>  
+  
+  <!-- Security restrictions -->
+  <security-constraint>	
+    <web-resource-collection>
+	  <web-resource-name>Users Only</web-resource-name>
+	  <url-pattern>/secure/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	  <role-name>user</role-name>
+    </auth-constraint>		
+  </security-constraint>
+  
+  <security-constraint>	
+    <web-resource-collection>
+	  <web-resource-name>Users Only</web-resource-name>
+	  <url-pattern>/services/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	  <role-name>user</role-name>
+    </auth-constraint>		
+  </security-constraint>
+  
+  <!-- Default pages to load -->
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <!-- Application event listeners -->
+  <listener>
+    <listener-class>org.starexec.app.Starexec</listener-class>
+  </listener>
+</web-app>

@@ -1,0 +1,72 @@
+#explorer {
+	margin-top: 15px;
+	float:left;
+	width: 28%;		
+	min-height: 90%;
+	height: 90%;
+	overflow: auto;	
+	position: absolute;
+}
+
+#explorer a:link {
+	text-decoration: none;	
+}
+
+#detailPanel {
+	padding-left: 10px;
+	margin-top: 15px;
+	float:right;	
+	width: 70%;
+	border-left: solid 3px #111111;	
+}
+
+#detailPanel hr {
+	border-top: solid 1px #666666;
+}
+
+#detailPanel h3, #explorer h3 {
+	color: #FFFFFF;
+	font-size: 24px;
+	margin-bottom: 5px;
+	display: inline-block;
+}
+
+#detailPanel p.accent {
+	color: #666666;
+	font-style: italic;
+}
+
+#detailPanel tbody .row_selected{
+	background-color: #dc6f04;
+}
+	
+#detailPanel .button{
+	margin-bottom:9px;
+}
+
+#detailPanel fieldset {	
+	margin-top: 35px;
+}
+
+#actionList {
+	list-style: none;
+}
+
+#actionList li {
+	float: left;
+	margin: 5px;
+}
+
+.expd, #actionList li a ,
+.qtip-nonPermanentLeader a.tooltipButton, img {	
+	cursor: pointer;
+}
+
+#content table {
+ 	width: 100%;	
+}
+
+#progressBar {
+	display: inline-block;
+	margin-left: 20px;
+}

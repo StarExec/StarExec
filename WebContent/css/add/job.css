@@ -1,0 +1,50 @@
+#content fieldset {
+	width: 600px;
+	margin: 50px auto 50px auto;	
+}
+
+#content table {
+	width: 100%;
+}
+
+#content table tr th {
+	padding: 10px;
+}
+
+#content table tr td {
+	padding: 10px;
+	vertical-align: middle;
+}
+
+#content table input[type="text"], 
+#content table textarea {
+	width: 200px;
+}
+
+#content table select {
+	width: 212px;
+}
+
+button {
+	float: right;
+}
+
+#actionBar {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 10px;	
+}
+
+#tblSolverConfig tr td,
+#tblSolverConfig tr th,
+#tblBenchConfig tr td,
+#tblBenchConfig tr th {
+	width: 50%;
+}
+
+#tblSolverConfig tr td:nth-child(3) a,
+#tblBenchConfig tr td:nth-child(3) a {
+	font-size: 12px;
+	cursor: pointer;
+}
