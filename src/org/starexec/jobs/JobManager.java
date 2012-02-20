@@ -142,7 +142,7 @@ public abstract class JobManager {
 		f.delete();				
 		f.createNewFile();
 		
-		if(!f.setExecutable(true)) {
+		if(!f.setExecutable(true, false)) {
 			log.error("Can't change owner's executable permissions on file " + scriptPath);
 			return "";
 		}

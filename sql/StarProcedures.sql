@@ -1225,7 +1225,7 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 DROP PROCEDURE IF EXISTS AddUser;
 CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, IN _archiveType VARCHAR(8), OUT _id INT)
 	BEGIN		
-		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota, preferred_archive_type)
+		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota, pref_archive_type)
 		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota, _archiveType);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
