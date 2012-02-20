@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,8 +20,10 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
@@ -81,9 +84,9 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getAllQueues(@QueryParam("id") int id) {		
 		if(id <= 0) {
-			return gson.toJson(RESTHelpers.toQueueList(Cluster.getAllQueues()));
+			return gson.toJson(RESTHelpers.toQueueList(Queues.getAll()));
 		} else {
-			return gson.toJson(RESTHelpers.toNodeList(Cluster.getNodesForQueue(id)));
+			return gson.toJson(RESTHelpers.toNodeList(Queues.getNodes(id)));
 		}
 	}
 	
@@ -106,7 +109,7 @@ public class RESTServices {
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
 	public String getQueueDetails(@PathParam("id") int id) {		
-		return gson.toJson(Cluster.getQueueDetails(id));
+		return gson.toJson(Queues.getDetails(id));
 	}
 	
 	/**
@@ -143,13 +146,15 @@ public class RESTServices {
 		
 		Space s = null;
 		Permission p = null;
+		HashMap<Integer, HashMap<String, String>> po = null;
 		
 		if(Permissions.canUserSeeSpace(spaceId, userId)) {
 			s = Spaces.getDetails(spaceId, userId);
 			p = SessionUtil.getPermission(request, spaceId);
+			po = Statistics.getJobPairOverviews(s.getJobs());
 		}					
 		
-		return limitGson.toJson(new RESTHelpers.SpacePermissionPair(s, p));				
+		return limitGson.toJson(new RESTHelpers.SpaceDetailTriplet(s, p, po));				
 	}	
 	
 	/**
@@ -460,7 +465,7 @@ public class RESTServices {
 	 * attribute that contains a list of users to copy as well as a 'fromSpace' parameter that is the
 	 * space the users are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add user permission in destination space
-	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -512,7 +517,7 @@ public class RESTServices {
 	 * attribute that contains a list of solvers to copy as well as a 'fromSpace' parameter that is the
 	 * space the solvers are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -570,7 +575,7 @@ public class RESTServices {
 	 * attribute that contains a list of benchmarks to copy as well as a 'fromSpace' parameter that is the
 	 * space the benchmarks are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -628,7 +633,7 @@ public class RESTServices {
 	 * attribute that contains a list of jobs to copy as well as a 'fromSpace' parameter that is the
 	 * space the jobs are being copied from.
 	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't beint to the 'from space', 5: the 'from space' is locked
+	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST

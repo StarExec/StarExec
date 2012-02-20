@@ -151,21 +151,47 @@ CREATE TABLE queue_assoc (
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
 );
 
+-- Status codes for jobs
+CREATE TABLE status_codes (
+	code TINYINT NOT NULL,
+	status VARCHAR(64) NOT NULL,
+	description TEXT,
+	PRIMARY KEY(code)
+);
+
+-- Job status codes here MUST match the enumerated types in Java
+-- If these change, the prolog, epilog and status_codes scripts must be changed on the head node
+INSERT INTO status_codes VALUES (0, 'unknown', 'the job status is not known or has not been set');
+INSERT INTO status_codes VALUES (1, 'pending submission', 'the job has been added to the starexec database but has not been submitted to the grid engine');
+INSERT INTO status_codes VALUES (2, 'enqueued', 'the job has been submitted to the grid engine and is waiting for an available execution host');
+INSERT INTO status_codes VALUES (3, 'preparing', 'the jobs environment on an execution host is being prepared');
+INSERT INTO status_codes VALUES (4, 'running', 'the job is currently being ran on an execution host');
+INSERT INTO status_codes VALUES (5, 'finishing', 'the jobs output is being stored and its environment is being cleaned up');
+INSERT INTO status_codes VALUES (6, 'awaiting statistics', 'the job has completed execution and is waiting for its runtime statistics from the grid engine');
+INSERT INTO status_codes VALUES (7, 'complete', 'the job has successfully completed execution and its statistics have been received from the grid engine');
+INSERT INTO status_codes VALUES (8, 'statistics error', 'the job completed execution but there was a problem accuiring its statistics from the grid engine');
+INSERT INTO status_codes VALUES (9, 'run script error', 'the job could not be executed because a valid run script was not present');
+INSERT INTO status_codes VALUES (10, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
+INSERT INTO status_codes VALUES (11, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
+INSERT INTO status_codes VALUES (12, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
+
 -- All of the jobs within the system, this is the overarching entity
 -- that contains individual job pairs (solver/config -> benchmark)
 CREATE TABLE jobs (
 	id INT NOT NULL AUTO_INCREMENT,
-	user_id INT NOT NULL,
-	node INT,
+	user_id INT NOT NULL,	
 	name VARCHAR(32),
-	submitted TIMESTAMP DEFAULT 0,
-	finished TIMESTAMP DEFAULT 0,
-	timeout INT,
-	status VARCHAR(24) DEFAULT "Ready",
+	queue_id INT,
+	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	pre_processor INT,
+	post_processor INT,	
+	timeout BIGINT,
 	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	FOREIGN KEY (node) REFERENCES nodes(id) ON DELETE NO ACTION	
+	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,
+	FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL
 );
 
 -- All the configurations that belong to a solver. A solver
@@ -181,34 +207,41 @@ CREATE TABLE configurations (
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
 
--- All the job pairs in starexec which are configuration to benchmark mappings.
--- This is the smallest atomic 'unit' that is ran on a worker node. Note a job
--- pair may be shared by different jobs, this is a sort of 'cache' or pre-made pairs
+-- Table which contains specific information about a job pai
 CREATE TABLE job_pairs (
-	id INT NOT NULL AUTO_INCREMENT, 
-	config_id INT,
-	bench_id INT,
-	PRIMARY KEY (id),
-	UNIQUE KEY (config_id, bench_id),
-	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL,
-	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE SET NULL
-);
-
--- Table which contains specific information about a job pair run
--- that is unique to the job it ran under (these will not belong to
--- more than one job unlike the job_pairs table)
-CREATE TABLE job_pair_attr (
-	id INT NOT NULL AUTO_INCREMENT,
+	id INT NOT NULL AUTO_INCREMENT,	
 	job_id INT NOT NULL,
-	pair_id INT,
-	node_id INT NOT NULL,
-	start TIMESTAMP DEFAULT 0,
-	stop TIMESTAMP DEFAULT 0,
-	result VARCHAR(64) DEFAULT "",
-	status VARCHAR(64) DEFAULT "",
+	sge_id INT,
+	bench_id INT,
+	config_id INT,		
+	status_code TINYINT DEFAULT 0,
+	short_result VARCHAR(64) DEFAULT "",
+	node_id INT,
+	queuesub_time TIMESTAMP DEFAULT 0,
+	start_time TIMESTAMP DEFAULT 0,
+	end_time TIMESTAMP DEFAULT 0,
+	exit_status INT,
+	wallclock BIGINT,
+	cpu DOUBLE,
+	user_time DOUBLE,
+	system_time DOUBLE,
+	io_data DOUBLE,
+	io_wait DOUBLE,
+	mem_usage DOUBLE,
+	max_vmem DOUBLE,
+	max_res_set DOUBLE,
+	page_reclaims DOUBLE,
+	page_faults DOUBLE,
+	block_input DOUBLE,
+	block_output DOUBLE,
+	vol_contex_swtch DOUBLE,
+	invol_contex_swtch DOUBLE,	
 	PRIMARY KEY(id),
+	UNIQUE KEY(sge_id),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE SET NULL,
+	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE SET NULL,
+	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL,
+	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION
 );
 
@@ -269,11 +302,9 @@ CREATE TABLE user_assoc (
 CREATE TABLE set_assoc (
 	space_id INT NOT NULL, 
 	child_id INT NOT NULL,
-	permission INT,
 	PRIMARY KEY (space_id, child_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (child_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL
+	FOREIGN KEY (child_id) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- Which benchmarks belong to which spaces

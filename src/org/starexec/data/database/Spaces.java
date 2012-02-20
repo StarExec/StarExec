@@ -420,10 +420,10 @@ public class Spaces {
 	}
 	
 	/**
-	 * Gets all subspaces beinting to another space
+	 * Gets all subspaces belonging to another space
 	 * @param spaceId The id of the parent space. Give an id <= 0 to get the root space
 	 * @param userId The id of the user requesting the subspaces. This is used to verify the user can see the space
-	 * @return A list of child spaces beinting to the parent space that the given user can see
+	 * @return A list of child spaces belonging to the parent space that the given user can see
 	 * @author Tyler Jensen
 	 */
 	public static List<Space> getSubSpaces(int spaceId, int userId) {
@@ -487,8 +487,8 @@ public class Spaces {
 	}
 	
 	/**
-	 * Gets a space with detailed information (solvers, benchmarks, jobs and user beinting
-	 * to the space are also populated)
+	 * Gets a space with detailed information (solvers, benchmarks, jobs and user belonging
+	 * to the space are also populated (but not job pairs))
 	 * @param spaceId The id of the space to get information for
 	 * @param userId The id of user requesting the space used to view details from their perspective
 	 * @return A space object consisting of detailed information about the space
@@ -513,7 +513,7 @@ public class Spaces {
 	
 	/**
 	 * @param spaceId The id of the space to get users for
-	 * @return A list of users beinting directly to the space
+	 * @return A list of users belonging directly to the space
 	 * @author Tyler Jensen
 	 */
 	public static List<User> getUsers(int spaceId) {
@@ -592,7 +592,7 @@ public class Spaces {
 	 * Internal recursive method that adds a space and it's benchmarks to the database
 	 * @param con The connection to perform the operations on
 	 * @param space The space to add to the database
-	 * @param parentId The id of the parent space that the given space will beint to
+	 * @param parentId The id of the parent space that the given space will belong to
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Tyler Jensen
 	 */

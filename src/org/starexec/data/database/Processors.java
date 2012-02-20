@@ -92,6 +92,32 @@ public class Processors {
 	}
 	
 	/**	 
+	 * @param con The connection to make the query on
+	 * @param processorId The id of the bentch processor to retrieve
+	 * @return The corresponding processor
+	 * @author Tyler Jensen
+	 */
+	protected static Processor get(Connection con, int processorId) throws Exception {						
+		CallableStatement procedure = con.prepareCall("{CALL GetProcessorById(?)}");
+		procedure.setInt(1, processorId);
+		ResultSet results = procedure.executeQuery();			
+		
+		if(results.next()){							
+			Processor t = new Processor();
+			t.setId(results.getInt("id"));
+			t.setCommunityId(results.getInt("community"));
+			t.setDescription(results.getString("description"));
+			t.setName(results.getString("name"));
+			t.setFilePath(results.getString("path"));
+			t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+			t.setDiskSize(results.getLong("disk_size"));
+			return t;					
+		}							
+		
+		return null;
+	}
+	
+	/**	 
 	 * @param processorId The id of the bentch processor to retrieve
 	 * @return The corresponding processor
 	 * @author Tyler Jensen
@@ -101,21 +127,7 @@ public class Processors {
 		
 		try {
 			con = Common.getConnection();					
-			CallableStatement procedure = con.prepareCall("{CALL GetProcessorById(?)}");
-			procedure.setInt(1, processorId);
-			ResultSet results = procedure.executeQuery();			
-			
-			if(results.next()){							
-				Processor t = new Processor();
-				t.setId(results.getInt("id"));
-				t.setCommunityId(results.getInt("community"));
-				t.setDescription(results.getString("description"));
-				t.setName(results.getString("name"));
-				t.setFilePath(results.getString("path"));
-				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
-				t.setDiskSize(results.getLong("disk_size"));
-				return t;					
-			}							
+			return Processors.get(con, processorId);			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

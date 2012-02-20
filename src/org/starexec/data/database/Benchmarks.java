@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class Benchmarks {
 	/**
 	 * Adds a single benchmark to the database under the given spaceId
 	 * @param benchmark The benchmark to add to the database
-	 * @param spaceId The id of the space the benchmark will beint to
+	 * @param spaceId The id of the space the benchmark will belong to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
@@ -90,7 +91,7 @@ public class Benchmarks {
 	/**
 	 * Adds the list of benchmarks to the database and associates them with the given spaceId
 	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will beint to
+	 * @param spaceId The space the benchmarks will belong to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
@@ -119,7 +120,7 @@ public class Benchmarks {
 	 * Internal method which adds a single benchmark to the database under the given spaceId
 	 * @param con The connection the operation will take place on
 	 * @param benchmark The benchmark to add to the database
-	 * @param spaceId The id of the space the benchmark will beint to
+	 * @param spaceId The id of the space the benchmark will belong to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
@@ -144,7 +145,7 @@ public class Benchmarks {
 	 * Internal method which adds the list of benchmarks to the database and associates them with the given spaceId
 	 * @param con The connection the operation will take place on
 	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will beint to
+	 * @param spaceId The space the benchmarks will belong to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
@@ -206,33 +207,70 @@ public class Benchmarks {
 		
 		try {
 			con = Common.getConnection();		
+			return Benchmarks.get(con, benchId);				
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param con The connection to query with
+	 * @param benchId The id of the benchmark to retrieve
+	 * @return A benchmark object representing the benchmark with the given ID
+	 * @author Tyler Jensen
+	 */
+	protected static Benchmark get(Connection con, int benchId) throws Exception {					
+		CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
+		procedure.setInt(1, benchId);					
+		ResultSet results = procedure.executeQuery();
+		
+		if(results.next()){
+			Benchmark b = new Benchmark();
+			b.setId(results.getInt("bench.id"));
+			b.setUserId(results.getInt("bench.user_id"));
+			b.setName(results.getString("bench.name"));
+			b.setUploadDate(results.getTimestamp("bench.uploaded"));
+			b.setPath(results.getString("bench.path"));
+			b.setDescription(results.getString("bench.description"));
+			b.setDownloadable(results.getBoolean("bench.downloadable"));
+			b.setDiskSize(results.getLong("bench.disk_size"));
 			
-			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
-			procedure.setInt(1, benchId);					
-			ResultSet results = procedure.executeQuery();
+			Processor t = new Processor();
+			t.setId(results.getInt("types.id"));
+			t.setCommunityId(results.getInt("types.community"));
+			t.setDescription(results.getString("types.description"));
+			t.setName(results.getString("types.name"));
+			t.setFilePath(results.getString("types.path"));
+			t.setDiskSize(results.getLong("types.disk_size"));
 			
-			if(results.next()){
-				Benchmark b = new Benchmark();
-				b.setId(results.getInt("bench.id"));
-				b.setUserId(results.getInt("bench.user_id"));
-				b.setName(results.getString("bench.name"));
-				b.setUploadDate(results.getTimestamp("bench.uploaded"));
-				b.setPath(results.getString("bench.path"));
-				b.setDescription(results.getString("bench.description"));
-				b.setDownloadable(results.getBoolean("bench.downloadable"));
-				b.setDiskSize(results.getLong("bench.disk_size"));
-				
-				Processor t = new Processor();
-				t.setId(results.getInt("types.id"));
-				t.setCommunityId(results.getInt("types.community"));
-				t.setDescription(results.getString("types.description"));
-				t.setName(results.getString("types.name"));
-				t.setFilePath(results.getString("types.path"));
-				t.setDiskSize(results.getLong("types.disk_size"));
-				
-				b.setType(t);
-				return b;				
-			}											
+			b.setType(t);
+			return b;				
+		}													
+		
+		return null;
+	}
+	
+	/**
+	 * @param benchIds A list of ids to get benchmarks for
+	 * @return A list of benchmark object representing the benchmarks with the given IDs
+	 * @author Tyler Jensen
+	 */
+	public static List<Benchmark> get(List<Integer> benchIds) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();					
+			List<Benchmark> benchList = new ArrayList<Benchmark>();
+			
+			for(int id : benchIds) {				
+					benchList.add(Benchmarks.get(con, id));
+			}
+			
+			return benchList;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -244,7 +282,7 @@ public class Benchmarks {
 	
 	/**
 	 * @param spaceId The id of the space to get benchmarks for
-	 * @return A list of all benchmarks beinting to the space
+	 * @return A list of all benchmarks belonging to the space
 	 * @author Tyler Jensen
 	 */
 	public static List<Benchmark> getBySpace(int spaceId) {

@@ -40,21 +40,16 @@ public class R {
 	public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
 	public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
 	public static String NODE_WORKING_DIR = null;							// The directory on the local nodes where they can use for scratch space (read/write)
-	public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node    	
+	public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node
+	public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
+	public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from SGE scripts when job runs)
+	public static String NODE_OUTPUT_DIR = null;							// The path to the directory on the local node where output should be placed by the user in order to be saved by starexec
 	public static String BENCH_TYPE_DIR = null;								// Where to deposit new benchmark type processor scripts
-	public static String DOWNLOAD_FILE_DIR = null;							// Where to store processed files for downloading
+	public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
 	
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
-	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)
-	public static int NEXT_JID = 1;											// The number of the next Job to be ran
-	public static int PAIR_ID = 1;											// The number of the next pair to be ran
-	
-	// Job status strings
-	public static String JOB_STATUS_DONE = "Done";							// The status of a successfully finished job
-	public static String JOB_STATUS_RUNNING = "Running";					// The status of a currently running job
-	public static String JOB_STATUS_ENQUEUED = "Enqueued";					// The status of a job that SGE has queued up to be run
-	public static String JOB_STATUS_ERR = "Error";							// The status of a failed job
+	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
 	
 	// Misc application properties
 	public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
@@ -63,7 +58,8 @@ public class R {
 	public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
 	public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
 	public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
-	public static long DEFAULT_USER_QUOTA = 52428800;								// The default user disk quota to assign new users; currently 50MB
+	public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
+	public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
 	
 	// Queue and node status strings
 	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)
@@ -79,5 +75,7 @@ public class R {
 	public static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
 	public static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
 	public static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
-	public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that beint to a queue from SGE's queue detail output
+	public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that belong to a queue from SGE's queue detail output
+	public static String STATS_ENTRY_PATTERN = "^([\\w\\d\\.]+:){5}%d:.+$"; // The regular expression to parse out entries in the sge accounting file
+	public static String SGE_ACCOUNTING_FILE = null;  						// The absolute path to the SGE accounting file that holds job statistics
 }	

@@ -71,8 +71,8 @@ public class XmlUtil {
 //	 * of the fie. The bxml file location is used to determine the absolute paths to the benchmark
 //	 * files.
 //	 * @param bxmlFile The bxml file to parse
-//	 * @param userid The id of the user the benchmarks will beint to
-//	 * @param communityId The id of the community the benchmarks will beint to
+//	 * @param userid The id of the user the benchmarks will belong to
+//	 * @param communityId The id of the community the benchmarks will belong to
 //	 * @return The handler that contains the results from the parse
 //	 * @throws Exception
 //	 */

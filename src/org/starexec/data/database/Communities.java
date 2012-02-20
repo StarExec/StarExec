@@ -17,7 +17,7 @@ public class Communities {
 	private static final Logger log = Logger.getLogger(Communities.class);
 	
 	/**
-	 * @return A list of child spaces beinting to the root space (community spaces)
+	 * @return A list of child spaces belonging to the root space (community spaces)
 	 * @author Todd Elvers
 	 */
 	public static List<Space> getAll() {

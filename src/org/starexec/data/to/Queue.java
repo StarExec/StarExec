@@ -1,16 +1,17 @@
 package org.starexec.data.to;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gson.annotations.Expose;
 
 /**
- * Represents an SGE queue which has a collection of worker nodes that beint to it
+ * Represents an SGE queue which has a collection of worker nodes that belong to it
  * @author Tyler Jensen
  */
-public class Queue extends Identifiable {
+public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Expose private String name;
 	@Expose private String status;
 	@Expose private int slotsUsed;
@@ -107,7 +108,7 @@ public class Queue extends Identifiable {
 	}
 
 	/**
-	 * @return the worker nodes that beint to the queue
+	 * @return the worker nodes that belong to the queue
 	 */
 	public List<WorkerNode> getNodes() {
 		return nodes;
@@ -137,5 +138,10 @@ public class Queue extends Identifiable {
 	@Override
 	public String toString() {
 		return this.name;
+	}
+
+	@Override
+	public Iterator<WorkerNode> iterator() {
+		return this.nodes.iterator();
 	}
 }

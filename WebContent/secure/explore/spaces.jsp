@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min" css="common/table, explore/common, explore/spaces">			
+<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, explore/spaces">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		<ul id="exploreList">
@@ -19,7 +19,9 @@
 					<tr>
 						<th>name</th>
 						<th>status</th>
-						<th style="width:270px;">description</th>
+						<th>complete</th>
+						<th>pending</th>
+						<th>error</th>
 					</tr>
 				</thead>			
 			</table>

@@ -73,68 +73,74 @@ INSERT INTO processors (name, description, path, community, processor_type, disk
 	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3, 10240000);
 
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
-	(1, 'Napalm', SYSDATE(), 'C:\\Benchmark.smt2', 'This is a sample benchmark that is downloadable', 1, 1048576);
+	(1, 'Gasburner', SYSDATE(), '/home/starexec/Benchmarks/gasburner-prop3-2.smt2', 'This is a sample benchmark that is downloadable', 1, 1024);
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
-	(2, 'Roadrunner', SYSDATE(), 'C:\\CJBenchmark.smt2', 'This is another sample benchmark that cant be downloaded', 0, 1, 262144000);
+	(2, 'Jagertest', SYSDATE(), '/home/starexec/Benchmarks/jagertest2.smt2', 'This is another sample benchmark that cant be downloaded', 0, 1, 1024);
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
-	(6, 'TPTP1', SYSDATE(), 'C:\\TPBenchmark.tptp', 'This is a sample benchmark that is downloadable', 1, 2621440);
+	(1, 'Model 5 8', SYSDATE(), '/home/starexec/Benchmarks/model_5_8.smt2', 'This is a sample benchmark that is downloadable', 1, 1024);
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
-	(6, 'TPTP2', SYSDATE(), 'C:\\TPBenchmark2.tptp', 'This is another sample benchmark that cant be downloaded', 0, 26214400);
+	(1, 'Model 6 10', SYSDATE(), '/home/starexec/Benchmarks/model_6_10.smt2', 'This is a sample benchmark that is downloadable', 1, 1024);	
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(1, 'Model 6 9', SYSDATE(), '/home/starexec/Benchmarks/model_6_9.smt2', 'This is a sample benchmark that is downloadable', 1, 1024);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(1, 'Problem 004', SYSDATE(), '/home/starexec/Benchmarks/problem__004.smt2', 'This is a sample benchmark that is downloadable', 1, 1024);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(6, 'ALG436-1', SYSDATE(), '/home/starexec/Benchmarks/ALG436-1.p', 'This is a sample benchmark that is downloadable', 1, 1024);
+INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
+	(6, 'ALG438-1', SYSDATE(), '/home/starexec/Benchmarks/ALG438-1.p', 'This is another sample benchmark that cant be downloaded', 0, 1024);
 	
 INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
-	(1, 'CVC3', SYSDATE(), 'C:\\z3\\', 'This is a downloadable solver', 1, 26214400);
+	(1, 'Z3', SYSDATE(), '/home/starexec/Solvers/z3', 'This is a downloadable solver that exists on the cluster', 1, 10240);
 INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
-	(6, 'Vampire', SYSDATE(), 'C:\\vamp\\', 'This is a non-downloadable solver', 0, 157286400);
+	(6, 'Vampire', SYSDATE(), '/home/starexec/Solvers/20110509-10.46.01', 'This is a non-downloadable solver that exists on the cluster', 0, 10240);
 
 INSERT INTO configurations(solver_id, name, description) VALUES
-	(1, "Default", "This is a default configuration for CVC3");
+	(1, "default", "This is a default configuration for Z3");
 INSERT INTO configurations(solver_id, name, description) VALUES
-	(1, "Secondary", "This is a secondary configuration for CVC3");
+	(1, "alternate_config", "This is a secondary configuration for Z3");
 INSERT INTO configurations(solver_id, name, description) VALUES
-	(2, "Default", "This is a default configuration for Vampire");
+	(2, "default", "This is a default configuration for Vampire");
 INSERT INTO configurations(solver_id, name, description) VALUES
-	(2, "Secondary", "This is a secondary configuration for Vampire");
+	(2, "other_config", "This is a secondary configuration for Vampire");
 	
 	
-INSERT INTO jobs (user_id, name, status, description, submitted, finished) VALUES
-	(1, 'Sweet Job', 'Finished', 'This is an example job description', SYSDATE(), DATE_ADD(SYSDATE(), INTERVAL 2 HOUR));
-INSERT INTO jobs (user_id, name, status, description, submitted) VALUES
-	(2, 'SMT Job', 'Running', 'This is another example job description', SYSDATE());
-INSERT INTO jobs (user_id, name, status, description, submitted) VALUES
-	(6, 'TPTP Job 1', 'Running', 'This is an example job for the TPTP community', SYSDATE());
-INSERT INTO jobs (user_id, name, status, description, submitted) VALUES
-	(6, 'TPTP Job 2', 'Done', 'This is another example job for the TPTP community', SYSDATE());
+INSERT INTO jobs (user_id, name, description) VALUES
+	(1, 'Sweet Job','This is an example job description');
+INSERT INTO jobs (user_id, name, description) VALUES
+	(2, 'SMT Job', 'This is another example job description');
+INSERT INTO jobs (user_id, name, description) VALUES
+	(6, 'TPTP Job 1', 'This is an example job for the TPTP community');
+INSERT INTO jobs (user_id, name, description) VALUES
+	(6, 'TPTP Job 2', 'This is another example job for the TPTP community');
 	
-INSERT INTO job_pairs(config_id, bench_id) VALUES (1, 1);
-INSERT INTO job_pairs(config_id, bench_id) VALUES (2, 2);
-INSERT INTO job_pairs(config_id, bench_id) VALUES (3, 3);
-INSERT INTO job_pairs(config_id, bench_id) VALUES (4, 4);
+INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code) 
+	VALUES (1, 1990, 1, 1, 1, SYSDATE(), SYSDATE(), "SAT", 6);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (1, 3, 3, 3, SYSDATE(), SYSDATE(), "UNSAT", 7);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (2, 2, 2, 2, SYSDATE(), SYSDATE(), "FAIL", 12);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (2, 4, 4, 4, SYSDATE(), SYSDATE(), "SAT", 7);
 
-INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
-	(1, 1, 2, SYSDATE(), SYSDATE(), "SAT", "Success");
--- INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
---	(1, 2, 3, SYSDATE(), SYSDATE(), "Error", "Error");
-	
-INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
-	(3, 3, 3, SYSDATE(), SYSDATE(), "Yes", "Success");
-INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
-	(3, 4, 3, SYSDATE(), SYSDATE(), "No", "Success");
-INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
-	(4, 3, 2, SYSDATE(), SYSDATE(), "No", "Success");
-INSERT INTO job_pair_attr(job_id, pair_id, node_id, start, stop, result, status) values
-	(4, 4, 2, SYSDATE(), SYSDATE(), "No", "Success");
-	
-INSERT INTO set_assoc VALUES (1, 2, 1);
-INSERT INTO set_assoc VALUES (1, 3, 1);
-INSERT INTO set_assoc VALUES (1, 5, 1);
-INSERT INTO set_assoc VALUES (3, 4, 1);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (3, 3, 4, 4, SYSDATE(), SYSDATE(), "Yes", 7);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (3, 4, 3, 4, SYSDATE(), SYSDATE(), "No", 7);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (4, 3, 4, 3, SYSDATE(), SYSDATE(), "No", 7);
+INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, short_result, status_code)
+	VALUES (4, 4, 3, 3, SYSDATE(), SYSDATE(), "No", 7);
+		
+INSERT INTO set_assoc VALUES (1, 2);
+INSERT INTO set_assoc VALUES (1, 3);
+INSERT INTO set_assoc VALUES (1, 5);
+INSERT INTO set_assoc VALUES (3, 4);
 
 INSERT INTO closure VALUES (1, 2);
 INSERT INTO closure VALUES (1, 3);
 INSERT INTO closure VALUES (1, 4);
 INSERT INTO closure VALUES (1, 5);
 INSERT INTO closure VALUES (3, 4);
-
 
 INSERT INTO user_assoc VALUES (1, 3, 3, 1);
 INSERT INTO user_assoc VALUES (1, 4, 3, 2);
@@ -147,15 +153,21 @@ INSERT INTO user_assoc VALUES (7, 3, 3, 7);
 
 INSERT INTO bench_assoc VALUES (2, 1);
 INSERT INTO bench_assoc VALUES (2, 2);
+INSERT INTO bench_assoc VALUES (2, 3);
+INSERT INTO bench_assoc VALUES (2, 4);
+INSERT INTO bench_assoc VALUES (2, 5);
+INSERT INTO bench_assoc VALUES (2, 6);
 INSERT INTO bench_assoc VALUES (3, 1);
 INSERT INTO bench_assoc VALUES (3, 2);
-INSERT INTO bench_assoc VALUES (5, 3);
-INSERT INTO bench_assoc VALUES (5, 4);
+INSERT INTO bench_assoc VALUES (3, 3);
+INSERT INTO bench_assoc VALUES (3, 4);
+INSERT INTO bench_assoc VALUES (3, 5);
+INSERT INTO bench_assoc VALUES (3, 6);
+INSERT INTO bench_assoc VALUES (5, 7);
+INSERT INTO bench_assoc VALUES (5, 8);
 
 INSERT INTO solver_assoc VALUES (2, 1);
-INSERT INTO solver_assoc VALUES (2, 2);
 INSERT INTO solver_assoc VALUES (3, 1);
-INSERT INTO solver_assoc VALUES (3, 2);
 INSERT INTO solver_assoc VALUES (5, 2);
 
 INSERT INTO job_assoc VALUES (2, 1);

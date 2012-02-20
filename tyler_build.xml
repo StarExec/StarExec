@@ -11,7 +11,7 @@
 	<property name="class-directory" value="${build-directory}/classes" />		
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="tomcat-dir" value="/project/tomcat/apache-tomcat-7" />
-	<property name="db_name" value="prod_starexec" />
+	<property name="db_name" value="dev_tj_starexec" />
 	
 	<!-- Specify to java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
@@ -39,23 +39,19 @@
 		<!-- Update the starexec-config file to use the production configuration -->
 		<replaceregexp file="${config-directory}/starexec-config.xml"
 		               match="default=(.+)"
-		               replace="default=&quot;production&quot;&gt;"
+		               replace="default=&quot;tyler_dev_cluster&quot;&gt;"
 		               byline="false"
 		/>
 		
 		<!-- Update the sql scripts to use the correct database -->
 		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
-			<fileset dir="$sql" includes="**/*.sql"/>
+			<fileset dir="sql" includes="**/*.sql"/>
 		</replaceregexp>
 		
 		<!-- Update the sql schema to use the correct database -->
-		<replaceregexp file="sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
-		<replaceregexp file="sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
-		
-		<!-- Update the log4j config file to only record INFO level events -->
-		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
-	        <entry key="log4j.rootLogger" value="INFO, STAREXEC"/>
-	    </propertyfile>
+		<replaceregexp file="./sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
+		<replaceregexp file="./sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
+				
 		
 		<!-- Clear the build directory if it exists and re-make the dir -->
 		<delete dir="${build-directory}" />

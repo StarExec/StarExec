@@ -117,8 +117,8 @@ public class Websites {
 	/**
 	 * Deletes the website associated with the given website ID.
 	 * @param websiteId the ID of the website to delete
-	 * @param entityId the ID of the entity that the website beints to (user, solver, space)
-	 * @param webType the type of entity the website beints to
+	 * @param entityId the ID of the entity that the website belongs to (user, solver, space)
+	 * @param webType the type of entity the website belongs to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */

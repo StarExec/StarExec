@@ -9,13 +9,13 @@
 		
 		Job j = null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.get(jobId);
+			j = Jobs.getDetailed(jobId);
 		}
 		
 		if(j != null) {			
 			request.setAttribute("usr", Users.get(j.getUserId()));
-			request.setAttribute("job", j);	
-			request.setAttribute("pairs", Jobs.getPairs(j.getId(), userId));
+			request.setAttribute("job", j);
+			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 		}
@@ -26,73 +26,98 @@
 	}
 %>
 
-<star:template title="${job.name}" js="details/shared" css="details/shared, details/job">			
+<star:template title="${job.name}" js="lib/jquery.dataTables.min, details/shared, details/job" css="common/table, details/shared, details/job">			
 	<fieldset>
 		<legend>details</legend>
 		<table class="shaded">
-			<tr>
-				<td>status</td>			
-				<td>${job.status}</td>
-			</tr>
-			<tr>
-				<td>description</td>			
-				<td>${job.description}</td>
-			</tr>
-			<tr>
-				<td>owner</td>			
-				<td><star:user value="${usr}" /></td>
-			</tr>							
-			<tr>
-				<td>submitted</td>			
-				<td><fmt:formatDate pattern="MMM dd yyyy hh:mm:ss.SSS a" value="${job.submitted}" /></td>
-			</tr>
-			<tr>
-				<td>finished</td>			
-				<td><fmt:formatDate pattern="MMM dd yyyy hh:mm:ss.SSS a" value="${job.finished}" /></td>
-			</tr>
-			<tr>
-				<td>runtime</td>			
-				<td>${job.runTime}</td>
-			</tr>			
+			<thead>
+				<tr>
+					<th>property</th>
+					<th>value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr title="${pairStats.pendingPairs == 0 ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
+					<td>status</td>			
+					<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
+				</tr>
+				<tr title="the job creator's description for this job">
+					<td>description</td>			
+					<td>${job.description}</td>
+				</tr>
+				<tr title="the user who submitted this job">
+					<td>owner</td>			
+					<td><star:user value="${usr}" /></td>
+				</tr>							
+				<tr title="the date/time the job was created on starexec">
+					<td>created</td>			
+					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
+				</tr>
+				<tr title="the total wallclock runtime of the job. calculated by taking the difference between the start time of earliest completed pair and the end time of the latest compelted pair">
+					<td>runtime</td>			
+					<td>${pairStats.runtime / 1000} ms</td>
+				</tr>					
+				<tr title="the preprocessor that was used to process input for this job">
+					<td>preprocessor</td>
+					<c:if test="${not empty job.preProcessor}">			
+					<td title="${job.preProcessor.description}">${job.preProcessor.name}</td>
+					</c:if>
+					<c:if test="${empty job.preProcessor}">			
+					<td>none</td>
+					</c:if>
+				</tr>		
+				<tr title="the postprocessor that was used to process output for this job">
+					<td>postprocessor</td>
+					<c:if test="${not empty job.postProcessor}">			
+					<td title="${job.postProcessor.description}">${job.postProcessor.name}</td>
+					</c:if>
+					<c:if test="${empty job.postProcessor}">			
+					<td>none</td>
+					</c:if>
+				</tr>
+				<tr title="the execution queue this job was submitted to">
+					<td>queue</td>	
+					<c:if test="${not empty job.queue}">
+					<td><a href="/starexec/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="/starexec/images/external.png"/></a></td>
+					</c:if>
+					<c:if test="${empty job.queue}">
+					<td>unknown</td>
+					</c:if>						
+				</tr>				
+			</tbody>
 		</table>	
 	</fieldset>		
 	<fieldset>
-	<legend>job pairs</legend>
-	<c:if test="${not empty pairs}">		
-		<table class="shaded">
-			<tr>
-				<th>benchmark</th>
-				<th>solver</th>
-				<th>config</th>
-				<th>status</th>
-				<th>result</th>
-				<!--<th>start</th>
-				<th>end</th> -->
-				<th>runtime</th>
-			</tr>			
-			<c:forEach var="pair" items="${pairs}">
-				<tr>
-					<td><star:benchmark value="${pair.benchmark}" /></td>
-					<td><star:solver value="${pair.solver}" /></td>
-					<td><star:config value="${pair.solver.configurations[0]}" /></td>				
-					<td>${pair.status}</td>
-					<td>${pair.result}</td>
-					<!-- <td><fmt:formatDate pattern="MMM dd yyyy hh:mm:ss.SSS a" value="${pair.startDate}" /></td>					
-					<td><fmt:formatDate pattern="MMM dd yyyy hh:mm:ss.SSS a" value="${pair.endDate}" /></td> -->					
-					<td>${pair.runTime}</td>
-				</tr>
-			</c:forEach>
-		</table>
-	</c:if>		
-	<c:if test="${empty pairs}">
+	<legend>job pairs</legend>	
+	<c:if test="${empty job.jobPairs}">
 		<p>none</p>
 	</c:if>		
-	</fieldset>	
-	<fieldset>
-		<legend>actions</legend>		
-			<ul>
-				<li><a id="downloadLink" href="#">download</a></li>
-				<li><a href="#">run</a></li>
-			</ul>					
-	</fieldset>	
+	<c:if test="${not empty job.jobPairs}">		
+		<table id="pairTbl" class="shaded">
+			<thead>
+				<tr>
+					<th>benchmark</th>
+					<th>solver</th>
+					<th>config</th>
+					<th>status</th>
+					<th>result</th>				
+				</tr>		
+			</thead>	
+			<tbody>
+			<c:forEach var="pair" items="${job.jobPairs}">
+				<tr>					
+					<td>
+						<input type="hidden" name="pid" value="${pair.id}"/>
+						<star:benchmark value="${pair.bench}" />
+					</td>
+					<td><star:solver value="${pair.solver}" /></td>
+					<td><star:config value="${pair.solver.configurations[0]}" /></td>				
+					<td title="${pair.status.description}">${pair.status}</td>					
+					<td>${pair.shortResult}</td>
+				</tr>
+			</c:forEach>
+			</tbody>
+		</table>
+	</c:if>		
+	</fieldset>		
 </star:template>

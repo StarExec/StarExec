@@ -620,14 +620,50 @@ function populateDetails(jsonData) {
 	jobTable.fnClearTable();	
 	$.each(jsonData.space.jobs, function(i, job) {	
 		var hiddenJobId = '<input type="hidden" value="' + job.id + '" >';
-		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenJobId;		
-		jobTable.fnAddData([jobLink, job.status, job.description]);
+		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenJobId;
+		var stats = jsonData.pairOverview[job.id];
+		var status = stats.pendingPairs > 0 ? "incomplete" : "complete";	
+		
+		function getPairStatHtml(numerator, statType) {
+			return "<p class='stat " + statType + "'>" + numerator + '/' + stats.totalPairs + "</p>";
+		}
+		
+		jobTable.fnAddData([jobLink, status, getPairStatHtml(stats.completePairs, 'asc'), getPairStatHtml(stats.pendingPairs, 'desc'), getPairStatHtml(stats.errorPairs, 'desc')]);
+		
 		// Set up data about this primitive used for drag/drop
 		$(jobTable.fnGetNodes(i)).data('id', job.id);
 		$(jobTable.fnGetNodes(i)).data('type', 'job');
 		$(jobTable.fnGetNodes(i)).data('name', job.name);
-	});	
+	});		
 	initDraggable($('#jobs'));
+	
+	// Colorize the statistics in the job table for completed pairs
+	$("#jobs p.asc").heatcolor(
+		function() {
+			// Return the floating point value of the stat
+			return eval($(this).text());
+		},
+		{ 
+			maxval: 1,
+			minval: 0,
+			colorStyle: 'greentored',
+			lightness: 0 
+		}
+	);
+	
+	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
+	$("#jobs p.desc").heatcolor(
+		function() {
+			return eval($(this).text());
+		},
+		{ 
+			maxval: 1,
+			minval: 0,
+			colorStyle: 'greentored',
+			reverseOrder: true,
+			lightness: 0 
+		}
+	);
 	
 	// Populate user details	
 	$('#userField legend').children('span:first-child').text(jsonData.space.users.length);

@@ -1,3 +1,7 @@
 fieldset {
-	width: 650px;	
+	width: 750px;	
+}
+
+#pairTbl tr {
+	cursor: pointer;
 }

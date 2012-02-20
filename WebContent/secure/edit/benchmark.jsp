@@ -30,11 +30,11 @@
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
 		}
-		} catch (NumberFormatException nfe) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");
-		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-		}
+	} catch (NumberFormatException nfe) {
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");
+	} catch (Exception e) {
+		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+	}
 %>
 
 <star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/benchmark">				

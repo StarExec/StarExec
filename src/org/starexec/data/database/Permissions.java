@@ -43,7 +43,7 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the given solvers in some way. More specifically,
-	 * this checks if the user beints to all the spaces the solvers beint to.
+	 * this checks if the user belongs to all the spaces the solvers belong to.
 	 * @param solverIds The solvers to check if the user can see
 	 * @param userId The user that is requesting to view the given solvers	
 	 * @return True if the user can somehow see the solvers, false otherwise
@@ -80,7 +80,7 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the solver in some way. More specifically,
-	 * this checks if the user beints to any space the solver beints to.
+	 * this checks if the user belongs to any space the solver belongs to.
 	 * @param solverId The solver to check if the user can see
 	 * @param userId The user that is requesting to view the given solver	
 	 * @return True if the user can somehow see the solver, false otherwise
@@ -110,7 +110,7 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the benchmark in some way. More specifically,
-	 * this checks if the user beints to any space the benchmark beints to.
+	 * this checks if the user belongs to any space the benchmark belongs to.
 	 * @param benchId The benchmark to check if the user can see
 	 * @param userId The user that is requesting to view the given benchmark	 * 
 	 * @return True if the user can somehow see the benchmark, false otherwise
@@ -140,7 +140,7 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the benchmarks in some way. More specifically,
-	 * this checks if the user beints to all spaces the benchmarks beint to.
+	 * this checks if the user belongs to all spaces the benchmarks belong to.
 	 * @param benchIds The benchmarks to check if the user can see
 	 * @param userId The user that is requesting to view the given benchmarks 
 	 * @return True if the user can somehow see all benchmarks, false otherwise
@@ -177,7 +177,7 @@ public class Permissions {
 	
 	/**
 	 * Checks to see if the user has access to the job in some way. More specifically,
-	 * this checks if the user beints to any space the job beints to.
+	 * this checks if the user belongs to any space the job belongs to.
 	 * @param jobId The job to check if the user can see
 	 * @param userId The user that is requesting to view the given job 
 	 * @return True if the user can somehow see the job, false otherwise
@@ -206,10 +206,10 @@ public class Permissions {
 	}
 	
 	/**
-	 * Checks to see if the user beints to the given space.
+	 * Checks to see if the user belongs to the given space.
 	 * @param spaceId The space to check if the user can see
 	 * @param userId The user that is requesting to view the given space
-	 * @return True if the user beints to the space, false otherwise
+	 * @return True if the user belongs to the space, false otherwise
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeSpace(int spaceId, int userId) {		

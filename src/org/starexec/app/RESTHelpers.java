@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -134,18 +135,21 @@ public class RESTHelpers {
 	}
 	
 	/**
-	 * Represents a space aint with a user's permission for the space. Used so
-	 * the client side can determine what actions a user can take on a space.
+	 * Represents a space, a user's permission for the space and a collection
+	 * of pair overview statistics on the space's jobs. This is purely a helper
+	 * class so we can easily read the information via javascript on the client.
 	 * @author Tyler Jensen
 	 */
 	@SuppressWarnings("unused")
-	protected static class SpacePermissionPair {
+	protected static class SpaceDetailTriplet {
 		@Expose private Space space;
 		@Expose private Permission perm;
+		@Expose private HashMap<Integer, HashMap<String, String>> pairOverview;
 		
-		public SpacePermissionPair(Space s, Permission p) {
+		public SpaceDetailTriplet(Space s, Permission p, HashMap<Integer, HashMap<String, String>> pairOverview) {
 			this.space = s;
 			this.perm = p;
+			this.pairOverview = pairOverview;
 		}
 	}
 	

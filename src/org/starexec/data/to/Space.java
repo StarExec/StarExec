@@ -1,6 +1,7 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Space extends Identifiable {	
+public class Space extends Identifiable implements Iterable<Space> {	
 	@Expose	private String name;
 	@Expose private String description = "no description";
 	private boolean locked;
@@ -106,7 +107,7 @@ public class Space extends Identifiable {
 	}
 
 	/**
-	 * @return all solvers beinting directly to this space
+	 * @return all solvers belonging directly to this space
 	 */
 	public List<Solver> getSolvers() {
 		return this.solvers;
@@ -120,7 +121,7 @@ public class Space extends Identifiable {
 	}
 
 	/**
-	 * @return all benchmarks beinting directly to this space
+	 * @return all benchmarks belonging directly to this space
 	 */
 	public List<Benchmark> getBenchmarks() {
 		return this.benchmarks;
@@ -134,7 +135,7 @@ public class Space extends Identifiable {
 	}
 
 	/**
-	 * @return all jobs beinting directly to this space
+	 * @return all jobs belonging directly to this space
 	 */
 	public List<Job> getJobs() {
 		return this.jobs;
@@ -148,7 +149,7 @@ public class Space extends Identifiable {
 	}
 
 	/**
-	 * @return all users beinting to the space
+	 * @return all users belonging to the space
 	 */
 	public List<User> getUsers() {
 		return this.users;
@@ -162,35 +163,35 @@ public class Space extends Identifiable {
 	}
 
 	/**
-	 * @param solvers The list of solvers beinting to this space
+	 * @param solvers The list of solvers belonging to this space
 	 */
 	public void setSolvers(List<Solver> solvers) {
 		this.solvers = solvers;
 	}
 
 	/**
-	 * @param benchmarks The list of benchmarks beinting to this space
+	 * @param benchmarks The list of benchmarks belonging to this space
 	 */
 	public void setBenchmarks(List<Benchmark> benchmarks) {
 		this.benchmarks = benchmarks;
 	}
 
 	/**
-	 * @param jobs The list of jobs beinting to this space
+	 * @param jobs The list of jobs belonging to this space
 	 */
 	public void setJobs(List<Job> jobs) {
 		this.jobs = jobs;
 	}
 
 	/**
-	 * @param users The list of users beinting to this space
+	 * @param users The list of users belonging to this space
 	 */
 	public void setUsers(List<User> users) {
 		this.users = users;
 	}
 
 	/**
-	 * @return the list of subspaces beinting to this space
+	 * @return the list of subspaces belonging to this space
 	 */
 	public List<Space> getSubspaces() {
 		return subspaces;
@@ -201,5 +202,10 @@ public class Space extends Identifiable {
 	 */
 	public void setSubspaces(List<Space> subspaces) {
 		this.subspaces = subspaces;
+	}
+
+	@Override
+	public Iterator<Space> iterator() {
+		return this.subspaces.iterator();
 	}			
 }

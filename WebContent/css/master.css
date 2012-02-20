@@ -121,7 +121,7 @@ ul.horizontal li {
 
 #buildInfo {
 	font-size: 11px;
-	position: absolute;
+	position: fixed;
 	bottom: 5px;
 	right: 5px;
 	float: right;

@@ -25,13 +25,13 @@ import org.starexec.util.Validator;
  */
 public class Starexec implements ServletContextListener {
 	private static final Logger log = Logger.getLogger(Starexec.class);
-	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(2);
 	
-	private static String ROOT_APPLICATION_PATH = "";	
+	public static String ROOT_APPLICATION_PATH = "";	
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String CONFIG_PATH = "/WEB-INF/classes/org/starexec/config/starexec-config.xml";
-	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";	
+	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -80,15 +80,29 @@ public class Starexec implements ServletContextListener {
 				GridEngineUtil.loadWorkerNodes();
 				GridEngineUtil.loadQueues();
 			}
+		};	
+		
+		// Create a task that updates statistics of jobs that are finished
+		final Runnable processJobStatsTask = new Runnable() {			
+			@Override
+			public void run() {
+				if(GridEngineUtil.isAvailable()) {
+					GridEngineUtil.processStatistics();
+				}
+			}
 		};		
 		
 		// Schedule the cluster update task to be run every so often as specified in the config file
 		taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);
 		
+		// Schedule statistics processing to run every so often
+		taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
+		
 		// Set any application variables to be used on JSP's with EL
 		event.getServletContext().setAttribute("buildVersion", ConfigUtil.getBuildVersion());
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
-		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);
-	}
+		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
+		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
+	}	
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="skylar_dev_laptop">
+<starexec-configuration default="tyler_dev_local">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -9,26 +9,32 @@
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?zeroDateTimeBehavior=convertToNull" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="100" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
-			<!-- Path Configuration -->
+			<!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
 			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />					
 			<property key="CONFIG_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/org/starexec/config" />
 			<property key="STAREXEC_ROOT" value="/project/tomcat-webapps/webapps/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
-			<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />
-			<property key="SOLVER_BIN_DIR" value="/bin" />									
+			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />
+			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
+			<property key="NODE_WORKING_DIR" value="/export/starexec/workspace/" />
+			<property key="NODE_OUTPUT_DIR" value="/export/starexec/workspace/output" />
+			<property key="SOLVER_BIN_DIR" value="/bin" />
+			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />											
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
-			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
-			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
+			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />			
 			<!-- SGE Configuration -->
+			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
+			<property key="SGE_STATISTICS_PERIOD" value="120" />
+			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />
 			<property key="QUEUE_DETAILS_COMMAND" value="qconf -sq " />
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
-			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />	
+			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
 		</class>
 		<class name="org.starexec.util.Validator">					
 			<property key="BOOLEAN_PATTERN">
@@ -77,17 +83,19 @@
 			<property key="SOLVER_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\solvers" />				
 			<property key="CONFIG_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\build\\classes\\org\\starexec\\config" />
 			<property key="STAREXEC_ROOT" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\" />
-			<property key="JOB_INBOX_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobs" />
+			<property key="JOB_INBOX_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobin" />
+			<property key="JOB_LOG_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobout" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\node" />
 			<property key="BENCH_TYPE_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\types" />
-			<property key="SOLVER_BIN_DIR" value="\\bin" />			
+			<property key="SOLVER_BIN_DIR" value="\\bin" />	
+			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />		
 			<!-- Misc. Configuration -->
 			<property key="LOG_TO_CONSOLE" value="true" />			
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
 			<property key="EMAIL_SMTP" value="smtp.gmail.com" />
 			<property key="EMAIL_SMTP_PORT" value="587" />
-			<property key="EMAIL_USER" value="tylernjensen@gmail.com" />
-			<property key="EMAIL_PWD" value="PASSWORD" />
+			<property key="EMAIL_USER" value="starexec.app@gmail.com" />
+			<property key="EMAIL_PWD" value="star3x3c2011!" />
 			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />
 			<!-- SGE Configuration -->
 			<property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Global\\-sql.txt" />
@@ -107,19 +115,13 @@
 			<property key="MYSQL_POOL_MAX_SIZE" value="3" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
-			<property key="BENCHMARK_PATH" value="/home/tnjensen/stardev/data/benchmarks" />
-			<property key="SOLVER_PATH" value="/home/tnjensen/stardev/data/solvers" />				
-			<property key="CONFIG_PATH" value="/home/tnjensen/stardev/tomcat/webapps/starexec/WEB-INF/classes/org/starexec/config" />
-			<property key="STAREXEC_ROOT" value="/home/tnjensen/stardev/tomcat/webapps/starexec" />
-			<property key="JOB_INBOX_DIR" value="/home/tnjensen/stardev/data/jobin" />
-			<property key="NODE_WORKING_DIR" value="/project/tomcat-webapps/webapps" />
-			<property key="SOLVER_BIN_DIR" value="/bin" />
-			<!-- Misc. Configuration -->			
-			<property key="LOG_TO_CONSOLE" value="false" />
-			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
-			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
-			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />
-			<property key="CLUSTER_UPDATE_PERIOD" value="30" />	
+			<property key="BENCHMARK_PATH" value="/home/tnjensen/dev/benchmarks" />
+			<property key="SOLVER_PATH" value="/home/tnjensen/dev/solvers" />				
+			<property key="CONFIG_PATH" value="/home/tnjensen/dev/tomcat/webapps/starexec/WEB-INF/classes/org/starexec/config" />
+			<property key="STAREXEC_ROOT" value="/home/tnjensen/dev/tomcat/webapps/starexec" />
+			<property key="JOB_INBOX_DIR" value="/home/tnjensen/dev/jobin" />
+			<property key="JOB_LOG_DIR" value="/home/tnjensen/dev/jobout" />					
+			<property key="NODE_WORKING_DIR" value="/export/starexec/workspace" />
 		</class>
 	</configuration>
 	<configuration name="todd_dev_local" inherit="production">
@@ -137,8 +139,10 @@
 			<property key="CONFIG_PATH" value="C:\\Users\\Todd\\workspace\\starexec\\build\\classes\\org\\starexec\\config\\" />
 			<property key="STAREXEC_ROOT" value="C:\\Users\\Todd\\workspace\\starexec\\" />
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\jobs\\" />
+			<property key="JOB_LOG_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\job_out\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\node\\" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
+			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
 			<!-- Misc. Configuration -->			
 			<property key="LOG_TO_CONSOLE" value="true" />
 			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />
@@ -159,8 +163,10 @@
 			<property key="CONFIG_PATH" value="C:\\StarExec Workspace\\starexec\\build\\classes\\org\\starexec\\config" />
 			<property key="STAREXEC_ROOT" value="C:\\StarExec Workspace\\starexec\\" />
 			<property key="JOB_INBOX_DIR" value="C:\\StarExec Workspace\\starexec_res\\jobs" />
+			<property key="JOB_LOG_DIR" value="C:\\StarExec Workspace\\starexec_res\\job_out\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\StarExec Workspace\\starexec_res\\node" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
+			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
 			<!-- Misc. Configuration -->
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="true" />
@@ -184,7 +190,7 @@
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Skylar\\workspace\\starexec_res\\jobs" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Skylar\\workspace\\starexec_res\\node" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
-			<property key="DOWNLOAD_FILE_DIR" value="C:\\Users\\Skylar\\workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\starexec\\secure\\files\\" />
+			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />

@@ -44,6 +44,9 @@ public class ConfigUtil {
 	private static String buildUser = null;
 	private static Date buildDate = null;
 	
+	// The configuration in use
+	private static String configName = "";
+	
 	/**
 	 * Loads resources from the starexec-config.xml file into the static resource classes
 	 * specified in the config file using reflection. The property file keys must match the
@@ -90,6 +93,7 @@ public class ConfigUtil {
 			
 			// Lastly, load all properties from the default node
 			loadPropertiesFromNode(defaultConfigNode);
+			ConfigUtil.configName = defaultConfigName;
 		} catch (Exception e) {
 			log.fatal(e.getMessage(), e);
 		}
@@ -211,6 +215,13 @@ public class ConfigUtil {
 				}
 			}				
 		}	
+	}
+	
+	/**
+	 * @return The name of the currently loaded configuration
+	 */
+	public static String getConfigName() {						
+		return ConfigUtil.configName;
 	}
 	
 	/**

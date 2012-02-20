@@ -1,6 +1,7 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Solver extends Identifiable {
+public class Solver extends Identifiable implements Iterable<Configuration> {
 	private int userId = -1;
 	@Expose	private String name;
 	@Expose private String description = "no description";
@@ -125,6 +126,11 @@ public class Solver extends Identifiable {
 	 */
 	public void addConfiguration(Configuration configuration) {
 		this.configurations.add(configuration);
+	}
+
+	@Override
+	public Iterator<Configuration> iterator() {
+		return this.configurations.iterator();
 	}	
 	
 	/**

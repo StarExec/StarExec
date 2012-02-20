@@ -47,7 +47,7 @@ public class UploadSolver extends HttpServlet {
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
-    private static final String SOLVER_RUN = "run";
+    private static final String CONFIG_PREFIX = "run_";
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -148,9 +148,9 @@ public class UploadSolver extends HttpServlet {
 		
 		for(File f : binDir.listFiles()){
 			f.setExecutable(true, false);
-			if(f.isFile() && f.getName().startsWith(UploadSolver.SOLVER_RUN)){
+			if(f.isFile() && f.getName().startsWith(UploadSolver.CONFIG_PREFIX)){
 				Configuration c = new Configuration();								
-				c.setName(f.getName());
+				c.setName(f.getName().substring(UploadSolver.CONFIG_PREFIX.length()));
 				returnList.add(c);
 			}				
 		}

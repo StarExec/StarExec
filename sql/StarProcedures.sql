@@ -16,6 +16,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 	
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddBenchmark;
 CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT)
 	BEGIN
 		DECLARE bid INT DEFAULT -1;
@@ -29,6 +30,7 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloada
 	
 -- Associates the given benchmark with the given space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AssociateBench;
 CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 	BEGIN		
 		INSERT IGNORE INTO bench_assoc VALUES (_spaceId, _benchId);
@@ -36,6 +38,7 @@ CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 
 -- Deletes a benchmark given that benchmark's id
 -- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS DeleteBenchmarkById;
 CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM benchmarks WHERE id = _benchmarkId;
@@ -45,6 +48,7 @@ CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
 	
 -- Retrieves the benchmark with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetBenchmarkById;
 CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -56,6 +60,7 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 	
 -- Retrieves all benchmarks owned by a given user id
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetBenchmarksByOwner;
 CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
@@ -66,6 +71,7 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 	
 -- Retrieves all benchmarks belonging to a space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSpaceBenchmarksById;
 CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -83,6 +89,7 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 -- places the path of the benchmark in _path if it has no other
 -- associations in bench_assoc, otherwise places NULL in _path
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS RemoveBenchFromSpace;
 CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT, OUT _path TEXT)
 	BEGIN
 		DELETE FROM bench_assoc
@@ -100,6 +107,7 @@ CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT, OUT _pat
 	
 -- Updates the details associated with a given benchmark
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS UpdateBenchmarkDetails;
 CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(32), IN _description TEXT, IN _downloadable BOOLEAN, IN _type INT)
 	BEGIN
 		UPDATE benchmarks
@@ -122,6 +130,7 @@ CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(32
 
 -- Adds a new processor with the given information
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddProcessor;
 CREATE PROCEDURE AddProcessor(IN _name VARCHAR(32), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT)
 	BEGIN		
 		INSERT INTO processors (name, description, path, community, processor_type)
@@ -132,6 +141,7 @@ CREATE PROCEDURE AddProcessor(IN _name VARCHAR(32), IN _desc TEXT, IN _path TEXT
 -- and inserts the processor_path into _path, so the physical file(s) can
 -- be removed from disk
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS DeleteProcessor;
 CREATE PROCEDURE DeleteProcessor(IN _id INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM processors WHERE id = _id;
@@ -141,6 +151,7 @@ CREATE PROCEDURE DeleteProcessor(IN _id INT, OUT _path TEXT)
 	
 -- Gets all processors of a given type
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetAllProcessors;
 CREATE PROCEDURE GetAllProcessors(IN _type TINYINT)
 	BEGIN		
 		SELECT *
@@ -151,6 +162,7 @@ CREATE PROCEDURE GetAllProcessors(IN _type TINYINT)
 	
 -- Retrieves all processor belonging to a community
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetProcessorsByCommunity;
 CREATE PROCEDURE GetProcessorsByCommunity(IN _id INT, IN _type TINYINT)
 	BEGIN
 		SELECT *
@@ -161,6 +173,7 @@ CREATE PROCEDURE GetProcessorsByCommunity(IN _id INT, IN _type TINYINT)
 	
 -- Gets the processor with the given ID
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetProcessorById;
 CREATE PROCEDURE GetProcessorById(IN _id INT)
 	BEGIN		
 		SELECT *
@@ -170,6 +183,7 @@ CREATE PROCEDURE GetProcessorById(IN _id INT)
 	
 -- Updates a processor's description
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateProcessorDescription;
 CREATE PROCEDURE UpdateProcessorDescription(IN _id INT, IN _desc TEXT)
 	BEGIN		
 		UPDATE processors
@@ -179,6 +193,7 @@ CREATE PROCEDURE UpdateProcessorDescription(IN _id INT, IN _desc TEXT)
 	
 -- Updates a processor's name
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateProcessorName;
 CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(32))
 	BEGIN		
 		UPDATE processors
@@ -188,6 +203,7 @@ CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(32))
 	
 -- Updates a processor's processor path
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateProcessorPath;
 CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIGINT)
 	BEGIN		
 		UPDATE processors
@@ -208,6 +224,7 @@ CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIG
 
 -- Adds a worker node to the database and ignores duplicates
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AssociateQueue;
 CREATE PROCEDURE AssociateQueue(IN _queueName VARCHAR(64), IN _nodeName VARCHAR(64))
 	BEGIN
 		INSERT IGNORE INTO queue_assoc
@@ -218,6 +235,7 @@ CREATE PROCEDURE AssociateQueue(IN _queueName VARCHAR(64), IN _nodeName VARCHAR(
 	
 -- Adds a worker node to the database and ignores duplicates
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddNode;
 CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
 	BEGIN
 		INSERT IGNORE INTO nodes (name)
@@ -226,6 +244,7 @@ CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
 	
 -- Adds a SGE queue to the database and ignores duplicates
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddQueue;
 CREATE PROCEDURE AddQueue(IN _name VARCHAR(64))
 	BEGIN
 		INSERT IGNORE INTO queues (name)
@@ -234,6 +253,7 @@ CREATE PROCEDURE AddQueue(IN _name VARCHAR(64))
 	
 -- Gets the id, name and status of all nodes in the cluster
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetAllNodes;
 CREATE PROCEDURE GetAllNodes()
 	BEGIN		
 		SELECT id, name, status
@@ -243,6 +263,7 @@ CREATE PROCEDURE GetAllNodes()
 	
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetNodesForQueue;
 CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 	BEGIN		
 		SELECT id, name, status
@@ -254,6 +275,7 @@ CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 
 -- Gets the id, name and status of all queues in the cluster that are active
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetAllQueues;
 CREATE PROCEDURE GetAllQueues()
 	BEGIN		
 		SELECT id, name, status
@@ -264,6 +286,7 @@ CREATE PROCEDURE GetAllQueues()
 	
 -- Gets worker node with the given ID
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetNodeDetails;
 CREATE PROCEDURE GetNodeDetails(IN _id INT)
 	BEGIN		
 		SELECT *
@@ -271,8 +294,19 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 		WHERE id=_id;
 	END // 
 	
--- Gets worker node with the given ID
+-- Gets the queue with the given ID (excluding SGE attributes)
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetQueue;
+CREATE PROCEDURE GetQueue(IN _id INT)
+	BEGIN		
+		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total
+		FROM queues
+		WHERE id=_id;
+	END // 
+	
+-- Gets the queue with the given ID (includes all SGE attributes)
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetQueueDetails;
 CREATE PROCEDURE GetQueueDetails(IN _id INT)
 	BEGIN		
 		SELECT *
@@ -282,6 +316,7 @@ CREATE PROCEDURE GetQueueDetails(IN _id INT)
 	
 -- Updates a node's attribute (assuming the column already exists)
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateNodeAttr;
 CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64), IN _fieldVal VARCHAR(64))
 	BEGIN	
 		SET @updateAttr = CONCAT('UPDATE nodes SET ', _fieldName, '="', _fieldVal,'" WHERE name="', _name, '"');
@@ -291,6 +326,7 @@ CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64),
 	
 -- Updates a queues's attribute (assuming the column already exists)
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateQueueAttr;
 CREATE PROCEDURE UpdateQueueAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64), IN _fieldVal VARCHAR(64))
 	BEGIN	
 		SET @updateAttr = CONCAT('UPDATE queues SET ', _fieldName, '="', _fieldVal,'" WHERE name="', _name, '"');
@@ -300,6 +336,7 @@ CREATE PROCEDURE UpdateQueueAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64)
 	
 -- Updates a queues's usage stats
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateQueueUseage;
 CREATE PROCEDURE UpdateQueueUseage(IN _name VARCHAR(64), IN _total INTEGER, IN _free INTEGER, IN _used INTEGER, IN _reserved INTEGER)
 	BEGIN	
 		UPDATE queues
@@ -309,6 +346,7 @@ CREATE PROCEDURE UpdateQueueUseage(IN _name VARCHAR(64), IN _total INTEGER, IN _
 
 -- Updates all queues status'
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateAllQueueStatus;
 CREATE PROCEDURE UpdateAllQueueStatus(IN _status VARCHAR(32))
 	BEGIN	
 		UPDATE queues
@@ -317,6 +355,7 @@ CREATE PROCEDURE UpdateAllQueueStatus(IN _status VARCHAR(32))
 	
 -- Updates a specific queues status
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateQueueStatus;
 CREATE PROCEDURE UpdateQueueStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 	BEGIN	
 		UPDATE queues
@@ -326,6 +365,7 @@ CREATE PROCEDURE UpdateQueueStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 
 -- Updates all nodes status'
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateAllNodeStatus;
 CREATE PROCEDURE UpdateAllNodeStatus(IN _status VARCHAR(32))
 	BEGIN	
 		UPDATE nodes
@@ -334,6 +374,7 @@ CREATE PROCEDURE UpdateAllNodeStatus(IN _status VARCHAR(32))
 	
 -- Updates a specific node's status
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateNodeStatus;
 CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 	BEGIN	
 		UPDATE nodes
@@ -353,6 +394,7 @@ CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 -- Returns basic space information for the community with the given id
 -- This ensures security by preventing malicious users from getting details about ANY space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetCommunityById;
 CREATE PROCEDURE GetCommunityById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -366,6 +408,7 @@ CREATE PROCEDURE GetCommunityById(IN _id INT)
 
 -- Removes the association a user has with a given space
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS LeaveCommunity;
 CREATE PROCEDURE LeaveCommunity(IN _userId INT, IN _commId INT)
 	BEGIN
 		-- Remove the permission associated with this user/community
@@ -389,13 +432,35 @@ CREATE PROCEDURE LeaveCommunity(IN _userId INT, IN _commId INT)
 
 -- Adds an association between the given job and space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AssociateJob;
 CREATE PROCEDURE AssociateJob(IN _jobId INT, IN _spaceId INT)
 	BEGIN
 		INSERT IGNORE INTO job_assoc VALUES (_spaceId, _jobId);
 	END //
 	
+-- Retrieves simple overall statistics for job pairs belonging to a job
+-- Including the total number of pairs, how many are complete, pending or errored out
+-- as well as how long the pairs ran
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobPairOverview;
+CREATE PROCEDURE GetJobPairOverview(IN _jobId INT)
+	BEGIN
+		-- This is messy in order to get back pretty column names.
+		-- Derived tables must have identifiers which is why a, b, c, d and e exist but aren't used
+		SELECT * FROM (
+			(SELECT COUNT(*) AS totalPairs FROM job_pairs WHERE job_id=_jobId) AS a, -- Gets the total number of pairs
+			(SELECT COUNT(*) AS completePairs FROM job_pairs WHERE job_id=_jobId AND status_code=7) AS b, -- Gets number of pairs with COMPLETE status codes
+			(SELECT COUNT(*) AS pendingPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6)) AS c, -- Gets number of pairs with non complete and non error status codes
+			(SELECT COUNT(*) AS errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 9 AND 13 OR status_code=0)) AS d, -- Gets number of UNKNOWN or ERROR status code pairs
+			(SELECT TIMESTAMPDIFF( -- Gets time difference between earliest completed pair's start time and latest completed pair's end time
+				MICROSECOND, 
+				(SELECT MIN(start_time) FROM job_pairs WHERE job_id=_jobId AND status_code=7),
+				(SELECT MAX(end_time) FROM job_pairs WHERE job_id=_jobId AND status_code=7)) AS runtime) AS e);
+	END //
+	
 -- Retrieves basic info about a job from the jobs table
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobById;
 CREATE PROCEDURE GetJobById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -405,32 +470,38 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 	
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
-CREATE PROCEDURE GetJobPairByJob(IN _id INT)
+DROP PROCEDURE IF EXISTS GetJobPairsByJob;
+CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 	BEGIN
-		SELECT job_pair_attr.status AS status, 
-			   job_pair_attr.result AS result,
-			   job_pair_attr.id AS id, 
-			   job_pair_attr.start AS start,
-			   job_pair_attr.stop AS stop,
-			   configurations.id AS config_id, 
-			   configurations.name AS config_name, 
-			   configurations.description AS config_desc, 
-			   benchmarks.id AS bench_id, 
-			   benchmarks.name AS bench_name, 
-			   benchmarks.description AS bench_desc,
-			   solvers.id AS solver_id,
-			   solvers.name AS solver_name,
-			   solvers.description AS solver_desc
-		FROM job_pair_attr
-			   JOIN job_pairs ON job_pair_attr.pair_id=job_pairs.id
-			   JOIN benchmarks ON job_pairs.bench_id=benchmarks.id
-			   JOIN configurations ON configurations.id=job_pairs.config_id
-			   JOIN solvers ON configurations.solver_id=solvers.id
-		WHERE job_pair_attr.job_id = _id;
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		WHERE job_pairs.job_id=_id
+		ORDER BY job_pairs.end_time DESC;
+	END //
+
+-- Gets the job pair associated with the given sge id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobPairBySgeId;
+CREATE PROCEDURE GetJobPairBySgeId(IN _sgeId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+		WHERE sge_id=_sgeId;
+	END //
+	
+-- Gets the job pair with the given id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobPairById;
+CREATE PROCEDURE GetJobPairById(IN _Id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		WHERE job_pairs.id=_Id;
 	END //
 	
 -- Removes the association between a job and a given space
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS RemoveJobFromSpace;
 CREATE PROCEDURE RemoveJobFromSpace(IN _jobId INT, IN _spaceId INT)
 BEGIN
 	DELETE FROM job_assoc
@@ -438,30 +509,123 @@ BEGIN
 	AND space_id = _spaceId;
 END //
 	
--- Retrieves all jobs belonging to a space
+-- Retrieves all jobs belonging to a space (but not their job pairs)
 -- Author: Tyler Jensen
-CREATE PROCEDURE GetSpaceJobsById(IN _id INT)
+DROP PROCEDURE IF EXISTS GetSpaceJobsById;
+CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
 	BEGIN
 		SELECT *
 		FROM jobs
 		WHERE id IN
-				(SELECT job_id
-				FROM job_assoc
-				WHERE space_id = _id)
-		ORDER BY name;
+			(SELECT job_id
+			 FROM job_assoc
+			 WHERE space_id=_spaceId) 
+		ORDER BY created DESC;
 	END //
 
+-- Adds a new job pair record to the database
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddJobPair;
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, OUT _id INT)
+	BEGIN
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code)
+		VALUES (_jobId, _benchId, _configId, _status);
+		SELECT LAST_INSERT_ID() INTO _id;
+	END //
+
+-- Adds a new job record to the database
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddJob;
+CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(32), IN _desc TEXT, IN _queueId INT, IN _timeout BIGINT, IN _preProcessor INT, IN _postProcessor INT, OUT _id INT)
+	BEGIN
+		INSERT INTO jobs (user_id, name, description, queue_id, timeout, pre_processor, post_processor)
+		VALUES (_userId, _name, _desc, _queueId, _timeout, _preProcessor, _postProcessor);
+		SELECT LAST_INSERT_ID() INTO _id;
+	END //
+	
+-- Updates a job pair's sge id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS SetSGEJobId;
+CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
+	BEGIN
+		UPDATE job_pairs
+		SET sge_id=_sgeId
+		WHERE id=_jobPairId;
+	END //
+	
+-- Gets all SGE ids that have a certain status code
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSGEIdsByStatus;
+CREATE PROCEDURE GetSGEIdsByStatus(IN _statusCode TINYINT)
+	BEGIN
+		SELECT sge_id
+		FROM job_pairs
+		WHERE status_code=_statusCode;
+	END //	
+	
+-- Updates a job pair's status
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdatePairStatus;
+CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
+	BEGIN
+		UPDATE job_pairs
+		SET status_code=_statusCode
+		WHERE id=_jobPairId;
+	END //
+	
+-- Updates a job pair's status given its sge id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateSGEPairStatus;
+CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
+	BEGIN
+		UPDATE job_pairs
+		SET status_code=_statusCode
+		WHERE sge_id=_sgeId;
+	END //		
+
+-- Updates a job pair's statistics (used by the job epilog script)
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdatePairStats;
+CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _shortResult VARCHAR(64), IN _nodeName VARCHAR(64), IN _queuesubTime TIMESTAMP, IN _startTime TIMESTAMP, IN _endTime TIMESTAMP, IN _exitStatus INT, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _ioData DOUBLE, IN _ioWait DOUBLE, IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
+	BEGIN
+		UPDATE job_pairs
+		SET short_result=_shortResult,
+			node_id=(SELECT id FROM nodes WHERE name=_nodeName),
+			queuesub_time=_queuesubTime,
+			start_time=_startTime,
+			end_time=_endTime,
+			exit_status=_exitStatus,
+			wallclock=TIMESTAMPDIFF(MICROSECOND ,_endTime, _startTime),
+			cpu=_cpu,
+			user_time=_userTime,
+			system_time=_systemTime,
+			io_data=_ioData,
+			io_wait=_ioWait,
+			mem_usage=_memUsage,
+			max_vmem=_maxVmem,
+			max_res_set=_maxResSet,
+			page_reclaims=_pageReclaims,
+			page_faults=_pageFaults,
+			block_input=_blockInput,
+			block_output=_blockOutput,
+			vol_contex_swtch=_volContexSwtch,
+			invol_contex_swtch=_involContexSwtch
+		WHERE sge_id=_sgeId;
+	END //
 
 	
 	
-
-
+	
+	
+	
+	
 /*************************************************************************
 *********************** MISC STORED PROCEDURES ***************************
 *************************************************************************/
 
 -- Adds a new column to the specified table only if it doesn't already exist.
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddColumnUnlessExists;
 CREATE PROCEDURE AddColumnUnlessExists(IN dbName tinytext, IN tableName tinytext, IN fieldName tinytext, IN fieldDef text)
 	BEGIN
 		IF NOT EXISTS 
@@ -479,6 +643,7 @@ CREATE PROCEDURE AddColumnUnlessExists(IN dbName tinytext, IN tableName tinytext
 
 -- Adds a new historical record to the logins table which tracks all user logins
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS LoginRecord;
 CREATE PROCEDURE LoginRecord(IN _userId INT, IN _ipAddress VARCHAR(15), IN _agent TEXT)
 	BEGIN		
 		INSERT INTO logins (user_id, login_date, ip_address, browser_agent)
@@ -497,6 +662,7 @@ CREATE PROCEDURE LoginRecord(IN _userId INT, IN _ipAddress VARCHAR(15), IN _agen
 
 -- Adds a new permissions record with the given permissions
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddPermissions;
 CREATE PROCEDURE AddPermissions(IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1), 
 IN _addSpace TINYINT(1), IN _addJob TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1), 
 IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1), OUT id INT)
@@ -512,6 +678,7 @@ IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1), OU
 	
 -- Returns 1 if the given user can somehow see the given solver, 0 otherwise
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS CanViewSolver;
 CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 	BEGIN		
 		SELECT IF((				
@@ -525,6 +692,7 @@ CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 
 	-- Returns 1 if the given user can somehow see the given benchmark, 0 otherwise
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS CanViewBenchmark;
 CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 	BEGIN		
 		SELECT IF((
@@ -538,6 +706,7 @@ CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 
 -- Returns 1 if the given user can somehow see the given job, 0 otherwise
 -- Author: Tyler Jensen	
+DROP PROCEDURE IF EXISTS CanViewJob;
 CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 	BEGIN		
 		SELECT IF((
@@ -551,6 +720,7 @@ CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 
 -- Returns 1 if the given user can somehow see the given space, 0 otherwise
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS CanViewSpace;
 CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
 	BEGIN		
 		SELECT IF((
@@ -562,6 +732,7 @@ CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
 	
 -- Finds the maximal set of permissions for the given user on the given space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetUserPermissions;
 CREATE PROCEDURE GetUserPermissions(IN _userId INT, IN _spaceId INT)
 	BEGIN		
 		SELECT MAX(add_solver) AS add_solver, 
@@ -581,6 +752,7 @@ CREATE PROCEDURE GetUserPermissions(IN _userId INT, IN _spaceId INT)
 	
 -- Finds the default user permissions for the given space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSpacePermissions;
 CREATE PROCEDURE GetSpacePermissions(IN _spaceId INT)
 	BEGIN		
 		SELECT permissions.*
@@ -590,6 +762,7 @@ CREATE PROCEDURE GetSpacePermissions(IN _spaceId INT)
 	
 -- Copies one set of permissions into another with a new ID
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS CopyPermissions;
 CREATE PROCEDURE CopyPermissions(IN _permId INT, OUT _newId INT)
 	BEGIN
 		INSERT INTO permissions (add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader)
@@ -602,6 +775,7 @@ CREATE PROCEDURE CopyPermissions(IN _permId INT, OUT _newId INT)
 
 -- Sets a user's permissions for a given space
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS SetUserPermissions;
 CREATE PROCEDURE SetUserPermissions(IN _userId INT, IN _spaceId INT,IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1), 
 IN _addSpace TINYINT(1), IN _addJob TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1), 
 IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1))
@@ -633,6 +807,7 @@ IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1))
 
 -- Adds an activation code for a specific user
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS AddCode;
 CREATE PROCEDURE AddCode(IN _id INT, IN _code VARCHAR(36))
 	BEGIN
 		INSERT INTO verify(user_id, code, created)
@@ -641,6 +816,7 @@ CREATE PROCEDURE AddCode(IN _id INT, IN _code VARCHAR(36))
 	
 -- Adds a request to join a community, provided the user isn't already a part of that community
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS AddCommunityRequest;
 CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VARCHAR(36), IN _message VARCHAR(300))
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM user_assoc WHERE user_id = _id AND space_id = _community) THEN
@@ -651,6 +827,7 @@ CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VAR
 	
 -- Adds a user to USER_ASSOC, USER_ROLES and deletes their entry in INVITES
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS ApproveCommunityRequest;
 CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 	BEGIN
 		DECLARE _newPermId INT;
@@ -677,6 +854,7 @@ CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 -- Adds a new entry to pass_reset_request for a given user (also deletes previous
 -- entries for the same user)
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS AddPassResetRequest;
 CREATE PROCEDURE AddPassResetRequest(IN _id INT, IN _code VARCHAR(36))
 	BEGIN
 		IF EXISTS(SELECT * FROM pass_reset_request WHERE user_id = _id) THEN
@@ -691,6 +869,7 @@ CREATE PROCEDURE AddPassResetRequest(IN _id INT, IN _code VARCHAR(36))
 -- (i.e. doesn't have an entry in USER_ROLES) then they are completely
 -- deleted from the system
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS DeclineCommunityRequest;
 CREATE PROCEDURE DeclineCommunityRequest(IN _id INT, IN _community INT)
 	BEGIN
 		DELETE FROM community_requests 
@@ -704,6 +883,7 @@ CREATE PROCEDURE DeclineCommunityRequest(IN _id INT, IN _community INT)
 	
 -- Returns the community request associated with given user id
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetCommunityRequestById;
 CREATE PROCEDURE GetCommunityRequestById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -713,6 +893,7 @@ CREATE PROCEDURE GetCommunityRequestById(IN _id INT)
 	
 -- Returns the community request associated with the given activation code
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetCommunityRequestByCode;
 CREATE PROCEDURE GetCommunityRequestByCode(IN _code VARCHAR(36))
 	BEGIN
 		SELECT *
@@ -723,6 +904,7 @@ CREATE PROCEDURE GetCommunityRequestByCode(IN _code VARCHAR(36))
 -- Looks for an activation code, and if successful, removes it from VERIFY,
 -- then adds an entry to USER_ROLES
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS RedeemActivationCode;
 CREATE PROCEDURE RedeemActivationCode(IN _code VARCHAR(36), OUT _id INT)
 	BEGIN
 		IF EXISTS(SELECT _code FROM verify WHERE code = _code) THEN
@@ -738,6 +920,7 @@ CREATE PROCEDURE RedeemActivationCode(IN _code VARCHAR(36), OUT _id INT)
 -- Redeems a given password reset code by deleting the corresponding entry
 -- in pass_reset_request and returning the user_id of that deleted entry
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS RedeemPassResetRequestByCode;
 CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id INT)
 	BEGIN
 		SELECT user_id INTO _id
@@ -768,6 +951,7 @@ CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(32), IN _downloadabl
 
 -- Adds a Space/Solver association
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS AddSolverAssociation;
 CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 	BEGIN
 		INSERT IGNORE INTO solver_assoc VALUES (_spaceId, _solverId);
@@ -775,6 +959,7 @@ CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 	
 -- Adds a run configuration to the specified solver
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS AddConfiguration;
 CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(32))
 	BEGIN
 		INSERT INTO configurations (solver_id, name)
@@ -783,6 +968,7 @@ CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(32))
 	
 -- Deletes a solver given that solver's id
 -- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS DeleteSolverById;
 CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM solvers WHERE id = _solverId;
@@ -792,6 +978,7 @@ CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
 	
 -- Retrieves the configurations that belong to a solver with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetConfigsForSolver;
 CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
 	BEGIN
 		SELECT *
@@ -801,6 +988,7 @@ CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
 	
 -- Retrieves all solvers belonging to a space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSpaceSolversById;
 CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -814,6 +1002,7 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 	
 -- Retrieves the solver with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSolverById;
 CREATE PROCEDURE GetSolverById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -823,6 +1012,7 @@ CREATE PROCEDURE GetSolverById(IN _id INT)
 
 -- Retrieves the solvers owned by a given user id
 -- Todd Elvers
+DROP PROCEDURE IF EXISTS GetSolversByOwner;
 CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
@@ -830,11 +1020,31 @@ CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 		WHERE user_id = _userId;
 	END //
 	
+-- Retrieves the configurations that belong to a solver with the given id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetConfigsForSolver;
+CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM configurations
+		WHERE solver_id = _id;
+	END //
+	
+-- Retrieves the configurations with the given id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetConfiguration;
+CREATE PROCEDURE GetConfiguration(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM configurations
+		WHERE id = _id;
+	END //
 	
 -- Removes the association between a solver and a given space;
 -- places the path of the solver in _path if it has no other
 -- associations in solver_assoc, otherwise places NULL in _path
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS RemoveSolverFromSpace;
 CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _path TEXT)
 	BEGIN
 		DELETE FROM solver_assoc
@@ -853,6 +1063,7 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _p
 
 -- Updates the details associated with a given solver
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS UpdateSolverDetails;
 CREATE PROCEDURE UpdateSolverDetails(IN _solverId INT, IN _name VARCHAR(32), IN _description TEXT, IN _downloadable BOOLEAN)
 	BEGIN
 		UPDATE solvers
@@ -873,6 +1084,7 @@ CREATE PROCEDURE UpdateSolverDetails(IN _solverId INT, IN _name VARCHAR(32), IN 
 
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddSpace;
 CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, OUT id INT)
 	BEGIN		
 		INSERT INTO spaces (name, created, description, locked, default_permission)
@@ -886,6 +1098,7 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYIN
 
 -- Adds an association between two spaces
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AssociateSpaces;
 CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT, IN _permission INT)
 	BEGIN		
 		INSERT IGNORE INTO set_assoc
@@ -894,6 +1107,7 @@ CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT, IN _permissi
 	
 -- Gets all the descendants of a space
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetDescendantsOfSpace;
 CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId INT)
 	BEGIN
 		SELECT descendant
@@ -903,6 +1117,7 @@ CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId INT)
 	
 -- Gets all the leaders of a space
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetLeadersBySpaceId;
 CREATE PROCEDURE GetLeadersBySpaceId(IN _id INT)
 	BEGIN
 		SELECT *
@@ -918,6 +1133,7 @@ CREATE PROCEDURE GetLeadersBySpaceId(IN _id INT)
 	
 -- Returns basic space information for the space with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSpaceById;
 CREATE PROCEDURE GetSpaceById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -927,6 +1143,7 @@ CREATE PROCEDURE GetSpaceById(IN _id INT)
 	
 -- Returns all spaces belonging to the space with the given id.
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSubSpacesById;
 CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID
@@ -949,6 +1166,7 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 	
 -- Returns all spaces that are a subspace of the root
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetSubSpacesOfRoot;
 CREATE PROCEDURE GetSubSpacesOfRoot()
 	BEGIN
 		SELECT *
@@ -962,6 +1180,7 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 	
 -- Removes the association between a space and a subspace and deletes the subspace
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS RemoveSubspace;
 CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 	BEGIN
 		-- Remove that space's default permission
@@ -975,6 +1194,7 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 	
 -- Updates the name of the space with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateSpaceName;
 CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(32))
 	BEGIN
 		UPDATE spaces
@@ -984,6 +1204,7 @@ CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(32))
 
 -- Updates the name of the spacewith the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS UpdateSpaceDescription;
 CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 	BEGIN
 		UPDATE spaces
@@ -1001,6 +1222,7 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 
 -- Begins the registration process by adding a user to the USERS table
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS AddUser;
 CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, IN _archiveType VARCHAR(8), OUT _id INT)
 	BEGIN		
 		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota, preferred_archive_type)
@@ -1010,6 +1232,7 @@ CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), 
 
 -- Adds an association between a user and a space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddUserToSpace;
 CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT, IN _proxy INT)
 	BEGIN		
 		DECLARE _newPermId INT;
@@ -1026,6 +1249,7 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT, IN _proxy INT)
 	
 -- Returns the (hashed) password of the user with the given user id
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS GetPasswordById;
 CREATE PROCEDURE GetPasswordById(IN _id INT)
 	BEGIN
 		SELECT password
@@ -1035,6 +1259,7 @@ CREATE PROCEDURE GetPasswordById(IN _id INT)
 
 -- Returns the user record with the given email address
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetUserByEmail;
 CREATE PROCEDURE GetUserByEmail(IN _email VARCHAR(64))
 	BEGIN
 		SELECT * 
@@ -1044,6 +1269,7 @@ CREATE PROCEDURE GetUserByEmail(IN _email VARCHAR(64))
 	
 -- Returns unregistered user corresponding to the given id
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetUnregisteredUserById;
 CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 	BEGIN
 		SELECT * 
@@ -1056,6 +1282,7 @@ CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 	
 -- Returns the user record with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetUserById;
 CREATE PROCEDURE GetUserById(IN _id INT)
 	BEGIN
 		SELECT * 
@@ -1065,6 +1292,7 @@ CREATE PROCEDURE GetUserById(IN _id INT)
 	
 -- Retrieves all users belonging to a space
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSpaceUsersById;
 CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 	BEGIN
 		SELECT DISTINCT *
@@ -1080,6 +1308,7 @@ CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 -- Updates the preferred archive type of the user with the given user
 -- id to the given archive type.
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdateArchiveType;
 CREATE PROCEDURE UpdateArchiveType(IN _id INT, IN _archiveType VARCHAR(8))
 	BEGIN
 		UPDATE users
@@ -1091,6 +1320,7 @@ CREATE PROCEDURE UpdateArchiveType(IN _id INT, IN _archiveType VARCHAR(8))
 -- Updates the email address of the user with the given user id to the
 -- given email address. The email address should already be validated
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdateEmail;
 CREATE PROCEDURE UpdateEmail(IN _id INT, IN _email VARCHAR(64))
 	BEGIN
 		UPDATE users
@@ -1101,6 +1331,7 @@ CREATE PROCEDURE UpdateEmail(IN _id INT, IN _email VARCHAR(64))
 -- Updates the first name of the user with the given user id to the
 -- given first name. The first name should already be validated.	
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdateFirstName;
 CREATE PROCEDURE UpdateFirstName(IN _id INT, IN _firstname VARCHAR(32))
 	BEGIN
 		UPDATE users
@@ -1111,6 +1342,7 @@ CREATE PROCEDURE UpdateFirstName(IN _id INT, IN _firstname VARCHAR(32))
 -- Updates the last name of the user with the given user id to the
 -- given last name. The last name should already be validated
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdateLastName;
 CREATE PROCEDURE UpdateLastName(IN _id INT, IN _lastname VARCHAR(32))
 	BEGIN
 		UPDATE users
@@ -1121,6 +1353,7 @@ CREATE PROCEDURE UpdateLastName(IN _id INT, IN _lastname VARCHAR(32))
 -- Updates the institution of the user with the given user id to the
 -- given institution. The institution should already be validated
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdateInstitution;
 CREATE PROCEDURE UpdateInstitution(IN _id INT, IN _institution VARCHAR(64))
 	BEGIN
 		UPDATE users
@@ -1131,6 +1364,7 @@ CREATE PROCEDURE UpdateInstitution(IN _id INT, IN _institution VARCHAR(64))
 -- Updates the password of the user with the given user id to the
 -- given (already hashed and validated) password.
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdatePassword;
 CREATE PROCEDURE UpdatePassword(IN _id INT, IN _password VARCHAR(128))
 	BEGIN
 		UPDATE users
@@ -1140,6 +1374,7 @@ CREATE PROCEDURE UpdatePassword(IN _id INT, IN _password VARCHAR(128))
 	
 -- Sets a new password for a given user
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS SetPasswordByUserId;
 CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
 	BEGIN
 		UPDATE users
@@ -1150,6 +1385,7 @@ CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
 -- Increments the disk_quota attribute of the users table by the value of _newBytes
 -- for the given user
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS UpdateUserDiskQuota;
 CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 	BEGIN
 		UPDATE users
@@ -1159,6 +1395,7 @@ CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 	
 -- Returns the number of bytes a given user is consuming on disk
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetUserDiskUsage;
 CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 	BEGIN
 		SELECT sum(benchmarks.disk_size + solvers.disk_size) AS disk_usage
@@ -1175,6 +1412,7 @@ CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 	
 -- Adds a website that is associated with a user
 -- Author: Skylar Stark	
+DROP PROCEDURE IF EXISTS AddUserWebsite;
 CREATE PROCEDURE AddUserWebsite(IN _userId INT, IN _url TEXT, IN _name VARCHAR(64))
 	BEGIN
 		INSERT INTO website(user_id, url, name)
@@ -1183,6 +1421,7 @@ CREATE PROCEDURE AddUserWebsite(IN _userId INT, IN _url TEXT, IN _name VARCHAR(6
 	
 -- Adds a website that is associated with a solver
 -- Author: Tyler Jensen	
+DROP PROCEDURE IF EXISTS AddSolverWebsite;
 CREATE PROCEDURE AddSolverWebsite(IN _solverId INT, IN _url TEXT, IN _name VARCHAR(64))
 	BEGIN
 		INSERT INTO website(solver_id, url, name)
@@ -1191,6 +1430,7 @@ CREATE PROCEDURE AddSolverWebsite(IN _solverId INT, IN _url TEXT, IN _name VARCH
 	
 -- Adds a website that is associated with a space (community)
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddSpaceWebsite;
 CREATE PROCEDURE AddSpaceWebsite(IN _spaceId INT, IN _url TEXT, IN _name VARCHAR(64))
 	BEGIN
 		INSERT INTO website(space_id, url, name)
@@ -1199,6 +1439,7 @@ CREATE PROCEDURE AddSpaceWebsite(IN _spaceId INT, IN _url TEXT, IN _name VARCHAR
 	
 -- Deletes the website with the given website id
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS DeleteUserWebsite;
 CREATE PROCEDURE DeleteUserWebsite(IN _id INT, IN _userId INT)
 	BEGIN
 		DELETE FROM website
@@ -1207,6 +1448,7 @@ CREATE PROCEDURE DeleteUserWebsite(IN _id INT, IN _userId INT)
 
 -- Deletes a website associated with a space
 -- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS DeleteSpaceWebsite;
 CREATE PROCEDURE DeleteSpaceWebsite(IN _id INT, IN _spaceId INT)
 	BEGIN
 		DELETE FROM website
@@ -1215,6 +1457,7 @@ CREATE PROCEDURE DeleteSpaceWebsite(IN _id INT, IN _spaceId INT)
 	
 -- Returns all websites associated with the user with the given user id
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS GetWebsitesByUserId;
 CREATE PROCEDURE GetWebsitesByUserId(IN _userid INT)
 	BEGIN
 		SELECT id, name, url
@@ -1225,6 +1468,7 @@ CREATE PROCEDURE GetWebsitesByUserId(IN _userid INT)
 
 -- Gets all websites that are associated with the solver with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetWebsitesBySolverId;
 CREATE PROCEDURE GetWebsitesBySolverId(IN _id INT)
 	BEGIN
 		SELECT id, name, url
@@ -1234,6 +1478,7 @@ CREATE PROCEDURE GetWebsitesBySolverId(IN _id INT)
 
 -- Gets all websites that are associated with the space with the given id
 -- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetWebsitesBySpaceId;
 CREATE PROCEDURE GetWebsitesBySpaceId(IN _id INT)
 	BEGIN
 		SELECT id, name, url

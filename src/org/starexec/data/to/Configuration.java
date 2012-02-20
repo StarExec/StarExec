@@ -14,8 +14,16 @@ public class Configuration extends Identifiable {
 	@Expose private String name;
 	@Expose private String description = "no description";
 	
+	public Configuration() {
+		
+	}
+	
+	public Configuration(int configId) {
+		super.setId(configId);
+	}
+	
 	/**
-	 * @return the id of the solver the configuration beints to
+	 * @return the id of the solver the configuration belongs to
 	 */
 	public int getSolverId() {
 		return solverId;

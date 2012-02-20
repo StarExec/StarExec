@@ -10,8 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -32,6 +34,7 @@ public class CreateJob extends HttpServlet {
 	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
 	private static final String solvers = "solver";
+	private static final String configs = "configs";
 	private static final String benchmarks = "bench";
 	private static final String spaceId = "sid";
 	
@@ -52,62 +55,91 @@ public class CreateJob extends HttpServlet {
 			return;
 		}		
 		
-		// Do job processing here...
+		// Get pre and post processor IDs if they exist, or else set them to -1
+		int preProcessorId = Util.paramExists(preProcessor, request) ? Integer.parseInt((String)request.getParameter(preProcessor)) : -1; 
+		int postProcessorId = Util.paramExists(postProcessor, request) ? Integer.parseInt((String)request.getParameter(postProcessor)) : -1;
+		
+		Job j = JobManager.buildJob(
+				SessionUtil.getUserId(request), 
+				(String)request.getParameter(name), 
+				(String)request.getParameter(description), 
+				preProcessorId,
+				postProcessorId, 
+				Integer.parseInt((String)request.getParameter(workerQueue)), 
+				Util.toIntegerList(request.getParameterValues(benchmarks)), 
+				Util.toIntegerList(request.getParameterValues(solvers)), 
+				Util.toIntegerList(request.getParameterValues(configs)));
+
+		int space = Integer.parseInt((String)request.getParameter(spaceId));
+		boolean submitSuccess = JobManager.submitJob(j, space);		
+		
+		if(true == submitSuccess) {
+			// If the submission was successful, send back to space explorer
+			response.sendRedirect("/starexec/secure/explore/spaces.jsp");
+		} else {
+			// Or else send an error
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Your job failed to submit for an unknown reason. Please try again.");
+		}
 	}
 
 	/**
 	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
 	 * and content length requirements to ensure it is not malicious.
-	 * @param spaceRequest The request to validate
+	 * @param request The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
-	private boolean isValid(HttpServletRequest spaceRequest) {
+	private boolean isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			if(!Validator.isValidInteger((String)spaceRequest.getParameter(spaceId))) {
+			if(!Validator.isValidInteger((String)request.getParameter(spaceId))) {
 				return false;
 			}
 						
 			// If processors are specified, make sure they're valid ints
-			if(Util.paramExists(postProcessor, spaceRequest)) {
-				if(!Validator.isValidInteger((String)spaceRequest.getParameter(postProcessor))) {
+			if(Util.paramExists(postProcessor, request)) {
+				if(!Validator.isValidInteger((String)request.getParameter(postProcessor))) {
 					return false;
 				}
 			}
 
-			if(Util.paramExists(preProcessor, spaceRequest)) {
-				if(!Validator.isValidInteger((String)spaceRequest.getParameter(preProcessor))) {
+			if(Util.paramExists(preProcessor, request)) {
+				if(!Validator.isValidInteger((String)request.getParameter(preProcessor))) {
 					return false;
 				}
 			}
 			
 			// Make sure the queue is a valid integer
-			if(!Validator.isValidInteger((String)spaceRequest.getParameter(workerQueue))) {
+			if(!Validator.isValidInteger((String)request.getParameter(workerQueue))) {
 				return false;
 			}
 		
 			// Ensure the job name is valid (alphanumeric < 32 chars)
-			if(!Validator.isValidPrimName((String)spaceRequest.getParameter(name))) {
+			if(!Validator.isValidPrimName((String)request.getParameter(name))) {
 				return false;
 			}
 			
 			// Ensure the job description is valid
-			if(!Validator.isValidPrimDescription((String)spaceRequest.getParameter(description))) {
+			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
 				return false;
 			}		
 			
 			// Check to see if we have a valid list of solver ids
-			if(!Validator.isValidIntegerList(spaceRequest.getParameterValues(solvers))) {
+			if(!Validator.isValidIntegerList(request.getParameterValues(solvers))) {
+				return false;
+			}
+			
+			// Check to see if we have a valid list of configuration ids
+			if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
 				return false;
 			}
 
 			// Check to see if we have a valid list of benchmark ids
-			if(!Validator.isValidIntegerList(spaceRequest.getParameterValues(benchmarks))) {
+			if(!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
 				return false;
 			}
 			
-			int sid = Integer.parseInt((String)spaceRequest.getParameter(spaceId));
-			Permission perm = SessionUtil.getPermission(spaceRequest, sid);
+			int sid = Integer.parseInt((String)request.getParameter(spaceId));
+			Permission perm = SessionUtil.getPermission(request, sid);
 			
 			// Make sure the user has access to the space
 			if(perm == null || !perm.canAddJob()) {
@@ -115,13 +147,13 @@ public class CreateJob extends HttpServlet {
 			}
 			
 			// Make sure the user is using benchmarks and solvers that they can see
-			int userId = SessionUtil.getUserId(spaceRequest);
+			int userId = SessionUtil.getUserId(request);
 			
-			if(!Permissions.canUserSeeSolvers(Util.toIntegerList(spaceRequest.getParameterValues(solvers)), userId)) {
+			if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
 				return false;
 			}
 			
-			if(!Permissions.canUserSeeBenchs(Util.toIntegerList(spaceRequest.getParameterValues(benchmarks)), userId)) {
+			if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
 				return false;
 			}
 			

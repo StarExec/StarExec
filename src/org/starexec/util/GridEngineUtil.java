@@ -1,15 +1,29 @@
 package org.starexec.util;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.ggf.drmaa.Session;
+import org.ggf.drmaa.SessionFactory;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Queues;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
 
 /**
@@ -37,14 +51,14 @@ public class GridEngineUtil {
 	 * be done AFTER nodes are loaded as the queues will make associations to the nodes. This also loads
 	 * attributes for the queue as well as its current usage.
 	 */
-	public static void loadQueues() {
+	public static synchronized void loadQueues() {
 		GridEngineUtil.loadQueueDetails();
 		GridEngineUtil.loadQueueUsage();
 	}
 	
 	/**
 	 * Loads the list of active queues on the system, loads their attributes into the database
-	 * as well as their associations to worker nodes that beint to each queue.
+	 * as well as their associations to worker nodes that belong to each queue.
 	 */
 	private static void loadQueueDetails() {
 		BufferedReader queueResults = null;
@@ -59,7 +73,7 @@ public class GridEngineUtil {
 			}
 			
 			// Set all queues as inactive (we will set them as active when we see them)
-			Cluster.setQueueStatus(R.QUEUE_STATUS_INACTIVE);
+			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
 			
 			// Read the queue names one at a time
 			String line;		
@@ -67,14 +81,14 @@ public class GridEngineUtil {
 				String name = line;
 								
 				// In the database, update the attributes for the queue
-				Cluster.updateQueue(name,  GridEngineUtil.getQueueDetails(name));
+				Queues.update(name,  GridEngineUtil.getQueueDetails(name));
 				
 				// Set the queue as active since we just saw it
-				Cluster.setQueueStatus(name, R.QUEUE_STATUS_ACTIVE);
+				Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
 				
 				// For each of the queue's node's, add an association
 				for(WorkerNode node : GridEngineUtil.getQueueAssociations(name)) {
-					Cluster.associateQueue(name, node.getName());	
+					Queues.associate(name, node.getName());	
 				}				
 			}
 		} catch (Exception e) {
@@ -113,7 +127,7 @@ public class GridEngineUtil {
 				q.setSlotsTotal(Integer.parseInt(data[5]));
 				
 				// Update the database with the new usage stats
-				Cluster.updateQueueUsage(q);
+				Queues.updateUsage(q);
 			}			
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
@@ -121,9 +135,9 @@ public class GridEngineUtil {
 	}
 	
 	/**
-	 * Gets all of the worker nodes that beint to a queue 
+	 * Gets all of the worker nodes that belong to a queue 
 	 * @param name The name of the queue to find worker nodes for
-	 * @return A list of worker nodes that beint to the given queue
+	 * @return A list of worker nodes that belong to the given queue
 	 */
 	public static List<WorkerNode> getQueueAssociations(String name) {
 		// Create the list of nodes that will be returned		
@@ -178,7 +192,7 @@ public class GridEngineUtil {
 	 * Gets the worker nodes from SGE and adds them to the database if they don't already exist. This must be done
 	 * BEFORE queues have been loaded as the queues will make associations to the nodes.
 	 */
-	public static void loadWorkerNodes() {
+	public static synchronized void loadWorkerNodes() {
 		BufferedReader nodeResults = null;
 		
 		try {			
@@ -236,4 +250,180 @@ public class GridEngineUtil {
 		
 		return details;
 	}	
+	
+	/**
+	 * Finds all starexec jobs that are waiting to have their statistics processed
+	 * and pulls the statistics from the grid engine into the database
+	 */
+	public static synchronized void processStatistics() {
+		try {
+			// First get the SGE ids of all the jobs that need their statistics processed
+			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_STATS.getVal());					
+			
+			// For each id to process...
+			for(int id : idsToProcess) {
+				try {
+					// Get the job's statistics
+					String[] jobStats = GridEngineUtil.getSgeJobStats(id);
+					
+					// Build a job pair based on the statistics
+					JobPair pair = GridEngineUtil.rawStatsToPair(id, jobStats);
+					
+					// Update the database with the pair
+					Jobs.updatePairStatistics(pair);
+					Jobs.setSGEPairStatus(id, StatusCode.STATUS_COMPLETE.getVal());
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+					Jobs.setSGEPairStatus(id, StatusCode.ERROR_STATS.getVal());
+				}
+			}
+			
+			if(idsToProcess != null && idsToProcess.size() > 0) {
+				log.debug(String.format("Processed statistics for %d job pairs", idsToProcess.size()));
+			}
+ 		} catch (Exception e){
+ 			log.error(e.getMessage(), e);
+ 		}
+	}
+	
+	/**
+	 * Populates a job pair object based on the raw statistics from the grid engine
+	 * @param sgeId The sge id of the pair to convert
+	 * @param stats The raw statistics retrieved from the grid engine
+	 * @return A job pair with fully populated statistics based on the given statistics
+	 */
+	private static JobPair rawStatsToPair(int sgeId, String[] stats) {
+		JobPair jp = new JobPair();
+		jp.setGridEngineId(sgeId);
+		jp.getNode().setName(stats[1]);
+		jp.setQueueSubmitTime(toTimestamp(stats[8]));
+		jp.setStartTime(toTimestamp(stats[9]));
+		jp.setEndTime(toTimestamp(stats[10]));
+		jp.setExitStatus(Integer.parseInt(stats[12]));
+		jp.setCpuUsage(Double.parseDouble(stats[36]));
+		jp.setUserTime(Double.parseDouble(stats[14]));
+		jp.setSystemTime(Double.parseDouble(stats[15]));
+		jp.setIoDataUsage(Double.parseDouble(stats[38]));
+		jp.setIoDataWait(Double.parseDouble(stats[40]));
+		jp.setMemoryUsage(Double.parseDouble(stats[37]));
+		jp.setMaxVirtualMemory(Double.parseDouble(stats[42]));
+		jp.setMaxResidenceSetSize(Double.parseDouble(stats[16]));
+		jp.setPageReclaims(Double.parseDouble(stats[21]));
+		jp.setPageFaults(Double.parseDouble(stats[22]));
+		jp.setBlockInput(Double.parseDouble(stats[24]));
+		jp.setBlockOutput(Double.parseDouble(stats[25]));
+		jp.setVoluntaryContextSwitches(Double.parseDouble(stats[29]));
+		jp.setInvoluntaryContextSwitches(Double.parseDouble(stats[30]));
+		return jp;		
+	}
+	
+	/**
+	 * Converts a string which is the number of seconds since Jan. 1st 1970 to a mysql timestamp
+	 * @param epochTime The string (which is parsed to a long) that is the unix epoch
+	 * @return The sql timestamp representing by the epoch
+	 */
+	private static Timestamp toTimestamp(String epochTime) {
+		/* 
+		 * Unix time is seconds since Jan 1st 1970, but SQL's timestamp expects 
+		 * milliseconds since that time, so we multiply by 1000 to get milliseconds
+		 */
+		long unixTime = Long.parseLong(epochTime);
+		Timestamp t = new Timestamp(unixTime * 1000);			
+		return t;
+	}
+	
+	/**
+	 * Retrieves an array of SGE job statistics
+	 * @param sgeId The id of the job to get statistics for
+	 * @return An array of strings representing the statistics for a job (see wiki for details)
+	 */
+	private static String[] getSgeJobStats(int sgeId) throws Exception {
+		DataInputStream dis = null;
+		FileInputStream fis = null;
+		
+		try {
+			// Compile the pattern that is tailored for the job we're looking for		
+			Pattern statsPattern = Pattern.compile(String.format(R.STATS_ENTRY_PATTERN, sgeId), Pattern.CASE_INSENSITIVE);
+			
+			// Open a buffered reader for the sge accounting file to read line by line
+			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
+			dis = new DataInputStream(fis);
+			BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+			
+			// For each line in the sge accounting file 
+			String line = null;
+			while ((line = br.readLine()) != null)   {	
+				// If this is the stats entry we're looking for...
+				if(statsPattern.matcher(line).matches()) {
+					// Split it by colons (the delimiter sge uses) and return it
+					return line.split(":");
+				}
+			}
+		} catch (Exception e) {
+			// Do nothing
+		} finally {
+			// Close the accounting file
+			dis.close();
+			fis.close();
+		}
+		
+		throw new Exception("Job statistics for sge job #" + sgeId + " could not be found");
+	}
+	
+	/**
+	 * Checks to see if the grid engine is available by attempting to load
+	 * a session (this forces java to try to load the sge native libraries)
+	 * @return True if the native libraries exist on this computer, false if they do not
+	 */
+	public static boolean isAvailable() {
+		try {
+			// Get a dummy session to force the class and native libraries to be loaded
+			Session s = SessionFactory.getFactory().getSession();
+			s.init("");
+			s.exit();
+			
+			// If we got here, the libraries loaded successfully!
+			return true;
+		} catch(UnsatisfiedLinkError ule) { 
+			// Don't log, expected if the engine isn't available
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Returns the log of a job pair by reading
+	 * in the physical log file into a string.
+	 * @param pair The pair to get the log for (must have a valid id and sge id)
+	 * @return The log of the job run
+	 */
+	public static String getJobLog(JobPair pair) {
+		return GridEngineUtil.getJobLog(pair.getId(), pair.getGridEngineId());
+	}
+	
+	/**
+	 * Returns the log of a job pair by reading
+	 * in the physical log file into a string.
+	 * @param pairId The id of the pair to get the log for
+	 * @param sgeId The SGE id of the pair
+	 * @return The log of the job run
+	 */
+	public static String getJobLog(int pairId, int sgeId) {
+		try {
+			// Find the path to the job log. It's in the job log directory
+			// in the format job_1.bash.o2 where 1 is the pair id and 2 is the sge id
+			String logPath = String.format("%s/job_%d.bash.o%d", R.JOB_LOG_DIR, pairId, sgeId);
+			File logFile = new File(logPath);
+			
+			if(logFile.exists()) {
+				return FileUtils.readFileToString(logFile);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return null;
+	}
 }

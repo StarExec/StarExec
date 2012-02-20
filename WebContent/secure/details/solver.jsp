@@ -48,7 +48,7 @@
 					<td>		
 						<ul>
 							<c:forEach var="site" items="${sites}">
-								<li>${site}</li>
+								<li><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/starexec/images/external.png"/></a></li>
 							</c:forEach>	
 						</ul>
 					</td>

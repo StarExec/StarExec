@@ -14,7 +14,7 @@
 		if(!p.canAddJob()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
-			request.setAttribute("queues", Cluster.getAllQueues());
+			request.setAttribute("queues", Queues.getAll());
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
@@ -56,7 +56,7 @@
 				<tr>
 					<td class="label"><p>post processor</p></td>
 					<td>					
-						<select id="postProcess" name="process">
+						<select id="postProcess" name="postProcess">
 						<option value=""></option>
 						<c:forEach var="proc" items="${postProcs}">
 								<option value="${proc.id}">${proc.name}</option>
@@ -91,7 +91,7 @@
 							<input type="hidden" name="solver" value="${s.id}"/>
 							<star:solver value='${s}'/></td>
 						<td>
-							<select id="config_${s.id}" name="config_${s.id}">								
+							<select id="config_${s.id}" name="configs">								
 								<c:forEach var="c" items="${s.configurations}">
 									<option value="${c.id}">${c.name}</option>
 								</c:forEach>
