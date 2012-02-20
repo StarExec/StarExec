@@ -45,7 +45,7 @@
 		
 		<!-- Update the sql scripts to use the correct database -->
 		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
-			<fileset dir="$sql" includes="**/*.sql"/>
+			<fileset dir="sql" includes="**/*.sql"/>
 		</replaceregexp>
 		
 		<!-- Update the sql schema to use the correct database -->
