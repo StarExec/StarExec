@@ -84,7 +84,7 @@ public class Download extends HttpServlet {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(Starexec.ROOT_APPLICATION_PATH, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format);
 			
@@ -112,7 +112,7 @@ public class Download extends HttpServlet {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(Starexec.ROOT_APPLICATION_PATH, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format);
 			
@@ -142,7 +142,7 @@ public class Download extends HttpServlet {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(Starexec.ROOT_APPLICATION_PATH, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			
 			// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{pair id}

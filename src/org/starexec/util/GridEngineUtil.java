@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
@@ -21,6 +22,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Status.StatusCode;
@@ -377,6 +379,9 @@ public class GridEngineUtil {
 	 */
 	public static boolean isAvailable() {
 		try {
+			// Try to load the class, if it does not exist this will cause an exception instead of an error			
+			Class.forName("com.sun.grid.drmaa.SessionImpl");
+			
 			// Get a dummy session to force the class and native libraries to be loaded
 			Session s = SessionFactory.getFactory().getSession();
 			s.init("");
@@ -384,13 +389,40 @@ public class GridEngineUtil {
 			
 			// If we got here, the libraries loaded successfully!
 			return true;
-		} catch(UnsatisfiedLinkError ule) { 
+		} catch(Error e) {
 			// Don't log, expected if the engine isn't available
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+		} catch(Exception e) {
+			// Don't log, expected if the engine isn't available
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Finds the standard output of a job pair and returns it as a string. Null
+	 * is returned if the output doesn't exist or cannot be found
+	 * @param job The job the pair is apart of
+	 * @param pair The pair to get output for
+	 * @return All console output from a job pair run for the given pair
+	 */
+	public static String getStdOut(Job job, JobPair pair, int limit) {
+		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getId(), limit);
+	}
+	
+	/**
+	 * Finds the standard output of a job pair and returns it as a string. Null
+	 * is returned if the output doesn't exist or cannot be found
+	 * @param userId The id of the user that submitted the job
+	 * @param jobId The id of the job the pair is apart of
+	 * @param pairId The pair to get output for
+	 * @param limit The maximum number of lines to return
+	 * @return All console output from a job pair run for the given pair
+	 */
+	public static String getStdOut(int userId, int jobId, int pairId, int limit) {
+		String stdoutPath = String.format("%s/%d/%d/%d/stdout.txt", R.JOB_OUTPUT_DIR, userId, jobId, pairId);
+		File stdoutFile = new File(stdoutPath);
+		
+		return Util.readFileLimited(stdoutFile, limit);
 	}
 	
 	/**
@@ -414,14 +446,14 @@ public class GridEngineUtil {
 		try {
 			// Find the path to the job log. It's in the job log directory
 			// in the format job_1.bash.o2 where 1 is the pair id and 2 is the sge id
-			String logPath = String.format("%s/job_%d.bash.o%d", R.JOB_LOG_DIR, pairId, sgeId);
+			String logPath = String.format("%s/job_%d.bash.o%d", R.JOB_LOG_DIR, pairId, sgeId);			
 			File logFile = new File(logPath);
 			
 			if(logFile.exists()) {
 				return FileUtils.readFileToString(logFile);
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.warn(e.getMessage(), e);
 		}
 		
 		return null;

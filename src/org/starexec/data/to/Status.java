@@ -1,5 +1,7 @@
 package org.starexec.data.to;
 
+import java.rmi.UnexpectedException;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -71,20 +73,25 @@ public class Status {
 		STATUS_FINISHING(5),
 		STATUS_WAIT_STATS(6),
 		STATUS_COMPLETE(7),
-		ERROR_STATS(8),
-		ERROR_RUNSCRIPT(9),
-		ERROR_BENCHMARK(10),
-		ERROR_ENVIRONMENT(11),
-		ERROR_GENERAL(12);
+		ERROR_SGE_REJECT(8),
+		ERROR_SUBMIT_FAIL(9),
+		ERROR_STATS(10),
+		ERROR_RUNSCRIPT(11),
+		ERROR_BENCHMARK(12),
+		ERROR_ENVIRONMENT(13),
+		EXCEED_RUNTIME(14),
+		EXCEED_CPU_MEM(15),
+		EXCEED_FILE_WRITE(16),
+		ERROR_GENERAL(17);
 		
 		private int val;
 		
 		private StatusCode(int val) {
-			this.val = val;
-		}
+			this.val = val;			
+		}				
 		
 		public int getVal() {
-			return this.val;
+			return this.val;			
 		}				
 	}
 }

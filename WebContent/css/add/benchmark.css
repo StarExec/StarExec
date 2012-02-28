@@ -22,7 +22,8 @@ button {
 
 #tblDefaultPerm tr td {
 	padding: 0px;
-	padding-right: 40px;	
+	padding-right: 40px;
+	background-color: transparent;	
 }
 
 #tblDefaultPerm tr th {

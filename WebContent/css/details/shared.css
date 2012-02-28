@@ -1,19 +1,25 @@
-fieldset {
-	width: 500px;
-	margin: auto;	
-	margin-bottom: 20px;
-}
-
 table {
 	width: 100%;	
 }
 
-table tr td {
-	padding: 15px;
+fieldset {
+	width: 600px;
+	margin-top: 30px;
+	margin-bottom: 20px;	
 }
 
-#content ul li {
-	list-style: none;
-	float: left;
-	margin-right: 20px;
+#downLink {
+	float: right;
+	margin-right: 185px;	
+}
+
+textarea {
+	width: 98%;
+	height: 300px;
+	font-family: monospace;
+}
+
+.popoutLink {
+	float: right;
+	margin-top: 7px;
 }

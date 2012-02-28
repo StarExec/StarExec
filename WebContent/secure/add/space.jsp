@@ -25,55 +25,63 @@
 		<fieldset>
 			<legend>new space</legend>
 			<table id="tblSpace" class="shaded">
-				<tr>
-					<td class="label"><p>name</p></td>
-					<td><input id="txtName" name="name" type="text"/></td>
-				</tr>
-				<tr>
-					<td class="label"><p>description</p></td>
-					<td><textarea id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
-				</tr>
-				<tr>
-					<td class="label"><p>default</p></td>
-					<td>			
-						<table id="tblDefaultPerm">
-							<tr>
-								<th></th>
-								<th>solver</th>
-								<th>bench</th>
-								<th>users</th>
-								<th>space</th>
-								<th>jobs</th>
-							</tr>
-							<tr>
-								<td>add</td>
-								<td><input type="checkbox" name="addSolver"/></td>
-								<td><input type="checkbox" name="addBench"/></td>
-								<td><input type="checkbox" name="addUser"/></td>
-								<td><input type="checkbox" name="addSpace"/></td>
-								<td><input type="checkbox" name="addJob"/></td>
-							</tr>
-							<tr>
-								<td>remove</td>
-								<td><input type="checkbox" name="removeSolver"/></td>
-								<td><input type="checkbox" name="removeBench"/></td>
-								<td><input type="checkbox" name="removeUser"/></td>
-								<td><input type="checkbox" name="removeSpace"/></td>
-								<td><input type="checkbox" name="removeJob"/></td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-				<tr>
-					<td class="label"><p>locked</p></td>
-					<td>			
-						<input type="radio" name="locked" value="true" /> yes
-						<input type="radio" name="locked" value="false" checked="checked"/> no
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2"><button id="btnCreate">create</button></td>
-				</tr>
+				<thead>
+					<tr>
+						<td>attribute</td>
+						<td>value</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="label"><p>name</p></td>
+						<td><input id="txtName" name="name" type="text"/></td>
+					</tr>
+					<tr>
+						<td class="label"><p>description</p></td>
+						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
+					</tr>
+					<tr>
+						<td class="label"><p>default</p></td>
+						<td>			
+							<table id="tblDefaultPerm">
+								<tr>
+									<th></th>
+									<th>solver</th>
+									<th>bench</th>
+									<th>users</th>
+									<th>space</th>
+									<th>jobs</th>
+								</tr>
+								<tr>
+									<td>add</td>
+									<td><input type="checkbox" name="addSolver"/></td>
+									<td><input type="checkbox" name="addBench"/></td>
+									<td><input type="checkbox" name="addUser"/></td>
+									<td><input type="checkbox" name="addSpace"/></td>
+									<td><input type="checkbox" name="addJob"/></td>
+								</tr>
+								<tr>
+									<td>remove</td>
+									<td><input type="checkbox" name="removeSolver"/></td>
+									<td><input type="checkbox" name="removeBench"/></td>
+									<td><input type="checkbox" name="removeUser"/></td>
+									<td><input type="checkbox" name="removeSpace"/></td>
+									<td><input type="checkbox" name="removeJob"/></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td class="label"><p>locked</p></td>
+						<td>			
+							<input type="radio" name="locked" value="true" /> yes
+							<input type="radio" name="locked" value="false" checked="checked"/> no
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2"><button id="btnCreate">create</button></td>
+					</tr>
+				</tbody>
 			</table>		
 		</fieldset>
 	</form>		

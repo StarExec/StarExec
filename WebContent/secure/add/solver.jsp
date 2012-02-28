@@ -25,27 +25,35 @@
 		<fieldset>
 			<legend>solver information</legend>		
 			<table id="tblSolver" class="shaded">
-				<tr>
-					<td>solver location</td>
-					<td><input name="f" type="file" /></td>
-				</tr>
-				<tr>
-					<td>solver name</td>
-					<td><input name="sn" type="text" size="42" /></td>
-				</tr>
-				<tr>
-					<td>solver description</td>
-					<td><textarea rows="6" cols="40" name="desc"></textarea></td>
-				</tr>
-				<tr>
-					<td>downloadable</td>
-					<td>
-						<input name="dlable" type="radio" value="true" checked="checked" /><label>yes</label>
-						<input name="dlable" type="radio" value="false" /><label>no</label>
-					</td>
-				<tr>
-					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
-				</tr>
+				<thead>
+					<tr>
+						<td>attribute</td>
+						<td>value</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>solver location</td>
+						<td><input name="f" type="file" /></td>
+					</tr>
+					<tr>
+						<td>solver name</td>
+						<td><input name="sn" type="text" size="42" /></td>
+					</tr>
+					<tr>
+						<td>solver description</td>
+						<td><textarea rows="6" cols="40" name="desc"></textarea></td>
+					</tr>
+					<tr>
+						<td>downloadable</td>
+						<td>
+							<input name="dlable" type="radio" value="true" checked="checked" /><label>yes</label>
+							<input name="dlable" type="radio" value="false" /><label>no</label>
+						</td>
+					<tr>
+						<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
+					</tr>
+				</tbody>
 			</table>																	
 		</fieldset>
 	</form>

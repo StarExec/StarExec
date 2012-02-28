@@ -67,7 +67,7 @@ CREATE TABLE permissions (
 -- as a folder)
 CREATE TABLE spaces (
 	id INT NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(32) NOT NULL,
+	name VARCHAR(64) NOT NULL,
 	created TIMESTAMP DEFAULT 0,
 	description TEXT,
 	locked BOOLEAN DEFAULT 0,
@@ -79,7 +79,7 @@ CREATE TABLE spaces (
 -- All pre, post and bench processors in the system
 CREATE TABLE processors (
 	id INT NOT NULL AUTO_INCREMENT,
-	name VARCHAR(32) NOT NULL,
+	name VARCHAR(64) NOT NULL,
 	description TEXT,
 	path TEXT NOT NULL,
 	community INT NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE processors (
 CREATE TABLE benchmarks (
 	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,
-	name VARCHAR(32) NOT NULL,
+	name VARCHAR(128) NOT NULL,
 	bench_type INT,
 	uploaded TIMESTAMP NOT NULL,
 	path TEXT NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE benchmarks (
 CREATE TABLE solvers (
 	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,
-	name VARCHAR(32) NOT NULL,
+	name VARCHAR(64) NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
 	path TEXT NOT NULL,
 	description TEXT,
@@ -136,7 +136,7 @@ CREATE TABLE queues (
 -- This just maintains hardware information manually to be viewed by
 CREATE TABLE nodes (
 	id INT NOT NULL AUTO_INCREMENT, 	
-	name VARCHAR(64) NOT NULL,
+	name VARCHAR(128) NOT NULL,
 	status VARCHAR(32),
 	PRIMARY KEY (id),
 	UNIQUE KEY (name)
@@ -169,23 +169,27 @@ INSERT INTO status_codes VALUES (4, 'running', 'the job is currently being ran o
 INSERT INTO status_codes VALUES (5, 'finishing', 'the jobs output is being stored and its environment is being cleaned up');
 INSERT INTO status_codes VALUES (6, 'awaiting statistics', 'the job has completed execution and is waiting for its runtime statistics from the grid engine');
 INSERT INTO status_codes VALUES (7, 'complete', 'the job has successfully completed execution and its statistics have been received from the grid engine');
-INSERT INTO status_codes VALUES (8, 'statistics error', 'the job completed execution but there was a problem accuiring its statistics from the grid engine');
-INSERT INTO status_codes VALUES (9, 'run script error', 'the job could not be executed because a valid run script was not present');
-INSERT INTO status_codes VALUES (10, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
-INSERT INTO status_codes VALUES (11, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
-INSERT INTO status_codes VALUES (12, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
+INSERT INTO status_codes VALUES (8, 'rejected', 'the job was sent to the grid engine for execution but was rejected. this can indicate that there were no available queues or the grid engine is in an unclean state');
+INSERT INTO status_codes VALUES (9, 'submit failed', 'there was an issue submitting your job to the grid engine. this can be caused be unexpected errors raised by the grid engine');
+INSERT INTO status_codes VALUES (10, 'statistics error', 'the job completed execution but there was a problem accuiring its statistics from the grid engine');
+INSERT INTO status_codes VALUES (11, 'run script error', 'the job could not be executed because a valid run script was not present');
+INSERT INTO status_codes VALUES (12, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
+INSERT INTO status_codes VALUES (13, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
+INSERT INTO status_codes VALUES (14, 'runtime exceeded', 'the job was terminated because it exceeded its run time limit');
+INSERT INTO status_codes VALUES (15, 'cpu/memory exceeded', 'the job was terminated because it exceeded its virtual memory or cpu time limit');
+INSERT INTO status_codes VALUES (16, 'file write exceeded', 'the job was terminated because it exceeded its file write limit');
+INSERT INTO status_codes VALUES (17, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
 
 -- All of the jobs within the system, this is the overarching entity
 -- that contains individual job pairs (solver/config -> benchmark)
 CREATE TABLE jobs (
 	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,	
-	name VARCHAR(32),
+	name VARCHAR(64),
 	queue_id INT,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	pre_processor INT,
-	post_processor INT,	
-	timeout BIGINT,
+	post_processor INT,		
 	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
@@ -201,7 +205,7 @@ CREATE TABLE jobs (
 CREATE TABLE configurations (
 	id INT NOT NULL AUTO_INCREMENT,
 	solver_id INT,
-	name VARCHAR(32) NOT NULL,
+	name VARCHAR(64) NOT NULL,
 	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
@@ -215,8 +219,9 @@ CREATE TABLE job_pairs (
 	bench_id INT,
 	config_id INT,		
 	status_code TINYINT DEFAULT 0,
-	short_result VARCHAR(64) DEFAULT "",
 	node_id INT,
+	cpuTimeout INT,
+	clockTimeout INT,
 	queuesub_time TIMESTAMP DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,

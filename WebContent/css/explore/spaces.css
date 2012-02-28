@@ -28,6 +28,10 @@
 	border-radius:2px;
 }
 
+#spaceField span.spaceLink {
+	cursor: pointer;
+}
+
 .qtip-content table {
 	width: 100%;
 }

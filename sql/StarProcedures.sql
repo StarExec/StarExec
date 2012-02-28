@@ -17,14 +17,14 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddBenchmark;
-CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(32), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT)
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(128), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT)
 	BEGIN
-		DECLARE bid INT DEFAULT -1;
+		DECLARE _benchId INT DEFAULT -1;
 		
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
 		
-		SELECT LAST_INSERT_ID() INTO bid;		
+		SELECT LAST_INSERT_ID() INTO _benchId;		
 		INSERT INTO bench_assoc VALUES (_spaceId, _benchId);
 	END //	
 	
@@ -451,7 +451,7 @@ CREATE PROCEDURE GetJobPairOverview(IN _jobId INT)
 			(SELECT COUNT(*) AS totalPairs FROM job_pairs WHERE job_id=_jobId) AS a, -- Gets the total number of pairs
 			(SELECT COUNT(*) AS completePairs FROM job_pairs WHERE job_id=_jobId AND status_code=7) AS b, -- Gets number of pairs with COMPLETE status codes
 			(SELECT COUNT(*) AS pendingPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6)) AS c, -- Gets number of pairs with non complete and non error status codes
-			(SELECT COUNT(*) AS errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 9 AND 13 OR status_code=0)) AS d, -- Gets number of UNKNOWN or ERROR status code pairs
+			(SELECT COUNT(*) AS errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 8 AND 17 OR status_code=0)) AS d, -- Gets number of UNKNOWN or ERROR status code pairs
 			(SELECT TIMESTAMPDIFF( -- Gets time difference between earliest completed pair's start time and latest completed pair's end time
 				MICROSECOND, 
 				(SELECT MIN(start_time) FROM job_pairs WHERE job_id=_jobId AND status_code=7),
@@ -526,20 +526,20 @@ CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code)
-		VALUES (_jobId, _benchId, _configId, _status);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
-CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(32), IN _desc TEXT, IN _queueId INT, IN _timeout BIGINT, IN _preProcessor INT, IN _postProcessor INT, OUT _id INT)
+CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(32), IN _desc TEXT, IN _queueId INT, IN _preProcessor INT, IN _postProcessor INT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, timeout, pre_processor, post_processor)
-		VALUES (_userId, _name, _desc, _queueId, _timeout, _preProcessor, _postProcessor);
+		INSERT INTO jobs (user_id, name, description, queue_id, pre_processor, post_processor)
+		VALUES (_userId, _name, _desc, _queueId, _preProcessor, _postProcessor);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	
@@ -586,16 +586,15 @@ CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
 -- Updates a job pair's statistics (used by the job epilog script)
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdatePairStats;
-CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _shortResult VARCHAR(64), IN _nodeName VARCHAR(64), IN _queuesubTime TIMESTAMP, IN _startTime TIMESTAMP, IN _endTime TIMESTAMP, IN _exitStatus INT, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _ioData DOUBLE, IN _ioWait DOUBLE, IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
+CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _nodeName VARCHAR(64), IN _queuesubTime TIMESTAMP, IN _startTime TIMESTAMP, IN _endTime TIMESTAMP, IN _exitStatus INT, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _ioData DOUBLE, IN _ioWait DOUBLE, IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
 	BEGIN
 		UPDATE job_pairs
-		SET short_result=_shortResult,
-			node_id=(SELECT id FROM nodes WHERE name=_nodeName),
+		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
 			queuesub_time=_queuesubTime,
 			start_time=_startTime,
 			end_time=_endTime,
 			exit_status=_exitStatus,
-			wallclock=TIMESTAMPDIFF(MICROSECOND ,_endTime, _startTime),
+			wallclock=TIMESTAMPDIFF(MICROSECOND , _startTime, _endTime),
 			cpu=_cpu,
 			user_time=_userTime,
 			system_time=_systemTime,
@@ -941,6 +940,7 @@ CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id INT)
 
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS AddSolver;
 CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(32), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT)
 	BEGIN
 		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size)
@@ -1099,10 +1099,10 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYIN
 -- Adds an association between two spaces
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AssociateSpaces;
-CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT, IN _permission INT)
+CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT)
 	BEGIN		
 		INSERT IGNORE INTO set_assoc
-		VALUES (_parentId, _childId, _permission);
+		VALUES (_parentId, _childId);
 	END //
 	
 -- Gets all the descendants of a space

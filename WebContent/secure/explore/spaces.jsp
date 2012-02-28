@@ -13,7 +13,7 @@
 		<p id="spaceDesc" class="accent"></p>
 			
 		<fieldset id="jobField">
-			<legend onclick="toggleTable(this)" class="expd" id="jobExpd"><span>0</span> jobs <span>(+)</span></legend>
+			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -28,7 +28,7 @@
 		</fieldset>	
 			
 		<fieldset id="solverField">
-			<legend onclick="toggleTable(this)" class="expd" id="solverExpd"><span>0</span> solvers <span>(+)</span></legend>
+			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
 			<table id="solvers">
 				<thead>
 					<tr>
@@ -40,20 +40,19 @@
 		</fieldset>						
 		
 		<fieldset id="benchField">
-			<legend onclick="toggleTable(this)" class="expd" id="benchExpd"><span>0</span> benchmarks <span>(+)</span></legend>
+			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
 			<table id="benchmarks">
 				<thead>
 					<tr>
-						<th style="width:150px;">name</th>
-						<th>type</th>	
-						<th>description</th>						
+						<th style="width:75%;">name</th>
+						<th>type</th>											
 					</tr>
 				</thead>		
 			</table>
 		</fieldset>											
 		
 		<fieldset  id="userField">
-			<legend onclick="toggleTable(this)" class="expd" id="userExpd"><span>0</span> users <span>(+)</span></legend>
+			<legend class="expd" id="userExpd"><span>0</span> users</legend>
 			<table id="users">
 				<thead>
 					<tr>
@@ -66,7 +65,7 @@
 		</fieldset>		
 		
 		<fieldset id="spaceField">
-			<legend onclick="toggleTable(this)" class="expd" id="spaceExpd"><span>0</span> subspaces <span>(+)</span></legend>
+			<legend class="expd" id="spaceExpd"><span>0</span> subspaces</legend>
 			<table id="spaces">
 				<thead>
 					<tr>

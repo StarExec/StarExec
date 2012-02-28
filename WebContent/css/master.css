@@ -50,8 +50,6 @@ input[type="password"] {
 	padding: 0px 5px 0px 5px;	
 }
 
-
-
 textarea {
 	resize: none;
 	padding: 5px;
@@ -90,9 +88,14 @@ label.error {
 	color: #ae0000;
 }
 
-.shaded tbody tr:nth-child(even),
-.shaded tr:nth-child(even) {
+.shaded > tbody > tr:nth-child(even),
+.shaded > thead > tr {
 	background-color: #111111;
+}
+
+.shaded tbody > tr > td,
+.shaded thead > tr > th {
+	padding: 10px;		
 }
 
 /***************** Common classes *************************/
@@ -193,7 +196,7 @@ ul.horizontal li {
 #content {
 	background-color: #222222;
 	min-height: 350px;	
-	padding: 15px;
+	padding: 15px 15px 35px 15px;
 	display:block;
 	position: relative;
 	overflow: hidden;
@@ -219,7 +222,8 @@ ul.horizontal li {
 }
 
 #pageHeader img {
-	height: 100%;
+	width: 300px;
+	height: 70px;
 }
 
 #pageHeader h1 {	

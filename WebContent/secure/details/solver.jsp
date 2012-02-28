@@ -26,47 +26,61 @@
 	}
 %>
 
-<star:template title="${solver.name}" js="details/shared" css="details/shared">				
+<star:template title="${solver.name}" js="details/shared, details/solver" css="details/shared">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table class="shaded">
-			<tr>
-				<td>description</td>			
-				<td>${solver.description}</td>
-			</tr>
-			<tr>
-				<td>owner</td>			
-				<td><star:user value="${usr}" /></td>
-			</tr>							
-			<tr>
-				<td>uploaded</td>			
-				<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
-			</tr>
-			<c:if test="${not empty sites}">			
+			<thead>
 				<tr>
-					<td>websites</td>	
-					<td>		
-						<ul>
-							<c:forEach var="site" items="${sites}">
-								<li><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/starexec/images/external.png"/></a></li>
-							</c:forEach>	
-						</ul>
-					</td>
+					<th>attribute</th>
+					<th>value</th>
 				</tr>
-			</c:if>				
+			</thead>
+			<tbody>
+				<tr>
+					<td>name</td>			
+					<td>${solver.name}</td>
+				</tr>
+				<tr>
+					<td>description</td>			
+					<td>${solver.description}</td>
+				</tr>
+				<tr>
+					<td>owner</td>			
+					<td><star:user value="${usr}" /></td>
+				</tr>							
+				<tr>
+					<td>uploaded</td>			
+					<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
+				</tr>				
+			</tbody>				
 		</table>	
-	</fieldset>		
-	<fieldset>
-		<legend>related jobs</legend>
-		<p>coming soon...</p>
 	</fieldset>
 	
-	<c:if test="${solver.downloadable}">
-		<fieldset>
-			<legend>actions</legend>		
-				<ul>
-					<li><a href="/starexec/secure/download?type=solver&id=${solver.id}">download</a></li>
-				</ul>					
-		</fieldset>
+	<c:if test="${not empty sites}">		
+	<fieldset id="fieldSites">
+		<legend>websites</legend>
+		<table class="shaded">
+			<thead>
+				<tr>
+					<th>link(s)</th>					
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="site" items="${sites}">
+					<tr><td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/starexec/images/external.png"/></a></td></tr>
+				</c:forEach>			
+			</tbody>				
+		</table>	
+	</fieldset>			
+	</c:if>
+	
+	<!-- <fieldset>
+		<legend>related jobs</legend>
+		<p>coming soon...</p>
+	</fieldset>  -->
+	
+	<c:if test="${solver.downloadable}">		
+		<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>		
 	</c:if>		
 </star:template>

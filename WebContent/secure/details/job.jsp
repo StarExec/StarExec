@@ -29,7 +29,7 @@
 <star:template title="${job.name}" js="lib/jquery.dataTables.min, details/shared, details/job" css="common/table, details/shared, details/job">			
 	<fieldset>
 		<legend>details</legend>
-		<table class="shaded">
+		<table id="detailTbl" class="shaded">
 			<thead>
 				<tr>
 					<th>property</th>
@@ -53,8 +53,8 @@
 					<td>created</td>			
 					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
 				</tr>
-				<tr title="the total wallclock runtime of the job. calculated by taking the difference between the start time of earliest completed pair and the end time of the latest compelted pair">
-					<td>runtime</td>			
+				<tr title="the total wallclock elapsed time of the job. calculated by taking the difference between the start time of earliest completed pair and the end time of the latest compelted pair">
+					<td>elapsed time</td>			
 					<td>${pairStats.runtime / 1000} ms</td>
 				</tr>					
 				<tr title="the preprocessor that was used to process input for this job">
@@ -100,7 +100,7 @@
 					<th>solver</th>
 					<th>config</th>
 					<th>status</th>
-					<th>result</th>				
+					<th>time</th>				
 				</tr>		
 			</thead>	
 			<tbody>
@@ -112,8 +112,15 @@
 					</td>
 					<td><star:solver value="${pair.solver}" /></td>
 					<td><star:config value="${pair.solver.configurations[0]}" /></td>				
-					<td title="${pair.status.description}">${pair.status}</td>					
-					<td>${pair.shortResult}</td>
+					<td title="${pair.status.description}">${pair.status}</td>
+					<c:choose>
+						<c:when test="${pair.status.code == 7}">
+							<td>${pair.wallclockTime / 1000} ms</td>
+						</c:when>
+						<c:otherwise>
+							<td>--</td>
+						</c:otherwise>						
+					</c:choose>
 				</tr>
 			</c:forEach>
 			</tbody>

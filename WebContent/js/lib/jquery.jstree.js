@@ -2183,10 +2183,10 @@
 
 			var s = this._get_settings().cookies,
 				tmp;
-			if(!!s.save_loaded) {
+			/*if(!!s.save_loaded) {
 				tmp = $.cookie(s.save_loaded);
 				if(tmp && tmp.length) { this.data.core.to_load = tmp.split(","); }
-			}
+			}*/
 			if(!!s.save_opened) {
 				tmp = $.cookie(s.save_opened);
 				if(tmp && tmp.length) { this.data.core.to_open = tmp.split(","); }
@@ -2204,7 +2204,7 @@
 				}, this));
 		},
 		defaults : {
-			save_loaded		: "jstree_load",
+			//save_loaded		: "jstree_load",
 			save_opened		: "jstree_open",
 			save_selected	: "jstree_select",
 			auto_save		: true,

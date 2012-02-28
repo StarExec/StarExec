@@ -700,10 +700,9 @@ public class Spaces {
 		int newSpaceId = procAddSpace.getInt(6);
 		
 		// Add the new space as a child space of the parent space
-		CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?, ?)}");	
+		CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
 		procSubspace.setInt(1, parentId);
 		procSubspace.setInt(2, newSpaceId);
-		procSubspace.setInt(3, defaultPermId);					
 		procSubspace.executeUpdate();		
 		
 		// Add the adding user to the space with the maximal permissions

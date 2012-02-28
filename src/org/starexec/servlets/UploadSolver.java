@@ -146,14 +146,18 @@ public class UploadSolver extends HttpServlet {
 		
 		List<Configuration> returnList = new ArrayList<Configuration>();
 		
-		for(File f : binDir.listFiles()){
-			f.setExecutable(true, false);
+		for(File f : binDir.listFiles()){			
 			if(f.isFile() && f.getName().startsWith(UploadSolver.CONFIG_PREFIX)){
 				Configuration c = new Configuration();								
 				c.setName(f.getName().substring(UploadSolver.CONFIG_PREFIX.length()));
 				returnList.add(c);
+				
+				// Make sure the configuration has the right line endings
+				Util.normalizeFile(f);
 			}				
+			f.setExecutable(true, false);
 		}
+		
 		return returnList;
 	}
 	

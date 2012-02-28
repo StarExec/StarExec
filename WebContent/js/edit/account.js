@@ -89,6 +89,16 @@ $(document).ready(function(){
 			window.location.reload(true);
 		});
 	});
+	
+	$('fieldset:first').expandable(false);
+	$('fieldset:not(:first)').expandable(true);
+	
+	$('#personal').dataTable( {
+        "sDom": 'rt<"bottom"f><"clear">',
+        "aaSorting": [],
+        "bPaginate": false,        
+        "bSort": true        
+    });	
 });
 
 
@@ -203,11 +213,11 @@ function togglePlusMinus(addSiteButton){
 function displayWebsites(data) {
 	
 	// Ensures the websites table is empty
-	$('#websites tr').parent().remove();
+	$('#websites tbody tr').remove();
 	
 	// Injects the clickable delete button that's always present
 	$.each(data, function(i, site) {
-		$('#websites').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="website" id="' + site.id + '">delete</a></td></tr>');
+		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="website" id="' + site.id + '">delete</a></td></tr>');
 	});
 	
 	// Handles deletion of websites

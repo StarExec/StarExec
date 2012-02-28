@@ -131,6 +131,10 @@ tr.even {
 	background-color: #111111;
 }
 
+tbody tr.row_selected{
+	background-color: #dc6f04;
+}
+
 .dataTables_scroll {
 	clear: both;
 }

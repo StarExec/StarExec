@@ -11,9 +11,7 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
-			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />					
-			<property key="CONFIG_PATH" value="/project/tomcat-webapps/webapps/starexec/WEB-INF/classes/org/starexec/config" />
-			<property key="STAREXEC_ROOT" value="/project/tomcat-webapps/webapps/starexec" />
+			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />											
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
 			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />
 			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
@@ -25,7 +23,9 @@
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
-			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />			
+			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
+			<property key="DEFAULT_USER_QUOTA" value="52428800" />
+								
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<property key="SGE_STATISTICS_PERIOD" value="120" />
@@ -35,13 +35,17 @@
 			<property key="QUEUE_DETAILS_COMMAND" value="qconf -sq " />
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
 			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
+			<property key="MAX_PAIR_RUNTIME" value="259200" />
+			<property key="MAX_PAIR_CPUTIME" value="259200" />
+			<property key="MAX_PAIR_FILE_WRITE" value="2097152" />
+			<property key="MAX_PAIR_VMEM" value="768000" />
 		</class>
 		<class name="org.starexec.util.Validator">					
 			<property key="BOOLEAN_PATTERN">
 				<value><![CDATA[true|false]]></value>
 			</property>		
 			<property key="LONG_PATTERN">
-				<value><![CDATA[^\d+$]]></value>
+				<value><![CDATA[^\-?\d+$]]></value>
 			</property>									
 			<property key="USER_NAME_PATTERN">
 				<value><![CDATA[^[A-Z\-\s']{2,32}$]]></value>
@@ -56,7 +60,7 @@
 				<value><![CDATA[https?://([-\w\.]+)+(:\d+)?(/([\w/_\.]*(\?\S+)?)?){1,128}]]></value>
 			</property>						
 			<property key="PRIMITIVE_NAME_PATTERN">
-				<value><![CDATA[^[\w\-\. ]{1,32}$]]></value>
+				<value><![CDATA[^[\w\-\. ]{1,64}$]]></value>
 			</property>									
 			<property key="PASSWORD_PATTERN">
 				<value><![CDATA[^(?=.*[A-Zz0-9\Q~`!@#$%^&*()_\-\+=\E]+$)(?=.*[0-9]{1,})(?=.*[A-Za-z]{1,})(?=.*[\Q~`!@#$%^&*()_\-\+=\E]+{1,}).{6,20}$]]></value>
@@ -80,9 +84,7 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\benchmarks" />
-			<property key="SOLVER_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\solvers" />				
-			<property key="CONFIG_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\build\\classes\\org\\starexec\\config" />
-			<property key="STAREXEC_ROOT" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec\\" />
+			<property key="SOLVER_PATH" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\solvers" />										
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobin" />
 			<property key="JOB_LOG_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\jobout" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Tyler\\Documents\\Eclipse EE\\starexec_res\\node" />
@@ -117,9 +119,9 @@
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="/home/tnjensen/dev/benchmarks" />
 			<property key="SOLVER_PATH" value="/home/tnjensen/dev/solvers" />				
-			<property key="CONFIG_PATH" value="/home/tnjensen/dev/tomcat/webapps/starexec/WEB-INF/classes/org/starexec/config" />
-			<property key="STAREXEC_ROOT" value="/home/tnjensen/dev/tomcat/webapps/starexec" />
+			<property key="CONFIG_PATH" value="/home/tnjensen/dev/tomcat/webapps/starexec/WEB-INF/classes/org/starexec/config" />			
 			<property key="JOB_INBOX_DIR" value="/home/tnjensen/dev/jobin" />
+			<property key="JOB_OUTPUT_DIR" value="/home/tnjensen/dev/jobout" />
 			<property key="JOB_LOG_DIR" value="/home/tnjensen/dev/jobout" />					
 			<property key="NODE_WORKING_DIR" value="/export/starexec/workspace" />
 		</class>
@@ -135,9 +137,7 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\benchmarks\\" />
-			<property key="SOLVER_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\solvers\\" />				
-			<property key="CONFIG_PATH" value="C:\\Users\\Todd\\workspace\\starexec\\build\\classes\\org\\starexec\\config\\" />
-			<property key="STAREXEC_ROOT" value="C:\\Users\\Todd\\workspace\\starexec\\" />
+			<property key="SOLVER_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\solvers\\" />										
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\jobs\\" />
 			<property key="JOB_LOG_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\job_out\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\node\\" />
@@ -159,9 +159,7 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="C:\\StarExec Workspace\\starexec_res\\benchmarks" />
-			<property key="SOLVER_PATH" value="C:\\StarExec Workspace\\starexec_res\solvers" />				
-			<property key="CONFIG_PATH" value="C:\\StarExec Workspace\\starexec\\build\\classes\\org\\starexec\\config" />
-			<property key="STAREXEC_ROOT" value="C:\\StarExec Workspace\\starexec\\" />
+			<property key="SOLVER_PATH" value="C:\\StarExec Workspace\\starexec_res\solvers" />										
 			<property key="JOB_INBOX_DIR" value="C:\\StarExec Workspace\\starexec_res\\jobs" />
 			<property key="JOB_LOG_DIR" value="C:\\StarExec Workspace\\starexec_res\\job_out\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\StarExec Workspace\\starexec_res\\node" />
@@ -184,9 +182,7 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
 			<property key="BENCHMARK_PATH" value="C:\\Users\\Skylar\\workspace\\starexec_res\\benchmarks" />
-			<property key="SOLVER_PATH" value="C:\\Users\\Skylar\\workspace\\starexec_res\solvers" />				
-			<property key="CONFIG_PATH" value="C:\\Users\\Skylar\\workspace\\starexec\\build\\classes\\org\\starexec\\config" />
-			<property key="STAREXEC_ROOT" value="C:\\Users\\Skylar\\workspace\\starexec\\" />
+			<property key="SOLVER_PATH" value="C:\\Users\\Skylar\\workspace\\starexec_res\solvers" />										
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Skylar\\workspace\\starexec_res\\jobs" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Skylar\\workspace\\starexec_res\\node" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />

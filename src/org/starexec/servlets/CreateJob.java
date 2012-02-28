@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Job;
@@ -36,6 +37,8 @@ public class CreateJob extends HttpServlet {
 	private static final String solvers = "solver";
 	private static final String configs = "configs";
 	private static final String benchmarks = "bench";
+	private static final String cpuTimeout = "cpuTimeout";
+	private static final String clockTimeout = "wallclockTimeout";
 	private static final String spaceId = "sid";
 	
 	/**
@@ -58,6 +61,10 @@ public class CreateJob extends HttpServlet {
 		// Get pre and post processor IDs if they exist, or else set them to -1
 		int preProcessorId = Util.paramExists(preProcessor, request) ? Integer.parseInt((String)request.getParameter(preProcessor)) : -1; 
 		int postProcessorId = Util.paramExists(postProcessor, request) ? Integer.parseInt((String)request.getParameter(postProcessor)) : -1;
+		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
+		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
+		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
 		
 		Job j = JobManager.buildJob(
 				SessionUtil.getUserId(request), 
@@ -66,6 +73,8 @@ public class CreateJob extends HttpServlet {
 				preProcessorId,
 				postProcessorId, 
 				Integer.parseInt((String)request.getParameter(workerQueue)), 
+				cpuLimit,
+				runLimit,
 				Util.toIntegerList(request.getParameterValues(benchmarks)), 
 				Util.toIntegerList(request.getParameterValues(solvers)), 
 				Util.toIntegerList(request.getParameterValues(configs)));
@@ -92,6 +101,15 @@ public class CreateJob extends HttpServlet {
 		try {
 			// Make sure the parent space id is a int
 			if(!Validator.isValidInteger((String)request.getParameter(spaceId))) {
+				return false;
+			}
+			
+			// Make sure timeout an int
+			if(!Validator.isValidInteger((String)request.getParameter(clockTimeout))) {
+				return false;
+			}
+			
+			if(!Validator.isValidInteger((String)request.getParameter(cpuTimeout))) {
 				return false;
 			}
 						

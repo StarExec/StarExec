@@ -17,7 +17,6 @@
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
-			request.setAttribute("log", GridEngineUtil.getJobLog(jp));
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to view this job pair");
 		}
@@ -28,10 +27,10 @@
 	}
 %>
 
-<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair" css="common/table, details/shared, details/pair">			
-	<fieldset>
+<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared">			
+	<fieldset id="fieldDetails">
 		<legend>details</legend>
-		<table class="shaded">
+		<table id="detailTable" class="shaded">
 			<thead>
 				<tr>
 					<th>property</th>
@@ -59,6 +58,14 @@
 					<td>ran by</td>			
 					<td><star:user value="${usr}" /></td>
 				</tr>
+				<tr>
+					<td>cpu timeout</td>			
+					<td>${pair.cpuTimeout} seconds</td>
+				</tr>
+				<tr>
+					<td>wallclock timeout</td>			
+					<td>${pair.wallclockTimeout} seconds</td>
+				</tr>
 				<c:if test="${pair.status.code == 7}">
 				<tr>
 					<td>execution host</td>
@@ -84,7 +91,7 @@
 			</tbody>
 		</table>	
 	</fieldset>		
-	<fieldset>
+	<fieldset id="fieldStats">
 	<legend>run statistics</legend>	
 	<c:choose>
 		<c:when test="${pair.status.code == 6}">
@@ -163,19 +170,19 @@
 		</c:otherwise>
 	</c:choose>		
 	</fieldset>		
-	
-	<c:if test="${pair.status.code > 4 && pair.status.code <= 12}">
-		<fieldset>
-			<legend>job log</legend>
-			<c:if test="${not empty log}">
-				<textarea>
-${log}
-				</textarea>
-			</c:if>
-			<c:if test="${empty log}">
-				<p>unavailable</p>
-			</c:if>
+	<c:if test="${pair.status.code > 4}">
+		<fieldset id="fieldOutput">		
+			<legend><img alt="loading" src="/starexec/images/loader.gif"> output</legend>			
+			<textarea id="jpStdout" readonly="readonly"></textarea>	
+			<a href="/starexec/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
 		</fieldset>
 	</c:if>
-	<a href="/starexec/secure/download?type=jp_output&id=${pair.id}" id="downLink">download output</a>
+	<c:if test="${pair.status.code > 4 && pair.status.code <= 12}">
+		<fieldset id="fieldLog">
+			<legend><img alt="loading" src="/starexec/images/loader.gif"> job log</legend>			
+			<textarea id="jpLog" readonly="readonly"></textarea>
+			<a href="/starexec/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
+		</fieldset>
+	</c:if>
+	<a href="/starexec/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
 </star:template>

@@ -8,11 +8,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for jobs (NOT grid engine job execution, see JobManager for that)
@@ -63,31 +65,30 @@ public class Jobs {
 	 * @return True if the operation was successful
 	 */
 	private static boolean addJob(Connection con, Job job) throws Exception {				
-		CallableStatement procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setInt(1, job.getUserId());
 		procedure.setString(2, job.getName());
 		procedure.setString(3, job.getDescription());		
 		procedure.setInt(4, job.getQueue().getId());
-		procedure.setLong(5, job.getTimeout());
 		
 		// Only set pre and post processors if they're specified, else set to null
 		if(job.getPreProcessor().getId() > 0) {
-			procedure.setInt(6, job.getPreProcessor().getId());
+			procedure.setInt(5, job.getPreProcessor().getId());
+		} else {
+			procedure.setNull(5, java.sql.Types.INTEGER);
+		}		
+		if(job.getPostProcessor().getId() > 0) {
+			procedure.setInt(6, job.getPostProcessor().getId());
 		} else {
 			procedure.setNull(6, java.sql.Types.INTEGER);
 		}		
-		if(job.getPostProcessor().getId() > 0) {
-			procedure.setInt(7, job.getPostProcessor().getId());
-		} else {
-			procedure.setNull(7, java.sql.Types.INTEGER);
-		}		
 		
 		// The procedure will return the job's new ID in this parameter
-		procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
+		procedure.registerOutParameter(7, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
 		
 		// Update the job's ID so it can be used outside this method
-		job.setId(procedure.getInt(8));		
+		job.setId(procedure.getInt(7));		
 		
 		return true;
 	}
@@ -152,18 +153,20 @@ public class Jobs {
 	 * @return True if the operation was successful
 	 */
 	private static boolean addJobPair(Connection con, JobPair pair) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setInt(1, pair.getJobId());
 		procedure.setInt(2, pair.getBench().getId());
 		procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
 		procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());				
+		procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
+		procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
 		
 		// The procedure will return the pair's new ID in this parameter
-		procedure.registerOutParameter(5, java.sql.Types.INTEGER);	
+		procedure.registerOutParameter(7, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
 		
 		// Update the pair's ID so it can be used outside this method
-		pair.setId(procedure.getInt(5));
+		pair.setId(procedure.getInt(7));
 		
 		return true;
 	}
@@ -264,8 +267,7 @@ public class Jobs {
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setTimeout(results.getLong("timeout"));
+				j.setCreateTime(results.getTimestamp("created"));				
 				
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
@@ -304,8 +306,7 @@ public class Jobs {
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setTimeout(results.getLong("timeout"));
+				j.setCreateTime(results.getTimestamp("created"));				
 				
 				j.getQueue().setId(results.getInt("queue_id"));
 				j.getPreProcessor().setId(results.getInt("pre_processor"));
@@ -344,8 +345,7 @@ public class Jobs {
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setTimeout(results.getLong("timeout"));				
+				j.setCreateTime(results.getTimestamp("created"));					
 				jobs.add(j);				
 			}			
 						
@@ -571,8 +571,9 @@ public class Jobs {
 
 		jp.setId(result.getInt("id"));
 		jp.setJobId(result.getInt("job_id"));
-		jp.setGridEngineId(result.getInt("sge_id"));		
-		jp.setShortResult(result.getString("short_result"));
+		jp.setGridEngineId(result.getInt("sge_id"));	
+		jp.setCpuTimeout(result.getInt("cpuTimeout"));		
+		jp.setWallclockTimeout(result.getInt("clockTimeout"));
 		jp.setQueueSubmitTime(result.getTimestamp("queuesub_time"));
 		jp.setStartTime(result.getTimestamp("start_time"));
 		jp.setEndTime(result.getTimestamp("end_time"));
@@ -657,28 +658,27 @@ public class Jobs {
 		
 		try {
 			con = Common.getConnection();									
-			CallableStatement procedure = con.prepareCall("{CALL UpdatePairStats(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");			
-			procedure.setInt(1, pair.getGridEngineId());
-			procedure.setString(2, pair.getShortResult());
-			procedure.setString(3, pair.getNode().getName());
-			procedure.setTimestamp(4, pair.getQueueSubmitTime());
-			procedure.setTimestamp(5, pair.getStartTime());
-			procedure.setTimestamp(6, pair.getEndTime());
-			procedure.setInt(7, pair.getExitStatus());
-			procedure.setDouble(8, pair.getCpuUsage());
-			procedure.setDouble(9, pair.getUserTime());
-			procedure.setDouble(10, pair.getSystemTime());
-			procedure.setDouble(11, pair.getIoDataUsage());
-			procedure.setDouble(12, pair.getIoDataWait());
-			procedure.setDouble(13, pair.getMemoryUsage());
-			procedure.setDouble(14, pair.getMaxVirtualMemory());
-			procedure.setDouble(15, pair.getMaxResidenceSetSize());
-			procedure.setDouble(16, pair.getPageReclaims());
-			procedure.setDouble(17, pair.getPageFaults());
-			procedure.setDouble(18, pair.getBlockInput());
-			procedure.setDouble(19, pair.getBlockOutput());
-			procedure.setDouble(20, pair.getVoluntaryContextSwitches());
-			procedure.setDouble(21, pair.getInvoluntaryContextSwitches());							
+			CallableStatement procedure = con.prepareCall("{CALL UpdatePairStats(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");			
+			procedure.setInt(1, pair.getGridEngineId());			
+			procedure.setString(2, pair.getNode().getName());
+			procedure.setTimestamp(3, pair.getQueueSubmitTime());
+			procedure.setTimestamp(4, pair.getStartTime());
+			procedure.setTimestamp(5, pair.getEndTime());
+			procedure.setInt(6, pair.getExitStatus());
+			procedure.setDouble(7, pair.getCpuUsage());
+			procedure.setDouble(8, pair.getUserTime());
+			procedure.setDouble(9, pair.getSystemTime());
+			procedure.setDouble(10, pair.getIoDataUsage());
+			procedure.setDouble(11, pair.getIoDataWait());
+			procedure.setDouble(12, pair.getMemoryUsage());
+			procedure.setDouble(13, pair.getMaxVirtualMemory());
+			procedure.setDouble(14, pair.getMaxResidenceSetSize());
+			procedure.setDouble(15, pair.getPageReclaims());
+			procedure.setDouble(16, pair.getPageFaults());
+			procedure.setDouble(17, pair.getBlockInput());
+			procedure.setDouble(18, pair.getBlockOutput());
+			procedure.setDouble(19, pair.getVoluntaryContextSwitches());
+			procedure.setDouble(20, pair.getInvoluntaryContextSwitches());							
 				
 			procedure.executeUpdate();						
 			return true;

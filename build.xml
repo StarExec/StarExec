@@ -12,6 +12,7 @@
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="tomcat-dir" value="/project/tomcat/apache-tomcat-7" />
 	<property name="db_name" value="prod_starexec" />
+	<property name="sge_script_dir" value="/home/starexec/sge_scripts"/>
 	
 	<!-- Specify to java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
@@ -82,6 +83,19 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>		
+		
+		<!-- Copy the sge scripts to their proper location -->		
+		<copy todir="${sge_script_dir}">
+			<fileset dir="${source-directory}/org/starexec/config/sge">
+				<include name="**/*.bash" />
+			</fileset>
+		</copy>
+		
+		<!-- Change permissions of the new sge script files so sge can use them -->
+		<chmod dir="${sge_script_dir}" perm="770" includes="**/*.bash"/>		
+		<chown owner=":star-web">
+			<fileset dir="${sge_script_dir}" includes="**/*.bash"/>
+	    </chown>
 		
 		<!-- Create the war file! -->		
 		<war warfile="${war-file-name}" webxml="${web-inf}/web.xml">

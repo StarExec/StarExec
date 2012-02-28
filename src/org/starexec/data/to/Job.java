@@ -16,8 +16,7 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Job extends Identifiable implements Iterable<JobPair> {
-	private int userId = -1;	
-	private long timeout = -1;	
+	private int userId = -1;		
 	@Expose private String name;
 	@Expose private String description = "no description";
 	private Queue queue = null;
@@ -73,20 +72,6 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 */
 	public void setCreateTime(Timestamp created) {
 		this.createTime = created;
-	}
-
-	/**
-	 * @return the maximum amount of time (in seconds) a job can run
-	 */
-	public long getTimeout() {
-		return this.timeout;
-	}
-
-	/**
-	 * @param timeout the timeout for the job
-	 */
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
 	}
 
 	/**

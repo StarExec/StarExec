@@ -27,12 +27,15 @@ import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -91,7 +94,80 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a json string representing all attributes of the node with the given id
+	 * @return a json string that holds the log of job pair with the given id
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/jobs/pairs/{id}/log")
+	@Produces("text/plain")		
+	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
+		JobPair jp = Jobs.getPair(id);
+		int userId = SessionUtil.getUserId(request);
+		
+		if(jp != null) {			
+			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
+				String log = GridEngineUtil.getJobLog(jp.getId(), jp.getGridEngineId());
+				
+				if(!Util.isNullOrEmpty(log)) {
+					return log;
+				}
+			}
+		}
+		
+		return "not available";
+	}
+	
+	/**
+	 * @return a string that is the plain text contents of a benchmark file
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/benchmarks/{id}/contents")
+	@Produces("text/plain")	
+	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+		Benchmark b = Benchmarks.get(id);
+		int userId = SessionUtil.getUserId(request);
+		
+		if(b != null) {			
+			if(Permissions.canUserSeeBench(b.getId(), userId) && b.isDownloadable()) {				
+				String contents = Benchmarks.getContents(b, limit);
+				
+				if(!Util.isNullOrEmpty(contents)) {
+					return contents;
+				}				
+			}
+		}
+		
+		return "not available";
+	}
+	
+	/**
+	 * @return a string that holds the std out of job pair with the given id
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/jobs/pairs/{id}/stdout")
+	@Produces("text/plain")	
+	public String getJobPairStdout(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+		JobPair jp = Jobs.getPair(id);
+		int userId = SessionUtil.getUserId(request);
+		
+		if(jp != null) {			
+			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
+				Job j = Jobs.getShallow(jp.getJobId());			
+				String stdout = GridEngineUtil.getStdOut(j, jp, limit);
+				
+				if(!Util.isNullOrEmpty(stdout)) {
+					return stdout;
+				}				
+			}
+		}
+		
+		return "not available";
+	}
+	
+	/**
+	 * @return a string representing all attributes of the node with the given id
 	 * @author Tyler Jensen
 	 */
 	@GET

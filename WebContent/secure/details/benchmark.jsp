@@ -28,52 +28,74 @@
 	}
 %>
 
-<star:template title="${bench.name}" js="details/shared" css="details/shared">				
+<star:template title="${bench.name}" js="details/shared, details/benchmark" css="details/shared">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
 		<table class="shaded">
-			<tr>
-				<td>description</td>			
-				<td>${bench.description}</td>
-			</tr>
-			<tr>
-				<td>owner</td>			
-				<td><star:user value="${usr}" /></td>
-			</tr>							
-			<tr>
-				<td>uploaded</td>			
-				<td><fmt:formatDate pattern="MMM dd yyyy" value="${bench.uploadDate}" /></td>
-			</tr>			
+			<thead>
+				<tr>
+					<th>attribute</th>
+					<th>value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>description</td>			
+					<td>${bench.description}</td>
+				</tr>
+				<tr>
+					<td>owner</td>			
+					<td><star:user value="${usr}" /></td>
+				</tr>							
+				<tr>
+					<td>uploaded</td>			
+					<td><fmt:formatDate pattern="MMM dd yyyy" value="${bench.uploadDate}" /></td>
+				</tr>	
+				<tr>
+					<td>downloadable</td>			
+					<td>${bench.downloadable}</td>
+				</tr>		
+			</tbody>
 		</table>	
 	</fieldset>
-		<fieldset>
+	<fieldset id="fieldType">
 		<legend>type</legend>
 		<table class="shaded">
-			<tr>
-				<td>name</td>			
-				<td>${bench.type.name}</td>
-			</tr>
-			<tr>
-				<td>description</td>			
-				<td>${bench.type.description}</td>
-			</tr>
-			<tr>
-				<td>owning community</td>			
-				<td><star:community value="${com}" /></td>
-			</tr>		
+			<thead>
+				<tr>
+					<th>attribute</th>
+					<th>value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>name</td>			
+					<td>${bench.type.name}</td>
+				</tr>
+				<tr>
+					<td>description</td>			
+					<td>${bench.type.description}</td>
+				</tr>
+				<tr>
+					<td>owning community</td>			
+					<td><star:community value="${com}" /></td>
+				</tr>		
+			</tbody>
 		</table>	
 	</fieldset>			
-	<fieldset>
+	
+	<!-- <fieldset>
 		<legend>related jobs</legend>
 		<p>coming soon...</p>
-	</fieldset>
+	</fieldset> -->
 	
 	<c:if test="${bench.downloadable}">
-		<fieldset>
-			<legend>actions</legend>		
-				<ul>
-					<li><a id="downloadLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download</a></li>
-				</ul>					
-		</fieldset>
+		<fieldset id="fieldContents">
+			<legend><img alt="loading" src="/starexec/images/loader.gif"> contents</legend>
+			<textarea id="benchContent" readonly="readonly"></textarea>	
+			<a href="/starexec/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
+		</fieldset>			
+		
+		<a id="downLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download</a>
 	</c:if>			
 </star:template>

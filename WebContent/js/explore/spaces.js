@@ -28,8 +28,6 @@ $(document).ready(function(){
 	
 	// Enable/disable buttons based on permissions
 	initButtons();
-	
-	$('.dataTables_wrapper').hide();
 });
 
 /**
@@ -253,7 +251,11 @@ function initSpaceExplorer(){
 				}
 			}
 		},
-		"initially_select" : [ "1" ],
+		"ui" : {			
+			"select_limit" : 1,			
+			"selected_parent_close" : "select_parent",			
+			"initially_select" : [ "1" ]			
+		},
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
@@ -549,7 +551,8 @@ function initDataTables(){
         "sDom": 'rt<"bottom"flpi><"clear">'
     });
 	jobTable = $('#jobs').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": 'rt<"bottom"flpi><"clear">',
+        "aaSorting": []
     });
 	spaceTable = $('#spaces').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">'
@@ -576,6 +579,9 @@ function initDataTables(){
 	$('#users tbody').delegate('tr', 'hover', function(){
 		$(this).toggleClass('hovered');
 	});
+	
+	// Set all fieldselts as expandable (except for action fieldset)
+	$('fieldset:not(:last-child)').expandable(true);
 	
 	console.log('all datatables initialized');
 }
@@ -705,8 +711,9 @@ function populateDetails(jsonData) {
 	benchTable.fnClearTable();
 	$.each(jsonData.space.benchmarks, function(i, bench) {
 		var hiddenBenchId = '<input type="hidden" value="' + bench.id + '" >';
-		var benchLink = '<a href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenBenchId;
-		benchTable.fnAddData([benchLink, bench.type.name, bench.description]);		
+		var benchLink = '<a title="' + bench.description + '" href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenBenchId;
+		var typeSpan = '<span title="' + bench.type.description + '">' + bench.type.name + '</span>';
+		benchTable.fnAddData([benchLink, typeSpan]);		
 		// Set up data about this primitive used for drag/drop
 		$(benchTable.fnGetNodes(i)).data('id', bench.id);
 		$(benchTable.fnGetNodes(i)).data('type', 'benchmark');
@@ -719,7 +726,7 @@ function populateDetails(jsonData) {
 	spaceTable.fnClearTable();
 	$.each(jsonData.space.subspaces, function(i, subspace) {
 		var hiddenSubspaceId = '<input type="hidden" value="' + subspace.id + '" >';
-		var spaceLink = '<a href="/starexec/secure/details/space.jsp?id=' + subspace.id + '" target="blank">' + subspace.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenSubspaceId;
+		var spaceLink = '<span class="spaceLink" onclick="openSpace(' + spaceId + ',' + subspace.id + ')">' + subspace.name + '<img class="extLink" src="/starexec/images/external.png"/></span>' + hiddenSubspaceId;		
 		spaceTable.fnAddData([spaceLink, subspace.description]);		
 	});
 	
@@ -730,6 +737,17 @@ function populateDetails(jsonData) {
 	$('#loader').hide();
 	
 	console.log('Client side UI updated with details for ' + spaceName);
+}
+
+/**
+ * Expands the given parent space and selects the given child space in the jsTree
+ * @param parentId
+ * @param childId
+ */
+function openSpace(parentId, childId) {	
+	$("#exploreList").jstree("open_node", "#" + parentId, function() {
+	$.jstree._focused().select_node("#" + childId, true);	
+});	
 }
 
 
@@ -859,7 +877,7 @@ function checkPermissions(perms) {
 	
 	// Create tooltips for the expd class
 	createTooltip($("#userExpd"), null, 'expd', getSinglePermTable('user', perms.addUser, perms.removeUser));
-	createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBench, perms.removeBench));
+	createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBenchmark, perms.removeBench));
 	createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
 	createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
 	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));
@@ -878,17 +896,6 @@ function updateButtonIds(id) {
 	$('#uploadSolver').attr('href', "/starexec/secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
 	console.log('updated action button space ids to ' + id);
-}
-
-
-function toggleTable(sender) {
-	$(sender).parent().children('.dataTables_wrapper').slideToggle('fast');	
-	
-	if($(sender).children('span:last-child').text() == '(+)') {
-		$(sender).children('span:last-child').text('(-)');		
-	} else {
-		$(sender).children('span:last-child').text('(+)');		
-	}
 }
 
 /**

@@ -8,17 +8,11 @@ table {
 	width: 100%;	
 }
 
-table tr td {
-	padding: 15px;
-}
-
 #content ul li {
 	list-style: none;
 	float: left;
 	margin-right: 20px;
 }
-
-
 
 #delete{
 	float:right;
@@ -35,19 +29,12 @@ table tr td:first-child {
 	vertical-align: middle;
 }
 
-table .styled {
-	width: 192px;	
-	height: 28px;
-	margin-left: 2px;
-	border: 1px solid #13a5e1;				
-	font-size: 16px;	
+input[type="text"], textarea {
+	width: 200px; 
 }
 
-textarea#description {
-	resize: none;	
-	height: 50px;
-	border: 1px solid #13a5e1;
-	padding: 0px 5px 0px 5px;
+select {
+	width: 210px;
 }
 
 textarea#description.error{

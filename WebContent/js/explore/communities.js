@@ -55,6 +55,9 @@ $(document).ready(function(){
 		$(this).toggleClass("row_selected");
 	});
 	
+	// Make leaders and members expandable
+	$('.expd').parent().expandable(true);
+	
 	// Hide the 'remove user' button
 	$("#removeUser").fadeOut('fast');
 	
@@ -106,9 +109,7 @@ $(document).ready(function(){
 				}
 			}		
 		});				
-	});
-	
-	$('.dataTables_wrapper').hide();
+	});	
 	
 	$('#joinComm').button({
 		icons: {
@@ -210,7 +211,7 @@ function populateDetails(jsonData) {
 	});
 	
 	// Check the new permissions for the loaded space
-	checkPermissions(jsonData.perm);
+	checkPermissions(jsonData.perm);	
 	
 	// Done loading, hide the loader
 	$('#loader').hide();	
@@ -267,16 +268,6 @@ function updateActionId(id) {
 			}		
 		});
 	});
-}
-
-function toggleTable(sender) {
-	$(sender).parent().children('.dataTables_wrapper').slideToggle('fast');	
-	
-	if($(sender).children('span:last-child').text() == '(+)') {
-		$(sender).children('span:last-child').text('(-)');
-	} else {
-		$(sender).children('span:last-child').text('(+)');
-	}
 }
 
 /**

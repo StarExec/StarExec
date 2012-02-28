@@ -36,33 +36,37 @@
 	}
 %>
 
-<star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/solver">				
+<star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/shared">				
 	<form id="editSolverForm">
 		<fieldset>
 			<legend>solver details</legend>
 			<table class="shaded">
-				<tr>
-					<td class="label">solver name</td>			
-					<td><input id="name" type="text" name="name" value="${solver.name}" maxlength="32"/></td>
-				</tr>
-				<tr>
-					<td class="label">description</td>			
-					<td><textarea id="description" name="description" >${solver.description}</textarea></td>
-				</tr>
-				<tr>
-					<td>downloadable</td>
-					<td>
-					<input id="downloadable" type="radio" name="downloadable" value="true"  ${isDownloadable}>yes
-					<input id="downloadable" type="radio" name="downloadable" value="false" ${isNotDownloadable}>no
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<button type="button" id="delete">delete</button>
-						<button type="button" id="update">update</button>
-					</td>
-				</tr>						
+				<thead>
+					<tr>
+						<th>attribute</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="label">solver name</td>			
+						<td><input id="name" type="text" name="name" value="${solver.name}" maxlength="32"/></td>
+					</tr>
+					<tr>
+						<td class="label">description</td>			
+						<td><textarea id="description" name="description" >${solver.description}</textarea></td>
+					</tr>
+					<tr>
+						<td>downloadable</td>
+						<td>
+						<input id="downloadable" type="radio" name="downloadable" value="true"  ${isDownloadable}>yes
+						<input id="downloadable" type="radio" name="downloadable" value="false" ${isNotDownloadable}>no
+						</td>
+					</tr>																			
+				</tbody>
 			</table>	
+			<button type="button" id="delete">delete</button>
+			<button type="button" id="update">update</button>
 		</fieldset>		
 	</form>
 </star:template>

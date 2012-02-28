@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
@@ -47,12 +48,18 @@ public abstract class JobManager {
 			}
 			
 			// Read in the job script template and format it for all the pairs in this job
-			String jobTemplate = Util.readFile(new File(R.CONFIG_PATH, "jobscript"));
+			String jobTemplate = FileUtils.readFileToString(new File(R.CONFIG_PATH, "sge/jobscript"));
+			
+			// General job setup
 			jobTemplate = jobTemplate.replace("$$QUEUE$$", job.getQueue().getName());			
 			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
 			jobTemplate = jobTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
 			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 			jobTemplate = jobTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
+			
+			// Impose resource limits
+			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
+			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);							
 			
 			// Optimization, do outside of loop
 			boolean isSGEAvailable = GridEngineUtil.isAvailable();
@@ -67,9 +74,13 @@ public abstract class JobManager {
 				
 				if(true == isSGEAvailable) {				
 					// Submit to the grid engine
-					int sgeId = JobManager.submitScript(scriptPath);
-					Jobs.updateGridEngineId(pair.getId(), sgeId);
-					Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+					int sgeId = JobManager.submitScript(scriptPath, pair);
+					
+					// If the submission was successful
+					if(sgeId >= 0) {											
+						Jobs.updateGridEngineId(pair.getId(), sgeId);
+						Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+					}
 				}
 			}
 			
@@ -85,40 +96,59 @@ public abstract class JobManager {
 	/**
 	 * Takes in a job script and submits it to the grid engine
 	 * @param scriptPath The absolute path to the script
-	 * @return The grid engine id of the submitted job
+	 * @param pair The pair the script is being submitted for
+	 * @return The grid engine id of the submitted job. -1 if the submit failed
 	 */
-	private synchronized static int submitScript(String scriptPath) throws Exception {
-		// Get a new grid engine session
-        Session session = SessionFactory.getFactory().getSession();
-		JobTemplate sgeTemplate = null;		
+	private synchronized static int submitScript(String scriptPath, JobPair pair) throws Exception {
+		Session session = null;
+		JobTemplate sgeTemplate = null;
 		
-		// Initialize session
-        session.init("");
+		try {
+			// Get a new grid engine session
+	        session = SessionFactory.getFactory().getSession();
+			sgeTemplate = null;		
+			
+			// Initialize session
+	        session.init("");
+	
+	        // Set up the grid engine template
+	        sgeTemplate = session.createJobTemplate();
+	        
+	        // DRMAA needs to be told to expect a shell script and not a binary
+	        sgeTemplate.setNativeSpecification("-shell y -b n");
+	        
+	        // Tell the job where it will deal with files
+	        sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
+	        
+	        // Tell where the starexec log for the job should be placed (semicolon is required by SGE)
+	        sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR);
+	
+	        // Tell the job where the script to be executed is
+	        sgeTemplate.setRemoteCommand(scriptPath);	        
 
-        // Set up the grid engine template
-        sgeTemplate = session.createJobTemplate();
-        
-        // DRMAA needs to be told to expect a shell script and not a binary
-        sgeTemplate.setNativeSpecification("-shell y -b n");
-        
-        // Tell the job where it will deal with files
-        sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
-        
-        // Tell where the starexec log for the job should be placed (semicolon is required by SGE)
-        sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR + "/");
-
-        // Tell the job where the script to be executed is
-        sgeTemplate.setRemoteCommand(scriptPath);
-
-        // Actually submit the job to the grid engine
-        String id = session.runJob(sgeTemplate);
-        log.info(String.format("Job #%s (\"%s\") has been submitted to the grid engine.", id, scriptPath));
-               
-        // Cleanup
-        session.deleteJobTemplate(sgeTemplate);
-        session.exit();
-
-        return Integer.parseInt(id);
+	        // Actually submit the job to the grid engine
+	        String id = session.runJob(sgeTemplate);
+	        log.info(String.format("Job #%s (\"%s\") has been submitted to the grid engine.", id, scriptPath));	               	       	        
+	        
+	        return Integer.parseInt(id);
+		} catch (org.ggf.drmaa.DrmaaException drme) {
+			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
+			log.error(drme.getMessage(), drme);
+		} catch (Exception e) {
+			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
+			log.error(e.getMessage(), e);
+		} finally {
+	        // Cleanup. Session's MUST be exited or SGE will be mean to you
+			if(sgeTemplate != null) {
+				session.deleteJobTemplate(sgeTemplate);
+			}
+			
+			if(session != null) {
+				session.exit();
+			}
+		}
+		
+		return -1;
 	}
 	
 	/**
@@ -130,11 +160,17 @@ public abstract class JobManager {
 	 */
 	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
 		String jobScript = template;		
+		
+		// General pair configuration
 		jobScript = jobScript.replace("$$SOLVER_PATH$$", pair.getSolver().getPath());
 		jobScript = jobScript.replace("$$SOLVER_NAME$$", pair.getSolver().getName());
 		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
+
+		// Resource limits
+		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));		
+		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
 		
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		File f = new File(scriptPath);
@@ -142,8 +178,8 @@ public abstract class JobManager {
 		f.delete();				
 		f.createNewFile();
 		
-		if(!f.setExecutable(true, false)) {
-			log.error("Can't change owner's executable permissions on file " + scriptPath);
+		if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
+			log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
 			return "";
 		}
 		
@@ -162,19 +198,21 @@ public abstract class JobManager {
 	 * @param preProcessorId The id of the pre-processor to use for this job (-1 for none)
 	 * @param postProcessorId The id of the post-processor to use for this job (-1 for none)
 	 * @param queueId The id of the queue this job should run on
+	 * @param cpuTimeout The maximum amount of cpu time this job's pairs can run (individually)
+	 * @param clockTimeout The maximum amount of time (wallclock) this job's pairs can run (individually)
 	 * @param benchmarkIds A list of benchmarks to use in this job
 	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @return
 	 */
-	public static Job buildJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds) {
+	public static Job buildJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, int cpuTimeout, int clockTimeout, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds) {
 		// Create a new job object
 		Job j = new Job();
 		
 		// Set the job's name, submitter user id and description
 		j.setName(name);
-		j.setUserId(userId);
-	
+		j.setUserId(userId);		
+		
 		if(description != null) {
 			j.setDescription(description);
 		}
@@ -201,7 +239,9 @@ public abstract class JobManager {
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
-				pair.setSolver(solver);
+				pair.setSolver(solver);				
+				pair.setCpuTimeout(cpuTimeout);
+				pair.setWallclockTimeout(clockTimeout);
 				j.addJobPair(pair);
 			}
 		}

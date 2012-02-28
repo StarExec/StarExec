@@ -35,10 +35,6 @@
 	color: #666666;
 	font-style: italic;
 }
-
-#detailPanel tbody .row_selected{
-	background-color: #dc6f04;
-}
 	
 #detailPanel .button{
 	margin-bottom:9px;

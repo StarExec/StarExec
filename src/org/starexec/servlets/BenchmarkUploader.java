@@ -51,10 +51,12 @@ public class BenchmarkUploader extends HttpServlet {
 	private static final String addBench = "addBench";
 	private static final String addUser = "addUser";
 	private static final String addSpace = "addSpace";
+	private static final String addJob = "addJob";
 	private static final String removeSolver = "removeSolver";
 	private static final String removeBench = "removeBench";
 	private static final String removeUser = "removeUser";
 	private static final String removeSpace = "removeSpace";
+	private static final String removeJob = "removeJob";
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -218,11 +220,13 @@ public class BenchmarkUploader extends HttpServlet {
 		p.setAddBenchmark(form.containsKey(addBench));
 		p.setAddSolver(form.containsKey(addSolver));
 		p.setAddSpace(form.containsKey(addSpace));
-		p.setAddUser(form.containsKey(addUser));	
+		p.setAddUser(form.containsKey(addUser));
+		p.setAddJob(form.containsKey(addJob));
 		p.setRemoveBench(form.containsKey(removeBench));
 		p.setRemoveSolver(form.containsKey(removeSolver));
 		p.setRemoveSpace(form.containsKey(removeSpace));
 		p.setRemoveUser(form.containsKey(removeUser));
+		p.setRemoveJob(form.containsKey(removeJob));
 		
 		return p;
 	}

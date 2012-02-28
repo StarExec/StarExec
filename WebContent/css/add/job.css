@@ -3,25 +3,25 @@
 	margin: 50px auto 50px auto;	
 }
 
-#content table {
+.contentTbl {
 	width: 100%;
 }
 
-#content table tr th {
+.contentTbl tr th {
 	padding: 10px;
 }
 
-#content table tr td {
+.contentTbl tr td {
 	padding: 10px;
 	vertical-align: middle;
 }
 
-#content table input[type="text"], 
-#content table textarea {
+.contentTbl input[type="text"], 
+.contentTbl textarea {
 	width: 200px;
 }
 
-#content table select {
+.contentTbl select {
 	width: 212px;
 }
 
@@ -43,8 +43,29 @@ button {
 	width: 50%;
 }
 
-#tblSolverConfig tr td:nth-child(3) a,
-#tblBenchConfig tr td:nth-child(3) a {
-	font-size: 12px;
+#tblSolverConfig tbody tr,
+#tblBenchConfig tbody tr {	
 	cursor: pointer;
+}
+
+div.selectWrap p, div.selectWrap span {
+	display: inline-block;	
+}
+
+div.selectWrap {
+	font-size: 13px;
+	display: inline-block;
+}
+
+div.selectWrap p {
+	cursor: pointer;
+}
+
+div.selectWrap p:hover {
+	text-decoration: underline;
+}
+
+div.selectWrap span {
+	position: relative;
+	top: 3px;
 }

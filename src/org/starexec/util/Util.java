@@ -2,11 +2,17 @@ package org.starexec.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,38 +21,77 @@ import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
 	
 	/**
-	 * Be careful not to read in a file that takes up too much memory.
-	 * @param f File to insert
-	 * @return The string representation of the file
-	 * @throws IOException
+	 * Gives back a String that is the contents of the first n lines of the file where n always less
+	 * than or equal to lineLimit
+	 * @param f The file to read
+	 * @param lineLimit The maximum number of lines to read (anything less than 0 indicates no limit)
+	 * @return The contents of the file as a String (null if it could not be found)
 	 */
-	public static String readFile(File f) throws IOException {
-		BufferedReader reader = null;
-		String ls = getLineSeparator();
+	public static String readFileLimited(File f, int lineLimit) {
+		LineIterator lineItr = null;
 		
 		try {
-			reader = new BufferedReader(new FileReader(f));
-			String line = null;
-			StringBuilder str = new StringBuilder();
-			while( (line = reader.readLine()) != null ) {
-				str.append(line + ls);
+			// Set limit to max if it's less than 0 (anything less than 0 inclusive indicates no limit)
+			lineLimit = Math.min(lineLimit, Integer.MAX_VALUE);
+			
+			// If we found the correct std out file...
+			if(f.exists()) {
+				// Create a buffer to store the lines in and an iterator to iterate over the lines
+				StringBuilder sb = new StringBuilder();
+				lineItr = FileUtils.lineIterator(f);
+				int i = 0;
+				
+				// While there are more lines in the file...
+				while (lineItr.hasNext()) {
+					// If we've reached the line limit, break out, we're done.
+					if(i++ == lineLimit) {
+						break;
+					}
+					
+					// If we're still under the limit, add the line to the buffer
+					sb.append(lineItr.nextLine());					
+				}
+				
+				// Return the buffer
+				return sb.toString();
+			} else {
+				// If the file doesn't exist...
+				log.warn("Could not find file to open: " + f.getAbsolutePath());
 			}
-			reader.close();
-			return str.toString();
-		} catch(IOException e) {
-			if(reader != null) reader.close();
-			throw e;
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		} finally {
+			// Release the line iterator without potential error
+			LineIterator.closeQuietly(lineItr);
 		}
+		
+		return null;
+	}
+	
+	/**
+	 * Ensures a number is within a given range
+	 * @param min The minimum value the given value can be
+	 * @param max The maximum value the given value can be
+	 * @param value The actual value to clamp
+	 * @return min if value is less than min, max if value is 
+	 * greater than max, or value if it is between min and max
+	 */
+	public static int clamp(int min, int max, int value) {
+		return Math.max(Math.min(value, max), min);
 	}
 	
 	/**
@@ -213,5 +258,60 @@ public class Util {
 		}
 		
 		return retList;
+	}
+	
+	/**
+	 * Normalizes all line endings in the given file to the line ending of the OS the JVM is running on
+	 * @param f The file to normalize
+	 */
+	public static void normalizeFile(File f) {		
+		File temp = null;
+		BufferedReader bufferIn = null;
+		BufferedWriter bufferOut = null;		
+		
+		try {			
+			if(f.exists()) {
+				// Create a new temp file to write to
+				temp = new File(f.getAbsolutePath() + ".normalized");
+				temp.createNewFile();
+						
+				// Get a stream to read from the file un-normalized file
+				FileInputStream fileIn = new FileInputStream(f);
+				DataInputStream dataIn = new DataInputStream(fileIn);
+				bufferIn = new BufferedReader(new InputStreamReader(dataIn));
+				
+				// Get a stream to write to the noramlized file
+				FileOutputStream fileOut = new FileOutputStream(temp);
+				DataOutputStream dataOut = new DataOutputStream(fileOut);
+				bufferOut = new BufferedWriter(new OutputStreamWriter(dataOut));
+				
+				// For each line in the un-normalized file
+				String line;
+				while ((line = bufferIn.readLine()) != null) {
+					// Write the original line plus the operating-system dependent newline
+					bufferOut.write(line);
+					bufferOut.newLine();								
+				}
+			
+				bufferIn.close();
+				bufferOut.close();
+				
+				// Remove the original file
+				f.delete();
+				
+				// And rename the original file to the new one
+				temp.renameTo(f);
+			} else {
+				// If the file doesn't exist...
+				log.warn("Could not find file to open: " + f.getAbsolutePath());
+			}
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		} finally {
+			// Clean up, temp should never exist
+			FileUtils.deleteQuietly(temp);
+			IOUtils.closeQuietly(bufferIn);
+			IOUtils.closeQuietly(bufferOut);
+		}
 	}
 }

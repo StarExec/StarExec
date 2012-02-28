@@ -16,6 +16,15 @@ fieldset table {
 	border: none;
 }
 
+#content input[type="text"], textarea {
+	width: 60%;
+}
+
+#content input[type="file"] {
+	width: 60%;
+	padding-right: 10px;
+}
+
 #btnUpload {	
 	float: right;
 }

@@ -22,10 +22,10 @@
 			</table>
 		</fieldset>	
 		
-		<fieldset>
+		<!-- <fieldset>
 			<legend>actions</legend>
 			<ul id="actionList">							
 			</ul>
-		</fieldset>				
+		</fieldset>-->				
 	</div>	
 </star:template>

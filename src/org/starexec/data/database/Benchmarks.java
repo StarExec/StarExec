@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Processor;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for benchmarks.
@@ -406,4 +407,25 @@ public class Benchmarks {
 		log.debug(String.format("Benchmark [id=%d] failed to be updated.", id));
 		return false;
 	}	
+	
+	/**
+	 * Retrieves the contents of a benchmark file from disk as a string
+	 * @param b The benchmark to get the contents of (must have a valid path)
+	 * @param limit the maximum number of lines to return
+	 * @return The file contents as a string
+	 */
+	public static String getContents(Benchmark b, int limit) {
+		File file = new File(b.getPath());
+		return Util.readFileLimited(file, limit);
+	}
+	
+	/**
+	 * Retrieves the contents of a benchmark file from disk as a string
+	 * @param benchId The id of the benchmark to get the contents of
+	 * @param limit the maximum number of lines to return
+	 * @return The file contents as a string
+	 */
+	public static String getContents(int benchId, int limit) {
+		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
+	}
 }

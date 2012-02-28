@@ -12,11 +12,6 @@ tr .label {
 	width: 25%;
 }
 
-tr td,
-tr th {
-	padding: 10px;		
-}
-
 #passwordTable tr td button {
 	float: right;
 }

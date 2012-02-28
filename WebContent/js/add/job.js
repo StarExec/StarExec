@@ -26,8 +26,13 @@ $(document).ready(function(){
 				maxlength: 512,
 				regex: "^[\\w\\]\\[!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"
 			},
-			queue: {
-				required: true,
+			cpuTimeout: {
+				required: true,			    
+			    max: 259200
+			},
+			wallclockTimeout: {
+				required: true,			    
+			    max: 259200
 			}
 		},
 		messages: {
@@ -41,20 +46,43 @@ $(document).ready(function(){
 				maxlength: "< 512 characters",
 				regex: "invalid character(s)"
 			},
-			queue: {
-				required: "select a worker queue",
+			cpuTimeout: {
+				required: "enter a timeout",			    
+			    max: "3 day max timeout"
+			},
+			wallclockTimeout: {
+				required: "enter a timeout",			    
+			    max: "3 day max timeout"
 			}
 		}
 	});
 	
-	// Initialize buttons
-	initButtons();
+	// Initialize UI
+	initUI();	
+	
+	$('#addForm').submit(function() {
+		// Remove all unselected rows from the DOM before submitting
+		$('#tblBenchConfig tbody').children('tr').not('.row_selected').find('input').remove();
+		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('select, input').remove();
+	  	return true;
+	});
 });
 
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */
-function initButtons() {
+function initUI() {
+	// Set up datatables
+	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
+        "sDom": 'rt<"bottom"f><"clear">',        
+        "bPaginate": false,        
+        "bSort": true        
+    });
+	
+	// Place the select all/none buttons in the datatable footer
+	$('#fieldStep2 div.selectWrap').detach().prependTo('#fieldStep2 div.bottom');
+	$('#fieldStep3 div.selectWrap').detach().prependTo('#fieldStep3 div.bottom');
+	
 	$('#btnNext').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-e"
@@ -64,9 +92,9 @@ function initButtons() {
     	// Make sure the job config form is valid  before moving on
     	if(progress == 0 && false == isValid) {
     		return;
-    	} else if (progress == 1 && $('#tblSolverConfig tbody tr').length <= 1) {
+    	} else if (progress == 1 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {    	
     		// Make sure the user selects at least one solver before moving on
-    		showMessage('warn', 'you must have at least one solver for this job', 2000);
+    		showMessage('warn', 'you must have at least one solver for this job', 3000);
     		return;
     	}
     	
@@ -82,44 +110,37 @@ function initButtons() {
     	progress--;
     	updateProgress();
     });
-	
-	$('#btnUndo').button({
-		icons: {
-			secondary: "ui-icon-arrowrefresh-1-w"
-    }}).click(function(){
-    	switch(progress) {
-	    	case 1:	// Solver config stage
-	    		// Pop an element from the undo list and add it back to the table
-	    		$('#tblSolverConfig tbody').append(solverUndo.pop());
-	    		break;
-	    	case 2:	// Benchmark config stage
-	    		// Pop an element from the undo list and add it back to the table
-	    		$('#tblBenchConfig tbody').append(benchUndo.pop());
-	    		break;
-    	}
-    	
-    	if(solverUndo.length < 1 && benchUndo.length < 1) {
-    		// If there are no more items to undo, then hide the undo button
-    		$('#btnUndo').fadeOut('fast');
-    	}
-    });
     
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
     }}).click(function(){
     	// Make sure the user has at least one bechmark in the table
-    	if (progress == 2 && $('#tblBenchConfig tbody tr').length <= 1) {
-    		showMessage('warn', 'you must have at least one benchmark for this job', 2000);
+    	if (progress == 2 && $('#tblBenchConfig tbody tr.row_selected').length <= 0) {
+    		showMessage('warn', 'you must have at least one benchmark for this job', 3000);
     		return false;
     	}
     });
     
-    // Initialize the state of the job creator by forcing a progress update
-    updateProgress();
+    // Hook up select all/none buttons
+    $('.selectAll').click(function() {
+    	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+    });
     
-    // Initially hide the undo button
-	$('#btnUndo').fadeOut('fast');
+    $('.selectNone').click(function() {
+    	$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+    });
+    
+    // Enable row selection
+	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
+		$(this).toggleClass("row_selected");
+	});
+    
+	// Set timeout default to 1 day	
+	$("#timeoutDay option[value='1']").attr("selected", "selected");
+	
+    // Initialize the state of the job creator by forcing a progress update
+    updateProgress();           
 }
 
 /**
@@ -151,26 +172,4 @@ function updateProgress() {
 			$('#btnDone').fadeIn('fast');
 			break;
 	}
-}
-
-/**
- * Removes a benchmak from a table and adds it to the undo list
- */
-function removeBench(obj) {
-	// Save the DOM object
-	benchUndo.push($(obj).parent().parent());	
-	// Remove it from DOM
-	$(obj).parent().parent().remove();
-	$('#btnUndo').fadeIn('fast');
-}
-
-/**
- * Removes a solver from a table and adds it to the undo list
- */
-function removeSolver(obj) {
-	// Save the DOM object
-	solverUndo.push($(obj).parent().parent());
-	// Remove it from DOM
-	$(obj).parent().parent().remove();
-	$('#btnUndo').fadeIn('fast');
 }

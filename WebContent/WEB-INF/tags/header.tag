@@ -2,8 +2,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <header id="pageHeader">
-	<img src="/starexec/images/logo.svg" alt="Starexec Logo">
-	<h1>star<span class="font-accent">exec</span></h1>
+	<a href="/starexec"><img src="/starexec/images/starlogo.png" alt="Starexec Logo"></a>
 	
 	<c:if test="${not empty user}">
 		<nav>

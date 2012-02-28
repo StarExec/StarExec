@@ -37,50 +37,54 @@
 	}
 %>
 
-<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/benchmark">				
+<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/shared">				
 	<form id="editBenchmarkForm">
 		<fieldset>
 			<legend>benchmark details</legend>
 			<table class="shaded">
-				<tr>
-					<td class="label">benchmark name</td>			
-					<td><input id="name" type="text" name="name" value="${bench.name}" maxlength="32"/></td>
-				</tr>
-				<tr>
-					<td class="label">description</td>			
-					<td><textarea id="description" name="description" >${bench.description}</textarea></td>
-				</tr>
-				<tr>
-					<td class="label">type</td>
-					<td>
-						<select id="benchType" name="benchType" class="styled">
-							<c:forEach var="type" items="${types}">
-									<c:choose>
-										<c:when test="${type.name == bench.type.name}">
-											<option selected value="${type.id}">${type.name}</option>	
-										</c:when>
-										<c:otherwise>
-											<option value="${type.id}">${type.name}</option>
-										</c:otherwise>
-									</c:choose>
-							</c:forEach>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td>downloadable</td>
-					<td>
-					<input id="downloadable" type="radio" name="downloadable" value="true"  ${isDownloadable}   >yes
-					<input id="downloadable" type="radio" name="downloadable" value="false" ${isNotDownloadable}>no
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<button type="button" id="delete">delete</button>
-						<button type="button" id="update">update</button>
-					</td>
-				</tr>						
+				<thead>
+					<tr>
+						<th>attribute</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="label">name</td>			
+						<td><input id="name" type="text" name="name" value="${bench.name}" maxlength="32"/></td>
+					</tr>
+					<tr>
+						<td class="label">description</td>			
+						<td><textarea id="description" name="description" >${bench.description}</textarea></td>
+					</tr>
+					<tr>
+						<td class="label">type</td>
+						<td>
+							<select id="benchType" name="benchType">
+								<c:forEach var="type" items="${types}">
+										<c:choose>
+											<c:when test="${type.name == bench.type.name}">
+												<option selected value="${type.id}">${type.name}</option>	
+											</c:when>
+											<c:otherwise>
+												<option value="${type.id}">${type.name}</option>
+											</c:otherwise>
+										</c:choose>
+								</c:forEach>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>downloadable</td>
+						<td>
+							<input id="downloadable" type="radio" name="downloadable" value="true" ${isDownloadable}> yes
+							<input id="downloadable" type="radio" name="downloadable" value="false" ${isNotDownloadable}> no
+						</td>
+					</tr>						
+				</tbody>			
 			</table>	
+			<button type="button" id="delete">delete</button>
+			<button type="button" id="update">update</button>
 		</fieldset>		
 	</form>
 </star:template>

@@ -15,6 +15,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
+import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
 /**
@@ -25,12 +26,10 @@ import org.starexec.util.Validator;
  */
 public class Starexec implements ServletContextListener {
 	private static final Logger log = Logger.getLogger(Starexec.class);
-	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(2);
-	
-	public static String ROOT_APPLICATION_PATH = "";	
+	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(2);	
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
-	private static String CONFIG_PATH = "/WEB-INF/classes/org/starexec/config/starexec-config.xml";
+	//private static String CONFIG_PATH = "/WEB-INF/classes/org/starexec/config/starexec-config.xml";
 	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
 	
 	@Override
@@ -59,13 +58,16 @@ public class Starexec implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
-		Starexec.ROOT_APPLICATION_PATH = event.getServletContext().getRealPath("/");
-		log.info(String.format("Application started at [%s]", ROOT_APPLICATION_PATH));
+		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
+		log.info(String.format("Application started at [%s]", R.STAREXEC_ROOT));
 		// Before we do anything we must configure log4j!
-		PropertyConfigurator.configure(new File(ROOT_APPLICATION_PATH, LOG4J_PATH).getAbsolutePath());
+		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 										
+		// Setup the path to starexec's configuration files
+		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
+		
 		// Load all properties from the starexec-config file
-		ConfigUtil.loadProperties(new File(ROOT_APPLICATION_PATH, CONFIG_PATH));
+		ConfigUtil.loadProperties(new File(R.CONFIG_PATH, "starexec-config.xml"));
 		
 		// Initialize the datapool after properties are loaded
 		Common.initialize();

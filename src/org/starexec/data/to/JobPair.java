@@ -9,10 +9,11 @@ import java.sql.Timestamp;
 public class JobPair extends Identifiable {	
 	private int jobId = -1;
 	private int gridEngineId = -1;
+	private int cpuTimeout = -1;
+	private int wallclockTimeout = -1;
 	private WorkerNode node = null;
 	private Solver solver = null;
 	private Benchmark bench = null;	
-	private String shortResult = "";
 	private Status status = null;
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
@@ -67,6 +68,34 @@ public class JobPair extends Identifiable {
 	 */
 	public void setGridEngineId(int gridEngineId) {
 		this.gridEngineId = gridEngineId;
+	}
+		
+	/**
+	 * @return the maximum amount of cpu time (in seconds) a job pair can run
+	 */
+	public int getCpuTimeout() {
+		return this.cpuTimeout;
+	}
+
+	/**
+	 * @param timeout the cpu timeout for the job pair
+	 */
+	public void setCpuTimeout(int timeout) {
+		this.cpuTimeout = timeout;
+	}
+	
+	/**
+	 * @return the maximum amount of wallclock time (in seconds) a job pair can run
+	 */
+	public int getWallclockTimeout() {
+		return this.wallclockTimeout;
+	}
+
+	/**
+	 * @param timeout the wallclock timeout for the job pair
+	 */
+	public void setWallclockTimeout(int timeout) {
+		this.wallclockTimeout = timeout;
 	}
 	
 	/**
@@ -137,20 +166,6 @@ public class JobPair extends Identifiable {
 	 */
 	public void setEndTime(Timestamp endTime) {
 		this.endTime = endTime;
-	}
-	
-	/**
-	 * @return the user generated short result for this pair
-	 */
-	public String getShortResult() {
-		return shortResult;
-	}
-	
-	/**
-	 * @param shortResult the short result to set for this pair
-	 */
-	public void setShortResult(String shortResult) {
-		this.shortResult = shortResult;
 	}
 	
 	/**

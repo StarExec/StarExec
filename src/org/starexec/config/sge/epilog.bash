@@ -8,7 +8,7 @@
 # Tyler Jensen
 #
 # MODIFIED:    
-# 2/15/2012
+# 2/22/2012
 #
 # DESCRIPTION:
 # This is the script that gets executed when
@@ -16,14 +16,10 @@
 # the environment and to do any after-job related
 # tasks
 #
-# NOTE: This file is included in the STAREXEC project
-# for version control only. If changes are made, please
-# copy the file to /home/starexec/sge_scripts
-#
 # /////////////////////////////////////////////
 
-# Include the predefined status codes
-. /home/starexec/sge_scripts/status_codes.bash
+# Include the predefined status codes and functions
+. /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
 WORKING_DIR='/export/starexec/workspace'
@@ -43,24 +39,9 @@ JOB_IN_DIR=$SHARED_DIR/jobin
 # Path to the job output directory
 JOB_OUT_DIR=$SHARED_DIR/jobout
 
-# DB username and password for status reporting
-DB_USER=star_report
-DB_PASS=5t4rr3p0rt2012
-
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
-
-function log {
-	echo "`date +'%D %r %Z'`: $1"
-	return $?
-}
-
-function sendStatus {
-        mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)"
-	log "sent job status $1 to $REPORT_HOST"
-	return $?
-}
 
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
@@ -98,7 +79,7 @@ function createDir {
 	# Check the directory actually does exist
 	if [ ! -d $1 ]; then
 		mkdir $1
-		log "cannot create directory '$1' this may cause problems in result reporting"
+		log "job error: cannot create directory '$1' this jobs output cannot be saved"
 	fi
 
 	return $?
@@ -107,9 +88,26 @@ function createDir {
 # /////////////////////////////////////////////
 # MAIN
 # /////////////////////////////////////////////
-log "execution on $HOSTNAME complete"
-sendStatus $STATUS_FINISHING
-copyOutput
+
+# A trap was caught if the string terminated is contained in the log
+JOB_ERROR=`grep 'job error:' $SGE_STDOUT_PATH`
+
+# If there was no error...
+if [ "$JOB_ERROR" = "" ]; then
+	log "execution on $HOSTNAME complete"
+	sendStatus $STATUS_FINISHING
+	copyOutput
+else
+	log "execution on $HOSTNAME interrupted"
+fi
+
 cleanWorkspace
-sendStatus $STATUS_WAIT_STATS
-log "STAREXEC job #$JOB_ID complete. Statistics for this job will be sent to starexec in the near future."
+
+if [ "$JOB_ERROR" = "" ]; then
+	sendStatus $STATUS_WAIT_STATS
+	log "STAREXEC job #$JOB_ID completed successfully"
+else
+	log "STAREXEC job #$JOB_ID exited with errors"
+fi
+
+exit 0
