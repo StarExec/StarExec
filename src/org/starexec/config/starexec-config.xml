@@ -48,7 +48,7 @@
 				<value><![CDATA[^\-?\d+$]]></value>
 			</property>									
 			<property key="USER_NAME_PATTERN">
-				<value><![CDATA[^[A-Z\-\s']{2,32}$]]></value>
+				<value><![CDATA[^[A-Za-z\-\s']{2,32}$]]></value>
 			</property>						
 			<property key="INSTITUTION_PATTERN">
 				<value><![CDATA[^[\w\-\s']{2,64}$]]></value>
@@ -63,7 +63,7 @@
 				<value><![CDATA[^[\w\-\. ]{1,64}$]]></value>
 			</property>									
 			<property key="PASSWORD_PATTERN">
-				<value><![CDATA[^(?=.*[A-Zz0-9\Q~`!@#$%^&*()_\-\+=\E]+$)(?=.*[0-9]{1,})(?=.*[A-Za-z]{1,})(?=.*[\Q~`!@#$%^&*()_\-\+=\E]+{1,}).{6,20}$]]></value>
+				<value><![CDATA[^(?=.*[A-Za-z0-9~`!@#\$%\^&\*\(\)_\-\+\=]+$)(?=.*[0-9~`!@#\$%\^&\*\(\)_\-\+\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$]]></value>
 			</property>						
 			<property key="REQUEST_MESSAGE">				
 				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				

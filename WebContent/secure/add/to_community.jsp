@@ -1,10 +1,18 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.SessionUtil" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 try {
-	int id = Integer.parseInt((String)request.getParameter("cid"));
-	Space com = Communities.getDetails(id);
+	int comId = Integer.parseInt((String)request.getParameter("cid"));
+	Space com = Communities.getDetails(comId);
+	
+	/*
+	*  If the user is attempting to join a community they are apart of, redirect them
+	*  back to the community explorer
+	*/
+	if(Users.isMemberOfSpace(SessionUtil.getUserId(request), comId)){
+		response.sendRedirect("/starexec/secure/explore/communities.jsp?result=alreadyMember");
+	}
 	
 	if(com == null) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -17,30 +25,38 @@ try {
 %>
 
 <star:template title="join ${com.name}" css="add/to_community" js="lib/jquery.validate.min, add/to_community">		
-	<form method="POST" action="request" id="inviteForm">
+	<form method="POST" action="to_community/request" id="inviteForm">
 	<fieldset>
 		<legend>community information</legend>
 			<table class="shaded">
-				<tr>
-					<td class="label">community </td>
-					<td>
-						<p>${com.name}</p>
-					</td>
-				</tr>
-				<tr>
-					<td class="label">reason for joining </td>
-					<td><textarea name="msg" id="reason" maxlength="300">describe your motivation for joining this community</textarea></td>
-				</tr>		
-				<tr>
-					<td class="label">notice </td>
-					<td><p>all community leaders of ${com.name} will be e-mailed your request to join their community</p></td>
-				</tr>		
-				<tr>					
-					<td colspan="3">
-						<input type="hidden" name="cm" value="${com.id}"/>
-						<button type="submit" id="btnSubmit" value="Submit">send request</button>
-					</td>
-				</tr>
+				<thead>
+					<tr>
+						<th>attribute</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="label">community </td>
+						<td>
+							<p>${com.name}</p>
+						</td>
+					</tr>
+					<tr>
+						<td class="label">reason for joining </td>
+						<td><textarea name="msg" id="reason" maxlength="300">describe your motivation for joining this community</textarea></td>
+					</tr>		
+					<tr>
+						<td class="label">notice </td>
+						<td><p>all community leaders of ${com.name} will be e-mailed your request to join their community</p></td>
+					</tr>		
+					<tr>					
+						<td colspan="3">
+							<input type="hidden" name="cm" value="${com.id}"/>
+							<button type="submit" id="btnSubmit" value="Submit">send request</button>
+						</td>
+					</tr>
+				</tbody>
 			</table>
 	</fieldset>	
 	</form>

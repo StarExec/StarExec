@@ -6,22 +6,30 @@
 	<form method="POST" action="/starexec/public/reset_password" id="resetForm">	
 	<fieldset>			
 		<legend>credentials</legend>
-		<table>								
-			<tr>
-				<td class="label">first name: </td>
-				<td><input id="firstname" type="text" name="fn" maxlength="32"/></td>
-			</tr>
-			<tr>
-				<td class="label">last name: </td>
-				<td><input id="lastname" type="text" name="ln" maxlength="32"/></td>
-			</tr>
-			<tr>
-				<td class="label">email: </td>
-				<td><input id="email" type="text" name="em" maxlength="64"/></td>
-			</tr>
-			<tr>
-				<td colspan="2"><button type="submit" id="submit" value="Submit">reset</button></td>
-			</tr>
+		<table class="shaded">
+			<thead>
+				<tr>
+					<th>attribute</th>
+					<th id="value_header">value</th>
+				</tr>
+			</thead>	
+			<tbody>
+				<tr>
+					<td class="label">first name: </td>
+					<td><input id="firstname" type="text" name="fn" maxlength="32"/></td>
+				</tr>
+				<tr>
+					<td class="label">last name: </td>
+					<td><input id="lastname" type="text" name="ln" maxlength="32"/></td>
+				</tr>
+				<tr>
+					<td class="label">email: </td>
+					<td><input id="email" type="text" name="em" maxlength="64"/></td>
+				</tr>
+				<tr>
+					<td colspan="2"><button type="submit" id="submit" value="Submit">reset</button></td>
+				</tr>
+			</tbody>
 		</table>		
 	</fieldset>	
 	</form>

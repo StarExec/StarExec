@@ -268,8 +268,8 @@ function initSpaceExplorer(){
         
         // Remove all non-permanent tooltips from the page; helps keep
         // the page from getting filled with hundreds of qtip divs
-        $(".qtip-nonPermanentLeader").remove();
-        $(".qtip-nonPermanentExpd").remove();
+        $(".qtip-userTooltip").remove();
+        $(".qtip-expdTooltip").remove();
         
         // Hide all buttons that are selection-dependent
         hideButtons();
@@ -973,10 +973,11 @@ function updateTable(dataTable){
 
 /**
  * Takes in a set of permissions and builds a pretty table to display to the user
+ * @param tooltip the tooltip we are creating a permissions table for
  * @param perms The set of permissions to display in a table
  * @returns A jQuery object that is the table to display in the UI for the given permissions
  */
-function getPermTable(perms, type) {	
+function getPermTable(tooltip, perms, type) {	
 	var permWrap = $('<div>');	// A wrapper for the table and leader info
 	var table = $('<table>');	// The table where the permissions are displayed
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
@@ -1000,9 +1001,9 @@ function getPermTable(perms, type) {
 	if(perms.isLeader) {
 		// If this person is a leader, add the leader div to the wrapper
 		$(permWrap).append(leaderDiv);
-	} else if (type == 'leader') {		
-		// If they're not a leader but the caller has specified to display the 'leader' button...
-		
+	} 
+	// If they're not a leader but the caller has specified to display the 'leader' button...
+	else if (type == 'leader') {		
 		// Create a button to make the user a leader
 		var leadBtn = $('<span class="leaderBtn">make leader</span>').button({
 			icons: {
@@ -1024,6 +1025,14 @@ function getPermTable(perms, type) {
 		
 		// Add the leader button to the wrapper
 		$(permWrap).append(leadBtn);
+	}
+	// Shrink the space tooltip size if its for a non-leader
+	else if (type == 'space'){
+		tooltip.updateStyle('spaceTooltipNormal');
+	}
+	// Shrink the user tooltip size if its for a non-leader
+	else if (!type){
+		tooltip.updateStyle('userTooltipNormal');
 	}
 		
 	// Return the resulting DOM element to be inserted
@@ -1095,10 +1104,19 @@ function initTooltipStyles(){
 	 * Custom tooltip style for tooltips that will never be deleted
 	 * (i.e. tooltips on the spaces in #exploreList)
 	 */
-	$.fn.qtip.styles.permanentTooltip = {
+	$.fn.qtip.styles.spaceTooltipLeader = {
 			background: '#E1E1E1',
 			padding: 10,
 			height: 144,
+			width: 220,
+			title : {
+				color : '#ae0000'
+			}
+	};
+	$.fn.qtip.styles.spaceTooltipNormal = {
+			background: '#E1E1E1',
+			padding: 10,
+			height: 120,
 			width: 220,
 			title : {
 				color : '#ae0000'
@@ -1109,7 +1127,7 @@ function initTooltipStyles(){
 	 * Custom tooltip styles for tooltips that will be deleted everytime
 	 * a new space is selected
 	 */
-	$.fn.qtip.styles.nonPermanentLeader = {
+	$.fn.qtip.styles.userTooltipLeader = {
 			background: '#E1E1E1',
 			height: 144,
 			width: 220,
@@ -1118,9 +1136,28 @@ function initTooltipStyles(){
 				color : '#ae0000'
 			}
 	};
-	
-	$.fn.qtip.styles.nonPermanentExpd = {
+	$.fn.qtip.styles.userTooltipNormal = {
 			background: '#E1E1E1',
+			height: 120,
+			width: 220,
+			padding: 10,
+			title : {
+				color : '#ae0000'
+			}
+	};
+	
+	$.fn.qtip.styles.expdTooltip = {
+			background: '#E1E1E1',
+			width: 220,
+			padding: 10,
+			title : {
+				color : '#ae0000'
+			}
+	};
+	
+	$.fn.qtip.styles.userTooltip = {
+			background: '#E1E1E1',
+			height: 144,
 			width: 220,
 			padding: 10,
 			title : {
@@ -1201,7 +1238,7 @@ function getTooltipConfig(type, message){
 				},
 				style: {
 					// Load custom color scheme
-					name: "nonPermanentLeader",
+					name: "userTooltip",
 					// Add a tip to the right middle portion of the tooltip
 					tip: 'rightMiddle',
 			   },			   
@@ -1218,7 +1255,7 @@ function getTooltipConfig(type, message){
 										showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
 									} else {
 										// Replace current content (current = loader.gif)										
-										self.updateContent(getPermTable(theResponse, 'leader'), true);										
+										self.updateContent(getPermTable(self, theResponse, 'leader'), true);										
 									}
 									return true;
 								}
@@ -1232,6 +1269,7 @@ function getTooltipConfig(type, message){
 				   // then this resets the tooltip once it loses focus and fades from view
 				   onHide: function(){
 					   var self = this;
+					   console.log("permissions = " + $(self.elements.title).text());
 					   if('p' != $(self.elements.title).text()[0]){
 						   self.updateTitle('<center><a>permissions</a></center>');
 						   var userId = $(this.elements.target).children('td:first').children('input').val();
@@ -1239,8 +1277,8 @@ function getTooltipConfig(type, message){
 								   '/starexec/services/space/' + spaceId + '/perm/' + userId,
 								   function(theResponse){
 									   console.log('AJAX response for permission tooltip received');
-//									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
-									   self.updateContent(getPermTable(theResponse, 'leader'), true);  
+									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
+									   self.updateContent(getPermTable(self, theResponse, 'leader'), true);  
 									   self.updateTitle('<center><a>permissions</a></center>');									   
 									   return true;
 								   }	
@@ -1309,7 +1347,7 @@ function getTooltipConfig(type, message){
 					  }
 				},
 				style: {
-					name: "permanentTooltip",
+					name: "spaceTooltipLeader",
 					tip: 'bottomLeft',
 			   },
 			   api:{
@@ -1328,7 +1366,7 @@ function getTooltipConfig(type, message){
 								function(theResponse){
 									console.log('AJAX response for permission tooltip received');
 									self.updateContent("");
-									self.updateContent(getPermTable(theResponse.perm), true);
+									self.updateContent(getPermTable(self, theResponse.perm), true);
 									return true;
 								}
 						).error(function(){
@@ -1363,7 +1401,7 @@ function getTooltipConfig(type, message){
 				event: "mouseover"
 			},
 			style: {
-				name: 'nonPermanentExpd'
+				name: 'expdTooltip'
 			}
 		};
 	}
@@ -1413,7 +1451,7 @@ function getTooltipConfig(type, message){
 					  }
 				},
 				style: {
-					name: "nonPermanentLeader",
+					name: "userTooltip",
 					tip: 'rightMiddle',
 			   },
 			   api:{
@@ -1429,7 +1467,7 @@ function getTooltipConfig(type, message){
 									function(theResponse){
 										console.log('AJAX response for permission tooltip received');
 										// Replace current content (current = loader.gif)
-										self.updateContent(getPermTable(theResponse), true);
+										self.updateContent(getPermTable(self, theResponse), true);
 										return true;
 									}
 							).error(function(){

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -15,7 +15,7 @@
 		if(b != null) {
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
-			
+			request.setAttribute("diskSize", FileUtils.byteCountToDisplaySize(b.getDiskSize()));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			request.setAttribute("com", s);
 		} else {
@@ -50,6 +50,10 @@
 				<tr>
 					<td>uploaded</td>			
 					<td><fmt:formatDate pattern="MMM dd yyyy" value="${bench.uploadDate}" /></td>
+				</tr>
+				<tr>
+					<td>disk size</td>			
+					<td>${diskSize}</td>
 				</tr>	
 				<tr>
 					<td>downloadable</td>			

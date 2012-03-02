@@ -94,6 +94,9 @@ function showMessage(type, message, duration) {
 	
 	// When the close element is clicked, close the message and remove it from the DOM
 	$(closeMessage).click(function() {
+		// If the X is clicked before the message's duration runs out,
+		// stop the duration timer and close the element immediately
+		clearTimeout($(msg).stop().data('timer'));
 		$(msg).slideUp(500, function(){
 			$(msg).remove();
 		});
@@ -103,9 +106,11 @@ function showMessage(type, message, duration) {
 	$(msg).hide().prependTo($('body')).slideDown(500, function(){
 		if(duration > 0) {
 			// After the specified duration, slide it up and remove it from the DOM
-			$(msg).delay(duration).slideUp(500, function(){
-				$(msg).remove();
-			});
+		    $.data(this, 'timer', setTimeout(function() { 
+		    	$(msg).slideUp(500, function(){
+					$(msg).remove();
+				});
+		    }, duration));
 		}
 	});		
 }

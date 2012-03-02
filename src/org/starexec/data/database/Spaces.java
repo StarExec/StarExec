@@ -5,13 +5,13 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -184,7 +184,7 @@ public class Spaces {
 	 */
 	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?, ?)}");
-		List<File> filesToDelete = new ArrayList<File>();
+		List<File> filesToDelete = new LinkedList<File>();
 		
 		for(int benchId : benchIds){
 			procedure.setInt(1, benchId);
@@ -199,7 +199,9 @@ public class Spaces {
 			}
 		}
 		
-		log.debug(String.format("%d benchmark(s) were successfully removed from a space [id=%d].", benchIds.size(), spaceId));
+		if(spaceId >= 0){
+			log.debug(String.format("%d benchmark(s) were successfully removed from a space [id=%d].", benchIds.size(), spaceId));
+		}
 		
 		// Remove files from disk
 		for(File file : filesToDelete){
@@ -261,8 +263,8 @@ public class Spaces {
 	 */
 	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?, ?)}");
-		List<File> filesToDelete = new ArrayList<File>();
-
+		List<File> filesToDelete = new LinkedList<File>();
+		
 		for(int solverId : solverIds){
 			procedure.setInt(1, solverId);
 			procedure.setInt(2, spaceId);
@@ -275,7 +277,9 @@ public class Spaces {
 			}
 		}
 		
-		log.debug(String.format("%d solver(s) were successfully removed from a space [id=%d].", solverIds.size(), spaceId));
+		if(spaceId >= 0) {
+			log.debug(String.format("%d solver(s) were successfully removed from a space [id=%d].", solverIds.size(), spaceId));
+		}
 		
 		// Remove files from disk
 		for(File file : filesToDelete){
@@ -299,7 +303,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeJobs(ArrayList<Integer> jobIds, int spaceId) {
+	public static boolean removeJobs(List<Integer> jobIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -335,14 +339,28 @@ public class Spaces {
 	 * @throws SQLException if an error occurs while removing jobs from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeJobs(ArrayList<Integer> jobIds, int spaceId, Connection con) throws SQLException {
+	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
+		List<Integer> benchmarks = new LinkedList<Integer>();
+		List<Integer> solvers = new LinkedList<Integer>();
+		
 		for(int jobId : jobIds){
+			// Gather the benchmarks and solvers from the jobs being removed
+			List<JobPair> jobPairs = Jobs.getPairsDetailed(jobId);
+			for(JobPair jp : jobPairs) {
+				benchmarks.add(jp.getBench().getId());
+				solvers.add(jp.getSolver().getId());
+			}
+			
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, spaceId);
 			
 			procedure.executeUpdate();			
 		}
+		
+		// Check the benchmarks & solvers related to this job and see if any are dangling resources
+		removeBenches(benchmarks, -1, con);
+		removeSolvers(solvers, -1, con);
 		
 		log.debug(String.format("%d jobs were successfully removed from a space [id=%d].", jobIds.size(), spaceId));
 		return true;
@@ -358,7 +376,7 @@ public class Spaces {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeSubspaces(ArrayList<Integer> subspaceIds, int spaceId) {
+	public static boolean removeSubspaces(List<Integer> subspaceIds, int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -758,9 +776,9 @@ public class Spaces {
 	 * @author Todd Elvers
 	 */
 	protected static void smartDelete(int spaceId, Connection con) throws SQLException{
-		ArrayList<Integer> benches = new ArrayList<Integer>();
-		ArrayList<Integer> solvers = new ArrayList<Integer>();
-		ArrayList<Integer> jobs = new ArrayList<Integer>();
+		List<Integer> benches = new LinkedList<Integer>();
+		List<Integer> solvers = new LinkedList<Integer>();
+		List<Integer> jobs = new LinkedList<Integer>();
 		
 		// Collect the space's benchmarks, solvers, and jobs
 		for(Benchmark b : Benchmarks.getBySpace(spaceId)){
@@ -776,8 +794,8 @@ public class Spaces {
 		// Remove them from the space, triggering the database to check if 
 		// any of these primitives aren't referenced anywhere else and,
 		// if so, deleting them
+		removeJobs(jobs, spaceId, con);
 		removeBenches(benches, spaceId, con);
 		removeSolvers(solvers, spaceId, con);
-		removeJobs(jobs, spaceId, con);
 	}
 }

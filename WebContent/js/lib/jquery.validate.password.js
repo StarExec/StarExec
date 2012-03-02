@@ -17,13 +17,25 @@
  */
 (function($) {
 	
+	// Regexes used to calculate password strength
 	var LOWER = /[a-z]/,
 		UPPER = /[A-Z]/,
 		DIGIT = /[0-9]/,
 		PUNCT = /[~!@#$%\^&*()\-_=+]/,
 		SPECIAL = /[^a-zA-Z0-9~!@#$%\^&*()\-_=+]/;
 		
-		
+	// Reference to the password strength meter in the DOM
+	var passwordStrengthMeter = null;
+
+	/**
+	 * Sets the passwordStrengthMeter's pointer to the password strength
+	 * meter DOM element and hides it
+	 */
+	$.validator.passwordStrengthMeter = function(domElement){
+		passwordStrengthMeter = domElement;
+		$(passwordStrengthMeter).hide();
+	};
+	
 	function rating(rate, message) {
 		return {
 			rate: rate,
@@ -35,6 +47,9 @@
 		return str.substring(0, 1).toLowerCase() + str.substring(1);
 	}
 	
+	/**
+	 * Returns a password strength value and message
+	 */
 	$.validator.passwordRating = function(password) {
 		var lower = LOWER.test(password),
 			upper = UPPER.test(uncapitalize(password)),
@@ -42,20 +57,27 @@
 			punct = PUNCT.test(password),
 			special = SPECIAL.test(password);
 		
-		if(special)
+		if(special){
 			return rating(0, "illegal");
-		if (!password || password.length < 6)
+		}
+		if (!password || password.length < 5){
 			return rating(1, "too-short");
-		if (password.length > 16)
+		}
+		if (password.length > 32){
 			return rating(2, "too-long");
-		if (lower && upper && digit && punct)
+		}
+		if (lower && upper && digit && punct){
 			return rating(6, "strong");
-		if (lower && digit && punct || upper && digit && punct)
+		}
+		if (lower && digit && punct || upper && digit && punct || upper && lower && punct || upper && lower && digit){
 			return rating(5, "good");
-		if (lower && digit || upper && digit || lower && punct || upper && punct || digit && punct)
+		}
+		if (lower && digit || upper && digit || lower && punct || upper && punct){
 			return rating(4, "weak");
-		if (lower || upper || digits || punct)
+		}
+		if (lower || upper || digits || punct){
 			return rating(3, "very-weak");
+		}
 	};
 	
 	$.validator.passwordRating.messages = {
@@ -73,6 +95,12 @@
 		var password = element.value;
 	
 		var rating = $.validator.passwordRating(password);
+		
+		// If the password strength meter's DOM element is known, make sure it's visible
+		if(null != passwordStrengthMeter && false == $(passwordStrengthMeter).is(':visible')){
+			$(passwordStrengthMeter).show();
+		}
+		
 		// update message for this field
 		if($(element).attr("id") == "password"){
 			var meter = $(".password-meter", element.form);		
@@ -82,7 +110,9 @@
 			.addClass("password-meter-message")
 			.addClass("password-meter-message-" + rating.messageKey)
 			.text($.validator.passwordRating.messages[rating.messageKey]);
-			return rating.rate > 4;
+			
+			// Valid passwords = passwords of strength 4 or more
+			return rating.rate > 3;
 		}
 		
 		// Prevents confirm_password's validation messages from being suppressed

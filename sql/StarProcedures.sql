@@ -92,14 +92,20 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 DROP PROCEDURE IF EXISTS RemoveBenchFromSpace;
 CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT, OUT _path TEXT)
 	BEGIN
-		DELETE FROM bench_assoc
-		WHERE space_id = _spaceId
-		AND bench_id = _benchId;
+		IF _spaceId >= 0 THEN
+			DELETE FROM bench_assoc
+			WHERE space_id = _spaceId
+			AND bench_id = _benchId;
+		END IF;
 		
 		IF NOT EXISTS (SELECT * FROM bench_assoc WHERE bench_id = _benchId) THEN
-			SELECT path INTO _path FROM benchmarks WHERE id = _benchId;
-			DELETE FROM benchmarks
-			WHERE id = _benchId;
+			IF NOT EXISTS (SELECT * FROM job_pairs WHERE bench_id = _benchId) THEN
+				SELECT path INTO _path FROM benchmarks WHERE id = _benchId;
+				DELETE FROM benchmarks
+				WHERE id = _benchId;
+			ELSE
+				SELECT NULL INTO _path;
+			END IF;
 		ELSE
 			SELECT NULL INTO _path;
 		END IF;
@@ -1042,19 +1048,28 @@ CREATE PROCEDURE GetConfiguration(IN _id INT)
 	
 -- Removes the association between a solver and a given space;
 -- places the path of the solver in _path if it has no other
--- associations in solver_assoc, otherwise places NULL in _path
+-- associations in solver_assoc and isn't being used for any jobs,
+-- otherwise places NULL in _path
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS RemoveSolverFromSpace;
 CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _path TEXT)
 	BEGIN
-		DELETE FROM solver_assoc
-		WHERE solver_id = _solverId
-		AND space_id = _spaceId;
+		IF _spaceId >= 0 THEN
+			DELETE FROM solver_assoc
+			WHERE solver_id = _solverId
+			AND space_id = _spaceId;
+		END IF;
 		
+		-- Ensure the solver isn't being used in any other space
 		IF NOT EXISTS(SELECT * FROM solver_assoc WHERE solver_id =_solverId) THEN
-			SELECT path INTO _path FROM solvers WHERE id = _solverId;
-			DELETE FROM solvers
-			WHERE id = _solverId;
+			-- Ensure the solver isn't being used for any other jobs
+			IF NOT EXISTS(SELECT * FROM job_pairs JOIN configurations ON job_pairs.config_id=configurations.id WHERE solver_id=_solverId) THEN
+				SELECT path INTO _path FROM solvers WHERE id = _solverId;
+				DELETE FROM solvers
+				WHERE id = _solverId;
+			ELSE
+				SELECT NULL INTO _path;
+			END IF;
 		ELSE
 			SELECT NULL INTO _path;
 		END IF;
@@ -1404,8 +1419,21 @@ CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 		AND    solvers.user_id = _userId;
 	END //
 	
-	
+-- Returns one record if a given user is a member of a particular space
+-- otherwise it returns an empty set
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS IsMemberOfSpace;
+CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
+	BEGIN
+		SELECT *
+		FROM  user_assoc
+		WHERE user_id  = _userId
+		AND   space_id = _spaceId;
+	END // 
 
+	
+	
+	
 /*************************************************************************
 ********************** WEBSITE STORED PROCEDURES *************************
 *************************************************************************/

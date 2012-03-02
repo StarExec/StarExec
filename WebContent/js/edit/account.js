@@ -15,7 +15,9 @@ $(document).ready(function(){
 	});	
 	$('#new_website').hide();
 
-	
+	// Hide the password strength meter initially and display it when a password's
+	// strength has been calculated
+	$.validator.passwordStrengthMeter("#pwd-meter");
 	
 	//make the various parts editable
 	editable("firstname");
@@ -27,10 +29,6 @@ $(document).ready(function(){
 	// the following code prevents that trigger
 	$("#changePassForm").submit(function(e){
 		e.preventDefault();
-	});
-	
-	$("#password").focus(function(){
-		$('#pwd-meter').show();
 	});
 	
 	// Validates change-password fields
@@ -267,6 +265,9 @@ function editable(attribute) {
 function saveChanges(obj, save, attr, old) {
 	if (true == save) {
 		var newVal = $(obj).siblings('input:first').val();
+		
+		// Fixes 'session expired' bug that would occur if user inputed the empty String
+		newVal = (newVal == "") ? "-1" : newVal;
 		
 		$.post(  
 				"/starexec/services/edit/user/" + attr + "/" + newVal,

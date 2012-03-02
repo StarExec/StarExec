@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <star:template title="view communities" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/communities" css="common/table, explore/common">			
 	<div id="explorer">
@@ -62,4 +63,7 @@
 	<div id="dialog-confirm-leave" title="leave community">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-leave-txt"></span></p>
 	</div>
+	<c:if test="${not empty param.result and param.result == 'alreadyMember'}">			
+		<div class='error message'>you are already a member of that community</div>
+	</c:if>
 </star:template>

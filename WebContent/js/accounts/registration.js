@@ -32,6 +32,10 @@ $(document).ready(function() {
 	    }
 	});
 	
+	// Hide the password strength meter initially and display it when a password's
+	// strength has been calculated
+	$.validator.passwordStrengthMeter("#pwd-meter");
+	
 	
 	$("#regForm").validate({
 		rules : {

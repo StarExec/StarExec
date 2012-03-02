@@ -563,4 +563,32 @@ public class Users {
 		
 		return false;
 	}
+	
+	
+	/**
+	 * Checks if a given user is a member of a particular space
+	 * 
+	 * @param userId the id of the user to check for membership in a particular space
+	 * @param spaceId the id of the space to check for a given user's membership
+	 * @return true iff the given user is a member of the given space, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean isMemberOfSpace(int userId, int spaceId){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL IsMemberOfSpace(?, ?)}");
+			procedure.setInt(1, userId);					
+			procedure.setInt(2, spaceId);
+			ResultSet results = procedure.executeQuery();
+			return results.next();
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
 }

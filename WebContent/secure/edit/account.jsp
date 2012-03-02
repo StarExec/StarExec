@@ -12,7 +12,7 @@
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 	}
 %>
-<star:template title="edit account" css="common/table, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
+<star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<p>review and edit your account details here.</p>
 	<fieldset>
 		<legend>personal information</legend>

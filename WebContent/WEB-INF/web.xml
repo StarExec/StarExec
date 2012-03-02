@@ -74,7 +74,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>CommunityRequest</servlet-name>
-    <url-pattern>/secure/community/request</url-pattern>  
+    <url-pattern>/secure/add/to_community/request</url-pattern>  
   </servlet-mapping>
 
   <servlet>

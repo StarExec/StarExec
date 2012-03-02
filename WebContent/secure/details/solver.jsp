@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -16,6 +16,7 @@
 			request.setAttribute("usr", Users.get(s.getUserId()));
 			request.setAttribute("solver", s);
 			request.setAttribute("sites", Websites.getAll(solverId, Websites.WebsiteType.SOLVER));
+			request.setAttribute("diskSize", FileUtils.byteCountToDisplaySize(s.getDiskSize()));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}
