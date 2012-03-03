@@ -7,11 +7,6 @@ fieldset table {
 	width: 100%;
 }
 
-#tblSolver tr td {
-	padding: 10px;
-	vertical-align: middle;
-}
-
 #uploadFile {
 	border: none;
 }

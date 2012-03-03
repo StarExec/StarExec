@@ -170,14 +170,15 @@
 		</c:otherwise>
 	</c:choose>		
 	</fieldset>		
-	<c:if test="${pair.status.code > 4}">
+	<c:if test="${pair.status.code == 6 or pair.status.code == 7}">
 		<fieldset id="fieldOutput">		
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> output</legend>			
 			<textarea id="jpStdout" readonly="readonly"></textarea>	
 			<a href="/starexec/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
+			<p class="caption">output may be truncated. 'popout' for the full output.</p>
 		</fieldset>
 	</c:if>
-	<c:if test="${pair.status.code > 4 && pair.status.code <= 12}">
+	<c:if test="${pair.status.code > 4}">
 		<fieldset id="fieldLog">
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> job log</legend>			
 			<textarea id="jpLog" readonly="readonly"></textarea>

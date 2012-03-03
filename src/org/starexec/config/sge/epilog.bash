@@ -8,13 +8,16 @@
 # Tyler Jensen
 #
 # MODIFIED:    
-# 2/22/2012
+# 3/2/2012
 #
 # DESCRIPTION:
 # This is the script that gets executed when
 # a job is complete. It's job is to clean up
 # the environment and to do any after-job related
 # tasks
+#
+# NOTE: This file is deployed to use when the project
+# is built with the production build scripts
 #
 # /////////////////////////////////////////////
 

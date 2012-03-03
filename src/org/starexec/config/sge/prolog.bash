@@ -2,13 +2,13 @@
 
 # /////////////////////////////////////////////
 # NAME:        
-# StarExec Global Epilog Script
+# StarExec Global Prolog Script
 #
 # AUTHOR:      
 # Tyler Jensen
 #
 # MODIFIED:    
-# 2/15/2012
+# 3/2/2012
 #
 # DESCRIPTION:
 # This script runs BEFORE the user's job and
@@ -18,9 +18,8 @@
 # That are defined by SGE and by the jobscript in
 # the starexec project.
 #
-# NOTE: This file is included in the STAREXEC project
-# for version control only. If changes are made, please
-# copy the file to /home/starexec/sge_scripts
+# NOTE: This file is deployed to use when the project
+# is built with the production build scripts
 #
 # /////////////////////////////////////////////
 

@@ -19,7 +19,7 @@
 				<jsp:doBody/>
 			</div>		
 		<star:footer />
-		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})">starexec alpha build ${buildVersion}</div>
+		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})">starexec revision ${buildVersion}</div>
 		</div>
 	</body>
 </html>

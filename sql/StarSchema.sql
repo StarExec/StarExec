@@ -62,6 +62,9 @@ CREATE TABLE permissions (
 	PRIMARY KEY(id)
 );
 
+-- Default permission for the root space
+INSERT INTO permissions VALUES (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
 -- All of the spaces in starexec. A space is simply a set where
 -- solvers, benchmarks, users and jobs exist (I like to think of it
 -- as a folder)
@@ -76,6 +79,10 @@ CREATE TABLE spaces (
 	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
+-- The root space
+INSERT INTO spaces (name, created, description, locked, default_permission) VALUES 
+('root', SYSDATE(), 'this is the starexec container space which holds all communities.', 1, 1);
+
 -- All pre, post and bench processors in the system
 CREATE TABLE processors (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -88,6 +95,10 @@ CREATE TABLE processors (
 	PRIMARY KEY (id),
 	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
+
+-- The default 'no type' benchmark processor
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES 
+('no_type', 'this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type.', '/home/starexec/processor_scripts/no-type.bash', 1, 3, 145);
 
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
@@ -103,6 +114,14 @@ CREATE TABLE benchmarks (
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE NO ACTION
+);
+
+-- All attributes for each benchmark
+CREATE TABLE bench_attributes (
+	bench_id INT NOT NULL,
+	attr_key VARCHAR(128) NOT NULL,
+	attr_value VARCHAR(128) NOT NULL,
+	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 -- The record for an individual solver
@@ -175,8 +194,8 @@ INSERT INTO status_codes VALUES (10, 'statistics error', 'the job completed exec
 INSERT INTO status_codes VALUES (11, 'run script error', 'the job could not be executed because a valid run script was not present');
 INSERT INTO status_codes VALUES (12, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
 INSERT INTO status_codes VALUES (13, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
-INSERT INTO status_codes VALUES (14, 'runtime exceeded', 'the job was terminated because it exceeded its run time limit');
-INSERT INTO status_codes VALUES (15, 'cpu/memory exceeded', 'the job was terminated because it exceeded its virtual memory or cpu time limit');
+INSERT INTO status_codes VALUES (14, 'timeout (wallclock)', 'the job was terminated because it exceeded its run time limit');
+INSERT INTO status_codes VALUES (15, 'timeout (cpu)', 'the job was terminated because it exceeded its virtual memory or cpu time limit');
 INSERT INTO status_codes VALUES (16, 'file write exceeded', 'the job was terminated because it exceeded its file write limit');
 INSERT INTO status_codes VALUES (17, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
 

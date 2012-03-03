@@ -11,9 +11,10 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
-			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />											
+			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
+			<property key="PROCESSOR_DIR" value="/home/starexec/processor_scripts" />											
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
-			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />
+			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />					
 			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
 			<property key="NODE_WORKING_DIR" value="/export/starexec/workspace/" />
 			<property key="NODE_OUTPUT_DIR" value="/export/starexec/workspace/output" />
@@ -24,8 +25,7 @@
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
-			<property key="DEFAULT_USER_QUOTA" value="52428800" />
-								
+			<property key="DEFAULT_USER_QUOTA" value="52428800" />								
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<property key="SGE_STATISTICS_PERIOD" value="120" />
@@ -117,6 +117,7 @@
 			<property key="MYSQL_POOL_MAX_SIZE" value="3" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
+			<property key="PROCESSOR_DIR" value="/home/tnjensen/dev/processors" />
 			<property key="BENCHMARK_PATH" value="/home/tnjensen/dev/benchmarks" />
 			<property key="SOLVER_PATH" value="/home/tnjensen/dev/solvers" />				
 			<property key="CONFIG_PATH" value="/home/tnjensen/dev/tomcat/webapps/starexec/WEB-INF/classes/org/starexec/config" />			

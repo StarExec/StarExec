@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -7,6 +8,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -19,6 +22,7 @@ import org.starexec.util.Util;
  */
 public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
+	public static final int NO_TYPE = 1;
 	
 	/**
 	 * Associates the benchmarks with the given ids to the given space
@@ -34,8 +38,7 @@ public class Benchmarks {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 			
-			CallableStatement procedure = null;						
-			procedure = con.prepareCall("{CALL AssociateBench(?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AssociateBench(?, ?)}");
 			
 			for(int bid : benchIds) {
 				procedure.setInt(1, bid);
@@ -53,6 +56,24 @@ public class Benchmarks {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Adds a new attribute to a benchmark
+	 * @param con The connection to make the insertion on
+	 * @param benchId The id of the benchmark the attribute is for
+	 * @param key The key of the attribute
+	 * @param val The value of the attribute
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	protected static boolean addBenchAttr(Connection con, int benchId, String key, String val) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL AddBenchAttr(?, ?, ?)}");
+		procedure.setInt(1, benchId);
+		procedure.setString(2, key);
+		procedure.setString(3, val);
+		procedure.executeUpdate();
+		return true;
 	}
 	
 	/**
@@ -90,7 +111,8 @@ public class Benchmarks {
 	}
 	
 	/**
-	 * Adds the list of benchmarks to the database and associates them with the given spaceId
+	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
+	 * The benchmark types are also processed based on the type of the first benchmark only.
 	 * @param benchmarks The list of benchmarks to add
 	 * @param spaceId The space the benchmarks will belong to
 	 * @return True if the operation was a success, false otherwise
@@ -103,7 +125,16 @@ public class Benchmarks {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
-			Benchmarks.add(con, benchmarks, spaceId);
+			
+			// Get the processor of the first benchmark (they should all have the same processor)
+			Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
+			
+			// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
+			Benchmarks.attachBenchAttrs(benchmarks, p);
+			
+			// Next add them to the database (must happen AFTER they are processed);
+			Benchmarks.add(con, benchmarks, spaceId);		
+			
 			Common.endTransaction(con);
 			
 			return true;
@@ -118,6 +149,40 @@ public class Benchmarks {
 	}	
 	
 	/**
+	 * Given a set of benchmarks and a processor, this method runs each benchmark through
+	 * the processor and adds a hashmap of attributes to the benchmark that are given from
+	 * the processor.
+	 * @param benchmarks The set of benchmarks to get attributes for
+	 * @param p The processor to run each benchmark on
+	 */
+	protected static void attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
+		log.debug("Beginning processing for " + benchmarks.size() + " benchmarks");			
+			
+		// For each benchmark in the list to process...
+		for(Benchmark b : benchmarks) {
+			BufferedReader reader = null;
+			
+			try {
+				// Run the processor on the benchmark file
+				reader = Util.executeCommand(p.getFilePath() + " " + b.getPath());
+				
+				// Load results into a properties file
+				Properties prop = new Properties();
+				prop.load(reader);							
+				
+				// Attach the attributes to the benchmark
+				b.setAttributes(prop);
+			} catch (Exception e) {
+				log.warn(e.getMessage(), e);
+			} finally {
+				if(reader != null) {
+					try { reader.close(); } catch(Exception e) {}
+				}
+			}
+		}
+	}	
+	
+	/**
 	 * Internal method which adds a single benchmark to the database under the given spaceId
 	 * @param con The connection the operation will take place on
 	 * @param benchmark The benchmark to add to the database
@@ -127,19 +192,44 @@ public class Benchmarks {
 	 */
 	protected static boolean add(Connection con, Benchmark benchmark, int spaceId) throws Exception {				
 		CallableStatement procedure = null;			
+		Properties attrs = benchmark.getAttributes();
 		
-		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?)}");
+		// Setup normal information for the benchmark
+		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setString(1, benchmark.getName());		
 		procedure.setString(2, benchmark.getPath());
 		procedure.setBoolean(3, benchmark.isDownloadable());
-		procedure.setInt(4, benchmark.getUserId());
-		procedure.setInt(5, benchmark.getType().getId());
+		procedure.setInt(4, benchmark.getUserId());			
+		procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
 		procedure.setInt(6, spaceId);
 		procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
+		procedure.registerOutParameter(8, java.sql.Types.INTEGER);
 		
+		// Execute procedure and get back the benchmark's id
 		procedure.executeUpdate();		
+		benchmark.setId(procedure.getInt(8));
+		
+		// If the benchmark is valid according to its processor...
+		if(Benchmarks.isBenchValid(attrs)) {
+			// Discard the valid attribute, we don't need it
+			attrs.remove("starexec-valid");
+			
+			// For each attribute (key, value)...
+			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+				// Add the attribute to the database
+				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
+			}							
+		}				
 		
 		return true;
+	}
+	
+	/**
+	 * Internal helper method to determine if a benchmark is valid according to its attributes
+	 */
+	private static boolean isBenchValid(Properties attrs) {
+		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
+		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
 	}
 	
 	/**
@@ -198,17 +288,33 @@ public class Benchmarks {
 	}	
 	
 	/**
-	 * 
+	 * Retrieves a benchmark without attributes
 	 * @param benchId The id of the benchmark to retrieve
 	 * @return A benchmark object representing the benchmark with the given ID
 	 * @author Tyler Jensen
 	 */
 	public static Benchmark get(int benchId) {
+		return Benchmarks.get(benchId, false);
+	}
+	
+	/**
+	 * @param benchId The id of the benchmark to retrieve
+	 * @param includeAttrs Whether or not to to get this benchmark's attributes
+	 * @return A benchmark object representing the benchmark with the given ID
+	 * @author Tyler Jensen
+	 */
+	public static Benchmark get(int benchId, boolean includeAttrs) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
-			return Benchmarks.get(con, benchId);				
+			Benchmark b = Benchmarks.get(con, benchId);
+			
+			if(true == includeAttrs){
+				b.setAttributes(Benchmarks.getAttributes(con, b.getId()));
+			}
+			
+			return b;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -216,6 +322,52 @@ public class Benchmarks {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Retrieves all attributes (key/value) of the given benchmark
+	 * @param benchId The id of the benchmark to get the attributes of
+	 * @return The properties object which holds all the benchmark's attributes
+	 * @author Tyler Jensen
+	 */
+	public static Properties getAttributes(int benchId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Benchmarks.getAttributes(con, benchId);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves all attributes (key/value) of the given benchmark
+	 * @param con The connection to make the query on
+	 * @param benchId The id of the benchmark to get the attributes of
+	 * @return The properties object which holds all the benchmark's attributes
+	 * @author Tyler Jensen
+	 */
+	protected static Properties getAttributes(Connection con, int benchId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL GetBenchAttrs(?)}");
+		procedure.setInt(1, benchId);					
+		ResultSet results = procedure.executeQuery();
+		
+		Properties prop = new Properties();
+		
+		while(results.next()){
+			prop.put(results.getString("attr_key"), results.getString("attr_value"));				
+		}			
+		
+		if(prop.size() <= 0) {
+			prop = null;
+		}
+		
+		return prop;
 	}
 	
 	/**

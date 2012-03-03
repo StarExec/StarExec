@@ -172,7 +172,12 @@ public class ProcessorManager extends HttpServlet {
 			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
 			File newFile = this.getProcessorFilePath(newProc.getCommunityId(), processorFile.getName());
 			processorFile.write(newFile);
-			newProc.setFilePath(newFile.getAbsolutePath());					
+			
+			if (!newFile.setExecutable(true, false)) {			
+				log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
+			}
+			
+			newProc.setFilePath(newFile.getAbsolutePath());			
 			log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), newProc.getCommunityId()));					
 			
 			if(Processors.add(newProc)) {
@@ -270,7 +275,7 @@ public class ProcessorManager extends HttpServlet {
 	 */
 	private File getProcessorFilePath(int communityId, String fileName) {
 		// Get the base benchmark type directory and add community ID
-		File saveDir = new File(R.BENCH_TYPE_DIR, "" + communityId);			
+		File saveDir = new File(R.PROCESSOR_DIR, "" + communityId);			
 		
 		// Then add the unique datetime to the path to ensure it's unique
 		saveDir = new File(saveDir, shortDate.format(new Date()));

@@ -44,7 +44,7 @@ public class R {
 	public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
 	public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from SGE scripts when job runs)
 	public static String NODE_OUTPUT_DIR = null;							// The path to the directory on the local node where output should be placed by the user in order to be saved by starexec
-	public static String BENCH_TYPE_DIR = null;								// Where to deposit new benchmark type processor scripts
+	public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
 	public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
 	
 	// Job Manager (JM) constants

@@ -103,7 +103,9 @@ $(document).ready(function(){
 	$('#addWebsite').button({
 		icons: {
 			secondary: "ui-icon-plus"
-    }});		
+    }});	
+	
+	$('fieldset:not(:first)').expandable(true);
 });
 
 function displayWebsites(data) {

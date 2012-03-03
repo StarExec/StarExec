@@ -23,3 +23,8 @@ textarea {
 	float: right;
 	margin-top: 7px;
 }
+
+.caption {
+	font-size: 12px;
+	margin-top: 10px;
+}

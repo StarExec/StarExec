@@ -9,7 +9,7 @@
 		
 		Benchmark b = null;
 		if(Permissions.canUserSeeBench(benchId, userId)) {
-			b = Benchmarks.get(benchId);
+			b = Benchmarks.get(benchId, true);
 		}		
 		
 		if(b != null) {
@@ -88,16 +88,40 @@
 		</table>	
 	</fieldset>			
 	
+	<c:if test="${not empty bench.attributes}">
+		<fieldset id="fieldAttributes">
+			<legend>attributes</legend>
+			<table class="shaded">
+				<thead>
+					<tr>
+						<th>key</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+				<c:forEach var="entry" items="${bench.attributes}">
+					<tr>
+						<td>${entry.key}</td>
+						<td>${entry.value}</td>
+					</tr>
+				</c:forEach>					
+				</tbody>
+		</table>		
+			
+		</fieldset>							
+	</c:if>	
+	
 	<!-- <fieldset>
 		<legend>related jobs</legend>
 		<p>coming soon...</p>
-	</fieldset> -->
+	</fieldset> -->		
 	
 	<c:if test="${bench.downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> contents</legend>
 			<textarea id="benchContent" readonly="readonly"></textarea>	
 			<a href="/starexec/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
+			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
 		</fieldset>			
 		
 		<a id="downLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download</a>

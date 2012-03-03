@@ -27,8 +27,8 @@
 			<table id="tblSolver" class="shaded">
 				<thead>
 					<tr>
-						<td>attribute</td>
-						<td>value</td>
+						<th>attribute</th>
+						<th>value</th>
 					</tr>
 				</thead>
 				<tbody>

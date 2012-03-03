@@ -28,18 +28,22 @@
 	<fieldset>
 		<legend>community details</legend>
 		<table id="detailsTbl" class="shaded">
-			<tr>
-				<th class="label">attribute</th>
-				<th>current value</th>
-			</tr>
-			<tr>
-				<td>community name </td>
-				<td id="editname">${com.name}</td>
-			</tr>
-			<tr>
-				<td>description</td>
-				<td id="editdesc">${com.description}</td>
-			</tr>		
+			<thead>
+				<tr>
+					<th class="label">attribute</th>
+					<th>current value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>community name </td>
+					<td id="editname">${com.name}</td>
+				</tr>
+				<tr>
+					<td>description</td>
+					<td id="editdesc">${com.description}</td>
+				</tr>		
+			</tbody>
 		</table>
 		<span class="caption">(click the current value of an attribute to edit it)</span>
 	</fieldset>
@@ -60,18 +64,22 @@
 			<input type="hidden" name="action" value="update"/>
 			<input type="hidden" name="type" value="bench"/>
 			<table id="benchTypeTbl" class="shaded">
-				<tr>
-					<th>name</th>				
-					<th>description</th>
-					<th>file name</th>
-				</tr>
+				<thead>
+					<tr>
+						<th>name</th>				
+						<th>description</th>
+						<th>file name</th>
+					</tr>
+				</thead>				
+				<tbody>
 				<c:forEach var="proc" items="${bench_proc}">
 					<tr id="proc_${proc.id}">
 						<td>${proc.name}</td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
-				</c:forEach>									
+				</c:forEach>
+				</tbody>									
 			</table>
 		</form>
 		<span id="toggleBenchType" class="caption">+ add new</span>
@@ -105,18 +113,22 @@
 			<input type="hidden" name="action" value="update"/>
 			<input type="hidden" name="type" value="pre"/>
 			<table id="preProcessorTbl" class="shaded">
-				<tr>
-					<th>name</th>				
-					<th>description</th>
-					<th>file name</th>
-				</tr>
-				<c:forEach var="proc" items="${pre_proc}">
-					<tr id="proc_${proc.id}">
-						<td>${proc.name}</td>
-						<td>${proc.description}</td>
-						<td>${proc.fileName}</td>
+				<thead>
+					<tr>
+						<th>name</th>				
+						<th>description</th>
+						<th>file name</th>
 					</tr>
-				</c:forEach>																				
+				</thead>
+				<tbody>
+					<c:forEach var="proc" items="${pre_proc}">
+						<tr id="proc_${proc.id}">
+							<td>${proc.name}</td>
+							<td>${proc.description}</td>
+							<td>${proc.fileName}</td>
+						</tr>
+					</c:forEach>
+				</tbody>																				
 			</table>
 		</form>
 		<span id="togglePreProcessor" class="caption">+ add new</span>
@@ -150,18 +162,22 @@
 			<input type="hidden" name="action" value="update"/>
 			<input type="hidden" name="type" value="post"/>
 			<table id="postProcessorTbl" class="shaded">
-				<tr>
-					<th>name</th>				
-					<th>description</th>
-					<th>file name</th>
-				</tr>								
-				<c:forEach var="proc" items="${post_proc}">
-					<tr id="proc_${proc.id}">
-						<td>${proc.name}</td>
-						<td>${proc.description}</td>
-						<td>${proc.fileName}</td>
-					</tr>
-				</c:forEach>					
+				<thead>
+					<tr>
+						<th>name</th>				
+						<th>description</th>
+						<th>file name</th>
+					</tr>								
+				</thead>
+				<tbody>
+					<c:forEach var="proc" items="${post_proc}">
+						<tr id="proc_${proc.id}">
+							<td>${proc.name}</td>
+							<td>${proc.description}</td>
+							<td>${proc.fileName}</td>
+						</tr>
+					</c:forEach>					
+				</tbody>
 			</table>
 		</form>
 		<span id="togglePostProcessor" class="caption">+ add new</span>

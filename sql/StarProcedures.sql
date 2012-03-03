@@ -17,16 +17,32 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddBenchmark;
-CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(128), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT)
-	BEGIN
-		DECLARE _benchId INT DEFAULT -1;
-		
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(128), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT, OUT _benchId INT)
+	BEGIN	
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
 		
 		SELECT LAST_INSERT_ID() INTO _benchId;		
 		INSERT INTO bench_assoc VALUES (_spaceId, _benchId);
 	END //	
+		
+-- Adds a new attribute to a benchmark 
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddBenchAttr;
+CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(64), IN _val VARCHAR(64))
+	BEGIN
+		INSERT INTO bench_attributes VALUES (_benchmarkId, _key, _val);
+	END //
+	
+-- Retrieves all attributes for a benchmark 
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetBenchAttrs;
+CREATE PROCEDURE GetBenchAttrs(IN _benchmarkId INT)
+	BEGIN
+		SELECT *
+		FROM bench_attributes 
+		WHERE bench_id=_benchmarkId;
+	END //
 	
 -- Associates the given benchmark with the given space
 -- Author: Tyler Jensen
@@ -137,10 +153,10 @@ CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(32
 -- Adds a new processor with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddProcessor;
-CREATE PROCEDURE AddProcessor(IN _name VARCHAR(32), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT)
+CREATE PROCEDURE AddProcessor(IN _name VARCHAR(32), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT, IN _diskSize BIGINT)
 	BEGIN		
-		INSERT INTO processors (name, description, path, community, processor_type)
-		VALUES (_name, _desc, _path, _comId, _type);
+		INSERT INTO processors (name, description, path, community, processor_type, disk_size)
+		VALUES (_name, _desc, _path, _comId, _type, _diskSize);
 	END //
 	
 -- Removes the association between a processor and a given space,

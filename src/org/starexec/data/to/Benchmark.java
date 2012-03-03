@@ -1,6 +1,12 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 import org.starexec.util.Util;
 
@@ -11,15 +17,16 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Benchmark extends Identifiable{
+public class Benchmark extends Identifiable implements Iterable<Entry<Object, Object>>{
 	private int userId = -1;	
 	@Expose private String name;	
 	@Expose private String description = "no description";	
 	@Expose private Processor type;
 	private Timestamp uploadDate;	
-	private transient String path;
+	private Properties attributes;
+	private String path;
 	private boolean isDownloadable;
-	private long diskSize;
+	private long diskSize;	
 	
 	/**
 	 * @return the user id of the user who uploaded the solver
@@ -133,5 +140,24 @@ public class Benchmark extends Identifiable{
 	 */
 	public long getDiskSize(){
 		return diskSize;
+	}
+		
+	/**
+	 * @return the attributes
+	 */
+	public Properties getAttributes() {
+		return attributes;
+	}
+
+	/**
+	 * @param attributes the attributes to set
+	 */
+	public void setAttributes(Properties attributes) {
+		this.attributes = attributes;
+	}	
+
+	@Override
+	public Iterator<Entry<Object, Object>> iterator() {
+		return this.attributes.entrySet().iterator();
 	}
 }
