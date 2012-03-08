@@ -8,7 +8,7 @@
 # Tyler Jensen
 #
 # MODIFIED:    
-# 3/2/2012
+# 03/07/2012
 #
 # DESCRIPTION:
 # This is the script that gets executed when
@@ -25,7 +25,7 @@
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
-WORKING_DIR='/export/starexec/workspace'
+WORKING_DIR='/export/starexec/sandbox'
 
 # Path to where the solver will be copied
 LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
@@ -50,7 +50,10 @@ function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
 	# Remove all existing files in the workspace
-	rm -rf "$WORKING_DIR"/*
+	rm -f "$WORKING_DIR"/*.*
+	rm -rf "$LOCAL_SOLVER_DIR"/*
+	rm -rf "$LOCAL_BENCH_DIR"/*
+	rm -rf "$STAREXEC_OUT_DIR"/*
 
 	# Remove original jobscript
 	rm -f "$JOB_IN_DIR/job_$PAIR_ID.bash"

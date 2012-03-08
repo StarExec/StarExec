@@ -148,7 +148,6 @@ INSERT INTO set_assoc VALUES (1, 6);
 INSERT INTO set_assoc VALUES (3, 4);
 INSERT INTO set_assoc VALUES (4, 5);
 
-INSERT INTO closure VALUES (1, 1);
 INSERT INTO closure VALUES (2, 2);
 INSERT INTO closure VALUES (3, 3);
 INSERT INTO closure VALUES (4, 4);

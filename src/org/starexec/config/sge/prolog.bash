@@ -8,7 +8,7 @@
 # Tyler Jensen
 #
 # MODIFIED:    
-# 3/2/2012
+# 03/07/2012
 #
 # DESCRIPTION:
 # This script runs BEFORE the user's job and
@@ -27,13 +27,13 @@
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
-WORKING_DIR='/export/starexec/workspace'
+WORKING_DIR='/export/starexec/sandbox'
 
 # Path to where the solver will be copied
 LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
 # Path to where the benchmark will be copied
-LOCAL_BENCH_DIR="$WORKING_DIR/benchmarks"
+LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
 # Path to shared directory for each node in cluster.
 SHARED_DIR='/home/starexec'
@@ -72,16 +72,16 @@ function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
 	# Remove all existing files in the workspace
-	rm -rf "$WORKING_DIR"/*
+	rm -rf "$WORKING_DIR"/*.*
 
-	# Create the output directory
-	createDir "$STAREXEC_OUT_DIR"	
+	# Clear the output directory	
+	rm -rf "$STAREXEC_OUT_DIR"/*
 
-	# Create local solver directory
-	createDir "$LOCAL_SOLVER_DIR"
+	# Clear the local solver directory	
+	rm -rf "$LOCAL_SOLVER_DIR"/*
 
-	# Create local benchmark directory
-	createDir "$LOCAL_BENCH_DIR"
+	# Clear the local benchmark directory	
+	rm -rf "$LOCAL_BENCH_DIR"/*
 
 	log "execution host $HOSTNAME cleaned"
 	return $?

@@ -79,9 +79,20 @@ CREATE TABLE spaces (
 	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
+-- The set of all associations between each node and it's descendants
+-- (see the hierarchical data represendation PDF on the wiki for more details)
+CREATE TABLE closure (
+	ancestor INT NOT NULL,
+	descendant INT NOT NULL,
+	UNIQUE KEY (ancestor, descendant),
+	FOREIGN KEY (ancestor) REFERENCES spaces(id),
+	FOREIGN KEY (descendant) REFERENCES spaces(id) ON DELETE CASCADE
+);
+
 -- The root space
 INSERT INTO spaces (name, created, description, locked, default_permission) VALUES 
 ('root', SYSDATE(), 'this is the starexec container space which holds all communities.', 1, 1);
+INSERT INTO closure VALUES(1,1);
 
 -- All pre, post and bench processors in the system
 CREATE TABLE processors (
@@ -275,16 +286,6 @@ CREATE TABLE job_attributes (
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
-);
-
--- The set of all associations between each node and it's descendants
--- (see the hierarchical data represendation PDF on the wiki for more details)
-CREATE TABLE closure (
-	ancestor INT NOT NULL,
-	descendant INT NOT NULL,
-	UNIQUE KEY (ancestor, descendant),
-	FOREIGN KEY (ancestor) REFERENCES spaces(id),
-	FOREIGN KEY (descendant) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- The table that keeps track of verification codes that should
