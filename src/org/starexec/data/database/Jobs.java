@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -91,6 +93,54 @@ public class Jobs {
 		job.setId(procedure.getInt(7));		
 		
 		return true;
+	}
+	
+	/**
+	 * Adds a new attribute to a job pair
+	 * @param con The connection to make the update on
+	 * @param pairId The id of the job pair the attribute is for
+	 * @param key The key of the attribute
+	 * @param val The value of the attribute
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	protected static boolean addJobAttr(Connection con, int pairId, String key, String val) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?)}");
+		procedure.setInt(1, pairId);
+		procedure.setString(2, key);
+		procedure.setString(3, val);
+		
+		procedure.executeUpdate();
+		return true;			
+	}
+	
+	/**
+	 * Adds a set of attributes to a job pair
+	 * @param pairId The id of the job pair the attribute is for
+	 * @param attributes The attributes to add to the job pair
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean addJobAttributes(int pairId, Properties attributes) {
+		Connection con = null;
+		
+		try {
+			con = Common.getConnection();
+			
+			// For each attribute (key, value)...
+			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
+				// Add the attribute to the database
+				Jobs.addJobAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
+			}	
+			
+			return true;
+		} catch(Exception e) {			
+			log.error(e.getMessage(), e);
+		} finally {			
+			Common.safeClose(con);	
+		}
+		
+		return false;		
 	}
 	
 	/**
@@ -425,6 +475,106 @@ public class Jobs {
 	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {			
 		CallableStatement procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 		procedure.setInt(1, pairId);					
+		ResultSet results = procedure.executeQuery();
+										
+		if(results.next()){
+			JobPair jp = Jobs.resultToPair(results);
+			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
+			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
+			jp.setAttributes(Jobs.getAttributes(con, pairId));
+			
+			Status s = new Status();
+			s.setCode(results.getInt("status.code"));
+			s.setStatus(results.getString("status.status"));
+			s.setDescription(results.getString("status.description"));
+			jp.setStatus(s);					
+			
+			return jp;
+		}			
+			
+		return null;		
+	}
+	
+	/**
+	 * Retrieves all attributes (key/value) of the given job pair
+	 * @param pairId The id of the job pair to get the attributes of
+	 * @return The properties object which holds all the pair's attributes
+	 * @author Tyler Jensen
+	 */
+	public static Properties getAttributes(int pairId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Benchmarks.getAttributes(con, pairId);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves all attributes (key/value) of the given job pair
+	 * @param con The connection to make the query on
+	 * @param pairId The id of the pair to get the attributes of
+	 * @return The properties object which holds all the pair's attributes
+	 * @author Tyler Jensen
+	 */
+	protected static Properties getAttributes(Connection con, int pairId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL GetPairAttrs(?)}");
+		procedure.setInt(1, pairId);					
+		ResultSet results = procedure.executeQuery();
+		
+		Properties prop = new Properties();
+		
+		while(results.next()){
+			prop.put(results.getString("attr_key"), results.getString("attr_value"));				
+		}			
+		
+		if(prop.size() <= 0) {
+			prop = null;
+		}
+		
+		return prop;
+	}
+	
+	/**
+	 * Gets the job pair with the given id recursively 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param sgeId The sge id of the pair to get
+	 * @return The job pair object with the given id.
+	 * @author Tyler Jensen
+	 */
+	public static JobPair getSGEPairDetailed(int sgeId) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			return Jobs.getSGEPairDetailed(con, sgeId);		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;		
+	}
+	
+	/**
+	 * Gets the job pair with the given id recursively 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param sgeId The sge id of the pair to get
+	 * @return The job pair object with the given id.
+	 * @author Tyler Jensen
+	 */
+	protected static JobPair getSGEPairDetailed(Connection con, int sgeId) throws Exception {			
+		CallableStatement procedure = con.prepareCall("{CALL GetJobPairBySGE(?)}");
+		procedure.setInt(1, sgeId);					
 		ResultSet results = procedure.executeQuery();
 										
 		if(results.next()){

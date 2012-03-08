@@ -1,6 +1,7 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
@@ -15,6 +16,7 @@ public class JobPair extends Identifiable {
 	private Solver solver = null;
 	private Benchmark bench = null;	
 	private Status status = null;
+	private Properties attributes = null;
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;	
@@ -39,7 +41,7 @@ public class JobPair extends Identifiable {
 		this.node = new WorkerNode();
 		this.solver = new Solver();
 		this.bench = new Benchmark();
-		this.status = new Status();
+		this.status = new Status();		
 	}
 	
 	/**
@@ -56,6 +58,20 @@ public class JobPair extends Identifiable {
 		this.jobId = jobId;
 	}
 	
+	/**
+	 * @return the attributes for this job pair
+	 */
+	public Properties getAttributes() {
+		return attributes;
+	}
+
+	/**
+	 * @param attributes the attributes to set for this job pair
+	 */
+	public void setAttributes(Properties attributes) {
+		this.attributes = attributes;
+	}
+
 	/**
 	 * @return the actual job id of this pair in the grid engine
 	 */

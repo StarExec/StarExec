@@ -6,8 +6,6 @@ USE starexec;
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
 	VALUES ('tyler-jensen@uiowa.edu', 'Tyler', 'Jensen', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
-	VALUES ('clifton-palmer@uiowa.edu', 'CJ', 'Palmer', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
-INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
 	VALUES ('aaron.stump.test@uiowa.edu', 'Aaron', 'Stump', 'University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
 	VALUES ('tinelli.test@uiowa.edu', 'Cesare', 'Tinelli', 'University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
@@ -20,7 +18,6 @@ INSERT INTO users (email, first_name, last_name, institution, created, password,
 
 	
 INSERT INTO user_roles VALUES('tyler-jensen@uiowa.edu', 'user');
-INSERT INTO user_roles VALUES('clifton-palmer@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('aaron.stump.test@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('tinelli.test@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('skylar-stark@uiowa.edu', 'user');
@@ -67,6 +64,8 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('3SAT', SYSDATE(), 'this is the 3SAT space, the child of SAT space', 0, 4);
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
+	('4SAT', SYSDATE(), 'this is the 3SAT space, the child of SAT space', 0, 4);
+INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('TPTP', SYSDATE(), 'this is Geoffs example space', 0, 5);
 
 /*
@@ -105,7 +104,7 @@ INSERT INTO bench_attributes VALUES (1, 'status', 'SAT');
 INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
 	(1, 'Z3', SYSDATE(), '/home/starexec/solvers/z3', 'This is a downloadable solver that exists on the cluster', 1, 10240);
 INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
-	(6, 'Vampire', SYSDATE(), '/home/starexec/solvers/20110509-10.46.01', 'This is a non-downloadable solver that exists on the cluster', 0, 10240);
+	(5, 'Vampire', SYSDATE(), '/home/starexec/solvers/vampire', 'This is a non-downloadable solver that exists on the cluster', 0, 10240);
 
 INSERT INTO configurations(solver_id, name, description) VALUES
 	(1, "default", "This is a default configuration for Z3");
@@ -113,8 +112,6 @@ INSERT INTO configurations(solver_id, name, description) VALUES
 	(1, "alternate_config", "This is a secondary configuration for Z3");
 INSERT INTO configurations(solver_id, name, description) VALUES
 	(2, "default", "This is a default configuration for Vampire");
-INSERT INTO configurations(solver_id, name, description) VALUES
-	(2, "other_config", "This is a secondary configuration for Vampire");
 	
 /*	
 INSERT INTO jobs (user_id, name, description) VALUES
@@ -147,23 +144,34 @@ INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time
 	
 INSERT INTO set_assoc VALUES (1, 2);
 INSERT INTO set_assoc VALUES (1, 3);
-INSERT INTO set_assoc VALUES (1, 5);
+INSERT INTO set_assoc VALUES (1, 6);
 INSERT INTO set_assoc VALUES (3, 4);
+INSERT INTO set_assoc VALUES (4, 5);
+
+INSERT INTO closure VALUES (1, 1);
+INSERT INTO closure VALUES (2, 2);
+INSERT INTO closure VALUES (3, 3);
+INSERT INTO closure VALUES (4, 4);
+INSERT INTO closure VALUES (5, 5);
+INSERT INTO closure VALUES (6, 6);
 
 INSERT INTO closure VALUES (1, 2);
 INSERT INTO closure VALUES (1, 3);
 INSERT INTO closure VALUES (1, 4);
 INSERT INTO closure VALUES (1, 5);
+INSERT INTO closure VALUES (1, 6);
 INSERT INTO closure VALUES (3, 4);
+INSERT INTO closure VALUES (3, 5);
+INSERT INTO closure VALUES (4, 5);
 
 INSERT INTO user_assoc VALUES (1, 3, 3, 6);
-INSERT INTO user_assoc VALUES (1, 4, 3, 6);
-INSERT INTO user_assoc VALUES (2, 3, 3, 7);
-INSERT INTO user_assoc VALUES (3, 2, 2, 8);
-INSERT INTO user_assoc VALUES (4, 2, 2, 9);
-INSERT INTO user_assoc VALUES (5, 3, 3, 10);
-INSERT INTO user_assoc VALUES (6, 5, 5, 11);
-INSERT INTO user_assoc VALUES (7, 3, 3, 12);
+INSERT INTO user_assoc VALUES (1, 5, 5, 6);
+INSERT INTO user_assoc VALUES (2, 2, 2, 8);
+INSERT INTO user_assoc VALUES (3, 2, 2, 9);
+INSERT INTO user_assoc VALUES (4, 3, 3, 10);
+INSERT INTO user_assoc VALUES (5, 6, 6, 11);
+INSERT INTO user_assoc VALUES (1, 6, 6, 6);
+INSERT INTO user_assoc VALUES (6, 3, 3, 12);
 
 INSERT INTO bench_assoc VALUES (2, 1);
 INSERT INTO bench_assoc VALUES (2, 2);
@@ -177,12 +185,13 @@ INSERT INTO bench_assoc VALUES (3, 3);
 INSERT INTO bench_assoc VALUES (3, 4);
 INSERT INTO bench_assoc VALUES (3, 5);
 INSERT INTO bench_assoc VALUES (3, 6);
-INSERT INTO bench_assoc VALUES (5, 7);
-INSERT INTO bench_assoc VALUES (5, 8);
+INSERT INTO bench_assoc VALUES (6, 7);
+INSERT INTO bench_assoc VALUES (6, 8);
 
 INSERT INTO solver_assoc VALUES (2, 1);
 INSERT INTO solver_assoc VALUES (3, 1);
-INSERT INTO solver_assoc VALUES (5, 2);
+INSERT INTO solver_assoc VALUES (3, 2);
+INSERT INTO solver_assoc VALUES (6, 2);
 
 /*
 INSERT INTO job_assoc VALUES (2, 1);

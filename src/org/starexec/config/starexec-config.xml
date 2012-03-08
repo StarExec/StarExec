@@ -16,8 +16,8 @@
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
 			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />					
 			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
-			<property key="NODE_WORKING_DIR" value="/export/starexec/workspace/" />
-			<property key="NODE_OUTPUT_DIR" value="/export/starexec/workspace/output" />
+			<property key="NODE_WORKING_DIR" value="/export/starexec/sandbox/" />
+			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
 			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />											
 			<!-- Misc. Configuration -->
@@ -28,7 +28,7 @@
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />								
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
-			<property key="SGE_STATISTICS_PERIOD" value="120" />
+			<property key="SGE_STATISTICS_PERIOD" value="60" />
 			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />

@@ -186,11 +186,11 @@ INSERT INTO status_codes VALUES (2, 'enqueued', 'the job has been submitted to t
 INSERT INTO status_codes VALUES (3, 'preparing', 'the jobs environment on an execution host is being prepared');
 INSERT INTO status_codes VALUES (4, 'running', 'the job is currently being ran on an execution host');
 INSERT INTO status_codes VALUES (5, 'finishing', 'the jobs output is being stored and its environment is being cleaned up');
-INSERT INTO status_codes VALUES (6, 'awaiting statistics', 'the job has completed execution and is waiting for its runtime statistics from the grid engine');
+INSERT INTO status_codes VALUES (6, 'awaiting results', 'the job has completed execution and is waiting for its runtime statistics and attributes from the grid engine');
 INSERT INTO status_codes VALUES (7, 'complete', 'the job has successfully completed execution and its statistics have been received from the grid engine');
 INSERT INTO status_codes VALUES (8, 'rejected', 'the job was sent to the grid engine for execution but was rejected. this can indicate that there were no available queues or the grid engine is in an unclean state');
 INSERT INTO status_codes VALUES (9, 'submit failed', 'there was an issue submitting your job to the grid engine. this can be caused be unexpected errors raised by the grid engine');
-INSERT INTO status_codes VALUES (10, 'statistics error', 'the job completed execution but there was a problem accuiring its statistics from the grid engine');
+INSERT INTO status_codes VALUES (10, 'results error', 'the job completed execution but there was a problem accuiring its statistics or attributes from the grid engine');
 INSERT INTO status_codes VALUES (11, 'run script error', 'the job could not be executed because a valid run script was not present');
 INSERT INTO status_codes VALUES (12, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
 INSERT INTO status_codes VALUES (13, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
@@ -267,6 +267,14 @@ CREATE TABLE job_pairs (
 	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL,
 	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION
+);
+
+-- All attributes for each job pair
+CREATE TABLE job_attributes (
+	pair_id INT NOT NULL,
+	attr_key VARCHAR(128) NOT NULL,
+	attr_value VARCHAR(128) NOT NULL,
+	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
 
 -- The set of all associations between each node and it's descendants

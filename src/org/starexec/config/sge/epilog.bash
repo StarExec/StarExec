@@ -28,19 +28,19 @@
 WORKING_DIR='/export/starexec/workspace'
 
 # Path to where the solver will be copied
-LOCAL_SOLVER_DIR=$WORKING_DIR/solver
+LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
 # Path to where the benchmark will be copied
-LOCAL_BENCH_DIR=$WORKING_DIR/benchmark
+LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
 # Path to shared directory for each node in cluster.
 SHARED_DIR='/home/starexec'
 
 # Path to the job input directory
-JOB_IN_DIR=$SHARED_DIR/jobin
+JOB_IN_DIR="$SHARED_DIR/jobin"
 
 # Path to the job output directory
-JOB_OUT_DIR=$SHARED_DIR/jobout
+JOB_OUT_DIR="$SHARED_DIR/jobout"
 
 # /////////////////////////////////////////////
 # Functions
@@ -50,10 +50,10 @@ function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
 	# Remove all existing files in the workspace
-	rm -rf $WORKING_DIR/*
+	rm -rf "$WORKING_DIR"/*
 
 	# Remove original jobscript
-	rm -f $JOB_IN_DIR/job_$PAIR_ID.bash
+	rm -f "$JOB_IN_DIR/job_$PAIR_ID.bash"
 
 	log "execution host $HOSTNAME cleaned"
 	return $?
@@ -69,7 +69,7 @@ function copyOutput {
 	log "copying output to master host"
 
 	# Copy output from local host output to master host output storage
-	cp -r $STAREXEC_OUT_DIR/* $UNIQUE_OUT_DIR
+	cp -r "$STAREXEC_OUT_DIR"/* "$UNIQUE_OUT_DIR"
 
 	log "job output copy complete"
 
@@ -107,7 +107,7 @@ fi
 cleanWorkspace
 
 if [ "$JOB_ERROR" = "" ]; then
-	sendStatus $STATUS_WAIT_STATS
+	sendStatus $STATUS_WAIT_RESULTS
 	log "STAREXEC job #$JOB_ID completed successfully"
 else
 	log "STAREXEC job #$JOB_ID exited with errors"

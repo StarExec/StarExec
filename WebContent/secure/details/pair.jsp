@@ -95,7 +95,7 @@
 	<legend>run statistics</legend>	
 	<c:choose>
 		<c:when test="${pair.status.code == 6}">
-			<p>waiting for results. try again in 2-5 minutes.</p>
+			<p>waiting for results. try again in 2 minutes.</p>
 		</c:when>
 		<c:when test="${pair.status.code == 7}">
 			<table id="pairStats" class="shaded">
@@ -170,6 +170,40 @@
 		</c:otherwise>
 	</c:choose>		
 	</fieldset>		
+	
+	<fieldset id="fieldAttrs">
+	<legend>pair attributes</legend>	
+	<c:choose>
+		<c:when test="${pair.status.code == 6}">
+			<p>waiting for results. try again in 2 minutes.</p>
+		</c:when>
+		<c:when test="${pair.status.code == 7 && empty pair.attributes}">
+			<p>none</p>
+		</c:when>
+		<c:when test="${pair.status.code == 7}">
+			<table id="pairAttrs" class="shaded">
+				<thead>
+					<tr>
+						<th>key</th>
+						<th>value</th>				
+					</tr>		
+				</thead>	
+				<tbody>
+					<c:forEach var="entry" items="${pair.attributes}">
+					<tr>
+						<td>${entry.key}</td>
+						<td>${entry.value}</td>
+					</tr>
+				</c:forEach>
+				</tbody>
+			</table>
+		</c:when>				
+		<c:otherwise>		
+			<p>unavailable</p>
+		</c:otherwise>
+	</c:choose>		
+	</fieldset>
+	
 	<c:if test="${pair.status.code == 6 or pair.status.code == 7}">
 		<fieldset id="fieldOutput">		
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> output</legend>			
@@ -178,6 +212,7 @@
 			<p class="caption">output may be truncated. 'popout' for the full output.</p>
 		</fieldset>
 	</c:if>
+	
 	<c:if test="${pair.status.code > 4}">
 		<fieldset id="fieldLog">
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> job log</legend>			

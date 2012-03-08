@@ -29,7 +29,7 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(128), IN _path TEXT, IN _download
 -- Adds a new attribute to a benchmark 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddBenchAttr;
-CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(64), IN _val VARCHAR(64))
+CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
 		INSERT INTO bench_attributes VALUES (_benchmarkId, _key, _val);
 	END //
@@ -41,7 +41,8 @@ CREATE PROCEDURE GetBenchAttrs(IN _benchmarkId INT)
 	BEGIN
 		SELECT *
 		FROM bench_attributes 
-		WHERE bench_id=_benchmarkId;
+		WHERE bench_id=_benchmarkId
+		ORDER BY attr_key ASC;
 	END //
 	
 -- Associates the given benchmark with the given space
@@ -460,6 +461,26 @@ CREATE PROCEDURE AssociateJob(IN _jobId INT, IN _spaceId INT)
 		INSERT IGNORE INTO job_assoc VALUES (_spaceId, _jobId);
 	END //
 	
+	
+-- Adds a new attribute to a job pair 
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddJobAttr;
+CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
+	BEGIN
+		INSERT INTO job_attributes VALUES (_pairId, _key, _val);
+	END //
+	
+-- Retrieves all attributes for a job pair 
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetPairAttrs;
+CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
+	BEGIN
+		SELECT *
+		FROM job_attributes 
+		WHERE pair_id=_pairId
+		ORDER BY attr_key ASC;
+	END //
+	
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran
@@ -519,6 +540,16 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
 		WHERE job_pairs.id=_Id;
+	END //
+	
+-- Gets the job pair with the given id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobPairBySGE;
+CREATE PROCEDURE GetJobPairBySGE(IN _Id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		WHERE job_pairs.sge_id=_Id;
 	END //
 	
 -- Removes the association between a job and a given space
@@ -1124,7 +1155,7 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYIN
 		INSERT INTO closure (ancestor, descendant)	-- Update closure table
 			SELECT ancestor, id FROM closure
 			WHERE descendant = _parent
-			UNION ALL SELECT _parent, id; 
+			UNION ALL SELECT _parent, id UNION SELECT id, id; 
 	END //
 
 -- Adds an association between two spaces
@@ -1143,7 +1174,7 @@ CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId INT)
 	BEGIN
 		SELECT descendant
 		FROM closure
-		WHERE ancestor = _spaceId;
+		WHERE ancestor = _spaceId AND NOT descendant=_spaceId;
 	END //
 	
 -- Gets all the leaders of a space
@@ -1177,20 +1208,21 @@ CREATE PROCEDURE GetSpaceById(IN _id INT)
 DROP PROCEDURE IF EXISTS GetSubSpacesById;
 CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 	BEGIN
-		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID
+		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
 			SELECT *
 			FROM spaces
 			WHERE id = 
 				(SELECT MIN(id)
 				FROM spaces);
-		ELSE				-- Else find all children spaces that the user is apart of
+		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
 			SELECT *
 			FROM spaces
 			WHERE id IN
-				(SELECT child_id
+				(SELECT child_id 
 				 FROM set_assoc 
-					JOIN user_assoc ON set_assoc.child_id=user_assoc.space_id
-				 WHERE set_assoc.space_id =_spaceId AND user_assoc.user_id=_userId)
+					JOIN closure ON set_assoc.child_id=closure.ancestor 
+					JOIN user_assoc ON (user_assoc.user_id=_userId AND user_assoc.space_id=closure.descendant) 
+					WHERE set_assoc.space_id=_spaceId)
 			ORDER BY name;
 		END IF;
 	END //

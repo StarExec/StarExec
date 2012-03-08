@@ -8,12 +8,13 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,12 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.R;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
@@ -63,7 +65,10 @@ public class Util {
 					}
 					
 					// If we're still under the limit, add the line to the buffer
-					sb.append(lineItr.nextLine());					
+					sb.append(lineItr.nextLine());
+					
+					// Don't forget to add a new line, since they are stripped as they are read
+					sb.append("\n");
 				}
 				
 				// Return the buffer
@@ -312,6 +317,38 @@ public class Util {
 			FileUtils.deleteQuietly(temp);
 			IOUtils.closeQuietly(bufferIn);
 			IOUtils.closeQuietly(bufferOut);
+		}
+	}
+	
+	/**
+	 * Deletes all files in the given directory that are as old as, or older than the specified number of days
+	 * @param directory The directory to clear old files out of (non-recursive)
+	 * @param daysAgo Files older than this many days ago will be deleted
+	 */
+	public static void clearOldFiles(String directory, int daysAgo){
+		try {
+			File dir = new File(directory);
+			
+			if(!dir.exists()) {
+				return;
+			}
+			
+			// Subtract days from the current time
+			Calendar calendar = Calendar.getInstance();
+			calendar.add(Calendar.DATE, -daysAgo);			
+			
+			// Create a new filter for files older than this new time
+			IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
+			
+			// Get all of the outdated files
+			Collection<File> outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
+			
+			// Remove them all
+			for(File f : outdatedFiles) {
+				FileUtils.deleteQuietly(f);
+			}					
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
 		}
 	}
 }

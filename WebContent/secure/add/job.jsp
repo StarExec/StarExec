@@ -59,18 +59,18 @@
 							</c:forEach>
 							</select>
 						</td>
-					</tr>
+					</tr>-->
 					<tr title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
 						<td>					
 							<select id="postProcess" name="postProcess">
-							<option value=""></option>
+							<option value="-1">none</option>
 							<c:forEach var="proc" items="${postProcs}">
 									<option value="${proc.id}">${proc.name}</option>
 							</c:forEach>
 							</select>
 						</td>
-					</tr>-->
+					</tr>
 					<tr title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>wallclock timeout</p></td>
 						<td>	

@@ -2,7 +2,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <header id="pageHeader">
-	<a href="/starexec"><img src="/starexec/images/starlogo.png" alt="Starexec Logo"></a>
+	<a href="/starexec/secure/index.jsp"><img src="/starexec/images/starlogo.png" alt="Starexec Logo"></a>
 	
 	<c:if test="${not empty user}">
 		<nav>
@@ -33,13 +33,13 @@
 			            <li class="round"><a href="/starexec/secure/explore/communities.jsp">communities</a></li>    			            
 			        </ul>  
 				</li>
-				<li class="round">
+				<!-- <li class="round">
 					<a href="#">jobs</a>  
 			        <ul class="subnav round">  
 			            <li class="round"><a href="#">mine</a></li>  
 			            <li class="round"><a href="#">recent</a></li>  
 			        </ul>  
-				</li>
+				</li>-->
 				<li class="round">
 					<a href="#">cluster</a>  
 			        <ul class="subnav round">  

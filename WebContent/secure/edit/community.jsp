@@ -106,7 +106,7 @@
 			</table>
 		</form>
 	</fieldset>
-	<fieldset>
+	<!-- <fieldset>
 		<legend>pre processors</legend>
 		<form id="updatePrePrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
@@ -154,7 +154,7 @@
 				</tr>			 			 			
 			</table>
 		</form>
-	</fieldset>
+	</fieldset>-->
 	<fieldset>
 		<legend>post processors</legend>
 		<form id="updatePstPrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			

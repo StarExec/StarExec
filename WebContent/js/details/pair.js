@@ -10,13 +10,19 @@ $(document).ready(function(){
         "bSort": true        
     });
 	
+	$('#pairAttrs').dataTable( {
+        "sDom": 'rt<"bottom"f><"clear">',        
+        "bPaginate": false
+    });
+	
 	$('#downLink').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-s"
     }});
 	
 	$('#fieldDetails').expandable(false);
-	$('#fieldStats').expandable(false);
+	$('#fieldStats').expandable(true);
+	$('#fieldAttrs').expandable(true);
 	
 	$('#fieldOutput').expandable(true, function() {
 		if($(this).data('requested') == undefined) {

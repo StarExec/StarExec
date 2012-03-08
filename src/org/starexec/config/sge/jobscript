@@ -13,6 +13,9 @@
 # Enable resource limit signals
 #$ -notify
 
+# Submit under sandbox user
+#$ -u sandbox
+
 # Resource limits
 #$ -l s_vmem=$$MAX_MEM$$K -l s_fsize=$$MAX_WRITE$$K -l s_rt=$$MAX_RUNTIME$$ -l s_cpu=$$MAX_CPUTIME$$
 
@@ -43,11 +46,11 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 #==========================================================================
 
 # Change directory to the workspace just in case
-cd /export/starexec/workspace/solver/bin
+cd /export/starexec/sandbox/solver/bin
 
 # Compute local worker node path to resources
-NODE_SOLVER_PATH=/export/starexec/workspace/solver/bin/run_${CONFIG_NAME}
-NODE_BENCH_PATH=/export/starexec/workspace/benchmarks/${BENCH_PATH##*/}
+NODE_SOLVER_PATH=/export/starexec/sandbox/solver/bin/run_${CONFIG_NAME}
+NODE_BENCH_PATH=/export/starexec/sandbox/benchmark/${BENCH_PATH##*/}
 
 # Execute the solver on the benchmark and send all output to that file
 $NODE_SOLVER_PATH $NODE_BENCH_PATH &> $STAREXEC_OUT_DIR/stdout.txt

@@ -58,9 +58,6 @@ public class CreateJob extends HttpServlet {
 			return;
 		}		
 		
-		// Get pre and post processor IDs if they exist, or else set them to -1
-		int preProcessorId = Util.paramExists(preProcessor, request) ? Integer.parseInt((String)request.getParameter(preProcessor)) : -1; 
-		int postProcessorId = Util.paramExists(postProcessor, request) ? Integer.parseInt((String)request.getParameter(postProcessor)) : -1;
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
@@ -70,8 +67,8 @@ public class CreateJob extends HttpServlet {
 				SessionUtil.getUserId(request), 
 				(String)request.getParameter(name), 
 				(String)request.getParameter(description), 
-				preProcessorId,
-				postProcessorId, 
+				-1, // TODO: Change to pre-processor id when implemented
+				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)), 
 				cpuLimit,
 				runLimit,

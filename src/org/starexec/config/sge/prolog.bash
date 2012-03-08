@@ -30,28 +30,28 @@
 WORKING_DIR='/export/starexec/workspace'
 
 # Path to where the solver will be copied
-LOCAL_SOLVER_DIR=$WORKING_DIR/solver
+LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
 # Path to where the benchmark will be copied
-LOCAL_BENCH_DIR=$WORKING_DIR/benchmarks
+LOCAL_BENCH_DIR="$WORKING_DIR/benchmarks"
 
 # Path to shared directory for each node in cluster.
 SHARED_DIR='/home/starexec'
 
 # Path to the job input directory
-JOB_IN_DIR=$SHARED_DIR/jobin
+JOB_IN_DIR="$SHARED_DIR/jobin"
 
 # Actual qualified name of the config run script
-CONFIG_NAME=run_$CONFIG_NAME
+CONFIG_NAME="run_$CONFIG_NAME"
 
 # The benchmark's name
-BENCH_NAME=${BENCH_PATH##*/}
+BENCH_NAME="${BENCH_PATH##*/}"
 
 # The path to the benchmark on the execution host
-LOCAL_BENCH_PATH=$LOCAL_BENCH_DIR/$BENCH_NAME
+LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
 
 # The path to the config run script on the execution host
-CONFIG_PATH=$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME
+CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
 
 # /////////////////////////////////////////////
 # Functions
@@ -72,16 +72,16 @@ function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
 	# Remove all existing files in the workspace
-	rm -rf $WORKING_DIR/*
+	rm -rf "$WORKING_DIR"/*
 
 	# Create the output directory
-	createDir $STAREXEC_OUT_DIR	
+	createDir "$STAREXEC_OUT_DIR"	
 
 	# Create local solver directory
-	createDir $LOCAL_SOLVER_DIR
+	createDir "$LOCAL_SOLVER_DIR"
 
 	# Create local benchmark directory
-	createDir $LOCAL_BENCH_DIR
+	createDir "$LOCAL_BENCH_DIR"
 
 	log "execution host $HOSTNAME cleaned"
 	return $?
@@ -89,11 +89,11 @@ function cleanWorkspace {
 
 function copyDependencies {
 	log "copying solver ($SOLVER_NAME) to execution host..."
-	cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
 	log "solver copy complete"
 
 	log "copying benchmark (${BENCH_PATH##*/}) to execution host..."
-	cp $BENCH_PATH $LOCAL_BENCH_DIR
+	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"
 	log "benchmark copy complete"
 
 	return $?	
@@ -101,7 +101,7 @@ function copyDependencies {
 
 function verifyWorkspace { 
 	# Make sure the configuration exists before we execute it
-	if ! [ -x $CONFIG_PATH ]; then
+	if ! [ -x "$CONFIG_PATH" ]; then
 		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
 		sendStatus $ERROR_RUNSCRIPT
 	else
@@ -109,7 +109,7 @@ function verifyWorkspace {
 	fi	
 
 	# Make sure the benchmark exists before the job runs
-	if ! [ -x $LOCAL_BENCH_PATH ]; then
+	if ! [ -x "$LOCAL_BENCH_PATH" ]; then
 		echo "job error: could not locate the benchmark '$BENCH_NAME' on the execution host"
 		sendStatus $ERROR_BENCHMARK		
 	else

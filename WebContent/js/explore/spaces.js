@@ -609,6 +609,29 @@ function getSpaceDetails(id) {
  * @param jsonData the json data to populate the details page with
  */
 function populateDetails(jsonData) {
+	// If the space is null, the user can see the space but is not a member
+	if(jsonData.space == null) {
+		// Go ahead and show the space's name
+		$('#spaceName').fadeOut('fast', function(){
+			$('#spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
+		});
+		
+		// Show a message why they can't see the space's details
+		$('#spaceDesc').fadeOut('fast', function(){
+			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
+		});		
+		
+		// Hide all the info table fieldsets
+		$('#detailPanel fieldset').fadeOut('fast');		
+		$('#loader').hide();
+		
+		// Stop executing the rest of this function
+		return;
+	} else {
+		// Or else the user can see the space, make sure the info table fieldsets are visible
+		$('#detailPanel fieldset').show();
+	}
+	
 	// Update the selected space id
 	spaceId = jsonData.space.id;
 	spaceName = jsonData.space.name;

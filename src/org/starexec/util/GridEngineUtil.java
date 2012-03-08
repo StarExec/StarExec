@@ -4,17 +4,18 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
@@ -24,6 +25,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
@@ -40,12 +42,22 @@ public class GridEngineUtil {
 	private static Pattern nodeKeyValPattern;
 	private static Pattern queueKeyValPattern;
 	private static Pattern queueAssocPattern;
+	private static ExecutorService threadPool = null;
 	
 	static {
 		// Compile the SGE output parsing patterns when this class is loaded
 		nodeKeyValPattern = Pattern.compile(R.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 		queueKeyValPattern = Pattern.compile(R.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
+		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);		
+		threadPool = Executors.newCachedThreadPool();		
+	}
+	
+	/**
+	 * Shuts down the reserved threadpool this util uses.
+	 */
+	public static void shutdown() throws Exception {
+		threadPool.shutdown();
+		threadPool.awaitTermination(10, TimeUnit.SECONDS);
 	}
 	
 	/**
@@ -257,35 +269,101 @@ public class GridEngineUtil {
 	 * Finds all starexec jobs that are waiting to have their statistics processed
 	 * and pulls the statistics from the grid engine into the database
 	 */
-	public static synchronized void processStatistics() {
+	public static synchronized void processResults() {
 		try {
 			// First get the SGE ids of all the jobs that need their statistics processed
-			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_STATS.getVal());					
+			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
 			
 			// For each id to process...
-			for(int id : idsToProcess) {
-				try {
-					// Get the job's statistics
-					String[] jobStats = GridEngineUtil.getSgeJobStats(id);
-					
-					// Build a job pair based on the statistics
-					JobPair pair = GridEngineUtil.rawStatsToPair(id, jobStats);
-					
-					// Update the database with the pair
-					Jobs.updatePairStatistics(pair);
-					Jobs.setSGEPairStatus(id, StatusCode.STATUS_COMPLETE.getVal());
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-					Jobs.setSGEPairStatus(id, StatusCode.ERROR_STATS.getVal());
-				}
+			for(int id : idsToProcess) {	
+				final int safeId = id;
+				log.debug("Processing job pair " + safeId);
+				
+				// Execute the processing for this id on a thread from the pool
+				threadPool.execute(new Runnable() {					
+					@Override
+					public void run() {
+						log.debug("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
+
+						// Process statistics and attributes
+						boolean success = GridEngineUtil.processStatistics(safeId);
+						success = success && GridEngineUtil.processAttributes(safeId);				
+						Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
+						
+						log.debug("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
+					}
+				});
 			}
 			
 			if(idsToProcess != null && idsToProcess.size() > 0) {
-				log.debug(String.format("Processed statistics for %d job pairs", idsToProcess.size()));
+				log.debug(String.format("Scheduled results processing for %d job pairs", idsToProcess.size()));
 			}
  		} catch (Exception e){
  			log.error(e.getMessage(), e);
  		}
+	}
+	
+	/**
+	 * Pulls the statistics from the grid engine and places them into the database
+	 * @param sgeId The sge id of the pair to process statistics for
+	 * @return True if the operation was a success, false otherwise
+	 */
+	private static boolean processStatistics(int sgeId) {
+		try {
+			// Get the job's statistics
+			String[] jobStats = GridEngineUtil.getSgeJobStats(sgeId);
+			
+			// Build a job pair based on the statistics
+			JobPair pair = GridEngineUtil.rawStatsToPair(sgeId, jobStats);
+			
+			// Update the database with the pair
+			Jobs.updatePairStatistics(pair);
+			return true;			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);			
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Runs the post processor on the output of the job pair and stores the
+	 * resulting attributes in the database
+	 * @param sgeId The sge id of the pair to process attributes for
+	 * @return True if the operation was a success, false otherwise
+	 */
+	private static boolean processAttributes(int sgeId) {
+		BufferedReader reader = null;		
+		JobPair pair = Jobs.getSGEPairDetailed(sgeId);
+		Job job = Jobs.getDetailed(pair.getJobId());
+		
+		try {
+			Processor processor = job.getPostProcessor();
+			
+			if(processor != null) {
+				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getId());
+	
+				// Run the processor on the std out file
+				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());
+				
+				// Load results into a properties file
+				Properties prop = new Properties();
+				prop.load(reader);							
+				
+				// Attach the attributes to the benchmark
+				Jobs.addJobAttributes(pair.getId(), prop);
+			}
+			
+			return true;
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		} finally {
+			if(reader != null) {
+				try { reader.close(); } catch(Exception e) {}
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -418,11 +496,21 @@ public class GridEngineUtil {
 	 * @param limit The maximum number of lines to return
 	 * @return All console output from a job pair run for the given pair
 	 */
-	public static String getStdOut(int userId, int jobId, int pairId, int limit) {
-		String stdoutPath = String.format("%s/%d/%d/%d/stdout.txt", R.JOB_OUTPUT_DIR, userId, jobId, pairId);
-		File stdoutFile = new File(stdoutPath);
-		
+	public static String getStdOut(int userId, int jobId, int pairId, int limit) {		
+		File stdoutFile = GridEngineUtil.getStdOutFile(userId, jobId, pairId);		
 		return Util.readFileLimited(stdoutFile, limit);
+	}
+	
+	/**
+	 * Finds the standard output of a job pair and returns its file.
+	 * @param userId The id of the user that submitted the job
+	 * @param jobId The id of the job the pair is apart of
+	 * @param pairId The pair to get output for
+	 * @return All console output from a job pair run for the given pair
+	 */
+	public static File getStdOutFile(int userId, int jobId, int pairId) {
+		String stdoutPath = String.format("%s/%d/%d/%d/stdout.txt", R.JOB_OUTPUT_DIR, userId, jobId, pairId);
+		return new File(stdoutPath);				
 	}
 	
 	/**
