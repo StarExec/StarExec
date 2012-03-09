@@ -269,19 +269,25 @@ public class RESTServices {
 	}	
 	
 	/**
+	 * Retrieves the associated websites of a given user, space, or solver.
+	 * The type is included in the POST path; if it's a space or solver, the
+	 * space/solver id is also included in the POST path.
+	 * 
 	 * @return a json string representing all the websites associated with
-	 * the current user
+	 * the current user/space/solver
 	 * @author Skylar Stark and Todd Elvers
 	 */
 	@GET
-	@Path("/websites/{type}/{spaceId}")
+	@Path("/websites/{type}/{id}")
 	@Produces("application/json")
-	public String getWebsites(@PathParam("type") String type, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String getWebsites(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
 			return gson.toJson(Websites.getAll(userId, Websites.WebsiteType.USER));
 		} else if(type.equals("space")){
-			return gson.toJson(Websites.getAll(spaceId, Websites.WebsiteType.SPACE));
+			return gson.toJson(Websites.getAll(id, Websites.WebsiteType.SPACE));
+		} else if (type.equals("solver")) {
+			return gson.toJson(Websites.getAll(id, Websites.WebsiteType.SOLVER));
 		}
 		return gson.toJson(1);
 	}
@@ -312,6 +318,14 @@ public class RESTServices {
 				String url = request.getParameter("url");			
 				success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
 			}
+		} else if (type.equals("solver")) {
+			//Make sure this user is the solver owner
+			Solver s = Solvers.get(id);
+			if (s.getUserId() == SessionUtil.getUserId(request)) {
+				String name = request.getParameter("name");
+				String url = request.getParameter("url");
+				success = Websites.add(id, url, name, Websites.WebsiteType.SOLVER);
+			}
 		}
 		
 		// Passed validation AND Database update successful	
@@ -330,20 +344,26 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/websites/delete/{type}/{spaceId}/{websiteId}")
+	@Path("/websites/delete/{type}/{id}/{websiteId}")
 	@Produces("application/json")
-	public String deleteWebsite(@PathParam("type") String type, @PathParam("spaceId") int spaceId, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
+	public String deleteWebsite(@PathParam("type") String type, @PathParam("id") int id, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		
 		if(type.equals("user")){
 			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(1);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader
-			Permission perm = SessionUtil.getPermission(request, spaceId);		
+			Permission perm = SessionUtil.getPermission(request, id);		
 			if(perm == null || !perm.isLeader()) {
 				return gson.toJson(2);	
 			}
 			
-			return Websites.delete(websiteId, spaceId, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(1);
+			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(1);
+		} else if (type.equals("solver")) {
+			Solver s = Solvers.get(id);
+			if (s.getUserId() == SessionUtil.getUserId(request)) {
+				return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(1);
+			}
+			return gson.toJson(2);
 		}
 		
 		return gson.toJson(1);

@@ -53,14 +53,6 @@ fieldset ul li {
 	font-size: smaller;
 }
 
-li button {
-	display: none;
-}
-
-li:hover button {
-	display: block;
-}
-
 #editfirstname:hover, 
 #editlastname:hover, 
 #editinstitution:hover {

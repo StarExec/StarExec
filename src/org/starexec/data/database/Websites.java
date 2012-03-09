@@ -137,7 +137,8 @@ public class Websites {
 					procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?, ?)}");
 					break;
 				case SOLVER:
-					throw new Exception("Not implemented");				
+					procedure = con.prepareCall("{CALL DeleteSolverWebsite(?, ?)}");
+					break;
 				default:
 					throw new Exception("Unhandled value for WebsiteType");
 			}

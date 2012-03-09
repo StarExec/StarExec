@@ -137,7 +137,7 @@ public class Validator {
     
     /**
      * Validates a generic description and checks that it contains content and is less than 1024
-     * characters int. ALL characters are allowed in descriptions.
+     * characters long. ALL characters are allowed in descriptions.
      * 
      * @param desc the description to check
      * @return true iff name isn't null or empty and is less than 1024 characters

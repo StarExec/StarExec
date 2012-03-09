@@ -125,7 +125,6 @@ function displayWebsites(data) {
 					"/starexec/services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + websiteId,
 					function(returnData){
 						if (returnData == 0) {
-//							showMessage('success', "website sucessfully deleted", 5000);
 							parent.remove();
 						} else {
 							showMessage('error', "error: website not deleted. please try again", 5000);
@@ -204,6 +203,50 @@ function editable(attribute) {
 	
 	$('#edit' + attribute).css('cursor', 'pointer');
 } 
+
+function saveChanges(obj, save, attr, old) {
+	if (true == save) {
+		var newVal;
+		//since the description is in a textarea, we need to case switch on it to pull
+		//from the correct object
+		if (attr = 'desc') {
+			newVal = $(obj).siblings('textarea:first').val();
+		} else {
+			newVal = $(obj).siblings('input:first').val();
+		}
+		
+		// Fixes 'session expired' bug that would occur if user inputed the empty String
+		newVal = (newVal == "") ? "-1" : newVal;
+		
+		$.post(  
+				"/starexec/services/edit/space/" + attr + "/" + getParameterByName("cid"),
+				{val: newVal},
+			    function(returnCode){  			        
+			    	if(returnCode == '0') {
+			    		// Hide the input box and replace it with the table cell
+			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
+			    		// Make the value editable again
+			    		editable(attr);
+			    	} else {
+			    		showMessage('error', "invalid characters; please try again", 5000);
+			    		// Hide the input box and replace it with the table cell
+			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+			    		// Make the value editable again
+			    		editable(attr);
+			    	}
+			     },  
+			     "json"  
+		).error(function(){
+			alert('Session expired');
+			window.location.reload(true);
+		});
+	} else {
+		// Hide the input box and replace it with the table cell
+		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+		// Make the value editable again
+		editable(attr);
+	}
+}
 
 function processorEditable(table) {			
 	$(table).delegate('tr', 'click', function(){

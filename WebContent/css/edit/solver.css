@@ -1,0 +1,25 @@
+#new_website input {
+	width: 30%;
+}
+
+.website {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
+.caption {
+	text-align: right;
+	font-size: 14px;
+	display: block;
+	margin-top: 10px;
+}
+
+#new_website {
+	float: right;
+	margin-top: 10px;
+}
+
+#toggleWebsite {	
+	cursor: pointer;	
+}

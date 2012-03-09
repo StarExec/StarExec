@@ -36,7 +36,7 @@
 	}
 %>
 
-<star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/shared">				
+<star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/shared, edit/solver">				
 	<form id="editSolverForm">
 		<fieldset>
 			<legend>solver details</legend>
@@ -69,4 +69,23 @@
 			<button type="button" id="update">update</button>
 		</fieldset>		
 	</form>
+	<fieldset>
+		<legend>associated websites</legend>
+		<table id="websites" class="shaded">
+			<thead>
+				<tr>
+					<th>link</th>
+					<th>action</th>					
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>			
+		<span id="toggleWebsite" class="caption"><span>+</span> add new</span>
+		<div id="new_website">
+			name: <input type="text" id="website_name" /> 
+			url: <input type="text" id="website_url" /> 
+			<button id="addWebsite">add</button>
+		</div>
+	</fieldset>
 </star:template>

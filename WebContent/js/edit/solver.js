@@ -1,6 +1,20 @@
 $(document).ready(function(){
-	// Attach click listeners to both buttons
+	//get website information for the given solver
+	$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), displayWebsites).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+	
+	
+	// Attach click listeners to all the buttons
 	initButtons();
+	
+	// Setup '+ add new' animation
+	$('#toggleWebsite').click(function() {
+		$('#new_website').slideToggle('fast');
+		togglePlusMinus(this);
+	});	
+	$('#new_website').hide();
 	
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
@@ -48,9 +62,55 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-check"
     }});
+	
+	$('#addWebsite').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});
+	
+	$('fieldset:first').expandable(false);
+	$('fieldset:not(:first)').expandable(true);
 });
 
 function initButtons(){
+	// Handles adding a new website
+	$("#addWebsite").click(function(){
+		var name = $("#website_name").val();
+		var url = $("#website_url").val();
+		
+		if(name.trim().length == 0) {
+			showMessage('error', 'please enter a website name', 6000);
+			return;
+		} else if (url.indexOf("http://") != 0) {			
+			showMessage('error', 'url must start with http://', 6000);
+			return;
+		} else if (url.trim().length <= 12) {
+			showMessage('error', 'the given url is not long enough', 6000);
+			return;
+		}	
+		
+		var data = {name: name, url: url};
+		$.post(
+				"/starexec/services/website/add/solver/" + getParameterByName("id"),
+				data,
+				function(returnCode) {
+			    	if(returnCode == '0') {
+			    		$("#website_name").val("");
+			    		$("#website_url").val("");
+			    		$('#websites li').remove();
+			    		$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), displayWebsites).error(function(){
+			    			alert('Session expired');
+			    			window.location.reload(true);
+			    		});
+			    	} else {
+			    		showMessage('error', "error: website not added. please try again", 5000);
+			    	}
+				},
+				"json"
+		);
+		
+	});
+	
 	// Prompts user to confirm deletion and, if they confirm,
 	// deletes the solver via AJAX, then redirects to explore/spaces.jsp
 	$("#delete").click(function(){
@@ -112,4 +172,50 @@ function initButtons(){
 		}
 	});
 	
+}
+
+/**
+ * Toggles the plus-minus text of the "+ add new" website button
+ */
+function togglePlusMinus(addSiteButton){
+	if($(addSiteButton).children('span:first-child').text() == "+"){
+		$(addSiteButton).children('span:first-child').text("-");
+	} else {
+		$(addSiteButton).children('span:first-child').text("+");
+	}
+}
+
+
+function displayWebsites(data) {
+	
+	// Ensures the websites table is empty
+	$('#websites tbody tr').remove();
+	
+	// Injects the clickable delete button that's always present
+	$.each(data, function(i, site) {
+		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="website" id="' + site.id + '">delete</a></td></tr>');
+	});
+	
+	// Handles deletion of websites
+	$('.website').click(function(){
+		var id = $(this).attr('id');
+		var parent = $(this).parent().parent();
+		var answer = confirm("are you sure you want to delete this website?");
+		if (true == answer) {
+			$.post(
+					"/starexec/services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
+					function(returnData){
+						if (returnData == 0) {
+							parent.remove();
+						} else {
+							showMessage('error', "error: website not deleted. please try again", 5000);
+						}
+					},
+					"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
+	});
 }

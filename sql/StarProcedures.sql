@@ -1542,8 +1542,26 @@ CREATE PROCEDURE AddSpaceWebsite(IN _spaceId INT, IN _url TEXT, IN _name VARCHAR
 		INSERT INTO website(space_id, url, name)
 		VALUES(_spaceId, _url, _name);
 	END //
+
+-- Deletes the solver website with the given website id
+-- Author: Skylar Stark	
+DROP PROCEDURE IF EXISTS DeleteSolverWebsite;
+CREATE PROCEDURE DeleteSolverWebsite(IN _id INT, IN _solverId INT)
+	BEGIN
+		DELETE FROM website
+		WHERE id = _id AND solver_id = _solverId;
+	END // 
 	
--- Deletes the website with the given website id
+-- Deletes the space website with the given website id
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS DeleteSpaceWebsite;
+CREATE PROCEDURE DeleteSpaceWebsite(IN _id INT, IN _spaceId INT)
+	BEGIN
+		DELETE FROM website
+		WHERE id = _id AND space_id = _spaceId;
+	END //
+	
+-- Deletes the user website with the given website id
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS DeleteUserWebsite;
 CREATE PROCEDURE DeleteUserWebsite(IN _id INT, IN _userId INT)
@@ -1552,14 +1570,6 @@ CREATE PROCEDURE DeleteUserWebsite(IN _id INT, IN _userId INT)
 		WHERE id = _id AND user_id = _userId;
 	END //
 
--- Deletes a website associated with a space
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS DeleteSpaceWebsite;
-CREATE PROCEDURE DeleteSpaceWebsite(IN _id INT, IN _spaceId INT)
-	BEGIN
-		DELETE FROM website
-		WHERE id = _id AND space_id = _spaceId;
-	END //
 	
 -- Returns all websites associated with the user with the given user id
 -- Author: Skylar Stark
@@ -1579,7 +1589,8 @@ CREATE PROCEDURE GetWebsitesBySolverId(IN _id INT)
 	BEGIN
 		SELECT id, name, url
 		FROM website
-		WHERE website.solver_id = _id;
+		WHERE website.solver_id = _id
+		ORDER BY name;
 	END //
 
 -- Gets all websites that are associated with the space with the given id
@@ -1589,7 +1600,8 @@ CREATE PROCEDURE GetWebsitesBySpaceId(IN _id INT)
 	BEGIN
 		SELECT id, name, url
 		FROM website
-		WHERE website.space_id = _id;
+		WHERE website.space_id = _id
+		ORDER BY name;
 	END //	
 
 DELIMITER ; -- This should always be at the end of this file

@@ -22,7 +22,7 @@
 }
 %>
 
-<star:template title="edit ${com.name}" css="edit/community" js="edit/community, lib/jquery.validate.min">
+<star:template title="edit ${com.name}" js="lib/jquery.validate.min, edit/community" css="edit/community">
 	<p>manage the ${com.name} community</p>
 	<input type="hidden" value="${com.id}" id="comId"/>
 	<fieldset>

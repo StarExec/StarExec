@@ -69,7 +69,7 @@
 				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				
 			</property>						
 			<property key="PRIMITIVE_DESC_PATTERN">
-				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{0,512}$]]></value>
+				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{1,1024}$]]></value>
 			</property>						
 		</class>
 	</configuration>
