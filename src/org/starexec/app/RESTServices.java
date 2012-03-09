@@ -448,6 +448,68 @@ public class RESTServices {
 		return success ? gson.toJson(0) : gson.toJson(1);
 	}
 
+	/** Updates all details of a space in the database. Space id is included in the path.
+	 * First makes sure all details exist and are valid, then checks if the user making
+	 * the request is a leader of the space, then updates the space accordingly.
+	 * 
+	 * @return a json string containing '0' if the update is successful, else a json string
+	 * containing '1' if it is unsuccessful or a json string containing '2' if the current
+	 * user doesn't have sufficient privileges.
+	 * @author Skylar Stark
+	 */
+	@POST
+	@Path("/edit/space/{id}")
+	@Produces("application/json")
+	public String editSpace(@PathParam("id") int id, @Context HttpServletRequest request) {
+		// Ensure the parameters exist
+		if(!Util.paramExists("name", request)
+				|| !Util.paramExists("description", request)
+				|| !Util.paramExists("locked", request)){
+			return gson.toJson(3);
+		}
+		
+		// Ensure the parameters are valid
+		if(!Validator.isValidPrimName(request.getParameter("name"))
+				|| !Validator.isValidPrimDescription(request.getParameter("description"))
+				|| !Validator.isValidBool(request.getParameter("locked"))){
+			return gson.toJson(3);
+		}
+		
+		// Permissions check; if user is NOT a leader of the space, deny update request
+		int userId = SessionUtil.getUserId(request);
+		Permission perm = Permissions.get(userId, id);
+		if(perm == null || !perm.isLeader()){
+			gson.toJson(2);
+		}
+		
+		// Extract new space details from request and add them to a new space object
+		
+		Space s = new Space();
+		s.setId(id);
+		s.setName(request.getParameter("name"));
+		s.setDescription(request.getParameter("description"));
+		s.setLocked(Boolean.parseBoolean(request.getParameter("locked")));
+		
+		// Extract permission details from request and add them to a new permission object
+		// Then set the above space's permission to this new permission object
+		Permission p = new Permission();
+		p.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));
+		p.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));
+		p.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));
+		p.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));
+		p.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));
+		p.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+		p.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+		p.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+		p.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+		p.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+		
+		s.setPermission(p);
+		
+		// Perform the update and return information according to success/failure
+		return Spaces.updateDetails(userId, s) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
 	/**
 	 * Removes a benchmark type from a given space
 	 * 

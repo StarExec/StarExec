@@ -391,4 +391,32 @@ public class Permissions {
 		log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
 		return true;		
 	}
+	
+	/** Updates the permission with the given id. Since this will be one step in a
+	 * multi-step process, we use transactions. 
+	 * 
+	 * @param permId the id of the permission to change
+	 * @param perm a Permission object containing the new permissions
+	 * @return true iff the permission update was successful
+	 * @author Skylar Stark
+	 */
+	protected static boolean updatePermission(int permId, Permission perm, Connection con) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL UpdatePermissions(?,?,?,?,?,?,?,?,?,?,?)}");
+
+		procedure.setInt(1, permId);
+		procedure.setBoolean(2, perm.canAddSolver());
+		procedure.setBoolean(3, perm.canAddBenchmark());
+		procedure.setBoolean(4, perm.canAddUser());
+		procedure.setBoolean(5, perm.canAddSpace());
+		procedure.setBoolean(6, perm.canAddJob());
+		procedure.setBoolean(7, perm.canRemoveSolver());
+		procedure.setBoolean(8, perm.canRemoveBench());
+		procedure.setBoolean(9, perm.canRemoveSpace());
+		procedure.setBoolean(10, perm.canRemoveUser());
+		procedure.setBoolean(11, perm.canRemoveJob());
+		
+		procedure.executeUpdate();
+		log.info(String.format("Permission [%d] successfully updated.", permId));
+		return true;
+	}
 }

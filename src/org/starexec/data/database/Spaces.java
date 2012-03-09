@@ -44,7 +44,7 @@ public class Spaces {
 				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));
-				s.setCreated(results.getTimestamp("created"));	
+				s.setCreated(results.getTimestamp("created"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -797,5 +797,65 @@ public class Spaces {
 		removeJobs(jobs, spaceId, con);
 		removeBenches(benches, spaceId, con);
 		removeSolvers(solvers, spaceId, con);
+	}
+
+	/** Updates the details of a space in the database. The given Space object should contain 
+	 * the space id of the space we are updating, as well as all the other necessary information.
+	 * 
+	 * @param userId the user id of the user making the request (to check permission)
+	 * @param s the space object containing the information we are updating to
+	 * @return true iff the update is successful
+	 * @author Skylar Stark
+	 */
+	public static boolean updateDetails(int userId, Space s) {
+		Connection con = null;			
+		boolean success = false;
+		try {
+			con = Common.getConnection();
+			// Only perform this update if we have permission to
+			if (Permissions.get(userId, s.getId()).isLeader()) {
+				Common.beginTransaction(con);
+
+				success = Spaces.updateDetails(s, con);
+				
+				Common.endTransaction(con);
+			}
+			
+			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
+			return success;		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {		
+			Common.doRollback(con);			
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/** Updates the details of a space in the database. The given Space object should contain 
+	 * the space id of the space we are updating, as well as all the other necessary information.
+	 * This is a multi-step process, so we use transactions.
+	 * 
+	 * @param s the space object containing the information we are updating to
+	 * @return true iff the space update is successful
+	 * @author Skylar Stark
+	 */
+	protected static boolean updateDetails(Space s, Connection con) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?)}");	
+		
+		procedure.setInt(1, s.getId());
+		procedure.setString(2, s.getName());
+		procedure.setString(3, s.getDescription());
+		procedure.setBoolean(4, s.isLocked());
+		procedure.registerOutParameter(5, java.sql.Types.INTEGER);		
+
+		procedure.executeUpdate();
+
+		// Get the id of the associated default permission, then update that permission
+		int permId = procedure.getInt(5);
+		Permissions.updatePermission(permId, s.getPermission(), con);
+		
+		return true;
 	}
 }

@@ -62,6 +62,11 @@ function initButtonUI() {
 		icons: {
 			secondary: "ui-icon-minus"
     }});	
+
+	$('.btnEdit').button({
+		icons: {
+			secondary: "ui-icon-pencil"
+	}});
 	
 	console.log('jQuery UI buttons initialized');
 }
@@ -832,10 +837,14 @@ function checkPermissions(perms) {
 	
 	if(perms.isLeader){
 		// attach leader tooltips to every entry in the userTable 
-		createTooltip($('#users tbody'), 'tr', 'leader');		
+		createTooltip($('#users tbody'), 'tr', 'leader');
+		
+		$('#editSpace').fadeIn('fast');
 	} else {
 		// otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
+		
+		$('#editSpace').fadeOut('fast');
 	}	
 	
 	if(perms.removeUser){
@@ -913,7 +922,8 @@ function checkPermissions(perms) {
  * Updates the URLs to perform actions on the current space
  * @param id The id of the current space
  */
-function updateButtonIds(id) {	
+function updateButtonIds(id) {
+	$('#editSpace').attr('href', "/starexec/secure/edit/space.jsp?id=" + id);
 	$('#addSpace').attr('href', "/starexec/secure/add/space.jsp?sid=" + id);
 	$('#uploadBench').attr('href', "/starexec/secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', "/starexec/secure/add/solver.jsp?sid=" + id);

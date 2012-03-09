@@ -848,10 +848,26 @@ IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1))
 		AND space_id = _spaceId;
 	END //
 	
-	
-	
-	
-	
+-- Updates the permission set with the given id
+-- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS UpdatePermissions;
+CREATE PROCEDURE UpdatePermissions(IN _id INT, IN _addSolver BOOLEAN, IN _addBench BOOLEAN, IN _addUser BOOLEAN, 
+IN _addSpace BOOLEAN, IN _addJob BOOLEAN, IN _removeSolver BOOLEAN, IN _removeBench BOOLEAN, IN _removeSpace BOOLEAN,
+IN _removeUser BOOLEAN, IN _removeJob BOOLEAN)
+	BEGIN
+		UPDATE permissions
+		SET add_user      = _addUser,
+			add_solver    = _addSolver, 
+			add_bench     = _addBench,
+			add_job       = _addJob,
+			add_space     = _addSpace,
+			remove_user   = _removeUser,
+			remove_solver = _removeSolver,
+			remove_bench  = _removeBench,
+			remove_job    = _removeJob,
+			remove_space  = _removeSpace
+		WHERE id = _id;
+	END //
 	
 /*************************************************************************
 ********************** REQUEST STORED PROCEDURES *************************
@@ -1275,8 +1291,22 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 		WHERE id = _id;
 	END //
 	
-
-	
+-- Updates all details of the space with the given id, and returns the permission id to
+-- help update default permissions.
+-- Author: Skylar Stark	
+DROP PROCEDURE IF EXISTS UpdateSpaceDetails;
+CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(32), IN _desc TEXT, IN _locked BOOLEAN, OUT _perm INT)
+	BEGIN
+		UPDATE spaces
+		SET name = _name,
+		description = _desc,
+		locked = _locked
+		WHERE id = _spaceId;
+		
+		SELECT default_permission INTO _perm
+		FROM spaces
+		WHERE id = _spaceId;
+	END //
 	
 	
 /*************************************************************************

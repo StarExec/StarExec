@@ -83,7 +83,7 @@ public class Download extends HttpServlet {
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
-			String fileName = UUID.randomUUID().toString() + format;
+			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format);
@@ -107,11 +107,11 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark
 	 */
     private static String handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
-		// If we can see this solver AND the solver is downloadable...
+		// If we can see this benchmark AND the benchmark is downloadable...
 		if (Permissions.canUserSeeBench(b.getId(), userId) && b.isDownloadable()) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
-			String fileName = UUID.randomUUID().toString() + format;
+			String fileName = b.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format);
@@ -175,7 +175,7 @@ public class Download extends HttpServlet {
     			return false;
     		}
     		
-    		// The requested type should be a solver or a benchmark
+    		// The requested type should be a solver, benchmark, or job pair output
     		if (!(request.getParameter("type").equals("solver") ||
     				request.getParameter("type").equals("bench") ||
     				request.getParameter("type").equals("jp_output"))) {

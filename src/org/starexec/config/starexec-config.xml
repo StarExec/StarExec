@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="tyler_dev_local">
+<starexec-configuration default="skylar_dev_laptop">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -187,7 +187,7 @@
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Skylar\\workspace\\starexec_res\\jobs" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Skylar\\workspace\\starexec_res\\node" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
-			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
+			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files" />
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
