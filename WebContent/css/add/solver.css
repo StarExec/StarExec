@@ -11,15 +11,22 @@ fieldset table {
 	border: none;
 }
 
-#content input[type="text"], textarea {
+input[type="text"], textarea, input[type="file"] {
 	width: 60%;
 }
 
-#content input[type="file"] {
-	width: 60%;
-	padding-right: 10px;
+#fileLoc {
+	width: 62%;
 }
 
 #btnUpload {	
 	float: right;
+}
+
+tbody tr td:first-child {
+	width: 30%;
+}
+
+td, .error {
+	vertical-align: middle;
 }

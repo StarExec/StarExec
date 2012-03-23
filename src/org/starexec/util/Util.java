@@ -11,7 +11,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -32,6 +31,7 @@ import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
@@ -351,4 +351,35 @@ public class Util {
 			log.warn(e.getMessage(), e);
 		}
 	}
+	
+	
+	/**
+	 * Returns a configuration's absolute file path given the solver's path and 
+	 * the configuration's name
+	 *
+	 * @param solverPath the absolute path to the solver's directory
+	 * @param configName the configuration's name (which is also the filename)
+	 * @return null if the solver path or configuration's name are null or empty, otherwise
+	 * this returns the absolute path to the given configuration's file on disk
+	 * @author Todd Elvers
+	 */
+	public static String getSolverConfigPath(String solverPath, String configName){
+		if(isNullOrEmpty(solverPath) || isNullOrEmpty(configName)){
+			return null;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(solverPath);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/
+		sb.append(R.SOLVER_BIN_DIR);	// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
+		sb.append(File.separator);		// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
+		// Append 'run_' prefix to the configuration's filename if it isn't already there
+		if(false == configName.startsWith("run_")){
+			sb.append("run_");
+		}
+		sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{run_configName}
+		
+		return sb.toString();
+	}
+	
+
 }

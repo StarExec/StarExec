@@ -11,12 +11,24 @@ $(document).ready(function(){
 			f: {
 				required: true,
 				regex: "(\.zip$)|(\.tar(\.gz)?$)"
+			},
+			sn: {
+				required: true
+			},
+			desc: {
+				required: true
 			}
 		},
 		messages: {
 			f: {
 				required: "please select a file",
 				regex: ".zip, .tar and .tar.gz only"
+			},
+			sn: {
+				required: "input solver name"
+			},
+			desc: {
+				required: "input description"
 			}
 		}
 	});

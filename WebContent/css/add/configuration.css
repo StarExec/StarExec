@@ -1,0 +1,49 @@
+fieldset {						
+	width: 75%;	
+	margin-bottom: 30px;
+	margin-top: 30px;
+}
+
+fieldset table tr td:first-child {
+	width: 200px;
+	margin: 10px;
+}
+
+tr td,
+tr th {
+	padding: 10px;		
+	vertical-align: middle;
+}
+
+.error {
+	vertical-align: middle;
+}
+
+#uploadBtn {
+	float: right;
+	margin-right: 10px;
+}
+
+#cancelBtn {
+	float: right;
+}
+
+#configFile {
+	width: 62%;
+}
+
+#configName {
+	margin-left:1px;
+}
+
+input {
+	width: 60%;
+	font-family: monospace;
+}
+
+textarea {
+	width: 60%;
+	height: 100px;
+	font-family: monospace;
+	margin-left: 1px;
+}

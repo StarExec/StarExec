@@ -17,6 +17,7 @@
 			request.setAttribute("solver", s);
 			request.setAttribute("sites", Websites.getAll(solverId, Websites.WebsiteType.SOLVER));
 			request.setAttribute("diskSize", FileUtils.byteCountToDisplaySize(s.getDiskSize()));
+			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}
@@ -27,7 +28,7 @@
 	}
 %>
 
-<star:template title="${solver.name}" js="details/shared, details/solver" css="details/shared">				
+<star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="details/shared, common/table">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table class="shaded">
@@ -57,7 +58,29 @@
 			</tbody>				
 		</table>	
 	</fieldset>
-	
+	<fieldset>
+		<legend>configurations</legend>
+		<table id="tblSolverConfig" class="shaded">	
+			<thead>
+				<tr>
+					<th>name</th>
+					<th>description</th>						
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="c" items="${configs}">
+				<tr>
+					<td style="width:150px;">
+						<a href="/starexec/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="/starexec/images/external.png"/></a>
+					</td>
+					<td>
+						${c.description}
+					</td>
+				</tr>
+				</c:forEach>			
+			</tbody>						
+		</table>				
+	</fieldset>
 	<c:if test="${not empty sites}">		
 	<fieldset id="fieldSites">
 		<legend>websites</legend>
@@ -81,7 +104,17 @@
 		<p>coming soon...</p>
 	</fieldset>  -->
 	
-	<c:if test="${solver.downloadable}">		
-		<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>		
-	</c:if>		
+	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
+	<c:choose>
+		<c:when test="${usr.id == user.id && solver.downloadable}">
+			<a href="/starexec/secure/download?type=solver?id=${solver.id}" id="downLink">download</a>
+			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig" class="uploadConfig">upload configuration</a>
+		</c:when>
+		<c:when test="${usr.id != user.id && solver.downloadable}">
+			<a href="/starexec/secure/download?type=solver?id=${solver.id}" id="downLink">download</a>
+		</c:when>
+		<c:when test="${usr.id == user.id && !solver.downloadable}">
+			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfigMargin" class="uploadConfig">upload configuration</a>
+		</c:when>
+	</c:choose>
 </star:template>

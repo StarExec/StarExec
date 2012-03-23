@@ -59,7 +59,9 @@ public class R {
 	public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
 	public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
 	public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
-	public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB	
+	public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
+	public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
+		"this is your personal space";
 	
 	// Queue and node status strings
 	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)

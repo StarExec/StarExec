@@ -4,14 +4,15 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for solvers
@@ -266,12 +267,91 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	protected static boolean addConfiguration(Connection con, Configuration c) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?)}");
 		procedure.setInt(1, c.getSolverId());
 		procedure.setString(2, c.getName());
 		
 		procedure.executeUpdate();		
 		return true;		
+	}
+	
+	/**
+	 * Adds a configuration entry in the database for a particular solver
+	 * and updates that solver's disk size to reflect the new file<br>
+	 *
+	 * @param s the solver to add the configuration to
+	 * @param c the configuration to add to said solver
+	 * @return either a value greater than or equal to 0, reflecting the newly added configuration's id in the
+	 * database, or a -1 indicating an error occurred
+	 * @author Todd Elvers
+	 */
+	public static int addConfiguration(Solver s, Configuration c) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?)}");
+			procedure.setInt(1, s.getId());
+			procedure.setString(2, c.getName());
+			procedure.executeUpdate();		
+			int newConfigId = procedure.getInt(3);
+			
+			// Update the disk size of the parent solver to include the new configuration file's size
+			Solvers.updateSolverDiskSize(con, s);
+			
+			// Return the id of the newly created configuration
+			return newConfigId;						
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}		
+		
+		return -1;
+	}
+	
+	/**
+	 * Updates a solver's disk_size attribute
+	 *
+	 * @param solver the solver object containing the new disk size to set
+	 * @return true iff the solver's size was successfully updated, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean updateSolverDiskSize(Solver solver){
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			Solvers.updateSolverDiskSize(con, solver);
+			log.info(String.format("Configuration's parent solver '%s' has had its disk size successfully updated.", solver.getName()));
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		log.warn(String.format("Configuration's parent solver '%s' has failed to have its disk size updated.", solver.getName()));
+		return false;
+	}
+	
+	
+	/**
+	 * Updates a solver's disk_size attribute on an existing transaction
+	 * 
+	 * @param con the database transaction to use while updating the solver's disk size
+	 * @param solver the solver object containing the new disk size to set
+	 * @return true iff the solver's size was successfully updated, false otherwise
+	 * @author Todd Elvers
+	 */
+	private static void updateSolverDiskSize(Connection con, Solver s) throws Exception {
+		// Get the size of the solver's directory
+		File solverDir = new File(s.getPath());
+		s.setDiskSize(FileUtils.sizeOfDirectory(solverDir));
+		
+		// Update the database to reflect the solver's directory size
+		CallableStatement procedure = con.prepareCall("{CALL UpdateSolverDiskSize(?, ?)}");
+		procedure.setInt(1, s.getId());
+		procedure.setLong(2, s.getDiskSize());
+		
+		procedure.executeUpdate();		
 	}
 	
 	/**
@@ -383,6 +463,7 @@ public class Solvers {
 			c.setId(results.getInt("id"));			
 			c.setName(results.getString("name"));			
 			c.setSolverId(results.getInt("solver_id"));
+			c.setDescription(results.getString("description"));
 			return c;
 		}								
 				
@@ -506,6 +587,7 @@ public class Solvers {
 				c.setId(results.getInt("id"));
 				c.setName(results.getString("name"));
 				c.setSolverId(results.getInt("solver_id"));
+				c.setDescription(results.getString("description"));
 				configs.add(c);
 			}			
 						
@@ -564,5 +646,163 @@ public class Solvers {
 		
 		log.debug(String.format("Getting the solvers owned by user %d failed.", userId));
 		return null;
+	}
+
+	
+	/**
+	 * Updates a configuration name, description and file contents 
+	 *
+	 * @param configId the id of the configuration to update
+	 * @param name the new name to update the configuration with (this will also affect the filename on disk)
+	 * @param description the new description to update the configuration with
+	 * @param contents the new configuration file contents to update the file contents on disk with
+	 * @return true iff the configuration file is successfully updated, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean updateConfigDetails(int configId, String name, String description, String contents) {
+		Connection con = null;			
+		
+		try {
+			
+			// Try and update the configuration file's name and/or contents
+			if(Solvers.updateConfigFile(configId, name, contents)){
+				
+				// If the physical configuration file was successfully renamed, update the database too
+				con = Common.getConnection();
+				CallableStatement procedure = con.prepareCall("{CALL UpdateConfigurationDetails(?, ?, ?)}");
+				procedure.setInt(1, configId);
+				procedure.setString(2, name);
+				procedure.setString(3, description);
+				procedure.executeUpdate();
+				
+				log.info(String.format("Configuration [%s] has been successfully updated.", name));
+				return true;
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		log.warn(String.format("Configuration [%s] failed to update properly.", name));
+		return false;
+	}
+	
+	
+	
+	/**
+	 * Updates a configuration file's contents and/or filename
+	 *
+	 * @param configId the id of the configuration whose file is to be updated
+	 * @param newConfigName the new configuration filename
+	 * @param contents the new configuration file contents
+	 * @return true iff the configuration file was successfully updated, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean updateConfigFile(int configId, String newConfigName, String contents){
+		try {
+			if(configId < 0 || Util.isNullOrEmpty(newConfigName) || Util.isNullOrEmpty(contents)){
+				log.warn("The configuration file parameters to update with are invalid.");
+				return false;
+			}
+			
+			Solver s = Solvers.getSolverByConfig(configId);
+			Configuration config = Solvers.getConfiguration(configId);
+			boolean isConfigNameUnchanged = true;
+			
+			// Build path to old configuration file (should exist)
+			File oldConfig = new File(Util.getSolverConfigPath(s.getPath(), config.getName()));
+			
+			// Build path to new configuration file (should not yet exist)
+			File newConfig = new File(Util.getSolverConfigPath(s.getPath(), newConfigName));
+			
+			// If the old config and new config names are NOT the same, ensure the file pointed to by
+			// the new config does not already exist on disk
+			if(false == oldConfig.getName().equals(newConfig.getName())){
+				isConfigNameUnchanged = false;
+				if(newConfig.exists()){
+					return false;
+				}
+			}
+			
+			// IF the contents aren't the same between oldConfig and newConfig THEN
+			if (!contents.equals(FileUtils.readFileToString(oldConfig))) {
+				// Rewrite the file, changing the name if necessary
+				if (true == isConfigNameUnchanged) {
+					FileUtils.writeByteArrayToFile(oldConfig, contents.getBytes(), false);
+				} else {
+					FileUtils.writeByteArrayToFile(newConfig, contents.getBytes());
+					oldConfig.delete();
+				}
+			}
+			// OTHERWISE contents are the same
+			else { 
+				// Rename the file if necessary
+				if (false == isConfigNameUnchanged){
+					FileUtils.moveFile(oldConfig, newConfig);
+				}
+			}
+			
+			return true;
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
+		}
+		
+		return false;
+	}
+	
+	
+	/**
+	 * Deletes a configuration from the database given that configuration's id
+	 *
+	 * @param configId the id of the configuration to remove from the database
+	 * @return true iff the configuration is successfully deleted from the database, 
+	 * false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean deleteConfiguration(int configId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");	
+			procedure.setInt(1, configId);
+			procedure.executeUpdate();
+			
+			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		log.warn(String.format("Configuration %d has failed to be deleted from the database.", configId));
+		return false;
+	}
+	
+	
+	/**
+	 * Deletes a given configuration object's physical file from disk
+	 *
+	 * @param config the configuration whose physical file is to be deleted from disk
+	 * @return true iff the configuration object's corresponding physical file is successfully deleted from disk,
+	 *  false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean deleteConfigurationFile(Configuration config) {
+		try {
+			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
+			File configFile = new File(Util.getSolverConfigPath(Solvers.getSolverByConfig(config.getId()).getPath(), config.getName()));
+			if(configFile.delete()){
+				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
+				return true;
+			}
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+		
+		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
+		return false;
 	}
 }

@@ -8,20 +8,29 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
 import org.starexec.util.Util;
 
 /**
- * @author Todd Elvers
+ * Servlet that handles email verification for new users, emailing leaders
+ * of spaces when new users request to join, and accept/decline responses
+ * sent back from leaders about user join requests
+ * 
+ * @author Todd Elvers & Tyler Jensen
  */
 @SuppressWarnings("serial")
 public class Verify extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Verify.class);     
+	
+	
 	
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -47,6 +56,7 @@ public class Verify extends HttpServlet {
      * @param request the servlet containing the incoming GET request
      * @param response the servlet that handles redirection
      * @throws IOException if any of the redirects fail
+     * @author Todd Elvers
      */
     private void handleAcceptance(HttpServletRequest request, HttpServletResponse response) throws IOException  {
     	String code = (String)request.getParameter(Mail.EMAIL_CODE);
@@ -79,8 +89,15 @@ public class Verify extends HttpServlet {
 			wasApproved = Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
 			
 			if(wasApproved) {
+				
 				// Notify user they've been approved				
 				Mail.sendRequestResults(user, communityName, wasApproved, false, serverName);
+				
+				// Create a personal subspace for the user in the space they were admitted to
+				if(true == createPersonalSubspace(comRequest.getCommunityId(), user)){
+					log.info(String.format("Personal space successfully created for user [%s]", user.getFullName()));
+				}
+				
 				log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
 				response.sendRedirect("/starexec/public/messages/leader_response.jsp");
 			} 
@@ -107,6 +124,7 @@ public class Verify extends HttpServlet {
      * @param request the servlet containing the incoming GET request
      * @param response the servlet that handles redirection
      * @throws IOException if any of the redirects fail
+     * @author Todd Elvers & Tyler Jensen
      */
     private void handleActivation(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	String code = request.getParameter(Mail.EMAIL_CODE).toString();
@@ -137,6 +155,30 @@ public class Verify extends HttpServlet {
     	Mail.sendCommunityRequest(newUser, comReq, serverName);    	   
     }
     
-
+    /**
+     * Creates a new personal space as a subspace of the space the user was admitted to
+     * 
+     * @param parentSpaceId the id of the space this new personal space will be a subspace of
+     * @param user the user for whom this new personal space is being created
+     * @return true if the personal subspace was successfully created, false otherwise
+     */
+    public static boolean createPersonalSubspace(int parentSpaceId, User user){
+    	// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_e)
+    	StringBuilder sb = new StringBuilder();
+		sb.append(user.getFirstName().toLowerCase());
+		sb.append("_");
+		sb.append(user.getLastName().toLowerCase().charAt(0));
+		sb.toString();
+		
+    	// Set the space's attributes
+		Space s = new Space();
+    	s.setName(sb.toString());
+		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
+		s.setLocked(false);
+		s.setPermission(new Permission(true));
+		
+		// Return true if the subspace is successfully created, false otherwise
+    	return Spaces.add(s, parentSpaceId, user.getId()) > 0;
+    }
  
 }

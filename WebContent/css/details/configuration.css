@@ -1,0 +1,43 @@
+fieldset {						
+	width: 75%;	
+	margin-bottom: 30px;
+	margin-top: 30px;
+}
+
+fieldset table,
+fieldset ul {
+	width: 100%;
+}
+tr .label {
+	width: 25%;
+}
+
+tr td,
+tr th {
+	padding: 10px;		
+	vertical-align: middle;
+}
+
+#detailsTbl tr td:first-child {
+	width: 40%;
+}
+
+#detailsTbl tr td textarea{
+	height: 125px;
+}
+
+#editConfig {
+	float: right;
+	margin-right: 20px;
+}
+
+#deleteConfig {
+	float: right;
+	margin-right: 113px;	
+}
+
+textarea {
+	width: 98%;
+	height: 100px;
+	font-family: monospace;
+}

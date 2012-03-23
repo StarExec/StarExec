@@ -34,7 +34,7 @@
 				<tbody>
 					<tr>
 						<td>solver location</td>
-						<td><input name="f" type="file" /></td>
+						<td><input name="f" type="file" id="fileLoc"/></td>
 					</tr>
 					<tr>
 						<td>solver name</td>

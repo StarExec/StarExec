@@ -59,7 +59,7 @@
     <url-pattern>/public/verification/email</url-pattern>  
   </servlet-mapping>
   
-    <servlet>
+  <servlet>
     <servlet-name>PasswordReset</servlet-name>
     <servlet-class>org.starexec.servlets.PasswordReset</servlet-class>
   </servlet>
@@ -140,6 +140,14 @@
     <url-pattern>/secure/download</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>ConfigurationUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadConfiguration</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ConfigurationUploader</servlet-name>
+    <url-pattern>/secure/upload/configurations</url-pattern>
+  </servlet-mapping>
   
   <!-- RESTEasy webservice framework configuration -->
   <servlet>  	

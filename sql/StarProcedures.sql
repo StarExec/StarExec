@@ -1029,11 +1029,24 @@ CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 -- Adds a run configuration to the specified solver
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddConfiguration;
-CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(32))
+CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(64), OUT configId INT)
 	BEGIN
 		INSERT INTO configurations (solver_id, name)
 		VALUES (_solverId, _name);
+		
+		SELECT LAST_INSERT_ID() INTO configId;
 	END //
+	
+
+-- Deletes a configuration given that configuration's id
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS DeleteConfigurationById;
+CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
+	BEGIN
+		DELETE FROM configurations
+		WHERE id = _configId;
+	END //	
+	
 	
 -- Deletes a solver given that solver's id
 -- Author: Todd Elvers	
@@ -1138,7 +1151,30 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _p
 		END IF;
 			
 	END // 
-
+	
+-- Updates the disk_size attribute of a given solver
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS UpdateSolverDiskSize;
+CREATE PROCEDURE UpdateSolverDiskSize(IN _solverId INT, IN _newDiskSize BIGINT)
+	BEGIN
+		UPDATE solvers
+		SET disk_size = _newDiskSize
+		WHERE id = _solverId;
+	END //
+	
+	
+-- Updates the details associated with a given configuration
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS UpdateConfigurationDetails;
+CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(64), IN _description TEXT)
+	BEGIN
+		UPDATE configurations
+		SET name = _name,
+		description = _description
+		WHERE id = _configId;
+	END //
+	
+	
 -- Updates the details associated with a given solver
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateSolverDetails;

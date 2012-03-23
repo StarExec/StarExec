@@ -28,3 +28,13 @@ textarea {
 	font-size: 12px;
 	margin-top: 10px;
 }
+
+#uploadConfig {
+	float: right;
+	margin-right: 10px;
+}
+
+#uploadConfigMargin {
+	float: right;
+	margin-right: 185px;
+}

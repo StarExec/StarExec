@@ -114,7 +114,7 @@
 						<td>
 							<select id="config_${s.id}" name="configs">								
 								<c:forEach var="c" items="${s.configurations}">
-									<option value="${c.id}">${c.name}</option>
+									<option value="${c.id}" title="${c.description}">${c.name}</option>
 								</c:forEach>
 							</select>
 						</td>																			

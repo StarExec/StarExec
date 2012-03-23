@@ -14,12 +14,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
-import org.starexec.data.database.Processors;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -27,6 +27,7 @@ import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
@@ -1210,10 +1211,10 @@ public class RESTServices {
 	/**
 	 * Changes the permissions of a given user for a given space
 	 * 
-	 * @return 0 if the permissions were successfully changed, 1 if there
-	 * was an error on the database level, 2 if the user changing the permissions
-	 * isn't a leader, and 3 if the user whos permissions are to be changed is 
-	 * a leader
+	 * @return 0 if the permissions were successfully changed,<br>
+	 * 		1 if there was an error on the database level,<br>
+	 * 		2 if the user changing the permissions isn't a leader,<br>
+	 * 		3 if the user whos permissions are to be changed is a leader
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1250,4 +1251,108 @@ public class RESTServices {
 		// Update database with new permissions
 		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(1);
 	}
+	
+	
+	/**
+	 * Updates a configuration's name, description, and contents. Note: Updating of the
+	 * name or contents modifies the actual configuration file.
+	 *
+	 * @param configId the id of the configuration file to update
+	 * @param request the HttpServletRequest object containing the new configuration's name,
+	 * description and contents
+	 * @return 0 if the configuration was successfully updated,<br>
+	 * 		1 if there was an error on the database level,<br>
+	 * 		2 if the user has insufficient privileges to edit the configuration,<br> 
+	 * 		3 if the parameters are invalid or don't exist<br>
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/edit/configuration/{id}")
+	@Produces("application/json")
+	public String editConfigurationDetails(@PathParam("id") int configId, @Context HttpServletRequest request) {
+		
+		// Ensure the parameters exist
+		if(!Util.paramExists("name", request)
+				|| !Util.paramExists("description", request)
+				|| !Util.paramExists("contents", request)){
+			return gson.toJson(3);
+		}
+		
+		// Ensure the parameters are valid
+		if(!Validator.isValidPrimName(request.getParameter("name"))
+				|| !Validator.isValidPrimDescription(request.getParameter("description"))
+				||  request.getParameter("contents").isEmpty()){
+			return gson.toJson(3);
+		}
+		
+		// Permissions check; if user is NOT the owner of the configuration file's solver, deny update request
+		int userId = SessionUtil.getUserId(request);
+		Configuration config = Solvers.getConfiguration(configId);
+		Solver solver = Solvers.get(config.getSolverId());
+		if(null == solver || solver.getUserId() != userId){
+			gson.toJson(2);
+		}
+		
+		
+		// Extract new configuration file details from request
+		String name = (String) request.getParameter("name");
+		String description = (String) request.getParameter("description");
+		String contents = (String) request.getParameter("contents");
+		
+		// Apply new solver details to database
+		return Solvers.updateConfigDetails(configId, name, description, contents) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	
+	/**
+	 * Deletes a configuration from the database, from file, and updates the configuration's parent solver's
+	 * disk quota to reflect the deletion 
+	 *
+	 * @param configId the id of the configuration to delete
+	 * @param request the HttpRequestServlet object containing the user's id
+	 * @return 0 if the configuration was successfully deleted,<br>
+	 * 		1 if the configuration id is invalid,<br> 
+	 * 		2 if the user has insufficient privileges to delete the configuration,<br> 
+	 * 		3 if the configuration file fails to be deleted from disk,<br>
+	 * 		4 if the configuration file fails to be deleted from the database,<br> 
+	 * 		5 if the configuration file's parent solver's disk size fails to be updated
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/delete/configuration/{id}")
+	@Produces("application/json")
+	public String deleteConfiguration(@PathParam("id") int configId, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+
+		// Validate configuration id parameter
+		Configuration config = Solvers.getConfiguration(configId);
+		if(null == config){
+			return gson.toJson(1);
+		}
+		
+		// Permissions check; if user is NOT the owner of the configuration file's solver, deny deletion request
+		Solver solver = Solvers.get(config.getSolverId());
+		if(null == solver || solver.getUserId() != userId){
+			return gson.toJson(2);
+		}
+		
+		// Attempt to remove the configuration's physical file from disk
+		if(false == Solvers.deleteConfigurationFile(config)){
+			return gson.toJson(3);
+		}
+		
+		// Attempt to remove the configuration's entry in the database
+		if(false == Solvers.deleteConfiguration(configId)){
+			return gson.toJson(4);
+		}
+		
+		// Attempt to update the disk_size of the parent solver to reflect the file deletion
+		if(false == Solvers.updateSolverDiskSize(solver)){
+			return gson.toJson(5);
+		}
+		
+		// If this point is reached, then the configuration has been completely removed
+		return gson.toJson(0);
+	}
+	
 }
