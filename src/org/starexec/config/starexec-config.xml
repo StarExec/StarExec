@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="skylar_dev_laptop">
+<starexec-configuration default="ben_dev_317">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
 			<property key="MYSQL_DATABASE" value="prod_starexec" />
 			<property key="MYSQL_USERNAME" value="prod_star_app" />
 			<property key="MYSQL_PASSWORD" value="g4qC867ByQ3736i7" />
-			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?zeroDateTimeBehavior=convertToNull" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="100" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
+			<property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/batchSpace/batchSpaceSchema.xsd" /> 
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
 			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
 			<property key="PROCESSOR_DIR" value="/home/starexec/processor_scripts" />											
@@ -73,6 +74,36 @@
 			</property>						
 		</class>
 	</configuration>
+	<configuration name="ben_dev_317" inherit="production">
+   		<class name="org.starexec.constants.R">  
+ <!--   MYSQL Configuration   --> 
+  		<property key="MYSQL_DATABASE" value="starexec" /> 
+		<property key="MYSQL_USERNAME" value="root" /> 
+		<property key="MYSQL_PASSWORD" value="root" /> 
+		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" /> 
+		<property key="MYSQL_POOL_MAX_SIZE" value="3" /> 
+		<property key="MYSQL_POOL_MIN_SIZE" value="1" />    
+ <!--   Path Configuration   --> 
+	  <property key="BENCHMARK_PATH" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\benchmarks" /> 
+	  <property key="SOLVER_PATH" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\solvers" /> 
+	  <property key="CONFIG_PATH" value="C:\\Users\\Ben\\workspace\\starexec\\src\\org\\starexec\\config" /> 
+	  <property key="JOB_INBOX_DIR" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\jobs" /> 
+	  <property key="NODE_WORKING_DIR" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\nodes" /> 
+	  <property key="BENCH_TYPE_DIR" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\types" /> 
+	  <property key="SPACE_XML_SCHEMA_LOC" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\batch\\batchSpaceSchema.xsd" /> 
+	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
+ <!--   Misc. Configuration     --> 
+	  <property key="LOG_TO_CONSOLE" value="true" /> 
+	  <property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />    
+ <!--   SGE Configuration     --> 
+	  <property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -sql.txt" /> 
+	  <property key="QUEUE_USAGE_COMMAND" value="C:\\Users\\Ben\\CmdSpoof -gc.txt" /> 
+	  <property key="QUEUE_DETAILS_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -sq.txt" /> 
+	  <property key="NODE_LIST_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -se.txt" /> 
+	  <property key="NODE_DETAILS_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof-sel.txt" /> 
+  	</class>
+  </configuration>
+	
 	<configuration name="tyler_dev_local" inherit="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->
