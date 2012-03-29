@@ -5,7 +5,9 @@
 	try {
 		User user = SessionUtil.getUser(request);
 		long disk_usage = Users.getDiskUsage(user.getId());
+		int userId = user.getId();
 		
+		request.setAttribute("userId", userId);
 		request.setAttribute("diskQuota", FileUtils.byteCountToDisplaySize(user.getDiskQuota()));
 		request.setAttribute("diskUsage", FileUtils.byteCountToDisplaySize(disk_usage));
 	} catch (Exception e) {
@@ -14,16 +16,27 @@
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<p>review and edit your account details here.</p>
+	
 	<fieldset>
-		<legend>personal information</legend>
-		<table id="personal" class="shaded">
-			<thead>
+	<legend>personal information</legend>
+	<table>
+	<tr>
+	<td style="vertical-align: center">
+		<!-- <img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 onclick="changeImage(this)">  -->
+		<img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 onclick="imagePopUp('/starexec/secure/get/pictures?type=uorg\&Id=${userId}')">
+    	<ul>
+			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">Edit</a></li>
+		</ul>
+	</td>
+	<td style="vertical-align: top">
+		<table id="personal" class="shaded">   
+		<thead> 	
 				<tr>
 					<th class="label">attribute</th>
 					<th>current value</th>
 				</tr>
 			</thead>
-			<tbody>			
+			<tbody>	
 				<tr>
 					<td>first name </td>
 					<td id="editfirstname">${user.firstName}</td>
@@ -41,6 +54,9 @@
 					<td>${user.email}</td>
 				</tr>
 			</tbody>
+		</table>
+		</td>
+		</tr>
 		</table>
 		<h6>(click the current value of an attribute to edit it; email addresses are currently not editable)</h6>
 	</fieldset>
@@ -146,5 +162,13 @@
 				</tr>
 			</tbody>
 		</table>
+	</fieldset>
+    <fieldset>
+		<legend>picture</legend>
+		<img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 onclick="changeImage(this)">
+		<!--<img src="/starexec/secure/get/pictures?Id=${userId}&type=thumbnail" onclick="OpenFullSizeWindow('/starexec/secure/get/pictures?Id=${userId}&type=origin', 'showPic', '')" width = 100/>-->
+    	<ul>
+			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">Edit</a></li>
+		</ul>
 	</fieldset>
 </star:template>

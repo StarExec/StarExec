@@ -298,3 +298,22 @@ function saveChanges(obj, save, attr, old) {
 	}
 }
 
+var flag = true;
+
+function changeImage(obj){
+	if (flag){
+		var splitString = obj.src.split("&type=");
+		obj.src = splitString[0] + ("&type=uorg");
+		obj.width = 600;
+	} else{
+		var splitString = obj.src.split("&type=");
+		obj.src = splitString[0] + ("&type=uthn");
+		obj.width = 150;
+	}
+	flag = !flag;
+}
+	
+function imagePopUp(url){
+	var img = '/starexec/secure/details/showpic.jsp?imgurl=' + escape(url);
+	window.open (img, 'showpic', 'height=360, width=320, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no');
+}

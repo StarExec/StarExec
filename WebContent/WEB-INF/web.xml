@@ -123,6 +123,24 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>GetPicture</servlet-name>
+    <servlet-class>org.starexec.servlets.GetPicture</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetPicture</servlet-name>
+    <url-pattern>/secure/get/pictures</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>PictureUploader</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadPicture</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PictureUploader</servlet-name>
+    <url-pattern>/secure/upload/pictures</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>JobResults</servlet-name>
     <servlet-class>org.starexec.servlets.Results</servlet-class>
   </servlet>
