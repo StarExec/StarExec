@@ -48,6 +48,7 @@ public class R {
 	public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
 	public static String PICTURE_PATH = null;
 	
+	public static String PICTURE_PATH = null;								// Where the pictures are stored
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
 	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
