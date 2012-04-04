@@ -44,9 +44,10 @@ public class R {
 	public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
 	public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from SGE scripts when job runs)
 	public static String NODE_OUTPUT_DIR = null;							// The path to the directory on the local node where output should be placed by the user in order to be saved by starexec
-	public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
+	public static String BENCH_TYPE_DIR = null;								// Where to deposit new benchmark type processor scripts
 	public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
-	public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
+	public static String PICTURE_PATH = null;
+	
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
 	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
@@ -60,8 +61,6 @@ public class R {
 	public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
 	public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
 	public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
-	public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
-		"this is your personal space";
 	
 	// Queue and node status strings
 	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)
@@ -80,8 +79,4 @@ public class R {
 	public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that belong to a queue from SGE's queue detail output
 	public static String STATS_ENTRY_PATTERN = "^([\\w\\d\\.]+:){5}%d:.+$"; // The regular expression to parse out entries in the sge accounting file
 	public static String SGE_ACCOUNTING_FILE = null;  						// The absolute path to the SGE accounting file that holds job statistics
-	public static int MAX_PAIR_RUNTIME = 86400;  							// The largest possible amount of time a job pair can run before being terminated (in seconds)
-	public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
-	public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
-	public static long MAX_PAIR_VMEM = 768000;  							// The largest possible amount of memory (in kilobytes) a job pair is allowed to use
 }	

@@ -164,12 +164,4 @@
 			</tbody>
 		</table>
 	</fieldset>
-    <fieldset>
-		<legend>picture</legend>
-		<img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 onclick="changeImage(this)">
-		<!--<img src="/starexec/secure/get/pictures?Id=${userId}&type=thumbnail" onclick="OpenFullSizeWindow('/starexec/secure/get/pictures?Id=${userId}&type=origin', 'showPic', '')" width = 100/>-->
-    	<ul>
-			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">Edit</a></li>
-		</ul>
-	</fieldset>
 </star:template>

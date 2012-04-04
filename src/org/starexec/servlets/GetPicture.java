@@ -107,7 +107,6 @@ public class GetPicture extends HttpServlet{
     		if (!Validator.isValidInteger(request.getParameter("Id"))) {
     			return false;
     		}
-        	System.out.printf("mark3\n");
         	
     		if (!(request.getParameter("type").equals("uthn") ||
     			  request.getParameter("type").equals("uorg") ||
