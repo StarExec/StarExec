@@ -1,0 +1,10 @@
+$$USER$$,
+
+We regret to inform you that your request to join the $$COMMUNITY$$ community has been declined.
+
+If you feel like you've received this message in error, you can re-apply to join $$COMMUNITY$$ on our website or request to be a member of a different community by following this link:
+$$LINK$$
+
+We apologize for any inconvenience!
+
+-STAREXEC TEAM
