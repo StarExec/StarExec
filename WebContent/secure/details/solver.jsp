@@ -58,7 +58,6 @@
 			</tbody>				
 		</table>	
 	</fieldset>
-<<<<<<< .mine
 	<fieldset>
 		<legend>picture</legend>
 			<img src= "/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" width = 150 onclick="changeImage(this)">
@@ -66,8 +65,13 @@
 				<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">Edit</a></li>
 			</ul>						
 	</fieldset>
-	
-=======
+	<fieldset>
+		<legend>picture</legend>
+			<img src= "/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" width = 150 onclick="changeImage(this)">
+    		<ul>
+				<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">Edit</a></li>
+			</ul>						
+	</fieldset>
 	<fieldset>
 		<legend>configurations</legend>
 		<table id="tblSolverConfig" class="shaded">	
@@ -91,7 +95,6 @@
 			</tbody>						
 		</table>				
 	</fieldset>
->>>>>>> .r9522
 	<c:if test="${not empty sites}">		
 	<fieldset id="fieldSites">
 		<legend>websites</legend>
