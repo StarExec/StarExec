@@ -11,7 +11,7 @@ $(document).ready(function(){
 		rules: {
 			benchFile: {
 				required: true,
-				regex: "(\.zip$)|(\.tar(\.gz)?$)"
+				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			}
 		},
 		messages: {

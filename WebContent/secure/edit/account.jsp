@@ -157,6 +157,7 @@
 							<option value="zip"<c:if test="${user.archiveType == '.zip'}"> selected="selected"</c:if>>.zip</option>
 							<option value="tar"<c:if test="${user.archiveType == '.tar'}"> selected="selected"</c:if>>.tar</option>
 							<option value="tar.gz"<c:if test="${user.archiveType == '.tar.gz'}"> selected="selected"</c:if>>.tar.gz</option>
+							<option value="tgz"<c:if test="${user.archiveType == '.tgz'}"> selected="selected"</c:if>>.tgz</option>
 						</select>
 					</td>
 				</tr>

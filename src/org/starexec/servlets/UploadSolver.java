@@ -39,7 +39,7 @@ public class UploadSolver extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(UploadSolver.class);	
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
-    private static final String[] extensions = {".tar", ".tar.gz", ".zip"};
+    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     
     // Some param constants to process the form
     private static final String SOLVER_DESC = "desc";

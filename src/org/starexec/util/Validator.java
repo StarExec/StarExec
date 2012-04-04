@@ -36,6 +36,8 @@ public class Validator {
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
 	
+    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+	
     public static void initialize() {
     	// Make sure some patterns were loaded first before we compile them
     	if(Util.isNullOrEmpty(USER_NAME_PATTERN)) {
@@ -181,15 +183,16 @@ public class Validator {
     }
     
     /**
-     * Validates an archive type. Archives must be either .zip, .tar, or .tar.gz
+     * Validates an archive type. Archives must be either .zip, .tar, or .tar.gz/.tgz
      * @param format the archive type to check
      * @return true iff the format is of supported type
      */
     public static boolean isValidArchiveType(String format) {
-    	//TODO make this a configurable list?
-    	if (format.equals(".zip") || format.equals(".tar") || format.equals(".tar.gz")) {
-    		return true;
-    	}
+		for(String ext : Validator.extensions) {
+			if(format.equals(ext)) {
+				return true;
+			}
+		}
     	
     	return false;
     }

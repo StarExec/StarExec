@@ -39,7 +39,7 @@ public class BenchmarkUploader extends HttpServlet {
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
     
     // Valid file types for uploads
-    private static final String[] extensions = {".tar", ".tar.gz", ".zip"};
+    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     
     // Request attributes
     private static final String SPACE_ID = "space";

@@ -82,12 +82,15 @@ public class Download extends HttpServlet {
 		// If we can see this solver AND the solver is downloadable...
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
-			// Create the file so we can use it
+			// Create the file so we can use it, and the directory it will be placed in
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir = new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR);
+			uniqueDir.mkdirs(); //Was running into errors without this; figured it doesn't hurt to leave it in
+			uniqueDir = new File(uniqueDir, fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format);
 			
+			//We return the fileName so the browser can redirect straight to it
 			return fileName;
 		}
 		else {
@@ -186,7 +189,6 @@ public class Download extends HttpServlet {
     	} catch (Exception e) {
     		log.warn(e.getMessage(), e);
     	}
-    	
     	return false;
     }
 }

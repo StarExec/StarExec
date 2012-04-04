@@ -118,11 +118,11 @@
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	<c:choose>
 		<c:when test="${usr.id == user.id && solver.downloadable}">
-			<a href="/starexec/secure/download?type=solver?id=${solver.id}" id="downLink">download</a>
+			<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
 			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig" class="uploadConfig">upload configuration</a>
 		</c:when>
 		<c:when test="${usr.id != user.id && solver.downloadable}">
-			<a href="/starexec/secure/download?type=solver?id=${solver.id}" id="downLink">download</a>
+			<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
 		</c:when>
 		<c:when test="${usr.id == user.id && !solver.downloadable}">
 			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfigMargin" class="uploadConfig">upload configuration</a>

@@ -55,9 +55,10 @@
 					<td class="label">preferred archive type</td>
 					<td>
 						<select name="pat">
-							<option value=".zip" selected="selected">.zip</option>
 							<option value=".tar">.tar</option>
-							<option value=".tar.gz">.tar.gz</option>
+							<option value=".tar.gz" selected="selected">.tar.gz</option>
+							<option value=".tgz">.tgz</option>
+							<option value=".zip">.zip</option>
 						</select>
 					</td>
 			</tr>

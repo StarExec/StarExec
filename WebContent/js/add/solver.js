@@ -10,7 +10,7 @@ $(document).ready(function(){
 		rules: {
 			f: {
 				required: true,
-				regex: "(\.zip$)|(\.tar(\.gz)?$)"
+				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			sn: {
 				required: true

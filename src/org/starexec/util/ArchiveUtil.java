@@ -42,7 +42,7 @@ public class ArchiveUtil {
 				ArchiveUtil.extractZIP(fileName, destination);
 			} else if(fileName.endsWith(".tar")) {
 				ArchiveUtil.extractTAR(fileName, destination);
-			} else if (fileName.endsWith(".tar.gz")) {
+			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
 				
@@ -200,7 +200,7 @@ public class ArchiveUtil {
 				ArchiveUtil.createZip(path, destination);
 			} else if (format.equals(".tar")) {
 				ArchiveUtil.createTar(path, destination);
-			} else if (format.equals(".tar.gz")) {
+			} else if (format.equals(".tar.gz") || format.equals(".tgz")) {
 				ArchiveUtil.createTarGz(path, destination);
 			}
 		} catch (Exception e) {
