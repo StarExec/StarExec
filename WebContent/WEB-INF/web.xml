@@ -141,6 +141,15 @@
   </servlet-mapping>
   
   <servlet>
+  	<servlet-name>SpaceXMLUploader</servlet-name> 
+  	<servlet-class>org.starexec.servlets.UploadSpaceXML</servlet-class> 
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>SpaceXMLUploader</servlet-name> 
+  	<url-pattern>/secure/upload/space</url-pattern> 
+  </servlet-mapping>
+   
+  <servlet>
     <servlet-name>JobResults</servlet-name>
     <servlet-class>org.starexec.servlets.Results</servlet-class>
   </servlet>

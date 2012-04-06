@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://wiki.uiowa.edu/download/attachments/59581532/batchSpaceSchema.xsd" targetNamespace="http://wiki.uiowa.edu/download/attachments/59581532/batchSpaceSchema.xsd">
+    
+    <annotation>
+    	<documentation>
+    		This is the xml schema for a starexec space hierarchy. 
+    	</documentation>
+    </annotation>
+ 
+    <element name="Space" type="tns:Space"></element>
+    
+    <complexType name="Space">
+    	<sequence>
+    		<element name="Benchmark" type="tns:Benchmark" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    		<element name="Solver" type="tns:Solver" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    		<element name="Space" type="tns:Space" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    	 <attribute name="id" type="int"></attribute>
+    	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
+    </complexType>
+
+    <complexType name="Benchmark">
+    	<attribute name="id" type="int"></attribute>
+    	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    </complexType>
+    
+    <complexType name="Solver">
+    	<attribute name="id" type="int"></attribute>
+    	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    </complexType>
+    
+    <simpleType name="PrimitiveName">
+  		<restriction base="string">
+    		<pattern value="[\w\-\. ]{1,64}"/>
+  		</restriction>
+	</simpleType>
+
+    
+</schema>

@@ -53,6 +53,11 @@ function initButtonUI() {
 			secondary: "ui-icon-arrowthick-1-n"
     }});
 	
+	$('.btnDown').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-s"
+    }});
+	
 	$('.btnRun').button({
 		icons: {
 			secondary: "ui-icon-gear"
@@ -912,8 +917,7 @@ function checkPermissions(perms) {
 	createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBenchmark, perms.removeBench));
 	createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
 	createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
-	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));
-	
+	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));	
 	console.log('permissions checked and processed');
 }
 
@@ -928,6 +932,8 @@ function updateButtonIds(id) {
 	$('#uploadBench').attr('href', "/starexec/secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', "/starexec/secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
+	$('#downloadXML').attr('href', "/starexec/secure/download?type=spaceXML&id="+id);
+	$('#uploadXML').attr('href', "/starexec/secure/add/batchSpace.jsp?sid=" + id);
 	console.log('updated action button space ids to ' + id);
 }
 

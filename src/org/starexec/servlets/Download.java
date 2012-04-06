@@ -2,13 +2,23 @@ package org.starexec.servlets;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jboss.resteasy.spi.HttpResponse;
 
@@ -20,6 +30,8 @@ import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.util.BatchUtil;
+import org.xml.sax.SAXException;
 
 /**
  * Handles requests to download files from starexec
@@ -42,6 +54,7 @@ public class Download extends HttpServlet {
     	try {
     		
 			if (false == validateRequest(request)) {
+				log.debug("Bad download Request");
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
 				return;
 			}
@@ -55,6 +68,10 @@ public class Download extends HttpServlet {
 			} else if (request.getParameter("type").equals("jp_output")) {
 				JobPair jp = Jobs.getPair(Integer.parseInt(request.getParameter("id")));
 				fileName = handlePairOutput(jp, u.getId(), u.getArchiveType(), response);				
+			}
+			else if (request.getParameter("type").equals("spaceXML")) {
+				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
+				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);
 			}
 		
 			// Redirect based on success/failure
@@ -128,6 +145,53 @@ public class Download extends HttpServlet {
     	return null;
     }
     
+	/**
+	 * Processes a space xml file to be downloaded. The xml file and the space hierarchy xml schema is archived in a format that is
+	 * specified by the user, given a random name, and placed in a secure folder on the server.
+	 * @param space the space to be downloaded
+	 * @param userId the id of the user making the download request
+	 * @param format the user's preferred archive type
+	 * @return the filename of the created archive
+	 * @author Benton McCune
+	 * @throws Exception 
+	 */
+    private static String handleSpaceXML(Space space, int userId, String format, HttpServletResponse response) throws Exception {
+		log.debug("Space XML download called");
+    	
+    	// If we can see this Space
+		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
+			log.debug("Permission to download XML granted");			
+			BatchUtil butil = new BatchUtil();
+			File file = null;
+			
+			file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
+			
+			String fileNamewoFormat = UUID.randomUUID().toString();
+			String fileName = fileNamewoFormat + format;
+			
+			//container has the xml schema and the newly created xml file.  uniqueDir is the compressed file downloaded by user
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			File container = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileNamewoFormat);
+			container.mkdir();
+			
+			File schemaCopy = new File("batchSpaceSchema.xsd");
+			FileUtils.moveFileToDirectory(file, container, false);
+			InputStream schemaStream = Files.newInputStream(Paths.get(R.SPACE_XML_SCHEMA_LOC)); 
+			FileUtils.copyInputStreamToFile(schemaStream, schemaCopy);
+			FileUtils.moveFileToDirectory(schemaCopy, container, false);
+			uniqueDir.createNewFile();
+			
+			ArchiveUtil.createArchive(container, uniqueDir, format);
+			
+			return fileName;
+		}
+		else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+		}
+    	
+    	return null;
+    }
+    
     /**
 	 * Processes a job pair's output to be downloaded. The output is archived in a format that is
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
@@ -178,9 +242,10 @@ public class Download extends HttpServlet {
     			return false;
     		}
     		
-    		// The requested type should be a solver, benchmark, or job pair output
+    		// The requested type should be a solver, benchmark, spaceXML, or job pair output
     		if (!(request.getParameter("type").equals("solver") ||
     				request.getParameter("type").equals("bench") ||
+    				request.getParameter("type").equals("spaceXML") ||
     				request.getParameter("type").equals("jp_output"))) {
     			return false;
     		}
