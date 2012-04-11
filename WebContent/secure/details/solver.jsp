@@ -29,41 +29,47 @@
 %>
 
 <star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="details/shared, common/table">				
+	<div id="popDialog" style="display: none;">
+  		<img id="popImage" src=""/>
+	</div>
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
-		<table class="shaded">
-			<thead>
+			<table>
 				<tr>
-					<th>attribute</th>
-					<th>value</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>name</td>			
-					<td>${solver.name}</td>
-				</tr>
-				<tr>
-					<td>description</td>			
-					<td>${solver.description}</td>
-				</tr>
-				<tr>
-					<td>owner</td>			
-					<td><star:user value="${usr}" /></td>
-				</tr>							
-				<tr>
-					<td>uploaded</td>			
-					<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
-				</tr>				
-			</tbody>				
-		</table>	
-	</fieldset>
-	<fieldset>
-		<legend>picture</legend>
-			<img src= "/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" width = 150 onclick="changeImage(this)">
-    		<ul>
-				<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">Edit</a></li>
-			</ul>						
+				<td style="vertical-align: center">
+					<img src= "/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" height = 160" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
+					<a class="uploadConfig" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${userId}">Change</a>
+				</td>
+				<td style="vertical-align: top">
+					<table class="shaded">
+						<thead>
+							<tr>
+								<th>attribute</th>
+								<th>value</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>name</td>			
+								<td>${solver.name}</td>
+							</tr>
+							<tr>
+								<td>description</td>			
+								<td>${solver.description}</td>
+							</tr>
+							<tr>
+								<td>owner</td>			
+								<td><star:user value="${usr}" /></td>
+							</tr>							
+							<tr>
+								<td>uploaded</td>			
+								<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
+							</tr>				
+						</tbody>				
+					</table>
+				</td>
+			</tr>
+		</table>
 	</fieldset>
 	<fieldset>
 		<legend>configurations</legend>

@@ -1,20 +1,55 @@
 $(document).ready(function(){
+	
+	$('#fieldSites').expandable(true);
+	initUI();
 
-	$('#fieldSites').expandable(true);			
+	$('img').click(function(event){
+		event.preventDefault();
+		PopUp($(this).attr('enlarge'));
+	});      
 });
 
-var flag = true;
-
-function changeImage(obj){
+function initUI(){
+	$('#fieldSites').expandable(true);		
 	
-	if (flag){
-		var splitString = obj.src.split("&type=");
-		obj.src = splitString[0] + ("&type=sorg");
-		obj.width = 600;
-	} else{
-		var splitString = obj.src.split("&type=");
-		obj.src = splitString[0] + ("&type=sthn");
-		obj.width = 150;
-	}
-	flag = !flag;
+	// Setup datatable of configurations
+	$('#tblSolverConfig').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">',        
+        "bPaginate": true,        
+        "bSort": true        
+    });
+	
+	// Setup button icons
+	$('#uploadConfig, #uploadConfigMargin').button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+    });
+	
+	$('#uploadPicture').button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+    });	
+}
+
+function PopUp(uri) {
+	imageDialog = $("#popDialog");
+	imageTag = $("#popImage");
+	
+	imageTag.attr('src', uri);
+
+	imageTag.load(function(){
+		
+		var resizedHieght = 400;
+			
+		$('#popDialog').dialog({
+			dialogClass: 'alert',
+			modal: true,
+			resizable: true,
+			draggable: false,
+			height: resizedHieght,
+			width: 'auto'
+		});
+	});  
 }

@@ -15,17 +15,18 @@
 	}
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
+	<div id="popDialog" style="display: none;">
+  		<img id="popImage" src=""/>
+	</div>
 	<p>review and edit your account details here.</p>
-	
 	<fieldset>
 	<legend>personal information</legend>
 	<table>
 	<tr>
 	<td style="vertical-align: center">
-		<!-- <img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 onclick="changeImage(this)">  -->
-		<img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 onclick="imagePopUp('/starexec/secure/get/pictures?type=uorg\&Id=${userId}')">
+		<img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">
     	<ul>
-			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">Edit</a></li>
+			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">Change</a></li>
 		</ul>
 	</td>
 	<td style="vertical-align: top">
@@ -36,7 +37,7 @@
 					<th>current value</th>
 				</tr>
 			</thead>
-			<tbody>	
+			<tbody>
 				<tr>
 					<td>first name </td>
 					<td id="editfirstname">${user.firstName}</td>

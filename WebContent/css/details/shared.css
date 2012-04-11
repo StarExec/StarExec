@@ -38,3 +38,5 @@ textarea {
 	float: right;
 	margin-right: 185px;
 }
+
+.noTitle .ui-dialog-titlebar {display:none}

@@ -78,3 +78,5 @@ input[type="text"] {
 #toggleWebsite {	
 	cursor: pointer;	
 }
+
+.noTitle .ui-dialog-titlebar {display:none}

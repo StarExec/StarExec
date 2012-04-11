@@ -97,6 +97,11 @@ $(document).ready(function(){
         "bPaginate": false,        
         "bSort": true        
     });	
+	
+	$('img').click(function(event){
+		event.preventDefault();
+		PopUp($(this).attr('enlarge'));
+	}); 
 });
 
 
@@ -193,6 +198,12 @@ function initButtons(){
 			);
 		}
 	});
+	
+	$('#uploadPicture').button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+    });	
 }
 
 /**
@@ -313,7 +324,22 @@ function changeImage(obj){
 	flag = !flag;
 }
 	
-function imagePopUp(url){
-	var img = '/starexec/secure/details/showpic.jsp?imgurl=' + escape(url);
-	window.open (img, 'showpic', 'height=360, width=320, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no');
+function PopUp(uri) {
+	imageDialog = $("#popDialog");
+	imageTag = $("#popImage");
+	
+	imageTag.attr('src', uri);
+
+	imageTag.load(function(){
+		$('#popDialog').dialog({
+			dialogClass: 'noTitle',
+			modal: true,
+			resizable: false,
+			draggable: false,
+			height: 'auto',
+			width: 'auto',
+			maxWidth: 500,
+			mxHeight: 400
+		});
+	});  
 }
