@@ -21,7 +21,8 @@
 			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
 			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />	
-			<property key="PICTURE_PATH" value="/home/starexec/pictures" /> 										
+			<property key="PICTURE_PATH" value="/home/starexec/pictures" /> 
+			<property key="BATCH_SPACE_XML_DIR" value="/home/starexec/batchSpace/uploads" /> 										
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
@@ -94,7 +95,8 @@
 	  <property key="SPACE_XML_SCHEMA_LOC" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\batch\\batchSpaceSchema.xsd" /> 
 	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
 	  <property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
-	  <property key="PICTURE_PATH" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\pictures" /> 
+	  <property key="PICTURE_PATH" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\pictures" />
+	  <property key="BATCH_SPACE_XML_DIR" value="C:\\Users\\Ben\\workspace\\starexec\\starexec_res\\batch\\uploads" />  
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />    

@@ -83,16 +83,17 @@ public class UploadSpaceXML extends HttpServlet {
 	 */
 	public BatchUtil handleXMLFile(int userId, HashMap<String, Object> form) throws Exception {
 		try {
-			FileItem item = (FileItem)form.get(UploadSpaceXML.UPLOAD_FILE);
-						
+			log.debug("Handling Upload of XML File from User " + userId);
+			FileItem item = (FileItem)form.get(UploadSpaceXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
-			File uniqueDir = new File(R.DOWNLOAD_FILE_DIR, "" + userId);
+			File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "" + userId);
 			uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 			
 			uniqueDir.mkdirs();
 			
 			//Process the archive file and extract
+		
 			File archiveFile = new File(uniqueDir,  item.getName());
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);

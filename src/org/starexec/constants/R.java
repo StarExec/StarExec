@@ -48,6 +48,7 @@ public class R {
 	public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
 	public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
 	public static String PICTURE_PATH = null;								// Where the pictures are located
+	public static String BATCH_SPACE_XML_DIR = null;                            // Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
 	
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
