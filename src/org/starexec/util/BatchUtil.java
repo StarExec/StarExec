@@ -70,7 +70,7 @@ public class BatchUtil {
 		Transformer transformer = transformerFactory.newTransformer();
 		DOMSource source = new DOMSource(doc);
 		
-		File file = new File(space.getName() +".xml");
+		File file = new File(R.STAREXEC_ROOT, space.getName() +".xml");
 		
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);

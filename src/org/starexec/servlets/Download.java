@@ -172,7 +172,7 @@ public class Download extends HttpServlet {
 			File container = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileNamewoFormat);
 			container.mkdir();
 			
-			File schemaCopy = new File("batchSpaceSchema.xsd");
+			File schemaCopy = new File(R.STAREXEC_ROOT, "batchSpaceSchema.xsd");
 			FileUtils.moveFileToDirectory(file, container, false);
 			File schema = new File(R.SPACE_XML_SCHEMA_LOC);
 			InputStream schemaStream = new FileInputStream(schema);
