@@ -28,9 +28,15 @@ function initUI(){
 	
 	$('#uploadPicture').button({
 		icons: {
-			primary: "ui-icon-arrowthick-1-n"
+			primary: "ui-icon-gear"
 		}
-    });	
+    });
+	
+	$(".close-image").click(function() {
+	    $(this).parent().hide();
+	});
+	
+	$('#popImage').css('height','400px');
 }
 
 function PopUp(uri) {
@@ -40,16 +46,15 @@ function PopUp(uri) {
 	imageTag.attr('src', uri);
 
 	imageTag.load(function(){
-		
-		var resizedHieght = 400;
-			
 		$('#popDialog').dialog({
-			dialogClass: 'alert',
-			modal: true,
-			resizable: true,
+			dialogClass: 'noTitle',
+			modal: false,
+			resizable: false,
 			draggable: false,
-			height: resizedHieght,
-			width: 'auto'
+			height: 'auto',
+			width: 'auto',
+			maxWidth: 500,
+			mxHeight: 400
 		});
 	});  
 }

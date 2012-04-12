@@ -17,6 +17,7 @@
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<div id="popDialog" style="display: none;">
   		<img id="popImage" src=""/>
+  		<img class="close-image" src="http://residentialsearch.savills.co.uk/Content/Images/icon_close.png" />
 	</div>
 	<p>review and edit your account details here.</p>
 	<fieldset>

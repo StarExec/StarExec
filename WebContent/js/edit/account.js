@@ -101,7 +101,14 @@ $(document).ready(function(){
 	$('img').click(function(event){
 		event.preventDefault();
 		PopUp($(this).attr('enlarge'));
-	}); 
+	});
+	
+	$(".close-image").click(function() {
+	    $(this).parent().hide();
+	});
+	
+	$('#popImage').css('height','400px');
+
 });
 
 
@@ -333,7 +340,7 @@ function PopUp(uri) {
 	imageTag.load(function(){
 		$('#popDialog').dialog({
 			dialogClass: 'noTitle',
-			modal: true,
+			modal: false,
 			resizable: false,
 			draggable: false,
 			height: 'auto',

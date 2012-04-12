@@ -31,6 +31,7 @@
 <star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="details/shared, common/table">				
 	<div id="popDialog" style="display: none;">
   		<img id="popImage" src=""/>
+  		<img class="close-image" src="http://residentialsearch.savills.co.uk/Content/Images/icon_close.png" />
 	</div>
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
