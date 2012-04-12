@@ -1,37 +1,35 @@
 package org.starexec.servlets;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.jboss.resteasy.spi.HttpResponse;
-
-import org.starexec.app.Starexec;
 import org.starexec.constants.R;
-import org.starexec.data.database.*;
-import org.starexec.data.to.*;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
+import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-import org.starexec.util.BatchUtil;
-import org.xml.sax.SAXException;
 
 /**
  * Handles requests to download files from starexec
@@ -176,7 +174,8 @@ public class Download extends HttpServlet {
 			
 			File schemaCopy = new File("batchSpaceSchema.xsd");
 			FileUtils.moveFileToDirectory(file, container, false);
-			InputStream schemaStream = Files.newInputStream(Paths.get(R.SPACE_XML_SCHEMA_LOC)); 
+			File schema = new File(R.SPACE_XML_SCHEMA_LOC);
+			InputStream schemaStream = new FileInputStream(schema);
 			FileUtils.copyInputStreamToFile(schemaStream, schemaCopy);
 			FileUtils.moveFileToDirectory(schemaCopy, container, false);
 			uniqueDir.createNewFile();
