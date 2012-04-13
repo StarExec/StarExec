@@ -76,7 +76,7 @@ public class UploadPicture extends HttpServlet {
 			File archiveFile = new File(filenameupload);
 			item.write(archiveFile);
 
-			String fileNameThumbnail = filePath + "\\" + fileName + "_thn.jpg";
+			String fileNameThumbnail = filePath + "/" + fileName + "_thn.jpg";
 			scale(filenameupload, 100, 120, fileNameThumbnail);
 			
 			response.sendRedirect(redir);
