@@ -39,13 +39,11 @@ textarea {
 	margin-right: 185px;
 }
 
-.close-image{
-    display: block;
-    float:right;
-    position:relative;
-    top:-10px;
-    right: -10px;
-    height: 20px;
+.noTitle .ui-dialog-titlebar {
+	display:none
 }
 
-.noTitle .ui-dialog-titlebar {display:none}
+#uploadPicture {
+	margin-left: 15px;
+}
+

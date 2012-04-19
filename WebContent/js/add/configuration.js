@@ -5,7 +5,7 @@ $(document).ready(function(){
 	
 	// Attach from validation to the configuration upload form
 	attachFormValidation();
-	
+
 });
 
 
@@ -18,15 +18,23 @@ function initGUI() {
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
     }});
-	$('#cancelBtn').button({
+	$('.cancelBtn').button({
 		icons: {
 			secondary: "ui-icon-closethick"
     }});
+	$('#saveBtn').button({
+		icons:{
+			secondary: "ui-icon-disk"
+		}
+	});
 	
 	// If user clicks 'cancel', redirect to solver's details page
-	$('#cancelBtn').click(function(){
+	$('.cancelBtn').click(function(){
 		window.location = "/starexec/secure/details/solver.jsp?id=" + getParameterByName("sid");
 	});
+	
+	$('#upload').expandable(false);
+	$('#save').expandable(true);
 }
 
 /**
@@ -49,10 +57,12 @@ function attachFormValidation() {
 				required: true
 			},
 			name: {
-				required: true
+				required: true,
+				regex: "^[\\w\\-\\.\\s]+$"
 			},
 			description: { 
-				required: true
+				required: true,
+				regex: "^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$"
 			}
 		},
 		messages: {
@@ -60,10 +70,40 @@ function attachFormValidation() {
 				required: "please select a file"
 			},
 			name: {
-				required: "input a name"
+				required: "name required"
 			},
 			description: {
 				required: "description required"
+			}
+		}
+	});
+	
+	// Add validation to the configuration save form
+	$("#saveConfigForm").validate({
+		rules: {
+			name: {
+				required: true,
+				regex: "^[\\w\\-\\.\\s]+$"
+			},
+			description: { 
+				required: true,
+				regex: "^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$"
+			},
+			contents: {
+				required: true
+			}
+		},
+		messages: {
+			name: {
+				required: "name required",
+				regex: "invalid characters"
+			},
+			description: {
+				required: "description required",
+				regex: "invalid characters"
+			},
+			contents: {
+				required: "file can't be empty"
 			}
 		}
 	});

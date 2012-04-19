@@ -4,31 +4,87 @@ var benchTable;
 var solverTable;
 var spaceTable;
 var jobTable;
-var spaceId; // id of the current space
-var spaceName; // name of the current space
+var spaceId;			// id of the current space
+var spaceName;			// name of the current space
+var debugMode = true;	// if false, console.log() calls will be ignored
 
 $(document).ready(function(){	
-	console.log('page ready!');
 	
-	// initializes custom tooltip styles
+	// Build the tooltip styles (i.e. dimensions, color, etc)
 	initTooltipStyles();
 	
-	// builds the space explorer tree
-	// creates tooltips for the space explorer, .expd class, and userTable (if applicable)
+	// Build left-hand side of page (space explorer)
 	initSpaceExplorer();
 	
-	// builds the DataTable objects and enables multi-select on them
-	initDataTables();
+	// Build right-hand side of page (space details)
+	initSpaceDetails();
 	
-	// Set up jQuery UI buttons
-	initButtonUI();	
-	
-	// Set up jQuery UI dialog boxes
-	initDialogs();
-	
-	// Enable/disable buttons based on permissions
-	initButtons();
 });
+
+
+/**
+ * Attaches a click listener to a given fieldset that, if activated, checks
+ * to ensure the fieldset that is about to be displayed has data.  If it doesn't
+ * have data, the data is queried for via AJAX.
+ */
+function fieldsetMonitor(fieldset){
+	// Attach an event listener to the given fieldset's 'expand' button
+	$(fieldset).click(function() {
+		// Only process clicks if the fieldset hasn't been populated with primitives and is currently open
+		if(true == isFieldsetOpen(fieldset) && false == $(fieldset).data('populated')){
+			// Populate the given fieldset with its primitives by calling the dataTable's redraw function, which forces an AJAX query
+			switch(fieldset[1]){
+				case 'j':
+					jobTable.fnDraw();
+					$('#jobExpd').data('populated', true);
+					break;
+				case 'u':
+					userTable.fnDraw();
+					$('#userExpd').data('populated', true);
+					break;
+				case 's':
+					if('o' == fieldset[2]) {
+						solverTable.fnDraw();
+						$('#solverExpd').data('populated', true);
+					} else {
+						spaceTable.fnDraw();
+						$('#spaceExpd').data('populated', true);
+					}
+					break;
+				case 'b':
+					benchTable.fnDraw();
+					$('#benchExpd').data('populated', true);
+					break;
+			}
+		}
+	});
+}
+
+
+/**
+ * Convenience method for determining if a given fieldset has been expanded or not
+ *  
+ * @param fieldset the id of the fieldset to check for expansion (first letter must be a '#' symbol)
+ * @returns {Boolean} true iff the given fieldset has been expanded
+ */
+function isFieldsetOpen(fieldset){
+	if($(fieldset + ' span:last-child').text() == ' (+)'){
+		return false;
+	} else { 
+		return true;
+	}
+}
+
+/**
+ * Prints a message to the Chrome javascript console if debugging is enabled
+ * 
+ * @param message the message to print to Chrome's javascript console
+ */
+function log(message){
+	if(true == debugMode){
+		console.log(message);
+	}
+}
 
 /**
  * Hides all jquery ui dialogs for page startup
@@ -36,8 +92,32 @@ $(document).ready(function(){
 function initDialogs() {	
 	$( "#dialog-confirm-copy" ).hide();
 	$( "#dialog-confirm-delete" ).hide();
-	console.log('all confirmation dialogs hidden');
+	log('all confirmation dialogs hidden');
 }
+
+/**
+ * Sets up the 'space details' that consumes the right-hand side of the page
+ */
+function initSpaceDetails(){
+	
+	// builds the DataTable objects and enables multi-select on them
+	initDataTables();
+	
+	// Set up jQuery UI dialog boxes
+	initDialogs();
+	
+	// Set up jQuery button UI
+	initButtonUI();
+	
+	// Attach monitors to the primitive fieldsets to listen for mouse clicks
+	fieldsetMonitor('#jobExpd');
+	fieldsetMonitor('#userExpd');
+	fieldsetMonitor('#solverExpd');
+	fieldsetMonitor('#benchExpd');
+	fieldsetMonitor('#spaceExpd');
+	
+}
+
 
 /**
  * Basic initialization for jQuery UI buttons (sets style and icons)
@@ -73,7 +153,13 @@ function initButtonUI() {
 			secondary: "ui-icon-pencil"
 	}});
 	
-	console.log('jQuery UI buttons initialized');
+	$('#trashcan').button({
+		icons: {
+			secondary: "ui-icon-trash"
+	}});
+	$('#trashcan').hide();
+	
+	log('jQuery UI buttons initialized');
 }
 
 /**
@@ -81,10 +167,12 @@ function initButtonUI() {
  * @param table The table to make draggable
  */
 function initDraggable(table) {
+	var rows = $(table).children('tbody').children('tr');
+	
 	// Using jQuery UI, make the first column in each row draggable
-	$(table).children('tbody').children('tr').draggable({
-		cursorAt: { cursor: 'move', bottom: 10, left: 34},	// Set the cursor to the move icon and make it start in the corner of the helper		
-		containment: 'window',	// Allow the element to be dragged anywhere in the browser window
+	rows.draggable({
+		cursorAt: { cursor: 'move', bottom: 10, left: 20},	// Set the cursor to the move icon and make it start in the corner of the helper		
+		containment: 'document',// Allow the element to be dragged anywhere in the document
 		distance: 20,			// Only trigger a drag when the distanced dragged is > 20 pixels
 		scroll: true,			// Scroll with the page as the item is dragged if needed
 		helper: getDragClone,	// The method that returns the 'cloned' element that is dragged
@@ -92,29 +180,73 @@ function initDraggable(table) {
 		stop: onDragStop		// Method called when the dragging ends
 	});
 	
+	// Set the JQuery variables used during the drag/drop process
+	$.each(rows, function(i, row){
+		$(row).data("id", $(row).children('td:first-child').children('input').val());
+		$(row).data("type", $(row).children('td:first-child').children('input').attr('prim'));
+		$(row).data("name", $(row).children('td:first-child').children('a').text());
+	});
+	
 	// Make each space in the explorer list be a droppable target
 	$('#exploreList').find('a').droppable( {
-		// Function which is called when an item is dropped on a space
 	    drop: onSpaceDrop,
 	    hoverClass: 'hover',	// Class applied to the space element when something is being dragged over it
 	    activeClass: 'active'	// Class applied to the space element when something is being dragged
 	});
 	
-	console.log('table initialized as draggable');
+	// Make the trash can in the explorer list be a droppable target
+	$('#trashcan').droppable({
+		drop: onTrashDrop,
+	    hoverClass: 'hover',	// Class applied to the space element when something is being dragged over it
+	    activeClass: 'active'	// Class applied to the space element when something is being dragged
+	});
+	
+	log($(table).attr('id') + ' table initialized as draggable');
 }
  
 /**
  * Called when any item is starting to be dragged within the browser
  */
 function onDragStart(event, ui) {
-	console.log('drag started');
+	log('drag started');
+	$('#trashcan').show();
 }
 
 /**
  * Called when there is no longer anything being dragged
  */
 function onDragStop(event, ui) {
-	console.log('drag stopped');
+	log('drag stopped');
+	$('#trashcan').hide();
+}
+
+/**
+ * Called when a draggable item (primitive) is dropped on the trash can
+ */
+function onTrashDrop(event, ui){
+	// Collect the selected elements from the table being dragged from
+	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
+	
+	if(ids.length < 2) {
+		// If 0 or 1 things are selected in the table, just use the element that is being dragged
+		ids = [ui.draggable.data('id')];
+	}
+	
+	// Call the appropriate primitive removal function
+	switch(ui.draggable.data('type')[0]){
+		case 'u':
+			removeUsers(ids);
+			break;
+		case 's':
+			removeSolvers(ids);
+			break;
+		case 'b':
+			removeBenchmarks(ids);
+			break;
+		case 'j':
+			removeJobs(ids);
+			break;
+	}
 }
 
 /**
@@ -128,7 +260,7 @@ function onSpaceDrop(event, ui) {
 	var destSpace = $(event.target).parent().attr('id');
 	var destName = $(event.target).text();
 	
-	console.log(ids.length + ' rows dropped onto ' + destName);
+	log(ids.length + ' rows dropped onto ' + destName);
 	
 	if(ids.length < 2) {
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
@@ -145,7 +277,7 @@ function onSpaceDrop(event, ui) {
 		modal: true,
 		buttons: {
 			'yes': function() {
-				console.log('user confirmed copy action');
+				log('user confirmed copy action');
 				
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-copy').dialog('close');
@@ -155,7 +287,7 @@ function onSpaceDrop(event, ui) {
 					'/starexec/services/spaces/' + destSpace + '/add/' + ui.draggable.data('type'), // We use the type to denote copying a user/solver/benchmark/job
 					{selectedIds : ids, fromSpace : spaceId},	// Attach the selected items to the data of the post along with the space it's coming from
 					function(returnCode) {
-						console.log('AJAX response recieved with code ' + returnCode);
+						log('AJAX response recieved with code ' + returnCode);
 						switch (returnCode) {
 							case 0:	// Success
 								if(ids.length > 1) {								
@@ -190,7 +322,7 @@ function onSpaceDrop(event, ui) {
 				});	 									
 			},
 			"cancel": function() {
-				console.log('user canceled copy action');
+				log('user canceled copy action');
 				$(this).dialog("close");
 			}
 		}		
@@ -206,20 +338,30 @@ function getDragClone(event) {
 	var txtDisplay = $(src).children(':first-child').text();
 	var icon = 'ui-icon ';	
 	var primType = $(src).data('type');
+	console.log(src);
+	
+	if(false == $(src).hasClass('row_selected')){
+		$(src).addClass('row_selected');
+	}
 	
 	if(ids.length > 1) {
 		txtDisplay = ids.length + ' ' + primType + 's';
 	}
 	
 	// Change the drag icon based on what the type of object being dragged is
-	if(primType == 'user') {
-		icon += 'ui-icon-person';
-	} else if (primType == 'benchmark') {
-		icon += 'ui-icon-script';
-	} else if (primType == 'job') {
-		icon += 'ui-icon-gear';
-	} else {
-		icon += 'ui-icon-newwin';
+	switch(primType[0]){
+		case 'u':
+			icon += 'ui-icon-person';
+			break;
+		case 'b':
+			icon += 'ui-icon-script';
+			break;
+		case 'j':
+			icon += 'ui-icon-gear';
+			break;
+		default:
+			icon += 'ui-icon-newwin';
+			break;
 	}
 	
 	// Return a styled div with the name of the element that was originally dragged
@@ -227,12 +369,13 @@ function getDragClone(event) {
 }
 
 /**
- * Creates the space explorer tree for the left-hand side of the page
+ * Creates the space explorer tree for the left-hand side of the page, also
+ * creates tooltips for the space explorer, .expd class, and userTable (if applicable)
  */
 function initSpaceExplorer(){
 	// Set the path to the css theme for the jstree plugin
 	$.jstree._themes = "/starexec/css/jstree/";
-	
+	var id;
 	 // Initialize the jstree plugin for the explorer list
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
@@ -269,9 +412,11 @@ function initSpaceExplorer(){
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
+		
+		
 		// When a node is clicked, get its ID and display the info in the details pane
         id = data.rslt.obj.attr("id");
-        console.log('Space explorer node ' + id + ' was clicked');
+        log('Space explorer node ' + id + ' was clicked');
         
         updateButtonIds(id);
         getSpaceDetails(id);
@@ -281,291 +426,410 @@ function initSpaceExplorer(){
         $(".qtip-userTooltip").remove();
         $(".qtip-expdTooltip").remove();
         
-        // Hide all buttons that are selection-dependent
-        hideButtons();
-    }).delegate("a", "click", function (event, data) { event.preventDefault(); });// This just disable's links in the node title
+    }).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 	
-	console.log('Space explorer node list initialized');
+	log('Space explorer node list initialized');
 	
 	// Create the space tooltips on <a> elements that are children of $(#exploreList)
 	createTooltip($('#exploreList'), 'a', 'space');
 }
 
-
 /**
- * Initialize the click listener functions for the buttons of the 'actions' fieldset
+ * Handles removal of benchmark(s) from a space
  */
-function initButtons(){
-	// Handles removal of benchmark(s) from a space
-	$("#removeBench").click(function(){
-		var selectedBenches = getSelectedRows(benchTable);
-		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected benchmark(s) from ' + spaceName + '?');
-		
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					console.log('user confirmed benchmark deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(  
+function removeBenchmarks(selectedBenches){
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected benchmark(s) from ' + spaceName + '?');
+	
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		buttons: {
+			'yes': function() {
+				log('user confirmed benchmark deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
 						"/starexec/services/remove/benchmark/" + spaceId,
 						{selectedBenches : selectedBenches},
 						function(returnCode) {
-							console.log('AJAX response received with code ' + returnCode);
+							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
-									updateTable(benchTable);
-									$("#removeBench").fadeOut("fast");
-									break;
-								case 1:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have sufficient privileges to remove benchmarks from this space", 5000);
-									break;
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(benchTable);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove benchmarks from this space", 5000);
+								break;
 							}
 						},
 						"json"
-					).error(function(){
-						alert('Session expired');
-						window.location.reload(true);
-					});		
-				},
-				"cancel": function() {
-					console.log('user canceled benchmark deletion');
-					$(this).dialog("close");
-				}
-			}		
-		});				
-	});
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});		
+			},
+			"cancel": function() {
+				log('user canceled benchmark deletion');
+				$(this).dialog("close");
+			}
+		}		
+	});				
+}	
+
+/**
+ * Handles removal of user(s) from a space
+ */
+function removeUsers(selectedUsers){
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected users(s) from ' + spaceName + '?');
 	
-	// Handles removal of user(s) from a space
-	$("#removeUser").click(function(){
-		var selectedUsers = getSelectedRows(userTable);			
-		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected users(s) from ' + spaceName + '?');
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		buttons: {
+			'yes': function() {
+				log('user confirmed user deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
+					"/starexec/services/remove/user/" + spaceId,
+					{selectedUsers : selectedUsers},
+					function(returnCode) {
+						log('AJAX response received with code ' + returnCode);
+						switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(userTable);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove other users from this space", 5000);
+								break;
+							case 3:
+								showMessage('error', "you can not remove yourself from this space in that way, " +
+										"instead use the 'leave' button to leave this community", 5000);
+								break;
+							case 4:
+								showMessage('error', "you can not remove other leaders of this space", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});	
+			},
+			"cancel": function() {
+				log('user canceled user deletion');
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
+/**
+ * Handles removal of solver(s) from a space
+ */
+function removeSolvers(selectedSolvers){
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected solver(s) from ' + spaceName + '?');
+	
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		buttons: {
+			'yes': function() {
+				log('user confirmed solver deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
+					"/starexec/services/remove/solver/" + spaceId,
+					{selectedSolvers : selectedSolvers},
+					function(returnCode) {
+						log('AJAX response received with code ' + returnCode);
+						switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(solverTable);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove solvers from this space", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			},
+			"cancel": function() {
+				log('user canceled solver deletion');
+				$(this).dialog("close");
+			}
+		}		
+	});		
+}
+
+/**
+ * Handles removal of job(s) from a space
+ */
+function removeJobs(selectedJobs){
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected job(s) from ' + spaceName + '?');
+	
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		buttons: {
+			'yes': function() {
+				log('user confirmed job deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
+					"/starexec/services/remove/job/" + spaceId,
+					{selectedJobs : selectedJobs},
+					function(returnCode) {
+						log('AJAX response received with code ' + returnCode);
+						switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(jobTable);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove jobs from this space", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			},
+			"cancel": function() {
+				log('user canceled job deletion');
+				$(this).dialog("close");
+			}
+		}		
+	});		
+}
+
+/**
+ * Handles removal of subspace(s) from a space
+ */
+function removeSubspaces(selectedSubspaces){
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s) from ' + spaceName + '?');
+	
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		buttons: {
+			'yes': function() {
+				log('user confirmed subspace deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
+					"/starexec/services/remove/subspace/" + spaceId,
+					{selectedSubspaces : selectedSubspaces},
+					function(returnCode) {
+						log('AJAX response received with code ' + returnCode);
+						switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(spaceTable);
+								initSpaceExplorer();
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
+								break;
+							case 3:
+								showMessage('error', "you can only delete subspaces that themselves have no subspaces", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			},
+			"cancel": function() {
+				log('user canceled subspace deletion');
+				$(this).dialog("close");
+			}
+		}		
+	});		
+}
+
+
+/**
+ * Handles querying for pages in a given DataTable object
+ * 
+ * @param sSource the "sAjaxSource" of the calling table
+ * @param aoData the parameters of the DataTable object to send to the server
+ * @param fnCallback the function that actually maps the returned page to the DataTable object
+ */
+function fnPaginationHandler(sSource, aoData, fnCallback) {
+	var fieldset = $(this).parent().parent().siblings('.expd');
+	var tableName = $(this).attr('id');
+	
+	// This prevents the AJAX call below from using a spaceId variable of type 'undefined' (due to spaceId not being initialized on page load)
+	if(spaceId === undefined){
+		return;
+	}
+	
+	// If the fieldset of the current DataTable is open, query for the next page of primitives
+	if(true == isFieldsetOpen('#' + $(fieldset).attr('id'))){
+		$.post(  
+				sSource + spaceId + "/" + tableName + "/pagination",
+				aoData,
+				function(nextDataTablePage){
+					switch(nextDataTablePage){
+						case 1:
+							showMessage('error', "failed to get the next page of results; please try again", 5000);
+							break;
+						case 2:
+							showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
+							break;
+						default:
+							// Set the number in the fieldset
+							$(fieldset).children('span:first-child').text(nextDataTablePage.iTotalRecords);
+							
+							// Indicate this fieldset is populated with data
+							$(fieldset).data('populated', true);
+							
+							// Replace the current page with the newly received page
+							fnCallback(nextDataTablePage);
+							
+							// If the primitive type is 'job', then color code the results appropriately
+							if('j' == tableName[0]){
+								colorizeJobStatistics();
+							} 
+							
+							// Make the rows in the table that was just populated drag-and-drop enabled (except for spaces table)
+							if('p' != tableName[1]){
+								initDraggable('#' + tableName);
+							}
+							
+
+							break;
+					}
+				},  
+				"json"
+		).error(function(){
+			alert('Session expired');
+			window.location.reload(true);
+		});
 		
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					console.log('user confirmed user deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(  
-						"/starexec/services/remove/user/" + spaceId,
-						{selectedUsers : selectedUsers},
-						function(returnCode) {
-							console.log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
-									updateTable(userTable);
-									$("#removeUser").fadeOut("fast");
-									break;
-								case 1:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have sufficient privileges to remove other users from this space", 5000);
-									break;
-								case 3:
-									showMessage('error', "you can not remove yourself from this space in that way, " +
-											"instead use the 'leave' button to leave this community", 5000);
-									break;
-								case 4:
-									showMessage('error', "you can not remove other leaders of this space", 5000);
-									break;
-							}
-						},
-						"json"
-					).error(function(){
-						alert('Session expired');
-						window.location.reload(true);
-					});	
-				},
-				"cancel": function() {
-					console.log('user canceled user deletion');
-					$(this).dialog("close");
-				}
-			}		
-		});		
-	});
+	}
+}
+
+/**
+ * Colorize the job statistics in the jobTable
+ */
+function colorizeJobStatistics(){
+	// Colorize the statistics in the job table for completed pairs
+	$("#jobs p.asc").heatcolor(
+			function() {
+				// Return the floating point value of the stat
+				return eval($(this).text());
+			},
+			{ 
+				maxval: 1,
+				minval: 0,
+				colorStyle: 'greentored',
+				lightness: 0 
+			}
+	);
 	
-	// Handles removal of solver(s) from a space
-	$("#removeSolver").click(function(){
-		var selectedSolvers = getSelectedRows(solverTable);		
-		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected solver(s) from ' + spaceName + '?');
-		
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					console.log('user confirmed solver deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(  
-						"/starexec/services/remove/solver/" + spaceId,
-						{selectedSolvers : selectedSolvers},
-						function(returnCode) {
-							console.log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
-									updateTable(solverTable);
-									$("#removeSolver").fadeOut("fast");
-									break;
-								case 1:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have sufficient privileges to remove solvers from this space", 5000);
-									break;
-							}
-						},
-						"json"
-					).error(function(){
-						alert('Session expired');
-						window.location.reload(true);
-					});
-				},
-				"cancel": function() {
-					console.log('user canceled solver deletion');
-					$(this).dialog("close");
-				}
-			}		
-		});		
-	});
-	
-	// Handles removal of job(s) from a space
-	$("#removeJob").click(function(){
-		var selectedJobs = getSelectedRows(jobTable);	
-		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected job(s) from ' + spaceName + '?');
-		
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					console.log('user confirmed job deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(  
-						"/starexec/services/remove/job/" + spaceId,
-						{selectedJobs : selectedJobs},
-						function(returnCode) {
-							console.log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
-									updateTable(jobTable);
-									$("#removeJob").fadeOut("fast");
-									break;
-								case 1:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have sufficient privileges to remove jobs from this space", 5000);
-									break;
-							}
-						},
-						"json"
-					).error(function(){
-						alert('Session expired');
-						window.location.reload(true);
-					});
-				},
-				"cancel": function() {
-					console.log('user canceled job deletion');
-					$(this).dialog("close");
-				}
-			}		
-		});		
-	});
-	
-	
-	// Handles removal of subspace(s) from a space
-	$("#removeSubspace").click(function(){
-		var selectedSubspaces = getSelectedRows(spaceTable);			
-		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s) from ' + spaceName + '?');
-		
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					console.log('user confirmed subspace deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(  
-						"/starexec/services/remove/subspace/" + spaceId,
-						{selectedSubspaces : selectedSubspaces},
-						function(returnCode) {
-							console.log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
-									updateTable(spaceTable);
-									$("#removeSubspace").fadeOut("fast");
-									initSpaceExplorer();
-									break;
-								case 1:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
-									break;
-								case 3:
-									showMessage('error', "you can only delete subspaces that themselves have no subspaces", 5000);
-									break;
-							}
-						},
-						"json"
-					).error(function(){
-						alert('Session expired');
-						window.location.reload(true);
-					});
-				},
-				"cancel": function() {
-					console.log('user canceled subspace deletion');
-					$(this).dialog("close");
-				}
-			}		
-		});		
-	});
-	
-	console.log('action buttons initialized');
+	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
+	$("#jobs p.desc").heatcolor(
+			function() {
+				return eval($(this).text());
+			},
+			{ 
+				maxval: 1,
+				minval: 0,
+				colorStyle: 'greentored',
+				reverseOrder: true,
+				lightness: 0 
+			}
+	);
 }
 
 /**
  * Initializes the DataTable objects and adds multi-select to them
  */
 function initDataTables(){
+	
 	// DataTables setup
 	userTable = $('#users').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": 10,
+        "bServerSide"	: true,
+        "sAjaxSource"	: "/starexec/services/space/",
+        "sServerMethod" : 'POST',
+        "fnServerData"	: fnPaginationHandler
     });
+	
 	solverTable = $('#solvers').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": 10,
+        "bServerSide"	: true,
+        "sAjaxSource"	: "/starexec/services/space/",
+        "sServerMethod" : 'POST',
+        "fnServerData"	: fnPaginationHandler
     });
+	
 	benchTable = $('#benchmarks').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
-    });
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": 10,
+        "bServerSide"	: true,
+        "sAjaxSource"	: "/starexec/services/space/",
+        "sServerMethod" : "POST",
+        "fnServerData"	: fnPaginationHandler 
+	});
+	
 	jobTable = $('#jobs').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">',
-        "aaSorting": []
-    });
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": 10,
+        "bServerSide"	: true,
+        "sAjaxSource"	: "/starexec/services/space/",
+        "sServerMethod" : "POST",
+        "fnServerData"	: fnPaginationHandler 
+	});
+	
 	spaceTable = $('#spaces').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": 10,
+        "bServerSide"	: true,
+        "sAjaxSource"	: "/starexec/services/space/",
+        "sServerMethod" : "POST",
+        "fnServerData"	: fnPaginationHandler 
     });
 	
 	// Mulit-select setup
@@ -590,22 +854,24 @@ function initDataTables(){
 		$(this).toggleClass('hovered');
 	});
 	
-	// Set all fieldselts as expandable (except for action fieldset)
+	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset:not(:last-child)').expandable(true);
 	
-	console.log('all datatables initialized');
+	log('all datatables initialized');
 }
 
+
 /**
- * Populates the space details panel with information on the given space
+ * Populates the space details panel with the basic information about the space
+ * (e.g. the name, description) but does not query for details about primitives 
  */
 function getSpaceDetails(id) {
 	$('#loader').show();
 	$.post(  
 		"/starexec/services/space/" + id,  
 		function(data){ 
-			console.log('AJAX response received for details of space ' + id);
-			populateDetails(data);			
+			log('AJAX response received for details of space ' + id);
+			populateSpaceDetails(data);			
 		},  
 		"json"
 	).error(function(){
@@ -614,11 +880,128 @@ function getSpaceDetails(id) {
 	});
 }
 
+
 /**
- * Takes in a json  response and populates the details panel with information
- * @param jsonData the json data to populate the details page with
+ * Updates the number of primitives displayed for a given fieldset 
  */
-function populateDetails(jsonData) {
+function updateFieldsetCount(primType) {
+	switch(primType[0]){
+		case 'j':
+			jobTable.fnClearTable();	
+			var isJobTablePopulated = $('#jobExpd').data('populated');
+			
+			// Only permit this AJAX call if the jobs table has not yet been populated (i.e. it has never been opened)
+			if(undefined === isJobTablePopulated 
+					|| false == isJobTablePopulated
+					|| true == isJobTablePopulated && false == isFieldsetOpen('#jobExpd')){
+				$.post(  
+						"/starexec/services/space/" + spaceId + "/jobs/count",  
+						function(count){
+							$('#jobField legend').children('span:first-child').text(count);
+							$('#jobExpd').data('populated', false);
+						},  
+						"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			}
+			break;
+		case 'u':
+			userTable.fnClearTable();
+			var isUserTablePopulated = $('#userExpd').data('populated');
+			
+			// Only permit this AJAX call if the user table has not yet been populated (i.e. it has never been opened)
+			if(undefined === isUserTablePopulated 
+					|| false == isUserTablePopulated
+					|| true == isUserTablePopulated && false == isFieldsetOpen('#userExpd')){
+				$.post(  
+						"/starexec/services/space/" + spaceId + "/users/count",  
+						function(count){
+							$('#userField legend').children('span:first-child').text(count);
+							$('#userExpd').data('populated', false);
+						},  
+						"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			}
+			break;
+		case 's':
+			if('o' == primType[1]){
+				solverTable.fnClearTable();
+				var isSolverTablePopulated = $('#solverExpd').data('populated');
+				
+				// Only permit this AJAX call if the solvers table has not yet been populated (i.e. it has never been opened)
+				if(undefined === isSolverTablePopulated 
+						|| false == isSolverTablePopulated
+						|| true == isSolverTablePopulated && false == isFieldsetOpen('#solverExpd')){
+					$.post(  
+							"/starexec/services/space/" + spaceId + "/solvers/count",  
+							function(count){
+								$('#solverField legend').children('span:first-child').text(count);
+								$('#solverExpd').data('populated', false);
+							},  
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});
+				}
+			} else {
+				spaceTable.fnClearTable();
+				var isSpaceTablePopulated = $('#spaceExpd').data('populated');
+				
+				// Only permit this AJAX call if the spaces table has not yet been populated (i.e. it has never been opened)
+				if(undefined === isSpaceTablePopulated 
+						|| false == isSpaceTablePopulated
+						|| true == isSpaceTablePopulated && false == isFieldsetOpen('#spaceExpd')){
+					$.post(  
+							"/starexec/services/space/" + spaceId + "/spaces/count",  
+							function(count){
+								$('#spaceField legend').children('span:first-child').text(count);
+								$('#spaceExpd').data('populated', false);
+							},  
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});
+				}
+			}
+			break;
+		case 'b':
+			benchTable.fnClearTable();
+			var isBenchTablePopulated = $('#benchExpd').data('populated');
+			
+			// Only permit this AJAX call if the benchmarks table has not yet been populated (i.e. it has never been opened)
+			if(undefined === isBenchTablePopulated 
+					|| false == isBenchTablePopulated
+					|| true == isBenchTablePopulated && false == isFieldsetOpen('#benchExpd')){
+				$.post(  
+						"/starexec/services/space/" + spaceId + "/benchmarks/count",  
+						function(count){
+							$('#benchField legend').children('span:first-child').text(count);
+							$('#benchExpd').data('populated', false);
+						},  
+						"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			}
+			break;
+	}
+}
+
+
+/**
+ * Populates the space details of the currently selected space and queries
+ * for the primitives of any fieldsets that are expanded
+ * @param jsonData the basic information about the currently selected space
+ */
+function populateSpaceDetails(jsonData) {
 	// If the space is null, the user can see the space but is not a member
 	if(jsonData.space == null) {
 		// Go ahead and show the space's name
@@ -654,114 +1037,12 @@ function populateDetails(jsonData) {
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
 	
-	// Populate job details
-	$('#jobField legend').children('span:first-child').text(jsonData.space.jobs.length);
-	jobTable.fnClearTable();	
-	$.each(jsonData.space.jobs, function(i, job) {	
-		var hiddenJobId = '<input type="hidden" value="' + job.id + '" >';
-		var jobLink = '<a href="/starexec/secure/details/job.jsp?id=' + job.id + '" target="blank">' + job.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenJobId;
-		var stats = jsonData.pairOverview[job.id];
-		var status = stats.pendingPairs > 0 ? "incomplete" : "complete";	
-		
-		function getPairStatHtml(numerator, statType) {
-			return "<p class='stat " + statType + "'>" + numerator + '/' + stats.totalPairs + "</p>";
-		}
-		
-		jobTable.fnAddData([jobLink, status, getPairStatHtml(stats.completePairs, 'asc'), getPairStatHtml(stats.pendingPairs, 'desc'), getPairStatHtml(stats.errorPairs, 'desc')]);
-		
-		// Set up data about this primitive used for drag/drop
-		$(jobTable.fnGetNodes(i)).data('id', job.id);
-		$(jobTable.fnGetNodes(i)).data('type', 'job');
-		$(jobTable.fnGetNodes(i)).data('name', job.name);
-	});		
-	initDraggable($('#jobs'));
-	
-	// Colorize the statistics in the job table for completed pairs
-	$("#jobs p.asc").heatcolor(
-		function() {
-			// Return the floating point value of the stat
-			return eval($(this).text());
-		},
-		{ 
-			maxval: 1,
-			minval: 0,
-			colorStyle: 'greentored',
-			lightness: 0 
-		}
-	);
-	
-	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
-	$("#jobs p.desc").heatcolor(
-		function() {
-			return eval($(this).text());
-		},
-		{ 
-			maxval: 1,
-			minval: 0,
-			colorStyle: 'greentored',
-			reverseOrder: true,
-			lightness: 0 
-		}
-	);
-	
-	// Populate user details	
-	$('#userField legend').children('span:first-child').text(jsonData.space.users.length);
-	userTable.fnClearTable();		
-	$.each(jsonData.space.users, function(i, user) {
-		var hiddenUserId;
-		if(user.id == jsonData.perm.id){
-			hiddenUserId = '<input type="hidden" value="'+user.id+'" name="currentUser" id="uid'+user.id+'">';
-		} else {
-			hiddenUserId = '<input type="hidden" value="'+user.id+'" id="uid'+user.id+'">';
-		}
-		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';
-		userTable.fnAddData([userLink, user.institution, emailLink]);
-		// Set up data about this primitive used for drag/drop
-		$(userTable.fnGetNodes(i)).data('id', user.id);
-		$(userTable.fnGetNodes(i)).data('type', 'user');
-		$(userTable.fnGetNodes(i)).data('name', fullName);
-	});
-	initDraggable($('#users'));
-	
-	// Populate solver details
-	$('#solverField legend').children('span:first-child').text(jsonData.space.solvers.length);
-	solverTable.fnClearTable();
-	$.each(jsonData.space.solvers, function(i, solver) {
-		var hiddenSolverId = '<input type="hidden" value="' + solver.id + '" >';
-		var solverLink = '<a href="/starexec/secure/details/solver.jsp?id=' + solver.id + '" target="blank">' + solver.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenSolverId;
-		solverTable.fnAddData([solverLink, solver.description]);
-		// Set up data about this primitive used for drag/drop
-		$(solverTable.fnGetNodes(i)).data('id', solver.id);
-		$(solverTable.fnGetNodes(i)).data('type', 'solver');
-		$(solverTable.fnGetNodes(i)).data('name', solver.name);
-	});	
-	initDraggable($('#solvers'));
-		
-	// Populate benchmark details
-	$('#benchField legend').children('span:first-child').text(jsonData.space.benchmarks.length);
-	benchTable.fnClearTable();
-	$.each(jsonData.space.benchmarks, function(i, bench) {
-		var hiddenBenchId = '<input type="hidden" value="' + bench.id + '" >';
-		var benchLink = '<a title="' + bench.description + '" href="/starexec/secure/details/benchmark.jsp?id=' + bench.id + '" target="blank">' + bench.name + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenBenchId;
-		var typeSpan = '<span title="' + bench.type.description + '">' + bench.type.name + '</span>';
-		benchTable.fnAddData([benchLink, typeSpan]);		
-		// Set up data about this primitive used for drag/drop
-		$(benchTable.fnGetNodes(i)).data('id', bench.id);
-		$(benchTable.fnGetNodes(i)).data('type', 'benchmark');
-		$(benchTable.fnGetNodes(i)).data('name', bench.name);
-	});
-	initDraggable($('#benchmarks'));
-	
-	// Populate subspace details
-	$('#spaceField legend').children('span:first-child').text(jsonData.space.subspaces.length);
-	spaceTable.fnClearTable();
-	$.each(jsonData.space.subspaces, function(i, subspace) {
-		var hiddenSubspaceId = '<input type="hidden" value="' + subspace.id + '" >';
-		var spaceLink = '<span class="spaceLink" onclick="openSpace(' + spaceId + ',' + subspace.id + ')">' + subspace.name + '<img class="extLink" src="/starexec/images/external.png"/></span>' + hiddenSubspaceId;		
-		spaceTable.fnAddData([spaceLink, subspace.description]);		
-	});
+	// Populate the primitives' details if their fieldsets are expanded
+	updateFieldsetCount('jobs');
+	updateFieldsetCount('users');
+	updateFieldsetCount('solvers');
+	updateFieldsetCount('benchmarks');
+	updateFieldsetCount('spaces');
 	
 	// Check the new permissions for the loaded space
 	checkPermissions(jsonData.perm);
@@ -769,7 +1050,7 @@ function populateDetails(jsonData) {
 	// Done loading, hide the loader
 	$('#loader').hide();
 	
-	console.log('Client side UI updated with details for ' + spaceName);
+	log('Client side UI updated with details for ' + spaceName);
 }
 
 /**
@@ -777,7 +1058,7 @@ function populateDetails(jsonData) {
  * @param parentId
  * @param childId
  */
-function openSpace(parentId, childId) {	
+function openSpace(parentId, childId) {
 	$("#exploreList").jstree("open_node", "#" + parentId, function() {
 	$.jstree._focused().select_node("#" + childId, true);	
 });	
@@ -822,7 +1103,7 @@ function createTooltip(element, selector, type, message){
 		}
 	}
 	
-	console.log('tooltip created of type ' + type);
+	log('tooltip created of type ' + type);
 }
 
 /**
@@ -833,7 +1114,7 @@ function createTooltip(element, selector, type, message){
 function checkPermissions(perms) {	
 	// Check for no permission and hide entire action list if not present
 	if(perms == null) {
-		console.log('no permissions found, hiding action bar');
+		log('no permissions found, hiding action bar');
 		$('#actionList').hide();		
 		return;
 	} else {
@@ -841,7 +1122,7 @@ function checkPermissions(perms) {
 	}
 	
 	if(perms.isLeader){
-		// attach leader tooltips to every entry in the userTable 
+		// attach leader tooltips to every entry iupdateJobsFieldsetrTable 
 		createTooltip($('#users tbody'), 'tr', 'leader');
 		
 		$('#editSpace').fadeIn('fast');
@@ -852,11 +1133,11 @@ function checkPermissions(perms) {
 		$('#editSpace').fadeOut('fast');
 	}	
 	
-	if(perms.removeUser){
-		$("#users").delegate("tr", "click", function(){
-			updateButton(userTable, $("#removeUser"));
-		});
-	}
+//	if(perms.removeUser){
+//		$("#users").delegate("tr", "click", function(){
+//			updateButton(userTable, $("#removeUser"));
+//		});
+//	}
 	
 	if(perms.addSpace) {		
 		$('#addSpace').fadeIn('fast');		
@@ -864,11 +1145,11 @@ function checkPermissions(perms) {
 		$('#addSpace').fadeOut('fast');
 	}
 	
-	if(perms.removeSpace) {
-		$("#spaces").delegate("tr", "click", function(){
-			updateButton(spaceTable, $("#removeSubspace"));
-		});		
-	}
+//	if(perms.removeSpace) {
+//		$("#spaces").delegate("tr", "click", function(){
+//			updateButton(spaceTable, $("#removeSubspace"));
+//		});		
+//	}
 	
 	if(perms.addBenchmark) {
 		$('#uploadBench').fadeIn('fast');		
@@ -876,11 +1157,11 @@ function checkPermissions(perms) {
 		$('#uploadBench').fadeOut('fast');
 	}
 	
-	if(perms.removeBench){
-		$("#benchmarks").delegate("tr", "click", function(){
-			updateButton(benchTable, $("#removeBench"));
-		});		
-	}
+//	if(perms.removeBench){
+//		$("#benchmarks").delegate("tr", "click", function(){
+//			updateButton(benchTable, $("#removeBench"));
+//		});		
+//	}
 	
 	if(perms.addSolver) {
 		$('#uploadSolver').fadeIn('fast');		
@@ -894,23 +1175,23 @@ function checkPermissions(perms) {
 		$('#addJob').fadeOut('fast');
 	}
 	
-	if(perms.removeUser){
-		$("#users").delegate("tr", "click", function(){
-			updateButton(userTable, $("#removeUser"));
-		});
-	}
-	
-	if(perms.removeSolver){
-		$("#solvers").delegate("tr", "click", function(){
-			updateButton(solverTable, $("#removeSolver"));
-		});		
-	}
-	
-	if(perms.removeJob){
-		$("#jobs").delegate("tr", "click", function(){
-			updateButton(jobTable, $("#removeJob"));
-		});		
-	}
+//	if(perms.removeUser){
+//		$("#users").delegate("tr", "click", function(){
+//			updateButton(userTable, $("#removeUser"));
+//		});
+//	}
+//	
+//	if(perms.removeSolver){
+//		$("#solvers").delegate("tr", "click", function(){
+//			updateButton(solverTable, $("#removeSolver"));
+//		});		
+//	}
+//	
+//	if(perms.removeJob){
+//		$("#jobs").delegate("tr", "click", function(){
+//			updateButton(jobTable, $("#removeJob"));
+//		});		
+//	}
 	
 	// Create tooltips for the expd class
 	createTooltip($("#userExpd"), null, 'expd', getSinglePermTable('user', perms.addUser, perms.removeUser));
@@ -918,7 +1199,7 @@ function checkPermissions(perms) {
 	createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
 	createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
 	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));	
-	console.log('permissions checked and processed');
+	log('permissions checked and processed');
 }
 
 
@@ -937,17 +1218,17 @@ function updateButtonIds(id) {
 	console.log('updated action button space ids to ' + id);
 }
 
-/**
- * Hides all buttons that are selection-dependent
- */
-function hideButtons(){
-	$("#removeBench").hide();
-	$("#removeSolver").hide();
-	$("#removeUser").hide();
-	$("#removeJob").hide();
-	$('#removeSubspace').hide();
-	console.log('all remove buttons hidden');
-}
+///**
+// * Hides all buttons that are selection-dependent
+// */
+//function hideButtons(){
+//	$("#removeBench").hide();
+//	$("#removeSolver").hide();
+//	$("#removeUser").hide();
+//	$("#removeJob").hide();
+//	$('#removeSubspace').hide();
+//	log('all remove buttons hidden');
+//}
 
 
 /**
@@ -967,31 +1248,31 @@ function getSelectedRows(dataTable){
 }
 
 
-/**
- * This handles the showing and hiding of selection-specific buttons
- *  
- * @param dataTable the dataTable to check for selected items
- * @param button the button to handle
- */
-function updateButton(dataTable, button){
-	var selectedRows = $(dataTable).children('tbody').children('tr.row_selected');
-    var btnTxt = $(button).children('.ui-button-text');
-    
-    if(selectedRows.length == 0){
-    	$(button).fadeOut('fast');
-    }
-    else if(selectedRows.length >= 2 ){
-    	$(button).fadeIn('fast');
-    	if($(btnTxt).text()[$(btnTxt).text().length - 1] != "s"){
-    		$(btnTxt).text($(btnTxt).text() + "s").append();
-    	}
-    } else {
-    	$(button).fadeIn('fast');
-    	if($(btnTxt).text()[$(btnTxt).text().length - 1] == "s"){
-    		$(btnTxt).text($(btnTxt).text().substring(0, $(btnTxt).text().length - 1)).append();
-    	}
-    }
-}
+///**
+// * This handles the showing and hiding of selection-specific buttons
+// *  
+// * @param dataTable the dataTable to check for selected items
+// * @param button the button to handle
+// */
+//function updateButton(dataTable, button){
+//	var selectedRows = $(dataTable).children('tbody').children('tr.row_selected');
+//    var btnTxt = $(button).children('.ui-button-text');
+//    
+//    if(selectedRows.length == 0){
+//    	$(button).fadeOut('fast');
+//    }
+//    else if(selectedRows.length >= 2 ){
+//    	$(button).fadeIn('fast');
+//    	if($(btnTxt).text()[$(btnTxt).text().length - 1] != "s"){
+//    		$(btnTxt).text($(btnTxt).text() + "s").append();
+//    	}
+//    } else {
+//    	$(button).fadeIn('fast');
+//    	if($(btnTxt).text()[$(btnTxt).text().length - 1] == "s"){
+//    		$(btnTxt).text($(btnTxt).text().substring(0, $(btnTxt).text().length - 1)).append();
+//    	}
+//    }
+//}
 
 
 /**
@@ -1002,12 +1283,12 @@ function updateButton(dataTable, button){
 function updateTable(dataTable){
 	var rowsToRemove = $(dataTable).children('tbody').children('tr.row_selected');
 	var rowsRemaining = $(dataTable).children('tbody').children(':not(tr.row_selected)');
-	$(dataTable).parent().parent().children('legend').children('span:first-child').text(rowsRemaining.length);
-    $.each(rowsToRemove, function(i, row) {
-    	dataTable.fnDeleteRow(row);
-    });
-    
-    console.log('table updated. rows removed: ' + rowsToRemove + ' rows remaining: ' + rowsRemaining);
+	$.each(rowsToRemove, function(i, row) {
+		dataTable.fnDeleteRow(row);
+	});
+	$(dataTable).parent().parent().parent().children('legend').children('span:first-child').text(rowsRemaining.length);
+	
+	log('table updated. rows removed: ' + rowsToRemove.length + ' rows remaining: ' + rowsRemaining.length);
 }
 
 /**
@@ -1020,6 +1301,23 @@ function getPermTable(tooltip, perms, type) {
 	var permWrap = $('<div>');	// A wrapper for the table and leader info
 	var table = $('<table>');	// The table where the permissions are displayed
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
+	
+	// Resolves bug where tooltip is empty
+	if(undefined === perms || null == perms){
+		perms = {
+				isLeader		: false,
+				addJob			: false,
+				removeJob		: false,
+				addUser			: false,
+				removeUser		: false,
+				addSolver		: false,
+				removeSolver	: false,
+				addBenchmark	: false,
+				removeBenchmark	: false,
+				addSpace		: false,
+				removeSpace		: false
+		};
+	}
 	
 	// Build a row for each permission
 	$(table).append(wrapPermRow('job', perms.addJob, perms.removeJob));
@@ -1102,7 +1400,7 @@ function makeLeader(e) {
 	permData.removeSolver = true;
 	permData.removeBench = true;	
 		
-	console.log('user marked as leader');	
+	log('user marked as leader');	
 }
 
 /**
@@ -1129,7 +1427,7 @@ function getSinglePermTable(name, add, remove) {
  */
 function wrapPermRow(perm, add, remove){
 	var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();
-	var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();	
+	var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();
 	return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>"; 
 }
 
@@ -1204,7 +1502,7 @@ function initTooltipStyles(){
 			}
 	};
 	
-	console.log('tooltip styles initialized');
+	log('tooltip styles initialized');
 }
 
 
@@ -1289,7 +1587,7 @@ function getTooltipConfig(type, message){
 						$.post(
 								'/starexec/services/space/' + spaceId + '/perm/' + userId,
 								function(theResponse){
-									console.log('AJAX response for permission tooltip received');
+									log('AJAX response for permission tooltip received');
 									if(1 == theResponse){
 										showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
 									} else {
@@ -1308,14 +1606,14 @@ function getTooltipConfig(type, message){
 				   // then this resets the tooltip once it loses focus and fades from view
 				   onHide: function(){
 					   var self = this;
-					   console.log("permissions = " + $(self.elements.title).text());
+					   log("permissions = " + $(self.elements.title).text());
 					   if('p' != $(self.elements.title).text()[0]){
 						   self.updateTitle('<center><a>permissions</a></center>');
 						   var userId = $(this.elements.target).children('td:first').children('input').val();
 						   $.post(
 								   '/starexec/services/space/' + spaceId + '/perm/' + userId,
 								   function(theResponse){
-									   console.log('AJAX response for permission tooltip received');
+									   log('AJAX response for permission tooltip received');
 									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
 									   self.updateContent(getPermTable(self, theResponse, 'leader'), true);  
 									   self.updateTitle('<center><a>permissions</a></center>');									   
@@ -1394,7 +1692,7 @@ function getTooltipConfig(type, message){
 						var self = this;
 						var hoveredSpaceId = $('#exploreList').find('.jstree-hovered').parent().attr("id");
 						// Destroy the tooltip if the space being hovered is the root space
-						if(hoveredSpaceId == 1 || hoveredSpaceId == undefined){
+						if(hoveredSpaceId == 1 || hoveredSpaceId === undefined){
 							$('div[qtip="'+self.id+'"]').qtip('destroy');
 					    	return;
 					    }
@@ -1403,7 +1701,7 @@ function getTooltipConfig(type, message){
 						$.post(
 								'/starexec/services/space/' + hoveredSpaceId,
 								function(theResponse){
-									console.log('AJAX response for permission tooltip received');
+									log('AJAX response for permission tooltip received');
 									self.updateContent("");
 									self.updateContent(getPermTable(self, theResponse.perm), true);
 									return true;
@@ -1504,7 +1802,7 @@ function getTooltipConfig(type, message){
 							$.post(
 									url,
 									function(theResponse){
-										console.log('AJAX response for permission tooltip received');
+										log('AJAX response for permission tooltip received');
 										// Replace current content (current = loader.gif)
 										self.updateContent(getPermTable(self, theResponse), true);
 										return true;
@@ -1562,14 +1860,14 @@ function togglePermImage(image, perm){
 		else if(perm == "user") { permData.addUser = newVal; }
 		else if(perm == "solver") { permData.addSolver = newVal; }
 		else if(perm == "bench") { permData.addBenchmark = newVal; }
-		console.log('Updated add permission to ' + newVal + ' for ' + perm);
+		log('Updated add permission to ' + newVal + ' for ' + perm);
 	} else {		
 		if(perm == "space") { permData.removeSpace = newVal; }
 		else if(perm == "job") { permData.removeJob = newVal; }
 		else if(perm == "user") { permData.removeUser = newVal; }
 		else if(perm == "solver") { permData.removeSolver = newVal; }
 		else if(perm == "bench") { permData.removeBench = newVal; }
-		console.log('Updated remove permission to ' + newVal + ' for ' + perm);
+		log('Updated remove permission to ' + newVal + ' for ' + perm);
 	}
 }
 
@@ -1584,7 +1882,7 @@ function togglePermImage(image, perm){
 function saveChanges(obj, save){
 	// Get the currently hovered user
 	var userId = $($(obj).parents('.qtip').qtip('api').elements.target).children('td:first').children('input').val();
-	console.log('saving permissions for user ' + userId);
+	log('saving permissions for user ' + userId);
 	
 	// 'SAVE' option
 	if(true == save){  
@@ -1597,19 +1895,19 @@ function saveChanges(obj, save){
 		// Update database to reflect new permissions
 		$.post(
 				'/starexec/services/space/' + spaceId + '/edit/perm/' + userId,
-				{ addUser: perms.addUser,
-				  removeUser: perms.removeUser,
-				  addSolver: perms.addSolver,
-				  removeSolver: perms.removeSolver,
-				  addBench: perms.addBenchmark,
-				  removeBench: perms.removeBench,
-				  addJob: perms.addJob,
-				  removeJob: perms.removeJob,
-				  addSpace: perms.addSpace,
-				  removeSpace: perms.removeSpace,
-				  isLeader: perms.isLeader },
+				{ addUser		: perms.addUser,
+				  removeUser	: perms.removeUser,
+				  addSolver		: perms.addSolver,
+				  removeSolver	: perms.removeSolver,
+				  addBench		: perms.addBenchmark,
+				  removeBench	: perms.removeBench,
+				  addJob		: perms.addJob,
+				  removeJob		: perms.removeJob,
+				  addSpace		: perms.addSpace,
+				  removeSpace	: perms.removeSpace,
+				  isLeader		: perms.isLeader },
 				function(theResponse){
-					console.log('AJAX response received for permission edit request with code ' + theResponse);
+					log('AJAX response received for permission edit request with code ' + theResponse);
 					switch(theResponse){					
 						case 0:
 							// Change the title to 'permissions'
@@ -1632,7 +1930,7 @@ function saveChanges(obj, save){
 			window.location.reload(true);
 		});	
 	} else {  
-		console.log('user canceled edit permission action');
+		log('user canceled edit permission action');
 		$(obj).parents('.qtip').qtip('api').hide();
 	}
 }

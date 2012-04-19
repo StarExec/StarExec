@@ -85,7 +85,7 @@ CREATE TABLE closure (
 	ancestor INT NOT NULL,
 	descendant INT NOT NULL,
 	UNIQUE KEY (ancestor, descendant),
-	FOREIGN KEY (ancestor) REFERENCES spaces(id),
+	FOREIGN KEY (ancestor) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (descendant) REFERENCES spaces(id) ON DELETE CASCADE
 );
 

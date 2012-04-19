@@ -1,7 +1,6 @@
 package org.starexec.app;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +22,6 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
@@ -44,6 +42,7 @@ import org.starexec.util.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -213,7 +212,7 @@ public class RESTServices {
 	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
-	 * @author Tyler Jensen
+	 * @author Tyler Jensen & Todd Elvers
 	 */
 	@POST
 	@Path("/space/{id}")
@@ -223,16 +222,109 @@ public class RESTServices {
 		
 		Space s = null;
 		Permission p = null;
-		HashMap<Integer, HashMap<String, String>> po = null;
 		
 		if(Permissions.canUserSeeSpace(spaceId, userId)) {
-			s = Spaces.getDetails(spaceId, userId);
+			s = Spaces.get(spaceId);
 			p = SessionUtil.getPermission(request, spaceId);
-			po = Statistics.getJobPairOverviews(s.getJobs());
 		}					
 		
-		return limitGson.toJson(new RESTHelpers.SpaceDetailTriplet(s, p, po));				
+		return limitGson.toJson(new RESTHelpers.SpacePermPair(s, p));				
 	}	
+	
+	
+	/**
+	 * Returns the next page of entries in a given DataTable
+	 *
+	 * @param spaceId the id of the space to query for primitives from
+	 * @param primType the type of primitive
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of entries if successful,<br>
+	 * 		1 if the request fails parameter validation,<br> 
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/space/{id}/{primType}/pagination")
+	@Produces("application/json")	
+	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		// Ensure user can view the space containing the primitive(s)
+		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
+			return gson.toJson(2);
+		}
+		
+		// Query for the next page of primitives and return them to the user
+		switch( primType.charAt(0) ){
+			case 'j':
+				nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB, spaceId, request);
+				break;
+			case 'u':
+				nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.USER, spaceId, request);
+				break;
+			case 's':
+				if('o' == primType.charAt(1)) {
+					nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER, spaceId, request);
+				} else {
+					nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
+				}
+				break;
+			case 'b':
+				nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
+				break;
+		}
+		
+		
+		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+	}
+	
+	
+	/**
+	 * Returns an integer representing the number of primitives of the specified type that exist in a given space
+	 *
+	 * @param spaceId the id of the space to query for primitives from
+	 * @param primType the type of primitive
+	 * @param request the object containing the user's id
+	 * @return an integer representing the number of primitives of the given type in the given space if successful,<br>
+	 * 		-1 if the primitive type could not be determined,<br>
+	 * 		-2 if the user doesn't have permission to view the parent space of the primitive
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/space/{id}/{primType}/count")
+	@Produces("application/json")	
+	public String getPrimitiveCount(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		int count = -1;
+		
+		// Ensure user can view the space containing the primitive(s)
+		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
+			return gson.toJson(-2);
+		}
+		
+		// Return the number of primitives of the specified type
+		switch( primType.charAt(0) ){
+			case 'j':
+				count = Jobs.getBySpace(spaceId).size();
+				break;
+			case 'u':
+				count = Spaces.getUsers(spaceId).size();
+				break;
+			case 's':
+				if('o' == primType.charAt(1)){
+					count = Solvers.getBySpace(spaceId).size();	
+				} else {
+					count = Spaces.getSubSpaces(spaceId, userId).size();
+				}
+				break;
+			case 'b':
+				count = Benchmarks.getBySpace(spaceId).size();
+				break;
+		}
+		
+		return gson.toJson(count);
+	}
 	
 	/**
 	 * Gets the permissions a given user has in a given space

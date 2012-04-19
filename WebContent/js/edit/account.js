@@ -116,7 +116,6 @@ $(document).ready(function(){
  * Initializes the 'add website' and 'change password' buttons
  */
 function initButtons(){
-	
 	// Handles adding a new website
 	$("#addWebsite").click(function(){
 		var name = $("#website_name").val();

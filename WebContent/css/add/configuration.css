@@ -19,12 +19,12 @@ tr th {
 	vertical-align: middle;
 }
 
-#uploadBtn {
+#uploadBtn, #saveBtn {
 	float: right;
 	margin-right: 10px;
 }
 
-#cancelBtn {
+.cancelBtn {
 	float: right;
 }
 

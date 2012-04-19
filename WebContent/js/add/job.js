@@ -66,7 +66,9 @@ $(document).ready(function(){
 		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('select, input').remove();
 	  	return true;
 	});
+	
 });
+
 
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.

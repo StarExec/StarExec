@@ -24,8 +24,8 @@
 <star:template title="add to ${solver.name}" css="add/configuration" js="lib/jquery.validate.min, add/configuration">
 	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/configurations" id="uploadConfigForm">
 		<input type="hidden" name="solverId" value="${solver.id}"/>
-		<fieldset>
-			<legend>configuration information</legend>		
+		<fieldset id="upload">
+			<legend>uploading a configuration</legend>		
 			<table id="configTable" class="shaded">
 				<thead>
 					<tr>
@@ -35,21 +35,52 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>configuration location</td>
+						<td>file location</td>
 						<td><input id="configFile" name="file" type="file" size="64"/></td>
 					</tr>
 					<tr>
 						<td>configuration name</td>
-						<td><input id="configName" name="name" type="text" size="64"/></td>
+						<td><input id="configName" name="name" type="text" size="64" maxlength="60"/></td>
 					</tr>
 					<tr>
 						<td>configuration description</td>
-						<td><textarea id="configDesc" name="description" rows="6" cols="40"></textarea></td>
+						<td><textarea id="configDesc" name="description" rows="6" cols="40" maxlength="1024"></textarea></td>
 					</tr>
 				</tbody>
 			</table>	
-			<button id="cancelBtn" type="button">cancel</button>																
+			<button class="cancelBtn" type="button">cancel</button>																
 			<button id="uploadBtn" type="submit">upload</button>
 		</fieldset>
 	</form>
+	<!-- Feature not fully implemented
+	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/configurations" id="saveConfigForm">
+		<fieldset id="save">
+			<legend>writing a configuration</legend>		
+			<table id="configTable" class="shaded">
+				<thead>
+					<tr>
+						<th>attribute</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>configuration name</td>
+						<td><input id="configName" name="name" type="text" size="64" maxlength="60"/></td>
+					</tr>
+					<tr>
+						<td>configuration description</td>
+						<td><textarea id="configDesc" name="description" rows="6" cols="40" maxlength="1024"></textarea></td>
+					</tr>
+					<tr>
+						<td>configuration contents</td>
+						<td><textarea id="configContents" name="contents" rows="6" cols="40"/></textarea></td>
+					</tr>
+				</tbody>
+			</table>	
+			<button class="cancelBtn" type="button">cancel</button>																
+			<button id="saveBtn" type="submit">save</button>
+		</fieldset>
+	</form>
+	-->
 </star:template>
