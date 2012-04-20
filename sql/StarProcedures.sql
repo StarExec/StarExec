@@ -429,6 +429,16 @@ CREATE PROCEDURE GetCommunityById(IN _id INT)
 			 AND child_id = _id);
 	END //
 
+-- Checks to see if the space with the given space ID is a community.
+-- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS IsCommunity;
+CREATE PROCEDURE IsCommunity(IN _spaceId INT)
+	BEGIN
+		SELECT *
+		FROM set_assoc
+		WHERE space_id = 1 AND child_id = _spaceId;
+	END //
+	
 -- Removes the association a user has with a given space
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS LeaveCommunity;
