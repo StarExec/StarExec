@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mysql -u"root" -p"star3x3c2011!" < /project/tomcat-webapps/webapps/starexec/WEB-INF/sql/StarProcedures.sql

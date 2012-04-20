@@ -6,6 +6,8 @@
 #
 
 WEB_HOME=/project/tomcat-webapps/webapps
+BACKUP_HOME=$WEB_HOME/backup
+NEW_DIR=$BACKUP_HOME/`date +%m%d%y%s`  
 STAR_HOME=/home/starexec
 STAR_TEMP=/home/starexec/temp
 WAR=starexec.war
@@ -40,11 +42,13 @@ cd $STAR_TEMP/starexec
 ant -buildfile build.xml -q
 echo Starexec compilation and configuratio SUCCESSFUL
 
-echo Removing existing war file: $STAR_WAR
-rm -f $STAR_WAR
+echo Moving existing war file: $STAR_WAR
+#rm -f $STAR_WAR
+mkdir $NEW_DIR
+mv $STAR_WAR $NEW_DIR/starBackup.war
 
-echo Waiting for tomcat to remove previous starexec version
-while [ -d "$STAR_WAR" ]
+echo Waiting for tomcat to move previous starexec version
+while [ -e "$STAR_WAR" ]
 do
 	sleep 1s
 	echo -n '.'
