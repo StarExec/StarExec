@@ -4,6 +4,7 @@
 <star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, explore/spaces">			
 	<div id="explorer">
 		<h3>spaces</h3>
+		<a id="trashcan"></a>
 		<ul id="exploreList">
 		</ul>
 	</div>
@@ -86,11 +87,6 @@
 				<li><a class="btnDown" id="downloadXML" href="/starexec/secure/download">Download Space Hierarchy</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">Upload Space Hierarchy</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>				
-				<li><a class="btnRemove" id="removeSubspace">remove subspace</a></li>
-				<li><a class="btnRemove" id="removeUser">remove user</a></li>
-				<li><a class="btnRemove" id="removeBench">remove benchmark</a></li>
-				<li><a class="btnRemove" id="removeSolver">remove solver</a></li>
-				<li><a class="btnRemove" id="removeJob">remove job</a></li>				
 			</ul>
 		</fieldset>				
 	</div>	
