@@ -53,6 +53,9 @@ LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
 # The path to the config run script on the execution host
 CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
 
+#Temporarily include this to test specific example for TPTP includes
+AXIOM_PATH = /home/starexec/Benchmarks/8/20120311-10.49.07/Axioms/SET001-0.ax
+
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
@@ -99,6 +102,8 @@ function copyDependencies {
 	return $?	
 }
 
+
+
 function verifyWorkspace { 
 	# Make sure the configuration exists before we execute it
 	if ! [ -x "$CONFIG_PATH" ]; then
@@ -109,10 +114,10 @@ function verifyWorkspace {
 	fi	
 
 	# Make sure the benchmark exists before the job runs
-	if ! [ -x "$LOCAL_BENCH_PATH" ]; then
-		echo "job error: could not locate the benchmark '$BENCH_NAME' on the execution host"
-		sendStatus $ERROR_BENCHMARK		
-	else
+	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
+                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+                sendStatus $ERROR_BENCHMARK
+        else
 		log "execution host benchmark verified"
 	fi		
 
