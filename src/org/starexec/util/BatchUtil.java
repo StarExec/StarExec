@@ -62,7 +62,7 @@ public class BatchUtil {
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		
 		doc = docBuilder.newDocument();
-		Element rootSpace = generateSpaceXML(space, userId, true);
+		Element rootSpace = generateSpacesXML(space, userId);
 		doc.appendChild(rootSpace);
 		
 		// write the content into xml file
@@ -84,40 +84,19 @@ public class BatchUtil {
 	 *  @author Benton McCune
 	 *  @param space The space for which we want an xml representation.
 	 *  @param userId the id of the user making the request
-	 *  @param Boolean root True if you're providing the root space though other spaces use other method
-	 *  @return spaceElement for the xml file to represent space hierarchy of input space	 *  
+	 *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
 	 */	
-	public Element generateSpaceXML(Space space, int userId, Boolean root){		
+	public Element generateSpacesXML(Space space, int userId){		
 		log.debug("Generating Space XML for space " + space.getId());
 		
-		Element spaceElement = doc.createElementNS("http://wiki.uiowa.edu/download/attachments/59581532/batchSpaceSchema.xsd", "tns:Space");
-		spaceElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		spaceElement.setAttribute("xsi:schemaLocation", "http://wiki.uiowa.edu/download/attachments/59581532/batchSpaceSchema.xsd batchSpaceSchema.xsd");
+		Element spacesElement = doc.createElementNS("http://starexec.cs.uiowa.edu/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
+		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		spacesElement.setAttribute("xsi:schemaLocation", "http://starexec.cs.uiowa.edu/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
 		
-		Attr id = doc.createAttribute("id");
-		id.setValue(Integer.toString(space.getId()));
-		spaceElement.setAttributeNode(id);		
-		Attr name = doc.createAttribute("name");
-		name.setValue(space.getName());
-		spaceElement.setAttributeNode(name);
+		Element rootSpaceElement = generateSpaceXML(space, userId);
+		spacesElement.appendChild(rootSpaceElement);
 		
-		for (Benchmark benchmark:space.getBenchmarks()){
-			Element benchElement = doc.createElement("Benchmark");	
-			benchElement.setAttribute("id", Integer.toString(benchmark.getId()));
-			benchElement.setAttribute("name", benchmark.getName());
-			spaceElement.appendChild(benchElement);
-		}
-		for (Solver solver:space.getSolvers()){		
-			Element solverElement = doc.createElement("Solver");
-			solverElement.setAttribute("id", Integer.toString(solver.getId()));
-			solverElement.setAttribute("name", solver.getName());
-			spaceElement.appendChild(solverElement);
-		}	
-		for (Space subspace:space.getSubspaces()){			
-			spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId));
-		}
-		
-		return spaceElement;
+		return spacesElement;
 	}
 	
 	/**
@@ -191,12 +170,13 @@ public class BatchUtil {
         catch (SAXException ex) {
             log.debug("File is not valid because " + ex.getMessage());
             errorMessage = "File is not valid because " + ex.getMessage();
+            this.spaceCreationSuccess = false;
             return false;
         }		
 		
 	}
 	/**
-	 *  Creates space hierarchy from the xml file.
+	 *  Creates space hierarchies from the xml file.
 	 * @author Benton Mccune
 	 * @param file the xml file we wish to produce a space from
 	 * @param userId the userId of the user making the request
@@ -206,25 +186,20 @@ public class BatchUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public Boolean createSpaceFromFile(File file, int userId, int parentSpaceId) throws SAXException, ParserConfigurationException, IOException{
-		log.debug("Creating space hierarchy from file");
+	public Boolean createSpacesFromFile(File file, int userId, int parentSpaceId) throws SAXException, ParserConfigurationException, IOException{
+		
 		if (!validateAgainstSchema(file)){
-			log.debug("File is not Schema valid");{
-				return false;
-			}
+			log.debug("File from User " + userId + " is not Schema valid.");
+			return false;
 		}
 		
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.parse(file);
-		Element rootSpace = doc.getDocumentElement();
-		String name = rootSpace.getAttribute("name");
-		log.debug("Space Name = " + name);
-		if (name.length()<2){
-			log.debug("Name was not long enough");
-			errorMessage = name + "is not a valid name.  It must have two characters.";
-			return false;
-		}
+		Element spacesElement = doc.getDocumentElement();
+		NodeList listOfRootSpaceElements = spacesElement.getChildNodes();
+		
+		String name = "";//name variable to check
         //Check Benchmarks and Solvers
         NodeList listOfSpaces = doc.getElementsByTagName("Space");
 		log.debug("# of Spaces = " + listOfSpaces.getLength());
@@ -286,10 +261,21 @@ public class BatchUtil {
 				log.debug("Error - Node should be an element, but isn't");
 			}
 		}
-		//Create Space Hierarchy as child parent space	
-		spaceCreationSuccess = createSpaceFromElement(rootSpace, parentSpaceId, userId);
+		//Create Space Hierarchies as children of parent space	
+		this.spaceCreationSuccess = true;
+		for (int i = 0; i < listOfRootSpaceElements.getLength(); i++){
+			Node spaceNode = listOfRootSpaceElements.item(i);
+			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
+				Element spaceElement = (Element)spaceNode;
+				spaceCreationSuccess = spaceCreationSuccess && createSpaceFromElement(spaceElement, parentSpaceId, userId);
+			}
+		}
 		return spaceCreationSuccess;
 	}
+	
+
+	
+	
 	
 	/**
 	 * Creates space from Element.  Method called from createSpaceFromFile.  Also calls itself recursively.
@@ -324,17 +310,17 @@ public class BatchUtil {
 					createSpaceFromElement(childElement, spaceId, userId);
 				}
 				else{
-					log.debug("\"" + elementType + "\" is not a valid element type");
+					log.error("\"" + elementType + "\" is not a valid element type");
 				}
 			}
 			else{
-				log.debug("Error - Node should be an element, but isn't");
+				log.error("Space " + spaceId + " has a node should be an element, but isn't");
 			}
 		}
-		if (benchmarks.size()>0){
+		if (!benchmarks.isEmpty()){
 			Benchmarks.associate(benchmarks, spaceId);
 		}
-		if (solvers.size()>0){
+		if (!solvers.isEmpty()){
 			Benchmarks.associate(solvers, spaceId);
 		}	
 		return true;

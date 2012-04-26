@@ -77,6 +77,7 @@ public class UploadSpaceXML extends HttpServlet {
     
 	/**
 	 * This method is responsible for uploading a compressed folder with an xml representation
+	 * @author Benton McCune
 	 * @param userId the user ID of the user making the upload request
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
@@ -106,7 +107,7 @@ public class UploadSpaceXML extends HttpServlet {
 			Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 			for (File file:uniqueDir.listFiles())
 			{
-				result = batchUtil.createSpaceFromFile(file, userId, spaceId);		
+				result = batchUtil.createSpacesFromFile(file, userId, spaceId);		
 			}
 
 			return batchUtil;
@@ -119,9 +120,10 @@ public class UploadSpaceXML extends HttpServlet {
 
 	
 	/**
-	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.
+	 * Sees if a given String -> Object HashMap is a valid Upload Space XML request.
 	 * Checks to see if it contains all the information needed and if the information
 	 * is in the right format.
+	 * @author Benton McCune
 	 * @param form the HashMap representing the upload request.
 	 * @return true iff the request is valid
 	 */
