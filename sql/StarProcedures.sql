@@ -85,7 +85,16 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 		WHERE user_id = _userId;
 	END //
 	
-	
+-- Retrieves all benchmark dependencies for a given primary benchmark id
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetBenchmarksDependencies;
+CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
+	BEGIN
+		SELECT *
+		FROM bench_dependency
+		WHERE primary_bench_id = _pBenchId;
+	END //
+		
 -- Retrieves all benchmarks belonging to a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetSpaceBenchmarksById;

@@ -40,7 +40,7 @@ svn co $SVN_URL $STAR_TEMP -q
 echo Starting ANT build process...
 cd $STAR_TEMP/starexec
 ant -buildfile build.xml -q
-echo Starexec compilation and configuratio SUCCESSFUL
+echo Starexec compilation and configuration SUCCESSFUL
 
 echo Moving existing war file: $STAR_WAR
 #rm -f $STAR_WAR

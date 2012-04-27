@@ -53,8 +53,11 @@ LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
 # The path to the config run script on the execution host
 CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
 
+# The path to the bin directory of the solver on the execution host
+BIN_PATH="$LOCAL_SOLVER_DIR/bin"
+
 #Temporarily include this to test specific example for TPTP includes
-AXIOM_PATH = /home/starexec/Benchmarks/8/20120311-10.49.07/Axioms/SET001-0.ax
+#AXIOM_PATH = /home/starexec/Benchmarks/8/20120311-10.49.07/Axioms/SET001-0.ax
 
 # /////////////////////////////////////////////
 # Functions
@@ -98,12 +101,17 @@ function copyDependencies {
 	log "copying benchmark (${BENCH_PATH##*/}) to execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"
 	log "benchmark copy complete"
-
+	
+	log "copying benchmark dependencies to execution host..."
+	for (( i = 0 ; i < ${#BENCH_DEPENDS[@]} ; i++ ))
+	do
+		cp "${BENCH_DEPENDS[$i]}" "$BIN_DIR/${BENCH_DEPENDS[$i]"}
+	done
+	log "benchmark dependencies copy complete"
 	return $?	
 }
 
-
-
+#benchmark dependencies not currently verified.
 function verifyWorkspace { 
 	# Make sure the configuration exists before we execute it
 	if ! [ -x "$CONFIG_PATH" ]; then

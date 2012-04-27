@@ -208,3 +208,11 @@ INSERT INTO website (user_id, url, name) VALUES (5, 'http://www.google.com/', 'g
 INSERT INTO website (user_id, url, name) VALUES (5, 'http://www.bing.com/', 'bing');
 INSERT INTO website (user_id, url, name) VALUES (5, 'http://www.uiowa.edu/', 'uiowa');
 INSERT INTO website (space_id, url, name) VALUES (3, 'http://www.uiowa.edu/', 'uiowa');
+
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (1, 2, "C://Whatever");
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (2, 3, "C://Whatever");
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (4, 1, "C://Whatever");
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (1, 5, "C://Whatever");
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (3, 4, "C://Whatever");
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (5, 6, "C://Whatever");
+INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (3, 2, "C://Whatever");

@@ -29,7 +29,7 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	private long diskSize;	
 	
 	/**
-	 * @return the user id of the user who uploaded the solver
+	 * @return the user id of the user who uploaded the benchmark
 	 */	
 	public int getUserId() {
 		return userId;

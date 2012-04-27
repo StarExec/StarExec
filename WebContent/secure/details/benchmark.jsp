@@ -1,3 +1,4 @@
+<%@page import="java.util.ArrayList, java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -8,8 +9,10 @@
 		int benchId = Integer.parseInt(request.getParameter("id"));
 		
 		Benchmark b = null;
+		List<BenchmarkDependency> deps = new ArrayList<BenchmarkDependency>();
 		if(Permissions.canUserSeeBench(benchId, userId)) {
 			b = Benchmarks.get(benchId, true);
+			deps = Benchmarks.getBenchDependencies(benchId);
 		}		
 		
 		if(b != null) {
@@ -18,6 +21,7 @@
 			request.setAttribute("diskSize", FileUtils.byteCountToDisplaySize(b.getDiskSize()));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			request.setAttribute("com", s);
+			request.setAttribute("depends", deps);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");			
 		}
@@ -106,8 +110,29 @@
 					</tr>
 				</c:forEach>					
 				</tbody>
-		</table>		
-			
+		</table>					
+		</fieldset>							
+	</c:if>	
+	
+	<c:if test="${not empty depends}">
+		<fieldset id="fieldDepends">
+			<legend>dependencies</legend>
+			<table class="shaded">
+				<thead>
+					<tr>
+						<th>benchmark</th>
+						<th>path</th>
+					</tr>
+				</thead>
+				<tbody>
+				<c:forEach var="dependency" items="${depends}">
+					<tr>
+						<td><star:benchmark value="${dependency.secondaryBench}" /></td>			
+						<td>${dependency.dependencyPath}</td>
+					</tr>
+				</c:forEach>					
+				</tbody>
+		</table>					
 		</fieldset>							
 	</c:if>	
 	

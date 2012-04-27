@@ -14,6 +14,7 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Processor;
 import org.starexec.util.Util;
 
@@ -500,6 +501,7 @@ public class Benchmarks {
 			while(results.next()){
 				// Build benchmark object
 				Benchmark b = new Benchmark();
+				
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
 				b.setPath(results.getString("path"));
@@ -522,6 +524,48 @@ public class Benchmarks {
 		}
 		
 		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
+		return null;
+	}
+	
+	/**
+	 * Returns a list of benchmark dependencies that have the input benchmark as the primary benchmark
+	 * 
+	 * @param benchmarkId the id of the primary benchmark
+	 * @return a list of benchmark dependencies for a given benchmark, may be empty
+	 * @author Benton McCune
+	 */
+	public static List<BenchmarkDependency> getBenchDependencies(int benchmarkId) {
+		Connection con = null;			
+	 
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL getBenchmarkDependencies(?)}");
+			procedure.setInt(1, benchmarkId);					
+			ResultSet results = procedure.executeQuery();
+			List<BenchmarkDependency> dependencies = new LinkedList<BenchmarkDependency>();
+						
+			while(results.next()){
+				// Build benchmark dependency object
+
+				BenchmarkDependency benchD = new BenchmarkDependency();
+				benchD.setPrimaryBench(Benchmarks.get(results.getInt("primary_bench_id")));
+				benchD.setSecondaryBench(Benchmarks.get(results.getInt("secondary_bench_id")));
+				benchD.setDependencyPath(results.getString("include_path"));
+				
+				// Add benchmark dependency object to list of dependencies
+				dependencies.add(benchD);
+			}			
+			
+			log.debug(String.format("%d benchmarks were returned as being needed by benchmark %d.", dependencies.size(), benchmarkId));
+			
+			return dependencies;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		log.debug(String.format("Getting the dependencies of benchmark %d failed.", benchmarkId));
 		return null;
 	}
 	

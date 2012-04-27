@@ -1,6 +1,7 @@
 $(document).ready(function(){
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
+	$('#fieldDepends').expandable(true);
 	
 	$('#fieldContents').expandable(true, function() {
 		if($(this).data('requested') == undefined) {

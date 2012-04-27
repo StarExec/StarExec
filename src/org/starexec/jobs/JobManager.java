@@ -17,6 +17,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
@@ -167,7 +168,9 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
-
+		//Dependencies
+		jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench()));	
+		jobScript = jobScript.replace("$$LOCAL_DEPENDS$$", writeHostDependencyArray(pair.getBench()));	
 		// Resource limits
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));		
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
@@ -189,6 +192,47 @@ public abstract class JobManager {
 		
 		return scriptPath;
 	}	
+	
+	
+	/**
+	 * Creates an array for the bash script.  This array will consist of all the paths for the copies of the secondary 
+	 * benchmarks on the execution host. Will return "()" if there are no dependencies.
+	 * @author Benton McCune
+	 * @param bench the bench that possibly has dependencies
+	 * @return arrayString a String that will be an array within a bash script
+	 */
+	public static String writeHostDependencyArray(Benchmark bench)
+	{
+		String arrayString ="(";
+		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
+		for (BenchmarkDependency bd:dependencies)
+		{
+			arrayString = arrayString + "\"" + bd.getDependencyPath() + "\" ";
+		}
+		arrayString = arrayString +")";
+		log.debug(arrayString);
+		return arrayString;
+	}
+	
+	/**
+	 * Creates an array for the bash script.  This array will consist of all the paths for the secondary
+	 * benchmarks on the execution host.  Will return "()" if there are no dependencies.
+	 * @author Benton McCune
+	 * @param bench the bench that possibly has dependencies
+	 * @return arrayString a String that will be an array within a bash script
+	 */
+	public static String writeDependencyArray(Benchmark bench)
+	{
+		String arrayString ="(";
+		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
+		for (BenchmarkDependency bd:dependencies)
+		{
+			arrayString = arrayString + "\"" + bd.getSecondaryBench().getPath() + "\" ";
+		}
+		arrayString = arrayString +")";
+		log.debug(arrayString);
+		return arrayString;
+	}
 	
 	/**
 	 * Creates a new job object with all the information required to submit a new job to the grid engine

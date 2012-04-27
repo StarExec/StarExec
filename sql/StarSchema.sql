@@ -392,3 +392,15 @@ CREATE TABLE pass_reset_request (
 	UNIQUE KEY (code),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Benchmark dependencies - e.g. a benchmark may reference other benchmarks such as axioms
+-- Author: Benton McCune
+CREATE TABLE bench_dependency (
+	id INT NOT NULL AUTO_INCREMENT,
+	primary_bench_id INT NOT NULL,
+	secondary_bench_id INT NOT NULL,
+	include_path TEXT not NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY (primary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
+	FOREIGN KEY (secondary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
+);
