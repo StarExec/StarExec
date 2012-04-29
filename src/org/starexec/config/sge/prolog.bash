@@ -105,7 +105,8 @@ function copyDependencies {
 	log "copying benchmark dependencies to execution host..."
 	for (( i = 0 ; i < ${#BENCH_DEPENDS[@]} ; i++ ))
 	do
-		cp "${BENCH_DEPENDS[$i]}" "$BIN_DIR/${BENCH_DEPENDS[$i]"}
+		#cp "${BENCH_DEPENDS[$i]}" "$BIN_PATH/${LOCAL_DEPENDS[$i]}"
+		echo "${BENCH_DEPENDS[$i]}" "$BIN_PATH/${LOCAL_DEPENDS[$i]}"
 	done
 	log "benchmark dependencies copy complete"
 	return $?	
