@@ -56,6 +56,14 @@ CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
 # The path to the bin directory of the solver on the execution host
 BIN_PATH="$LOCAL_SOLVER_DIR/bin"
 
+# Array of secondary benchmarks starexec paths
+declare -a BENCH_DEPENDS_ARRAY
+BENCH_DEPENDS_ARRAY=(${BENCH_DEPENDS// / })
+
+# Array of secondary benchmarks execution host paths
+declare -a LOCAL_DEPENDS_ARRAY
+LOCAL_DEPENDS_ARRAY=(${LOCAL_DEPENDS// / })
+
 #Temporarily include this to test specific example for TPTP includes
 #AXIOM_PATH = /home/starexec/Benchmarks/8/20120311-10.49.07/Axioms/SET001-0.ax
 
@@ -103,10 +111,11 @@ function copyDependencies {
 	log "benchmark copy complete"
 	
 	log "copying benchmark dependencies to execution host..."
-	for (( i = 0 ; i < ${#BENCH_DEPENDS[@]} ; i++ ))
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
 	do
-		#cp "${BENCH_DEPENDS[$i]}" "$BIN_PATH/${LOCAL_DEPENDS[$i]}"
-		echo "${BENCH_DEPENDS[$i]}" "$BIN_PATH/${LOCAL_DEPENDS[$i]}"
+		NEW_D=$(dirname "$BIN_PATH/${LOCAL_DEPENDS_ARRAY[$i]}")
+		mkdir -p $NEW_D
+		cp "${BENCH_DEPENDS_ARRAY[$i]}" "$BIN_PATH/${LOCAL_DEPENDS_ARRAY[$i]}"
 	done
 	log "benchmark dependencies copy complete"
 	return $?	
