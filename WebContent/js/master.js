@@ -1,3 +1,5 @@
+var debugMode = false; //console.log statements are turned off by default
+
 /**
  * Contains javascript relevant to all pages within starexec 
  */
@@ -73,7 +75,16 @@ $(document).ready(function(){
 	}); 
 });
 
-
+/**
+ * Prints a message to the Chrome javascript console if debugging is enabled
+ * 
+ * @param message the message to print to Chrome's javascript console
+ */
+function log(message){
+	if(true == debugMode){
+		console.log(message);
+	}
+}
 
 /**
  * Function to display a message to the user. We can call this from other javascript

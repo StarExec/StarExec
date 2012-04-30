@@ -6,7 +6,7 @@ var spaceTable;
 var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
-var debugMode = true;	// if false, console.log() calls will be ignored
+//debugMode = true;	   	//uncomment to use console.log for debugging purposes
 
 $(document).ready(function(){	
 	
@@ -18,7 +18,6 @@ $(document).ready(function(){
 	
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
-	
 });
 
 
@@ -76,17 +75,6 @@ function isFieldsetOpen(fieldset){
 }
 
 /**
- * Prints a message to the Chrome javascript console if debugging is enabled
- * 
- * @param message the message to print to Chrome's javascript console
- */
-function log(message){
-	if(true == debugMode){
-		console.log(message);
-	}
-}
-
-/**
  * Hides all jquery ui dialogs for page startup
  */
 function initDialogs() {	
@@ -116,6 +104,10 @@ function initSpaceDetails(){
 	fieldsetMonitor('#benchExpd');
 	fieldsetMonitor('#spaceExpd');
 	
+	// This hides the action list if spaceId is never initialized; i.e. we aren't looking at a space
+	if (undefined == spaceId) {
+		$('#actionList').hide();
+	}	
 }
 
 
@@ -338,7 +330,7 @@ function getDragClone(event) {
 	var txtDisplay = $(src).children(':first-child').text();
 	var icon = 'ui-icon ';	
 	var primType = $(src).data('type');
-	console.log(src);
+	log(src);
 	
 	if(false == $(src).hasClass('row_selected')){
 		$(src).addClass('row_selected');
@@ -426,8 +418,11 @@ function initSpaceExplorer(){
         $(".qtip-userTooltip").remove();
         $(".qtip-expdTooltip").remove();
         
+        // Hide all buttons that are selection-dependent
+        hideButtons();
+        
     }).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
-	
+    
 	log('Space explorer node list initialized');
 	
 	// Create the space tooltips on <a> elements that are children of $(#exploreList)
@@ -1111,7 +1106,7 @@ function createTooltip(element, selector, type, message){
  * the user's permissions
  * @param perms The JSON permission object representing permissions for the current space
  */
-function checkPermissions(perms) {	
+function checkPermissions(perms) {
 	// Check for no permission and hide entire action list if not present
 	if(perms == null) {
 		log('no permissions found, hiding action bar');
@@ -1215,20 +1210,20 @@ function updateButtonIds(id) {
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
 	$('#downloadXML').attr('href', "/starexec/secure/download?type=spaceXML&id="+id);
 	$('#uploadXML').attr('href', "/starexec/secure/add/batchSpace.jsp?sid=" + id);
-	console.log('updated action button space ids to ' + id);
+	log('updated action button space ids to ' + id);
 }
 
-///**
-// * Hides all buttons that are selection-dependent
-// */
-//function hideButtons(){
-//	$("#removeBench").hide();
-//	$("#removeSolver").hide();
-//	$("#removeUser").hide();
-//	$("#removeJob").hide();
-//	$('#removeSubspace').hide();
-//	log('all remove buttons hidden');
-//}
+/**
+ * Hides all buttons that are selection-dependent
+ */
+function hideButtons(){
+	$("#removeBench").hide();
+	$("#removeSolver").hide();
+	$("#removeUser").hide();
+	$("#removeJob").hide();
+	$('#removeSubspace').hide();
+	log('all remove buttons hidden');
+}
 
 
 /**

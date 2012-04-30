@@ -1,6 +1,4 @@
 $(document).ready(function(){
-	
-	$('#fieldSites').expandable(true);
 	initUI();
 
 	$('img').click(function(event){
