@@ -7,6 +7,13 @@
 			text-decoration: underline;
 			color: #ae0000;
 		}
+		ul#advisory {
+  		 margin: 2em; 
+		}
+		ul#advisory li {
+   		padding-left: 1em; 
+   		margin-bottom: .5em; 		
+		}
 	</style>	
 	<p>Starexec is a cross community logic solving service under development at the University of Iowa under the direction of principal investigators Dr. Aaron Stump (Iowa), Dr. Geoff Sutcliffe (University of Miami), and Dr. Cesare Tinelli (Iowa).</p><br/>					
 	<p>Our goal is to provide a shared logic solving infrastructure to researchers to manage benchmark libraries, community membership, and provide solver execution on a large cluster and facilitate translation between logics.</p><br/>
@@ -14,8 +21,7 @@
 	<p>We are funded by a $1.85 million USD grant from the National Science Foundation, the details of which can be found <a href="http://www.nsf.gov/awardsearch/showAward.do?AwardNumber=1058748&WT.z_pims_id=12810">here</a>.</p>
 <br/>
 <p> StarExec Advisory Committee</p>
-<br/>
-<ul>
+<ul id="advisory" >
 <li> Nikolaj Bjørner (Microsoft Research)</li>
 <li> Ewen Denney (NASA Ames)</li>
 <li> Jürgen Giesl (RWTH Aachen)</li>
