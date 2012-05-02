@@ -2,9 +2,8 @@ $(document).ready(function(){
 	initUI();
 
 	$('img').click(function(event){
-		event.preventDefault();
 		PopUp($(this).attr('enlarge'));
-	});      
+	});
 });
 
 function initUI(){
@@ -29,12 +28,6 @@ function initUI(){
 			primary: "ui-icon-gear"
 		}
     });
-	
-	$(".close-image").click(function() {
-	    $(this).parent().hide();
-	});
-	
-	$('#popImage').css('height','400px');
 }
 
 function PopUp(uri) {
@@ -45,14 +38,12 @@ function PopUp(uri) {
 
 	imageTag.load(function(){
 		$('#popDialog').dialog({
-			dialogClass: 'noTitle',
-			modal: false,
+			dialogClass: "popup",
+			modal: true,
 			resizable: false,
 			draggable: false,
 			height: 'auto',
 			width: 'auto',
-			maxWidth: 500,
-			mxHeight: 400
 		});
 	});  
 }

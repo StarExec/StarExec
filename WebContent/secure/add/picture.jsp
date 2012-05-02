@@ -14,12 +14,14 @@
 		request.setAttribute("type", type);
 
 	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 	}
 %>
 
 <star:template title="upload a picture" css="add/picture" js="lib/jquery.validate.min, add/picture">
-	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/pictures?type=${type}&Id=${userId}" id="upForm">
+	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/pictures" id="upForm">
+			<input type="hidden" name="type" value="${type}"/>
+	        <input type="hidden" name="Id" value="${Id}"/>
 		<fieldset>
 			<legend>picture information</legend>		
 			<table id="tblSolver" class="shaded">

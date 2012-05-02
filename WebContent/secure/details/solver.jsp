@@ -29,19 +29,18 @@
 %>
 
 <star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="details/shared, common/table">				
-	<div id="popDialog" style="display: none;">
+	<div id="popDialog">
   		<img id="popImage" src=""/>
-  		<img class="close-image" src="http://residentialsearch.savills.co.uk/Content/Images/icon_close.png" />
 	</div>
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 			<table>
 				<tr>
-				<td style="vertical-align: center">
-					<img src= "/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" height = 160" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
-					<a class="uploadConfig" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${userId}">Change</a>
+				<td id="picSection">
+					<img id="showPicture" src="/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
+					<a id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
 				</td>
-				<td style="vertical-align: top">
+				<td id="solverDetail">
 					<table class="shaded">
 						<thead>
 							<tr>
@@ -84,7 +83,7 @@
 			<tbody>
 				<c:forEach var="c" items="${configs}">
 				<tr>
-					<td style="width:150px;">
+					<td id="configItem">
 						<a href="/starexec/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="/starexec/images/external.png"/></a>
 					</td>
 					<td>

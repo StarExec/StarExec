@@ -15,6 +15,7 @@
 		if(j != null) {			
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
+			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
@@ -126,5 +127,6 @@
 			</tbody>
 		</table>
 	</c:if>		
-	</fieldset>		
+	</fieldset>
+	<a href="/starexec/secure/download?type=job&id=${jobId}" id="jobdownload">download</a>
 </star:template>

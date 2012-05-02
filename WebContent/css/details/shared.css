@@ -13,6 +13,11 @@ fieldset {
 	margin-right: 185px;	
 }
 
+#jobdownload {
+	float: right;
+	margin-right: 150px;	
+}
+
 textarea {
 	width: 98%;
 	height: 300px;
@@ -39,11 +44,24 @@ textarea {
 	margin-right: 185px;
 }
 
-.noTitle .ui-dialog-titlebar {
-	display:none
+#popImage {
+	height: 400px;
 }
 
-#uploadPicture {
-	margin-left: 15px;
+#showPicture{
+	height: 160px;
 }
 
+#uploadPicture{
+	margin-left:auto;
+	margin-right:auto;
+	width:100%;
+}
+
+#solverDetail{
+	vertical-align:top;
+}
+
+#configItem{
+	width:150px;
+}

@@ -11,26 +11,25 @@
 		request.setAttribute("diskQuota", FileUtils.byteCountToDisplaySize(user.getDiskQuota()));
 		request.setAttribute("diskUsage", FileUtils.byteCountToDisplaySize(disk_usage));
 	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 	}
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
-	<div id="popDialog" style="display: none;">
+	<div id="popDialog">
   		<img id="popImage" src=""/>
-  		<img class="close-image" src="http://residentialsearch.savills.co.uk/Content/Images/icon_close.png" />
 	</div>
 	<p>review and edit your account details here.</p>
 	<fieldset>
 	<legend>personal information</legend>
 	<table>
 	<tr>
-	<td style="vertical-align: center">
-		<img src= "/starexec/secure/get/pictures?Id=${userId}&type=uthn" width = 150 enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">
+	<td id="picSection">
+		<img id="showPicture" src="/starexec/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">
     	<ul>
-			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">Change</a></li>
+			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
 		</ul>
 	</td>
-	<td style="vertical-align: top">
+	<td id="userDetail">
 		<table id="personal" class="shaded">   
 		<thead> 	
 				<tr>

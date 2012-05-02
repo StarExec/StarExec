@@ -15,6 +15,12 @@ $(document).ready(function(){
 		var pairId = $(this).find('input').val();
 		window.location.assign("/starexec/secure/details/pair.jsp?id=" + pairId);
 	});
+
+	$("#jobdownload").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+    });
 	
 	$('fieldset').expandable(false);
 });

@@ -1,10 +1,13 @@
 package org.starexec.servlets;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.UUID;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -70,6 +73,10 @@ public class Download extends HttpServlet {
 			else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);
+			}
+			else if (request.getParameter("type").equals("job")) {
+				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+				fileName = handleJob(job, u.getId(), u.getArchiveType(), response);
 			}
 		
 			// Redirect based on success/failure
@@ -223,6 +230,90 @@ public class Download extends HttpServlet {
     }
     
     /**
+     * Processes a job csv file to be downloaded. The file contains the information of all the job pairs within the specific job,
+     * given a random name, and placed in a secure folder on the server.
+     * @param job the job needed to be processed.
+     * @param userId the Id of the user who sends the request for the file.
+     * @param format the user's preferred archive type.
+     * @param response the servlet response sent back.
+     * @return the filename of the created archive.
+     * @throws IOException
+     * @author Ruoyu Zhang
+     */
+    private static String handleJob(Job job, int userId, String format, HttpServletResponse response) throws IOException {    	
+		if (Permissions.canUserSeeJob(job.getId(), userId)) {
+			String fileName = UUID.randomUUID().toString() + format;
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			uniqueDir.createNewFile();
+			
+			String jobFile = CreateJobCSV(job);
+			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format);
+			
+			return fileName;
+		}
+		else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+		}
+    	
+    	return null;
+    }
+    
+    /**
+     * Create the csv file for a specific job
+     * @param job the job needed to be processed
+     * @return the file name of the created csv file
+     * @throws IOException
+     * @author Ruoyu Zhang
+     */
+    private static String CreateJobCSV(Job job) throws IOException {
+    	StringBuilder sb = new StringBuilder();
+    	sb.delete(0, sb.length());
+    	sb.append(R.JOB_OUTPUT_DIR);
+    	sb.append("/");
+    	sb.append(job.getUserId());
+    	sb.append("_");
+    	sb.append(job.getId());
+    	sb.append(".csv");
+        String filename = sb.toString();
+        
+        List<JobPair> pairs = job.getJobPairs();
+        Iterator<JobPair> itr = pairs.iterator();
+       
+        sb.delete(0, sb.length());
+        sb.append("benchmark,solver,config,status,time\r\n");
+        
+        while(itr.hasNext()) {
+        	JobPair pair = itr.next();
+        	if (pair.getStatus().getCode() == 7) {
+        		sb.append(pair.getBench().getName());
+        		sb.append(",");
+        		sb.append(pair.getSolver().getName());
+        		sb.append(",");
+        		sb.append(pair.getSolver().getConfigurations().get(0).getName());
+        		sb.append(",");
+        		sb.append(pair.getStatus().toString());
+        		sb.append(",");
+        		sb.append(pair.getSystemTime()/1000);
+        		sb.append("ms");
+        		sb.append("\r\n");
+        		}
+        	else {
+        		sb.append(pair.getBench().getName());
+        		sb.append(",");
+        		sb.append(pair.getSolver().getName());
+        		sb.append(",");
+        		sb.append(pair.getSolver().getConfigurations().get(0).getName());
+        		sb.append(",");
+        		sb.append(pair.getStatus().toString());
+        		sb.append(",-");
+        		sb.append("\r\n");
+        	}
+        }
+        FileUtils.write(new File(filename), sb.toString());
+        return filename;
+    }
+    
+    /**
      * Validates the download request to make sure the requested data is of the right format
      * 
      * @return true iff the request is valid
@@ -243,7 +334,8 @@ public class Download extends HttpServlet {
     		if (!(request.getParameter("type").equals("solver") ||
     				request.getParameter("type").equals("bench") ||
     				request.getParameter("type").equals("spaceXML") ||
-    				request.getParameter("type").equals("jp_output"))) {
+    				request.getParameter("type").equals("jp_output") ||
+    				request.getParameter("type").equals("job"))) {
     			return false;
     		}
     		

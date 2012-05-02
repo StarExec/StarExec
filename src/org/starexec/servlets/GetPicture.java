@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.app.Starexec;
 import org.starexec.constants.R;
@@ -22,81 +23,125 @@ import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
+/**
+ * Handles the request to get the picture from the file system. If there
+ * is such a picture for the request, or else a default one, named as 
+ * Pic0.jpg is returned.
+ * @author Ruoyu Zhang
+ *
+ */
 @SuppressWarnings("serial")
 public class GetPicture extends HttpServlet{
 	private static final Logger log = Logger.getLogger(CreateJob.class);
     
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
 	}
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// If the request is not valid, then respond with an error
 		if (false == validateRequest(request)) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the GetPicture request was invalid");
 			return;
 		}
 		
+		// Check what type is the request, and generate file in different folders according to it.
     	String fileName = "";
     	String defaultName = "";
+    	StringBuilder sb = new StringBuilder();
     	
 		if (request.getParameter("type").equals("uthn")) {
-			fileName = String.format("/users/Pic%s_thn.jpg", request.getParameter("Id").toString());
-			defaultName = String.format ("/users/Pic0.jpg");
+			sb.delete(0, sb.length());
+			sb.append("/users/Pic");
+			sb.append(request.getParameter("Id").toString());
+			sb.append("_thn.jpg");
+			
+			fileName = sb.toString();
+			defaultName = "/users/Pic0.jpg";
 		} else if (request.getParameter("type").equals("uorg")) {
-			fileName = String.format("/users/Pic%s_org.jpg", request.getParameter("Id").toString());
-			defaultName = String.format ("/users/Pic0.jpg");
+			sb.delete(0, sb.length());
+			sb.append("/users/Pic");
+			sb.append(request.getParameter("Id").toString());
+			sb.append("_org.jpg");
+			
+			fileName = sb.toString();
+			defaultName = "/users/Pic0.jpg";
 		} else if (request.getParameter("type").equals("sthn")) {
-			fileName = String.format("/solvers/Pic%s_thn.jpg", request.getParameter("Id").toString());
-			defaultName = String.format ("/solvers/Pic0.jpg");
+			sb.delete(0, sb.length());
+			sb.append("/solvers/Pic");
+			sb.append(request.getParameter("Id").toString());
+			sb.append("_thn.jpg");
+			
+			fileName = sb.toString();
+			defaultName = "/solvers/Pic0.jpg";
 		} else if (request.getParameter("type").equals("sorg")) {
-			fileName = String.format("/solvers/Pic%s_org.jpg", request.getParameter("Id").toString());
-			defaultName = String.format ("/solvers/Pic0.jpg");
+			sb.delete(0, sb.length());
+			sb.append("/solvers/Pic");
+			sb.append(request.getParameter("Id").toString());
+			sb.append("_org.jpg");
+			
+			fileName = sb.toString();
+			defaultName = "/solvers/Pic0.jpg";
 		} else if (request.getParameter("type").equals("bthn")) {
-			fileName = String.format("/benchmarks/Pic%s_thn.jpg", request.getParameter("Id").toString());
-			defaultName = String.format ("/benchmarks/Pic0.jpg");
+			sb.delete(0, sb.length());
+			sb.append("/benchmarks/Pic");
+			sb.append(request.getParameter("Id").toString());
+			sb.append("_thn.jpg");
+			
+			fileName = sb.toString();
+			defaultName = "/benchmarks/Pic0.jpg";
 		} else if (request.getParameter("type").equals("borg")) {
-			fileName = String.format("/benchmarks/Pic%s_org.jpg", request.getParameter("Id").toString());
-			defaultName = String.format ("/benchmarks/Pic0.jpg");
+			sb.delete(0, sb.length());
+			sb.append("/benchmarks/Pic");
+			sb.append(request.getParameter("Id").toString());
+			sb.append("_org.jpg");
+			
+			fileName = sb.toString();
+			defaultName = "/solvers/Pic0.jpg";
 		}
 		
     	String filePath = R.PICTURE_PATH;
     	String filenamedownload;
-    	String filenamedisplay;
+    	
+    	sb.delete(0, sb.length());
+    	sb.append(filePath);
+    	sb.append(File.separator);
+    	sb.append(fileName);
+		File file = new File(sb.toString());
 		
-		File file = new File(filePath + "/" + fileName);
+		// If the desired file exists, then then file will return it, or else return the default file Pic0.jpg
 		if (file.exists())
 		{
-			filenamedownload = filePath + "/" + fileName;
-			filenamedisplay = fileName;
+			sb.delete(0, sb.length());
+	    	sb.append(filePath);
+	    	sb.append(File.separator);
+	    	sb.append(fileName);
+			filenamedownload = sb.toString();
 		}
 		else
 		{
-			fileName = String.format(defaultName);
-			filenamedownload = filePath + "/" + fileName;
-			filenamedisplay = fileName;
+			sb.delete(0, sb.length());
+	    	sb.append(filePath);
+	    	sb.append(File.separator);
+	    	sb.append(defaultName);
+			filenamedownload = sb.toString();
 		}
 		
-		response.setContentType("application/x-download");
-		response.addHeader("Content-Disposition", "attachment;filename="
-		    + filenamedisplay);
-		  try {
-		   java.io.OutputStream os = response.getOutputStream();
-		   java.io.FileInputStream fis = new java.io.FileInputStream(
-		     filenamedownload);
-		   byte[] b = new byte[1024];
-		   int i = 0;
-		   while ((i = fis.read(b)) > 0) {
-		    os.write(b, 0, i);
-		   }
-		   fis.close();
-		   os.flush();
-		   os.close();
-		  } catch (Exception e) {
-		  }
+		// Return the file in the response.
+		try {
+			java.io.OutputStream os = response.getOutputStream();
+			FileUtils.copyFile(new File(filenamedownload), os);
+			} catch (Exception e) {
+			}
     }
 	
+	/**
+	 * Validates the GetPicture request to make sure the requested data is of the right format
+	 * @param request The request need to be validated.
+	 * @return true if the request is valid.
+	 */
     public static boolean validateRequest(HttpServletRequest request) {
     	try {
     		if (!Util.paramExists("type", request)

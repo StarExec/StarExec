@@ -99,16 +99,8 @@ $(document).ready(function(){
     });	
 	
 	$('img').click(function(event){
-		event.preventDefault();
 		PopUp($(this).attr('enlarge'));
 	});
-	
-	$(".close-image").click(function() {
-	    $(this).parent().hide();
-	});
-	
-	$('#popImage').css('height','400px');
-
 });
 
 
@@ -314,21 +306,6 @@ function saveChanges(obj, save, attr, old) {
 		editable(attr);
 	}
 }
-
-var flag = true;
-
-function changeImage(obj){
-	if (flag){
-		var splitString = obj.src.split("&type=");
-		obj.src = splitString[0] + ("&type=uorg");
-		obj.width = 600;
-	} else{
-		var splitString = obj.src.split("&type=");
-		obj.src = splitString[0] + ("&type=uthn");
-		obj.width = 150;
-	}
-	flag = !flag;
-}
 	
 function PopUp(uri) {
 	imageDialog = $("#popDialog");
@@ -338,14 +315,12 @@ function PopUp(uri) {
 
 	imageTag.load(function(){
 		$('#popDialog').dialog({
-			dialogClass: 'noTitle',
-			modal: false,
+			dialogClass: "popup",
+			modal: true,
 			resizable: false,
 			draggable: false,
 			height: 'auto',
 			width: 'auto',
-			maxWidth: 500,
-			mxHeight: 400
 		});
 	});  
 }
