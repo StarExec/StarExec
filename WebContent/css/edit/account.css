@@ -80,6 +80,7 @@ input[type="text"] {
 }
 
 #popImage {
+	display: none;
 	height: 400px;
 }
 
