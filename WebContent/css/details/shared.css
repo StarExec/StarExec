@@ -48,6 +48,10 @@ textarea {
 	height: 400px;
 }
 
+#popDialog {
+	display: none;
+}
+
 #showPicture{
 	height: 160px;
 }
