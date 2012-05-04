@@ -87,14 +87,32 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 	
 -- Retrieves all benchmark dependencies for a given primary benchmark id
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetBenchmarksDependencies;
+DROP PROCEDURE IF EXISTS GetBenchmarkDependencies;
 CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 	BEGIN
 		SELECT *
 		FROM bench_dependency
 		WHERE primary_bench_id = _pBenchId;
 	END //
-		
+
+-- Retrieves all benchmarks with a specific name belonging to a space
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetBenchIdByName;
+CREATE PROCEDURE GetBenchIdByName(IN _id INT, IN _name VARCHAR(128))
+	BEGIN
+		SELECT id
+		FROM benchmarks AS bench
+			LEFT OUTER JOIN processors AS types
+			ON bench.bench_type=types.id
+		WHERE bench.id IN
+				(SELECT bench_id
+				FROM bench_assoc
+				WHERE space_id = _id)
+		AND bench.name = _name		
+		ORDER BY bench.name;
+	END //	
+	
+	
 -- Retrieves all benchmarks belonging to a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetSpaceBenchmarksById;
@@ -1238,6 +1256,17 @@ CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT)
 		VALUES (_parentId, _childId);
 	END //
 	
+-- Gets all the spaces that a user has access to
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetSpacesByUser;
+CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
+	BEGIN
+		SELECT *
+		FROM spaces
+		WHERE id IN 
+			(SELECT space_id FROM user_assoc WHERE user_id = _userId);
+	END //
+
 -- Gets all the descendants of a space
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetDescendantsOfSpace;
@@ -1246,7 +1275,8 @@ CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId INT)
 		SELECT descendant
 		FROM closure
 		WHERE ancestor = _spaceId AND NOT descendant=_spaceId;
-	END //
+	END //	
+	
 	
 -- Gets all the leaders of a space
 -- Author: Todd Elvers
@@ -1297,6 +1327,31 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 			ORDER BY name;
 		END IF;
 	END //
+	
+-- Returns all subsspaces of a given name belonging to the space with the given id.
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetSubSpaceIdByName;
+CREATE PROCEDURE GetSubSpaceIdByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(32))
+	BEGIN
+		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
+			SELECT *
+			FROM spaces
+			WHERE id = 
+				(SELECT MIN(id)
+				FROM spaces);
+		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
+			SELECT id
+			FROM spaces
+			WHERE id IN
+				(SELECT child_id 
+				 FROM set_assoc 
+					JOIN closure ON set_assoc.child_id=closure.ancestor 
+					JOIN user_assoc ON (user_assoc.user_id=_userId AND user_assoc.space_id=closure.descendant) 
+					WHERE set_assoc.space_id=_spaceId)
+			AND name = _name
+			ORDER BY name;
+		END IF;
+	END //	
 	
 -- Returns all spaces that are a subspace of the root
 -- Author: Todd Elvers
