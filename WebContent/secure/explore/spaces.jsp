@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, explore/spaces">			
+<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, explore/spaces, common/comments">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		<a id="trashcan"></a>
@@ -77,7 +77,7 @@
 			</table>
 		</fieldset>		
 		
-		<fieldset>
+		<fieldset id="actions">
 			<legend>actions</legend>
 			<ul id="actionList">
 				<li><a class="btnAdd" id="addSpace" href="/starexec/secure/add/space.jsp">add subspace</a></li>
@@ -88,13 +88,38 @@
 				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">upload space hierarchy</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>				
 			</ul>
-		</fieldset>				
+		</fieldset>	
+		
+		<div id="commentDiv">		
+		<fieldset id="commentField">
+		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
+			<table id="comments">
+			<thead>
+				<tr>
+					<th style="width:20%;">user</th>
+					<th style="width:20%;">time</th>
+					<th>comment</th>					
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>			
+		<span id="toggleComment" class="caption"><span>+</span>add new</span>
+		<div id="new_comment">
+			 <textarea id="comment_text"  cols="65" rows=2></textarea>  
+			<button id="addComment">add</button>
+		</div>
+		</fieldset>	
+		</div>	
+		
 	</div>	
 	
 	<div id="dialog-confirm-copy" title="confirm copy">
-		<p><span class="ui-icon ui-icon-info" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-copy-txt"></span></p>
+		<p><span class="ui-icon ui-icon-info" ></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	<div id="dialog-confirm-delete" title="confirm delete">
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
+	
+	
 </star:template>

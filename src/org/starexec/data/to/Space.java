@@ -26,12 +26,14 @@ public class Space extends Identifiable implements Iterable<Space> {
 	@Expose	private List<User> users;
 	@Expose	private List<Space> subspaces;
 	
+	
 	public Space() {
 		this.solvers = new LinkedList<Solver>();
 		this.benchmarks = new LinkedList<Benchmark>();
 		this.jobs = new LinkedList<Job>();
 		this.users = new LinkedList<User>();
 		this.subspaces = new LinkedList<Space>();
+		
 	}
 	
 	/**
@@ -203,7 +205,8 @@ public class Space extends Identifiable implements Iterable<Space> {
 	public void setSubspaces(List<Space> subspaces) {
 		this.subspaces = subspaces;
 	}
-
+	
+	
 	@Override
 	public Iterator<Space> iterator() {
 		return this.subspaces.iterator();

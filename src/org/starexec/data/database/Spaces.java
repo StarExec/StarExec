@@ -17,6 +17,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 
+
 /**
  * Handles all database interaction for spaces
  */
@@ -520,6 +521,7 @@ public class Spaces {
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId));
+			
 												
 			return s;			
 		} catch (Exception e){			
@@ -858,4 +860,6 @@ public class Spaces {
 		
 		return true;
 	}
+	
+
 }

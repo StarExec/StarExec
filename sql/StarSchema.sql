@@ -404,3 +404,23 @@ CREATE TABLE bench_dependency (
 	FOREIGN KEY (primary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
 	FOREIGN KEY (secondary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
+
+-- Comments which are associated with either a space, a solver, or a benchmark.
+-- It only makes sense to have one of the two id's set to a value,
+-- they're all included for convienience though so we don't have to
+-- have 2 redundant tables
+-- Author : Vivek Sardeshmukh
+CREATE TABLE comments (
+	id INT NOT NULL AUTO_INCREMENT, 
+	solver_id INT, 
+	benchmark_id INT,
+	space_id INT,
+	user_id INT,
+	cmt_date TIMESTAMP NOT NULL,
+	cmt TEXT NOT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY (benchmark_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE	
+);

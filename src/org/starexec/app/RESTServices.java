@@ -24,6 +24,7 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
+import org.starexec.data.database.Comments;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -34,6 +35,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.Comment;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
 import org.starexec.util.SessionUtil;
@@ -1446,5 +1448,114 @@ public class RESTServices {
 		// If this point is reached, then the configuration has been completely removed
 		return gson.toJson(0);
 	}
+	
+	/**
+	 * Retrieves the associated comments of a given benchmark, space, or solver.
+	 * The type and its id is included in the POST path
+	 * @return a json string representing all the comments associated with
+	 * the current benchmark/space/solver
+	 * @author Vivek Sardeshmukh
+	 */
+	@GET
+	@Path("/comments/{type}/{id}")
+	@Produces("application/json")
+	public String getComments(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if(type.startsWith("b")){
+			if(Permissions.canUserSeeBench(id, userId)){
+				return gson.toJson(Comments.getAll(id, Comments.CommentType.BENCHMARK));
+			}
+		} else if(type.startsWith("sp")){
+			if(Permissions.canUserSeeSpace(id, userId)) {
+				return gson.toJson(Comments.getAll(id, Comments.CommentType.SPACE));
+			}
+		} else if (type.startsWith("so")) {
+			if(Permissions.canUserSeeSolver(id, userId)){
+				return gson.toJson(Comments.getAll(id, Comments.CommentType.SOLVER));
+			}
+		}
+		return gson.toJson(1);
+	}
+	
+	/**
+	 * Adds a comment to the database. This is dynamic to allow adding a
+	 * comment associated with a space, solver, or benchmark. The type of comment is given
+	 * in the path
+	 * 
+	 * @return a json string containing '0' if the add was successful, '1' otherwise
+	 * @author Vivek Sardeshmukh 
+	 */
+	@POST
+	@Path("/comments/add/{type}/{id}")
+	@Produces("application/json")
+	public String addComment(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
+		boolean success = false;
+		int userId = SessionUtil.getUserId(request);
+		if (type.startsWith("b")) {
+			if(Permissions.canUserSeeBench(id, userId)){
+				String cmt = request.getParameter("comment");			
+				success = Comments.add(id, userId, cmt, Comments.CommentType.BENCHMARK);
+			}
+		} else if (type.startsWith("sp")) {
+			if(Permissions.canUserSeeSpace(id, userId)) {
+				String cmt = request.getParameter("comment");			
+				success = Comments.add(id, userId, cmt, Comments.CommentType.SPACE);
+			}
+		} else if (type.startsWith("so")) {
+			if(Permissions.canUserSeeSolver(id, userId)){
+				String cmt = request.getParameter("comment");			
+				success = Comments.add(id, userId, cmt, Comments.CommentType.SOLVER);	
+			}	
+		}
+		
+		// Passed validation AND Database update successful	
+		return success ? gson.toJson(0) : gson.toJson(1);
+	}
+
+	/**
+	 * Deletes a comment from either a benchmark, solver, or a space 
+	 *
+	 * @param type the type the delete is for, can be  'benchmark', or 'space', 'solver'
+	 * @param id the id of the entity (benchmark, space, or solver) from which we want to remove a comment
+	 * @param userId user id of corresponding comment 
+	 * @param commentId the id of the comment to remove
+	 * @return 0 iff the comment was successfully deleted for a space, 2 if the user lacks permissions,
+	 * and 1 otherwise
+	 * @author Vivek Sardeshmukh
+	 */
+	@POST
+	@Path("/comments/delete/{type}/{id}/{userId}/{commentId}")
+	@Produces("application/json")
+	public String deleteComment(@PathParam("type") String type, @PathParam("id") int id, @PathParam("userId") int userId, @PathParam("commentId") int commentId, @Context HttpServletRequest request) {
+		int uid = SessionUtil.getUserId(request); 
+		if (type.startsWith("b")) {
+			Benchmark b = Benchmarks.get(id);
+			// Ensure user is either the owner of the comment or the benchmark
+			 if (uid!=userId && uid!=b.getUserId()) {
+				 return gson.toJson(2);
+			 }
+			 return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(1);
+		} 
+		 else if (type.startsWith("sp")) {
+			//Permissions check; ensures the user deleting the comment is a leader or owner of the comment
+			Permission perm = SessionUtil.getPermission(request, id);		
+			if((perm == null || !perm.isLeader()) && uid!=userId ) {
+				return gson.toJson(2);	
+			}
+			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(1);
+		} 
+		 else if (type.startsWith("so")) {
+			Solver s = Solvers.get(id);
+			// Ensure user is either the owner of the comment or the solver
+			if (s.getUserId() != uid && userId != uid) {
+				return gson.toJson(2);
+			}
+			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(1);
+			
+		}
+		
+		return gson.toJson(1);
+	}
+
 	
 }

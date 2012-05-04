@@ -32,7 +32,7 @@
 	}
 %>
 
-<star:template title="${bench.name}" js="details/shared, details/benchmark" css="details/shared">				
+<star:template title="${bench.name}" js="details/shared, details/benchmark, lib/jquery.dataTables.min" css="details/shared, common/comments, common/table">				
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
 		<table class="shaded">
@@ -141,14 +141,42 @@
 		<p>coming soon...</p>
 	</fieldset> -->		
 	
+
+	
 	<c:if test="${bench.downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> contents</legend>
-			<textarea id="benchContent" readonly="readonly"></textarea>	
+			<textarea class=contentTextarea id="benchContent" readonly="readonly" ></textarea>	
 			<a href="/starexec/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
 		</fieldset>			
-		
-		<a id="downLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download</a>
-	</c:if>			
+	</c:if>
+	
+	<fieldset id="commentField">
+		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
+			<table id="comments">
+			<thead>
+				<tr>
+					<th style="width:20%;">user</th>
+					<th>time</th>
+					<th style="width:44%;">comment</th>	
+					<th style="width:11%;">action</th>				
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>			
+		<span id="toggleComment" class="caption"><span>+</span>add new</span>
+		<div id="new_comment">
+			<textarea id="comment_text" cols="60"></textarea>  
+			<button id="addComment">add</button>
+		</div>
+	</fieldset>	
+	<div id="dialog-confirm-delete" title="confirm delete">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>				
+	
+	<c:if test="${bench.downloadable}">
+		<a id="downLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download benchmark</a>
+	</c:if>
 </star:template>

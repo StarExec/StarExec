@@ -28,7 +28,7 @@
 	}
 %>
 
-<star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="common/table, details/shared">				
+<star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="common/table, common/comments, details/shared">				
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
@@ -116,6 +116,30 @@
 		<legend>related jobs</legend>
 		<p>coming soon...</p>
 	</fieldset>  -->
+	
+	<fieldset id="commentField">
+		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
+			<table id="comments">
+			<thead>
+				<tr>
+					<th style="width:20%;">user</th>
+					<th>time</th>
+					<th style="width:44%;">comment</th>	
+					<th style="width:11%;">action</th>				
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>			
+		<span id="toggleComment" class="caption"><span>+</span>add new</span>
+		<div id="new_comment">
+			 <textarea id="comment_text"  cols="60" rows="2"></textarea>  
+			<button id="addComment">add</button>
+		</div>
+	</fieldset>	
+	<div id="dialog-confirm-delete" title="confirm delete">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>		
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	<c:choose>

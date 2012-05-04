@@ -1,4 +1,4 @@
-var debugMode = false; //console.log statements are turned off by default
+var debugMode = true; //console.log statements are turned off by default
 
 /**
  * Contains javascript relevant to all pages within starexec 
@@ -154,3 +154,18 @@ function getParameterByName(name) {
     var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
+
+/**
+ * Converts text to html encoded text 
+ * @param s - text to encode
+ * @author Vivek Sardeshmukh
+ */
+function HtmlEncode(s)
+{
+  var el = document.createElement("div");
+  el.innerText = el.textContent = s;
+  s = el.innerHTML;
+  return s;
+}
+
+

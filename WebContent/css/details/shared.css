@@ -8,6 +8,12 @@ fieldset {
 	margin-bottom: 20px;	
 }
 
+.contentTextarea {
+	width: 98%;
+	height: 300px;
+	font-family: monospace;
+}
+
 #downLink {
 	float: right;
 	margin-right: 185px;	
@@ -18,11 +24,6 @@ fieldset {
 	margin-right: 150px;	
 }
 
-textarea {
-	width: 98%;
-	height: 300px;
-	font-family: monospace;
-}
 
 .popoutLink {
 	float: right;

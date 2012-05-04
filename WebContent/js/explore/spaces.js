@@ -3,13 +3,14 @@ var userTable;
 var benchTable;
 var solverTable;
 var spaceTable;
+var commentTable;
 var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
 //debugMode = true;	   	//uncomment to use console.log for debugging purposes
 
 $(document).ready(function(){	
-	
+		
 	// Build the tooltip styles (i.e. dimensions, color, etc)
 	initTooltipStyles();
 	
@@ -18,6 +19,7 @@ $(document).ready(function(){
 	
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
+	
 });
 
 
@@ -97,6 +99,9 @@ function initSpaceDetails(){
 	// Set up jQuery button UI
 	initButtonUI();
 	
+	// Set up comment table
+	initCommentUI();
+	
 	// Attach monitors to the primitive fieldsets to listen for mouse clicks
 	fieldsetMonitor('#jobExpd');
 	fieldsetMonitor('#userExpd');
@@ -104,13 +109,52 @@ function initSpaceDetails(){
 	fieldsetMonitor('#benchExpd');
 	fieldsetMonitor('#spaceExpd');
 	
-	// This hides the action list if spaceId is never initialized; i.e. we aren't looking at a space
-	if (undefined == spaceId) {
+	// This hides comment table and action list if the space is root space or we aren't looking at a space
+	if (spaceId == 1 || spaceId == undefined){
+		$('#commentDiv').hide();
 		$('#actionList').hide();
-	}	
+	}
 }
 
-
+/**
+ * Initialize UI needed for commenting system
+ * Also, display comments in the table
+ */
+function initCommentUI(){
+	// Setup '+ add comment' animation
+	$('#toggleComment').click(function() {
+		$('#new_comment').slideToggle('fast');
+		togglePlusMinus(this);
+	});	
+	$('#new_comment').hide();
+	//Handles adding a new comment - Vivek
+	$("#addComment").click(function(){
+		var comment = HtmlEncode($("#comment_text").val());
+		if(comment.trim().length == 0) {
+			showMessage('error', 'comments can not be empty', 6000);
+			return;
+		}	
+		var data = {comment: comment};
+		$.post(
+				"/starexec/services/comments/add/space/" + spaceId,
+				data,
+				function(returnCode) {
+			    	if(returnCode == '0') {
+			    		$("#comment_text").val("");
+			    		$.getJSON('/starexec/services/comments/space/' + spaceId, displayComments).error(function(){
+			    			alert('Session expired');
+			    			window.location.reload(true);
+			    		});
+			    	} else {
+			    		showMessage('error', "adding your comment was unsuccessful; please try again", 5000);
+			 
+			    	}
+				},
+				"json"
+		);
+		
+	});
+}
 /**
  * Basic initialization for jQuery UI buttons (sets style and icons)
  */
@@ -151,6 +195,11 @@ function initButtonUI() {
 	}});
 	$('#trashcan').hide();
 	
+	$('#addComment').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});
+	
 	log('jQuery UI buttons initialized');
 }
 
@@ -176,7 +225,13 @@ function initDraggable(table) {
 	$.each(rows, function(i, row){
 		$(row).data("id", $(row).children('td:first-child').children('input').val());
 		$(row).data("type", $(row).children('td:first-child').children('input').attr('prim'));
-		$(row).data("name", $(row).children('td:first-child').children('a').text());
+		// if it is comment then do not display the first field
+		if($(row).data('type')[0]=='c'){
+			$(row).data("name","this comment");
+		}
+		else{
+			$(row).data("name", $(row).children('td:first-child').children('a').text());
+		}
 	});
 	
 	// Make each space in the explorer list be a droppable target
@@ -238,6 +293,9 @@ function onTrashDrop(event, ui){
 		case 'j':
 			removeJobs(ids);
 			break;
+		case 'c' :
+			removeComment(ids);
+			break;
 	}
 }
 
@@ -245,6 +303,11 @@ function onTrashDrop(event, ui){
  * Called when a draggable item (primitive) is dropped on a space
  */
 function onSpaceDrop(event, ui) {
+	//comments can not be copied to space !
+	if (ui.draggable.data('type')[0]=='c'){
+		showMessage('error','you can not copy a comment to another space',5000);
+		return;
+	}
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));	    	
 	
@@ -351,6 +414,12 @@ function getDragClone(event) {
 		case 'j':
 			icon += 'ui-icon-gear';
 			break;
+		case 'c':
+			icon += 'ui-icon-newwin';
+			if(ids.length <= 1){
+				txtDisplay = 'comment';
+			}
+			break;
 		default:
 			icon += 'ui-icon-newwin';
 			break;
@@ -412,7 +481,9 @@ function initSpaceExplorer(){
         
         updateButtonIds(id);
         getSpaceDetails(id);
+        getSpaceComments(id);
         
+
         // Remove all non-permanent tooltips from the page; helps keep
         // the page from getting filled with hundreds of qtip divs
         $(".qtip-userTooltip").remove();
@@ -675,6 +746,50 @@ function removeSubspaces(selectedSubspaces){
 	});		
 }
 
+/**
+ * Handles removal of a comment from a space
+ * @author Vivek Sardeshmukh
+ */
+function removeComment(ids){
+	//only allow a single comment deletion - no mass deletion is allowed
+	if(ids.length > 1){
+		showMessage('error', "please select only one comment at a time", 5000);
+	}
+	else{
+		var idArray = ids[0].split('-');
+		var cid = idArray[0]; 	
+		var uid = idArray[1];
+		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this comment?');
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			buttons: {
+				'yes': function() {
+					$('#dialog-confirm-delete').dialog('close');
+					$.post(
+							"/starexec/services/comments/delete/space/" + spaceId + "/" + uid + "/" + cid, 
+							function(returnData){
+								if (returnData == 0) {
+									updateTable(commentTable);
+								} else if (returnData == 2) {
+									showMessage('error',"deleting comments is restricted to the owner of the space and the comment's owner", 5000);
+								} else {
+									showMessage('error', "adding your comment was unsuccessful, please try again later", 5000);
+								}
+							},
+							"json"
+							).error(function(){
+									alert('Session expired');
+									window.location.reload(true);
+							});
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+		  }		
+		});	
+	}
+	
+}
 
 /**
  * Handles querying for pages in a given DataTable object
@@ -769,8 +884,35 @@ function colorizeJobStatistics(){
 				lightness: 0 
 			}
 	);
+	
+		
+
 }
 
+/**
+ * Displays comments related to this space
+ * @param data - json response 
+ * @author Vivek Sardeshmukh
+ */
+function displayComments(data) {
+	//comments are made inivisible for root, now make them visible
+	$('#commentDiv').show();
+	
+	$('#commentField legend').children('span:first-child').text(data.length);
+	commentTable.fnClearTable();
+	$.each(data, function(i, comment) {
+		var ids= comment.id + '-' + comment.userId; //we need user id and comment id to delete that comment
+		var hiddenIds= '<input type="hidden" value="'+ids+'">';
+		var fullName = comment.firstName + ' ' + comment.lastName;
+		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + 
+			'<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenIds;
+		var cmt = comment.description;
+		var brcmt = cmt.replace(/\n/g, "<br />"); //replace all newlines to <br>
+		commentTable.fnAddData([userLink,  comment.uploadDate, brcmt]);
+		$(commentTable.fnGetNodes(i)).data('type', 'comment');
+	});
+	initDraggable('#comments');
+}
 /**
  * Initializes the DataTable objects and adds multi-select to them
  */
@@ -826,6 +968,10 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
+	commentTable = $('#comments').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">',
+        "aaSorting": [[ 1, "asc" ]]
+    }); 
 	
 	// Mulit-select setup
 	$("#users").delegate("tr", "click", function(){
@@ -843,15 +989,16 @@ function initDataTables(){
 	$("#spaces").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
 	});
-	
+	$("#comments").delegate("tr", "click", function(){
+		$(this).toggleClass("row_selected");
+	});
 	// User permission tooltip setup
 	$('#users tbody').delegate('tr', 'hover', function(){
 		$(this).toggleClass('hovered');
 	});
 	
 	// Set all fieldsets as expandable (except for action fieldset)
-	$('fieldset:not(:last-child)').expandable(true);
-	
+	$('fieldset:not(:#actions)').expandable(true);
 	log('all datatables initialized');
 }
 
@@ -1046,6 +1193,23 @@ function populateSpaceDetails(jsonData) {
 	$('#loader').hide();
 	
 	log('Client side UI updated with details for ' + spaceName);
+}
+
+/**
+ * Populates comments related to a space
+ * @param id - space id
+ * @author Vivek Sardeshmukh
+ */
+function getSpaceComments(id) {
+	if (id == 1 || id == undefined){
+		$('#commentDiv').hide();
+		return;
+	}
+	//get comment information for the given space
+	$.getJSON('/starexec/services/comments/space/' + id, displayComments).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});	
 }
 
 /**
@@ -1927,5 +2091,16 @@ function saveChanges(obj, save){
 	} else {  
 		log('user canceled edit permission action');
 		$(obj).parents('.qtip').qtip('api').hide();
+	}
+}
+
+/**
+ * Toggles the plus-minus text of the "+ add new" comment button
+ */
+function togglePlusMinus(addCommentButton){
+	if($(addCommentButton).children('span:first-child').text() == "+"){
+		$(addCommentButton).children('span:first-child').text("-");
+	} else {
+		$(addCommentButton).children('span:first-child').text("+");
 	}
 }
