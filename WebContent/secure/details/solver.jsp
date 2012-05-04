@@ -28,46 +28,46 @@
 	}
 %>
 
-<star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="details/shared, common/table">				
+<star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="common/table, details/shared">				
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
-			<table>
-				<tr>
-				<td id="picSection">
-					<img id="showPicture" src="/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
-					<a id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
-				</td>
-				<td id="solverDetail">
-					<table class="shaded">
-						<thead>
-							<tr>
-								<th>attribute</th>
-								<th>value</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>name</td>			
-								<td>${solver.name}</td>
-							</tr>
-							<tr>
-								<td>description</td>			
-								<td>${solver.description}</td>
-							</tr>
-							<tr>
-								<td>owner</td>			
-								<td><star:user value="${usr}" /></td>
-							</tr>							
-							<tr>
-								<td>uploaded</td>			
-								<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
-							</tr>				
-						</tbody>				
-					</table>
-				</td>
+		<table id="infoTable" class="shaded">
+			<tr>
+			<td id="picSection">
+				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
+				<a id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
+			</td>
+			<td id="solverDetail">
+				<table id="solverInfo" class="shaded">
+					<thead>
+						<tr>
+							<th>attribute</th>
+							<th>value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>name</td>			
+							<td>${solver.name}</td>
+						</tr>
+						<tr>
+							<td>description</td>			
+							<td>${solver.description}</td>
+						</tr>
+						<tr>
+							<td>owner</td>			
+							<td><star:user value="${usr}" /></td>
+						</tr>							
+						<tr>
+							<td>uploaded</td>			
+							<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
+						</tr>				
+					</tbody>				
+				</table>
+			</td>
 			</tr>
 		</table>
 	</fieldset>

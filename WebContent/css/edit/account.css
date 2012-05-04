@@ -94,3 +94,15 @@ input[type="text"] {
 #userDetail{
 	vertical-align:top;
 }
+
+#infoTable tbody tr:hover {
+	background-color: inherit;
+}
+
+#personal tbody tr:hover {
+	background-color: #ae0000;
+}
+
+#personal thead tr:hover {
+	background-color: #111111;
+}

@@ -21,7 +21,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 	<legend>personal information</legend>
-	<table>
+	<table id="infoTable">
 	<tr>
 	<td id="picSection">
 		<img id="showPicture" src="/starexec/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">

@@ -69,3 +69,15 @@ textarea {
 #configItem{
 	width:150px;
 }
+
+#infoTable tbody tr:hover {
+	background-color: inherit;
+}
+
+#solverInfo tbody tr:hover {
+	background-color: #ae0000;
+}
+
+#solverInfo thead tr:hover {
+	background-color: #111111;
+}
