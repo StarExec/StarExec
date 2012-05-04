@@ -1,4 +1,4 @@
-var debugMode = true; //console.log statements are turned off by default
+var debugMode = false; //console.log statements are turned off by default
 
 /**
  * Contains javascript relevant to all pages within starexec 
