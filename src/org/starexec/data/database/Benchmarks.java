@@ -170,7 +170,7 @@ public class Benchmarks {
 		try {			
 			//con = Common.getConnection();
 			
-			Common.beginTransaction(con);
+			//Common.beginTransaction(con);
 			
 			// Get the processor of the first benchmark (they should all have the same processor)
 			Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
@@ -184,14 +184,14 @@ public class Benchmarks {
 			// Process the benchmark for dependencies (must happen after they are added so that dependencies will have bench ids)
 			Benchmarks.introduceDependencies(benchmarks, depRootSpaceId, linked, userId, con);
 			
-			Common.endTransaction(con);
+			//Common.endTransaction(con);
 			
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
 		} finally {
-			Common.safeClose(con);
+			//Common.safeClose(con);
 		}
 		
 		return false;
