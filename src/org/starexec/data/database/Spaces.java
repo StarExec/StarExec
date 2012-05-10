@@ -836,7 +836,8 @@ public class Spaces {
 		// Set maximal permissions for the user who added the space	
 		Permissions.set(userId, newSpaceId, new Permission(true), con);
 		
-		Common.endTransaction(con);
+		//Do we necessarily want to end the transaction here?  I don't think we do.
+		//Common.endTransaction(con);
 		log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
 		return newSpaceId;
 	}
