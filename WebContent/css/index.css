@@ -1,0 +1,8 @@
+ul#advisory {
+	margin: 2em;
+}
+
+ul#advisory li {
+	padding-left: 1em;
+	margin-bottom: .5em;
+}

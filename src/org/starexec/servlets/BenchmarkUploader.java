@@ -57,7 +57,10 @@ public class BenchmarkUploader extends HttpServlet {
 	private static final String removeUser = "removeUser";
 	private static final String removeSpace = "removeSpace";
 	private static final String removeJob = "removeJob";
-    
+	
+	private static final String HAS_DEPENDENCIES = "dependency";
+    private static final String LINKED = "linked";
+    private static final String DEP_ROOT_SPACE_ID = "depRoot";
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
@@ -119,16 +122,33 @@ public class BenchmarkUploader extends HttpServlet {
 		String uploadMethod = (String)form.get(UPLOAD_METHOD);
 		int typeId = Integer.parseInt((String)form.get(BENCHMARK_TYPE));
 		boolean downloadable = Boolean.parseBoolean((String)form.get(BENCH_DOWNLOADABLE));				
-		
+		boolean hasDependencies = Boolean.parseBoolean((String)form.get(HAS_DEPENDENCIES));
+		boolean linked = Boolean.parseBoolean((String)form.get(LINKED));
+		int depRootSpaceId = Integer.parseInt((String)form.get(DEP_ROOT_SPACE_ID));
+		log.debug("has dependencies = " + hasDependencies);
+		log.debug("linked = " + linked);
+		log.debug("depRootSpaceIds = " + depRootSpaceId);
 		if(uploadMethod.equals("convert")) {
+			
 			Space result = this.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, this.extractPermissions(form));
 			
 			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
 			result.setId(spaceId);
-			Spaces.addWithBenchmarks(result, userId);
+			if (!hasDependencies){
+				Spaces.addWithBenchmarks(result, userId);
+			}
+			else
+			{				
+				Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked);
+			}
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> results = this.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-			Benchmarks.add(results, spaceId);
+			if (!hasDependencies){
+				Benchmarks.add(results, spaceId);
+			}
+			else{
+				Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId);
+			}
 		}
 						
         response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
@@ -235,6 +255,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * Validates a benchmark upload request to determine if it can be acted on or not.
 	 * @param form A list of form items contained in the request
 	 * @return True if the request is valid to act on, false otherwise
+	 * @author ??? - modified by Ben
 	 */
 	private boolean isRequestValid(HashMap<String, Object> form) {
 		try {			

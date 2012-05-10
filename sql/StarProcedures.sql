@@ -34,6 +34,14 @@ CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val
 		INSERT INTO bench_attributes VALUES (_benchmarkId, _key, _val);
 	END //
 	
+-- Adds a new dependency for a benchmark 
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS AddBenchDependency;
+CREATE PROCEDURE AddBenchDependency(IN _primary_bench_id INT, IN _secondary_benchId INT, IN _include_path TEXT)
+	BEGIN
+		INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (_primary_bench_id, _secondary_benchId, _include_path);
+	END //	
+	
 -- Retrieves all attributes for a benchmark 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetBenchAttrs;
@@ -98,12 +106,11 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 -- Retrieves all benchmarks with a specific name belonging to a space
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS GetBenchIdByName;
-CREATE PROCEDURE GetBenchIdByName(IN _id INT, IN _name VARCHAR(128))
+DROP PROCEDURE IF EXISTS GetBenchByName;
+CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(128))
 	BEGIN
-		SELECT id
+		SELECT *
 		FROM benchmarks AS bench
-			LEFT OUTER JOIN processors AS types
-			ON bench.bench_type=types.id
 		WHERE bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
@@ -1331,7 +1338,8 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 -- Returns all subsspaces of a given name belonging to the space with the given id.
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS GetSubSpaceIdByName;
-CREATE PROCEDURE GetSubSpaceIdByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(32))
+DROP PROCEDURE IF EXISTS GetSubSpaceByName;
+CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(64))
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
 			SELECT *
@@ -1340,7 +1348,7 @@ CREATE PROCEDURE GetSubSpaceIdByName(IN _spaceId INT, IN _userId INT, IN _name V
 				(SELECT MIN(id)
 				FROM spaces);
 		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
-			SELECT id
+			SELECT *
 			FROM spaces
 			WHERE id IN
 				(SELECT child_id 

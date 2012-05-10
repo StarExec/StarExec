@@ -93,7 +93,7 @@ public class Processors {
 	
 	/**	 
 	 * @param con The connection to make the query on
-	 * @param processorId The id of the bentch processor to retrieve
+	 * @param processorId The id of the bench processor to retrieve
 	 * @return The corresponding processor
 	 * @author Tyler Jensen
 	 */
@@ -118,7 +118,7 @@ public class Processors {
 	}
 	
 	/**	 
-	 * @param processorId The id of the bentch processor to retrieve
+	 * @param processorId The id of the bench processor to retrieve
 	 * @return The corresponding processor
 	 * @author Tyler Jensen
 	 */

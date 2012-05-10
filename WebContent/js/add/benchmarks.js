@@ -34,6 +34,20 @@ $(document).ready(function(){
 		  }
 	});
 	
+	$('#radioDependency').change(function() {
+		  if($('#radioDependency').is(':checked')) {
+			  $('#depSpaces').fadeIn('fast');
+			  $('#depLinked').fadeIn('fast');
+		  }
+	});
+	
+	$('#radioNoDependency').change(function() {
+		  if($('#radioNoDependency').is(':checked')) {
+			  $('#depSpaces').fadeOut('fast');
+			  $('#depLinked').fadeOut('fast');
+		  }
+	});
+	
 	$('#btnUpload').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"

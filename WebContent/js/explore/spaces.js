@@ -973,7 +973,7 @@ function initDataTables(){
         "aaSorting": [[ 1, "asc" ]]
     }); 
 	
-	// Mulit-select setup
+	// Multi-select setup
 	$("#users").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
 	});

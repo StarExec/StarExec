@@ -100,7 +100,12 @@ INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable
 	
 INSERT INTO bench_attributes VALUES (1, 'set-logic', 'LRA');
 INSERT INTO bench_attributes VALUES (1, 'status', 'SAT');
-	
+INSERT INTO bench_attributes VALUES (1, 'starexec-dependencies', '1');
+INSERT INTO bench_attributes VALUES (1, 'starexec-dependency-1', 'SAT/Jagertest');
+INSERT INTO bench_attributes VALUES (2, 'starexec-dependencies', '2');
+INSERT INTO bench_attributes VALUES (2, 'starexec-dependency-1', 'TPTP/TPTPA/ALG438-1');
+INSERT INTO bench_attributes VALUES (2, 'starexec-dependency-2', 'TPTP/TPTPB/ALG438-1');
+
 INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES
 	(1, 'Z3', SYSDATE(), '/home/starexec/solvers/z3', 'This is a downloadable solver that exists on the cluster', 1, 10240);
 INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size) VALUES

@@ -476,6 +476,40 @@ public class Spaces {
 	}
 	
 	/**
+	 * Gets all spaces the user has access to
+	 * @param userId The id of the user requesting the spaces. 
+	 * @return A list of spaces the user has access to
+	 * @author Benton McCune
+	 */
+	public static List<Space> GetSpacesByUser(int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpacesByUser(?)}");
+			procedure.setInt(1, userId);
+			ResultSet results = procedure.executeQuery();
+			List<Space> spaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getInt("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));				
+				spaces.add(s);
+			}					
+			return spaces;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Gets the name of a community by Id - helper method to work around permissions for this special case
 	 * @param spaceId the id of the community to get the name of
 	 * @return the name of the community
@@ -573,6 +607,7 @@ public class Spaces {
 	 * an existing space (it must have an ID that will be the ancestor space of all subspaces) and
 	 * it can optionally contain NEW benchmarks to be added to the space. The method then traverses
 	 * into its subspaces recursively and adds them to the database aint with their benchmarks.
+	 * 
 	 * @param parent The parent space that is the 'root' of the new subtree to be added
 	 * @param userId The user that will own the new spaces and benchmarks
 	 * @return True if the operation was a success, false otherwise
@@ -583,7 +618,7 @@ public class Spaces {
 		
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
-			con = Common.getConnection();
+			//con = Common.getConnection();
 			Common.beginTransaction(con);
 			
 			// For each subspace...
@@ -594,6 +629,51 @@ public class Spaces {
 			
 			// Add any new benchmarks in the space to the database
 			Benchmarks.add(parent.getBenchmarks(), parent.getId());
+			
+			
+			// We're done (notice that 'parent' is never added because it should already exist)
+			Common.endTransaction(con);			
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {					
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Adds all subspaces and their benchmarks to the database. The first space given should be
+	 * an existing space (it must have an ID that will be the ancestor space of all subspaces) and
+	 * it can optionally contain NEW benchmarks to be added to the space. The method then traverses
+	 * into its subspaces recursively and adds them to the database aint with their benchmarks.
+	 * 
+	 * @param parent The parent space that is the 'root' of the new subtree to be added
+	 * @param userId The user that will own the new spaces and benchmarks
+	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
+	 * @param linked true if the depRootSpace is the same as the first directory in the include statements
+	 * @return True if the operation was a success, false otherwise
+	 * @author Benton McCune
+	 */
+	public static boolean addWithBenchmarksAndDeps(Space parent, int userId, Integer depRootSpaceId, boolean linked) {
+		Connection con = null;
+		
+		try {
+			// We'll be doing everything with a single connection so we can roll back if needed
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			// For each subspace...
+			for(Space sub : parent.getSubspaces()) {
+				// Apply the recursive algorithm to add each subspace
+				Spaces.traverseWithDeps(con, sub, parent.getId(), userId, depRootSpaceId, linked);
+			}
+			
+			// Add any new benchmarks in the space to the database
+			Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId);
+			
 			
 			// We're done (notice that 'parent' is never added because it should already exist)
 			Common.endTransaction(con);			
@@ -627,6 +707,27 @@ public class Spaces {
 		
 		// Finally, add the benchmarks in the space to the database
 		Benchmarks.add(con, space.getBenchmarks(), spaceId);
+	}
+	
+	/**
+	 * Internal recursive method that adds a space and it's benchmarks to the database
+	 * @param con The connection to perform the operations on
+	 * @param space The space to add to the database
+	 * @param parentId The id of the parent space that the given space will belong to
+	 * @param userId The user id of the owner of the new space and its benchmarks
+	 * @author Benton McCune
+	 */
+	protected static void traverseWithDeps(Connection con, Space space, int parentId, int userId, Integer depRootSpaceId, Boolean linked) throws Exception {
+		// Add the new space to the database and get it's ID		
+		int spaceId = Spaces.add(con, space, parentId, userId);
+		
+		for(Space sub : space.getSubspaces()) {
+			// Recursively go through and add all of it's subspaces with itself as the parent
+			Spaces.traverseWithDeps(con, sub, spaceId, userId, depRootSpaceId, linked);
+		}			
+		
+		// Finally, add the benchmarks in the space to the database
+		Benchmarks.addWithDeps(space.getBenchmarks(), spaceId, con, depRootSpaceId, linked, userId);
 	}
 	
 	/**
@@ -860,6 +961,50 @@ public class Spaces {
 		
 		return true;
 	}
-	
+	/**
+	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
+	 * @param spaceId id of parent space
+	 * @param userId id of user making request
+	 * @param subSpaceName name of subspace that is being sought
+	 * @return subspaceId id of found subspace
+	 * @author Benton McCune
+	 */
+	public static Integer getSubSpaceIDbyName(Integer spaceId,
+			Integer userId, String subSpaceName) {
+		// TODO Auto-generated method stub
+		Connection con = null;			
+		
+		try {
+				con = Common.getConnection();		
+				CallableStatement procedure = con.prepareCall("{CALL GetSubSpaceByName(?,?,?)}");
+				
+				log.debug("Space ID = " + spaceId);
+				procedure.setInt(1, spaceId);
+				log.debug("User Id = " + userId);
+				procedure.setInt(2, userId);
+				log.debug("Subspace named " + subSpaceName);
+				procedure.setString(3, subSpaceName);
+				ResultSet results = procedure.executeQuery();
+				Integer subSpaceId = -1;
+				
+				if(results.next()){
+					Space ss = new Space();
+					subSpaceId = (results.getInt("id"));
+					log.debug("SubSpace Id = " + subSpaceId);
+				}	
+				results.last();
+				log.debug("# of subspaces named " + subSpaceName + " = " + results.getRow() );
+				if (results.getRow() != 1) //should only be getting one result
+				{
+					return -1;
+				}			
+				return subSpaceId;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		return -1;
 
+	}
 }

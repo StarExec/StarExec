@@ -64,9 +64,6 @@ BENCH_DEPENDS_ARRAY=(${BENCH_DEPENDS// / })
 declare -a LOCAL_DEPENDS_ARRAY
 LOCAL_DEPENDS_ARRAY=(${LOCAL_DEPENDS// / })
 
-#Temporarily include this to test specific example for TPTP includes
-#AXIOM_PATH = /home/starexec/Benchmarks/8/20120311-10.49.07/Axioms/SET001-0.ax
-
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
