@@ -306,7 +306,7 @@ public class Benchmarks {
 			}							
 
 		}				
-		
+		log.info("Adding Benchmark " + benchmark.getName());
 		return true;
 	}
 	
@@ -356,7 +356,7 @@ public class Benchmarks {
 			introduceDependencies(benchmark, depRootSpaceId, linked, userId, con);
 		}
 		}				
-		
+		log.info("Adding (with dependencies) Benchmark " + benchmark.getName());
 		return true;
 	}
 	
