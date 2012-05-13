@@ -109,7 +109,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of solvers
-				LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	*
 				
@@ -125,7 +126,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 						WHEN 1 THEN description
 					 END) DESC
 					 
-				LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 			
 		-- Otherwise, ensure the target solvers contain _query
@@ -153,7 +155,9 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of solvers
-				LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
+				
 			ELSE
 				SELECT 	*
 				
@@ -174,7 +178,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 						WHEN 1 THEN description
 					 END) DESC
 					 
-				LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 		END IF;
 	END //

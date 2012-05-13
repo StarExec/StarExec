@@ -88,7 +88,8 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 					END) ASC
 				
 				-- Shrink the results to only those required for the next page of Spaces
-				LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
 						name,
