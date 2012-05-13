@@ -320,7 +320,7 @@ public class GridEngineUtil {
 			Jobs.updatePairStatistics(pair);
 			return true;			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);			
+			log.error("processStatistics says " + e.getMessage(), e);			
 		}
 		
 		return false;
@@ -356,7 +356,7 @@ public class GridEngineUtil {
 			
 			return true;
 		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
+			log.warn("processAttributes says " + e.getMessage(), e);
 		} finally {
 			if(reader != null) {
 				try { reader.close(); } catch(Exception e) {}
