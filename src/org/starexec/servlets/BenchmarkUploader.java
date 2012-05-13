@@ -128,6 +128,7 @@ public class BenchmarkUploader extends HttpServlet {
 		log.debug("has dependencies = " + hasDependencies);
 		log.debug("linked = " + linked);
 		log.debug("depRootSpaceIds = " + depRootSpaceId);
+		log.info("about to upload benchmarks to space " + spaceId + "for user " + userId);
 		if(uploadMethod.equals("convert")) {
 			
 			Space result = this.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, this.extractPermissions(form));
@@ -143,7 +144,7 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> results = this.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-			if (!hasDependencies){
+			if (!hasDependencies){	
 				Benchmarks.add(results, spaceId);
 			}
 			else{
@@ -202,6 +203,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 */
 	private Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm) {
 		// Create a space for the current directory and set it's name		
+		log.info("Extracing Spaces and Benchmarks for " + userId);
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);

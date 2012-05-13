@@ -131,7 +131,7 @@ public class Benchmarks {
 
 				Common.beginTransaction(con);
 
-				log.debug(benchmarks.size() + " benchmarks being added to space " + spaceId);
+				log.info(benchmarks.size() + " benchmarks being added to space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
 
@@ -261,10 +261,13 @@ public class Benchmarks {
 				// Run the processor on the benchmark file
 				reader = Util.executeCommand(p.getFilePath() + " " + b.getPath());
 				log.debug("reader is null = " + (reader == null));
+				
 				// Load results into a properties file
 				Properties prop = new Properties();
+				if (reader != null){
 				prop.load(reader);							
-
+				reader.close();
+				}
 				// Attach the attributes to the benchmark
 				b.setAttributes(prop);
 			} catch (Exception e) {
