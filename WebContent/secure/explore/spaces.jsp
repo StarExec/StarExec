@@ -104,9 +104,9 @@
 			<tbody>
 			</tbody>
 		</table>			
-		<span id="toggleComment" class="caption"><span>+</span>add new</span>
+		<span id="toggleComment" class="caption"><span>+</span> add new</span>
 		<div id="new_comment">
-			 <textarea id="comment_text"  cols="65" rows=2></textarea>  
+			<textarea id="comment_text"></textarea>  
 			<button id="addComment">add</button>
 		</div>
 		</fieldset>	
@@ -115,10 +115,10 @@
 	</div>	
 	
 	<div id="dialog-confirm-copy" title="confirm copy">
-		<p><span class="ui-icon ui-icon-info" ></span><span id="dialog-confirm-copy-txt"></span></p>
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	<div id="dialog-confirm-delete" title="confirm delete">
-		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
+		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
 	
 	

@@ -106,3 +106,9 @@ input[type="text"] {
 #personal thead tr:hover {
 	background-color: #111111;
 }
+
+#uploadPicture{
+	margin-left: -1px;
+	margin-top: 0px;
+	width: 81%;
+}

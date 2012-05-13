@@ -1,10 +1,10 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.starexec.util.Util;
 
@@ -22,6 +22,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	private Queue queue = null;
 	@Expose private Timestamp createTime;
 	private List<JobPair> jobPairs;
+	private HashMap<String, Integer> liteJobPairStats;
 	private Processor preProcessor;
 	private Processor postProcessor;	
 	
@@ -156,5 +157,19 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	@Override
 	public Iterator<JobPair> iterator() {
 		return this.jobPairs.iterator();
+	}
+	
+	/**
+	 * @param ljps the job pair statistics to store in this object
+	 */
+	public void setLiteJobPairStats(HashMap<String, Integer> ljps){
+		this.liteJobPairStats = ljps;
+	}
+	
+	/**
+	 * @return the job pair statistics stored in this object
+	 */
+	public HashMap<String, Integer> getLiteJobPairStats(){
+		return liteJobPairStats;
 	}
 }

@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.util.Util;
 
@@ -804,5 +805,86 @@ public class Solvers {
 		
 		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
 		return false;
+	}
+
+	
+	/**
+	 * Gets the minimal number of Solvers necessary in order to service the client's
+	 * request for the next page of Solvers in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Solvers from
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param spaceId the id of the space to get the Solvers from
+	 * @return a list of 10, 25, 50, or 100 Solvers containing the minimal amount of data necessary
+	 * @author Todd Elvers
+	 */
+	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, spaceId);
+			procedure.setString(6, searchQuery);
+				
+			ResultSet results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+			
+			// Only get the necessary information to display this solver
+			// in a row in a DataTable object, nothing more.
+			while(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));				
+				s.setDescription(results.getString("description"));
+				solvers.add(s);	
+			}	
+			
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	
+	/**
+	 * Gets the number of Solvers in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Solvers in
+	 * @return the number of Solvers
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSolverCountInSpace(?)}");
+			procedure.setInt(1, spaceId);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("solverCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;
 	}
 }

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
@@ -68,6 +69,7 @@ public class UploadPicture extends HttpServlet {
      * @param form the form submitted for the upload.
      * @return the redirection string.
      * @throws Exception
+     * @author Ruoyu Zhang
      */
 	private String handleUploadRequest(int userId, HashMap<String, Object> form) throws Exception {
 		try {
@@ -113,8 +115,8 @@ public class UploadPicture extends HttpServlet {
 			sb.append(fileName);
 			sb.append("_org.jpg");
 	    	String filenameupload = sb.toString();  	
-
 			File archiveFile = new File(filenameupload);
+			archiveFile.getParentFile().mkdirs();
 			item.write(archiveFile);
 
 			sb.delete(0, sb.length());
@@ -124,7 +126,6 @@ public class UploadPicture extends HttpServlet {
 			sb.append("_thn.jpg");
 			String fileNameThumbnail = sb.toString();
 			scale(filenameupload, 100, 120, fileNameThumbnail);
-			
 			return redir;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -136,6 +137,7 @@ public class UploadPicture extends HttpServlet {
 	 * Validates a picture upload request to determine if it can be acted on or not.
 	 * @param form A list of form items contained in the request
 	 * @return True if the request is valid to act on, false otherwise
+	 * @author Ruoyu Zhang
 	 */
 	private boolean isRequestValid(HashMap<String, Object> form) {
 		try {			
@@ -160,6 +162,7 @@ public class UploadPicture extends HttpServlet {
 	 * @param destHeight The height of the shrunk picture.
 	 * @param destFile The file of the shrunk picture.
 	 * @throws IOException
+	 * @author Ruoyu Zhang
 	 */
 	public static void scale(String srcFile, int destWidth, int destHeight, String destFile) throws IOException {
 		

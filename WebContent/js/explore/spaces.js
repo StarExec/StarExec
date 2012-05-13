@@ -285,7 +285,11 @@ function onTrashDrop(event, ui){
 			removeUsers(ids);
 			break;
 		case 's':
-			removeSolvers(ids);
+			if(ui.draggable.data('type')[1] == 'o'){
+				removeSolvers(ids);
+			} else {
+				removeSubspaces(ids);
+			}
 			break;
 		case 'b':
 			removeBenchmarks(ids);
@@ -326,6 +330,11 @@ function onSpaceDrop(event, ui) {
 	} else {
 		$('#dialog-confirm-copy-txt').text('are you sure you want to copy the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
 	}		
+	
+	if(ui.draggable.data('type') == 'space'){
+		showMessage('error', "copying of spaces is not allowed", 5000);
+		return;
+	}
 	
 	// Display the confirmation dialog
 	$('#dialog-confirm-copy').dialog({
@@ -699,7 +708,7 @@ function removeJobs(selectedJobs){
  * Handles removal of subspace(s) from a space
  */
 function removeSubspaces(selectedSubspaces){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s) from ' + spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s), and all their subspaces, from ' + spaceName + '?');
 	
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
@@ -728,7 +737,7 @@ function removeSubspaces(selectedSubspaces){
 								showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
 								break;
 							case 3:
-								showMessage('error', "you can only delete subspaces that themselves have no subspaces", 5000);
+								showMessage('error', "you do not have sufficient privileges to remove one or more of the subspaces", 5000);
 								break;
 						}
 					},
@@ -835,11 +844,12 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 								colorizeJobStatistics();
 							} 
 							
-							// Make the rows in the table that was just populated drag-and-drop enabled (except for spaces table)
-							if('p' != tableName[1]){
-								initDraggable('#' + tableName);
-							}
-							
+							initDraggable('#' + tableName);
+//							// Make the rows in the table that was just populated drag-and-drop enabled (except for spaces table)
+//							if('p' != tableName[1]){
+//								
+//							}
+//							
 
 							break;
 					}
@@ -946,7 +956,7 @@ function initDataTables(){
         "bServerSide"	: true,
         "sAjaxSource"	: "/starexec/services/space/",
         "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler 
+        "fnServerData"	: fnPaginationHandler
 	});
 	
 	jobTable = $('#jobs').dataTable( {
@@ -956,6 +966,7 @@ function initDataTables(){
         "bServerSide"	: true,
         "sAjaxSource"	: "/starexec/services/space/",
         "sServerMethod" : "POST",
+        "aaSorting"		: [],	// On page load, don't sort by any column - tells server to sort by 'created'
         "fnServerData"	: fnPaginationHandler 
 	});
 	
@@ -999,7 +1010,55 @@ function initDataTables(){
 	
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset:not(:#actions)').expandable(true);
+	
+	// Set the DataTable filters to only query the server on enter key press
+	changeFiltersToEnterKeyOnly();
+	
 	log('all datatables initialized');
+}
+
+
+/**
+ * Removes the default 'query on keypress' functionality of all the filters
+ * in all the DataTables objects and replaces it with 'query on enter keypress'
+ */
+function changeFiltersToEnterKeyOnly(){
+	$("#users_filter input").unbind('keyup');
+	$('#users_filter input').bind('keyup', function(e) {
+		if(e.keyCode == 13) {
+			userTable.fnFilter(this.value);    
+	    }
+	});
+	$("#benchmarks_filter input").unbind('keyup');
+	$('#benchmarks_filter input').bind('keyup', function(e) {
+		if(e.keyCode == 13) {
+			benchTable.fnFilter(this.value);    
+	    }
+	});
+	$("#solvers_filter input").unbind('keyup');
+	$('#solvers_filter input').bind('keyup', function(e) {
+		if(e.keyCode == 13) {
+			solverTable.fnFilter(this.value);    
+	    }
+	});
+	$("#spaces_filter input").unbind('keyup');
+	$('#spaces_filter input').bind('keyup', function(e) {
+		if(e.keyCode == 13) {
+			spaceTable.fnFilter(this.value);    
+	    }
+	});
+	$("#jobs_filter input").unbind('keyup');
+	$('#jobs_filter input').bind('keyup', function(e) {
+		if(e.keyCode == 13) {
+			jobTable.fnFilter(this.value);    
+	    }
+	});
+	$("#comments_filter input").unbind('keyup');
+	$('#comments_filter input').bind('keyup', function(e) {
+		if(e.keyCode == 13) {
+			commentTable.fnFilter(this.value);    
+	    }
+	});
 }
 
 

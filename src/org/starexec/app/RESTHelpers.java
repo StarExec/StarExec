@@ -12,7 +12,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
@@ -43,9 +43,19 @@ public class RESTHelpers {
 		JOB, USER, SOLVER, BENCHMARK, SPACE
 	}
 	
-	private static final int ASCENDING = 0;
-	private static final int DESCENDING = 1;
+    private static final String SEARCH_QUERY = "sSearch";
+	private static final String SORT_DIRECTION = "sSortDir_0";
+	private static final String SYNC_VALUE = "sEcho";
+	private static final String SORT_COLUMN = "iSortCol_0";
+	private static final String STARTING_RECORD = "iDisplayStart";
+	private static final String RECORDS_PER_PAGE = "iDisplayLength";
+	private static final String TOTAL_RECORDS = "iTotalRecords";
+	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
 	
+	private static final int 	EMPTY = 0;
+	public static final int ASCENDING = 0;
+	public static final int DESCENDING = 1;
+
 	
 	/**
 	 * Takes in a list of spaces and converts it into
@@ -216,19 +226,19 @@ public class RESTHelpers {
 		
 		try{
 			// Parameters from the DataTable object
-		    String iDisplayStart = (String) request.getParameter("iDisplayStart");		// Represents the record number the current page starts at (0 for page 1, 10 for page 2, 
-		    String iDisplayLength = (String) request.getParameter("iDisplayLength");	// Represents the number of records in a page (default = 10 records per page)
-		    String sEcho = (String) request.getParameter("sEcho");						// Unique number used to keep the client-server interaction synchronized
-		    String iSortCol = (String) request.getParameter("iSortCol_0");				// Given an array of the column names, this is an index to which column is being used to sort
-		    String sDir = (String) request.getParameter("sSortDir_0");					// Represents the sorting direction ('asc' for ascending or 'desc' for descending)
-		    String sSearch = (String) request.getParameter("sSearch");					// Represents the filter/search query (if no filter/search query is provided, this is empty)
+		    String iDisplayStart = (String) request.getParameter(STARTING_RECORD);	// Represents the record number the current page starts at (0 for page 1, 10 for page 2, 
+		    String iDisplayLength = (String) request.getParameter(RECORDS_PER_PAGE);// Represents the number of records in a page (default = 10 records per page)
+		    String sEcho = (String) request.getParameter(SYNC_VALUE);				// Unique number used to keep the client-server interaction synchronized
+		    String iSortCol = (String) request.getParameter(SORT_COLUMN);			// Given an array of the column names, this is an index to which column is being used to sort
+		    String sDir = (String) request.getParameter(SORT_DIRECTION);			// Represents the sorting direction ('asc' for ascending or 'desc' for descending)
+		    String sSearch = (String) request.getParameter(SEARCH_QUERY);			// Represents the filter/search query (if no filter/search query is provided, this is empty)
 		    
 		    // Ensures the starting entry exists and is non-negative
 	    	if(Util.isNullOrEmpty(iDisplayStart)) {
 	    		return null;
 	    	} else {
 	    		int startingEntry = Integer.parseInt(iDisplayStart);
-	    		attrMap.put("iDisplayStart", startingEntry);
+	    		attrMap.put(STARTING_RECORD, startingEntry);
 	    		if (startingEntry < 0) {
 	    			return null;
 	    		}
@@ -239,7 +249,7 @@ public class RESTHelpers {
 	    		return null;
 	    	} else {
 	    		int entriesPerPage = Integer.parseInt(iDisplayLength);
-	    		attrMap.put("iDisplayLength", entriesPerPage);
+	    		attrMap.put(RECORDS_PER_PAGE, entriesPerPage);
 	    		if (entriesPerPage < 10 || entriesPerPage > 100) {
 	    			return null;
 	    		}
@@ -249,15 +259,22 @@ public class RESTHelpers {
 	    	if (Util.isNullOrEmpty(sEcho)) {
 	    		return null;
 	    	} else {
-	    		attrMap.put("sEcho", Integer.parseInt(sEcho));
+	    		attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
 	    	}
 	    	
 	    	// Ensures the columns to sort on are specified and valid
 	    	if (Util.isNullOrEmpty(iSortCol)) {
-	    		return null;
+	    		// Allow jobs datatable to have a sort column null, then set
+	    		// the column to sort by to column 5, which doesn't exist on
+	    		// the screen but represents the creation date
+	    		if(type == Primitive.JOB){
+	    			attrMap.put(SORT_COLUMN, 5);
+	    		} else {
+	    			return null;
+	    		}
 	    	} else {
 	    		int sortColumnIndex = Integer.parseInt(iSortCol);
-	    		attrMap.put("iSortCol", sortColumnIndex);
+	    		attrMap.put(SORT_COLUMN, sortColumnIndex);
 	    		switch(type){
 		    		case JOB:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 4) {
@@ -290,10 +307,16 @@ public class RESTHelpers {
 	    	
 	    	// Ensures the sort direction is specified and valid
 	    	if (Util.isNullOrEmpty(sDir)) {
-	    		return null;
+	    		// Only permit the jobs table to have a null sorting direction;
+	    		// this allows for jobs to be sorted initially on their creation date
+	    		if(type == Primitive.JOB){
+	    			attrMap.put(SORT_DIRECTION, DESCENDING);
+	    		} else {
+	    			return null;
+	    		}
 	    	} else {
 	    		if(sDir.contains("asc") || sDir.contains("desc")){
-	    			attrMap.put("sDir", (sDir.equals("asc") ? ASCENDING	: DESCENDING));
+	    			attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASCENDING	: DESCENDING));
 	    		} else {
 	    			return null;
 	    		}
@@ -301,14 +324,14 @@ public class RESTHelpers {
 	    	
 	    	// Depending on if the search/filter is empty or not, this will be 0 or 1
 	    	if (Util.isNullOrEmpty(sSearch)) {
-	    		attrMap.put("sSearch", 0);
+	    		attrMap.put(SEARCH_QUERY, 0);
 	    	} else {
-	    		attrMap.put("sSearch", 1);
+	    		attrMap.put(SEARCH_QUERY, 1);
 	    	}
 	    	
 	    	// Add the last two parameters, which will be set later, to the attribute map
-	    	attrMap.put("iTotalRecords", 0);
-	    	attrMap.put("iTotalDisplayRecords", 0);
+	    	attrMap.put(TOTAL_RECORDS, 0);
+	    	attrMap.put(TOTAL_RECORDS_AFTER_QUERY, 0);
 	    	
 	    	return attrMap;
 	    } catch(Exception e){
@@ -328,7 +351,7 @@ public class RESTHelpers {
 	 * @return HTML representing a job pair's status
 	 * @author Todd Elvers
 	 */
-	private static String getPairStatHtml(String statType, String numerator, String denominator){
+	private static String getPairStatHtml(String statType, int numerator, int denominator){
 		StringBuilder sb = new StringBuilder();
 		sb.append("<p class=\"stat ");
 		sb.append(statType);
@@ -339,28 +362,6 @@ public class RESTHelpers {
 		sb.append("</p>");
 		return sb.toString();
 	}
-	
-	
-	/**
-	 * Gets the index of the last entry to return to the client, used to shrink the list of primitives
-	 * being returned to the client
-	 *
-	 * @param primitives the list of primitives to shrink
-	 * @param attrMap the attribute map containing the entry to start on (iDisplayStart) and the number
-	 * of entries in a page (iDisplayLength)
-	 * @return the index of the last position to when shrinking the list of primitives
-	 * @author Todd Elvers
-	 */
-	private static int getIndexOfLastEntryInPage(List<?> primitives, HashMap<String, Integer> attrMap){
-		int indexOfLastEntryInPage = attrMap.get("iDisplayStart") + attrMap.get("iDisplayLength"); 
-    	if(primitives.size() < indexOfLastEntryInPage) {
-    		return primitives.size();
-    	} else {
-    		return indexOfLastEntryInPage;
-    	}
-    	
-	}
-	
 	
 	/**
 	 * Gets the next page of entries for a DataTable object
@@ -373,59 +374,52 @@ public class RESTHelpers {
 	 * @author Todd Elvers
 	 */
 	protected static JsonObject getNextDataTablesPage(Primitive type, int spaceId, HttpServletRequest request){
+		
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
+	    	log.debug("Returning null...");
 	    	return null;
 	    }
 	    
-	    JsonObject nextPage = new JsonObject();			// JSON object representing next page for client's DataTable object
-	    JsonArray dataTablePageEntries = null;			// JSON array containing the DataTable primitive entries
+	    JsonObject nextPage = new JsonObject();		// JSON object representing next page for client's DataTable object
+	    JsonArray dataTablePageEntries = null;		// JSON array containing the DataTable primitive entries
 	    
     	int currentUserId = SessionUtil.getUserId(request);
     	
 	    switch(type){
+	    
 		    case JOB:
 	    		List<Job> jobsToDisplay = new LinkedList<Job>();
-	    		HashMap<Integer, HashMap<String, String>> jobPairMap = Statistics.getJobPairOverviews(Jobs.getBySpace(spaceId));
+	    		int totalJobsInSpace = Jobs.getCountInSpace(spaceId);
 	    		
-			    /**
-			     * Get the list of jobs to return to the user and apply a search/filter to them if need be
-			     */
-	    		// If no filter/search is applied, then set of jobs to return = all jobs in the space
-			    if(0 == attrMap.get("sSearch")){
-			    	jobsToDisplay = Jobs.getBySpace(spaceId);
-		        }
-			    // Otherwise a filter/search is applied and the set of jobs to return is calculated
-			    else {
-		        	for(Job j : Jobs.getBySpace(spaceId)){
-		        		// Search on the job's name
-		        		if(j.getName().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())){
-		        			jobsToDisplay.add(j);
-		        		}
-		        	}
-		        }
-			    // These variables are used by the DOM to display pagination details
-			    attrMap.put("iTotalDisplayRecords", jobsToDisplay.size());
-			    attrMap.put("iTotalRecords", Jobs.getBySpace(spaceId).size());
-		        
-			    /**
-			     * Sort the list of jobs based on column contents and in either ascending or descending order
-			     */
-			    if(ASCENDING == attrMap.get("sDir")){
-			    	Collections.sort(jobsToDisplay, Strings.getNaturalComparatorForJobs(attrMap.get("iSortCol"), spaceId));
-			    } else {
-			    	Collections.sort(jobsToDisplay, Strings.getNaturalComparatorForJobs(attrMap.get("iSortCol"), spaceId));
-			    	Collections.reverse(jobsToDisplay);
-			    }
-		        
-			    
-		        /**
-		         * Shrink jobs list to only those needed for the next page of entries
-		         */
-	    		jobsToDisplay = jobsToDisplay.subList(attrMap.get("iDisplayStart"), RESTHelpers.getIndexOfLastEntryInPage(jobsToDisplay, attrMap));
+	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+	    		jobsToDisplay = Jobs.getJobsForNextPage(
+	    				attrMap.get(STARTING_RECORD),					// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 			// Search query
+	    				spaceId											// Parent space id 
+				);
+	    		
+	    		
+	    		/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobsInSpace);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalJobsInSpace);
 
-		    	
+			    
+			    
 		    	/**
 		    	 * Generate the HTML for the next DataTable page of entries
 		    	 */
@@ -450,62 +444,52 @@ public class RESTHelpers {
 		    		sb.append(hiddenJobId);
 					String jobLink = sb.toString();
 					
-					HashMap<String, String> jobStats = jobPairMap.get(job.getId());
-					String status = Integer.parseInt(jobStats.get("pendingPairs")) > 0 ? "incomplete" : "complete";
+					String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
 					
 					// Create an object, and inject the above HTML, to represent an entry in the DataTable
 					JsonArray entry = new JsonArray();
 		    		entry.add(new JsonPrimitive(jobLink));
 		    		entry.add(new JsonPrimitive(status));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("asc", jobStats.get("completePairs"), jobStats.get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", jobStats.get("pendingPairs"), jobStats.get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", jobStats.get("errorPairs"), jobStats.get("totalPairs"))));
+		    		entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
+		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
 		    		
 		    		dataTablePageEntries.add(entry);
 		    	}
 		    	
 		    	break;
+		    	
+		    	
 		    case USER:
 	    		List<User> usersToDisplay = new LinkedList<User>();
+	    		int totalUsersInSpace = Users.getCountInSpace(spaceId);
+	    		
+	    		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
+	    		usersToDisplay = Users.getUsersForNextPage(
+	    				attrMap.get(STARTING_RECORD),					// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 			// Search query
+	    				spaceId											// Parent space id 
+				);
+	    		
+	    		
+	    		/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalUsersInSpace);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, usersToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalUsersInSpace);
 		    	
-			    /**
-			     * Get the list of users to return to the user and apply a search/filter to them if need be
-			     */
-			    // If no filter/search is applied, then set of users to return = all users in the space
-			    if(0 == attrMap.get("sSearch")){
-		        	usersToDisplay = Spaces.getUsers(spaceId);
-		        }
-			    // Otherwise a filter/search is applied and the set of solvers to return is calculated
-			    else {
-		        	for(User u : Spaces.getUsers(spaceId)){
-		        		// Search on the user's name, email, and institution
-		        		if(u.getFullName().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())
-		        				|| u.getEmail().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())
-		        				|| u.getInstitution().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())){
-		        			usersToDisplay.add(u);
-		        		}
-		        	}
-		        }
-			    // These variables are used by the DOM to display pagination details
-			    attrMap.put("iTotalDisplayRecords", usersToDisplay.size());
-			    attrMap.put("iTotalRecords", Spaces.getUsers(spaceId).size());
-		        
-			    /**
-			     * Sort the list of users based on column contents and in either ascending or descending order
-			     */
-			    if(ASCENDING == attrMap.get("sDir")){
-			    	Collections.sort(usersToDisplay, Strings.getNaturalComparatorForUsers(attrMap.get("iSortCol")));
-			    } else {
-			    	Collections.sort(usersToDisplay, Strings.getNaturalComparatorForUsers(attrMap.get("iSortCol")));
-			    	Collections.reverse(usersToDisplay);
-			    }
-		        
-			    
-		        /**
-		         * Shrink users list to only those needed for the next page of entries
-		         */
-			    usersToDisplay = usersToDisplay.subList(attrMap.get("iDisplayStart"), RESTHelpers.getIndexOfLastEntryInPage(usersToDisplay, attrMap));
-
+	    		
 		    	
 		    	/**
 		    	 * Generate the HTML for the next DataTable page of entries
@@ -556,47 +540,39 @@ public class RESTHelpers {
 		    	}
 		    	
 		    	break;
+		    	
+		    	
 		    case SOLVER:
 	    		List<Solver> solversToDisplay = new LinkedList<Solver>();
+	    		int totalSolversInSpace =  Solvers.getCountInSpace(spaceId);
+	    		
+	    		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
+	    		solversToDisplay = Solvers.getSolversForNextPage(
+	    				attrMap.get(STARTING_RECORD),					// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 			// Search query
+	    				spaceId											// Parent space id 
+				);
+	    		
+	    		
+	    		/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolversInSpace);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, solversToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalSolversInSpace);
 		    	
-			    /**
-			     * Get the list of solvers to return to the user and apply a search/filter to them if need be
-			     */
-			    // If no filter/search is applied, then set of solvers to return = all solvers in the space
-			    if(0 == attrMap.get("sSearch")){
-		        	solversToDisplay = Solvers.getBySpace(spaceId);
-		        }
-			    // Otherwise a filter/search is applied and the set of solvers to return is calculated
-			    else {
-		        	for(Solver s : Solvers.getBySpace(spaceId)){
-		        		// Search on the solver's name and description
-		        		if(s.getName().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())
-		        				|| s.getDescription().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())){
-		        			solversToDisplay.add(s);
-		        		}
-		        	}
-		        }
-			    // These variables are used by the DOM to display pagination details
-			    attrMap.put("iTotalDisplayRecords", solversToDisplay.size());
-			    attrMap.put("iTotalRecords", Solvers.getBySpace(spaceId).size());
-		        
-			    /**
-			     * Sort the list of solvers based on column contents and in either ascending or descending order
-			     */
-			    if(ASCENDING == attrMap.get("sDir")){
-			    	Collections.sort(solversToDisplay, Strings.getNaturalComparatorForSolvers(attrMap.get("iSortCol")));
-			    } else {
-			    	Collections.sort(solversToDisplay, Strings.getNaturalComparatorForSolvers(attrMap.get("iSortCol")));
-			    	Collections.reverse(solversToDisplay);
-			    }
-		        
 			    
-		        /**
-		         * Shrink solvers list to only those needed for the next page of entries
-		         */
-	    		solversToDisplay = solversToDisplay.subList(attrMap.get("iDisplayStart"), RESTHelpers.getIndexOfLastEntryInPage(solversToDisplay, attrMap));
-
-		    	
+			    
 		    	/**
 		    	 * Generate the HTML for the next DataTable page of entries
 		    	 */
@@ -629,47 +605,38 @@ public class RESTHelpers {
 		    	}
 		    	
 		    	break;
+		    	
+		    	
 		    case BENCHMARK:
 		    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
+		    	int totalBenchmarksInSpace = Benchmarks.getCountInSpace(spaceId);
 		    	
-			    /**
-			     * Get the list of benchmarks to return to the user and apply a search/filter to them if need be
-			     */
-			    // If no filter/search is applied, then set of benchmarks to return = all benchmarks in the space
-			    if(0 == attrMap.get("sSearch")){
-		        	benchmarksToDisplay = Benchmarks.getBySpace(spaceId);
-		        }
-			    // Otherwise a filter/search is applied and the set of benchmarks to return is calculated
-			    else {
-		        	for(Benchmark b : Benchmarks.getBySpace(spaceId)){
-		        		// Search on the benchmark's name and the benchmark's type's name
-		        		if(b.getName().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())
-		        				|| b.getType().getName().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())){
-		        			benchmarksToDisplay.add(b);
-		        		}
-		        	}
-		        }
-			    // These variables are used by the DOM to display pagination details
-			    attrMap.put("iTotalDisplayRecords", benchmarksToDisplay.size());
-			    attrMap.put("iTotalRecords",Benchmarks.getBySpace(spaceId).size());
-			    
-			    /**
-			     * Sort the list of benchmarks based on column contents and in either ascending or descending order
-			     */
-			    if(ASCENDING == attrMap.get("sDir")){
-			    	Collections.sort(benchmarksToDisplay, Strings.getNaturalComparatorForBenchmarks(attrMap.get("iSortCol")));
-			    } else {
-			    	Collections.sort(benchmarksToDisplay, Strings.getNaturalComparatorForBenchmarks(attrMap.get("iSortCol")));
-			    	Collections.reverse(benchmarksToDisplay);
-			    }
-		        
-			    
-		        /**
-		         * Shrink benchmark list to only those needed for the next page of entries
-		         */
-			    benchmarksToDisplay = benchmarksToDisplay.subList(attrMap.get("iDisplayStart"), RESTHelpers.getIndexOfLastEntryInPage(benchmarksToDisplay, attrMap));
-
+		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
+		    	benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
+	    				attrMap.get(STARTING_RECORD),					// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
+	    				request.getParameter(SEARCH_QUERY),			 	// Search query
+	    				spaceId											// Parent space id 
+				);
 		    	
+		    	
+		    	/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarksInSpace);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, benchmarksToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalBenchmarksInSpace);
+			    
+			    
 		    	/**
 		    	 * Generate the HTML for the next DataTable page of entries
 		    	 */
@@ -715,46 +682,38 @@ public class RESTHelpers {
 		    	}
 		    	
 		    	break;
+		    	
+		    	
 		    case SPACE:
 		    	List<Space> spacesToDisplay = new LinkedList<Space>();
-		    	
-			    /**
-			     * Get the list of spaces to return to the user and apply a search/filter to them if need be
-			     */
-			    // If no filter/search is applied, then set of spaces to return = all spaces in the space
-			    if(0 == attrMap.get("sSearch")){
-		        	spacesToDisplay = Spaces.getSubSpaces(spaceId, currentUserId);
-		        }
-			    // Otherwise a filter/search is applied and the set of spaces to return is calculated
-			    else {
-		        	for(Space s : Spaces.getSubSpaces(spaceId, currentUserId)){
-		        		// Search on the job's name
-		        		if(s.getName().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())
-		        				|| s.getDescription().toLowerCase().contains(request.getParameter("sSearch").toLowerCase())){
-		        			spacesToDisplay.add(s);
-		        		}
-		        	}
-		        }
-			    // These variables are used by the DOM to display pagination details
-			    attrMap.put("iTotalDisplayRecords", spacesToDisplay.size());
-			    attrMap.put("iTotalRecords", Spaces.getSubSpaces(spaceId, currentUserId).size());
-		        
-			    /**
-			     * Sort the list of spaces based on column contents and in either ascending or descending order
-			     */
-			    if(ASCENDING == attrMap.get("sDir")){
-			    	Collections.sort(spacesToDisplay, Strings.getNaturalComparatorForSpaces(attrMap.get("iSortCol")));
-			    } else {
-			    	Collections.sort(spacesToDisplay, Strings.getNaturalComparatorForSpaces(attrMap.get("iSortCol")));
-			    	Collections.reverse(spacesToDisplay);
-			    }
-		        
-			    
-		        /**
-		         * Shrink spaces list to only those needed for the next page of entries
-		         */
-			    spacesToDisplay = spacesToDisplay.subList(attrMap.get("iDisplayStart"), RESTHelpers.getIndexOfLastEntryInPage(spacesToDisplay, attrMap));
 
+	    		int totalSubspacesInSpace = Spaces.getCountInSpace(spaceId);
+		    	
+		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
+		    	spacesToDisplay = Spaces.getSpacesForNextPage(
+	    				attrMap.get(STARTING_RECORD),					// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 			// Search query
+	    				spaceId											// Parent space id 
+				);
+		    	
+		    	
+		    	/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSubspacesInSpace);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, spacesToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalSubspacesInSpace);
+		    	
 		    	
 		    	/**
 		    	 * Generate the HTML for the next DataTable page of entries
@@ -795,12 +754,13 @@ public class RESTHelpers {
 	    }
 	    
 	    // Build the actual JSON response object and populated it with the created data
-	    nextPage.addProperty("sEcho", attrMap.get("sEcho"));
-	    nextPage.addProperty("iTotalRecords", attrMap.get("iTotalRecords"));
-	    nextPage.addProperty("iTotalDisplayRecords", attrMap.get("iTotalDisplayRecords"));
+	    nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
+	    nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
 	    nextPage.add("aaData", dataTablePageEntries);
 	    
 	    // Return the next DataTable page
     	return nextPage;
 	}
 }
+

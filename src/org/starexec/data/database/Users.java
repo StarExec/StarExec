@@ -3,13 +3,17 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for users
@@ -590,5 +594,87 @@ public class Users {
 		}
 		
 		return false;
+	}
+	
+	
+
+	/**
+	 * Gets the minimal number of Users necessary in order to service the client's
+	 * request for the next page of Users in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Users from
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param spaceId the id of the space to get the Users from
+	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
+	 * @author Todd Elvers
+	 */
+	public static List<User> getUsersForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;			
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, spaceId);
+			procedure.setString(6, searchQuery);
+			
+			ResultSet results = procedure.executeQuery();
+			List<User> users = new LinkedList<User>();
+			
+			while(results.next()){
+				User u = new User();
+				u.setId(results.getInt("id"));
+				u.setInstitution(results.getString("institution"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setEmail(results.getString("email"));
+				
+				users.add(u);			
+			}	
+			
+			return users;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets the number of Users in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Users in
+	 * @return the number of Users
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetUserCountInSpace(?)}");
+			procedure.setInt(1, spaceId);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("userCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;
 	}
 }

@@ -58,9 +58,9 @@ fieldset {
 }
 
 #uploadPicture{
-	margin-left:auto;
-	margin-right:auto;
-	width:100%;
+	margin-left: 12px;
+	margin-top: 4px;
+	width: 81%;
 }
 
 #solverDetail{

@@ -67,7 +67,7 @@ public class CommunityRequester extends HttpServlet {
 			   !Util.paramExists(Registration.USER_COMMUNITY, request)) {
 				return null;
 			}
-
+			
 			String message = request.getParameter(Registration.USER_MESSAGE);
 			int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY)); 		
 			
@@ -97,7 +97,6 @@ public class CommunityRequester extends HttpServlet {
 	 * between 1 and 300 characters in length
 	 */
 	private boolean validateParameters(int communityId, String message){
-		
 		if(communityId < 0 
 				|| !Communities.isCommunity(communityId)
 				|| !Validator.isValidRequestMessage(message)){
@@ -106,5 +105,6 @@ public class CommunityRequester extends HttpServlet {
 
 		return true;		
 	}
+
 
 }

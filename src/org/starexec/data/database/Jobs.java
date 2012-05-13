@@ -4,6 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -839,5 +840,95 @@ public class Jobs {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Gets the minimal number of Jobs necessary in order to service the client's
+	 * request for the next page of Jobs in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Jobs from
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param spaceId the id of the space to get the Jobs from
+	 * @return a list of 10, 25, 50, or 100 Jobs containing the minimal amount of data necessary
+	 * @author Todd Elvers
+	 */
+	public static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfJobs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, spaceId);
+			procedure.setString(6, searchQuery);
+				
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+				
+				// Grab the relevant job pair statistics; this prevents a secondary set of queries
+				// to the database in RESTHelpers.java
+				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
+				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
+				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
+				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
+				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
+				
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));
+				j.setLiteJobPairStats(liteJobPairStats);
+				jobs.add(j);		
+			}	
+			
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+
+	
+	/**
+	 * Gets the number of Jobs in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Jobs in
+	 * @return the number of Jobs
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetJobCountInSpace(?)}");
+			procedure.setInt(1, spaceId);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;
 	}
 }

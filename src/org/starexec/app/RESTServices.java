@@ -258,25 +258,17 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of primitives and return them to the user
-		switch( primType.charAt(0) ){
-			case 'j':
-				nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB, spaceId, request);
-				break;
-			case 'u':
-				nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.USER, spaceId, request);
-				break;
-			case 's':
-				if('o' == primType.charAt(1)) {
-					nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER, spaceId, request);
-				} else {
-					nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
-				}
-				break;
-			case 'b':
-				nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
-				break;
+		if(primType.startsWith("j")){
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB, spaceId, request);
+		} else if(primType.startsWith("u")){
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.USER, spaceId, request);
+		} else if(primType.startsWith("so")){
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER, spaceId, request);
+		} else if(primType.startsWith("sp")){
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
+		} else if(primType.startsWith("b")){
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
 		}
-		
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
@@ -306,23 +298,16 @@ public class RESTServices {
 		}
 		
 		// Return the number of primitives of the specified type
-		switch( primType.charAt(0) ){
-			case 'j':
-				count = Jobs.getBySpace(spaceId).size();
-				break;
-			case 'u':
-				count = Spaces.getUsers(spaceId).size();
-				break;
-			case 's':
-				if('o' == primType.charAt(1)){
-					count = Solvers.getBySpace(spaceId).size();	
-				} else {
-					count = Spaces.getSubSpaces(spaceId, userId).size();
-				}
-				break;
-			case 'b':
-				count = Benchmarks.getBySpace(spaceId).size();
-				break;
+		if(primType.startsWith("j")){
+			count = Jobs.getCountInSpace(spaceId);
+		} else if(primType.startsWith("u")){
+			count = Users.getCountInSpace(spaceId);
+		} else if(primType.startsWith("b")){
+			count = Benchmarks.getCountInSpace(spaceId);
+		} else if(primType.startsWith("so")){
+			count = Solvers.getCountInSpace(spaceId);	
+		}  else if(primType.startsWith("sp")){
+			count = Spaces.getCountInSpace(spaceId);
 		}
 		
 		return gson.toJson(count);
@@ -1064,44 +1049,32 @@ public class RESTServices {
 	 * Removes a subspace's association with a space, thereby removing the subspace
 	 * from the space
 	 * 
-	 * @param spaceId the id the space to remove the subspace from
-	 * @return a json string containing '0' if the subspace was successfully removed,
-	 *		   a string containing '1' for a database level failure/attempted 'empty' delete,
-	 *		   '2' for insufficient privileges, and '3' if the subspace to remove is not a leaf subspace (i.e.
-	 *		   if it has descendants) 			
+	 * @param parentSpaceId the id the space to remove the subspace from
+	 * @return 
 	 * @author Todd Elvers
 	 */
 	@POST
 	@Path("/remove/subspace/{spaceId}")
 	@Produces("application/json")
-	public String removeSubspacesFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedSubspaces[]")){
+	public String removeSubspacesFromSpace(@PathParam("spaceId") int parentSpaceId, @Context HttpServletRequest request) {
+		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+		try{
+			// Extract the String subspace id's and convert them to Integers
+			for(String id : request.getParameterValues("selectedSubspaces[]")){
+				selectedSubspaces.add(Integer.parseInt(id));
+			}
+		} catch(Exception e){
 			return gson.toJson(1);
 		}
 		
-		// Extract the String subspace id's and convert them to Integer
-		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedSubspaces[]")){
-			selectedSubspaces.add(Integer.parseInt(id));
-		}
-		
 		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
 		if(null == perm || !perm.isLeader()) {
 			return gson.toJson(2);	
 		}
-		
-		// Ensures the space to remove is a leaf-space (i.e. has no descendants)
-		for(int subspaceId : selectedSubspaces){
-			if(!Spaces.isLeaf(subspaceId)){
-				return gson.toJson(3);
-			}
-		}
-		
 
-		// Remove the subspace from the space
-		return Spaces.removeSubspaces(selectedSubspaces, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		// Remove the subspaces from the space
+		return Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(3);
 	}
 
 	/**

@@ -111,6 +111,7 @@ public class Communities {
 		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
 		return false;
 	}
+
 	
 	/**
 	 * Checks to see if the space with the given space ID is a community or not
@@ -118,25 +119,26 @@ public class Communities {
 	 * 
 	 * @param spaceId the ID of the space to check
 	 * @return true iff the space is a community
+	 * @author Skylar Stark
 	 */
 	public static boolean isCommunity(int spaceId) {
-		Connection con = null;			
-		
+		Connection con = null;
+
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL IsCommunity(?)}");
 			procedure.setInt(1, spaceId);
-			
+
 			ResultSet result = procedure.executeQuery();
-			
+
 			return result.next();
-			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return false;
 	}
 }

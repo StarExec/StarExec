@@ -17,6 +17,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Solver;
 import org.starexec.util.Util;
 
 /**
@@ -783,7 +784,7 @@ public class Benchmarks {
 			List<Benchmark> benchList = new ArrayList<Benchmark>();
 			
 			for(int id : benchIds) {				
-					benchList.add(Benchmarks.get(con, id));
+				benchList.add(Benchmarks.get(con, id));
 			}
 			
 			return benchList;
@@ -795,6 +796,7 @@ public class Benchmarks {
 		
 		return null;
 	}
+
 	
 	/**
 	 * @param spaceId The id of the space to get benchmarks for
@@ -985,5 +987,91 @@ public class Benchmarks {
 	 */
 	public static String getContents(int benchId, int limit) {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
+	}
+	
+	
+	/**
+	 * Gets the minimal number of Benchmarks necessary in order to service the client's
+	 * request for the next page of Benchmarks in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Benchmarks from
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param spaceId the id of the space to get the Benchmarks from
+	 * @return a list of 10, 25, 50, or 100 Benchmarks containing the minimal amount of data necessary
+	 * @author Todd Elvers
+	 */
+	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;			
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfBenchmarks(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, spaceId);
+			procedure.setString(6, searchQuery);
+			
+			ResultSet results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			
+			while(results.next()){
+				Benchmark b = new Benchmark();
+				b.setId(results.getInt("id"));
+				b.setName(results.getString("name"));
+				b.setDescription(results.getString("description"));
+				
+				Processor t = new Processor();
+				t.setDescription(results.getString("benchTypeDescription"));
+				t.setName(results.getString("benchTypeName"));
+				
+				b.setType(t);
+				benchmarks.add(b);			
+			}	
+			
+			
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	
+	/**
+	 * Gets the number of Benchmarks in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Benchmarks in
+	 * @return the number of Benchmarks
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkCountInSpace(?)}");
+			procedure.setInt(1, spaceId);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("benchCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;
 	}
 }

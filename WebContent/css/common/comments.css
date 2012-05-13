@@ -11,9 +11,20 @@
 	margin-top: 10px;
 }
 
+#comment_text {
+	height: 50px;
+	width: 500px;	
+}
+
+#addComment {
+	vertical-align: middle;
+	margin-bottom: 56px;
+}
+
 #new_comment {
 	float: right;
 	margin-top: 10px;
+	height: 60px;
 }
 
 #toggleComment {	

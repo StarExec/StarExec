@@ -58,10 +58,10 @@
 	</div>	
 	
 	<div id="dialog-confirm-delete" title="confirm delete">
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
+		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
 	<div id="dialog-confirm-leave" title="leave community">
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-leave-txt"></span></p>
+		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-leave-txt"></span></p>
 	</div>
 	<c:if test="${not empty param.result and param.result == 'alreadyMember'}">			
 		<div class='error message'>you are already a member of that community</div>

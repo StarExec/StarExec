@@ -66,3 +66,8 @@
 	display: inline-block;
 	margin-left: 20px;
 }
+
+.ui-icon-info, .ui-icon-alert {
+	 float: left; 
+	 margin: 0 7px 20px 0;"
+}

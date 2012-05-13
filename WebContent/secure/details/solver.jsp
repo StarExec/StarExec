@@ -32,7 +32,7 @@
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
-	<fieldset>
+		<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table id="infoTable" class="shaded">
 			<tr>
@@ -145,13 +145,13 @@
 	<c:choose>
 		<c:when test="${usr.id == user.id && solver.downloadable}">
 			<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
-			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig" class="uploadConfig">upload configuration</a>
+			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig" class="uploadConfig">add configuration</a>
 		</c:when>
 		<c:when test="${usr.id != user.id && solver.downloadable}">
 			<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
 		</c:when>
 		<c:when test="${usr.id == user.id && !solver.downloadable}">
-			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfigMargin" class="uploadConfig">upload configuration</a>
+			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfigMargin" class="uploadConfig">add configuration</a>
 		</c:when>
 	</c:choose>
 </star:template>
