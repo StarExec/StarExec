@@ -319,7 +319,7 @@ public class Benchmarks {
 			}							
 
 		}				
-		log.info("Adding Benchmark " + benchmark.getName());
+		log.debug("Adding Benchmark " + benchmark.getName());
 		return true;
 	}
 
@@ -446,7 +446,7 @@ public class Benchmarks {
 				if (depBenchId>-1)
 				{
 					if (Permissions.canUserSeeBench(depBenchId, userId)){
-						log.debug("Adding depedency, Bench " + bench.getId() + " dependent on " + depBenchId);
+						log.info("Adding dependency, Bench " + bench.getId() + " dependent on " + depBenchId);
 						Benchmarks.addBenchDependency(bench.getId(),depBenchId, includePath, con);
 					}
 				}
@@ -547,20 +547,19 @@ public class Benchmarks {
 		//dig through subspaces while you have to
 		while ((index < (spaces.length-1)) && (currentSpaceId > -1))
 		{
-			log.debug("Looking for SubSpace " + spaces[index] +" in Space " + currentSpaceId);
+			log.info("Looking for SubSpace " + spaces[index] +" in Space " + currentSpaceId);
 			currentSpaceId = Spaces.getSubSpaceIDbyName(currentSpaceId, userId, spaces[index]); 
-			log.debug("Returned with subspace " + currentSpaceId);
+			log.info("Returned with subspace " + currentSpaceId);
 			index++;
 		}
 		//now find bench in the subspace you've found
 		if (currentSpaceId > 1)
 		{
-			log.debug("Looking for Benchmark " + spaces[index] +" in Space " + currentSpaceId);
+			log.info("Looking for Benchmark " + spaces[index] +" in Space " + currentSpaceId);
 			Integer benchId = Benchmarks.getBenchIdByName(currentSpaceId, spaces[index]);
-			log.debug("Returned with bench " + benchId);
+			log.info("Returned with bench " + benchId);
 			return benchId;
 		}
-
 		return -1;
 	}
 	/**
