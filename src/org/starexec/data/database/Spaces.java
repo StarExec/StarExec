@@ -673,7 +673,7 @@ public class Spaces {
 		
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
-			//con = Common.getConnection();
+			con = Common.getConnection();
 			Common.beginTransaction(con);
 			
 			// For each subspace...
@@ -682,9 +682,10 @@ public class Spaces {
 				Spaces.traverse(con, s, parent.getId(), userId);
 			}
 			
-			// Add any new benchmarks in the space to the database
+			// Add any new benchmarks in the space to the database			
+			if (parent.getBenchmarks().size() > 0){
 			Benchmarks.add(parent.getBenchmarks(), parent.getId());
-			
+			}
 			
 			// We're done (notice that 'parent' is never added because it should already exist)
 			Common.endTransaction(con);			
@@ -723,12 +724,14 @@ public class Spaces {
 			// For each subspace...
 			for(Space sub : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
+				
 				Spaces.traverseWithDeps(con, sub, parent.getId(), userId, depRootSpaceId, linked);
 			}
 			
 			// Add any new benchmarks in the space to the database
-			Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId);
-			
+			if (parent.getBenchmarks().size()>0){
+				Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId);
+			}
 			
 			// We're done (notice that 'parent' is never added because it should already exist)
 			Common.endTransaction(con);			
