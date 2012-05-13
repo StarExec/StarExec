@@ -154,7 +154,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				END) ASC
 				
 				-- Shrink the results to only those required for the next page of benchmarks
-				--LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
 				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
@@ -179,7 +179,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				END) DESC
 				
 				-- Shrink the results to only those required for the next page of benchmarks
-				--LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
 				LIMIT 0, 10;
 			END IF;
 			
@@ -213,7 +213,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
-				--LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
 				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
@@ -243,7 +243,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 					 END) DESC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
-				--LIMIT _startingRecord, _recordsPerPage;
+				-- LIMIT _startingRecord, _recordsPerPage;
 				LIMIT 0, 10;
 			END IF;
 		END IF;
