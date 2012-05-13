@@ -197,7 +197,7 @@ public class Benchmarks {
 
 				return true;
 			} catch (Exception e){			
-				log.error("addWithDeps says" + e.getMessage(), e);
+				log.error("Need to roll back - addWithDeps says" + e.getMessage(), e);
 				Common.doRollback(con);
 			} finally {
 				//Common.safeClose(con);
@@ -205,6 +205,7 @@ public class Benchmarks {
 		}
 		else
 		{
+			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
 			return true;
 		}
 		return false;
@@ -295,7 +296,7 @@ public class Benchmarks {
 	protected static boolean add(Connection con, Benchmark benchmark, int spaceId) throws Exception {				
 		CallableStatement procedure = null;			
 		Properties attrs = benchmark.getAttributes();
-
+		log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
 		// Setup normal information for the benchmark
 		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setString(1, benchmark.getName());		
@@ -312,10 +313,11 @@ public class Benchmarks {
 		benchmark.setId(procedure.getInt(8));
 
 		// If the benchmark is valid according to its processor...
+		
 		if(Benchmarks.isBenchValid(attrs)) {
 			// Discard the valid attribute, we don't need it
 			attrs.remove("starexec-valid");
-
+			log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
 			// For each attribute (key, value)...
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
@@ -323,7 +325,7 @@ public class Benchmarks {
 			}							
 
 		}				
-		log.debug("Adding Benchmark " + benchmark.getName());
+		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
 		return true;
 	}
 
@@ -621,13 +623,14 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	protected static void add(Connection con, List<Benchmark> benchmarks, int spaceId) throws Exception {		
+		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {
 			if(!Benchmarks.add(con, b, spaceId)) {
 				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
 			}
 		}
 
-		log.debug(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 
 	/**
