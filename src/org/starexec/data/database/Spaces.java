@@ -715,7 +715,7 @@ public class Spaces {
 	 */
 	public static boolean addWithBenchmarksAndDeps(Space parent, int userId, Integer depRootSpaceId, boolean linked) {
 		Connection con = null;
-		
+		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
 			con = Common.getConnection();
@@ -778,7 +778,7 @@ public class Spaces {
 	protected static void traverseWithDeps(Connection con, Space space, int parentId, int userId, Integer depRootSpaceId, Boolean linked) throws Exception {
 		// Add the new space to the database and get it's ID		
 		int spaceId = Spaces.add(con, space, parentId, userId);
-		
+		log.info("traversing (with deps) space " + space.getName() );
 		for(Space sub : space.getSubspaces()) {
 			// Recursively go through and add all of it's subspaces with itself as the parent
 			Spaces.traverseWithDeps(con, sub, spaceId, userId, depRootSpaceId, linked);

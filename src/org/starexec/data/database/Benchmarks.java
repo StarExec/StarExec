@@ -153,6 +153,7 @@ public class Benchmarks {
 		}
 		else
 		{
+			log.info("No benchmarks to add here for space " + spaceId);
 			return true;
 		}
 		return false;
@@ -178,24 +179,25 @@ public class Benchmarks {
 				//con = Common.getConnection();
 
 				//Common.beginTransaction(con);
-
+				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
-
+				log.info("About to attach attributes to " + benchmarks.size());
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				Benchmarks.attachBenchAttrs(benchmarks, p);
-
+				log.info("About to add " + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed);
 				Benchmarks.add(con, benchmarks, spaceId);		
 
 				// Process the benchmark for dependencies (must happen after they are added so that dependencies will have bench ids)
+				log.info("About to introduce dependencies to " + benchmarks.size() + " benchmarks to space " + spaceId);
 				Benchmarks.introduceDependencies(benchmarks, depRootSpaceId, linked, userId, con);
 
 				//Common.endTransaction(con);
 
 				return true;
 			} catch (Exception e){			
-				log.error(e.getMessage(), e);
+				log.error("addWithDeps says" + e.getMessage(), e);
 				Common.doRollback(con);
 			} finally {
 				//Common.safeClose(con);
@@ -222,7 +224,7 @@ public class Benchmarks {
 	 */
 	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId) {
 		Connection con = null;			
-
+		log.info("Going to add " + benchmarks.size() + "benchmarks (with dependencies) to space " + spaceId);
 		try {			
 			con = Common.getConnection();
 
@@ -251,7 +253,7 @@ public class Benchmarks {
 	 * @param p The processor to run each benchmark on
 	 */
 	protected static void attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
-		log.debug("Beginning processing for " + benchmarks.size() + " benchmarks");			
+		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 
 		// For each benchmark in the list to process...
 		for(Benchmark b : benchmarks) {
@@ -261,7 +263,9 @@ public class Benchmarks {
 				// Run the processor on the benchmark file
 				reader = Util.executeCommand(p.getFilePath() + " " + b.getPath());
 				log.debug("reader is null = " + (reader == null));
-				
+				if (reader == null){
+					log.error("Reader is null!");
+				}
 				// Load results into a properties file
 				Properties prop = new Properties();
 				if (reader != null){
@@ -403,7 +407,7 @@ public class Benchmarks {
 	 * @author Benton McCune
 	 */
 	private static boolean introduceDependencies(List<Benchmark> benchmarks, Integer depRootSpaceId, Boolean linked, Integer userId, Connection con){
-
+		log.info("Introducing dependencies for " + benchmarks.size() + " benchmarks" );
 		for (Benchmark bench:benchmarks){
 			introduceDependencies(bench, depRootSpaceId, linked, userId, con);
 		}

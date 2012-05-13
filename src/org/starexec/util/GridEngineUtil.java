@@ -142,7 +142,8 @@ public class GridEngineUtil {
 				
 				// Update the database with the new usage stats
 				Queues.updateUsage(q);
-			}			
+			}	
+			buff.close();
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
@@ -158,8 +159,15 @@ public class GridEngineUtil {
 		List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 		
 		// Call SGE to get details for the given node (the child worker nodes are contained in the details output)
-		String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
-		
+		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
+		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
+		String results = Util.bufferToString(reader);
+		try {
+			reader.close();
+		}
+		catch (Exception e) {
+			log.warn("get Queue Associations says " + e.getMessage(), e);
+		}
 		// Parse the output from the SGE call to get the child worker nodes
 		java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
 		
@@ -185,8 +193,15 @@ public class GridEngineUtil {
 		HashMap<String, String> details = new HashMap<String, String>();
 		
 		// Call SGE to get details for the given node
-		String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
-		
+		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
+		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
+		String results = Util.bufferToString(reader);
+		try {
+			reader.close();
+		}
+		catch (Exception e) {
+			log.warn("get Queue Details says " + e.getMessage(), e);
+		}
 		// Parse the output from the SGE call to get the key/value pairs for the node
 		java.util.regex.Matcher matcher = queueKeyValPattern.matcher(results);
 		
@@ -248,7 +263,14 @@ public class GridEngineUtil {
 		HashMap<String, String> details = new HashMap<String, String>();
 		
 		// Call SGE to get details for the given node
-		String results = Util.bufferToString(Util.executeCommand(R.NODE_DETAILS_COMMAND + name));
+		BufferedReader reader = Util.executeCommand(R.NODE_DETAILS_COMMAND + name);
+		String results = Util.bufferToString(reader);
+		try {
+			reader.close();
+		}
+		catch (Exception e) {
+			log.warn("get Node Details says " + e.getMessage(), e);
+		}
 		
 		// Parse the output from the SGE call to get the key/value pairs for the node
 		java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(results);
