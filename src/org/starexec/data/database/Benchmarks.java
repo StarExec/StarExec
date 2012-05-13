@@ -319,8 +319,11 @@ public class Benchmarks {
 			attrs.remove("starexec-valid");
 			log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
 			// For each attribute (key, value)...
+			int count = 0;
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
+				count++;
+				log.info("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
 
