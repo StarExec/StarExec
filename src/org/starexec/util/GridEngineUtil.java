@@ -378,7 +378,7 @@ public class GridEngineUtil {
 			
 			return true;
 		} catch (Exception e) {
-			log.warn("processAttributes says " + e.getMessage(), e);
+			log.error("processAttributes says " + e.getMessage(), e);
 		} finally {
 			if(reader != null) {
 				try { reader.close(); } catch(Exception e) {}
@@ -462,7 +462,7 @@ public class GridEngineUtil {
 				}
 			}
 		} catch (Exception e) {
-			// Do nothing
+			log.error("getSgeJobStats says " + e.getMessage(), e);
 		} finally {
 			// Close the accounting file
 			dis.close();

@@ -214,7 +214,8 @@ public abstract class JobManager {
 			arrayString = arrayString + "" + path + " ";
 		}
 		arrayString = arrayString.trim() + "\"";
-		log.debug(arrayString);
+		log.info(arrayString);
+		log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
 		return arrayString;
 	}
 	
