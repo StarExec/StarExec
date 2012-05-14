@@ -463,13 +463,23 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	private static boolean introduceDependencies(List<Benchmark> benchmarks, Integer depRootSpaceId, Boolean linked, Integer userId, Connection con){
+	private static boolean introduceDependencies(List<Benchmark> benchmarks, Integer depRootSpaceId, Boolean linked, Integer userId, Connection conParam){
 		log.info("Introducing dependencies for " + benchmarks.size() + " benchmarks" );
+		Connection con = null;
+		try{
 		for (Benchmark bench:benchmarks){
 			introduceDependencies(bench, depRootSpaceId, linked, userId, con);
 		}
-
-		return false;
+		}
+		catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+			return false;
+		} finally {
+			log.debug("safe closing connection.");
+			Common.safeClose(con);
+		}
+		return true;
 	}
 
 	/**
@@ -482,8 +492,8 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	private static boolean introduceDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, Connection con){
-
+	private static boolean introduceDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, Connection conParam){
+		Connection con = null;
 		Properties atts = bench.getAttributes();
 		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
 		//		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
@@ -494,6 +504,8 @@ public class Benchmarks {
 			return false;
 		}			
 		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
 			numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
 			log.debug("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
@@ -511,12 +523,16 @@ public class Benchmarks {
 						Benchmarks.addBenchDependency(bench.getId(),depBenchId, includePath, con);
 					}
 				}
-			}		
+			}	
+			Common.endTransaction(con);
 		}
-		catch (Exception e){		
-			log.error(e.getMessage(), e);	
+		catch (Exception e){			
+			log.error("introduce dependency failed on bench " +bench.getName() + ": " + e.getMessage(), e);
 			Common.doRollback(con);
-		}		
+		} finally {
+			log.debug("safe closing connection.");
+			Common.safeClose(con);
+		}	
 		return true;
 	}
 
