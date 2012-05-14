@@ -346,9 +346,13 @@ public class Benchmarks {
 			attrs.remove("starexec-valid");
 			log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
 			// For each attribute (key, value)...
-			//int count = 0;
+			int count = 0;
 			int bigSetAtts = attrs.entrySet().size()/10;
-			Entry<Object, Object>[] entryArray = (Entry<Object, Object>[]) attrs.entrySet().toArray();
+			/*
+			Entry<Object,Object> thing = new Entry<Object,Object>();
+			Entry<Object, Object>[] entryArray = new Entry<Object, Object>[0];
+			entryArray = attrs.entrySet().toArray(entryArray);
+			
 			int i=0;
 			for (i = 0;i<bigSetAtts;i+=10){
 				Benchmarks.addBenchAttrTen(con, benchmark.getId(), entryArray, i);
@@ -358,15 +362,15 @@ public class Benchmarks {
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)entryArray[i].getKey(), (String)entryArray[i].getValue());
 				log.info("Adding  " + (String)entryArray[i].getKey() + ", " + (String)entryArray[i].getValue()+ i + " for benchmark " + benchmark.getId() + "from positon " + i);
 			}
+			*/
 			
-			/*
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
 				count++;
 				log.info("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
-			 */
+			 
 		}				
 		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
 		return true;
