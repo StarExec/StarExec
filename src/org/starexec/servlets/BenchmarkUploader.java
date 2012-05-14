@@ -98,7 +98,7 @@ public class BenchmarkUploader extends HttpServlet {
 		FileItem fileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
 		int userId = SessionUtil.getUserId(request);
 		int spaceId = Integer.parseInt((String)form.get(SPACE_ID));
-		
+		log.info("Handling upload request for user " + userId + " in space " + spaceId);
 		// Create a unique path the zip file will be extracted to
 		File uniqueDir = new File(R.BENCHMARK_PATH, "" + SessionUtil.getUserId(request));
 		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
