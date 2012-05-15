@@ -451,7 +451,8 @@ public class GridEngineUtil {
 			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
 			dis = new DataInputStream(fis);
 			br = new BufferedReader(new InputStreamReader(dis));
-			
+			log.info("Starting search for " + sgeId);
+			log.info("SGE ACCOUNTING FILE is at " + R.SGE_ACCOUNTING_FILE);
 			// For each line in the sge accounting file 
 			String line = null;
 			while ((line = br.readLine()) != null)   {	
