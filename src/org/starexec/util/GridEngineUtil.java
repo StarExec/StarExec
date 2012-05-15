@@ -446,21 +446,22 @@ public class GridEngineUtil {
 		try {
 			// Compile the pattern that is tailored for the job we're looking for		
 			Pattern statsPattern = Pattern.compile(String.format(R.STATS_ENTRY_PATTERN, sgeId), Pattern.CASE_INSENSITIVE);
-			int hackCount = 12;
+			int hackCount = 60;
 			while (hackCount > 0) {
 			// Open a buffered reader for the sge accounting file to read line by line
 			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
 			dis = new DataInputStream(fis);
 			br = new BufferedReader(new InputStreamReader(dis));
-			log.info("Starting search for " + sgeId + ". Attempt # " + (4 - hackCount));
+			log.debug("Starting search for " + sgeId + ". Attempt # " + (61 - hackCount));
 			//log.info("SGE ACCOUNTING FILE is at " + R.SGE_ACCOUNTING_FILE);
 			// For each line in the sge accounting file 
 			String line = null;
 			while ((line = br.readLine()) != null)   {	
 				// If this is the stats entry we're looking for...
-				log.info("Continuing search for " + sgeId + ". Attempt # " + (4 - hackCount) +". line is really ===" + line + "===");
+				log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
+					log.info("Pattern found for " + sgeId + "on attempt # " + (61 - hackCount));
 					return line.split(":");
 				}
 			}
@@ -469,10 +470,11 @@ public class GridEngineUtil {
 			fis.close();
 			br.close();	
 			hackCount--;
+			//This method can be called before SGE writes to the accounting file
 			if (hackCount > 0)
 			{
 				try{
-					Thread.sleep(5000);
+					Thread.sleep(1000);
 				}
 				catch(Exception e){
 					
