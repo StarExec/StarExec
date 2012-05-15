@@ -334,7 +334,7 @@ public class GridEngineUtil {
 		try {
 			// Get the job's statistics
 			String[] jobStats = GridEngineUtil.getSgeJobStats(sgeId);
-			
+			log.info("jobStats Array Length = " + jobStats.length);
 			// Build a job pair based on the statistics
 			JobPair pair = GridEngineUtil.rawStatsToPair(sgeId, jobStats);
 			
@@ -442,7 +442,7 @@ public class GridEngineUtil {
 	private static String[] getSgeJobStats(int sgeId) throws Exception {
 		DataInputStream dis = null;
 		FileInputStream fis = null;
-		
+		BufferedReader br = null;
 		try {
 			// Compile the pattern that is tailored for the job we're looking for		
 			Pattern statsPattern = Pattern.compile(String.format(R.STATS_ENTRY_PATTERN, sgeId), Pattern.CASE_INSENSITIVE);
@@ -450,12 +450,13 @@ public class GridEngineUtil {
 			// Open a buffered reader for the sge accounting file to read line by line
 			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
 			dis = new DataInputStream(fis);
-			BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+			br = new BufferedReader(new InputStreamReader(dis));
 			
 			// For each line in the sge accounting file 
 			String line = null;
 			while ((line = br.readLine()) != null)   {	
 				// If this is the stats entry we're looking for...
+				log.info("line is ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
 					return line.split(":");
@@ -467,6 +468,7 @@ public class GridEngineUtil {
 			// Close the accounting file
 			dis.close();
 			fis.close();
+			br.close();		
 		}
 		
 		throw new Exception("Job statistics for sge job #" + sgeId + " could not be found");

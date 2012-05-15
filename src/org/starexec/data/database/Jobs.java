@@ -834,7 +834,7 @@ public class Jobs {
 			procedure.executeUpdate();						
 			return true;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);
+			log.error("updatePairStatistics says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
