@@ -447,12 +447,12 @@ public class GridEngineUtil {
 			// Compile the pattern that is tailored for the job we're looking for		
 			Pattern statsPattern = Pattern.compile(String.format(R.STATS_ENTRY_PATTERN, sgeId), Pattern.CASE_INSENSITIVE);
 			int hackCount = 3;
-			while (hackCount > 0){
+			while (hackCount > 0) {
 			// Open a buffered reader for the sge accounting file to read line by line
 			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
 			dis = new DataInputStream(fis);
 			br = new BufferedReader(new InputStreamReader(dis));
-			log.info("Starting search for " + sgeId);
+			log.info("Starting search for " + sgeId + ". Attempt # " + (4 - hackCount));
 			//log.info("SGE ACCOUNTING FILE is at " + R.SGE_ACCOUNTING_FILE);
 			// For each line in the sge accounting file 
 			String line = null;
@@ -464,10 +464,20 @@ public class GridEngineUtil {
 					return line.split(":");
 				}
 			}
+			
 			dis.close();
 			fis.close();
 			br.close();	
 			hackCount--;
+			if (hackCount > 0)
+			{
+				try{
+					Thread.sleep(1000);
+				}
+				catch(Exception e){
+					
+				}
+			}
 		}
 		} catch (Exception e) {
 			log.error("getSgeJobStats says " + e.getMessage(), e);
