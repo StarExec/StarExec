@@ -458,7 +458,7 @@ public class GridEngineUtil {
 			String line = null;
 			while ((line = br.readLine()) != null)   {	
 				// If this is the stats entry we're looking for...
-				log.info("line is really ===" + line + "===");
+				log.info("Continuing search for " + sgeId + ". Attempt # " + (4 - hackCount) +". line is really ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
 					return line.split(":");
@@ -472,7 +472,7 @@ public class GridEngineUtil {
 			if (hackCount > 0)
 			{
 				try{
-					Thread.sleep(1000);
+					Thread.sleep(5000);
 				}
 				catch(Exception e){
 					
