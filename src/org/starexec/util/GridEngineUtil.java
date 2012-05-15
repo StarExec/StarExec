@@ -457,7 +457,7 @@ public class GridEngineUtil {
 			String line = null;
 			while ((line = br.readLine()) != null)   {	
 				// If this is the stats entry we're looking for...
-				log.info("line is ===" + line + "===");
+				log.info("line is really ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
 					return line.split(":");
