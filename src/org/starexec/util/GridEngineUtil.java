@@ -446,7 +446,7 @@ public class GridEngineUtil {
 		try {
 			// Compile the pattern that is tailored for the job we're looking for		
 			Pattern statsPattern = Pattern.compile(String.format(R.STATS_ENTRY_PATTERN, sgeId), Pattern.CASE_INSENSITIVE);
-			int hackCount = 3;
+			int hackCount = 12;
 			while (hackCount > 0) {
 			// Open a buffered reader for the sge accounting file to read line by line
 			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
