@@ -334,7 +334,6 @@ public class GridEngineUtil {
 		try {
 			// Get the job's statistics
 			String[] jobStats = GridEngineUtil.getSgeJobStats(sgeId);
-			log.info("jobStats Array Length = " + jobStats.length);
 			// Build a job pair based on the statistics
 			JobPair pair = GridEngineUtil.rawStatsToPair(sgeId, jobStats);
 			
@@ -381,7 +380,7 @@ public class GridEngineUtil {
 			log.error("processAttributes says " + e.getMessage(), e);
 		} finally {
 			if(reader != null) {
-				try { reader.close(); } catch(Exception e) {}
+				try { reader.close(); } catch(Exception e) {log.error("processAttributes failed at closing reader: " + e.getMessage(), e);}
 			}
 		}
 		
@@ -461,7 +460,7 @@ public class GridEngineUtil {
 				log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
-					log.info("Pattern found for " + sgeId + "on attempt # " + (61 - hackCount));
+					log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
 					return line.split(":");
 				}
 			}

@@ -33,7 +33,7 @@ public class Solvers {
 			con = Common.getConnection();		
 			return Solvers.get(con, solverId);		
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error("Solver get says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
@@ -48,6 +48,11 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	protected static Solver get(Connection con, int solverId) throws Exception {			
+		if(con.isClosed())
+		{
+			log.warn("Getting Solver " + solverId + " but connection is closed.");
+		}
+		
 		CallableStatement procedure = con.prepareCall("{CALL GetSolverById(?)}");
 		procedure.setInt(1, solverId);					
 		ResultSet results = procedure.executeQuery();
@@ -80,7 +85,7 @@ public class Solvers {
 			con = Common.getConnection();		
 			return Solvers.getSolverByConfig(con, configId);		
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error("getSolverByConfig says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
@@ -94,9 +99,14 @@ public class Solvers {
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId) throws Exception {			
+	protected static Solver getSolverByConfig(Connection con, int configId) throws Exception {		
+		if(con.isClosed())
+		{
+			log.warn("Getting SolverbyConfig with configId " + configId + " but connection is closed.");
+		}
 		Configuration c = Solvers.getConfiguration(con, configId);
-		return Solvers.getWithConfig(con, c.getSolverId(), c.getId());
+		//return Solvers.getWithConfig(con, c.getSolverId(), c.getId());
+		return Solvers.getWithConfig(c.getSolverId(), c.getId());
 	}
 	
 	
@@ -455,6 +465,11 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	protected static Configuration getConfiguration(Connection con, int configId) throws Exception {
+		if(con.isClosed())
+		{
+			log.warn("Getting Configuration " + configId+ " but connection is closed.");
+		}
+		
 		CallableStatement procedure = con.prepareCall("{CALL GetConfiguration(?)}");
 		procedure.setInt(1, configId);					
 		ResultSet results = procedure.executeQuery();
@@ -513,7 +528,8 @@ public class Solvers {
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			for(int i = 0; i < solverIds.size(); i++) {
-				Solver s = Solvers.getWithConfig(con, solverIds.get(i), configIds.get(i));
+				//Solver s = Solvers.getWithConfig(con, solverIds.get(i), configIds.get(i));
+				Solver s = Solvers.getWithConfig(solverIds.get(i), configIds.get(i));
 				solvers.add(s);
 			}
 			
@@ -555,10 +571,15 @@ public class Solvers {
 	 * @return The solver with the given configuration
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getWithConfig(Connection con, int solverId, int configId) throws Exception {			
-		Solver s = Solvers.get(con, solverId);
-		Configuration c = Solvers.getConfiguration(con, configId);
-		
+	protected static Solver getWithConfig(Connection con, int solverId, int configId) throws Exception {	
+		if(con.isClosed())
+		{
+			log.warn("GetWithConfig - solverId = " + solverId + " but connection is closed.");
+		}
+		//Solver s = Solvers.get(con, solverId);
+		Solver s = Solvers.get(solverId);
+		//Configuration c = Solvers.getConfiguration(con, configId);
+		Configuration c = Solvers.getConfiguration(configId);
 		if(s.getId() == c.getSolverId()) {
 			// Make sure this configuration actually belongs to the solver, and add it if it does
 			s.addConfiguration(c);	

@@ -323,8 +323,12 @@ public class Jobs {
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
-				j.setJobPairs(Jobs.getPairsDetailed(con, j.getId()));
-				
+				if(con.isClosed())
+				{
+					log.warn("getDetailed - About to getPairs detailed for job " + jobId + " but connection to pass is closed.");
+				}
+				//j.setJobPairs(Jobs.getPairsDetailed(con, j.getId()));
+				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
 				return j;
 			}									
 		} catch (Exception e){			
@@ -689,6 +693,11 @@ public class Jobs {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JobPair> getPairsDetailed(Connection con, int jobId) throws Exception {	
+		
+		if(con.isClosed())
+		{
+			log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
+		}
 		CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
@@ -696,10 +705,12 @@ public class Jobs {
 										
 		while(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
-			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));			
-			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
-			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
-			
+			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
