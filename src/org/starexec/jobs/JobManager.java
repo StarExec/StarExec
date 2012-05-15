@@ -111,22 +111,22 @@ public abstract class JobManager {
 			
 			// Initialize session
 	        session.init("");
-	
+	        log.info("submitScript - Session Initialized for Job Pair " + pair.getId());
 	        // Set up the grid engine template
 	        sgeTemplate = session.createJobTemplate();
-	        
+	        log.info("submitScript - Create Job Template for  " + pair.getId());
 	        // DRMAA needs to be told to expect a shell script and not a binary
 	        sgeTemplate.setNativeSpecification("-shell y -b n");
-	        
+	        log.info("submitScript - Set Native Specification for  " + pair.getId());
 	        // Tell the job where it will deal with files
 	        sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
-	        
+	        log.info("submitScript - Set Working Directory for  " + pair.getId());
 	        // Tell where the starexec log for the job should be placed (semicolon is required by SGE)
 	        sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR);
-	
+	        log.info("submitScript - Set Output Path for  " + pair.getId());
 	        // Tell the job where the script to be executed is
 	        sgeTemplate.setRemoteCommand(scriptPath);	        
-
+	        log.info("submitScript - Set Remote Command for  " + pair.getId());
 	        // Actually submit the job to the grid engine
 	        String id = session.runJob(sgeTemplate);
 	        log.info(String.format("Job #%s (\"%s\") has been submitted to the grid engine.", id, scriptPath));	               	       	        
