@@ -510,9 +510,11 @@ public class GridEngineUtil {
 			// If we got here, the libraries loaded successfully!
 			return true;
 		} catch(Error e) {
+			log.error("Grid Engine isAvailable Error - " + e.getMessage());
 			// Don't log, expected if the engine isn't available
 		} catch(Exception e) {
 			// Don't log, expected if the engine isn't available
+			log.error("Grid Engine isAvailable Exeption - " + e.getMessage());
 		}
 		
 		return false;
