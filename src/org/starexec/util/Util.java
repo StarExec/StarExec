@@ -204,11 +204,11 @@ public class Util {
 	public static BufferedReader executeCommand(String command) {
 		Runtime r = Runtime.getRuntime();		
 		BufferedReader reader = null;		
-		log.debug("Command from execute command = " + command);
+		log.info("Command from execute command = " + command);
 		try {		
 			
 			Process p = r.exec(command);
-			log.debug("Processor is null = " + (p==null));
+			log.debug("Process is null = " + (p==null));
 			InputStream in = p.getInputStream();
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);

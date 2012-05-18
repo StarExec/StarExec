@@ -297,6 +297,7 @@ public class GridEngineUtil {
 			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
 			
 			// For each id to process...
+			log.info(idsToProcess.size() + "jobs waiting to have stats processed");
 			for(int id : idsToProcess) {	
 				final int safeId = id;
 				log.debug("Processing job pair " + safeId);
@@ -309,10 +310,12 @@ public class GridEngineUtil {
 
 						// Process statistics and attributes
 						boolean success = GridEngineUtil.processStatistics(safeId);
-						success = success && GridEngineUtil.processAttributes(safeId);				
+						log.info("Statistic processing success for " + safeId + " = " + success);
+						success = success && GridEngineUtil.processAttributes(safeId);	
+						log.info("Statistic AND Attribute processing success for " + safeId + " = " + success);
 						Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
 						
-						log.debug("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
+						log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
 					}
 				});
 			}
@@ -369,10 +372,10 @@ public class GridEngineUtil {
 			if(processor != null) {
 				log.info("got post processor " + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
 				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getId());
-				log.info("about to run processor on stdOut file" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
+				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
-				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());
-				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
+				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());			  
+				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null));
 				// Load results into a properties file
 				Properties prop = new Properties();
 				prop.load(reader);							
