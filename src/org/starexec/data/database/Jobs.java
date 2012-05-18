@@ -129,6 +129,7 @@ public class Jobs {
 			con = Common.getConnection();
 			
 			// For each attribute (key, value)...
+			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
 			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
 				// Add the attribute to the database
 				Jobs.addJobAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
@@ -136,7 +137,7 @@ public class Jobs {
 			
 			return true;
 		} catch(Exception e) {			
-			log.error(e.getMessage(), e);
+			log.error("error adding Job Attributes = " + e.getMessage(), e);
 		} finally {			
 			Common.safeClose(con);	
 		}

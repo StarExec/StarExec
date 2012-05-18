@@ -357,25 +357,33 @@ public class GridEngineUtil {
 	 * @return True if the operation was a success, false otherwise
 	 */
 	private static boolean processAttributes(int sgeId) {
+		log.info("processing attributes for " + sgeId);
 		BufferedReader reader = null;		
 		JobPair pair = Jobs.getSGEPairDetailed(sgeId);
 		Job job = Jobs.getDetailed(pair.getJobId());
 		
 		try {
+			log.info("getting post processor for job " + job.getId() +", sgeId = " +sgeId);
 			Processor processor = job.getPostProcessor();
 			
 			if(processor != null) {
+				log.info("got post processor " + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
 				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getId());
-	
+				log.info("about to run processor on stdOut file" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
 				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());
-				
+				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
 				// Load results into a properties file
 				Properties prop = new Properties();
 				prop.load(reader);							
-				
+				log.info("loaded properties for job " + job.getId() +", sgeId = " +sgeId + ".  About to add job attributes for pair " + pair.getId());
 				// Attach the attributes to the benchmark
 				Jobs.addJobAttributes(pair.getId(), prop);
+				log.info("Job " + job.getId() +", sgeId = " +sgeId + ".  added job attributes for pair " + pair.getId());
+			}
+			else
+			{
+				log.info("post processor for job " + job.getId() +", sgeId = " +sgeId + " was returned null");
 			}
 			
 			return true;
