@@ -335,10 +335,13 @@ public class GridEngineUtil {
 			// Get the job's statistics
 			String[] jobStats = GridEngineUtil.getSgeJobStats(sgeId);
 			// Build a job pair based on the statistics
+			log.info("Returned from getting SgeJobStats for sgeId = " + sgeId+".  Now writing stats to pair");
 			JobPair pair = GridEngineUtil.rawStatsToPair(sgeId, jobStats);
 			
 			// Update the database with the pair
+			log.info("About to add pair to db for sgeId = " + sgeId);
 			Jobs.updatePairStatistics(pair);
+			log.info("Stats written to db for sgeId = " + sgeId);
 			return true;			
 		} catch (Exception e) {
 			log.error("processStatistics says " + e.getMessage(), e);			
@@ -415,6 +418,7 @@ public class GridEngineUtil {
 		jp.setBlockOutput(Double.parseDouble(stats[25]));
 		jp.setVoluntaryContextSwitches(Double.parseDouble(stats[29]));
 		jp.setInvoluntaryContextSwitches(Double.parseDouble(stats[30]));
+		log.info("Stats written to job pair for sgeId " + sgeId);
 		return jp;		
 	}
 	
