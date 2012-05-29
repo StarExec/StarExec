@@ -151,7 +151,7 @@ public class BenchmarkUploader extends HttpServlet {
 				Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId);
 			}
 		}
-						
+		log.info("Handle upload method complete in " + spaceId + "for user " + userId);				
         response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
 	}		
 	

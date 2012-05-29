@@ -84,8 +84,8 @@
 				<li><a class="btnUp" id="uploadBench" href="/starexec/secure/add/benchmarks.jsp">upload benchmarks</a></li>
 				<li><a class="btnUp" id="uploadSolver" href="/starexec/secure/add/solver.jsp">upload solver</a></li>				
 				<li><a class="btnRun" id="addJob" href="/starexec/secure/add/job.jsp">create job</a></li>
-				<li><a class="btnDown" id="downloadXML" href="/starexec/secure/download">download space hierarchy</a></li>				
-				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">upload space hierarchy</a></li>
+				<li><a class="btnDown" id="downloadXML" href="/starexec/secure/download">download space xml</a></li>				
+				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>				
 			</ul>
 		</fieldset>	

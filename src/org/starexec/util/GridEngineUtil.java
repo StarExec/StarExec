@@ -297,7 +297,8 @@ public class GridEngineUtil {
 			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
 			
 			// For each id to process...
-			log.info(idsToProcess.size() + "jobs waiting to have stats processed");
+			if (idsToProcess.size()>0){
+			log.info(idsToProcess.size() + "jobs waiting to have stats processed");}
 			for(int id : idsToProcess) {	
 				final int safeId = id;
 				log.debug("Processing job pair " + safeId);
@@ -375,7 +376,7 @@ public class GridEngineUtil {
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
 				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());			  
-				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null));
+				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null) + ". Reader is ready = " + (reader.ready()));
 				// Load results into a properties file
 				Properties prop = new Properties();
 				prop.load(reader);							
@@ -394,7 +395,7 @@ public class GridEngineUtil {
 			log.error("processAttributes says " + e.getMessage(), e);
 		} finally {
 			if(reader != null) {
-				try { reader.close(); } catch(Exception e) {log.error("processAttributes failed at closing reader: " + e.getMessage(), e);}
+				try { reader.close(); log.info("Reader closed for sgeId " + sgeId);} catch(Exception e) {log.error("processAttributes failed at closing reader: " + e.getMessage(), e);}
 			}
 		}
 		

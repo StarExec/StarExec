@@ -204,7 +204,7 @@ public class Util {
 	public static BufferedReader executeCommand(String command) {
 		Runtime r = Runtime.getRuntime();		
 		BufferedReader reader = null;		
-		log.info("Command from execute command = " + command);
+		log.debug("Command from execute command = " + command);
 		try {		
 			
 			Process p = r.exec(command);

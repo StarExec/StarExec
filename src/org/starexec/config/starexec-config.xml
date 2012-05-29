@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="skylar_dev_laptop">
+<starexec-configuration default="ben_dev_317">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -27,7 +27,7 @@
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
-			<property key="CONTACT_EMAIL" value="tyler-jensen@uiowa.edu" />
+			<property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />								
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
