@@ -281,7 +281,7 @@ public class Benchmarks {
 				
 	}
 
-	//returns arrayList with two maps
+	//returns data structure with two maps
 	/**
 	 * Validates the dependencies for a list of benchmarks (usually all benches of a single space)
 	 * @param benchmarks The list of benchmarks that might have dependencies
@@ -296,6 +296,8 @@ public class Benchmarks {
 			List<Benchmark> benchmarks, Integer spaceId, Boolean linked, Integer userId) {
 		//HashMap<Benchmark,ArrayList<ArrayList<Object>>> map = new HashMap();
 		
+		HashMap<String, Integer> foundDependencies = new HashMap<String,Integer>();//keys are include paths, values are the benchmarks ids of secondary benchmarks
+		
 		//ArrayList<Object> dataStruct = new ArrayList<Object>();
 		DependValidator dataStruct = new DependValidator();
 		HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
@@ -304,11 +306,11 @@ public class Benchmarks {
 		dataStruct.setAxiomMap(axiomMap);
 		//dataStruct.add(1, pathMap);
 		dataStruct.setPathMap(pathMap);
-		
+		dataStruct.setFoundDependencies(foundDependencies);
 		for (Benchmark benchmark:benchmarks){
 			//ArrayList<ArrayList<Object>> benchDepList = new ArrayList<ArrayList<Object>>();//List of two Lists for individual primary bench
 			DependValidator benchDepLists = new DependValidator();
-			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId);
+			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId, foundDependencies);
 			if (benchDepLists == null)
 			{
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
@@ -317,6 +319,7 @@ public class Benchmarks {
 			//pathMap.put(benchmark.getId(), (ArrayList<Object>)benchDepList.get(1));
 			pathMap.put(benchmark.getId(), benchDepLists.getPaths());
 			axiomMap.put(benchmark.getId(), benchDepLists.getAxiomIds());
+			foundDependencies = benchDepLists.getFoundDependencies();// get update 
 		}
 		return dataStruct;
 	}
@@ -330,9 +333,10 @@ public class Benchmarks {
 	 * @param userId the user's Id
 	 * @return the data structure that has information about depedencies
 	 * @author Benton McCune
+	 * @param foundDependencies 
 	 */
-	private static DependValidator validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId){
-		Connection con = null;
+	private static DependValidator validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, HashMap<String, Integer> foundDependencies){
+		//Connection con = null;
 		Properties atts = bench.getAttributes();
 		//ArrayList<ArrayList> benchDepList = new ArrayList<>();//List of two Lists for individual primary bench
 		DependValidator benchDepLists = new DependValidator();
@@ -343,22 +347,31 @@ public class Benchmarks {
 		Integer numberDependencies = 0;
 		String includePath = "";
 		/*if (!Permissions.canUserSeeBench(bench.getId(), userId)){
-			log.warb("User " + userId + " cannot see bench " +bench.getId());
+			log.warn("User " + userId + " cannot see bench " +bench.getId());
 			return null;
 		}
 		*/			
 		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
+			//con = Common.getConnection();
+			//Common.beginTransaction(con);
 			numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
 			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
 				includePath = atts.getProperty("starexec-dependency-"+i, "");//TODO: test when given bad atts
-				log.info("Dependency Path of Dependency " + i + " is " + includePath);
-				Integer depBenchId = -1;
+				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
+				Integer depBenchId = -1;				
 				if (includePath.length()>0){
-					depBenchId = Benchmarks.findDependentBench(spaceId,includePath, linked, userId);
-					log.info("Dependent Bench = " + depBenchId);
+					//checkMap first
+					if (foundDependencies.get(includePath)!= null){
+						depBenchId = foundDependencies.get(includePath);
+						log.info("Already found this one before, its id is " + depBenchId);
+					}
+					else{
+						log.info("This include path (" + includePath +") is new so we must search the database.");
+						depBenchId = Benchmarks.findDependentBench(spaceId,includePath, linked, userId);
+						foundDependencies.put(includePath, depBenchId);
+						log.info("Dependent Bench = " + depBenchId);
+					}
 					pathList.add(includePath);
 					axiomIdList.add(depBenchId);
 				}
@@ -369,17 +382,19 @@ public class Benchmarks {
 					return null;
 				}
 			}	
-			Common.endTransaction(con);
+			//Common.endTransaction(con);
 		}
 		catch (Exception e){			
 			log.error("validate dependency failed on bench " +bench.getName() + ": " + e.getMessage(), e);
-			Common.doRollback(con);
+			return null;
+		//	Common.doRollback(con);
 		} finally {
-			log.debug("safe closing connection.");
-			Common.safeClose(con);
+			//log.debug("safe closing connection.");
+			//Common.safeClose(con);
 		}	
 		benchDepLists.setAxiomIds(axiomIdList);
 		benchDepLists.setPaths(pathList);
+		benchDepLists.setFoundDependencies(foundDependencies);
 		return benchDepLists;
 	}
 	/**
