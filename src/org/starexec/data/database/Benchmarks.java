@@ -265,6 +265,7 @@ public class Benchmarks {
 		Integer benchId;
 		for (int i=0; i< benchmarks.size(); i++){
 			benchId = benchmarks.get(i).getId();
+			log.info("Benchmark " + i +" has id " + benchId + " with " + axiomMap.get(benchId).size() + " axiom ids and " + pathMap.get(benchId).size() + " paths");
 			introduceDependencies(benchId, axiomMap.get(benchId), pathMap.get(benchId));
 		}
 		// TODO Auto-generated method stub
@@ -272,10 +273,9 @@ public class Benchmarks {
 	}
 	//for single bench
 	private static void introduceDependencies(Integer benchId,
-			ArrayList<Integer> axiomIdList, ArrayList<String> pathList) {
-		
+			ArrayList<Integer> axiomIdList, ArrayList<String> pathList) {	
 		for (int i = 0; i < axiomIdList.size(); i++){
-			
+			log.info("(Primary Bench, Secondary Bench, Path) = (" + benchId + "," + axiomIdList.get(i) + "," + pathList.get(i)+ ")");
 			Benchmarks.addBenchDependency(benchId, axiomIdList.get(i), pathList.get(i));
 		}
 				
