@@ -9,6 +9,8 @@ public class DependValidator {
 	//these two are for the whole space
 	private HashMap<Integer, ArrayList<String>> pathMap;
 	private HashMap<Integer, ArrayList<Integer>> axiomMap;
+	//The following map is for caching to improve performance by making few calls to database
+	private HashMap<String, Integer> foundDependencies;//keys are include paths, values are the benchmarks ids of secondary benchmarks
 	
 	//this is for a single benchmark	
 	private ArrayList<String> paths;
@@ -60,6 +62,18 @@ public class DependValidator {
 	 */
 	public void setAxiomIds(ArrayList<Integer> axiomIds) {
 		this.axiomIds = axiomIds;
+	}
+	/**
+	 * @return the foundDependencies
+	 */
+	public HashMap<String, Integer> getFoundDependencies() {
+		return foundDependencies;
+	}
+	/**
+	 * @param foundDependencies the foundDependencies to set
+	 */
+	public void setFoundDependencies(HashMap<String, Integer> foundDependencies) {
+		this.foundDependencies = foundDependencies;
 	}
 	
 }
