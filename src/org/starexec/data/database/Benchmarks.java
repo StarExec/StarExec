@@ -19,6 +19,7 @@ import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver;
+import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
 
 /**
@@ -208,12 +209,14 @@ public class Benchmarks {
 				Benchmarks.attachBenchAttrs(benchmarks, p);
 				
 				//
-				ArrayList dataStruct = new ArrayList<>();//will just contain both maps
-				
-				HashMap<Integer, ArrayList<String>> pathMap = new HashMap<>();//Map from primary bench Id  to the array list of dependency paths 
-				HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
-				dataStruct.add(0, axiomMap);
-				dataStruct.add(1, pathMap);
+				//ArrayList<Object> dataStruct = new ArrayList<Object>();//will just contain both maps
+				DependValidator dataStruct = new DependValidator();
+				HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
+				HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<Integer, ArrayList<Integer>>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
+				//dataStruct.add(0, axiomMap);
+				dataStruct.setAxiomMap(axiomMap);				
+				//dataStruct.add(1, pathMap);
+				dataStruct.setPathMap(pathMap);
 				dataStruct = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, userId);
 				
 				log.info("About to add " + benchmarks.size() + " benchmarks to space " + spaceId);
@@ -253,9 +256,9 @@ public class Benchmarks {
 	}	
 	//for list of benches
 	private static void introduceDependencies(List<Benchmark> benchmarks,
-			ArrayList dataStruct) {
-		HashMap<Integer, ArrayList<Integer>> axiomMap = (HashMap<Integer, ArrayList<Integer>>) dataStruct.get(0);
-		HashMap<Integer, ArrayList<String>> pathMap = (HashMap<Integer, ArrayList<String>>) dataStruct.get(1);
+			DependValidator dataStruct) {
+		HashMap<Integer, ArrayList<Integer>> axiomMap = dataStruct.getAxiomMap();
+		HashMap<Integer, ArrayList<String>> pathMap = dataStruct.getPathMap();
 		Integer benchId;
 		for (int i=0; i< benchmarks.size(); i++){
 			benchId = benchmarks.get(i).getId();
@@ -286,26 +289,31 @@ public class Benchmarks {
 	 * @return the data structure that has information about depedencies
 	 * @author Benton McCune
 	 */
-	private static ArrayList validateDependencies(
+	private static DependValidator validateDependencies(
 			List<Benchmark> benchmarks, Integer spaceId, Boolean linked, Integer userId) {
 		//HashMap<Benchmark,ArrayList<ArrayList<Object>>> map = new HashMap();
 		
-		ArrayList dataStruct = new ArrayList<>();
-		HashMap<Integer, ArrayList<String>> pathMap = new HashMap<>();//Map from primary bench Id  to the array list of dependency paths 
-		HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
-		dataStruct.add(0, axiomMap);
-		dataStruct.add(1, pathMap);
+		//ArrayList<Object> dataStruct = new ArrayList<Object>();
+		DependValidator dataStruct = new DependValidator();
+		HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
+		HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<Integer, ArrayList<Integer>>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
+		//dataStruct.add(0, axiomMap);
+		dataStruct.setAxiomMap(axiomMap);
+		//dataStruct.add(1, pathMap);
+		dataStruct.setPathMap(pathMap);
 		
 		for (Benchmark benchmark:benchmarks){
-			ArrayList<ArrayList> benchDepList = new ArrayList<>();//List of two Lists for individual primary bench
-			benchDepList = validateIndBenchDependencies(benchmark, spaceId, linked, userId);
-			if (benchDepList == null)
+			//ArrayList<ArrayList<Object>> benchDepList = new ArrayList<ArrayList<Object>>();//List of two Lists for individual primary bench
+			DependValidator benchDepLists = new DependValidator();
+			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId);
+			if (benchDepLists == null)
 			{
 				log.warn("Dependent benchs not found for Bench " + benchmark.getId());
 				return null;
 			}
-			pathMap.put(benchmark.getId(), (ArrayList<String>)benchDepList.get(1));
-			axiomMap.put(benchmark.getId(), (ArrayList<Integer>)benchDepList.get(0));
+			//pathMap.put(benchmark.getId(), (ArrayList<Object>)benchDepList.get(1));
+			pathMap.put(benchmark.getId(), benchDepLists.getPaths());
+			axiomMap.put(benchmark.getId(), benchDepLists.getAxiomIds());
 		}
 		return dataStruct;
 	}
@@ -320,10 +328,11 @@ public class Benchmarks {
 	 * @return the data structure that has information about depedencies
 	 * @author Benton McCune
 	 */
-	private static ArrayList<ArrayList> validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId){
+	private static DependValidator validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId){
 		Connection con = null;
 		Properties atts = bench.getAttributes();
-		ArrayList<ArrayList> benchDepList = new ArrayList<>();//List of two Lists for individual primary bench
+		//ArrayList<ArrayList> benchDepList = new ArrayList<>();//List of two Lists for individual primary bench
+		DependValidator benchDepLists = new DependValidator();
 		ArrayList<Integer> axiomIdList = new ArrayList<>();
 		ArrayList<String> pathList = new ArrayList<>();
 		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
@@ -365,9 +374,9 @@ public class Benchmarks {
 			log.debug("safe closing connection.");
 			Common.safeClose(con);
 		}	
-		benchDepList.add(0, axiomIdList);
-		benchDepList.add(1,pathList);
-		return benchDepList;
+		benchDepLists.setAxiomIds(axiomIdList);
+		benchDepLists.setPaths(pathList);
+		return benchDepLists;
 	}
 	/**
 	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
