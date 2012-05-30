@@ -333,8 +333,8 @@ public class Benchmarks {
 		Properties atts = bench.getAttributes();
 		//ArrayList<ArrayList> benchDepList = new ArrayList<>();//List of two Lists for individual primary bench
 		DependValidator benchDepLists = new DependValidator();
-		ArrayList<Integer> axiomIdList = new ArrayList<>();
-		ArrayList<String> pathList = new ArrayList<>();
+		ArrayList<Integer> axiomIdList = new ArrayList<Integer>();
+		ArrayList<String> pathList = new ArrayList<String>();
 		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
 		//		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
 		Integer numberDependencies = 0;
