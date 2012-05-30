@@ -608,7 +608,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	private static boolean introduceDependencies(List<Benchmark> benchmarks, Integer depRootSpaceId, Boolean linked, Integer userId, Connection conParam){
+/*	private static boolean introduceDependencies(List<Benchmark> benchmarks, Integer depRootSpaceId, Boolean linked, Integer userId, Connection conParam){
 		log.info("Introducing dependencies for " + benchmarks.size() + " benchmarks" );
 		Connection con = null;
 		try{
@@ -626,7 +626,7 @@ public class Benchmarks {
 		}
 		return true;
 	}
-
+*/
 	/**
 	 * Introduces the dependencies for a benchmark
 	 * @param benchmarks The list of benchmarks that might have dependencies
@@ -637,7 +637,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	private static boolean introduceDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, Connection conParam){
+/*	private static boolean introduceDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, Connection conParam){
 		Connection con = null;
 		Properties atts = bench.getAttributes();
 		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
@@ -680,24 +680,34 @@ public class Benchmarks {
 		}	
 		return true;
 	}
-
+*/
 	// just for testing locally
 	public static boolean testDepCode(Benchmark bench, int userId){
-		Connection con = null;
+		//Connection con = null;
 		log.debug("Testing Dep Code on " + bench.getName());
 		try {	
-			con = Common.getConnection();
-			Common.beginTransaction(con);	
-			Benchmarks.validateIndBenchDependencies(bench, 3, true, 1);
+			//con = Common.getConnection();
+			//Common.beginTransaction(con);
+			ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
+			benches.add(bench);
+			DependValidator benValidator = Benchmarks.validateDependencies(benches, 3, true, 1);
+			if (benValidator!= null){
+			log.debug("Validated - now introducing depedencies");
+			Benchmarks.introduceDependencies(benches, benValidator);
+			}
+			else{
+				log.debug("Null validator - nothing else to do");
+			}
+			//Benchmarks.validateIndBenchDependencies(bench, 3, true, 1);
 			//Boolean success = introduceDependencies(bench, 6, true, userId, con);
 			//log.debug("Dependencies introduced = " +success);
-			Common.endTransaction(con);
+		//	Common.endTransaction(con);
 		}catch (Exception e){			
 			log.error(e.getMessage(), e);
-			Common.doRollback(con);
+			//Common.doRollback(con);
 		} finally {
-			log.debug("safe closing connection.");
-			Common.safeClose(con);
+		//	log.debug("safe closing connection.");
+		//	Common.safeClose(con);
 		}
 		return true;
 	}
