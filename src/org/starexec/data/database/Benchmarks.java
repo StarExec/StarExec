@@ -228,7 +228,7 @@ public class Benchmarks {
 					con = Common.getConnection();
 					Common.beginTransaction(con);
 				
-				Benchmarks.addReturnList(benchmarks, spaceId);
+				benchmarks = Benchmarks.addReturnList(benchmarks, spaceId);
 				
 				// introduce the validated dependencies (must happen after they are added so that dependencies will have bench ids)
 				log.info("About to introduce dependencies to " + benchmarks.size() + " benchmarks to space " + spaceId);
