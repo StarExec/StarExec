@@ -228,11 +228,11 @@ public class Benchmarks {
 					con = Common.getConnection();
 					Common.beginTransaction(con);
 				
-				Benchmarks.add(con, benchmarks, spaceId);
+				Benchmarks.addReturnList(benchmarks, spaceId);
 				
 				// introduce the validated dependencies (must happen after they are added so that dependencies will have bench ids)
 				log.info("About to introduce dependencies to " + benchmarks.size() + " benchmarks to space " + spaceId);
-				//assuming benches now have ids
+				//assuming benches now have ids, but they apparently don't!
 				Benchmarks.introduceDependencies(benchmarks, dataStruct);
 				
 				Common.endTransaction(con);
@@ -532,7 +532,7 @@ public class Benchmarks {
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
 				count++;
-				log.info("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
+				log.debug("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
 			 
@@ -549,6 +549,61 @@ public class Benchmarks {
 		}
 	}
 
+	//same, but returns Benchmark
+	protected static Benchmark addReturnBench(Benchmark benchmark, int spaceId) throws Exception {				
+		Connection con = null;
+		try{
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+		
+		CallableStatement procedure = null;			
+		Properties attrs = benchmark.getAttributes();
+		log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
+		// Setup normal information for the benchmark
+		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
+		procedure.setString(1, benchmark.getName());		
+		procedure.setString(2, benchmark.getPath());
+		procedure.setBoolean(3, benchmark.isDownloadable());
+		procedure.setInt(4, benchmark.getUserId());			
+		procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
+		procedure.setInt(6, spaceId);
+		procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
+		procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+
+		// Execute procedure and get back the benchmark's id
+		procedure.executeUpdate();		
+		benchmark.setId(procedure.getInt(8));
+
+		// If the benchmark is valid according to its processor...
+		
+		if(Benchmarks.isBenchValid(attrs)) {
+			// Discard the valid attribute, we don't need it
+			attrs.remove("starexec-valid");
+			log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
+			// For each attribute (key, value)...
+			int count = 0;
+			int bigSetAtts = attrs.entrySet().size()/10;
+			
+			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+				// Add the attribute to the database
+				count++;
+				log.debug("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
+				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
+			}							
+			 
+		}				
+		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
+		return benchmark;
+		}
+		catch (Exception e){			
+			log.error("addReturnBench says " + e.getMessage(), e);
+			Common.doRollback(con);
+			return null;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+	
 	
 	/**
 	 * Internal method which adds a single benchmark with dependencies to the database under the given spaceId
@@ -876,6 +931,18 @@ public class Benchmarks {
 			}
 		}		
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+	}
+	
+	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId) throws Exception {		
+		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+			for(Benchmark b : benchmarks) {
+			b = Benchmarks.addReturnBench(b, spaceId);
+			if(b == null) {
+				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+			}
+		}
+		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+		return benchmarks;	
 	}
 
 	/**
