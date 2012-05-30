@@ -311,7 +311,7 @@ public class Benchmarks {
 			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId);
 			if (benchDepLists == null)
 			{
-				log.warn("Dependent benchs not found for Bench " + benchmark.getId());
+				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
 				return null;
 			}
 			//pathMap.put(benchmark.getId(), (ArrayList<Object>)benchDepList.get(1));
@@ -342,22 +342,23 @@ public class Benchmarks {
 		//		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
 		Integer numberDependencies = 0;
 		String includePath = "";
-		if (!Permissions.canUserSeeBench(bench.getId(), userId)){
-			log.debug("User " + userId + " cannot see bench " +bench.getId());
+		/*if (!Permissions.canUserSeeBench(bench.getId(), userId)){
+			log.warb("User " + userId + " cannot see bench " +bench.getId());
 			return null;
-		}			
+		}
+		*/			
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 			numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
-			log.debug("# of dependencies = " + numberDependencies);
+			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
 				includePath = atts.getProperty("starexec-dependency-"+i, "");//TODO: test when given bad atts
-				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
+				log.info("Dependency Path of Dependency " + i + " is " + includePath);
 				Integer depBenchId = -1;
 				if (includePath.length()>0){
 					depBenchId = Benchmarks.findDependentBench(spaceId,includePath, linked, userId);
-					log.debug("Dependent Bench = " + depBenchId);
+					log.info("Dependent Bench = " + depBenchId);
 					pathList.add(includePath);
 					axiomIdList.add(depBenchId);
 				}
