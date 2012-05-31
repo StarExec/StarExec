@@ -222,20 +222,20 @@ public class Benchmarks {
 				dataStruct.setPathMap(pathMap);
 				dataStruct = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, userId);
 				
-				log.info("About to add " + benchmarks.size() + " benchmarks to space " + spaceId);
+				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed);
 				if (dataStruct != null){
-					con = Common.getConnection();
-					Common.beginTransaction(con);
+					//con = Common.getConnection();
+					//Common.beginTransaction(con);
 				
-				benchmarks = Benchmarks.addReturnList(benchmarks, spaceId);
+				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct);
 				
 				// introduce the validated dependencies (must happen after they are added so that dependencies will have bench ids)
-				log.info("About to introduce dependencies to " + benchmarks.size() + " benchmarks to space " + spaceId);
+				//log.info("About to introduce dependencies to " + benchmarks.size() + " benchmarks to space " + spaceId);
 				//assuming benches now have ids, but they apparently don't!
-				Benchmarks.introduceDependencies(benchmarks, dataStruct);
+				//Benchmarks.introduceDependencies(benchmarks, dataStruct);
 				
-				Common.endTransaction(con);
+				//Common.endTransaction(con);
 
 				}
 				else{
@@ -550,7 +550,7 @@ public class Benchmarks {
 	}
 
 	//same, but returns Benchmark
-	protected static Benchmark addReturnBench(Benchmark benchmark, int spaceId) throws Exception {				
+	protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct) throws Exception {				
 		Connection con = null;
 		try{
 			con = Common.getConnection();
@@ -590,7 +590,10 @@ public class Benchmarks {
 				log.debug("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
-			 
+			//do previously validated dependecies here
+			ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
+			benches.add(benchmark);
+			Benchmarks.introduceDependencies(benches, dataStruct);
 		}				
 		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
 		return benchmark;
@@ -933,12 +936,12 @@ public class Benchmarks {
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 	
-	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId) throws Exception {		
+	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct) throws Exception {		
 		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 			for(Benchmark b : benchmarks) {
-			b = Benchmarks.addReturnBench(b, spaceId);
+			b = Benchmarks.addBenchWDepend(b, spaceId, dataStruct);
 			if(b == null) {
-				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+				throw new Exception(String.format("Failed to add benchmark to space [%d]", spaceId));
 			}
 		}
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
