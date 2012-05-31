@@ -221,7 +221,8 @@ public class Benchmarks {
 				//dataStruct.add(1, pathMap);
 				dataStruct.setPathMap(pathMap);
 				dataStruct = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, userId);
-				
+				dataStruct.getAxiomMap().size();
+				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
 				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed);
 				if (dataStruct != null){
@@ -263,6 +264,7 @@ public class Benchmarks {
 		HashMap<Integer, ArrayList<Integer>> axiomMap = dataStruct.getAxiomMap();
 		HashMap<Integer, ArrayList<String>> pathMap = dataStruct.getPathMap();
 		Integer benchId;
+		log.info("entering dependency loop for benchmark list of size = " + benchmarks.size());
 		for (int i=0; i< benchmarks.size(); i++){
 			benchId = benchmarks.get(i).getId();
 			log.info("Benchmark " + i +" has id " + benchId + " with " + axiomMap.get(benchId).size() + " axiom ids and " + pathMap.get(benchId).size() + " paths");
@@ -307,7 +309,9 @@ public class Benchmarks {
 		//dataStruct.add(1, pathMap);
 		dataStruct.setPathMap(pathMap);
 		dataStruct.setFoundDependencies(foundDependencies);
-		for (Benchmark benchmark:benchmarks){
+		Benchmark benchmark = new Benchmark();
+		for (int i = 0; i< benchmarks.size(); i++){
+			benchmark = benchmarks.get(i);
 			//ArrayList<ArrayList<Object>> benchDepList = new ArrayList<ArrayList<Object>>();//List of two Lists for individual primary bench
 			DependValidator benchDepLists = new DependValidator();
 			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId, foundDependencies);
@@ -317,8 +321,8 @@ public class Benchmarks {
 				return null;
 			}
 			//pathMap.put(benchmark.getId(), (ArrayList<Object>)benchDepList.get(1));
-			pathMap.put(benchmark.getId(), benchDepLists.getPaths());
-			axiomMap.put(benchmark.getId(), benchDepLists.getAxiomIds());
+			pathMap.put(i, benchDepLists.getPaths());//doesn't have Ids yet! - need to use index
+			axiomMap.put(i, benchDepLists.getAxiomIds());
 			foundDependencies = benchDepLists.getFoundDependencies();// get update 
 		}
 		return dataStruct;
@@ -550,7 +554,7 @@ public class Benchmarks {
 	}
 
 	//same, but returns Benchmark
-	protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct) throws Exception {				
+	protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct, Integer benchIndex) throws Exception {				
 		Connection con = null;
 		try{
 			con = Common.getConnection();
@@ -582,7 +586,7 @@ public class Benchmarks {
 			log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
 			// For each attribute (key, value)...
 			int count = 0;
-			int bigSetAtts = attrs.entrySet().size()/10;
+			//int bigSetAtts = attrs.entrySet().size()/10;
 			
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
@@ -591,15 +595,18 @@ public class Benchmarks {
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
 			//do previously validated dependecies here
-			ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
-			benches.add(benchmark);
-			Benchmarks.introduceDependencies(benches, dataStruct);
+			//ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
+			//Benchmarks.introduceDependencies(benchmarks, dataStruct)
+			//benches.add(benchmark);
+			ArrayList<Integer> axiomIdList = dataStruct.getAxiomMap().get(benchIndex);
+			ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);
+			Benchmarks.introduceDependencies(benchmark.getId(), axiomIdList, pathList);
 		}				
 		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
 		return benchmark;
 		}
 		catch (Exception e){			
-			log.error("addReturnBench says " + e.getMessage(), e);
+			log.error("addBenchWDepend says " + e.getMessage(), e);
 			Common.doRollback(con);
 			return null;
 		} finally {
@@ -768,6 +775,7 @@ public class Benchmarks {
 			ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
 			benches.add(bench);
 			DependValidator benValidator = Benchmarks.validateDependencies(benches, 3, true, 1);
+			log.info("Size of axiom Map = " + benValidator.getAxiomMap().size());
 			if (benValidator!= null){
 			log.debug("Validated - now introducing depedencies");
 			Benchmarks.introduceDependencies(benches, benValidator);
@@ -938,8 +946,11 @@ public class Benchmarks {
 	
 	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct) throws Exception {		
 		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
-			for(Benchmark b : benchmarks) {
-			b = Benchmarks.addBenchWDepend(b, spaceId, dataStruct);
+			
+		Benchmark b = new Benchmark();
+		for(int i = 0; i < benchmarks.size(); i++) {
+			b = benchmarks.get(i);
+			b = Benchmarks.addBenchWDepend(b, spaceId, dataStruct, i);
 			if(b == null) {
 				throw new Exception(String.format("Failed to add benchmark to space [%d]", spaceId));
 			}
