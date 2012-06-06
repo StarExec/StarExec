@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -12,17 +12,25 @@
 	} else if (perm == null || !perm.isLeader()) {
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 	} else {
+		List<String> listOfDefaultSettings = Communities.getDefaultSettings(com.getId());
+		List<Processor> ListOfPostProcessors = Processors.getAll(ProcessorType.POST);
+		
 		request.setAttribute("com", com);	
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
 		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
 		request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
+		request.setAttribute("postProcs", Processors.getAll(ProcessorType.POST));
+		request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
+		request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
+		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
+		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 	}
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 }
 %>
 
-<star:template title="edit ${com.name}" js="lib/jquery.validate.min, edit/community" css="edit/community">
+<star:template title="edit ${com.name}" js="lib/jquery.dataTables.min, lib/jquery.validate.min, edit/community" css="common/table, edit/community">
 	<p>manage the ${com.name} community</p>
 	<input type="hidden" value="${com.id}" id="comId"/>
 	<fieldset>
@@ -106,6 +114,37 @@
 			</table>
 		</form>
 	</fieldset>
+	<fieldset>
+	<legend class="expd"><span></span>default settings</legend>
+	<table id="settings" class ="shaded">
+		<thead>
+			<tr>
+				<th class="label">name</th>
+				<th>values</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>post processor </td>
+				<td>					
+					<select id="editPostProcess" name="editPostProcess" default=${defaultPPId}>
+					<c:forEach var="proc" items="${postProcs}">
+							<option value="${proc.id}">${proc.name}</option>
+					</c:forEach>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>wallclock timeout</td>
+				<td id="editClockTimeout">${defaultClockTimeout}</td>
+			</tr>	
+			<tr>
+				<td>cpu timeout</td>
+				<td id="editCpuTimeout">${defaultCpuTimeout}</td>
+			</tr>
+		</tbody>
+	</table>
+	</fieldset>	
 	<!-- <fieldset>
 		<legend>pre processors</legend>
 		<form id="updatePrePrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			

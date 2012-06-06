@@ -34,7 +34,7 @@
 	</div>
 		<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
-		<table id="infoTable" class="shaded">
+		<table id="infoTable">
 			<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>

@@ -6,6 +6,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -850,6 +851,26 @@ public class Spaces {
 
 			// Add space is a multi-step process, so we need to use a transaction
 			int newSpaceId = Spaces.add(con, s, parentId, userId);
+			
+			// Get the default settings from the parent space.
+			CallableStatement procGetParentDefaultSettings = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");			
+			procGetParentDefaultSettings.setInt(1, parentId);
+			ResultSet results = procGetParentDefaultSettings.executeQuery();
+			List<Integer> listOfDefaultSettings = Arrays.asList(0,0,0);
+			
+			if(results.next()){
+				listOfDefaultSettings.set(0, results.getInt("post_processor"));
+				listOfDefaultSettings.set(1, results.getInt("cpu_timeout"));
+				listOfDefaultSettings.set(2, results.getInt("clock_timeout"));
+			}
+
+			// Initiate the space default settings the same as its parents.
+			CallableStatement procInitDefault = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?)}");	
+			procInitDefault.setInt(1, newSpaceId);
+			procInitDefault.setInt(2, listOfDefaultSettings.get(0));
+			procInitDefault.setInt(3, listOfDefaultSettings.get(1));
+			procInitDefault.setInt(4, listOfDefaultSettings.get(2));
+			procInitDefault.executeUpdate();
 
 			Common.endTransaction(con);			
 

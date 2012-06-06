@@ -1,5 +1,6 @@
 // Variables for keeping state in the 3-step process of job creation
 var progress = 0;
+var defaultPPId = 0;
 var solverUndo = [];
 var benchUndo = [];
 
@@ -56,7 +57,7 @@ $(document).ready(function(){
 			}
 		}
 	});
-	
+
 	// Initialize UI
 	initUI();	
 	
@@ -74,6 +75,11 @@ $(document).ready(function(){
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */
 function initUI() {
+	
+	// Set the selected post processor to be the default one
+	defaultPPId = $('#postProcess').attr('default');
+	$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	
 	// Set up datatables
 	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
         "sDom": 'rt<"bottom"f><"clear">',        

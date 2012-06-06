@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -140,5 +141,72 @@ public class Communities {
 		}
 
 		return false;
+	}
+	
+	/**
+	 * Get the default setting of the community given by the id.
+	 * 
+	 * @param id the community id 
+	 * @return a list of string containing the default settings
+	 * @author Ruoyu Zhang
+	 */
+	public static List<String> getDefaultSettings(int id) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetCommunityDefaultSettingsById(?)}");
+			procedure.setInt(1, id);					
+			ResultSet results = procedure.executeQuery();	
+			List<String> listOfDefaultSettings = Arrays.asList("","","","","");
+			
+			if(results.next()){
+				listOfDefaultSettings.set(0, results.getString("space_id"));
+				listOfDefaultSettings.set(1, results.getString("name"));
+				listOfDefaultSettings.set(2, results.getString("cpu_timeout"));
+				listOfDefaultSettings.set(3, results.getString("clock_timeout"));
+				listOfDefaultSettings.set(4, results.getString("post_processor"));
+				return listOfDefaultSettings;
+			} else {
+				listOfDefaultSettings.set(0, "id");
+				listOfDefaultSettings.set(1, "");
+				listOfDefaultSettings.set(2, "1");
+				listOfDefaultSettings.set(3, "1");
+				listOfDefaultSettings.set(4, "0");	
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Set the default settings for a community given by the id.
+	 * @param id The space id of the community
+	 * @param num Indicates which attribute needs to be set
+	 * @param setting The new value of the setting
+	 * @return True if the operation is successful
+	 * @author Ruoyu Zhang
+	 */
+	public static boolean setDefaultSettings(int id, int num, int setting) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL SetCommunityDefaultSettingsById(?, ?, ?)}");
+			procedure.setInt(1, id);
+			procedure.setInt(2, num);
+			procedure.setInt(3, setting);
+			ResultSet results = procedure.executeQuery();			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return true;
 	}
 }

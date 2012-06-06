@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,7 +7,10 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
+		int default_pp_index = 0;
 		request.setAttribute("space", Spaces.get(spaceId));
+		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
+		List<Processor> ListOfPostProcessors = Processors.getAll(ProcessorType.POST);
 		
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
@@ -18,7 +21,11 @@
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
-			request.setAttribute("postProcs", Processors.getAll(ProcessorType.POST));
+			request.setAttribute("postProcs", ListOfPostProcessors);
+			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
+			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
+			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
+			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
@@ -63,8 +70,7 @@
 					<tr title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
 						<td>					
-							<select id="postProcess" name="postProcess">
-							<option value="-1">none</option>
+							<select id="postProcess" name="postProcess" default=${defaultPPId}>
 							<c:forEach var="proc" items="${postProcs}">
 									<option value="${proc.id}">${proc.name}</option>
 							</c:forEach>
@@ -74,13 +80,13 @@
 					<tr title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>wallclock timeout</p></td>
 						<td>	
-							<input type="text" name="wallclockTimeout" id="wallclockTimeout" value="-1"/>
+							<input type="text" name="wallclockTimeout" id="wallclockTimeout" value="${defaultClockTimeout}"/>
 						</td>
 					</tr>
 					<tr title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>cpu timeout</p></td>
 						<td>	
-							<input type="text" name="cpuTimeout" id="cpuTimeout" value="-1"/>
+							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
 						</td>
 					</tr>
 					<tr title="which queue should this job be submitted to?">

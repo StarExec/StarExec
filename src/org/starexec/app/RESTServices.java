@@ -542,6 +542,12 @@ public class RESTServices {
 			if (true == Validator.isValidPrimDescription(newDesc)) {
 				success = Spaces.updateDescription(id, newDesc);				
 			}
+		} else if (attribute.equals("PostProcess")) {
+			success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
+		}else if (attribute.equals("CpuTimeout")) {
+			success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
+		}else if (attribute.equals("ClockTimeout")) {
+			success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
 		}
 		
 		// Passed validation AND Database update successful

@@ -1,3 +1,5 @@
+var defaultPPId = 0;
+
 $(document).ready(function(){
 	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
 		alert('Session expired');
@@ -7,6 +9,8 @@ $(document).ready(function(){
 	// Make forms editable
 	editable("name");
 	editable("desc");
+	editable("CpuTimeout");
+	editable("ClockTimeout");
 	processorEditable($('#benchTypeTbl'));
 	processorEditable($('#preProcessorTbl'));
 	processorEditable($('#postProcessorTbl'));
@@ -32,6 +36,9 @@ $(document).ready(function(){
 		togglePlusMinus(this);
 	});	
 	
+	$('#editPostProcess').change(function() {
+		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
+	});
 	
 	$('#newWebsite').hide();
 	$('#newTypeTbl').hide();
@@ -85,6 +92,10 @@ $(document).ready(function(){
 		});	
 	});	
 	
+	// Set the selected post processor to be the default one
+	defaultPPId = $('#editPostProcess').attr('default');
+	$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	
 	$('#addType').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
@@ -103,7 +114,7 @@ $(document).ready(function(){
 	$('#addWebsite').button({
 		icons: {
 			secondary: "ui-icon-plus"
-    }});	
+    }});
 	
 	$('fieldset:not(:first)').expandable(true);
 });
@@ -183,9 +194,13 @@ function editable(attribute) {
 		
 		if(attribute == "desc") {
 			$(this).after('<td><textarea>' + old + '</textarea>&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
-		} else {
+		} else if (attribute == "name"){
 			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
-		}		
+		} else if (attribute == "CpuTimeout"){
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+		} else if (attribute == "ClockTimeout"){
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+		}
 		
 		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
 		$('#cancel' + attribute).click(function(){saveChanges(this, false, attribute, old);});
@@ -209,9 +224,15 @@ function saveChanges(obj, save, attr, old) {
 		var newVal;
 		//since the description is in a textarea, we need to case switch on it to pull
 		//from the correct object
-		if (attr = 'desc') {
+		if (attr == 'desc') {
 			newVal = $(obj).siblings('textarea:first').val();
-		} else {
+		} else if (attr == 'name') {
+			newVal = $(obj).siblings('input:first').val();
+		} else if (attr == "PostProcess"){
+			newVal = obj;
+		} else if (attr == "CpuTimeout"){
+			newVal = $(obj).siblings('input:first').val();
+		} else if (attr == "ClockTimeout"){
 			newVal = $(obj).siblings('input:first').val();
 		}
 		

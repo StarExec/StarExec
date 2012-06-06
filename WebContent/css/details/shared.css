@@ -82,3 +82,11 @@ fieldset {
 #solverInfo thead tr:hover {
 	background-color: #111111;
 }
+
+#infoTablep tbody tr:hover {
+	background-color: inherit;
+}
+
+#userDetail {
+	vertical-align:top;
+}

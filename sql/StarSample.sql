@@ -68,18 +68,16 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('TPTP', SYSDATE(), 'this is Geoffs example space', 0, 5);
 
-/*
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
-	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3, 3, 1024);
+	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3, 2, 1024);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
-	('SAT_LIB_PRE', 'This is a sample SAT pre processor', 'C:\\SATPPREROCESSOR', 3, 1, 10240);
+	('SAT_LIB_PRE', 'This is a sample SAT pre processor', 'C:\\SATPPREROCESSOR', 3, 2, 10240);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('SAT_LIB_POST', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
-	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 3, 1024000);
+	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 2, 1024000);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
-	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3, 10240000);
-*/
+	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 2, 10240000);
 	
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
 	(1, 'Gasburner', SYSDATE(), '/home/starexec/benchmarks/gasburner-prop3-2.smt2', 'This is a sample benchmark that is downloadable', 1, 1, 1024);
@@ -222,3 +220,10 @@ INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path
 INSERT INTO comments(space_id, user_id, cmt, cmt_date) VALUES(3, 1, "this is sample comment", SYSDATE()); 
 
 INSERT INTO job_attributes (pair_id, attr_key, attr_value) VALUES (1, 'starexec-result', 'sat');
+
+INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (1, 1, 1, 1);
+INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (2, 2, 2, 2);
+INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (3, 3, 3, 3);
+INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (4, 4, 4, 4);
+INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (5, 5, 5, 5);
+INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (6, 6, 6, 6);

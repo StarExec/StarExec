@@ -314,6 +314,47 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(32), IN _d
 		WHERE id = _spaceId;
 	END //
 	
+-- Get the default settings of the space given by id.
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS GetSpaceDefaultSettingsById;
+CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
+	BEGIN
+		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor
+		FROM space_default_settings AS settings
+		LEFT OUTER JOIN processors AS pros
+		ON settings.post_processor = pros.id
+		WHERE space_id = _id;
+	END //
 
+-- Set a default setting of a space given by id.
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS SetSpaceDefaultSettingsById;
+CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT)
+	BEGIN
+      CASE _num
+		WHEN 1 THEN
+		UPDATE space_default_settings
+		SET post_processor = _setting
+		WHERE space_id = _id;
+		
+		WHEN 2 THEN
+		UPDATE space_default_settings
+		SET cpu_timeout = _setting
+		WHERE space_id = _id;
+		
+		WHEN 3 THEN
+		UPDATE space_default_settings
+		SET clock_timeout = _setting
+		WHERE space_id = _id;
+    END CASE;
+	END //
+
+-- Insert a default setting of a space given by id when it's initiated.
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS InitSpaceDefaultSettingsById;
+CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT)
+	BEGIN
+		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (_id, _pp, _cto, _clto);
+	END //
 
 DELIMITER ; -- This should always be at the end of this file
