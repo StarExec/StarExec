@@ -1,6 +1,5 @@
 USE starexec;
 
-
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
 	(1, 'Sample Benchmark 1', SYSDATE(), 'C:\\fakepath\\', 'This is a fake benchmark that does not exist on disk; for testing purposes only.', 1, 1, 1024);
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
@@ -3002,5 +3001,3 @@ INSERT INTO bench_assoc VALUES (3, 997);
 INSERT INTO bench_assoc VALUES (3, 998);
 INSERT INTO bench_assoc VALUES (3, 999);
 INSERT INTO bench_assoc VALUES (3, 1000);
-
-

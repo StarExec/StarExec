@@ -101,7 +101,8 @@
 					<th>solver</th>
 					<th>config</th>
 					<th>status</th>
-					<th>time</th>				
+					<th>time</th>
+					<th>result</th>				
 				</tr>		
 			</thead>	
 			<tbody>
@@ -122,6 +123,7 @@
 							<td>--</td>
 						</c:otherwise>						
 					</c:choose>
+					<td>${pair.starexecResult}</td>
 				</tr>
 			</c:forEach>
 			</tbody>

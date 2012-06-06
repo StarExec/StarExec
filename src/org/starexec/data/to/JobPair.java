@@ -3,6 +3,8 @@ package org.starexec.data.to;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.starexec.constants.R;
+
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
  * @author Tyler Jensen
@@ -140,6 +142,15 @@ public class JobPair extends Identifiable {
 	 */
 	public void setSolver(Solver solver) {
 		this.solver = solver;
+	}
+	
+	/**
+	 * @return the starexec-result value from attributes list
+	 */
+	public String getStarexecResult() {
+		Properties prop = this.getAttributes();
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT)) 
+			? prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
 	
 	/**

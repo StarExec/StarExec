@@ -513,7 +513,7 @@ public class Jobs {
 		
 		try {
 			con = Common.getConnection();		
-			return Benchmarks.getAttributes(con, pairId);
+			return Jobs.getAttributes(con, pairId);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -717,7 +717,7 @@ public class Jobs {
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
-			
+			jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
 			returnList.add(jp);
 		}			
 			

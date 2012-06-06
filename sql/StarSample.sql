@@ -118,18 +118,20 @@ INSERT INTO configurations(solver_id, name, description) VALUES
 INSERT INTO configurations(solver_id, name, description) VALUES
 	(2, "default", "This is a default configuration for Vampire");
 	
-/*	
+	
 INSERT INTO jobs (user_id, name, description) VALUES
 	(1, 'Sweet Job','This is an example job description');
+/*
 INSERT INTO jobs (user_id, name, description) VALUES
 	(2, 'SMT Job', 'This is another example job description');
 INSERT INTO jobs (user_id, name, description) VALUES
 	(6, 'TPTP Job 1', 'This is an example job for the TPTP community');
 INSERT INTO jobs (user_id, name, description) VALUES
 	(6, 'TPTP Job 2', 'This is another example job for the TPTP community');
-	
+*/	
 INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code) 
-	VALUES (1, 1990, 1, 1, 1, SYSDATE(), SYSDATE(), 6);
+	VALUES (1, 1990, 1, 1, 1, SYSDATE(), SYSDATE(), 7);
+/*
 INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, status_code)
 	VALUES (1, 3, 3, 3, SYSDATE(), SYSDATE(), 7);
 INSERT INTO job_pairs(job_id, config_id, bench_id, node_id, start_time, end_time, status_code)
@@ -183,12 +185,6 @@ INSERT INTO bench_assoc VALUES (2, 3);
 INSERT INTO bench_assoc VALUES (2, 4);
 INSERT INTO bench_assoc VALUES (2, 5);
 INSERT INTO bench_assoc VALUES (2, 6);
-INSERT INTO bench_assoc VALUES (3, 1);
-INSERT INTO bench_assoc VALUES (3, 2);
-INSERT INTO bench_assoc VALUES (3, 3);
-INSERT INTO bench_assoc VALUES (3, 4);
-INSERT INTO bench_assoc VALUES (3, 5);
-INSERT INTO bench_assoc VALUES (3, 6);
 INSERT INTO bench_assoc VALUES (6, 7);
 INSERT INTO bench_assoc VALUES (6, 8);
 
@@ -197,8 +193,9 @@ INSERT INTO solver_assoc VALUES (3, 1);
 INSERT INTO solver_assoc VALUES (3, 2);
 INSERT INTO solver_assoc VALUES (6, 2);
 
+
+INSERT INTO job_assoc VALUES (3, 1);
 /*
-INSERT INTO job_assoc VALUES (2, 1);
 INSERT INTO job_assoc VALUES (2, 2);
 INSERT INTO job_assoc VALUES (3, 1);
 INSERT INTO job_assoc VALUES (3, 2);
@@ -223,3 +220,5 @@ INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path
 INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (3, 2, "C://Whatever");
 
 INSERT INTO comments(space_id, user_id, cmt, cmt_date) VALUES(3, 1, "this is sample comment", SYSDATE()); 
+
+INSERT INTO job_attributes (pair_id, attr_key, attr_value) VALUES (1, 'starexec-result', 'sat');

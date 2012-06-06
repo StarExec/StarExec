@@ -199,6 +199,17 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 		ORDER BY name;
 	END //	
 	
+-- Retrieves the solver associated with the configuration with the given id
+-- Author: Skylar Stark
+DROP PROCEDURE IF EXISTS GetSolverIdByConfigId;
+CREATE PROCEDURE GetSolverIdByConfigId(IN _id INT)
+	BEGIN
+		SELECT id
+		FROM solvers
+		WHERE id IN (SELECT solver_id
+					FROM configurations
+					WHERE id = _id);
+	END //
 	
 -- Retrieves the solver with the given id
 -- Author: Tyler Jensen

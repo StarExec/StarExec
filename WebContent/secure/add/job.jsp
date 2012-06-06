@@ -112,7 +112,7 @@
 							<input type="hidden" name="solver" value="${s.id}"/>
 							<star:solver value='${s}'/></td>
 						<td>
-							<select id="config_${s.id}" name="configs">								
+							<select id="config_${s.id}" name="configs" multiple="multiple">								
 								<c:forEach var="c" items="${s.configurations}">
 									<option value="${c.id}" title="${c.description}">${c.name}</option>
 								</c:forEach>
@@ -125,6 +125,7 @@
 			<div class="selectWrap">
 				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>
+			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>
 		<fieldset id="fieldStep3">
 			<legend>benchmark selection</legend>

@@ -9,9 +9,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.util.Util;
 
@@ -105,7 +103,6 @@ public class Solvers {
 			log.warn("Getting SolverbyConfig with configId " + configId + " but connection is closed.");
 		}
 		Configuration c = Solvers.getConfiguration(con, configId);
-		//return Solvers.getWithConfig(con, c.getSolverId(), c.getId());
 		return Solvers.getWithConfig(c.getSolverId(), c.getId());
 	}
 	
@@ -514,23 +511,19 @@ public class Solvers {
 	 * @param solverIds A list of solvers to retrieve
 	 * @param configIds A list of configurations, where each one is retrieved along with the solvers in the given order.
 	 * @return A list of solvers, where each one has one configuration as specified in the configIds list
-	 * @author Tyler Jensen
+	 * @author Tyler Jensen & Skylar Stark
 	 */
 	public static List<Solver> getWithConfig(List<Integer> solverIds, List<Integer> configIds) {
-		if(solverIds.size() != configIds.size()) {
-			log.error(String.format("Logical error: expected to pair solvers and configurations but received %d solvers and %d configurations", solverIds.size(), configIds.size()));
-			return null;
-		}
-		
 		Connection con = null;		
 		try {
 			con = Common.getConnection();			
 			List<Solver> solvers = new LinkedList<Solver>();
 			
-			for(int i = 0; i < solverIds.size(); i++) {
-				//Solver s = Solvers.getWithConfig(con, solverIds.get(i), configIds.get(i));
-				Solver s = Solvers.getWithConfig(solverIds.get(i), configIds.get(i));
-				solvers.add(s);
+			for (int cid : configIds) {
+				Solver s = Solvers.getByConfigId(cid);
+				if (s != null & solverIds.contains(s.getId())) {
+					solvers.add(s); //Solver/config pair was valid and selected
+				}
 			}
 			
 			return solvers;
@@ -543,6 +536,42 @@ public class Solvers {
 		return null;
 	}
 	
+	/**
+	 * Returns a solver that is associated with a given configuration.
+	 * 
+	 * @param configId The id of the configuration of the solver we want to return
+	 * @return a solver with the configuration with the given configuration id
+	 */
+	private static Solver getByConfigId(int configId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSolverIdByConfigId(?)}");
+			procedure.setInt(1, configId);	
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				int sid = results.getInt("id");
+				Solver s = Solvers.get(sid);
+				Configuration c = Solvers.getConfiguration(configId);
+				// Make sure this configuration actually belongs to the solver, and add/return it if it does
+				if(sid == c.getSolverId()) {
+					s.addConfiguration(c);
+					return s;
+				}
+			}
+			
+			return null; //The solver/config pair was invalid.
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+
 	/**
 	 * @param solverId The id of the solver to retrieve
 	 * @param configId The id of the configuration to include with the solver

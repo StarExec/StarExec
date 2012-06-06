@@ -69,3 +69,9 @@ div.selectWrap span {
 	position: relative;
 	top: 3px;
 }
+
+fieldset h6 {
+	padding-top: 20px;
+	text-align: right;
+	font-size: small;
+}
