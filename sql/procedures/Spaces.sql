@@ -357,4 +357,12 @@ CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto IN
 		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (_id, _pp, _cto, _clto);
 	END //
 
+-- Get the id of the community when the space belongs
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS GetCommunityOfSpace;
+CREATE PROCEDURE GetCommunityOfSpace(IN _id INT)
+	BEGIN
+		SELECT min(ancestor) AS community FROM closure WHERE descendant=_id AND ancestor != 1;
+	END //
+
 DELIMITER ; -- This should always be at the end of this file
