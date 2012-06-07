@@ -1,0 +1,8 @@
+ul#qrTable {
+	margin: 2em;
+}
+
+ul#qrTable li {
+	padding-left: 1em;
+	margin-bottom: .5em;
+}
