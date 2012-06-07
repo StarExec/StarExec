@@ -146,19 +146,19 @@ public class Communities {
 	/**
 	 * Get the default setting of the community given by the id.
 	 * 
-	 * @param id the community id 
+	 * @param id the space id of the community
 	 * @return a list of string containing the default settings
 	 * @author Ruoyu Zhang
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
+		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0");
 		
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetCommunityDefaultSettingsById(?)}");
 			procedure.setInt(1, id);					
-			ResultSet results = procedure.executeQuery();	
-			List<String> listOfDefaultSettings = Arrays.asList("","","","","");
+			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				listOfDefaultSettings.set(0, results.getString("space_id"));
@@ -167,12 +167,14 @@ public class Communities {
 				listOfDefaultSettings.set(3, results.getString("clock_timeout"));
 				listOfDefaultSettings.set(4, results.getString("post_processor"));
 				return listOfDefaultSettings;
-			} else {
-				listOfDefaultSettings.set(0, "id");
-				listOfDefaultSettings.set(1, "");
-				listOfDefaultSettings.set(2, "1");
-				listOfDefaultSettings.set(3, "1");
-				listOfDefaultSettings.set(4, "0");	
+			}
+			else {
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?)}");
+				procedure.setInt(1, id);
+				procedure.setInt(2, 1);
+				procedure.setInt(3, 1);
+				procedure.setInt(4, 1);
+				procedure.executeUpdate();
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -180,7 +182,7 @@ public class Communities {
 			Common.safeClose(con);
 		}
 		
-		return null;
+		return listOfDefaultSettings;
 	}
 	
 	/**
@@ -196,11 +198,26 @@ public class Communities {
 		
 		try {			
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL SetCommunityDefaultSettingsById(?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
 			procedure.setInt(3, setting);
-			ResultSet results = procedure.executeQuery();			
+			
+			if (procedure.executeUpdate() == 0) {
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?)}");
+				procedure.setInt(1, id);
+				procedure.setInt(2, 1);
+				procedure.setInt(3, 1);
+				procedure.setInt(4, 1);
+				procedure.executeUpdate();
+
+				con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
+				procedure.setInt(1, id);
+				procedure.setInt(2, num);
+				procedure.setInt(3, setting);
+				procedure.executeUpdate();
+			}
+		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

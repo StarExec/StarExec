@@ -14,7 +14,7 @@
 	} else {
 		List<String> listOfDefaultSettings = Communities.getDefaultSettings(com.getId());
 		List<Processor> ListOfPostProcessors = Processors.getAll(ProcessorType.POST);
-		
+
 		request.setAttribute("com", com);	
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
 		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));

@@ -1183,4 +1183,88 @@ public class Spaces {
 		return -1;
 
 	}
+	
+	/**
+	 * Get the default setting of the space given by the id.
+	 * 
+	 * @param id the space id of the space
+	 * @return a list of string containing the default settings
+	 * @author Ruoyu Zhang
+	 */
+	public static List<String> getDefaultSettings(int id) {
+		Connection con = null;			
+		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0");
+		
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
+			procedure.setInt(1, id);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				listOfDefaultSettings.set(0, results.getString("space_id"));
+				listOfDefaultSettings.set(1, results.getString("name"));
+				listOfDefaultSettings.set(2, results.getString("cpu_timeout"));
+				listOfDefaultSettings.set(3, results.getString("clock_timeout"));
+				listOfDefaultSettings.set(4, results.getString("post_processor"));
+				return listOfDefaultSettings;
+			}
+			else {
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?)}");
+				procedure.setInt(1, id);
+				procedure.setInt(2, 1);
+				procedure.setInt(3, 1);
+				procedure.setInt(4, 1);
+				procedure.executeUpdate();
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return listOfDefaultSettings;
+	}
+	
+	/**
+	 * Set the default settings for a space given by the id.
+	 * @param id The space id of the space
+	 * @param num Indicates which attribute needs to be set
+	 * @param setting The new value of the setting
+	 * @return True if the operation is successful
+	 * @author Ruoyu Zhang
+	 */
+	public static boolean setDefaultSettings(int id, int num, int setting) {
+Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
+			procedure.setInt(1, id);
+			procedure.setInt(2, num);
+			procedure.setInt(3, setting);
+			
+			if (procedure.executeUpdate() == 0) {
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?)}");
+				procedure.setInt(1, id);
+				procedure.setInt(2, 1);
+				procedure.setInt(3, 1);
+				procedure.setInt(4, 1);
+				procedure.executeUpdate();
+
+				con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
+				procedure.setInt(1, id);
+				procedure.setInt(2, num);
+				procedure.setInt(3, setting);
+				procedure.executeUpdate();
+			}
+		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return true;
+	}
 }

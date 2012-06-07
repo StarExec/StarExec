@@ -7,7 +7,6 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
-		int default_pp_index = 0;
 		request.setAttribute("space", Spaces.get(spaceId));
 		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 		List<Processor> ListOfPostProcessors = Processors.getAll(ProcessorType.POST);
