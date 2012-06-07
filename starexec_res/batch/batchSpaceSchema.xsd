@@ -29,18 +29,18 @@
     			maxOccurs="unbounded">
     		</element>
     	</sequence>
-    	 <attribute name="id" type="int"></attribute>
+    	 <attribute name="id" type="int" use="optional"></attribute>
     	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
     </complexType>
 
     <complexType name="Benchmark">
     	<attribute name="id" type="int"></attribute>
-    	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    	<attribute name="name" type="string" use="optional"></attribute>
     </complexType>
     
     <complexType name="Solver">
     	<attribute name="id" type="int"></attribute>
-    	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    	<attribute name="name" type="string" use="optional"></attribute>
     </complexType>
     
     <simpleType name="PrimitiveName">
