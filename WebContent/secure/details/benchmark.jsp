@@ -146,7 +146,7 @@
 	<c:if test="${bench.downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> contents</legend>
-			<textarea class=contentTextarea id="benchContent" readonly="readonly" ></textarea>	
+			<textarea class="contentTextarea" id="benchContent" readonly="readonly" ></textarea>	
 			<a href="/starexec/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
 		</fieldset>			

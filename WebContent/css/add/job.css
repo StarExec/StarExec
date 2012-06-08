@@ -44,7 +44,8 @@ button {
 }
 
 #tblSolverConfig tbody tr,
-#tblBenchConfig tbody tr {	
+#tblBenchConfig tbody tr,
+#tblSpaceSelection tbody tr {	
 	cursor: pointer;
 }
 
@@ -74,4 +75,9 @@ fieldset h6 {
 	padding-top: 20px;
 	text-align: right;
 	font-size: small;
+}
+
+.selectConfigs {
+	height: 80px;
+	overflow: auto;
 }

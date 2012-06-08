@@ -117,22 +117,47 @@
 							<input type="hidden" name="solver" value="${s.id}"/>
 							<star:solver value='${s}'/></td>
 						<td>
-							<select id="config_${s.id}" name="configs" multiple="multiple">								
+							<div class="selectConfigs">
 								<c:forEach var="c" items="${s.configurations}">
-									<option value="${c.id}" title="${c.description}">${c.name}</option>
+									<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name}</input><br />
 								</c:forEach>
-							</select>
+							</div>
 						</td>																			
 					</tr>
 				</c:forEach>			
 				</tbody>						
 			</table>				
 			<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectDefault"><span class="ui-icon ui-icon-circlesmall-plus"></span>all default</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>
 		<fieldset id="fieldStep3">
+			<legend>run space selection</legend>
+			<table id="tblSpaceSelection" class="contentTbl">
+				<thead>
+					<tr>
+						<th>choice</th>
+						<th>description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="runSpace">
+						<td><input type="hidden" name="runChoice" value="space" />run ${space.name}</td>
+						<td>this will run all benchmarks in the current space.</td>
+					</tr>
+					<tr id="runHierarchy">
+						<td><input type="hidden" name="runChoice" value="hierarchy" />run ${space.name} and hierarchy</td>
+						<td>this will run all benchmarks in the current space as well as all benchmarks in the current space's hierarchy.</td>
+					</tr>
+					<tr id="runChoose">
+						<td><input type="hidden" name="runChoice" value="choose" />choose benchmarks</td>
+						<td>you will choose which benchmarks to run from the current space.</td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
+		<fieldset id="fieldStep4">
 			<legend>benchmark selection</legend>
 			<table id="tblBenchConfig" class="contentTbl">
 				<thead>

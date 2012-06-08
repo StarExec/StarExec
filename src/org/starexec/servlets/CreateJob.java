@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Job;
@@ -36,6 +38,7 @@ public class CreateJob extends HttpServlet {
 	private static final String workerQueue = "queue";
 	private static final String solvers = "solver";
 	private static final String configs = "configs";
+	private static final String run = "runChoice";
 	private static final String benchmarks = "bench";
 	private static final String cpuTimeout = "cpuTimeout";
 	private static final String clockTimeout = "wallclockTimeout";
@@ -63,6 +66,14 @@ public class CreateJob extends HttpServlet {
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
 		
+		List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
+		
+		
+		if (request.getParameter(run).equals("hierarchy")) {
+			//We chose to run the hierarchy, so add subspace benchmark IDs to the list.
+			benchmarkIds = Benchmarks.getBenchmarkIdsInHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), benchmarkIds);
+		}
+		
 		Job j = JobManager.buildJob(
 				SessionUtil.getUserId(request), 
 				(String)request.getParameter(name), 
@@ -72,7 +83,7 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(workerQueue)), 
 				cpuLimit,
 				runLimit,
-				Util.toIntegerList(request.getParameterValues(benchmarks)), 
+				benchmarkIds, 
 				Util.toIntegerList(request.getParameterValues(solvers)), 
 				Util.toIntegerList(request.getParameterValues(configs)));
 
@@ -147,11 +158,6 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
 				return false;
 			}
-
-			// Check to see if we have a valid list of benchmark ids
-			if(!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
-				return false;
-			}
 			
 			int sid = Integer.parseInt((String)request.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(request, sid);
@@ -161,13 +167,19 @@ public class CreateJob extends HttpServlet {
 				return false;
 			}
 			
-			// Make sure the user is using benchmarks and solvers that they can see
+			// Make sure the user is using solvers they can see
 			int userId = SessionUtil.getUserId(request);
 			
 			if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
 				return false;
 			}
+				
+			// Check to see if we have a valid list of benchmark ids
+			if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
+				return false;
+			}
 			
+			// Make sure the user is using benchmarks they can see
 			if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
 				return false;
 			}

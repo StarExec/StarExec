@@ -74,7 +74,6 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('TPTP', SYSDATE(), 'this is Geoffs example space', 0, 5);
 
-/*
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('SAT_LIB_V1', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 3, 3, 1024);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
@@ -85,11 +84,9 @@ INSERT INTO processors (name, description, path, community, processor_type, disk
 	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 3, 1024000);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3, 10240000);
-*/
 	
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
 	(1, 'Gasburner', SYSDATE(), '/home/starexec/benchmarks/gasburner-prop3-2.smt2', 'This is a sample benchmark that is downloadable', 1, 1, 1024);
-
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
 	(2, 'Jagertest', SYSDATE(), '/home/starexec/benchmarks/jagertest2.smt2', 'This is another sample benchmark that cant be downloaded', 0, 1, 1024);
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
@@ -240,3 +237,5 @@ INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path
 INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (3, 2, "C://Whatever");
 
 INSERT INTO comments(space_id, user_id, cmt, cmt_date) VALUES(3, 1, "this is sample comment", SYSDATE()); 
+
+INSERT INTO queues(name, status) VALUES ("queue1", "ACTIVE");

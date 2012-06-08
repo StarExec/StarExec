@@ -12,7 +12,8 @@ $(document).ready(function(){
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {
 		$('#tblBenchConfig tbody').children('tr').not('.row_selected').find('input').remove();
-		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('select, input').remove();
+		$('#tblSpaceSelection tbody').children('tr').not('.row_selected').find('input').remove();
+		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('input').remove();
 	  	return true;
 	});
 	
@@ -85,7 +86,8 @@ function attachFormValidation(){
 			$('#' + $(label).attr('for')).qtip('api').hide();
 		}
 	});
-}
+};
+
 
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.
@@ -105,7 +107,7 @@ function initUI() {
 	
 	// Place the select all/none buttons in the datatable footer
 	$('#fieldStep2 div.selectWrap').detach().prependTo('#fieldStep2 div.bottom');
-	$('#fieldStep3 div.selectWrap').detach().prependTo('#fieldStep3 div.bottom');
+	$('#fieldStep4 div.selectWrap').detach().prependTo('#fieldStep4 div.bottom');
 	
 	$('#btnNext').button({
 		icons: {
@@ -119,6 +121,10 @@ function initUI() {
     	} else if (progress == 1 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {    	
     		// Make sure the user selects at least one solver before moving on
     		showMessage('warn', 'you must have at least one solver for this job', 3000);
+    		return;
+    	} else if (progress == 2 && $('#tblSpaceSelection tbody tr.row_selected').length <= 0) {
+    		// Make sure the user has selected a choice for running the space
+    		showMessage('warn', 'you must make a selection to continue', 3000);
     		return;
     	}
     	
@@ -142,7 +148,7 @@ function initUI() {
 		}
     }).click(function(){
     	// Make sure the user has at least one benchmark in the table
-    	if (progress == 2 && $('#tblBenchConfig tbody tr.row_selected').length <= 0) {
+    	if (progress == 3 && $('#tblBenchConfig tbody tr.row_selected').length <= 0) {
     		showMessage('warn', 'you must have at least one benchmark for this job', 3000);
     		return false;
     	}
@@ -151,17 +157,46 @@ function initUI() {
     // Hook up select all/none buttons
     $('.selectAll').click(function() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+    	$(this).parents('.dataTables_wrapper').find('input').attr('checked', 'checked');
     });
     
     $('.selectNone').click(function() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+    	$(this).parents('.dataTables_wrapper').find('input').removeAttr('checked');
+    });  
+    
+    $('.selectDefault').click(function() {
+    	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+    	$(this).parents('.dataTables_wrapper').find('input').removeAttr('checked');
+    	$(this).parents('.dataTables_wrapper').find('div>input:first-child').attr('checked', 'checked');
     });
     
     // Enable row selection
 	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
 	});
-    
+	
+	// Step 3 related actions
+	// Selection toggling
+	$("#tblSpaceSelection").delegate("tr", "click", function(){
+		$(this).addClass("row_selected");
+		$(this).siblings().removeClass("row_selected");
+	});
+	
+	// Run space/hierarchy selected
+	$("#runSpace, #runHierarchy").click(function() {
+		$("#tblBenchConfig tr").addClass("row_selected");
+		$('#btnNext').fadeOut('fast');
+		$('#btnDone').fadeIn('fast');
+	});
+	
+	// Choose benchmarks selected
+	$("#runChoose").click(function() {
+		$("#tblBenchConfig tr").removeClass("row_selected");
+		$('#btnDone').fadeOut('fast');
+		$('#btnNext').fadeIn('fast');
+	});
+	
 	// Set timeout default to 1 day	
 	$("#timeoutDay option[value='1']").attr("selected", "selected");
 	
@@ -183,6 +218,7 @@ function updateProgress() {
 	$('#fieldStep1').hide();
 	$('#fieldStep2').hide();
 	$('#fieldStep3').hide();
+	$('#fieldStep4').hide();
 		
 	switch(progress) {
 		case 0:	// Job setup stage
@@ -197,8 +233,14 @@ function updateProgress() {
 			$('#btnPrev').fadeIn('fast');
 			$('#btnDone').fadeOut('fast');
 			break;
-		case 2:	// Bench config stage
+		case 2:	// Run space choice stage
 			$('#fieldStep3').fadeIn('fast');
+			$('#btnNext').fadeOut('fast');
+			$('#btnPrev').fadeIn('fast');
+			$('#btnDone').fadeOut('fast');
+			break;
+		case 3:	// Bench config stage
+			$('#fieldStep4').fadeIn('fast');
 			$('#btnNext').fadeOut('fast');
 			$('#btnPrev').fadeIn('fast');
 			$('#btnDone').fadeIn('fast');

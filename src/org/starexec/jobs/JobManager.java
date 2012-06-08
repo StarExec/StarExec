@@ -261,7 +261,6 @@ public abstract class JobManager {
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
 		// Retrieve all the solvers included in this job
-		// IMPORTANT: Solver IDs and Config IDs need to pair up in order (which is how they should be passed to the server)
 		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
 		
 		// Pair up the solvers and benchmarks

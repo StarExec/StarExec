@@ -2,11 +2,10 @@ var bid;
 var commentTable;
 
 $(document).ready(function(){
+	bid = getParameterByName('id');	
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
 	$('#fieldDepends').expandable(true);
-	bid = getParameterByName('id');
-	
 	$('#fieldContents').expandable(true, function() {
 		if($(this).data('requested') == undefined) {
 			$(this).data('requested', true);
@@ -21,11 +20,9 @@ $(document).ready(function(){
 			});
 		}
 	});
-	// Hide loading images by default
-	$('legend img').hide();	
 	
-//	initCommentsUI();
-//	initComments(bid);
+	initCommentsUI();
+	initComments(bid);
 	
 });
 

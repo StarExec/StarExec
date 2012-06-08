@@ -1419,4 +1419,42 @@ public class Benchmarks {
 
 		return 0;
 	}
+	
+	/**
+	 * Returns an integer list of all benchmark ids in a space's hierarchy. The space is given
+	 * as an input. Will only return the benchmark ids that the user can see from only the spaces
+	 * that the user has access to. This will NOT return benchmark ids from the current space;
+	 * those should already be given as an input.
+	 * 
+	 * @param spaceId the id of the space to find the hierarchy of
+	 * @param userId the id of the current user
+	 * @param benchmarkIds a list containing already needed benchmark ids
+	 * @return an integer list containing the benchmark ids of all benchmarks in the space hierarchy
+	 */
+	public static List<Integer> getBenchmarkIdsInHierarchy(int spaceId, int userId, List<Integer> benchmarkIds) {
+		Benchmarks.addBenchmarkIdsInHierarchy(spaceId, userId, benchmarkIds);
+			
+		return benchmarkIds;
+	}
+	
+	/**
+	 * Recursive method that navigates the space hierarchy and adds benchmark ids to a list
+	 * that we are passing to it.
+	 * 
+	 * @param spaceId the id of the current space we are navigating
+	 * @param userId the id of the current user
+	 * @param benchmarkIds the list of benchmark ids that we are adding to
+	 */
+	public static void addBenchmarkIdsInHierarchy(int spaceId, int userId, List<Integer> benchmarkIds) {
+		List<Space> spaces = Spaces.getSubSpaces(spaceId, userId);
+		for (Space s : spaces) {    //navigate the subspaces
+			List<Benchmark> benchmarks = Benchmarks.getBySpace(s.getId()); //get the benchmarks in this subspace
+			for (Benchmark b : benchmarks) {
+				if (!benchmarkIds.contains(b.getId())) {
+					benchmarkIds.add(b.getId()); //add it only if we don't already have it
+				}
+			}
+			Benchmarks.addBenchmarkIdsInHierarchy(s.getId(), userId, benchmarkIds); //recursively navigate the hierarchy
+		}
+	}
 }
