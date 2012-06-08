@@ -948,17 +948,21 @@ function removeComment(ids){
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var tableName = $(this).attr('id');
 	
-	// Extract the currently selected space from the jstree's cookie
-	var idOfSelectedSpace = $.cookie("jstree_select");
+    // Extract the id of the currently selected space from the DOM
+	var idOfSelectedSpace = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 	
-	// If this id is null, that means we have nothing selected and/or no cookies stored client-side
-	// This snippet selects the root space in that case
-	if(idOfSelectedSpace == null){
-		$('#exploreList').jstree('select_node', '#1', true);
-		idOfSelectedSpace = 1;
-	} else {
-		idOfSelectedSpace = idOfSelectedSpace[1];
+	// If we can't find the id of the space selected from the DOM, get it from the cookie instead
+	if(idOfSelectedSpace == null || idOfSelectedSpace == undefined){
+		idOfSelectedSpace = $.cookie("jstree_select");
+		// If we also can't find the cookie, then just set the space selected to be the root space
+		if(idOfSelectedSpace == null || idOfSelectedSpace == undefined){
+			$('#exploreList').jstree('select_node', '#1', true);
+			idOfSelectedSpace = 1;
+		} else {
+			idOfSelectedSpace = idOfSelectedSpace[1];
+		} 
 	}
+	
 
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
