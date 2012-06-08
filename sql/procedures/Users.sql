@@ -68,7 +68,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 				END) ASC
 				
 				-- Shrink the results to only those required for the next page of Users
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
 						institution,
@@ -86,7 +86,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 					WHEN 1 THEN institution
 					WHEN 2 THEN email
 				END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 		-- Otherwise, ensure the target Users contain _query
 		ELSE
@@ -119,7 +119,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 				END) ASC
 					 
 				-- Shrink the results to only those required for the next page of Users
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
 						institution,
@@ -140,7 +140,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 					WHEN 1 THEN institution
 					WHEN 2 THEN email
 				END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 		END IF;
 	END //

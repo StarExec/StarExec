@@ -86,7 +86,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 END) ASC
 			 
 				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id, 
 						name, 
@@ -111,7 +111,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 	WHEN 4 THEN errorPairs
 						ELSE created
 					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 			
 		-- Otherwise, ensure the target Jobs contain _query
@@ -151,7 +151,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id, 
 						name, 
@@ -178,7 +178,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 	WHEN 4 THEN errorPairs
 						ELSE created
 					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 		END IF;
 	END //
@@ -232,7 +232,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 END) ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
@@ -265,7 +265,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 	WHEN 4 THEN wallclock
 					 	WHEN 5 THEN result
 					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 			
 		-- Otherwise, ensure the target Jobs contain _query
@@ -316,7 +316,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 END) ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
@@ -354,7 +354,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 	WHEN 4 THEN wallclock
 					 	WHEN 5 THEN result
 					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 		END IF;
 	END //

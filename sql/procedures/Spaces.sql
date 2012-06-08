@@ -90,7 +90,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 					END) ASC
 				
 				-- Shrink the results to only those required for the next page of Spaces
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
 						name,
@@ -106,7 +106,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 						WHEN 0 THEN name
 						WHEN 1 THEN description
 					END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 			
 		-- Otherwise, ensure the target Spaces contain _query
@@ -138,7 +138,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 					END) ASC
 				
 				-- Shrink the results to only those required for the next page of Spaces
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			ELSE
 				SELECT 	id,
 						name,
@@ -156,7 +156,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 						WHEN 0 THEN name
 						WHEN 1 THEN description
 					END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
+				LIMIT 0, 10;
 			END IF;
 		END IF;
 	END //
