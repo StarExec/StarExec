@@ -160,12 +160,30 @@ function getParameterByName(name) {
  * @param s - text to encode
  * @author Vivek Sardeshmukh
  */
-function HtmlEncode(s)
-{
-  var el = document.createElement("div");
-  el.innerText = el.textContent = s;
-  s = el.innerHTML;
-  return s;
+function HtmlEncode(s) {
+	var el = document.createElement("div");
+	el.innerText = el.textContent = s;
+	s = el.innerHTML;
+	return s;
 }
 
+/**
+ * Returns the regular expression used to validate primitive names
+ */
+function getPrimNameRegex(){
+	return "^[\\w\\-\\.\\s]+$";
+}
 
+/**
+ * Returns the regular expression used to validate primitive descriptions
+ */
+function getPrimDescRegex(){
+	return "^[\\w\\s\\-\\[\\]\\\\~!@#$%^&*():;`,{}'\"/|=+?.]+$";
+}
+
+/**
+ * Returns the regular expression used to validate user names
+ */
+function getUserNameRegex(){
+	return "^[a-zA-Z\\-'\\s]+$";
+}

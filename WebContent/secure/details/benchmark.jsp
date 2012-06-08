@@ -152,6 +152,7 @@
 		</fieldset>			
 	</c:if>
 	
+<!-- 	Comments feature not yet polished, commenting-out for now
 	<fieldset id="commentField">
 		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
 			<table id="comments">
@@ -175,7 +176,8 @@
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>				
-	
+-->
+
 	<c:if test="${bench.downloadable}">
 		<a id="downLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 	</c:if>

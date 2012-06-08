@@ -24,7 +24,7 @@ try {
 }
 %>
 
-<star:template title="join ${com.name}" css="add/to_community" js="lib/jquery.validate.min, add/to_community">		
+<star:template title="join ${com.name}" css="add/to_community" js="lib/jquery.validate.min, lib/jquery.qtip.min, add/to_community">		
 	<form method="POST" action="to_community/request" id="inviteForm">
 	<fieldset>
 		<legend>community information</legend>
@@ -44,7 +44,7 @@ try {
 					</tr>
 					<tr>
 						<td class="label">reason for joining </td>
-						<td><textarea name="msg" id="reason" maxlength="300">describe your motivation for joining this community</textarea></td>
+						<td><textarea name="msg" id="reason"></textarea></td>
 					</tr>		
 					<tr>
 						<td class="label">notice </td>

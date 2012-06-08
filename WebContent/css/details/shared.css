@@ -53,21 +53,21 @@ fieldset {
 	display: none;
 }
 
-#showPicture{
+#showPicture {
 	height: 160px;
 }
 
-#uploadPicture{
+#uploadPicture {
 	margin-left: 12px;
 	margin-top: 4px;
-	width: 81%;
+	width: 107px;
 }
 
-#solverDetail{
+#solverDetail {
 	vertical-align:top;
 }
 
-#configItem{
+#configItem {
 	width:150px;
 }
 
@@ -89,4 +89,12 @@ fieldset {
 
 #userDetail {
 	vertical-align:top;
+}
+
+#picSection {
+	width: 133px;
+}
+
+#solverDetail tbody tr td:first-child {
+	width: 106px;
 }

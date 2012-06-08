@@ -68,8 +68,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 				END) ASC
 				
 				-- Shrink the results to only those required for the next page of Users
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id,
 						institution,
@@ -87,8 +86,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 					WHEN 1 THEN institution
 					WHEN 2 THEN email
 				END) DESC
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		-- Otherwise, ensure the target Users contain _query
 		ELSE
@@ -108,11 +106,9 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 								WHERE 	space_id = _spaceId)
 							
 				-- Exclude Users whose name and description don't contain the query string
-				AND 	id	IN (SELECT	id
-								FROM 	users
-								WHERE 	CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
-								OR		institution							LIKE 	CONCAT('%', _query, '%')
-								OR		email								LIKE 	CONCAT('%', _query, '%'))
+				AND 	CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				OR		institution							LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%')
 								
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -123,8 +119,7 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 				END) ASC
 					 
 				-- Shrink the results to only those required for the next page of Users
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id,
 						institution,
@@ -136,19 +131,16 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 				WHERE 	id 	IN (SELECT 	user_id
 								FROM	user_assoc
 								WHERE 	space_id = _spaceId)
-				AND 	id	IN (SELECT	id
-								FROM 	users
-								WHERE 	CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
-								OR		institution							LIKE 	CONCAT('%', _query, '%')
-								OR		email								LIKE 	CONCAT('%', _query, '%'))
+				AND 	CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				OR		institution							LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%')
 				ORDER BY 
 				(CASE _colSortedOn
 					WHEN 0 THEN full_name
 					WHEN 1 THEN institution
 					WHEN 2 THEN email
 				END) DESC
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;
 	END //

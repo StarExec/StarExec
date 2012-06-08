@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, explore/spaces, common/comments">			
+<star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, common/comments">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		<a id="trashcan"></a>
@@ -90,6 +90,8 @@
 			</ul>
 		</fieldset>	
 		
+<!-- 	Comments feature not yet polished, commenting-out for now
+	
 		<div id="commentDiv">		
 		<fieldset id="commentField">
 		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
@@ -111,7 +113,7 @@
 		</div>
 		</fieldset>	
 		</div>	
-		
+ -->	
 	</div>	
 	
 	<div id="dialog-confirm-copy" title="confirm copy">

@@ -1,11 +1,77 @@
 var defaultPPId = 0;
 
 $(document).ready(function(){
-	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
-		alert('Session expired');
-		window.location.reload(true);
+	refreshSpaceWebsites();
+	initUI();
+	attachFormValidation();
+	attachWebsiteMonitor();
+});
+
+/**
+ * Monitors the solver's "websites" and updates the server if the client adds/deletes any
+ */
+function attachWebsiteMonitor(){
+	// Handles deleting an existing website
+	$("#websiteTable").delegate(".delWebsite", "click", function(){
+		var id = $(this).attr('id');
+		var parent = $(this).parent().parent();
+		var answer = confirm("are you sure you want to delete this website?");
+		if (true == answer) {
+			$.post(
+					"/starexec/services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + id,
+					function(returnData){
+						if (returnData == 0) {
+							parent.remove();
+						} else {
+							showMessage('error', "the website was not deleted due to an error; please try again", 5000);
+						}
+					},
+					"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+		}
 	});
 	
+	// Handles adding a new website
+	$("#addWebsite").click(function(){
+		var name = $("#website_name").val();
+		var url = $("#website_url").val();
+		
+		if(name.trim().length == 0) {
+			showMessage('error', 'please enter a website name', 6000);
+			return;
+		} else if (url.indexOf("http://") != 0) {			
+			showMessage('error', 'url must start with http://', 6000);
+			return;
+		} else if (url.trim().length <= 12) {
+			showMessage('error', 'the given url is not long enough', 6000);
+			return;
+		}	
+		
+		var data = {name: name, url: url};
+		$.post(
+				"/starexec/services/website/add/space/" + $('#comId').val(),
+				data,
+				function(returnCode) {
+			    	if(returnCode == '0') {
+			    		$("#website_name").val("");
+			    		$("#website_url").val("");
+			    		$('#websites li').remove();
+			    		refreshSpaceWebsites();
+			    	} else {
+			    		showMessage('error', "error: website not added. please try again", 5000);
+			    	}
+				},
+				"json"
+		);
+		
+	});
+}
+
+
+function initUI(){
 	// Make forms editable
 	editable("name");
 	editable("desc");
@@ -39,6 +105,11 @@ $(document).ready(function(){
 	$('#editPostProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
+		
+	// Set the selected post processor to be the default one
+	defaultPPId = $('#editPostProcess').attr('default');
+	$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	
 	
 	$('#newWebsite').hide();
 	$('#newTypeTbl').hide();
@@ -46,55 +117,7 @@ $(document).ready(function(){
 	$('#newPreProcessTbl').hide();
 	$('#dialog-confirm-delete').hide();
 	
-	// Adds 'regex' function to validator
-	$.validator.addMethod(
-			"regex", 
-			function(value, element, regexp) {
-				var re = new RegExp(regexp);
-				return this.optional(element) || re.test(value);
-	});
-	
-	var formsToValidate = ['#addPreProcessorForm', '#addPostProcessorForm', '#newTypeForm'];
-	
-	$.each(formsToValidate, function(i, selector) {
-		$(selector).validate({
-			rules : {
-				name : {
-					required : true,
-					regex : "^[a-zA-Z0-9\\-\\s_]+$",
-					minlength : 2,
-					maxlength: 32
-				},
-				desc: {
-					required : false,	
-					regex : "^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$",
-					maxlength: 300
-				},
-				file: {
-					required : true				
-				}			
-			},
-			messages : {
-				name : {
-					required : "enter a processor name",
-					minlength : "needs to be at least 2 characters",
-					maxlength : "32 characters max",
-					regex : "invalid characters"
-				},
-				desc : {				
-					maxlength : "no more than 300 characters",	
-					regex : "invalid characters"
-				},
-				file : {
-					required : "choose a file"				
-				}
-			}		
-		});	
-	});	
-	
-	// Set the selected post processor to be the default one
-	defaultPPId = $('#editPostProcess').attr('default');
-	$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	$('fieldset:not(:first)').expandable(true);
 	
 	$('#addType').button({
 		icons: {
@@ -114,79 +137,90 @@ $(document).ready(function(){
 	$('#addWebsite').button({
 		icons: {
 			secondary: "ui-icon-plus"
-    }});
-	
-	$('fieldset:not(:first)').expandable(true);
-});
+    }});	
+}
 
-function displayWebsites(data) {
+/**
+ * Attaches form validation to the pre/post processors and the benchmark type form
+ */
+function attachFormValidation(){
+	// Re-validate the 'post-processor' and benchmark 'processor type' fields when they loses focus
+	$("#typeFile").change(function(){
+		 $("#typeFile").blur().focus(); 
+    });
+	$("#processorFile").change(function(){
+		 $("#processorFile").blur().focus(); 
+    });
+	
+	
+	// Adds regular expression handling to JQuery validator
+	$.validator.addMethod(
+			"regex", 
+			function(value, element, regexp) {
+				var re = new RegExp(regexp);
+				return this.optional(element) || re.test(value);
+	});
+	
+	var formsToValidate = ['#addPreProcessorForm', '#addPostProcessorForm', '#newTypeForm'];
+	
+	$.each(formsToValidate, function(i, selector) {
+		$(selector).validate({
+			rules : {
+				name : {
+					required : true,
+					regex : getPrimNameRegex(),
+					maxlength: 64
+				},
+				desc: {
+					required : true,	
+					regex : getPrimDescRegex(),
+					maxlength: 300
+				},
+				file: {
+					required : true				
+				}			
+			},
+			messages : {
+				name : {
+					required : "enter a processor name",
+					maxlength : "64 characters maximum",
+					regex : "invalid character(s)"
+				},
+				desc : {				
+					required : "enter a processor description",
+					maxlength : "300 characters maximum",	
+					regex : "invalid character(s)"
+				},
+				file : {
+					required : "choose a file"				
+				}
+			}		
+		});	
+	});	
+}
+
+/**
+ * Refreshes the space's websites by clearing them from the DOM, querying for them, and
+ * then re-populating the DOM with the new data
+ */
+function refreshSpaceWebsites(){
+	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+}
+
+/**
+ * Processes website data by adding a delete button to the HTML and inject that into the DOM
+ */
+function processWebsiteData(jsonData) {
 	// Injects the clickable delete button that's always present
 	$('#websiteTable tr').remove();
-	$.each(data, function(i, site) {
+	$.each(jsonData, function(i, site) {
 		$('#websiteTable').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-	
-	// Handles deletion of websites
-	$('.delWebsite').click(function(){
-		var answer = confirm("are you sure you want to delete this website?");
-		var websiteId = $(this).attr('id');
-		var parent = $(this).parent().parent();
-		if (true == answer) {
-			$.post(
-					"/starexec/services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + websiteId,
-					function(returnData){
-						if (returnData == 0) {
-							parent.remove();
-						} else {
-							showMessage('error', "error: website not deleted. please try again", 5000);
-						}
-					},
-					"json"
-			).error(function(){
-				alert('Session expired');
-				window.location.reload(true);
-			});
-		}
-	});
-	
-	// Add a new website functionality
-	$("#addWebsite").click(function(){
-		var name = $('#website_name').val();
-		var url = $('#website_url').val();
-		
-		if(name.trim().length == 0) {
-			showMessage('error', 'please enter a website name', 6000);
-			return;
-		} else if (url.indexOf("http://") != 0) {			
-			showMessage('error', 'url must start with http://', 6000);
-			return;
-		} else if (url.trim().length <= 12) {
-			showMessage('error', 'the given url is not long enough', 6000);
-			return;
-		}			
-		
-		var data = {name: name, url: url};
-		$.post(
-				"/starexec/services/website/add/space/" + $('#comId').val(),
-				data,
-				function(returnCode) {
-			    	if(returnCode == '0') {
-			    		$('#website_name').val("");
-			    		$('#website_url').val("");
-			    		$('#websiteTable tr').remove();
-			    		$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), displayWebsites).error(function(){
-			    			alert('Session expired');
-			    			window.location.reload(true);
-			    		});
-			    	} else {
-			    		showMessage('error', "error: website not added. please try again", 5000);
-			    	}
-				},
-				"json"
-		);
-	});
-	
 }
+
 
 function editable(attribute) {
 	$('#edit' + attribute).click(function(){

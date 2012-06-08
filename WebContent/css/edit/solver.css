@@ -2,7 +2,7 @@
 	width: 30%;
 }
 
-.website {
+.delWebsite {
 	float: right;
 	cursor: pointer;
 	font-size: smaller;
@@ -22,4 +22,8 @@
 
 #toggleWebsite {	
 	cursor: pointer;	
+}
+
+table tr td:first-child {
+	width: 160px;
 }

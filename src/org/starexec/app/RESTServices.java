@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.database.Comments;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -24,7 +26,6 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
-import org.starexec.data.database.Comments;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -35,7 +36,6 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
-import org.starexec.data.to.Comment;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
 import org.starexec.util.SessionUtil;
@@ -233,6 +233,34 @@ public class RESTServices {
 		return limitGson.toJson(new RESTHelpers.SpacePermPair(s, p));				
 	}	
 	
+	/**
+	 * Returns the next page of entries for a job pairs table
+	 *
+	 * @param jobId the id of the job to get the next page of job pairs for
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of job pair entries if successful,<br>
+	 * 		1 if the request fails parameter validation,<br> 
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/jobs/{id}/pairs/pagination")
+	@Produces("application/json")	
+	public String getJobPairsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		// Ensure user can view the job they are requesting the pairs from
+		if(false == Permissions.canUserSeeJob(jobId, userId)){
+			return gson.toJson(2);
+		}
+		
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
+		
+		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+	}
+	
 	
 	/**
 	 * Returns the next page of entries in a given DataTable
@@ -307,7 +335,7 @@ public class RESTServices {
 		} else if(primType.startsWith("so")){
 			count = Solvers.getCountInSpace(spaceId);	
 		}  else if(primType.startsWith("sp")){
-			count = Spaces.getCountInSpace(spaceId);
+			count = Spaces.getCountInSpace(spaceId, SessionUtil.getUserId(request));
 		}
 		
 		return gson.toJson(count);
@@ -395,7 +423,8 @@ public class RESTServices {
 			Permission perm = SessionUtil.getPermission(request, id);
 			if(perm != null && perm.isLeader()) {
 				String name = request.getParameter("name");
-				String url = request.getParameter("url");			
+				String url = request.getParameter("url");		
+				log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
 				success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
 			}
 		} else if (type.equals("solver")) {
@@ -516,8 +545,9 @@ public class RESTServices {
 	 * new value are included in the path. First validates that the new value
 	 * is legal, then updates the database and session information accordingly.
 	 * 
-	 * @return a json string containing '0' if the update was successful, else 
-	 * a json string containing '1' if there was a failure. '2' for insufficient permissions
+	 * @return 	0: successful,<br>
+	 * 			1: parameter validation failed,<br>
+	 * 			2: insufficient permissions 
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -529,6 +559,10 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
+		if(Util.isNullOrEmpty((String)request.getParameter("val"))){
+			return gson.toJson(1);
+		}
+		
 		boolean success = false;
 		
 		// Go through all the cases, depending on what attribute we are changing.
@@ -537,7 +571,7 @@ public class RESTServices {
 			if (true == Validator.isValidPrimName(newName)) {
 				success = Spaces.updateName(id, newName);
 			}
-		} else if (attribute.equals("desc")) {
+		} else if (attribute.equals("description")) {
 			String newDesc = (String)request.getParameter("val");
 			if (true == Validator.isValidPrimDescription(newDesc)) {
 				success = Spaces.updateDescription(id, newDesc);				
@@ -671,11 +705,10 @@ public class RESTServices {
 	 * Removes a benchmark's association to a space, thereby removing the
 	 * benchmark from the space
 	 * 
-	 * @return a json string containing '0' if the benchmark was successfully
-	 *         removed from the space, else a json string containing '1' if
-	 *         there was a failure on the database level/attempted 'empty' delete, 
-	 *         and '2' for insufficient permissions
-	 * @author Todd Elvers
+	 * @return	0: if the benchmark was successfully removed from the space,<br> 
+	 * 			1: if there was a failure at the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author 	Todd Elvers
 	 */
 	@POST
 	@Path("/remove/benchmark/{spaceId}")
@@ -704,12 +737,17 @@ public class RESTServices {
 	
 	/**
 	 * Associates (i.e. 'copies') a user from one space into another
-	 * @param spaceId
-	 * @param request The request that contains data about the operation including a 'selectedIds'
+	 * 
+	 * @param	spaceId the id of the destination space we are copying to
+	 * @param	request The request that contains data about the operation including a 'selectedIds'
 	 * attribute that contains a list of users to copy as well as a 'fromSpace' parameter that is the
 	 * space the users are being copied from.
-	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add user permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @return 	0: success,<br>
+	 * 			1: database failure,<br>
+	 * 			2: missing parameters,<br>
+	 * 			3: no add user permission in destination space,<br>
+	 * 			4: user doesn't belong to the 'from space',<br>
+	 * 			5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -755,21 +793,32 @@ public class RESTServices {
 	}
 
 	/**
-	 * Associates (i.e. 'copies') a solver from one space into another
-	 * @param spaceId
+	 * Associates (i.e. 'copies') a solver from one space into another space and, if specified by the client,
+	 * to all the subspaces of the destination space
+	 * 
+	 * @param spaceId the id of the destination space we are copying to
 	 * @param request The request that contains data about the operation including a 'selectedIds'
 	 * attribute that contains a list of solvers to copy as well as a 'fromSpace' parameter that is the
-	 * space the solvers are being copied from.
-	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
-	 * @author Tyler Jensen
+	 * space the solvers are being copied from, and a boolean 'copyToSubspaces' parameter indicating whether or not the solvers
+	 * should be added to the subspaces of the destination space
+	 * @return  0: success,<br> 
+	 * 			1: database failure,<br> 
+	 * 			2: missing parameters,<br> 
+	 * 			3: no add permission in destination space,<br>
+	 * 			4: user doesn't belong to the 'from space',<br> 
+	 * 			5: the 'from space' is locked,<br>
+	 * 			6: user does not belong to one or more of the subspaces of the destination space
+	 * @author Tyler Jensen & Todd Elvers
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
 	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		// Make sure we have a list of solvers to add and the space it's coming from
-		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+		if(null == request.getParameterValues("selectedIds[]") 
+				|| !Util.paramExists("fromSpace", request)
+				|| !Util.paramExists("copyToSubspaces", request)
+				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
 			return gson.toJson(2);
 		}
 		
@@ -779,47 +828,73 @@ public class RESTServices {
 		// Get the space the solver is being copied from
 		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
-		// Check permissions, the user must have add solver permissions in the destination space
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canAddSolver()) {
-			return gson.toJson(3);	
-		}			
+		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
+		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		
-		// Verify the user can at least see the space they claim to be copying from
-		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(4);
-		}			
+		// Convert the solvers to copy to an int list
+		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
-		// And the space the solvers are being copied from must not be locked
+		// Verify the space the solvers are being copied from is not locked
 		if(Spaces.get(fromSpace).isLocked()) {
 			return gson.toJson(5);
 		}
 		
-		// Convert the solvers to copy to a int list
-		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		
+		// Verify the user can at least see the space they claim to be copying from
+		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
+			return gson.toJson(4);
+		}	
+
 		// Make sure the user can see the solver they're trying to copy
-		for(int id : selectedSolvers) {
-			if(!Permissions.canUserSeeSolver(id, requestUserId)) {
+		for (int id : selectedSolvers) {
+			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
 				return gson.toJson(4);
 			}
-		}		
+		}
 		
-		// Make the associations
-		boolean success = Solvers.associate(selectedSolvers, spaceId);
-		
-		// Return a value based on results from database operation
-		return success ? gson.toJson(0) : gson.toJson(1);
+		// Check permissions - the user must have add solver permissions in the destination space
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canAddSolver()) {
+			return gson.toJson(3);	
+		}			
+
+		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
+		if (copyToSubspaces == true) {
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId);
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
+			for(Space subspace : subspaces){
+				Permission subspacePerm = SessionUtil.getPermission(request, subspace.getId());		
+				if(subspacePerm == null || !subspacePerm.canAddSolver()) {
+					return gson.toJson(6);	
+				}			
+				subspaceIds.add(subspace.getId());
+			}
+			
+			// Add the destination space to the list of spaces to associate the solvers with
+			subspaceIds.add(spaceId);
+
+			// Add the solvers to the destination space and its subspaces
+			return Solvers.associate(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+		} else {
+			// Add the solvers to the destination space
+			return Solvers.associate(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		}
 	}
 	
 	/**
 	 * Associates (i.e. 'copies') a benchmark from one space into another
-	 * @param spaceId
+	 * 
+	 * @param spaceId the id of the destination space we are copying to
 	 * @param request The request that contains data about the operation including a 'selectedIds'
 	 * attribute that contains a list of benchmarks to copy as well as a 'fromSpace' parameter that is the
 	 * space the benchmarks are being copied from.
-	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @return 	0: success,<br>
+	 * 			1: database failure,<br>
+	 * 			2: missing parameters,<br>
+	 * 			3: no add user permission in destination space,<br>
+	 * 			4: user doesn't belong to the 'from space',<br>
+	 * 			5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -872,12 +947,17 @@ public class RESTServices {
 	
 	/**
 	 * Associates (i.e. 'copies') a job from one space into another
-	 * @param spaceId
+	 * 
+	 * @param spaceId the id of the destination space we are copying to
 	 * @param request The request that contains data about the operation including a 'selectedIds'
 	 * attribute that contains a list of jobs to copy as well as a 'fromSpace' parameter that is the
 	 * space the jobs are being copied from.
-	 * @return 0: success, 1: database failure, 2: missing parameters, 3: no add permission in destination space
-	 * 4: user doesn't belong to the 'from space', 5: the 'from space' is locked
+	 * @return 	0: success,<br>
+	 * 			1: database failure,<br>
+	 * 			2: missing parameters,<br>
+	 * 			3: no add user permission in destination space,<br>
+	 * 			4: user doesn't belong to the 'from space',<br>
+	 * 			5: the 'from space' is locked
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -933,12 +1013,10 @@ public class RESTServices {
 	 * space; this differs from leaveCommunity() in that the user is not allowed
 	 * to remove themselves from a space or remove other leaders from a space
 	 * 
-	 * @return a json string containing '0' if the user(s) were successfully
-	 *         removed from the space, else a json string containing '1' if
-	 *         there was a database level failure/attempted 'empty' delete, 
-	 *         '2' for insufficient permissions, '3' if the leader initiating 
-	 *         the removal is in the list of users to remove, and '4' if the 
-	 *         list of users to remove contains another leader of the space
+	 * @return 	0: if the user(s) were successfully removed from the space,<br>
+	 * 			1: if there was an error on the database level,<br>
+	 * 			3: if the leader initiating the removal is in the list of users to remove,<br>
+	 * 			4: if the list of users t remove contains another leader of the space
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -983,10 +1061,9 @@ public class RESTServices {
 	 * Removes a solver's association with a space, thereby removing the solver
 	 * from the space
 	 * 
-	 * @return a json string containing '0' if the solver was successfully
-	 *         removed from the space, else a json string containing '1' if
-	 *         there was a database failure/attempted 'empty' delete, 
-	 *         '2' for insufficient permissions, '3' if the input was invalid,
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1019,10 +1096,9 @@ public class RESTServices {
 	 * Removes a job's association with a space, thereby removing the job from
 	 * the space
 	 * 
-	 * @return a json string containing '0' if the job was successfully removed
-	 *         from the space, else a json string containing '1' if there was a
-	 *         database level failure/attempted 'empty' delete, '2' for insufficient
-	 *         permissions, '3' if the input was invalid
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
 	 * @author Todd Elvers
 	 * @deprecated not yet tested
 	 */
@@ -1056,7 +1132,10 @@ public class RESTServices {
 	 * from the space
 	 * 
 	 * @param parentSpaceId the id the space to remove the subspace from
-	 * @return 
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters,<br>
+	 * 			2: insufficient permissions,<br>
+	 * 			3: error on the database level
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1089,8 +1168,10 @@ public class RESTServices {
 	 * update.
 	 * 
 	 * @param id the id of the solver to update the details for
-	 * @return 2 if parameters are not valid, 1 if updating the database failed,
-	 *         and 0 if the update was successful
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions,<br>
+	 * 			3: invalid parameters
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1132,8 +1213,9 @@ public class RESTServices {
 	 * be included in the path.
 	 * 
 	 * @param id the id of the solver to delete
-	 * @return 2 if the parameters are invalid, 1 if the deletion isn't
-	 *         successful, 0 if the deletion was successful
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1148,7 +1230,7 @@ public class RESTServices {
 			gson.toJson(2);
 		}
 		
-		//TODO Need to check if the solver exists in historical space. If it does, we SHOULD NOT delete the solver
+		// TODO Need to check if the solver exists in historical space. If it does, we SHOULD NOT delete the solver
 		// Delete the solver from the database
 		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(1);
 	}
@@ -1159,8 +1241,9 @@ public class RESTServices {
 	 * update.
 	 * 
 	 * @param id the id of the benchmark to update the details for
-	 * @return 2 if parameters are not valid, 1 if updating the database failed,
-	 *         and 0 if the update was successful
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1183,9 +1266,11 @@ public class RESTServices {
 	 * Deletes a benchmark given a benchmarks's id. The id of the benchmark to
 	 * delete must be included in the path.
 	 * 
-	 * @param id the id of the benchmark to delete
-	 * @return 2 if the parameters are invalid, 1 if the deletion isn't
-	 *         successful, 0 if the deletion was successful
+	 * @param benchId the id of the benchmark to delete
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions,<br>
+	 * 			3: invalid parameters
 	 * @author Todd Elvers
 	 */
 	@POST

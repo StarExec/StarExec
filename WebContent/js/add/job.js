@@ -4,9 +4,27 @@ var defaultPPId = 0;
 var solverUndo = [];
 var benchUndo = [];
 
-// When the document is ready to be executed on
 $(document).ready(function(){
-	// Add regex capabilities to validator
+	
+	initUI();
+	attachFormValidation();
+	
+	// Remove all unselected rows from the DOM before submitting
+	$('#addForm').submit(function() {
+		$('#tblBenchConfig tbody').children('tr').not('.row_selected').find('input').remove();
+		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('select, input').remove();
+	  	return true;
+	});
+	
+});
+
+
+/**
+ * Attach validation to the job creation form
+ */
+function attachFormValidation(){
+	
+	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
@@ -21,11 +39,12 @@ $(document).ready(function(){
 				required: true,
 				minlength: 2,
 				maxlength: 32,
-				regex : "^[\\w\\-\\. ]{1,32}$"
+				regex : getPrimNameRegex()
 			},
 			desc: {
-				maxlength: 512,
-				regex: "^[\\w\\]\\[!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"
+				required: true,
+				maxlength: 1024,
+				regex: getPrimDescRegex()
 			},
 			cpuTimeout: {
 				required: true,			    
@@ -38,13 +57,14 @@ $(document).ready(function(){
 		},
 		messages: {
 			name:{
-				required: "enter a space name",
-				minlength: ">= 2 characters",
-				maxlength: "< 32 characters",
+				required: "enter a job name",
+				minlength: "2 characters minimum",
+				maxlength: "32 characters maximum",
 				regex: "invalid character(s)"
 			},
 			desc: {
-				maxlength: "< 512 characters",
+				required: "enter a job description",
+				maxlength: "1024 characters maximum",
 				regex: "invalid character(s)"
 			},
 			cpuTimeout: {
@@ -55,21 +75,17 @@ $(document).ready(function(){
 				required: "enter a timeout",			    
 			    max: "3 day max timeout"
 			}
+		},
+		// Place the error messages in the tooltip instead of in the DOM
+		errorPlacement: function (error, element) {
+			$(element).qtip('api').updateContent('<b>'+$(error).text()+'</b>', true);
+		},
+		// Hide the error tooltip when no errors are present
+		success: function(label){
+			$('#' + $(label).attr('for')).qtip('api').hide();
 		}
 	});
-
-	// Initialize UI
-	initUI();	
-	
-	$('#addForm').submit(function() {
-		// Remove all unselected rows from the DOM before submitting
-		$('#tblBenchConfig tbody').children('tr').not('.row_selected').find('input').remove();
-		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('select, input').remove();
-	  	return true;
-	});
-	
-});
-
+}
 
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.
@@ -114,7 +130,8 @@ function initUI() {
 	$('#btnPrev').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
-    }}).click(function(){
+		}
+	}).click(function(){
     	progress--;
     	updateProgress();
     });
@@ -122,8 +139,9 @@ function initUI() {
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
-    }}).click(function(){
-    	// Make sure the user has at least one bechmark in the table
+		}
+    }).click(function(){
+    	// Make sure the user has at least one benchmark in the table
     	if (progress == 2 && $('#tblBenchConfig tbody tr.row_selected').length <= 0) {
     		showMessage('warn', 'you must have at least one benchmark for this job', 3000);
     		return false;
@@ -149,6 +167,12 @@ function initUI() {
 	
     // Initialize the state of the job creator by forcing a progress update
     updateProgress();           
+    
+    // Have the validation errors appear in tooltips instead of plain text
+    $('#txtJobName').qtip(getErrorTooltip());
+    $('#txtDesc').qtip(getErrorTooltip());
+    $('#wallclockTimeout').qtip(getErrorTooltip());
+    $('#cpuTimeout').qtip(getErrorTooltip());
 }
 
 /**
@@ -180,4 +204,56 @@ function updateProgress() {
 			$('#btnDone').fadeIn('fast');
 			break;
 	}
+}
+
+
+
+/**
+ * Returns the tooltip configuration used to display error messages to the client
+ */
+function getErrorTooltip(){
+	// Sets up the tooltip look & feel
+	$.fn.qtip.styles.errorTooltip = {
+			background: '#E1E1E1',
+			'padding-left': 15,
+			'padding-right': 8,
+			'padding-top': 8,
+			'padding-bottom': 8,
+			color : '#ae0000'
+	};
+	
+	// Return the tooltip configuration using the above style
+	return {
+		position: {
+			corner:{
+				target: 'rightMiddle',
+				tooltip: 'leftMiddle'
+			}
+		},
+		show: {
+			when: false,	// Don't tie the showing of this to any event
+			ready: false,	// Don't display tooltip once it has been initialized
+			effect: {
+				type: 'grow'
+			}
+		},
+		hide: {
+			when: false,	// Don't tie the hiding of this to any event
+			effect: 'fade'
+		},
+		style: {
+			tip: 'leftMiddle',
+			name: 'errorTooltip'
+		},
+		api:{
+			onContentUpdate: function(){
+				// Hide the tooltip initially by not showing the tooltip when it's empty
+				if($(this.elements.content).text().length > 1){
+					this.show();
+					// Fixes the bug where sometimes opacity is < 1
+					$('div[qtip="'+this.id+'"]').css('opacity',1);
+				}
+			}
+		}
+	};
 }

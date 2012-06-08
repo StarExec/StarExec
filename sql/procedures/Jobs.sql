@@ -25,8 +25,8 @@ CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHA
 
 -- Returns the number of jobs in a given space
 -- Author: Todd Elvers	
-DROP PROCEDURE IF EXISTS GetJobCountInSpace;
-CREATE PROCEDURE GetJobCountInSpace(IN _spaceId INT)
+DROP PROCEDURE IF EXISTS GetJobCountBySpace;
+CREATE PROCEDURE GetJobCountBySpace(IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
 		FROM jobs
@@ -34,7 +34,16 @@ CREATE PROCEDURE GetJobCountInSpace(IN _spaceId INT)
 					FROM job_assoc
 					WHERE space_id = _spaceId);
 	END //
-	
+
+-- Returns the number of jobs pairs for a given job
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetJobPairCountByJob;
+CREATE PROCEDURE GetJobPairCountByJob(IN _jobId INT)
+	BEGIN
+		SELECT COUNT(*) AS jobPairCount
+		FROM job_pairs
+		WHERE job_id = _jobId;
+	END //
 	
 -- Gets the fewest necessary Jobs in order to service a client's
 -- request for the next page of Jobs in their DataTable object.  
@@ -62,8 +71,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 				
 				-- Exclude Jobs that aren't in the specified space
 				WHERE 	id 	IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
+								FROM job_assoc
+								WHERE space_id = _spaceId)
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -77,8 +86,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 END) ASC
 			 
 				-- Shrink the results to only those required for the next page of Jobs
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id, 
 						name, 
@@ -92,8 +100,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
 				WHERE 	id 	IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
+								FROM job_assoc
+								WHERE space_id = _spaceId)
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name
@@ -103,8 +111,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 	WHEN 4 THEN errorPairs
 						ELSE created
 					 END) DESC
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 			
 		-- Otherwise, ensure the target Jobs contain _query
@@ -123,10 +130,9 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 				
 				FROM	jobs
 				
-				-- Exclude Jobs whose name and description don't contain the query string
-				WHERE 	id		IN (SELECT	id
-									FROM 	jobs
-									WHERE 	name		LIKE	CONCAT('%', _query, '%'))
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%')
 										
 				-- Exclude Jobs that aren't in the specified space
 				AND 	id 		IN (SELECT job_id 
@@ -145,8 +151,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of Jobs
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id, 
 						name, 
@@ -159,9 +164,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
-				WHERE 	id		IN (SELECT	id
-									FROM 	jobs
-									WHERE 	name		LIKE	CONCAT('%', _query, '%'))
+				WHERE 	name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%')
 				AND 	id 		IN (SELECT job_id 
 									FROM job_assoc
 									WHERE space_id = _spaceId)
@@ -174,8 +178,183 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 					 	WHEN 4 THEN errorPairs
 						ELSE created
 					 END) DESC
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+	
+	
+-- Gets the fewest necessary JobPairs in order to service a client's
+-- request for the next page of JobPairs in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.  
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetNextPageOfJobPairs;
+CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _jobId INT, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of JobPairs without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF (_sortASC = TRUE) THEN
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						GetWallclock(start_time, end_time) AS wallclock
+						
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+				
+				WHERE 	job_id = _jobId
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of JobPairs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						GetWallclock(start_time, end_time) AS wallclock
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+				WHERE 	job_id = _jobId
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Jobs contain _query
+		ELSE
+			IF (_sortASC = TRUE) THEN
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						GetWallclock(start_time, end_time) AS wallclock
+						
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+				
+				WHERE 	job_id = _jobId
+				
+				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
+				-- don't include the query
+				AND		bench.name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config.name		LIKE	CONCAT('%', _query, '%')
+				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		wallclock		LIKE	CONCAT('%', _query, '%')
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of JobPairs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						GetWallclock(start_time, end_time) AS wallclock
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+				WHERE 	job_id = _jobId
+				AND		bench.name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config.name		LIKE	CONCAT('%', _query, '%')
+				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		wallclock		LIKE	CONCAT('%', _query, '%')
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;
 	END //
@@ -271,6 +450,12 @@ BEGIN
 	DELETE FROM job_assoc
 	WHERE job_id = _jobId
 	AND space_id = _spaceId;
+	
+	-- If the job has no other associations in job_assoc, delete it from StarExec
+	IF NOT EXISTS (SELECT * FROM job_assoc WHERE job_id = _jobId) THEN
+		DELETE FROM jobs
+		WHERE id = _jobId;
+	END IF;
 END //
 	
 -- Retrieves all jobs belonging to a space (but not their job pairs)

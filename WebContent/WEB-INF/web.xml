@@ -175,6 +175,14 @@
     <servlet-name>ConfigurationUploader</servlet-name>
     <url-pattern>/secure/upload/configurations</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <servlet-name>ConfigurationSaver</servlet-name>
+    <servlet-class>org.starexec.servlets.SaveConfiguration</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ConfigurationSaver</servlet-name>
+    <url-pattern>/secure/save/configurations</url-pattern>
+  </servlet-mapping>
   
   <!-- RESTEasy webservice framework configuration -->
   <servlet>  	

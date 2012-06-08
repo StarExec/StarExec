@@ -6,16 +6,16 @@
 %>
 
 <star:template title="user registration" css="common/pass_strength_meter, accounts/registration" js="lib/jquery.validate.min, lib/jquery.validate.password, accounts/registration">	
-	<p>create a new user account</p>
-	<form method="POST" action="/starexec/public/registration/manager" id="regForm">	
-
+	<p class="registration">create a new user account</p>
+	<div id="javascriptDisabled">javascript is required for most features in StarExec, please enable it and reload this page</div>
+	<form method="POST" action="/starexec/public/registration/manager" id="regForm" class="registration">	
 	<fieldset>			
-		<legend>user information</legend>
+		<legend class="registration">user information</legend>
 		<table class="shaded">
 			<thead>
 				<tr>
 					<th>attribute</th>
-					<th id="value_header">value</th>
+					<th>value</th>
 				</tr>
 			</thead>		
 			<tbody>						
@@ -54,9 +54,10 @@
 				<tr>
 					<td class="label">preferred archive type</td>
 					<td>
-						<select name="pat">
+						<select id="archiveType" name="pat">
+							<option> </option>
 							<option value=".tar">.tar</option>
-							<option value=".tar.gz" selected="selected">.tar.gz</option>
+							<option value=".tar.gz">.tar.gz</option>
 							<option value=".tgz">.tgz</option>
 							<option value=".zip">.zip</option>
 						</select>
@@ -88,7 +89,7 @@
 					</tr>
 					<tr>
 						<td class="label">reason for joining</td>
-						<td><textarea name="msg" id="reason">describe your motivation for joining this community</textarea></td>
+						<td><textarea name="msg" id="reason"></textarea></td>
 					</tr>		
 					<tr>
 						<td colspan="3"><button type="submit" id="submit" value="Submit">register</button></td>

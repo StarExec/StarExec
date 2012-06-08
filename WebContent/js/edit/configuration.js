@@ -1,28 +1,13 @@
 $(document).ready(function(){
-	
-	// Setup the UI buttons/actions
 	initUI();
-	
-	
+	attachFormValidation();
 });
 
 
 /**
- * Sets up the UI buttons/actions 
+ * Initializes the user-interface
  */
 function initUI(){
-	
-	/* setup button icons and actions */
-	initButtons();
-	
-}
-
-
-
-/**
- * Sets up button icons and actions
- */
-function initButtons(){
 	
 	// Attach icons
 	$('#cancelConfig').button({
@@ -35,9 +20,6 @@ function initButtons(){
 			secondary: "ui-icon-check"
 		}
 	});
-	
-	// Setup form validation requirments
-	initFormValidation();
 	
 	// Updates the database to reflect the newly inputed configuration details
 	// when the 'update' button is pressed
@@ -56,7 +38,6 @@ function initButtons(){
 								window.location = '/starexec/secure/details/configuration.jsp?id=' + getParameterByName("id");
 								break;
 							case 1:
-//								showMessage('error', "configuration details and contents were not updated due to an internal error; please try again", 5000);
 								showMessage('error', "a configuration already exists for this solver with the name \""+name+"\"", 5000);
 								break;
 							case 2:
@@ -76,7 +57,10 @@ function initButtons(){
 	});
 }
 
-function initFormValidation(){
+/**
+ * Attaches form validation to the 'edit configuration' fields
+ */
+function attachFormValidation(){
 	
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
@@ -93,27 +77,33 @@ function initFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
-	// Configuration form validation constrains
+	// Form validation rules/messages
 	$("#editConfigForm").validate({
 		rules : {
 			name : {
 				required : true,
-				regex : "^[\\w\\-\\.\\s]+$"
+				maxlength: 64,
+				regex 	 : getPrimNameRegex()
 			},
 			description : {
-				required : true
+				required : true,
+				maxlength: 1024,
+				regex	 : getPrimDescRegex()
 			},
 			contents : { 
-				required: true
+				required : true
 			}
 		},
 		messages : {
 			name : {
 				required : "name required",
-				regex : "invalid characters"
+				maxlength: "64 characters maximum",
+				regex 	 : "invalid character(s)"
 			},
 			description : {
-				required : "description required"
+				required : "description required",
+				maxlength: "1024 characters maximum",
+				regex 	 : "invalid character(s)"
 			},
 			contents : {
 				required : "input script's contents"

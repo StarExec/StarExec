@@ -275,17 +275,18 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	protected static boolean addConfiguration(Connection con, Configuration c) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
 		procedure.setInt(1, c.getSolverId());
 		procedure.setString(2, c.getName());
+		procedure.setString(3, c.getDescription());
 		
 		procedure.executeUpdate();		
 		return true;		
 	}
 	
 	/**
-	 * Adds a configuration entry in the database for a particular solver
-	 * and updates that solver's disk size to reflect the new file<br>
+	 * Adds a configuration entry in the database for a particular solver 
+	 * and updates that solver's disk size to reflect the new file
 	 *
 	 * @param s the solver to add the configuration to
 	 * @param c the configuration to add to said solver
@@ -297,11 +298,13 @@ public class Solvers {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
 			procedure.setInt(1, s.getId());
 			procedure.setString(2, c.getName());
+			procedure.setString(3, c.getDescription());
+			
 			procedure.executeUpdate();		
-			int newConfigId = procedure.getInt(3);
+			int newConfigId = procedure.getInt(4);
 			
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
@@ -442,6 +445,8 @@ public class Solvers {
 				Solvers.associate(con, spaceId, sid);
 			}
 			
+			log.info("Successfully added solvers " + solverIds.toString() + " to space [" + spaceId + "]");
+			
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e){			
@@ -450,7 +455,58 @@ public class Solvers {
 		} finally {
 			Common.safeClose(con);
 		}
+		log.error("Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]");
+		return false;
+	}
+	
+	/**
+	 * Adds an association between a list of solvers and a space
+	 * 
+	 * @param con the database transaction to use
+	 * @param solverIds the ids of the solvers to add to a space
+	 * @param spaceId the id of the space to add the solvers to
+	 * @return true iff all solvers in solverIds are successfully 
+	 * added to the space represented by spaceId,<br> false otherwise
+	 * @throws Exception
+	 * @author Todd Elvers
+	 */
+	protected static boolean associate(Connection con, List<Integer> solverIds, int spaceId) throws Exception {
+		for(int sid : solverIds) {
+			Solvers.associate(con, spaceId, sid);
+		}
+		return true;
+	}
+	
+	/**
+	 * Adds an association between a list of solvers and a list of spaces, in an all-or-none fashion
+	 * 
+	 * @param solverIds the ids of the solvers to add to the spaces
+	 * @param spaceIds the ids of the spaces to add the solvers to
+	 * @return true iff all spaces in spaceIds successfully have all 
+	 * solvers in solverIds add to them, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean associate(List<Integer> solverIds, List<Integer> spaceIds) {
+		Connection con = null;			
 		
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			// For each space id in spaceIds, add all the solvers to it
+			for(int spaceId : spaceIds) {
+				Solvers.associate(con, solverIds, spaceId);
+			}
+			log.info("Successfully added solvers " + solverIds.toString() + " to spaces " + spaceIds.toString());
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		log.error("Failed to add solvers " + solverIds.toString() + " to spaces " + spaceIds.toString());
 		return false;
 	}
 

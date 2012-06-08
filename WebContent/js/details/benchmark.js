@@ -5,7 +5,6 @@ $(document).ready(function(){
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
 	$('#fieldDepends').expandable(true);
-	initCommentsUI();
 	bid = getParameterByName('id');
 	
 	$('#fieldContents').expandable(true, function() {
@@ -25,7 +24,8 @@ $(document).ready(function(){
 	// Hide loading images by default
 	$('legend img').hide();	
 	
-	initComments(bid);
+//	initCommentsUI();
+//	initComments(bid);
 	
 });
 

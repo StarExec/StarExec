@@ -1,5 +1,5 @@
 .dragClone {
-	max-width: 150px;
+	max-width: 200px;
 	overflow: hidden;	
 	position: fixed;
 	background-color: #fff;
@@ -19,8 +19,6 @@
 
 #exploreList a.active {
 	border: 1px dashed #008d03;
-	border-radius:2px;
-	padding: 10px;	
 }
 
 
@@ -98,7 +96,7 @@
 
 #trashcan .ui-icon {
 	margin-top: -8px;
-	margin-right: 9px;
+	margin-right: 10px;
 }
 
 #trashcan.active {

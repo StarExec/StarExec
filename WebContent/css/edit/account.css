@@ -47,7 +47,7 @@ fieldset ul li {
 	width: 30%;
 }
 
-.website {
+.delWebsite {
 	float: right;
 	cursor: pointer;
 	font-size: smaller;
@@ -103,12 +103,16 @@ input[type="text"] {
 	background-color: #ae0000;
 }
 
-#personal thead tr:hover {
+#personal thead tr:hover, .notShaded {
 	background-color: #111111;
 }
 
+#picSection{
+	width: 133px;
+}
+
 #uploadPicture{
-	margin-left: -1px;
-	margin-top: 0px;
-	width: 81%;
+	margin-left: 2px;
+	margin-top: -6px;
+	width: 107px;
 }

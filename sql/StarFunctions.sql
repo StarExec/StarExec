@@ -14,7 +14,11 @@ CREATE FUNCTION GetBenchmarkTypeDescription(_benchTypeId INT)
 	RETURNS TEXT
 	BEGIN
 		DECLARE benchTypeDescription TEXT;
-		SELECT description INTO benchTypeDescription FROM processors WHERE id = _benchTypeId;
+		
+		SELECT description INTO benchTypeDescription 
+		FROM processors 
+		WHERE id = _benchTypeId;
+		
 		RETURN benchTypeDescription;
 	END //
 	
@@ -26,7 +30,11 @@ CREATE FUNCTION GetBenchmarkTypeName(_benchTypeId INT)
 	RETURNS VARCHAR(64)
 	BEGIN
 		DECLARE benchTypeName VARCHAR(64);
-		SELECT name INTO benchTypeName FROM processors WHERE id = _benchTypeId;
+		
+		SELECT name INTO benchTypeName 
+		FROM processors 
+		WHERE id = _benchTypeId;
+		
 		RETURN benchTypeName;
 	END //
 	
@@ -38,7 +46,12 @@ CREATE FUNCTION GetCompletePairs(_jobId INT)
 	RETURNS INT
 	BEGIN
 		DECLARE completePairs INT;
-		SELECT COUNT(*) INTO completePairs FROM job_pairs WHERE job_id=_jobId AND status_code=7;
+		
+		SELECT COUNT(*) INTO completePairs 
+		FROM job_pairs 
+		WHERE job_id=_jobId 
+		AND status_code=7;
+		
 		RETURN completePairs;
 	END //
 	
@@ -50,10 +63,30 @@ CREATE FUNCTION GetErrorPairs(_jobId INT)
 	RETURNS INT
 	BEGIN
 		DECLARE errorPairs INT;
-		SELECT COUNT(*) INTO errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 8 AND 17 OR status_code=0);
+		
+		SELECT COUNT(*) INTO errorPairs 
+		FROM job_pairs 
+		WHERE job_id=_jobId 
+		AND (status_code BETWEEN 8 AND 17 OR status_code=0);
+		
 		RETURN errorPairs;
 	END //
-	
+
+-- Returns the result of a job pair
+-- Author: Todd Elvers
+DROP FUNCTION IF EXISTS GetJobPairResult;
+CREATE FUNCTION GetJobPairResult(_jobPairId INT)
+	RETURNS VARCHAR(128)
+	BEGIN
+		DECLARE result VARCHAR(128);
+		
+		SELECT attr_value INTO result 
+		FROM job_attributes 
+		WHERE pair_id = _jobPairId 
+		AND attr_key = "starexec-result";
+		
+		RETURN IFNULL(result, '--');
+	END //
 	
 -- Returns "complete" if the job represented by the given id had no pending job pairs,
 -- and returns "incomplete" otherwise
@@ -63,11 +96,13 @@ CREATE FUNCTION GetJobStatus(_jobId INT)
 	RETURNS VARCHAR(10)
 	BEGIN
 		DECLARE status VARCHAR(10);
+		
 		IF(GetPendingPairs(_jobId) > 0) THEN
 			SET status = "incomplete";
 		ELSE
 			SET status = "complete";
 		END IF;
+		
 		RETURN status;
 	END //
 	
@@ -79,7 +114,12 @@ CREATE FUNCTION GetPendingPairs(_jobId INT)
 	RETURNS INT
 	BEGIN
 		DECLARE pendingPairs INT;
-		SELECT COUNT(*) INTO pendingPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6);
+		
+		SELECT COUNT(*) INTO pendingPairs 
+		FROM job_pairs
+		WHERE job_id=_jobId 
+		AND (status_code BETWEEN 1 AND 6);
+		
 		RETURN pendingPairs;
 	END //
 	
@@ -91,9 +131,25 @@ CREATE FUNCTION GetTotalPairs(_jobId INT)
 	RETURNS INT
 	BEGIN
 		DECLARE totalPairs INT;
-		SELECT COUNT(*) INTO totalPairs FROM job_pairs WHERE job_id=_jobId;
+		
+		SELECT COUNT(*) INTO totalPairs 
+		FROM job_pairs 
+		WHERE job_id=_jobId;
+		
 		RETURN totalPairs;
 	END //
 
-
+	
+-- Determines the wallclock time difference between two timestamps
+-- and returns that in milliseconds
+-- Author: Todd Elvers
+DROP FUNCTION IF EXISTS GetWallclock;
+CREATE FUNCTION GetWallClock(start_time TIMESTAMP, end_time TIMESTAMP)
+	RETURNS BIGINT
+	BEGIN
+		DECLARE wallclock BIGINT;
+		SET wallclock = TIMESTAMPDIFF(MICROSECOND, start_time, end_time)/1000;
+		RETURN wallclock;
+	END//
+	
 DELIMITER ; -- This should always be at the end of this file

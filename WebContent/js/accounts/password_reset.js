@@ -1,5 +1,23 @@
 $(document).ready(function() {
-	// Adds 'regex' function to validator
+	initUI();
+	attachFormValidation();
+});
+
+/**
+ * Initializes the user-interface
+ */
+function initUI(){
+	$('#submit').button({
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-s"
+    }});
+}
+
+/**
+ * Attaches form validation to the password reset fields
+ */
+function attachFormValidation(){
+	// Adds regular expression handling to the jQuery Validator
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
@@ -8,44 +26,44 @@ $(document).ready(function() {
 	});
 
 	
-	// Validate fields
+	// Form validation rules/messages	
 	$("#resetForm").validate({
 		rules : {
 			fn : {
-				required : true,
-				regex : "^[a-zA-Z\\-'\\s]+$",
-				minlength : 2
+				required 	: true,
+				regex 		: getUserNameRegex(),
+				minlength 	: 2,
+				maxlength	: 32
 			},
 			ln : {
-				required : true,
-				regex : "^[a-zA-Z\\-'\\s]+$",
-				minlength : 2
+				required 	: true,
+				regex 		: getUserNameRegex(),
+				minlength 	: 2,
+				maxlength	: 32
 			},
 			em : {
-				required : true,
-				email : true
+				required 	: true,
+				email 		: true
 			}			
 		},
 		messages : {
 			fn : {
-				required : "enter a first name",
-				minlength : "needs to be at least 2 characters",
-				regex : "invalid characters"
+				required 	: "enter your first name",
+				minlength 	: "2 characters minimum",
+				maxlength	: "32 characters maximum",
+				regex 		: "invalid character(s)"
 			},
 			ln : {
-				required : "enter a last name",
-				minlength : "needs to be at least 2 characters",
-				regex : "invalid characters"
+				required 	: "enter your first name",
+				minlength 	: "2 characters minimum",
+				maxlength	: "32 characters maximum",
+				regex 		: "invalid character(s)"
 			},
 			em : {
-				required : "enter a valid email address",
-				email : "invalid email format"
+				required 	: "enter a valid email address",
+				email 		: "invalid email format"
 			}
 		}
 	});
 
-	$('#submit').button({
-		icons: {
-			secondary: "ui-icon-arrowrefresh-1-s"
-    }});
-});
+}

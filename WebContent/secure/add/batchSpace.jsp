@@ -6,12 +6,12 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
-		request.setAttribute("space", Spaces.get(spaceId));
 		
 		// Verify this user can add spaces to this space
-		Permission p = SessionUtil.getPermission(request, spaceId);
-		Boolean relevantPermission = p.canAddSpace();
-		if(!relevantPermission) {
+		Permission userPerm = SessionUtil.getPermission(request, spaceId);
+		if(userPerm.canAddSpace()) {
+			request.setAttribute("space", Spaces.get(spaceId));
+		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add spaces here");
 		}
 	} catch (NumberFormatException nfe) {
@@ -20,15 +20,16 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to upload spaces to this space or the space does not exist");		
 	}
 %>
-<star:template title="Upload XML Representation of Space Hierarchy to ${space.name}" css="add/solver" js="lib/jquery.validate.min, add/batchSpace">
+<star:template title="upload XML representation of space hierarchy to ${space.name}" css="add/solver" js="lib/jquery.validate.min, add/batchSpace">
 	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/space" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
-			<legend>Upload your compressed file </legend>		
+			<legend>upload your compressed file </legend>		
 			<table id="tblXML" class="shaded">
+				<tr></tr>
 				<tr>
-					<td>File location</td>
-					<td><input name="f" type="file" /></td>
+					<td>file location</td>
+					<td><input id="fileUpload" name="f" type="file" /></td>
 				</tr>
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 				</tr>

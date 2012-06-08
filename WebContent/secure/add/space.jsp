@@ -27,14 +27,14 @@
 			<table id="tblSpace" class="shaded">
 				<thead>
 					<tr>
-						<td>attribute</td>
-						<td>value</td>
+						<th>attribute</th>
+						<th>value</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						<td class="label"><p>name</p></td>
-						<td><input id="txtName" name="name" type="text"/></td>
+						<td><input id="txtName" name="name" type="text"></input></td>
 					</tr>
 					<tr>
 						<td class="label"><p>description</p></td>

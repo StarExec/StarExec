@@ -5,4 +5,3 @@
 \. StarFunctions.sql
 \. StarProcedures.sql
 \. StarSample.sql
-\. StarSampleLarge.sql

@@ -19,7 +19,7 @@ tr th {
 	vertical-align: middle;
 }
 
-#uploadBtn, #saveBtn {
+.uploadBtn, .saveBtn {
 	float: right;
 	margin-right: 10px;
 }

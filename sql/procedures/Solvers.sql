@@ -29,10 +29,10 @@ CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 -- Adds a run configuration to the specified solver
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddConfiguration;
-CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(64), OUT configId INT)
+CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(64), IN _description TEXT, OUT configId INT)
 	BEGIN
-		INSERT INTO configurations (solver_id, name)
-		VALUES (_solverId, _name);
+		INSERT INTO configurations (solver_id, name, description)
+		VALUES (_solverId, _name, _description);
 		
 		SELECT LAST_INSERT_ID() INTO configId;
 	END //
@@ -109,25 +109,19 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of solvers
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	*
-				
 				FROM	solvers
-				
 				WHERE 	id 	IN (SELECT	solver_id
 								FROM	solver_assoc
 								WHERE	space_id = _spaceId)
-								
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name
 						WHEN 1 THEN description
 					 END) DESC
-					 
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 			
 		-- Otherwise, ensure the target solvers contain _query
@@ -137,10 +131,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				FROM 	solvers
 				
 				-- Exclude solvers whose name and description don't contain the query string
-				WHERE 	id	IN (SELECT	id
-								FROM 	solvers
-								WHERE 	name 				LIKE	CONCAT('%', _query, '%')
-								OR		description			LIKE 	CONCAT('%', _query, '%'))
+				WHERE 	name 		LIKE	CONCAT('%', _query, '%')
+				OR		description	LIKE 	CONCAT('%', _query, '%')
 										
 				-- Exclude solvers that aren't in the specified space
 				AND 	id 	IN (SELECT	solver_id
@@ -155,31 +147,21 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of solvers
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
-				
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	*
-				
 				FROM 	solvers
-				
-				WHERE 	id	IN (SELECT	id
-								FROM 	solvers
-								WHERE 	name 				LIKE	CONCAT('%', _query, '%')
-								OR		description			LIKE 	CONCAT('%', _query, '%'))
-								
+				WHERE 	name 				LIKE	CONCAT('%', _query, '%')
+				OR		description			LIKE 	CONCAT('%', _query, '%')
 				AND 	id 	IN (SELECT	solver_id
 								FROM	solver_assoc
 								WHERE	space_id = _spaceId)
-								
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name 
 						WHEN 1 THEN description
 					 END) DESC
-					 
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;
 	END //

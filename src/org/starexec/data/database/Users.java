@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -136,6 +137,7 @@ public class Users {
 	/**
 	 * Adds the specified user to the database. This method will hash the 
 	 * user's password for them, so it must be supplied in plaintext.
+	 * 
 	 * @param user The user to add
 	 * @param communityId the id of the community to add this user wants to join
 	 * @param message the message from the user to the leaders of a community
@@ -170,15 +172,15 @@ public class Users {
 			// Extract id from OUT parameter
 			user.setId(procedure.getInt(8));
 			
-			boolean added = false;
+			boolean successfulRegistration = false;
 			
-			// Add unique activation code to VERIFY database under new user's id
+			// Add unique activation code to VERIFY table under new user's id
 			if(Requests.addActivationCode(con, user, code)){
-				// Add user's request to join a community to INVITES
-				added = Requests.addCommunityRequest(con, user, communityId, message);
+				// Add user's request to join a community to COMMUNITY_REQUESTS
+				successfulRegistration = Requests.addCommunityRequest(con, user, communityId, code, message);
 			}
 			
-			if(added){
+			if(successfulRegistration){
 				Common.endTransaction(con);
 				log.info(String.format("New user [%s] successfully registered", user));
 				return true;				

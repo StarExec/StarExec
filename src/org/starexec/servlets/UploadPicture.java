@@ -56,7 +56,7 @@ public class UploadPicture extends HttpServlet {
 				response.sendRedirect(this.handleUploadRequest(userId, form));
 			} else {
 				// Or else the request was invalid, send bad request error
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid picture upload request");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload picture request was malformed.");
 			}					
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

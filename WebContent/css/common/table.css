@@ -15,9 +15,14 @@
 	padding: 14px 0 2px 0;
 	border: 1px solid #ddd;
 	text-align: center;
-	color: #999;
+	color: white;
 	font-size: 14px;
-	background-color: white;
+	background-color: #222222;
+}
+
+.processing {
+	margin-right: 8px;
+	margin-bottom: -4px;
 }
 
 .dataTables_length {

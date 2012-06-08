@@ -31,8 +31,7 @@
 	}
 %>
 
-<star:template title="upload benchmarks to ${space.name}"
-	css="add/benchmark" js="lib/jquery.validate.min, add/benchmarks">
+<star:template title="upload benchmarks to ${space.name}" css="add/benchmark" js="lib/jquery.validate.min, add/benchmarks, lib/jquery.qtip.min">
 	<form id="uploadForm" enctype="multipart/form-data" method="POST"
 		action="/starexec/secure/upload/benchmarks">
 		<input type="hidden" name="space" value="${space.id}" />

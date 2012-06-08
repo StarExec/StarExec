@@ -117,6 +117,8 @@
 		<p>coming soon...</p>
 	</fieldset>  -->
 	
+	
+<!-- 	Comments feature not yet polished, commenting-out for now
 	<fieldset id="commentField">
 		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
 			<table id="comments">
@@ -137,6 +139,7 @@
 			<button id="addComment">add</button>
 		</div>
 	</fieldset>	
+-->
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>		

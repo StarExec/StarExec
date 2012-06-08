@@ -4,14 +4,13 @@ $(document).ready(function(){
 	initUI();
 
 	$('img').click(function(event){
-		PopUp($(this).attr('enlarge'));
+		popUp($(this).attr('enlarge'));
 	});
-	solverId = getParameterByName('id');
 	
-	initComments(solverId);
-	
-	
+//	solverId = getParameterByName('id');
+//	initComments(solverId);
 });
+
 
 /*
  * Get comments and display them
@@ -48,6 +47,8 @@ function initComments(solverId){
 		
 	});
 }
+
+
 function initUI(){
 	$('#fieldSites').expandable(true);
 	
@@ -90,7 +91,7 @@ function initUI(){
     });
 }
 
-function PopUp(uri) {
+function popUp(uri) {
 	imageDialog = $("#popDialog");
 	imageTag = $("#popImage");
 	

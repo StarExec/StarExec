@@ -4,8 +4,8 @@
 	width: 28%;		
 	min-height: 90%;
 	height: 90%;
-	overflow: auto;	
-	position: absolute;
+	overflow: hidden;	
+	position: relative;
 }
 
 #explorer a:link {
@@ -67,7 +67,19 @@
 	margin-left: 20px;
 }
 
+.ui-dialog {
+	height: 1000px;
+}
+
+#dialog-confirm-copy {
+	min-height: 70px;
+}
+
+#dialog-confirm-copy-txt {
+	position: absolute;
+}
+
 .ui-icon-info, .ui-icon-alert {
-	 float: left; 
-	 margin: 0 7px 20px 0;"
+	float: left; 
+	margin: 0 7px 20px 0;"
 }

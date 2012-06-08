@@ -27,12 +27,11 @@ import org.starexec.util.Validator;
  * Handles the request to get the picture from the file system. If there
  * is such a picture for the request, or else a default one, named as 
  * Pic0.jpg is returned.
- * @author Ruoyu Zhang
- *
+ * @author Ruoyu Zhang & Todd Elvers
  */
 @SuppressWarnings("serial")
 public class GetPicture extends HttpServlet{
-	private static final Logger log = Logger.getLogger(CreateJob.class);
+	private static final Logger log = Logger.getLogger(GetPicture.class);
     
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -43,106 +42,101 @@ public class GetPicture extends HttpServlet{
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// If the request is not valid, then respond with an error
 		if (false == validateRequest(request)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the GetPicture request was invalid");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The get picture request was malformed.");
 			return;
 		}
 		
 		// Check what type is the request, and generate file in different folders according to it.
-    	String fileName = "";
-    	String defaultName = "";
+    	String defaultPicFilename = new String();
+    	String picFilename = new String();
+    	String pictureDir = R.PICTURE_PATH;
     	StringBuilder sb = new StringBuilder();
     	
 		if (request.getParameter("type").equals("uthn")) {
 			sb.delete(0, sb.length());
-			sb.append("/users/Pic");
+			sb.append("users");
+			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append("_thn.jpg");
 			
-			fileName = sb.toString();
-			defaultName = "/users/Pic0.jpg";
+			defaultPicFilename = GetPicture.getDefaultPicture("users");
 		} else if (request.getParameter("type").equals("uorg")) {
 			sb.delete(0, sb.length());
-			sb.append("/users/Pic");
+			sb.append("users");
+			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append("_org.jpg");
 			
-			fileName = sb.toString();
-			defaultName = "/users/Pic0.jpg";
+			defaultPicFilename = GetPicture.getDefaultPicture("users");
 		} else if (request.getParameter("type").equals("sthn")) {
 			sb.delete(0, sb.length());
-			sb.append("/solvers/Pic");
+			sb.append("solvers");
+			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append("_thn.jpg");
 			
-			fileName = sb.toString();
-			defaultName = "/solvers/Pic0.jpg";
+			defaultPicFilename = GetPicture.getDefaultPicture("solvers");
 		} else if (request.getParameter("type").equals("sorg")) {
 			sb.delete(0, sb.length());
-			sb.append("/solvers/Pic");
+			sb.append("solvers");
+			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append("_org.jpg");
 			
-			fileName = sb.toString();
-			defaultName = "/solvers/Pic0.jpg";
+			defaultPicFilename = GetPicture.getDefaultPicture("solvers");
 		} else if (request.getParameter("type").equals("bthn")) {
 			sb.delete(0, sb.length());
-			sb.append("/benchmarks/Pic");
+			sb.append("benchmarks");
+			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append("_thn.jpg");
 			
-			fileName = sb.toString();
-			defaultName = "/benchmarks/Pic0.jpg";
+			defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
 		} else if (request.getParameter("type").equals("borg")) {
 			sb.delete(0, sb.length());
-			sb.append("/benchmarks/Pic");
+			sb.append("benchmarks");
+			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append("_org.jpg");
 			
-			fileName = sb.toString();
-			defaultName = "/solvers/Pic0.jpg";
+			defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
 		}
+		picFilename = sb.toString();
 		
-    	String filePath = R.PICTURE_PATH;
-    	String filenamedownload;
-    	
     	sb.delete(0, sb.length());
-    	sb.append(filePath);
-    	sb.append(File.separator);
-    	sb.append(fileName);
+    	sb.append(pictureDir);
+    	sb.append(picFilename);
 		File file = new File(sb.toString());
 		
-		// If the desired file exists, then then file will return it, or else return the default file Pic0.jpg
-		if (file.exists())
-		{
+		// If the desired file exists, then the file will return it, or else return the default file Pic0.jpg
+		if (file.exists() == false) {
 			sb.delete(0, sb.length());
-	    	sb.append(filePath);
-	    	sb.append(File.separator);
-	    	sb.append(fileName);
-			filenamedownload = sb.toString();
-		}
-		else
-		{
-			sb.delete(0, sb.length());
-	    	sb.append(filePath);
-	    	sb.append(File.separator);
-	    	sb.append(defaultName);
-			filenamedownload = sb.toString();
+			sb.append(pictureDir);
+			sb.append(defaultPicFilename);
+			file = new File(sb.toString());
 		}
 		
 		// Return the file in the response.
 		try {
 			java.io.OutputStream os = response.getOutputStream();
-			FileUtils.copyFile(new File(filenamedownload), os);
-			} catch (Exception e) {
-			}
-    }
+			FileUtils.copyFile(file, os);
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+	}
 	
 	/**
 	 * Validates the GetPicture request to make sure the requested data is of the right format
 	 * @param request The request need to be validated.
 	 * @return true if the request is valid.
 	 */
-    public static boolean validateRequest(HttpServletRequest request) {
+    private static boolean validateRequest(HttpServletRequest request) {
     	try {
     		if (!Util.paramExists("type", request)
     			|| !Util.paramExists("Id", request)) {
@@ -170,5 +164,37 @@ public class GetPicture extends HttpServlet{
     	
     	return false;
     }
-
+    
+    
+    /**
+     * Gets the path of the default picture for a particular primitive
+     * 
+     * @param primType the type of primitive whose default picture we need
+     * @return the default picture of the specified primitive type
+     * @author Todd Elvers
+     */
+    private static String getDefaultPicture(String primType){
+    	StringBuilder sb = new StringBuilder();
+    	
+    	switch(primType.charAt(0)){
+	    	case 'u':
+	    		sb.append("users");
+	    		sb.append(File.separator);
+	    		sb.append("Pic0.jpg");
+	    		break;
+	    	case 'b':
+	    		sb.append("benchmarks");
+	    		sb.append(File.separator);
+	    		sb.append("Pic0.jpg");
+	    		break;
+	    	case 's':
+	    		sb.append("solvers");
+	    		sb.append(File.separator);
+	    		sb.append("Pic0.jpg");
+	    		break;
+    	}
+    	
+    	return sb.toString();
+    }
+    
 }

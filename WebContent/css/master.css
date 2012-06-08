@@ -80,6 +80,7 @@ input.error {
 
 textarea.error {	
 	border: solid 1px #ae0000;
+	vertical-align: middle;
 }
 
 label.error {

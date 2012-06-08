@@ -17,7 +17,8 @@ public class Requests {
 	private static final Logger log = Logger.getLogger(Requests.class);
 	
 	/**
-	 * Adds an activation code to the database for a given user
+	 * Adds an activation code to the database for a given user (used during registration)
+	 * 
 	 * @param user the user to add an activation code to the database for
 	 * @param con the database connection maintaining the transaction
 	 * @param code the new activation code to add
@@ -44,8 +45,9 @@ public class Requests {
 	}
 	
 	/**
-	 * Adds an entry to the community request table in a transaction-safe manner, only used
-	 * when adding a new member to the database
+	 * Adds an entry to the community request table in a transaction-safe manner
+	 * 
+	 * @param code the code used in hyperlinks to safely reference this request
 	 * @param con the connection maintaining the database transaction
 	 * @param user user initiating the request
 	 * @param message the message to the leaders of the community
@@ -53,13 +55,13 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	protected static boolean addCommunityRequest(Connection con, User user, int communityId, String message ) {
+	protected static boolean addCommunityRequest(Connection con, User user, int communityId, String code, String message ) {
 		try {		
-			// Add a new entry to the VERIFY table
+			// Add a new entry to the community_request table
 			CallableStatement procedure = con.prepareCall("{CALL AddCommunityRequest(?, ?, ?, ?)}");
 			procedure.setInt(1, user.getId());
 			procedure.setInt(2, communityId);
-			procedure.setString(3, UUID.randomUUID().toString());
+			procedure.setString(3, code);
 			procedure.setString(4, message);
 
 			procedure.executeUpdate();		
@@ -75,6 +77,7 @@ public class Requests {
 	
 	/**
 	 * Adds a request to join a community for a given user and community
+	 * 
 	 * @param user the user who wants to join a community
 	 * @param communityId the id of the community the user wants to join
 	 * @param code the code used in hyperlinks to safely reference this request
@@ -87,7 +90,7 @@ public class Requests {
 		
 		try {
 			con = Common.getConnection();
-			return Requests.addCommunityRequest(con, user, communityId, message); 			
+			return Requests.addCommunityRequest(con, user, communityId, code, message); 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);			
 		} finally {

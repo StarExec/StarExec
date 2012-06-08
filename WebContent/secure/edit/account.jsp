@@ -22,16 +22,16 @@
 	<fieldset>
 	<legend>personal information</legend>
 	<table id="infoTable">
-	<tr>
-	<td id="picSection">
-		<img id="showPicture" src="/starexec/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">
-    	<ul>
-			<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
-		</ul>
-	</td>
-	<td id="userDetail">
-		<table id="personal" class="shaded">   
-		<thead> 	
+		<tr>
+			<td id="picSection">
+				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">
+		    	<ul>
+					<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
+				</ul>
+			</td>
+		<td id="userDetail">
+			<table id="personal" class="shaded">   
+			<thead> 	
 				<tr>
 					<th class="label">attribute</th>
 					<th>current value</th>
@@ -135,7 +135,7 @@
 					</tr>
 					<tr></tr>
 					<tr>
-						<td colspan="2"><button id="changePass">change</button></td>
+						<td class="notShaded" colspan="2"><button id="changePass">change</button></td>
 					</tr>
 				</tbody>
 			</table>

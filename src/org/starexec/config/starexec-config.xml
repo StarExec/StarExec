@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="skylar_dev_laptop">
+<starexec-configuration default="todd_dev_local">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -69,10 +69,10 @@
 				<value><![CDATA[^(?=.*[A-Za-z0-9~`!@#\$%\^&\*\(\)_\-\+\=]+$)(?=.*[0-9~`!@#\$%\^&\*\(\)_\-\+\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$]]></value>
 			</property>						
 			<property key="REQUEST_MESSAGE">				
-				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				
+				<value><![CDATA[^[\w\]\[\\!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				
 			</property>						
 			<property key="PRIMITIVE_DESC_PATTERN">
-				<value><![CDATA[^[\w\]\[!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{1,1024}$]]></value>
+				<value><![CDATA[^[\w\]\[\\!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{1,1024}$]]></value>
 			</property>						
 		</class>
 	</configuration>
@@ -169,17 +169,21 @@
 			<property key="MYSQL_DATABASE" value="starexec" />
 			<property key="MYSQL_USERNAME" value="root" />
 			<property key="MYSQL_PASSWORD" value="rooty" />
-			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true" />
-			<property key="MYSQL_POOL_MAX_SIZE" value="3" />			
-			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+			<property key="MYSQL_POOL_MAX_SIZE" value="20" />			
+			<property key="MYSQL_POOL_MIN_SIZE" value="10" />
 			<!-- Path Configuration -->
+			<property key="SPACE_XML_SCHEMA_LOC" value="C:\\Users\\Todd\\workspace\\starexec\\starexec_res\\batch\\batchSpaceSchema.xsd" /> 
+			<property key="BATCH_SPACE_XML_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\spaces\\uploads\\" />
 			<property key="BENCHMARK_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\benchmarks\\" />
 			<property key="SOLVER_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\solvers\\" />										
 			<property key="JOB_INBOX_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\jobs\\" />
 			<property key="JOB_LOG_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\job_out\\" />
 			<property key="NODE_WORKING_DIR" value="C:\\Users\\Todd\\workspace\\starexec_res\\node\\" />
 			<property key="SOLVER_BIN_DIR" value="\\bin" />
+			<property key="STAREXEC_ROOT" value="C:\\Users\\Todd\\workspace\\" />
 			<property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
+			<property key="PICTURE_PATH" value="C:\\Users\\Todd\\workspace\\starexec_res\\pictures\\" /> 
 			<!-- Misc. Configuration -->			
 			<property key="LOG_TO_CONSOLE" value="true" />
 			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />

@@ -11,9 +11,8 @@ fieldset table {
 }
 
 fieldset table tr td:first-child {
-	width: 200px;
+	width: 222px;
 	margin: 10px;
-	
 }
 
 table tr td:first-child.label {
@@ -59,11 +58,25 @@ textarea#reason {
 }
 
 textarea#reason.error{
-	vertical-align: middle;
 	border: solid 1px #ae0000;
 }
 
-#value_header {
-	text-align: left;
-	padding-left: 90px;
+.registration {
+	visibility: hidden;
+}
+
+#javascriptDisabled {
+	margin-top: 200px;
+	text-align: center;
+	color: #ae0000;
+	font-weight:bold;
+}
+
+#archiveType {
+	width: 212px;
+	height: 28px;
+}
+
+#archiveType.error {
+	border: solid 1px #ae0000;
 }

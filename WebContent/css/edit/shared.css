@@ -40,5 +40,5 @@ select {
 textarea#description.error{
 	border: 1px solid #ae0000;
 	vertical-align: middle;
-	padding: 0px 5px 0px 5px;
+	padding: 5px;
 }

@@ -26,9 +26,6 @@ table tr td {
 	padding: 10px;	
 }
 
-input, select, textarea {
-	width: 99%;	
-}
 
 td button {
 	float: right;		
@@ -54,12 +51,10 @@ table .styled.error {
 	border: solid 1px #ae0000;
 }
 
-
 textarea#reason {
-	resize: none;	
 	height: 50px;
+	width : 460px;
 	border: 1px solid #13a5e1;
-	padding: 0px 5px 0px 5px;
 }
 
 textarea#reason.error{

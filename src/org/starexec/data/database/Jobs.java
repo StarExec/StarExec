@@ -12,9 +12,11 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
@@ -299,7 +301,8 @@ public class Jobs {
 	}
 	
 	/**
-	 * Retrieves a job from the database as well as all of its job pairs 
+	 * Retrieves a job from the database as well as its job pairs and its queue/processor info
+	 * 
 	 * @param jobId The id of the job to get information for 
 	 * @return A job object containing information about the requested job
 	 * @author Tyler Jensen
@@ -330,6 +333,46 @@ public class Jobs {
 				}
 				//j.setJobPairs(Jobs.getPairsDetailed(con, j.getId()));
 				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+				return j;
+			}									
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves a job from the database as well as its queue and processor information
+	 * (excludes job pairs)
+	 * 
+	 * @param jobId The id of the job to get information for 
+	 * @return A job object containing information about the requested job
+	 * @author Todd Elvers
+	 */
+	public static Job getDetailedWithoutJobPairs(int jobId) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
+			procedure.setInt(1, jobId);					
+			ResultSet results = procedure.executeQuery();
+			
+			if(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));				
+				
+				j.setQueue(Queues.get(con, results.getInt("queue_id")));
+				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+				
 				return j;
 			}									
 		} catch (Exception e){			
@@ -928,7 +971,7 @@ public class Jobs {
 
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetJobCountInSpace(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetJobCountBySpace(?)}");
 			procedure.setInt(1, spaceId);
 			ResultSet results = procedure.executeQuery();
 
@@ -942,5 +985,114 @@ public class Jobs {
 		}
 
 		return 0;
+	}
+	
+	
+	/**
+	 * Gets the minimal number of Job Pairs necessary in order to service the client's
+	 * request for the next page of Job Pairs in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Job Pairs from
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param jobId the id of the Job to get the Job Pairs of
+	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
+	 * @author Todd Elvers
+	 */
+	public static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, jobId);
+			procedure.setString(6, searchQuery);
+				
+			ResultSet results = procedure.executeQuery();
+			List<JobPair> jobPairs = new LinkedList<JobPair>();
+			
+			while(results.next()){
+				
+				JobPair jp = new JobPair();
+				jp.setJobId(jobId);
+				jp.setId(results.getInt("job_pairs.id"));
+				jp.setWallclockTime(results.getLong("wallclock"));
+				
+				Benchmark bench = new Benchmark();
+				bench.setId(results.getInt("bench.id"));
+				bench.setName(results.getString("bench.name"));
+				bench.setDescription(results.getString("bench.description"));
+				
+				Solver solver = new Solver();
+				solver.setId(results.getInt("solver.id"));
+				solver.setName(results.getString("solver.name"));
+				solver.setDescription(results.getString("solver.description"));
+				
+				Configuration config = new Configuration();
+				config.setId(results.getInt("config.id"));
+				config.setName(results.getString("config.name"));
+				config.setDescription(results.getString("config.description"));
+				
+				Status status = new Status();
+				status.setCode(results.getInt("status.code"));
+				status.setStatus(results.getString("status.status"));
+				status.setDescription(results.getString("status.description"));
+				
+				Properties attributes = new Properties();
+				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+				
+				solver.addConfiguration(config);
+				jp.setBench(bench);
+				jp.setSolver(solver);
+				jp.setStatus(status);
+				jp.setAttributes(attributes);
+				jobPairs.add(jp);		
+			}	
+			
+			return jobPairs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+
+
+	/**
+	 * Returns the number of job pairs that exist for a given job
+	 * 
+	 * @param jobId the id of the job to get the number of job pairs for
+	 * @return the number of job pairs for the given job
+	 * @author Todd Elvers
+	 */
+	public static int getJobPairCount(int jobId) {
+		Connection con = null;
+	
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairCountByJob(?)}");
+			procedure.setInt(1, jobId);
+			ResultSet results = procedure.executeQuery();
+	
+			if (results.next()) {
+				return results.getInt("jobPairCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return 0;		
 	}
 }

@@ -29,10 +29,14 @@ public class UploadConfiguration extends HttpServlet {
 	private static final Logger log = Logger.getLogger(UploadConfiguration.class);	
     
     // Param constants to use to process the form
-    private static final String CONFIG_DESC = "description";
+    private static final String CONFIG_DESC = "uploadConfigDesc";
     private static final String SOLVER_ID = "solverId";
     private static final String UPLOAD_FILE = "file";
-    private static final String CONFIG_NAME = "name";    		
+    private static final String CONFIG_NAME = "uploadConfigName";    		
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
+    }
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -60,8 +64,6 @@ public class UploadConfiguration extends HttpServlet {
 				// Redirect user based on how the configuration handling went
 				if(result == -1) {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new configuration.");	
-				} else if (result == -2){
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A configuration already exists under that name.");
 				} else {
 					response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + Integer.parseInt((String)configAttrMap.get(SOLVER_ID)));	
 				}									
@@ -96,12 +98,21 @@ public class UploadConfiguration extends HttpServlet {
 			newConfig.setDescription((String)configAttrMap.get(CONFIG_DESC));
 			newConfig.setSolverId(solver.getId());
 			
-			// Build a path to the appropriate solver bin directory and
+			// Build a path to the appropriate solver bin directory
 			File newConfigFile = new File(Util.getSolverConfigPath(solver.getPath(), newConfig.getName()));
 			
-			// Ensure the file pointed to by newConfigFile doesn't already exist 
+			// If a configuration file exists on disk with the same name, append an integer to the file to make it unique
 			if(newConfigFile.exists()){
-				return -2;
+				boolean fileAlreadyExists = true;
+				int intSuffix = 0;
+				while(fileAlreadyExists){
+					File temp = new File(newConfigFile.getAbsolutePath() + (++intSuffix));
+					if(temp.exists() == false){
+						newConfigFile = temp;
+						newConfig.setName((String)configAttrMap.get(CONFIG_NAME) + intSuffix);
+						fileAlreadyExists = false;
+					}
+				}
 			}
 			
 			// Write the new configuration file to disk 

@@ -25,8 +25,8 @@
 	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/configurations" id="uploadConfigForm">
 		<input type="hidden" name="solverId" value="${solver.id}"/>
 		<fieldset id="upload">
-			<legend>uploading a configuration</legend>		
-			<table id="configTable" class="shaded">
+			<legend>upload a configuration</legend>		
+			<table id="uploadConfigTable" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>
@@ -40,23 +40,23 @@
 					</tr>
 					<tr>
 						<td>configuration name</td>
-						<td><input id="configName" name="name" type="text" size="64" maxlength="60"/></td>
+						<td><input id="uploadConfigName" name="uploadConfigName" type="text" size="64" maxlength="60"/></td>
 					</tr>
 					<tr>
 						<td>configuration description</td>
-						<td><textarea id="configDesc" name="description" rows="6" cols="40" maxlength="1024"></textarea></td>
+						<td><textarea id="uploadConfigDesc" name="uploadConfigDesc" rows="6" cols="40" maxlength="1024"></textarea></td>
 					</tr>
 				</tbody>
 			</table>	
 			<button class="cancelBtn" type="button">cancel</button>																
-			<button id="uploadBtn" type="submit">upload</button>
+			<button class="uploadBtn" type="submit">upload</button>
 		</fieldset>
 	</form>
-	<!-- Feature not fully implemented
-	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/configurations" id="saveConfigForm">
+	<form method="POST" action="/starexec/secure/save/configurations" id="saveConfigForm">
+		<input type="hidden" name="solverId" value="${solver.id}"/>
 		<fieldset id="save">
-			<legend>writing a configuration</legend>		
-			<table id="configTable" class="shaded">
+			<legend>write a configuration</legend>		
+			<table id="saveConfigTable" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>
@@ -66,21 +66,20 @@
 				<tbody>
 					<tr>
 						<td>configuration name</td>
-						<td><input id="configName" name="name" type="text" size="64" maxlength="60"/></td>
+						<td><input id="saveConfigName" name="saveConfigName" type="text" size="64" maxlength="60"/></td>
 					</tr>
 					<tr>
 						<td>configuration description</td>
-						<td><textarea id="configDesc" name="description" rows="6" cols="40" maxlength="1024"></textarea></td>
+						<td><textarea id="saveConfigDesc" name="saveConfigDesc" rows="6" cols="40" maxlength="1024"></textarea></td>
 					</tr>
 					<tr>
 						<td>configuration contents</td>
-						<td><textarea id="configContents" name="contents" rows="6" cols="40"/></textarea></td>
+						<td><textarea id="saveConfigContents" name="saveConfigContents" rows="6" cols="40"/></textarea></td>
 					</tr>
 				</tbody>
 			</table>	
 			<button class="cancelBtn" type="button">cancel</button>																
-			<button id="saveBtn" type="submit">save</button>
+			<button class="saveBtn" type="submit">save</button>
 		</fieldset>
 	</form>
-	-->
 </star:template>

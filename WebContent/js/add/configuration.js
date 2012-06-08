@@ -1,20 +1,15 @@
 $(document).ready(function(){
-	
-	// Setup user interface
-	initGUI();
-	
-	// Attach from validation to the configuration upload form
+	initUI();
 	attachFormValidation();
-
 });
 
 
 /**
  * Setup the user interface buttons & actions
  */
-function initGUI() {
+function initUI() {
 	// Setup button icons
-	$('#uploadBtn').button({
+	$('.uploadBtn').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
     }});
@@ -22,7 +17,7 @@ function initGUI() {
 		icons: {
 			secondary: "ui-icon-closethick"
     }});
-	$('#saveBtn').button({
+	$('.saveBtn').button({
 		icons:{
 			secondary: "ui-icon-disk"
 		}
@@ -38,11 +33,11 @@ function initGUI() {
 }
 
 /**
- * Validate the configuration upload form
+ * Attaches validation to the configuration upload form
  */
 function attachFormValidation() {
 	
-	// Add regular expression function 'regex' to the JQuery validator
+	// Add regular expression handling to the JQuery validator
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
@@ -50,30 +45,39 @@ function attachFormValidation() {
 				return this.optional(element) || re.test(value);
 	});
 	
-	// Add validation to the configuration upload form
+	// Re-validate the 'file location' field when it loses focus
+	$("#configFile").change(function(){
+		 $("#configFile").blur().focus(); 
+    });
+	
+	// Form validation rules/messages
 	$("#uploadConfigForm").validate({
 		rules: {
 			file: {
 				required: true
 			},
-			name: {
+			uploadConfigName: {
 				required: true,
-				regex: "^[\\w\\-\\.\\s]+$"
+				regex: getPrimNameRegex()
 			},
-			description: { 
+			uploadConfigDesc: { 
 				required: true,
-				regex: "^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$"
+				maxlength: 1024,
+				regex: getPrimDescRegex()
 			}
 		},
 		messages: {
 			file: {
 				required: "please select a file"
 			},
-			name: {
-				required: "name required"
+			uploadConfigName: {
+				required: "name required",
+				regex	: "invalid character(s)"
 			},
-			description: {
-				required: "description required"
+			uploadConfigDesc: {
+				required: "description required",
+				maxlength: "max length is 1024",
+				regex: "invalid character(s)"
 			}
 		}
 	});
@@ -81,28 +85,30 @@ function attachFormValidation() {
 	// Add validation to the configuration save form
 	$("#saveConfigForm").validate({
 		rules: {
-			name: {
+			saveConfigName: {
 				required: true,
-				regex: "^[\\w\\-\\.\\s]+$"
+				regex: getPrimNameRegex()
 			},
-			description: { 
+			saveConfigDesc: { 
 				required: true,
-				regex: "^[a-zA-Z0-9\\-\\s_.!?/,\\\\+=\"'#$%&*()\\[{}\\]]+$"
+				maxlength: 1024,
+				regex: getPrimDescRegex()
 			},
-			contents: {
+			saveConfigContents: {
 				required: true
 			}
 		},
 		messages: {
-			name: {
+			saveConfigName: {
 				required: "name required",
 				regex: "invalid characters"
 			},
-			description: {
+			saveConfigDesc: {
 				required: "description required",
+				maxlength: "max length is 1024",
 				regex: "invalid characters"
 			},
-			contents: {
+			saveConfigContents: {
 				required: "file can't be empty"
 			}
 		}

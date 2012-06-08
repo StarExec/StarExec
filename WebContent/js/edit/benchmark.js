@@ -1,6 +1,82 @@
 $(document).ready(function(){
-	// Prompts user to confirm deletion and, if they confirm, 
-	// deletes the benchmark via AJAX and redirects to space_explorer.jsp
+	initUI();
+	attachFormValidation();
+	attachButtonActions();
+});
+
+
+/**
+ * Initializes the user-interface
+ */
+function initUI(){
+	$('#delete').button({
+		icons: {
+			secondary: "ui-icon-minus"
+		}
+	});
+	
+	$('#update').button({
+		icons: {
+			secondary: "ui-icon-check"
+		}
+	});
+}
+
+
+/**
+ * Attaches form validation to the 'edit benchmark' fields
+ */
+function attachFormValidation(){
+	// Pressing the enter key on an input field triggers a submit,
+	// and this special validation process doesn't use submit, so
+	// the following code prevents that trigger
+	$("#editBenchmarkForm").submit(function(e){
+		e.preventDefault();
+	});
+	
+	// Adds regular expression handling to validator
+	$.validator.addMethod(
+			"regex", 
+			function(value, element, regexp) {
+				var re = new RegExp(regexp);
+				return this.optional(element) || re.test(value);
+	});
+	
+	// Form validation rules/messages
+	$("#editBenchmarkForm").validate({
+		rules : {
+			name : {
+				required : true,
+				maxlength: 64,
+				regex : getPrimNameRegex()
+			},
+			description : {
+				required : true,
+				maxlength: 1024,
+				regex: getPrimDescRegex()
+			}
+		},
+		messages : {
+			name : {
+				required : "name required",
+				maxlength: "64 characters maximum",
+				regex 	 : "invalid character(s)"
+			},
+			description : {
+				required : "description required",
+				maxlength: "1024 characters maximum",
+				regex	 : "invalid character(s)"
+			}
+		}
+	});
+}
+
+/**
+ * Attaches actions to the 'update' and 'delete' buttons
+ */
+function attachButtonActions(){
+	// If client clicks delete button first prompt them and, if they agree, then 
+	// delete the benchmark via AJAX and redirect to /explore/spaces.jsp
 	$("#delete").click(function(){
 		var confirm = window.confirm("are you sure you want to delete this benchmark?");
 		if(confirm == true){
@@ -28,8 +104,8 @@ $(document).ready(function(){
 	});
 	
 
-	// Triggers validation and, if that passes,
-	// updates the benchmark details via AJAX and redirects to benchmark.jsp 
+	// If the 'update' button is pressed then trigger validation and, if that passes,
+	// update the benchmark details via AJAX and redirect to /details/benchmark.jsp 
 	$("#update").click(function(){
 		var isFormValid = $("#editBenchmarkForm").valid();
 		if(isFormValid == true){
@@ -61,54 +137,4 @@ $(document).ready(function(){
 			);
 		}
 	});
-	
-	
-	// Pressing the enter key on an input field triggers a submit,
-	// and this special validation process doesn't use submit, so
-	// the following code prevents that trigger
-	$("#editBenchmarkForm").submit(function(e){
-		e.preventDefault();
-	});
-	
-	// Adds 'regex' function to validator
-	$.validator.addMethod(
-			"regex", 
-			function(value, element, regexp) {
-				var re = new RegExp(regexp);
-				return this.optional(element) || re.test(value);
-	});
-	
-	// Validates benchmark fields
-	$("#editBenchmarkForm").validate({
-		rules : {
-			name : {
-				required : true,
-				regex : "^[a-zA-Z0-9\\-_]+$"
-			},
-			description : {
-				required : true
-			}
-		},
-		messages : {
-			name : {
-				required : "name required",
-				regex : "invalid characters"
-			},
-			description : {
-				required : "description required"
-			}
-		}
-	});
-	
-	$('#delete').button({
-		icons: {
-			secondary: "ui-icon-minus"
-    }});
-	
-	$('#update').button({
-		icons: {
-			secondary: "ui-icon-check"
-    }});
-});
-
-
+}

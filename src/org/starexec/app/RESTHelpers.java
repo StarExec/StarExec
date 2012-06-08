@@ -1,6 +1,5 @@
 package org.starexec.app;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +14,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
@@ -23,7 +23,6 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
-import org.starexec.util.Strings;
 import org.starexec.util.Util;
 
 import com.google.gson.Gson;
@@ -39,8 +38,10 @@ public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);		
 	private static Gson gson = new Gson();
 	
+	// Job pairs aren't technically a primitive class according to how 
+	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
-		JOB, USER, SOLVER, BENCHMARK, SPACE
+		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR
 	}
 	
     private static final String SEARCH_QUERY = "sSearch";
@@ -52,9 +53,9 @@ public class RESTHelpers {
 	private static final String TOTAL_RECORDS = "iTotalRecords";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
 	
-	private static final int 	EMPTY = 0;
-	public static final int ASCENDING = 0;
-	public static final int DESCENDING = 1;
+	private static final int EMPTY = 0;
+	private static final int   ASC = 0;
+	private static final int  DESC = 1;
 
 	
 	/**
@@ -226,43 +227,25 @@ public class RESTHelpers {
 		
 		try{
 			// Parameters from the DataTable object
-		    String iDisplayStart = (String) request.getParameter(STARTING_RECORD);	// Represents the record number the current page starts at (0 for page 1, 10 for page 2, 
+		    String iDisplayStart = (String) request.getParameter(STARTING_RECORD);	// Represents the record number the current page starts at (0 for page 1, 10 for page 2, etc.) 
 		    String iDisplayLength = (String) request.getParameter(RECORDS_PER_PAGE);// Represents the number of records in a page (default = 10 records per page)
 		    String sEcho = (String) request.getParameter(SYNC_VALUE);				// Unique number used to keep the client-server interaction synchronized
 		    String iSortCol = (String) request.getParameter(SORT_COLUMN);			// Given an array of the column names, this is an index to which column is being used to sort
 		    String sDir = (String) request.getParameter(SORT_DIRECTION);			// Represents the sorting direction ('asc' for ascending or 'desc' for descending)
 		    String sSearch = (String) request.getParameter(SEARCH_QUERY);			// Represents the filter/search query (if no filter/search query is provided, this is empty)
 		    
-		    // Ensures the starting entry exists and is non-negative
-	    	if(Util.isNullOrEmpty(iDisplayStart)) {
-	    		return null;
-	    	} else {
-	    		int startingEntry = Integer.parseInt(iDisplayStart);
-	    		attrMap.put(STARTING_RECORD, startingEntry);
-	    		if (startingEntry < 0) {
-	    			return null;
-	    		}
-	    	}
+		    // Validates the starting record, the number of records per page, and the sync value
+		    if(Util.isNullOrEmpty(iDisplayStart)
+		    		||	Util.isNullOrEmpty(iDisplayLength)
+		    		||	Util.isNullOrEmpty(sEcho)
+		    		||	Integer.parseInt(iDisplayStart) < 0
+		    		||	Integer.parseInt(iDisplayLength) < 10
+		    		||	Integer.parseInt(iDisplayLength) > 100
+		    		||	Integer.parseInt(sEcho) < 0) {
+		    	return null;
+		    }
 	    	
-	    	// Ensures the number of entries per page is specified and is between 10 and 100
-	    	if (Util.isNullOrEmpty(iDisplayLength)) {
-	    		return null;
-	    	} else {
-	    		int entriesPerPage = Integer.parseInt(iDisplayLength);
-	    		attrMap.put(RECORDS_PER_PAGE, entriesPerPage);
-	    		if (entriesPerPage < 10 || entriesPerPage > 100) {
-	    			return null;
-	    		}
-	    	}
-
-	    	// Ensures the sync variable is an integer
-	    	if (Util.isNullOrEmpty(sEcho)) {
-	    		return null;
-	    	} else {
-	    		attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
-	    	}
-	    	
-	    	// Ensures the columns to sort on are specified and valid
+	    	// Validates that the columns to sort on are specified and valid
 	    	if (Util.isNullOrEmpty(iSortCol)) {
 	    		// Allow jobs datatable to have a sort column null, then set
 	    		// the column to sort by to column 5, which doesn't exist on
@@ -277,46 +260,38 @@ public class RESTHelpers {
 	    		attrMap.put(SORT_COLUMN, sortColumnIndex);
 	    		switch(type){
 		    		case JOB:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 4) {
-			    			return null;
-			    		}
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 4) return null;
+		    			break;
+		    		case JOB_PAIR:
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
 		    			break;
 		    		case USER:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) {
-			    			return null;
-			    		}
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    			break;
 		    		case SOLVER:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) {
-			    			return null;
-			    		}
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
 		    			break;
 		    		case BENCHMARK:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) {
-			    			return null;
-			    		}
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
 		    			break;
 		    		case SPACE:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) {
-			    			return null;
-			    		}
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
 		    			break;
 	    		}
-	    		
 	    	}
 	    	
-	    	// Ensures the sort direction is specified and valid
+	    	// Validates that the sort direction is specified and valid
 	    	if (Util.isNullOrEmpty(sDir)) {
 	    		// Only permit the jobs table to have a null sorting direction;
 	    		// this allows for jobs to be sorted initially on their creation date
 	    		if(type == Primitive.JOB){
-	    			attrMap.put(SORT_DIRECTION, DESCENDING);
+	    			attrMap.put(SORT_DIRECTION, DESC);
 	    		} else {
 	    			return null;
 	    		}
 	    	} else {
 	    		if(sDir.contains("asc") || sDir.contains("desc")){
-	    			attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASCENDING	: DESCENDING));
+	    			attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASC : DESC));
 	    		} else {
 	    			return null;
 	    		}
@@ -324,14 +299,18 @@ public class RESTHelpers {
 	    	
 	    	// Depending on if the search/filter is empty or not, this will be 0 or 1
 	    	if (Util.isNullOrEmpty(sSearch)) {
-	    		attrMap.put(SEARCH_QUERY, 0);
+	    		attrMap.put(SEARCH_QUERY, EMPTY);
 	    	} else {
 	    		attrMap.put(SEARCH_QUERY, 1);
 	    	}
-	    	
-	    	// Add the last two parameters, which will be set later, to the attribute map
-	    	attrMap.put(TOTAL_RECORDS, 0);
-	    	attrMap.put(TOTAL_RECORDS_AFTER_QUERY, 0);
+
+	    	// The request is valid if it makes it this far;
+	    	// Finish the validation by adding the remaining attributes to the map
+	    	attrMap.put(RECORDS_PER_PAGE, Integer.parseInt(iDisplayLength));
+    		attrMap.put(STARTING_RECORD, Integer.parseInt(iDisplayStart));
+    		attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
+	    	attrMap.put(TOTAL_RECORDS, EMPTY);
+	    	attrMap.put(TOTAL_RECORDS_AFTER_QUERY, EMPTY);
 	    	
 	    	return attrMap;
 	    } catch(Exception e){
@@ -363,22 +342,23 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
+	
 	/**
 	 * Gets the next page of entries for a DataTable object
 	 *
 	 * @param type the kind of primitives to query for
-	 * @param spaceId the id of the space to get the primitives from
+	 * @param id either the id of the space to get the primitives from, or the id of the job
+	 * to get job pairs for
 	 * @param request the object containing all the DataTable parameters
 	 * @return a JSON object representing the next page of primitives to return to the client,<br>
 	 * 		or null if the parameters of the request fail validation
 	 * @author Todd Elvers
 	 */
-	protected static JsonObject getNextDataTablesPage(Primitive type, int spaceId, HttpServletRequest request){
+	protected static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request){
 		
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
-	    	log.debug("Returning null...");
 	    	return null;
 	    }
 	    
@@ -391,16 +371,16 @@ public class RESTHelpers {
 	    
 		    case JOB:
 	    		List<Job> jobsToDisplay = new LinkedList<Job>();
-	    		int totalJobsInSpace = Jobs.getCountInSpace(spaceId);
+	    		int totalJobsInSpace = Jobs.getCountInSpace(id);
 	    		
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
 	    		jobsToDisplay = Jobs.getJobsForNextPage(
-	    				attrMap.get(STARTING_RECORD),					// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 			// Search query
-	    				spaceId											// Parent space id 
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id													// Parent space id 
 				);
 	    		
 	    		
@@ -462,16 +442,16 @@ public class RESTHelpers {
 		    	
 		    case USER:
 	    		List<User> usersToDisplay = new LinkedList<User>();
-	    		int totalUsersInSpace = Users.getCountInSpace(spaceId);
+	    		int totalUsersInSpace = Users.getCountInSpace(id);
 	    		
 	    		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
 	    		usersToDisplay = Users.getUsersForNextPage(
-	    				attrMap.get(STARTING_RECORD),					// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 			// Search query
-	    				spaceId											// Parent space id 
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id												// Parent space id 
 				);
 	    		
 	    		
@@ -544,16 +524,16 @@ public class RESTHelpers {
 		    	
 		    case SOLVER:
 	    		List<Solver> solversToDisplay = new LinkedList<Solver>();
-	    		int totalSolversInSpace =  Solvers.getCountInSpace(spaceId);
+	    		int totalSolversInSpace =  Solvers.getCountInSpace(id);
 	    		
 	    		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
 	    		solversToDisplay = Solvers.getSolversForNextPage(
-	    				attrMap.get(STARTING_RECORD),					// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 			// Search query
-	    				spaceId											// Parent space id 
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id												// Parent space id 
 				);
 	    		
 	    		
@@ -609,17 +589,17 @@ public class RESTHelpers {
 		    	
 		    case BENCHMARK:
 		    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-		    	int totalBenchmarksInSpace = Benchmarks.getCountInSpace(spaceId);
+		    	int totalBenchmarksInSpace = Benchmarks.getCountInSpace(id);
 		    	
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 		    	benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
-	    				attrMap.get(STARTING_RECORD),					// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
-	    				request.getParameter(SEARCH_QUERY),			 	// Search query
-	    				spaceId											// Parent space id 
-				);
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY),			 		// Search query
+	    				id												// Parent space id 
+				);	
 		    	
 		    	
 		    	/**
@@ -686,17 +666,19 @@ public class RESTHelpers {
 		    	
 		    case SPACE:
 		    	List<Space> spacesToDisplay = new LinkedList<Space>();
-
-	    		int totalSubspacesInSpace = Spaces.getCountInSpace(spaceId);
 		    	
+	    		int userId = SessionUtil.getUserId(request);
+	    		int totalSubspacesInSpace = Spaces.getCountInSpace(id, userId);
+	    		
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 		    	spacesToDisplay = Spaces.getSpacesForNextPage(
-	    				attrMap.get(STARTING_RECORD),					// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 					// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == 0 ? true : false,// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 						// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 			// Search query
-	    				spaceId											// Parent space id 
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id,											// Parent space id 
+	    				userId												// Id of user making request
 				);
 		    	
 		    	
@@ -732,7 +714,7 @@ public class RESTHelpers {
 					// Create the space "details" link and append the hidden input element
 		    		sb = new StringBuilder();
 		    		sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
-		    		sb.append(spaceId);
+		    		sb.append(id);
 		    		sb.append(",");
 		    		sb.append(space.getId());
 		    		sb.append(")\">");
@@ -746,6 +728,108 @@ public class RESTHelpers {
 					JsonArray entry = new JsonArray();
 		    		entry.add(new JsonPrimitive(spaceLink));
 		    		entry.add(new JsonPrimitive(space.getDescription()));
+		    		
+		    		dataTablePageEntries.add(entry);
+		    	}
+		    	
+		    	break;
+		    case JOB_PAIR:
+		    	List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+	    		int totalJobPairsforJob = Jobs.getJobPairCount(id);
+	    		
+	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+	    		jobPairsToDisplay = Jobs.getJobPairsForNextPage(
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id													// Job id 
+				);
+	    		
+	    		
+	    		/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairsforJob);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalJobPairsforJob);
+
+			    
+			    
+		    	/**
+		    	 * Generate the HTML for the next DataTable page of entries
+		    	 */
+		    	dataTablePageEntries = new JsonArray();
+		    	for(JobPair jp : jobPairsToDisplay){
+		    		StringBuilder sb = new StringBuilder();
+					String hiddenJobPairId;
+					
+					// Create the hidden input tag containing the jobpair id
+					sb.append("<input type=\"hidden\" value=\"");
+					sb.append(jp.getId());
+					sb.append("\" name=\"pid\"/>");
+					hiddenJobPairId = sb.toString();
+		    		
+		    		// Create the benchmark link and append the hidden input element
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(jp.getBench().getDescription());
+		    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
+		    		sb.append(jp.getBench().getId());
+		    		sb.append("\">");
+		    		sb.append(jp.getBench().getName());
+		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+		    		sb.append(hiddenJobPairId);
+					String benchLink = sb.toString();
+					
+					// Create the solver link
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(jp.getSolver().getDescription());
+		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
+		    		sb.append(jp.getSolver().getId());
+		    		sb.append("\">");
+		    		sb.append(jp.getSolver().getName());
+		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+					String solverLink = sb.toString();
+					
+					// Create the configuration link
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(jp.getSolver().getConfigurations().get(0).getDescription());
+		    		sb.append("\" href=\"/starexec/secure/details/configuration.jsp?id=");
+		    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
+		    		sb.append("\">");
+		    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
+		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+					String configLink = sb.toString();
+					
+					// Create the status field
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(jp.getStatus().getDescription());
+		    		sb.append("\">");
+		    		sb.append(jp.getStatus().getStatus());
+		    		sb.append("</a>");
+					String status = sb.toString();
+					
+					
+					// Create an object, and inject the above HTML, to represent an entry in the DataTable
+					JsonArray entry = new JsonArray();
+		    		entry.add(new JsonPrimitive(benchLink));
+		    		entry.add(new JsonPrimitive(solverLink));
+		    		entry.add(new JsonPrimitive(configLink));
+		    		entry.add(new JsonPrimitive(status));
+		    		entry.add(new JsonPrimitive(jp.getWallclockTime() + " ms"));
+		    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
 		    		
 		    		dataTablePageEntries.add(entry);
 		    	}

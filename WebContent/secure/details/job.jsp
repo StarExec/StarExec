@@ -9,7 +9,7 @@
 		
 		Job j = null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.getDetailed(jobId);
+			j = Jobs.getDetailedWithoutJobPairs(jobId);
 		}
 		
 		if(j != null) {			
@@ -27,7 +27,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js="lib/jquery.dataTables.min, details/shared, details/job" css="common/table, details/shared, details/job">			
+<star:template title="${job.name}" js="lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/job">			
 	<fieldset>
 		<legend>details</legend>
 		<table id="detailTbl" class="shaded">
@@ -90,10 +90,6 @@
 	</fieldset>		
 	<fieldset>
 	<legend>job pairs</legend>	
-	<c:if test="${empty job.jobPairs}">
-		<p>none</p>
-	</c:if>		
-	<c:if test="${not empty job.jobPairs}">		
 		<table id="pairTbl" class="shaded">
 			<thead>
 				<tr>
@@ -106,29 +102,9 @@
 				</tr>		
 			</thead>	
 			<tbody>
-			<c:forEach var="pair" items="${job.jobPairs}">
-				<tr>					
-					<td>
-						<input type="hidden" name="pid" value="${pair.id}"/>
-						<star:benchmark value="${pair.bench}" />
-					</td>
-					<td><star:solver value="${pair.solver}" /></td>
-					<td><star:config value="${pair.solver.configurations[0]}" /></td>				
-					<td title="${pair.status.description}">${pair.status}</td>
-					<c:choose>
-						<c:when test="${pair.status.code == 7}">
-							<td>${pair.wallclockTime / 1000} ms</td>
-						</c:when>
-						<c:otherwise>
-							<td>--</td>
-						</c:otherwise>						
-					</c:choose>
-					<td>${pair.starexecResult}</td>
-				</tr>
-			</c:forEach>
+				<!-- This will be populated by the job pair pagination feature -->
 			</tbody>
 		</table>
-	</c:if>		
 	</fieldset>
 	<a href="/starexec/secure/download?type=job&id=${jobId}" id="jobdownload">download</a>
 </star:template>

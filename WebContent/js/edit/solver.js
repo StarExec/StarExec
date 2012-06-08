@@ -1,13 +1,33 @@
 $(document).ready(function(){
-	//get website information for the given solver
-	$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), displayWebsites).error(function(){
-		alert('Session expired');
-		window.location.reload(true);
-	});
+	refreshSolverWebsites();
+	initUI();
+	attachFormValidation();
+	attachWebsiteMonitor();
+	attachButtonActions();
+});
+
+
+/**
+ * Initializes the user-interface
+ */
+function initUI(){
+	// Setup which fields are expanded and which are not
+	$('fieldset:first').expandable(false);
+	$('fieldset:not(:first)').expandable(true);
 	
-	
-	// Attach click listeners to all the buttons
-	initButtons();
+	// Setup JQuery button icons
+	$('#delete').button({
+		icons: {
+			secondary: "ui-icon-minus"
+    }});
+	$('#update').button({
+		icons: {
+			secondary: "ui-icon-check"
+    }});
+	$('#addWebsite').button({
+		icons: {
+			secondary: "ui-icon-plus"
+    }});
 	
 	// Setup '+ add new' animation
 	$('#toggleWebsite').click(function() {
@@ -15,7 +35,12 @@ $(document).ready(function(){
 		togglePlusMinus(this);
 	});	
 	$('#new_website').hide();
-	
+}
+
+/**
+ * Attaches form validation to the 'edit solver' fields
+ */
+function attachFormValidation(){
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
 	// the following code prevents that trigger
@@ -23,7 +48,7 @@ $(document).ready(function(){
 		e.preventDefault();
 	});
 	
-	// Adds 'regex' function to validator
+	// Adds regular expression handling to JQuery's validator
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
@@ -31,86 +56,39 @@ $(document).ready(function(){
 				return this.optional(element) || re.test(value);
 	});
 	
-	// Validates solver fields
+	// Form validation rules/messages
 	$("#editSolverForm").validate({
 		rules : {
 			name : {
 				required : true,
-				regex : "^[\\w\\-\\.\\s]+$"
+				maxlength: 64,
+				regex 	 : getPrimNameRegex()
 			},
 			description : {
-				required : true
+				required : true,
+				maxlength: 1024,
+				regex	 : getPrimDescRegex()
 			}
 		},
 		messages : {
 			name : {
 				required : "name required",
-				regex : "invalid characters"
+				maxlength: "64 characters maximum",
+				regex 	 : "invalid character(s)"
 			},
 			description : {
-				required : "description required"
+				required : "description required",
+				maxlength: "1024 characters maximum",
+				regex	 : "invalid character(s)"
 			}
 		}
 	});
-	
-	$('#delete').button({
-		icons: {
-			secondary: "ui-icon-minus"
-    }});
-	
-	$('#update').button({
-		icons: {
-			secondary: "ui-icon-check"
-    }});
-	
-	$('#addWebsite').button({
-		icons: {
-			secondary: "ui-icon-plus"
-    }});
-	
-	$('fieldset:first').expandable(false);
-	$('fieldset:not(:first)').expandable(true);
-});
+}
 
-function initButtons(){
-	// Handles adding a new website
-	$("#addWebsite").click(function(){
-		var name = $("#website_name").val();
-		var url = $("#website_url").val();
-		
-		if(name.trim().length == 0) {
-			showMessage('error', 'please enter a website name', 6000);
-			return;
-		} else if (url.indexOf("http://") != 0) {			
-			showMessage('error', 'url must start with http://', 6000);
-			return;
-		} else if (url.trim().length <= 12) {
-			showMessage('error', 'the given url is not long enough', 6000);
-			return;
-		}	
-		
-		var data = {name: name, url: url};
-		$.post(
-				"/starexec/services/website/add/solver/" + getParameterByName("id"),
-				data,
-				function(returnCode) {
-			    	if(returnCode == '0') {
-			    		$("#website_name").val("");
-			    		$("#website_url").val("");
-			    		$('#websites li').remove();
-			    		$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), displayWebsites).error(function(){
-			    			alert('Session expired');
-			    			window.location.reload(true);
-			    		});
-			    	} else {
-			    		showMessage('error', "error: website not added. please try again", 5000);
-			    	}
-				},
-				"json"
-		);
-		
-	});
-	
+/**
+ * Attaches actions to the 'update', 'delete', 'add new website' buttons
+ */
+function attachButtonActions(){
 	// Prompts user to confirm deletion and, if they confirm,
 	// deletes the solver via AJAX, then redirects to explore/spaces.jsp
 	$("#delete").click(function(){
@@ -185,19 +163,38 @@ function togglePlusMinus(addSiteButton){
 	}
 }
 
+/**
+ * Refreshes the list of websites associated with this solver
+ */
+function refreshSolverWebsites(){
+	//get website information for the given solver
+	$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+}
 
-function displayWebsites(data) {
-	
+
+/**
+ * Processes website data received from the server by creating HTML
+ * for each website, adding a 'delete' button, and then injecting that HTML into the DOM 
+ */
+function processWebsiteData(jsonData) {
 	// Ensures the websites table is empty
 	$('#websites tbody tr').remove();
 	
 	// Injects the clickable delete button that's always present
-	$.each(data, function(i, site) {
-		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="website" id="' + site.id + '">delete</a></td></tr>');
+	$.each(jsonData, function(i, site) {
+		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-	
-	// Handles deletion of websites
-	$('.website').click(function(){
+}
+
+/**
+ * Monitors the solver's "websites" and updates the server if the client adds/deletes any
+ */
+function attachWebsiteMonitor(){
+	// Handles deleting an existing website
+	$("#websites").delegate(".delWebsite", "click", function(){
 		var id = $(this).attr('id');
 		var parent = $(this).parent().parent();
 		var answer = confirm("are you sure you want to delete this website?");
@@ -208,7 +205,7 @@ function displayWebsites(data) {
 						if (returnData == 0) {
 							parent.remove();
 						} else {
-							showMessage('error', "error: website not deleted. please try again", 5000);
+							showMessage('error', "the website was not deleted due to an error; please try again", 5000);
 						}
 					},
 					"json"
@@ -217,5 +214,40 @@ function displayWebsites(data) {
 				window.location.reload(true);
 			});
 		}
+	});
+	
+	// Handles adding a new website
+	$("#addWebsite").click(function(){
+		var name = $("#website_name").val();
+		var url = $("#website_url").val();
+		
+		if(name.trim().length == 0) {
+			showMessage('error', 'please enter a website name', 6000);
+			return;
+		} else if (url.indexOf("http://") != 0) {			
+			showMessage('error', 'url must start with http://', 6000);
+			return;
+		} else if (url.trim().length <= 12) {
+			showMessage('error', 'the given url is not long enough', 6000);
+			return;
+		}	
+		
+		var data = {name: name, url: url};
+		$.post(
+				"/starexec/services/website/add/solver/" + getParameterByName("id"),
+				data,
+				function(returnCode) {
+			    	if(returnCode == '0') {
+			    		$("#website_name").val("");
+			    		$("#website_url").val("");
+			    		$('#websites li').remove();
+			    		refreshSolverWebsites();
+			    	} else {
+			    		showMessage('error', "error: website not added. please try again", 5000);
+			    	}
+				},
+				"json"
+		);
+		
 	});
 }

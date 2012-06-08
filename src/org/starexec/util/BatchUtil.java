@@ -18,7 +18,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.apache.log4j.xml.SAXErrorHandler;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
@@ -146,37 +148,38 @@ public class BatchUtil {
 	 *  @throws ParserConfigurationException
 	 *  @throws IOException   
 	 */	
-	public Boolean validateAgainstSchema(File file) throws SAXException, ParserConfigurationException, IOException{
+	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
 		factory.setNamespaceAware(true);
 
-		SchemaFactory schemaFactory = 
-		    SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
-		factory.setSchema(schemaFactory.newSchema(
-		    new Source[] {new StreamSource(R.SPACE_XML_SCHEMA_LOC)}));
-		Schema schema = factory.getSchema();
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		//builder.setErrorHandler(new SimpleErrorHandler());
-		Document document = builder.parse(file);
-		Validator validator = schema.newValidator();
-		DOMSource source = new DOMSource(document);
-        try {
+		try {
+			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(R.SPACE_XML_SCHEMA_LOC)}));
+			Schema schema = factory.getSchema();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+//			builder.setErrorHandler(new SAXErrorHandler());
+			Document document = builder.parse(file);
+			Validator validator = schema.newValidator();
+			DOMSource source = new DOMSource(document);
             validator.validate(source);
             log.debug("Space XML File has been validated against the schema.");
             return true;
-        }
-        catch (SAXException ex) {
-            log.debug("File is not valid because " + ex.getMessage());
-            errorMessage = "File is not valid because " + ex.getMessage();
+        } catch (SAXException ex) {
+            log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
+            log.warn("The file located at [" + file.getParentFile().getAbsolutePath() + "] has been removed since an error occured while parsing.");
+            FileUtils.deleteDirectory(file.getParentFile());
+            errorMessage = "File is not valid because: \"" + ex.getMessage() + "\"";
             this.spaceCreationSuccess = false;
             return false;
-        }		
+        }
 		
 	}
+	
+	
 	/**
-	 *  Creates space hierarchies from the xml file.
+	 * Creates space hierarchies from the xml file.
 	 * @author Benton Mccune
 	 * @param file the xml file we wish to produce a space from
 	 * @param userId the userId of the user making the request
@@ -189,7 +192,7 @@ public class BatchUtil {
 	public Boolean createSpacesFromFile(File file, int userId, int parentSpaceId) throws SAXException, ParserConfigurationException, IOException{
 		
 		if (!validateAgainstSchema(file)){
-			log.debug("File from User " + userId + " is not Schema valid.");
+			log.warn("File from User " + userId + " is not Schema valid.");
 			return false;
 		}
 		
@@ -222,7 +225,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.debug("Error - Node should be an element, but isn't");
+				log.warn("Node should be an element, but isn't");
 			}
 		}
 		//Verify user has access to solvers
@@ -239,7 +242,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.debug("Error - Node should be an element, but isn't");
+				log.warn("Node should be an element, but isn't");
 			}
 		}
 		//Verify user has access to benchmarks
@@ -258,7 +261,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.debug("Error - Node should be an element, but isn't");
+				log.warn("Node should be an element, but isn't");
 			}
 		}
 		//Create Space Hierarchies as children of parent space	
@@ -310,11 +313,11 @@ public class BatchUtil {
 					createSpaceFromElement(childElement, spaceId, userId);
 				}
 				else{
-					log.error("\"" + elementType + "\" is not a valid element type");
+					log.warn("\"" + elementType + "\" is not a valid element type");
 				}
 			}
 			else{
-				log.error("Space " + spaceId + " has a node should be an element, but isn't");
+				log.warn("Space " + spaceId + " has a node should be an element, but isn't");
 			}
 		}
 		if (!benchmarks.isEmpty()){

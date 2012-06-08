@@ -8,6 +8,7 @@ fieldset table,
 fieldset ul {
 	width: 100%;
 }
+
 tr .label {
 	width: 25%;
 }
@@ -19,10 +20,11 @@ tr th {
 }
 
 #detailsTbl tr td:first-child {
-	width: 40%;
+	width: 30%;
 }
 
 #detailsTbl tr td textarea{
+	width: 280px;
 	height: 125px;
 }
 
@@ -124,3 +126,8 @@ tr th {
 .updateForm td {
 	vertical-align: top;
 }
+
+#savedesc, #canceldesc {
+	vertical-align: bottom;
+}}
+

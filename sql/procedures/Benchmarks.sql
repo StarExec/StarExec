@@ -182,8 +182,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				END) ASC
 				
 				-- Shrink the results to only those required for the next page of benchmarks
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id,
 						name,
@@ -207,8 +206,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				END) DESC
 				
 				-- Shrink the results to only those required for the next page of benchmarks
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 			
 		-- Otherwise, ensure the target benchmarks contain _query
@@ -223,10 +221,9 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				FROM 	benchmarks
 				
 				-- Query Filtering
-				WHERE 	id	IN (SELECT	id
-								FROM 	benchmarks
-								WHERE 	name 								LIKE	CONCAT('%', _query, '%')
-								OR		GetBenchmarkTypeName(bench_type)	LIKE 	CONCAT('%', _query, '%'))
+				WHERE 	name 									LIKE	CONCAT('%', _query, '%')
+				OR		GetBenchmarkTypeDescription(bench_type)	LIKE 	CONCAT('%', _query, '%')
+								
 										
 				-- Exclude benchmarks that aren't in the specified space
 				AND 	id 	IN (SELECT 	bench_id
@@ -241,8 +238,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id,
 						name,
@@ -253,10 +249,8 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				FROM 	benchmarks
 				
 				-- Query Filtering
-				WHERE 	id	IN (SELECT	id
-								FROM 	benchmarks
-								WHERE 	name 								LIKE	CONCAT('%', _query, '%')
-								OR		GetBenchmarkTypeName(bench_type)	LIKE 	CONCAT('%', _query, '%'))
+				WHERE 	name 									LIKE	CONCAT('%', _query, '%')
+				OR		GetBenchmarkTypeDescription(bench_type)	LIKE 	CONCAT('%', _query, '%')
 										
 				-- Exclude benchmarks that aren't in the specified space
 				AND 	id 	IN (SELECT 	bench_id
@@ -271,8 +265,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 					 END) DESC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
-				-- LIMIT _startingRecord, _recordsPerPage;
-				LIMIT 0, 10;
+				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;
 	END //

@@ -1,7 +1,24 @@
 $(document).ready(function(){
-	// Attach click listeners to both buttons
-	initButtons();
-	
+	initUI();
+	attachFormValidation();
+	attachButtonActions();
+});
+
+/**
+ * Initializes the user-interface
+ */
+function initUI(){
+	$('#update').button({
+		icons: {
+			secondary: "ui-icon-check"
+		}
+	});
+}
+
+/**
+ * Attaches form validation to the 'edit space' fields
+ */
+function attachFormValidation(){
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
 	// the following code prevents that trigger
@@ -9,60 +26,72 @@ $(document).ready(function(){
 		e.preventDefault();
 	});
 	
-	// Validates space fields
+	// Adds regular expression handling to validator
+	$.validator.addMethod(
+			"regex", 
+			function(value, element, regexp) {
+				var re = new RegExp(regexp);
+				return this.optional(element) || re.test(value);
+	});
+	
+	// Form validation rules/messages
 	$("#editSpaceForm").validate({
 		rules: {
 			name: {
-				required: true,
-				minlength: 2,
-				maxlength: 32
+				required : true,
+				maxlength: 64,
+				regex	 : getPrimNameRegex()
 			},
-			desc: {
-				maxlength: 1024
+			description: {
+				required : true,
+				minlength: 2,
+				maxlength: 1024,
+				regex	 : getPrimDescRegex()
 			}
 		},
 		messages: {
 			name:{
-				required: "enter a space name",
-				minlength: ">= 2 characters",
-				maxlength: "< 32 characters"
+				required : "enter a space name",
+				maxlength: "too many characters",
+				regex	 : "invalid character(s)"
 			},
-			desc: {
-				maxlength: "< 1024 characters"
+			description: {
+				required : "enter a description",
+				maxlength: "too many characters",
+				regex	 : "invalid character(s)"
 			}
 		}
 	});
-	
-	$('#update').button({
-		icons: {
-			secondary: "ui-icon-check"
-    }});
-});
+}
 
-function initButtons(){
+
+/**
+ * Attaches an action to the 'update' button
+ */
+function attachButtonActions(){
 	// Triggers validation and, if that passes,
 	// updates the space details via AJAX, then redirects to explore/spaces.jsp
 	$("#update").click(function(){
 		var isFormValid = $("#editSpaceForm").valid();
 		if(isFormValid == true){
-			var name = $("#name").val();
-			var description = $("#description").val();
-			var isLocked = $("#locked").is(':checked');
-			var addBench = $("#addBench").is(':checked');
-			var addJob = $("#addJob").is(':checked');
-			var addSolver = $("#addSolver").is(':checked');
-			var addSpace = $("#addSpace").is(':checked');
-			var addUser = $("#addUser").is(':checked');
-			var removeBench = $("#removeBench").is(':checked');
-			var removeJob = $("#removeJob").is(':checked');
-			var removeSolver = $("#removeSolver").is(':checked');
-			var removeSpace = $("#removeSpace").is(':checked');
-			var removeUser = $("#removeUser").is(':checked');
-			var data = {name: name, description: description, locked: isLocked, addBench: addBench,
-					addJob: addJob, addSolver: addSolver, addSpace: addSpace, addUser: addUser,
-					removeBench: removeBench, removeJob: removeJob, removeSolver: removeSolver,
-					removeSpace: removeSpace, removeUser: removeUser};
+			// Extract relevant data from page
+			var data = 
+			{		name		: $("#name").val(), 
+					description	: $("#description").val(),
+					locked		: $("#locked").is(':checked'),
+					addBench	: $("#addBench").is(':checked'),
+					addJob		: $("#addJob").is(':checked'),
+					addSolver	: $("#addSolver").is(':checked'),
+					addSpace	: $("#addSpace").is(':checked'),
+					addUser		: $("#addUser").is(':checked'),
+					removeBench	: $("#removeBench").is(':checked'),
+					removeJob	: $("#removeJob").is(':checked'),
+					removeSolver: $("#removeSolver").is(':checked'),
+					removeSpace	: $("#removeSpace").is(':checked'),
+					removeUser	: $("#removeUser").is(':checked')
+			};
 			
+			// Pass data to server via AJAX
 			$.post(
 					"/starexec/services/edit/space/" + getParameterByName("id"),
 					data,

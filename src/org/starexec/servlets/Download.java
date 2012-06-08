@@ -175,7 +175,7 @@ public class Download extends HttpServlet {
 			//container has the xml schema and the newly created xml file.  uniqueDir is the compressed file downloaded by user
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			File container = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileNamewoFormat);
-			container.mkdir();
+			container.mkdirs();
 			
 			File schemaCopy = new File(R.STAREXEC_ROOT, "batchSpaceSchema.xsd");
 			FileUtils.moveFileToDirectory(file, container, false);

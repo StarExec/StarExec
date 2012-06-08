@@ -1,4 +1,26 @@
 $(document).ready(function(){
+	initUI();
+	attachFormValidation();
+});
+
+
+/**
+ * Initialize user-interface buttons/actions
+ */
+function initUI(){
+	$('#btnUpload').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-n"
+    }});
+}
+
+
+/**
+ * Attaches form validation to the file uploading field
+ */
+function attachFormValidation(){
+	
+	// Adds regular expression handling to the validator
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
@@ -6,6 +28,12 @@ $(document).ready(function(){
 				return this.optional(element) || re.test(value);
 	});
 	
+	// Re-validate the 'file location' field when it loses focus
+	$("#fileUpload").change(function(){
+		 $("#fileUpload").blur().focus(); 
+    });
+	
+	// Form validation rules/messages
 	$("#upForm").validate({
 		rules: {
 			f: {
@@ -20,9 +48,4 @@ $(document).ready(function(){
 			}
 		}
 	});
-	
-	$('#btnUpload').button({
-		icons: {
-			secondary: "ui-icon-arrowthick-1-n"
-    }});
-});
+}

@@ -1,4 +1,27 @@
 $(document).ready(function(){
+	initUI();
+	attachFormValidation();
+});
+
+
+
+/**
+ * Initializes user-interface 
+ */
+function initUI(){
+	$('#btnUpload').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-n"
+    }});
+}
+
+
+/**
+ * Attaches form validation to the solver upload form
+ */
+function attachFormValidation(){
+	
+	// Add regular expression handler to jQuery validator
 	$.validator.addMethod(
 			"regex", 
 			function(value, element, regexp) {
@@ -6,35 +29,44 @@ $(document).ready(function(){
 				return this.optional(element) || re.test(value);
 	});
 	
+	// Re-validate the 'solver location' field when it loses focus
+	$("#fileLoc").change(function(){
+		 $("#fileLoc").blur().focus(); 
+    });
+	
+	// Form validation rules/messages	
 	$("#upForm").validate({
 		rules: {
 			f: {
-				required: true,
-				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+				required : true,
+				regex	 : "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			sn: {
-				required: true
+				required : true,
+				maxlength: 64,
+				regex 	 : getPrimNameRegex()
 			},
 			desc: {
-				required: true
+				required : true,
+				maxlength: 1024,
+				regex    : getPrimDescRegex()
 			}
 		},
 		messages: {
 			f: {
 				required: "please select a file",
-				regex: ".zip, .tar and .tar.gz only"
+				regex 	: ".zip, .tar and .tar.gz only"
 			},
 			sn: {
-				required: "input solver name"
+				required: "solver name required",
+				maxlength: "64 characters maximum",
+				regex 	: "invalid character(s)"
 			},
 			desc: {
-				required: "input description"
+				required: "description required",
+				maxlength: "1024 characters maximum",
+				regex: "invalid character(s)"
 			}
 		}
 	});
-	
-	$('#btnUpload').button({
-		icons: {
-			secondary: "ui-icon-arrowthick-1-n"
-    }});
-});
+}
