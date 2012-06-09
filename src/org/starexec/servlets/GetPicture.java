@@ -111,6 +111,7 @@ public class GetPicture extends HttpServlet{
 		
     	sb.delete(0, sb.length());
     	sb.append(pictureDir);
+    	sb.append(File.separator);
     	sb.append(picFilename);
 		File file = new File(sb.toString());
 		
@@ -118,6 +119,7 @@ public class GetPicture extends HttpServlet{
 		if (file.exists() == false) {
 			sb.delete(0, sb.length());
 			sb.append(pictureDir);
+			sb.append(File.separator);
 			sb.append(defaultPicFilename);
 			file = new File(sb.toString());
 		}
