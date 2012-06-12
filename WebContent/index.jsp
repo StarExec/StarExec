@@ -36,11 +36,11 @@
 	<ul id="advisory">
 		<li>Nikolaj Bjørner (Microsoft Research)</li>
 		<li>Ewen Denney (NASA Ames)</li>
-		<li>Jürgen Giesl (RWTH Aachen)</li>
 		<li>Aarti Gupta (NEC Labs)</li>
 		<li>Ian Horrocks (Oxford)</li>
 		<li>Giovambattista Ianni (University of Calabria)</li>
 		<li>Daniel Le Berre (University of Artois)</li>
+		<li>Johannes Waldmann (Leipzig University of Applied Sciences)</li>
 	</ul>
 
 </star:template>
