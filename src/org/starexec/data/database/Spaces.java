@@ -1183,15 +1183,10 @@ public class Spaces {
 		
 		try {			
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
-			procedure.setInt(1, id);
-			ResultSet results = procedure.executeQuery();
 			
-			if (results.next()) {
-				procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
-				procedure.setInt(1, results.getInt("community"));
-				results = procedure.executeQuery();
-			}
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
+			procedure.setInt(1, GetCommunityOfSpace(id));
+			ResultSet results = procedure.executeQuery();
 			
 			if(results.next()){
 				listOfDefaultSettings.set(0, results.getString("space_id"));
@@ -1226,7 +1221,7 @@ public class Spaces {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setDefaultSettings(int id, int num, int setting) {
-Connection con = null;			
+		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
@@ -1257,5 +1252,31 @@ Connection con = null;
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Get the id of the community where the space belongs.
+	 * @param id the space from which to get its community
+	 * @return the id of the community of the space
+	 */
+	public static int GetCommunityOfSpace(int id) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
+			procedure.setInt(1, id);
+			ResultSet results = procedure.executeQuery();
+			if(results.next()) {
+				return results.getInt("community");
+			}
+			return -1;	
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return -1;
 	}
 }

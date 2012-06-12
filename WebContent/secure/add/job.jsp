@@ -9,7 +9,7 @@
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
 		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
-		List<Processor> ListOfPostProcessors = Processors.getAll(ProcessorType.POST);
+		List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
 		
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);

@@ -79,11 +79,29 @@ INSERT INTO processors (name, description, path, community, processor_type, disk
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('SAT_LIB_PRE', 'This is a sample SAT pre processor', 'C:\\SATPPREROCESSOR', 3, 1, 10240);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
-	('SAT_LIB_POST', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
+	('SAT_LIB_POST1', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_POST2', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_POST3', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_POST4', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('SAT_LIB_POST5', 'This is a sample SAT post processor', 'C:\\SATPOSTPROCESSOR', 3, 2, 102400);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('SMT_LIB_V1', 'This is a sample SMT benchmark type', 'C:\\SMTPROCESSOR', 2, 3, 1024000);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
-	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 5, 3, 10240000);
+	('TPTP_LIB_V1', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 6, 2, 10240000);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('TPTP_LIB_V2', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 6, 2, 10240000);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('TPTP_LIB_V3', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 6, 2, 10240000);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('TPTP_LIB_V4', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 6, 2, 10240000);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('TPTP_LIB_V5', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 6, 2, 10240000);
+INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
+	('TPTP_LIB_V6', 'This is a sample TPTP benchmark type', 'C:\\TPTPPROCESSOR', 6, 2, 10240000);
 	
 INSERT INTO benchmarks (user_id, name, uploaded, path, description, downloadable, bench_type, disk_size) VALUES
 	(1, 'Gasburner', SYSDATE(), '/home/starexec/benchmarks/gasburner-prop3-2.smt2', 'This is a sample benchmark that is downloadable', 1, 1, 1024);

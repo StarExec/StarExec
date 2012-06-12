@@ -13,13 +13,11 @@
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 	} else {
 		List<String> listOfDefaultSettings = Communities.getDefaultSettings(com.getId());
-		List<Processor> ListOfPostProcessors = Processors.getAll(ProcessorType.POST);
 
 		request.setAttribute("com", com);	
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
 		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
 		request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
-		request.setAttribute("postProcs", Processors.getAll(ProcessorType.POST));
 		request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
 		request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
@@ -128,7 +126,7 @@
 				<td>post processor </td>
 				<td>					
 					<select id="editPostProcess" name="editPostProcess" default=${defaultPPId}>
-					<c:forEach var="proc" items="${postProcs}">
+					<c:forEach var="proc" items="${post_proc}">
 							<option value="${proc.id}">${proc.name}</option>
 					</c:forEach>
 					</select>
