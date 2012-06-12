@@ -70,6 +70,7 @@
 						<td class="label"><p>post processor</p></td>
 						<td>					
 							<select id="postProcess" name="postProcess" default=${defaultPPId}>
+							<option value="-1">none</option>
 							<c:forEach var="proc" items="${postProcs}">
 									<option value="${proc.id}">${proc.name}</option>
 							</c:forEach>

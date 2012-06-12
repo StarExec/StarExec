@@ -102,7 +102,7 @@ function initUI(){
 		togglePlusMinus(this);
 	});	
 	
-	$('#editPostProcess').change(function() {
+	$('#editPostProcess').click(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
 		
