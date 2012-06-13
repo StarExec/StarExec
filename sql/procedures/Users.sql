@@ -8,6 +8,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 
 -- Begins the registration process by adding a user to the USERS table
+-- Makes their role "unauthorized"
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS AddUser;
 CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, IN _archiveType VARCHAR(8), OUT _id INT)
@@ -15,6 +16,9 @@ CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), 
 		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota, pref_archive_type)
 		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota, _archiveType);
 		SELECT LAST_INSERT_ID() INTO _id;
+		
+		INSERT INTO user_roles(email, role)
+		VALUES (_email, "unauthorized");
 	END //
 
 -- Adds an association between a user and a space
@@ -163,11 +167,9 @@ DROP PROCEDURE IF EXISTS GetUnregisteredUserById;
 CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 	BEGIN
 		SELECT * 
-		FROM users 
+		FROM users NATURAL JOIN user_roles
 		WHERE users.id = _id 
-		AND users.email NOT IN
-			(SELECT email 
-			FROM user_roles);
+		AND user_roles.role = 'unauthorized';
 	END //
 	
 -- Returns the number of users in a given space

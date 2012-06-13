@@ -212,6 +212,9 @@
   <security-role>
     <role-name>user</role-name>    
   </security-role>
+  <security-role>
+  	<role-name>unauthorized</role-name>
+  </security-role>
   
   <!-- Form based authentication configuration -->
   <login-config>
@@ -230,16 +233,31 @@
     </web-resource-collection>
     <auth-constraint>
 	  <role-name>user</role-name>
-    </auth-constraint>		
+	  <role-name>admin</role-name>
+    </auth-constraint>			
   </security-constraint>
   
-  <security-constraint>	
-    <web-resource-collection>
-	  <web-resource-name>Users Only</web-resource-name>
-	  <url-pattern>/services/*</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
+  <security-constraint>
+  	<web-resource-collection>
+  	  <web-resource-name>Users Only</web-resource-name>
+  	  <url-pattern>/secure/index.jsp</url-pattern>
+  	</web-resource-collection>
+  	<auth-constraint>
 	  <role-name>user</role-name>
+	  <role-name>admin</role-name>
+	  <role-name>unauthorized</role-name>
+    </auth-constraint>		
+  </security-constraint>
+
+  <security-constraint>
+  	<web-resource-collection>
+  	  <web-resource-name>Users Only</web-resource-name>
+  	  <url-pattern>/services/session/*</url-pattern>
+  	</web-resource-collection>
+  	<auth-constraint>
+	  <role-name>user</role-name>
+	  <role-name>admin</role-name>
+	  <role-name>unauthorized</role-name>
     </auth-constraint>		
   </security-constraint>
   

@@ -45,11 +45,13 @@ CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 			
 			INSERT INTO user_assoc(user_id, space_id, proxy, permission)
 			VALUES(_id, _community, _community, _newPermId);
-		END IF;
-		
-		IF NOT EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id)) THEN
-			INSERT INTO user_roles(email, role)
-				VALUES((SELECT email FROM users WHERE users.id = _id), 'user');
+			
+			-- make the user a user if they are currently unauthorized
+			IF EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id) AND role = 'unauthorized') THEN
+				UPDATE user_roles
+				SET role = 'user'
+				WHERE user_roles.email IN (SELECT email FROM users WHERE users.id = _id);
+			END IF;
 		END IF;
 	END //
 	
@@ -68,7 +70,7 @@ CREATE PROCEDURE AddPassResetRequest(IN _id INT, IN _code VARCHAR(36))
 	END //
 	
 -- Deletes a user's entry in INVITES, and if the user is unregistered
--- (i.e. doesn't have an entry in USER_ROLES) then they are completely
+-- (i.e. has a role of 'unauthorized') then they are completely
 -- deleted from the system
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS DeclineCommunityRequest;
@@ -76,11 +78,9 @@ CREATE PROCEDURE DeclineCommunityRequest(IN _id INT, IN _community INT)
 	BEGIN
 		DELETE FROM community_requests 
 		WHERE user_id = _id and community = _community;
-		DELETE FROM users
+		DELETE FROM users 
 		WHERE users.id = _id
-		AND users.email NOT IN
-			(SELECT email
-			FROM user_roles);
+		AND users.email IN (SELECT * FROM user_roles WHERE role = 'unauthorized');
 	END //
 	
 -- Returns the community request associated with given user id

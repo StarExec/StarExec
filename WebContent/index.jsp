@@ -3,11 +3,11 @@
 
 <star:template title="welcome!" css="index">
 	<style type="text/css">
-#content a:link {
-	text-decoration: underline;
-	color: #ae0000;
-}
-</style>
+		#content a:link {
+			text-decoration: underline;
+			color: #ae0000;
+		}
+	</style>
 	<p>Starexec is a cross community logic solving service under
 		development at the University of Iowa under the direction of principal
 		investigators Dr. Aaron Stump (Iowa), Dr. Geoff Sutcliffe (University

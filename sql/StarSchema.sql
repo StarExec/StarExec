@@ -23,7 +23,7 @@ CREATE TABLE users (
 );
 
 -- An associative table that maps a user to a role.
--- The application uses 'user' and 'admin' for now
+-- The application uses 'unauthorized', 'user' and 'admin' for now.
 CREATE TABLE user_roles (
 	email  VARCHAR(64) NOT NULL,
 	role VARCHAR(24) NOT NULL,

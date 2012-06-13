@@ -4,7 +4,7 @@
 <header id="pageHeader">
 	<a href="/starexec/secure/index.jsp"><img src="/starexec/images/starlogo.png" alt="Starexec Logo"></a>
 	
-	<c:if test="${not empty user}">
+	<c:if test="${not empty user && user.role != 'unauthorized'}">
 		<nav>
 			<ul>
 				<c:if test="${user.role == 'admin'}">
