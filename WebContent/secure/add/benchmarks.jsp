@@ -12,8 +12,7 @@
 		userSpaces = Spaces.GetSpacesByUser(userId);	
 		
 		request.setAttribute("space", Spaces.get(spaceId));
-		request.setAttribute("types",
-				Processors.getAll(ProcessorType.BENCH));
+		request.setAttribute("types", Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId), ProcessorType.BENCH));
 		request.setAttribute("userSpaces",userSpaces);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
