@@ -570,9 +570,10 @@ public class GridEngineUtil {
 	 */
 	public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {
 		try {			
-			String stdoutPath = String.format("%s/%d/%d/%s_%s/%s/stdout.txt", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name, bench_name);
-			File file =  new File(stdoutPath);
-			FileUtils.forceMkdir(file);		
+			String stdoutPath = String.format("%s/%d/%d/%s_%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name);
+			File path =  new File(stdoutPath);
+			FileUtils.forceMkdir(path);	
+			File file = new File (String.format("%s/%s.txt", bench_name));	
 			return file;	
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
