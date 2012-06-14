@@ -767,7 +767,7 @@ public class Spaces {
 		}			
 		
 		// Finally, add the benchmarks in the space to the database
-		Benchmarks.add(con, space.getBenchmarks(), spaceId);
+		Benchmarks.add(space.getBenchmarks(), spaceId);
 	}
 	
 	/**

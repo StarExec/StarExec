@@ -2,19 +2,24 @@ package org.starexec.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
+/**
+ * This is a data structure used to hold information about dependencies for benchmarks as they are validated
+ * 
+ * @author Benton McCune
+ *
+ */
 public class DependValidator {
 
 	
-	//these two are for the whole space
-	private HashMap<Integer, ArrayList<String>> pathMap;
-	private HashMap<Integer, ArrayList<Integer>> axiomMap;
-	//The following map is for caching to improve performance by making few calls to database
+	//these two are for the whole space.  keys are indices for benchmarks
+	private HashMap<Integer, ArrayList<String>> pathMap;//value is a List of dependency paths for a benchmark
+	private HashMap<Integer, ArrayList<Integer>> axiomMap;//value is a List of dependent bench id for a benchmark
+	//The following map is for caching to improve performance by making far fewer calls to database
 	private HashMap<String, Integer> foundDependencies;//keys are include paths, values are the benchmarks ids of secondary benchmarks
 	
 	//this is for a single benchmark	
-	private ArrayList<String> paths;
-	private ArrayList<Integer> axiomIds;
+	private ArrayList<String> paths;//List of dependency paths for a benchmark
+	private ArrayList<Integer> axiomIds;//List of dependent bench id for a benchmark
 	/**
 	 * @return the pathMap
 	 */

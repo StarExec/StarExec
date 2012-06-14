@@ -211,32 +211,20 @@ public class Benchmarks {
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				Benchmarks.attachBenchAttrs(benchmarks, p);
 				
-				//
-				//ArrayList<Object> dataStruct = new ArrayList<Object>();//will just contain both maps
+				//Datastructure to make sure dependencies are all valid before benchmarks are uploaded.
 				DependValidator dataStruct = new DependValidator();
 				HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
 				HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<Integer, ArrayList<Integer>>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
-				//dataStruct.add(0, axiomMap);
 				dataStruct.setAxiomMap(axiomMap);				
-				//dataStruct.add(1, pathMap);
 				dataStruct.setPathMap(pathMap);
 				dataStruct = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, userId);
 				dataStruct.getAxiomMap().size();
 				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
 				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
-				// Next add them to the database (must happen AFTER they are processed);
+				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
 				if (dataStruct != null){
-					//con = Common.getConnection();
-					//Common.beginTransaction(con);
 				
 				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct);
-				
-				// introduce the validated dependencies (must happen after they are added so that dependencies will have bench ids)
-				//log.info("About to introduce dependencies to " + benchmarks.size() + " benchmarks to space " + spaceId);
-				//assuming benches now have ids, but they apparently don't!
-				//Benchmarks.introduceDependencies(benchmarks, dataStruct);
-				
-				//Common.endTransaction(con);
 
 				}
 				else{
@@ -258,7 +246,13 @@ public class Benchmarks {
 		}
 		return false;
 	}	
-	//for list of benches
+	
+	/**
+	 *   introduces the (presumably validated)dependencies for a list of benchmarks
+	 * @param benchmarks list of benchmarks that (potentially) have dependencies 
+	 * @param dataStruct  datastructure that holds information about the benchmarks' dependencies
+	 * @author Benton McCune
+	 */
 	private static void introduceDependencies(List<Benchmark> benchmarks,
 			DependValidator dataStruct) {
 		HashMap<Integer, ArrayList<Integer>> axiomMap = dataStruct.getAxiomMap();
@@ -270,10 +264,15 @@ public class Benchmarks {
 			log.info("Benchmark " + i +" has id " + benchId + " with " + axiomMap.get(benchId).size() + " axiom ids and " + pathMap.get(benchId).size() + " paths");
 			introduceDependencies(benchId, axiomMap.get(benchId), pathMap.get(benchId));
 		}
-		// TODO Auto-generated method stub
 		
 	}
-	//for single bench
+	/**
+	 * introduces the dependencies for a single benchmark
+	 * @param benchId  id of the benchmark
+	 * @param axiomIdList   list of benchmark ids for dependent benchmarks
+	 * @param pathList   list of paths for dependent benchmarks (indices correspond to those in axiomIDList
+	 * @author Benton McCune
+	 */
 	private static void introduceDependencies(Integer benchId,
 			ArrayList<Integer> axiomIdList, ArrayList<String> pathList) {	
 		for (int i = 0; i < axiomIdList.size(); i++){
@@ -296,23 +295,18 @@ public class Benchmarks {
 	 */
 	private static DependValidator validateDependencies(
 			List<Benchmark> benchmarks, Integer spaceId, Boolean linked, Integer userId) {
-		//HashMap<Benchmark,ArrayList<ArrayList<Object>>> map = new HashMap();
 		
 		HashMap<String, Integer> foundDependencies = new HashMap<String,Integer>();//keys are include paths, values are the benchmarks ids of secondary benchmarks
 		
-		//ArrayList<Object> dataStruct = new ArrayList<Object>();
 		DependValidator dataStruct = new DependValidator();
 		HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
 		HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<Integer, ArrayList<Integer>>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
-		//dataStruct.add(0, axiomMap);
 		dataStruct.setAxiomMap(axiomMap);
-		//dataStruct.add(1, pathMap);
 		dataStruct.setPathMap(pathMap);
 		dataStruct.setFoundDependencies(foundDependencies);
 		Benchmark benchmark = new Benchmark();
 		for (int i = 0; i< benchmarks.size(); i++){
 			benchmark = benchmarks.get(i);
-			//ArrayList<ArrayList<Object>> benchDepList = new ArrayList<ArrayList<Object>>();//List of two Lists for individual primary bench
 			DependValidator benchDepLists = new DependValidator();
 			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId, foundDependencies);
 			if (benchDepLists == null)
@@ -320,7 +314,6 @@ public class Benchmarks {
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
 				return null;
 			}
-			//pathMap.put(benchmark.getId(), (ArrayList<Object>)benchDepList.get(1));
 			pathMap.put(i, benchDepLists.getPaths());//doesn't have Ids yet! - need to use index
 			axiomMap.put(i, benchDepLists.getAxiomIds());
 			foundDependencies = benchDepLists.getFoundDependencies();// get update 
@@ -340,24 +333,16 @@ public class Benchmarks {
 	 * @param foundDependencies 
 	 */
 	private static DependValidator validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, HashMap<String, Integer> foundDependencies){
-		//Connection con = null;
+		
 		Properties atts = bench.getAttributes();
-		//ArrayList<ArrayList> benchDepList = new ArrayList<>();//List of two Lists for individual primary bench
+		
 		DependValidator benchDepLists = new DependValidator();
 		ArrayList<Integer> axiomIdList = new ArrayList<Integer>();
 		ArrayList<String> pathList = new ArrayList<String>();
-		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
-		//		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
+
 		Integer numberDependencies = 0;
-		String includePath = "";
-		/*if (!Permissions.canUserSeeBench(bench.getId(), userId)){
-			log.warn("User " + userId + " cannot see bench " +bench.getId());
-			return null;
-		}
-		*/			
+		String includePath = "";		
 		try {
-			//con = Common.getConnection();
-			//Common.beginTransaction(con);
 			numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
 			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
@@ -386,15 +371,14 @@ public class Benchmarks {
 					return null;
 				}
 			}	
-			//Common.endTransaction(con);
+			
 		}
 		catch (Exception e){			
 			log.error("validate dependency failed on bench " +bench.getName() + ": " + e.getMessage(), e);
 			return null;
-		//	Common.doRollback(con);
+		
 		} finally {
-			//log.debug("safe closing connection.");
-			//Common.safeClose(con);
+
 		}	
 		benchDepLists.setAxiomIds(axiomIdList);
 		benchDepLists.setPaths(pathList);
@@ -516,22 +500,6 @@ public class Benchmarks {
 			// For each attribute (key, value)...
 			int count = 0;
 			int bigSetAtts = attrs.entrySet().size()/10;
-			//commented code should be removed when new dependency introduction is proven to work correctly
-			/*
-			Entry<Object,Object> thing = new Entry<Object,Object>();
-			Entry<Object, Object>[] entryArray = new Entry<Object, Object>[0];
-			entryArray = attrs.entrySet().toArray(entryArray);
-			
-			int i=0;
-			for (i = 0;i<bigSetAtts;i+=10){
-				Benchmarks.addBenchAttrTen(con, benchmark.getId(), entryArray, i);
-				log.info("Adding ten atts from position " + i + " for benchmark " + benchmark.getId());
-			}
-			for (;i<entryArray.length;i++){
-				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)entryArray[i].getKey(), (String)entryArray[i].getValue());
-				log.info("Adding  " + (String)entryArray[i].getKey() + ", " + (String)entryArray[i].getValue()+ i + " for benchmark " + benchmark.getId() + "from positon " + i);
-			}
-			*/
 			
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
@@ -553,7 +521,18 @@ public class Benchmarks {
 		}
 	}
 
-	//same, but returns Benchmark
+
+	/**
+	 *   Add a benchmark with dependencies.  The dependencies are already validated.
+	 * 
+	 * @param benchmark  the benchmark to be added
+	 * @param spaceId   the space the bench is being added to
+	 * @param dataStruct  the datastructure that holds the validated dependency information
+	 * @param benchIndex  the location of this benchmarks dependency info in the datastruct
+	 * @return benchmark returns the benchmark added (not typically needed)
+	 * @throws Exception
+	 * @author Benton McCune
+	 */
 	protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct, Integer benchIndex) throws Exception {				
 		Connection con = null;
 		try{
@@ -594,10 +573,7 @@ public class Benchmarks {
 				log.debug("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
-			//do previously validated dependecies here
-			//ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
-			//Benchmarks.introduceDependencies(benchmarks, dataStruct)
-			//benches.add(benchmark);
+			//do previously validated dependencies here
 			ArrayList<Integer> axiomIdList = dataStruct.getAxiomMap().get(benchIndex);
 			ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);
 			Benchmarks.introduceDependencies(benchmark.getId(), axiomIdList, pathList);
@@ -613,158 +589,7 @@ public class Benchmarks {
 			Common.safeClose(con);
 		}
 	}
-	
-	
-	/**
-	 * Internal method which adds a single benchmark with dependencies to the database under the given spaceId
-	 * @param con The connection the operation will take place on
-	 * @param benchmark The benchmark to add to the database
-	 * @param spaceId The space the benchmark will belong to
-	 * @param con database connection
-	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
-	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
-	 * @return True if the operation was a success, false otherwise
-	 * @author Benton McCune
-	 */
-	/*
-	protected static boolean addWithDependencies(Connection con, Benchmark benchmark, int spaceId, int depRootSpaceId, Boolean linked, int userId) throws Exception {				
-		CallableStatement procedure = null;			
-		Properties attrs = benchmark.getAttributes();
 
-		// Setup normal information for the benchmark
-		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
-		procedure.setString(1, benchmark.getName());		
-		procedure.setString(2, benchmark.getPath());
-		procedure.setBoolean(3, benchmark.isDownloadable());
-		procedure.setInt(4, benchmark.getUserId());			
-		procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
-		procedure.setInt(6, spaceId);
-		procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
-		procedure.registerOutParameter(8, java.sql.Types.INTEGER);
-
-		// Execute procedure and get back the benchmark's id
-		procedure.executeUpdate();		
-		benchmark.setId(procedure.getInt(8));
-
-		// If the benchmark is valid according to its processor...
-		if(Benchmarks.isBenchValid(attrs)) {
-			// Discard the valid attribute, we don't need it
-			attrs.remove("starexec-valid");
-
-			// For each attribute (key, value)...
-			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
-				// Add the attribute to the database
-				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
-			}							
-			if (Benchmarks.hasDependencies(attrs)){
-				//add dependencies
-				introduceDependencies(benchmark, depRootSpaceId, linked, userId, con);
-			}
-		}				
-		log.info("Adding (with dependencies) Benchmark " + benchmark.getName());
-		return true;
-	}
-
-*/
-/*	
-	//need method to call this for a whole space
-	private static boolean introduceDependenciesSpace(Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer userId){
-		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
-		for (Benchmark bench:benchmarks){
-			introduceDependencies(bench, depRootSpaceId, linked, userId);
-		}
-		List<Space> subSpaces = Spaces.getSubSpaces(spaceId, userId);
-		//Call for entire space hierarchy
-		for (Space subSpace:subSpaces){
-			introduceDependenciesSpace(subSpace.getId(), depRootSpaceId, linked, userId);
-		}
-		return false;
-	}
-*/	
-	/**
-	 * Introduces the dependencies for a list of benchmarks
-	 * @param benchmarks The list of benchmarks that might have dependencies
-	 * @param con database connection
-	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
-	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
-	 * @return True if the operation was a success, false otherwise
-	 * @author Benton McCune
-	 */
-/*	private static boolean introduceDependencies(List<Benchmark> benchmarks, Integer depRootSpaceId, Boolean linked, Integer userId, Connection conParam){
-		log.info("Introducing dependencies for " + benchmarks.size() + " benchmarks" );
-		Connection con = null;
-		try{
-		for (Benchmark bench:benchmarks){
-			introduceDependencies(bench, depRootSpaceId, linked, userId, con);
-		}
-		}
-		catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-			return false;
-		} finally {
-			log.debug("safe closing connection.");
-			Common.safeClose(con);
-		}
-		return true;
-	}
-*/
-	/**
-	 * Introduces the dependencies for a benchmark
-	 * @param benchmarks The list of benchmarks that might have dependencies
-	 * @param con database connection
-	 * @param spaceId the id of the space where the axiom benchmarks lie
-	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
-	 * @return True if the operation was a success, false otherwise
-	 * @author Benton McCune
-	 */
-/*	private static boolean introduceDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, Connection conParam){
-		Connection con = null;
-		Properties atts = bench.getAttributes();
-		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
-		//		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
-		Integer numberDependencies = 0;
-		String includePath = "";
-		if (!Permissions.canUserSeeBench(bench.getId(), userId)){
-			log.debug("User " + userId + " cannot see bench " +bench.getId());
-			return false;
-		}			
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-			numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
-			log.debug("# of dependencies = " + numberDependencies);
-			for (int i = 1; i <= numberDependencies; i++){
-				includePath = atts.getProperty("starexec-dependency-"+i, "");
-				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
-				Integer depBenchId = -1;
-				if (includePath.length()>0){
-					depBenchId = Benchmarks.findDependentBench(spaceId,includePath, linked, userId);
-					log.debug("Dependent Bench = " + depBenchId);
-				}
-				if (depBenchId>-1)
-				{
-					if (Permissions.canUserSeeBench(depBenchId, userId)){
-						log.info("Adding dependency, Bench " + bench.getId() + " dependent on " + depBenchId);
-						Benchmarks.addBenchDependency(bench.getId(),depBenchId, includePath);
-					}
-				}
-			}	
-			Common.endTransaction(con);
-		}
-		catch (Exception e){			
-			log.error("introduce dependency failed on bench " +bench.getName() + ": " + e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			log.debug("safe closing connection.");
-			Common.safeClose(con);
-		}	
-		return true;
-	}
-*/
 	// just for testing locally
 	public static boolean testDepCode(Benchmark bench, int userId){
 		//Connection con = null;
@@ -944,6 +769,7 @@ public class Benchmarks {
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 	
+	//
 	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct) throws Exception {		
 		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 			
