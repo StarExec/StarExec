@@ -9,10 +9,12 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		List<Space> userSpaces = new ArrayList<Space>();
-		userSpaces = Spaces.GetSpacesByUser(userId);	
-		
+		List<Processor> postProcs = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId), ProcessorType.BENCH);
+		userSpaces = Spaces.GetSpacesByUser(userId);
+		postProcs.add(Processors.getByCommunity(1, ProcessorType.BENCH).get(0));
+
 		request.setAttribute("space", Spaces.get(spaceId));
-		request.setAttribute("types", Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId), ProcessorType.BENCH));
+		request.setAttribute("types", postProcs);
 		request.setAttribute("userSpaces",userSpaces);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
