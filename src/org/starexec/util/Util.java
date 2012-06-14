@@ -375,8 +375,14 @@ public class Util {
 		sb.append(R.SOLVER_BIN_DIR);	// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
 		sb.append(File.separator);		// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
 		// Append 'run_' prefix to the configuration's filename if it isn't already there
-		if(false == configName.startsWith("run_")){
-			sb.append("run_");
+		if(false == configName.startsWith("starexec_run_")){
+			if (configName.startsWith("run_")){
+				sb.append("starexec_");
+			}
+			else
+			{
+				sb.append("starexec_run");
+			}
 		}
 		sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{run_configName}
 		
