@@ -372,7 +372,7 @@ public class GridEngineUtil {
 			
 			if(processor != null) {
 				log.info("got post processor " + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
-				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getId());
+				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(1).getName(), pair.getBench().getName());
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
 				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());			  
@@ -544,7 +544,7 @@ public class GridEngineUtil {
 	 * @return All console output from a job pair run for the given pair
 	 */
 	public static String getStdOut(Job job, JobPair pair, int limit) {
-		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getId(), limit);
+		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(1).getName(), pair.getBench().getName(), limit);
 	}
 	
 	/**
@@ -556,8 +556,8 @@ public class GridEngineUtil {
 	 * @param limit The maximum number of lines to return
 	 * @return All console output from a job pair run for the given pair
 	 */
-	public static String getStdOut(int userId, int jobId, int pairId, int limit) {		
-		File stdoutFile = GridEngineUtil.getStdOutFile(userId, jobId, pairId);		
+	public static String getStdOut(int userId, int jobId, String solver_name, String config_name, String bench_name, int limit) {		
+		File stdoutFile = GridEngineUtil.getStdOutFile(userId, jobId, solver_name, config_name, bench_name);		
 		return Util.readFileLimited(stdoutFile, limit);
 	}
 	
@@ -568,9 +568,16 @@ public class GridEngineUtil {
 	 * @param pairId The pair to get output for
 	 * @return All console output from a job pair run for the given pair
 	 */
-	public static File getStdOutFile(int userId, int jobId, int pairId) {
-		String stdoutPath = String.format("%s/%d/%d/%d/stdout.txt", R.JOB_OUTPUT_DIR, userId, jobId, pairId);
-		return new File(stdoutPath);				
+	public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {
+		try {			
+			String stdoutPath = String.format("%s/%d/%d/%s_%s/%s/stdout.txt", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name, bench_name);
+			File file =  new File(stdoutPath);
+			FileUtils.forceMkdir(file);		
+			return file;	
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+		return null;
 	}
 	
 	/**

@@ -1,13 +1,8 @@
 package org.starexec.servlets;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
+import java.util.zip.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -77,6 +72,9 @@ public class Download extends HttpServlet {
 			else if (request.getParameter("type").equals("job")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
 				fileName = handleJob(job, u.getId(), u.getArchiveType(), response);
+			} else if (request.getParameter("type").equals("j_outputs")) {
+				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response);
 			}
 		
 			// Redirect based on success/failure
@@ -269,7 +267,7 @@ public class Download extends HttpServlet {
     	StringBuilder sb = new StringBuilder();
     	sb.delete(0, sb.length());
     	sb.append(R.JOB_OUTPUT_DIR);
-    	sb.append("/");
+    	sb.append(File.separator);
     	sb.append(job.getUserId());
     	sb.append("_");
     	sb.append(job.getId());
@@ -280,7 +278,7 @@ public class Download extends HttpServlet {
         Iterator<JobPair> itr = pairs.iterator();
        
         sb.delete(0, sb.length());
-        sb.append("benchmark,solver,config,status,time\r\n");
+        sb.append("benchmark,solver,configuration,status,time,result\r\n");
         
         while(itr.hasNext()) {
         	JobPair pair = itr.next();
@@ -289,12 +287,14 @@ public class Download extends HttpServlet {
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
         		sb.append(",");
-        		sb.append(pair.getSolver().getConfigurations().get(0).getName());
+        		sb.append(pair.getSolver().getConfigurations().get(0));
         		sb.append(",");
         		sb.append(pair.getStatus().toString());
         		sb.append(",");
         		sb.append(pair.getSystemTime()/1000);
         		sb.append("ms");
+        		sb.append(",");
+        		sb.append(pair.getStarexecResult());
         		sb.append("\r\n");
         		}
         	else {
@@ -311,6 +311,46 @@ public class Download extends HttpServlet {
         }
         FileUtils.write(new File(filename), sb.toString());
         return filename;
+    }
+    
+    /**
+     * Get a zip file which contains the outputs of a job from all its job pairs.
+     * @param j The job to be handled
+     * @param userId The user the job belongs to
+     * @param format The compress format for the user to download
+     * @param response The servlet response sent back
+     * @return the filename of the created archive
+     * @throws IOException
+     * @author Ruoyu Zhang
+     */
+    private static String handleJobOutputs(Job j, int userId, String format, HttpServletResponse response) throws IOException {    	
+
+		// If the user can actually see the job the pair is apart of
+		if (Permissions.canUserSeeJob(j.getId(), userId)) {
+			// Path is /starexec/WebContent/secure/files/{random name}.{format}
+			// Create the file so we can use it
+			String fileName = UUID.randomUUID().toString() + format;
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			uniqueDir.createNewFile();
+			
+			// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{pair id}
+	    	StringBuilder sb = new StringBuilder();
+	    	sb.delete(0, sb.length());
+	    	sb.append(R.JOB_OUTPUT_DIR);
+	    	sb.append(File.separator);
+	    	sb.append(userId);
+	    	sb.append(File.separator);
+	    	sb.append(j.getId());
+			String outputPath = sb.toString();
+			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format);
+			
+			return fileName;
+		}
+		else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+		}
+    	
+    	return null;
     }
     
     /**
@@ -335,7 +375,8 @@ public class Download extends HttpServlet {
     				request.getParameter("type").equals("bench") ||
     				request.getParameter("type").equals("spaceXML") ||
     				request.getParameter("type").equals("jp_output") ||
-    				request.getParameter("type").equals("job"))) {
+    				request.getParameter("type").equals("job") ||
+    				request.getParameter("type").equals("j_outputs"))) {
     			return false;
     		}
     		

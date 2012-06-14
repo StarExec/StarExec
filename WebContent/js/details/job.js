@@ -8,6 +8,12 @@ $(document).ready(function(){
  * Initializes the user-interface
  */
 function initUI(){
+	$("#jobOutputDownload").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+    });
+	
 	$("#jobdownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"

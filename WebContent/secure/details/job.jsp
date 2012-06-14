@@ -106,5 +106,12 @@
 			</tbody>
 		</table>
 	</fieldset>
-	<a href="/starexec/secure/download?type=job&id=${jobId}" id="jobdownload">download</a>
+	
+	<fieldset>
+	<legend>actions</legend>
+		<ul id="actionList">
+			<li><a id="jobOutputDownload" href="/starexec/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
+			<li><a id="jobdownload" href="/starexec/secure/download?type=job&id=${jobId}">job information</a></li>
+		</ul>
+	</fieldset>		
 </star:template>
