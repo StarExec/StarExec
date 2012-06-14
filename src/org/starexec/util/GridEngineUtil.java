@@ -573,7 +573,7 @@ public class GridEngineUtil {
 			String stdoutPath = String.format("%s/%d/%d/%s_%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name);
 			File path =  new File(stdoutPath);
 			FileUtils.forceMkdir(path);	
-			File file = new File (String.format("%s/%s.txt", bench_name));	
+			File file = new File (String.format("%s/%s.txt", stdoutPath, bench_name));	
 			return file;	
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
