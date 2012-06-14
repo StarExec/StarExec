@@ -36,6 +36,7 @@ public class ArchiveUtil {
 	 * @return True if extraction was successful, false otherwise.
 	 */
 	public static boolean extractArchive(String fileName, String destination) {
+		log.debug("ExtractingArchive for " + fileName);
 		try {
 			// Check for the appropriate file extension and hand off to the appropriate method
 			if(fileName.endsWith(".zip")) {
@@ -57,7 +58,7 @@ public class ArchiveUtil {
 		    log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
 		    return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("Archive Util says " + e.getMessage(), e);
 		}
 		
 		return false;
@@ -124,6 +125,7 @@ public class ArchiveUtil {
 	 */
 	private static void extractTAR(String fileName, String destination) throws Exception {
 		// Use the Apache commons compression library to open up the tar file...
+		log.debug("extracting tar");
 		InputStream is = new FileInputStream(fileName);
 		BufferedInputStream bis = new BufferedInputStream(is);
 		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("tar", bis); 
@@ -154,12 +156,13 @@ public class ArchiveUtil {
 	}
 	
 	/**
-	 * Extracts a GZIP file and remoes the original if he extraction was successful.
+	 * Extracts a GZIP file and removes the original if he extraction was successful.
 	 * @param fileName The full path to the file
 	 * @param destination Where to extract the contents to
 	 */
 	private static void extractGZ(String fileName, String destination) throws Exception {
 		// Use the Apache commons compression library to magically extract a GZIP file...
+		log.debug("extractingGZ");
 		InputStream is = new FileInputStream(fileName);
 		BufferedInputStream bis = new BufferedInputStream(is);		
 		CompressorInputStream in = new CompressorStreamFactory().createCompressorInputStream("gz", bis);

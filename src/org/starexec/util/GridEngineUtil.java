@@ -568,17 +568,9 @@ public class GridEngineUtil {
 	 * @param pairId The pair to get output for
 	 * @return All console output from a job pair run for the given pair
 	 */
-	public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {
-		try {			
-			String stdoutPath = String.format("%s/%d/%d/%s_%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name);
-			File path =  new File(stdoutPath);
-			FileUtils.forceMkdir(path);	
-			File file = new File (String.format("%s/%s.txt", stdoutPath, bench_name));	
-			return file;	
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
-		}
-		return null;
+	public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {			
+		String stdoutPath = String.format("%s/%d/%d/%s_%s/%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name, bench_name);
+		return (new File(stdoutPath));	
 	}
 	
 	/**
