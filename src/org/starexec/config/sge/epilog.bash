@@ -42,6 +42,8 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/jobout"
 
+
+
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
@@ -68,11 +70,27 @@ function copyOutput {
 	# Copy this job's output to /JOBOUT/USERID/STAREXEC JOB ID/PAIR ID	
 	UNIQUE_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$PAIR_ID"
 	createDir "$UNIQUE_OUT_DIR"
+	
+	log "second output dir"
+	RZ_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$SOLVER_NAME"
+	log $RZ_OUT_DIR	
+        APPEND=_$CONFIG_NAME
+        log $APPEND
+        RZ_OUT_DIR="$RZ_OUT_DIR$APPEND"
+	log $RZ_OUT_DIR
+	createDir "$RZ_OUT_DIR"
 
 	log "copying output to master host"
+	
+
 
 	# Copy output from local host output to master host output storage
 	cp -r "$STAREXEC_OUT_DIR"/* "$UNIQUE_OUT_DIR"
+	
+	BENCH_NAME="${BENCH_PATH##*/}"
+	log "Bench Name = $BENCH_NAME"
+	log $RZ_OUT_DIR/$BENCH_NAME
+	cp  "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
 
 	log "job output copy complete"
 
