@@ -372,7 +372,7 @@ public class GridEngineUtil {
 			
 			if(processor != null) {
 				log.info("got post processor " + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
-				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(1).getName(), pair.getBench().getName());
+				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(0).getName(), pair.getBench().getName());
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
 				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());			  
