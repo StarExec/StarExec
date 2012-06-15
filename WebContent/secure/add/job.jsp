@@ -18,7 +18,7 @@
 		} else {
 			request.setAttribute("queues", Queues.getAll());
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
-			//request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
+			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
