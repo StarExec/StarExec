@@ -381,11 +381,10 @@ public class Util {
 			}
 			else
 			{
-				sb.append("starexec_run");
+				sb.append("starexec_run_");
 			}
 		}
-		sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{run_configName}
-		
+		sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
 		return sb.toString();
 	}
 	

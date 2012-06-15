@@ -476,7 +476,8 @@ public class GridEngineUtil {
 				log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
-					log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
+					if (hackCount>1){
+					log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));}
 					return line.split(":");
 				}
 			}
@@ -503,8 +504,7 @@ public class GridEngineUtil {
 			dis.close();
 			fis.close();
 			br.close();		
-		}
-		
+		}		
 		throw new Exception("Job statistics for sge job #" + sgeId + " could not be found");
 	}
 	
@@ -526,11 +526,9 @@ public class GridEngineUtil {
 			// If we got here, the libraries loaded successfully!
 			return true;
 		} catch(Error e) {
-			// Don't log, expected if the engine isn't available
-//			log.error("Grid Engine isAvailable Error - " + e.getMessage());
+			log.error("Grid Engine isAvailable Error - " + e.getMessage());
 		} catch(Exception e) {
-			// Don't log, expected if the engine isn't available
-//			log.error("Grid Engine isAvailable Exeption - " + e.getMessage());
+			log.error("Grid Engine isAvailable Exeption - " + e.getMessage());
 		}
 		
 		return false;
