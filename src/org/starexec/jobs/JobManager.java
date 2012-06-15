@@ -134,7 +134,7 @@ public abstract class JobManager {
 	        return Integer.parseInt(id);
 		} catch (org.ggf.drmaa.DrmaaException drme) {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
-			log.error("submitScript says" + drme.getMessage(), drme);
+			log.error("submitScript says " + drme.getMessage(), drme);
 		} catch (Exception e) {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 			log.error(e.getMessage(), e);
