@@ -497,6 +497,7 @@ public class Solvers {
 			for(int spaceId : spaceIds) {
 				Solvers.associate(con, solverIds, spaceId);
 			}
+			
 			log.info("Successfully added solvers " + solverIds.toString() + " to spaces " + spaceIds.toString());
 			Common.endTransaction(con);
 			return true;

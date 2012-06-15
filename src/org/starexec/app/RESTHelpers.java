@@ -451,7 +451,7 @@ public class RESTHelpers {
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id												// Parent space id 
+	    				id													// Parent space id 
 				);
 	    		
 	    		

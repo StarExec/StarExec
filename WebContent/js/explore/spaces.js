@@ -19,7 +19,7 @@ $(document).ready(function(){
 	
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
-	
+
 });
 
 
@@ -300,14 +300,14 @@ function onSpaceDrop(event, ui) {
 		ids = [ui.draggable.data('id')];
 		
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
-		if(ui.draggable.data('type')[0] == 's'){
+		if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
-		} else {
+		} else if(ui.draggable.data('type')[0] == 's') {
 			$('#dialog-confirm-copy-txt').text('are you sure you want to copy ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
-		if(ui.draggable.data('type')[0] == 's'){
-			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected solvers to' + destName + ' and all of its subspaces or just to' + destName +'?');
+		if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
+			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
 			$('#dialog-confirm-copy-txt').text('are you sure you want to copy the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
 		}
@@ -424,44 +424,118 @@ function onSpaceDrop(event, ui) {
 	}
 	// If primitive being copied to another space is a user...
 	else if(ui.draggable.data('type')[0] == 'u'){
-		// Make the request to the server without prompting the client with yes/no		
-		$.post(  	    		
-				'/starexec/services/spaces/' + destSpace + '/add/user',
-				{selectedIds : ids, fromSpace : spaceId},	
-				function(returnCode) {
-					log('AJAX response recieved with code ' + returnCode);
-					switch (returnCode) {
-					case 0:	// Success
-						if(ids.length > 1) {								
-							showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
-						} else {					    		
-							showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-						}
-						break;
-					case 1: // Database error
-						showMessage('error', "a database error occurred while processing your request", 5000);
-						break;
-					case 2: // Invalid parameters
-						showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-						break;
-					case 3: // No add permission in dest space
-						showMessage('error', "you do not have permission to add users to" + destName, 5000);
-						break;
-					case 4: // User doesn't belong to from space
-						showMessage('error', "you do not belong to the space that is being copied from", 5000);
-						break;
-					case 5: // From space is locked
-						showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-						break;
-					default:
-						showMessage('error', "the operation failed with an unknown return code", 5000);	
-					}
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space + subspaces': function() {
+					log('user confirmed copy of user(s) to'+ destName +' and all of its subspaces');
+					
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-copy').dialog('close');
+					
+					// Make the request to the server				
+					$.post(  	    		
+							'/starexec/services/spaces/' + destSpace + '/add/user',
+							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},	
+							function(returnCode) {
+								log('AJAX response recieved with code ' + returnCode);
+								switch (returnCode) {
+								case 0:	// Success
+									if(ids.length > 1) {								
+										showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
+									} else {					    		
+										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
+									}
+									if(ids.length > 1) {								
+										showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
+									} else {					    		
+										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
+									}
+									break;
+								case 1: // Database error
+									showMessage('error', "a database error occurred while processing your request", 5000);
+									break;
+								case 2: // Invalid parameters
+									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
+									break;
+								case 3: // No add permission in dest space
+									showMessage('error', "you do not have permission to add users to" + destName, 5000);
+									break;
+								case 4: // User doesn't belong to from space
+									showMessage('error', "you do not belong to the space that is being copied from", 5000);
+									break;
+								case 5: // From space is locked
+									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								case 6: // User doesn't have addUser permission in one or more of the subspaces of the 'from space'
+									showMessage('error', "you do not have permissions to copy users to one of the subspaces of" + destName, 5000);
+									break
+								default:
+									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}
+							},
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});							
 				},
-				"json"
-		).error(function(){
-			alert('Session expired');
-			window.location.reload(true);
-		});	 	
+				'space': function(){
+					log('user confirmed copy of user(s) to'+ destName);
+					
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-copy').dialog('close');
+					
+					// Make the request to the server				
+					$.post(  	    		
+							'/starexec/services/spaces/' + destSpace + '/add/user',
+							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},	
+							function(returnCode) {
+								log('AJAX response recieved with code ' + returnCode);
+								switch (returnCode) {
+								case 0:	// Success
+									if(ids.length > 1) {								
+										showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
+									} else {					    		
+										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
+									}
+									break;
+								case 1: // Database error
+									showMessage('error', "a database error occurred while processing your request", 5000);
+									break;
+								case 2: // Invalid parameters
+									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
+									break;
+								case 3: // No add permission in dest space
+									showMessage('error', "you do not have permission to add users to" + destName, 5000);
+									break;
+								case 4: // User doesn't belong to from space
+									showMessage('error', "you do not belong to the space that is being copied from", 5000);
+									break;
+								case 5: // From space is locked
+									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								case 6: // User doesn't have addUser permission in one or more of the subspaces of the 'from space'
+									showMessage('error', "you do not have permissions to copy users to one of the subspaces of" + destName, 5000);
+									break
+								default:
+									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}
+							},
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});	 	
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}		
+		});		
 	}
 	// Otherwise, if the primitive being copied to another space is a benchmark or job...
 	else {
@@ -1235,7 +1309,7 @@ function extendDataTableFunctions(){
  * on the jobs table when deleting/paginating
  */
 function getProcessingMessage(){
-	return '<img alt="loading" src="/starexec/images/loader.gif" class="processing">processing...</img>';
+	return '<center><img alt="loading" src="/starexec/images/loader.gif" class="processing">processing...</img></center>';
 }
 
 /**
@@ -1427,14 +1501,13 @@ function checkPermissions(perms) {
 	}
 	
 	if(perms.isLeader){
-		// attach leader tooltips to every entry iupdateJobsFieldsetrTable 
+		// attach leader tooltips to every entry 
 		createTooltip($('#users tbody'), 'tr', 'leader');
 		
 		$('#editSpace').fadeIn('fast');
 	} else {
-		// otherwise only attach a personal tooltip to the current user's entry in the userTable
+		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
-		
 		$('#editSpace').fadeOut('fast');
 	}	
 	
@@ -1751,14 +1824,12 @@ function getTooltipConfig(type, message){
 	if(type[0] == 'l'){
 		return {
 				content: {
-	                text: message,
+					text: getProcessingMessage(),
 	                title: {
 	                    text: '<center><a>permissions</a></center>'
 	                }
 	            },
-				position: {
-					// Place right middle portion of the tooltip
-					// to the left middle portion of the row element
+				position: {			// Place right middle portion of the tooltip to the left middle portion of the row element
 	    			corner: {
 	    				target: 'leftMiddle',
 	    				tooltip: 'rightMiddle'
@@ -1767,41 +1838,39 @@ function getTooltipConfig(type, message){
 				hide :{
 					fixed: true,
 					effect: {
-						type: 'fade'
+						type: 'fade',
+						length: 100
 					}
 				},
 				show: { 
-					// Ensures the tooltip is shown the first time it's moused over
-					ready: true,
-					// Ensures no other tooltip is displayed at the same time
-					solo: true,
-					// Every mouseover that occurs, after the first mouseover, will have to wait a second
-					// before the tooltip is triggered
-					delay: 1000,
+					ready: true,	// Ensures the tooltip is shown the first time it's moused over
+					solo: true,		// Ensures no other tooltip is displayed at the same time
+					delay: 1000,	// Every mouseover that occurs, after the first mouseover, will have to wait a second before the tooltip is triggered
 					event: "mouseover",
-					// CSS custom-effect trick to workaround the necessary ready:true flag,
-					// which breaks the 'delay' during the first mouseover event
-					effect: {
+					effect: {		// CSS custom-effect trick to workaround the necessary ready:true flag, which breaks the 'delay' during the first mouseover event
 						type: function() {
-						    var self = this;
-						    self.css('visibility','visible');
-						    self.css('opacity',1);
-						    if (self.data('ready')) {
-						    	self.show('slide', 150);
+						    var tooltip = this;
+						    tooltip.css('visibility','visible');
+						    tooltip.css('opacity',1);
+						    
+						    if (tooltip.data('ready')) {
+						    	tooltip.show('slide', 100);
 								return;
 						    }
-						    self.css('visibility','hidden').data('ready',1);						    						    
-						    var userId = $(this.qtip('api').elements.target).children('td:first').children('input').val();						    
+						    
+						    tooltip.css('visibility','hidden').data('ready',1);						    						    
+						    var userId = $(this.qtip('api').elements.target).children('td:first').children('input').val();		
+						    
 						    // Uses a timer to simulate the first delay=1000 that would occur here if ready=false
 							setTimeout(function(){
 								// If element is not being hovered over anymore when the timer ends, don't display it
 								if($("#users tbody tr.hovered td:first").children('input').val() == userId){
-									self.css('visibility','visible');
-									self.show('slide', 150);
+									tooltip.css('visibility','visible');
+									tooltip.show('slide', 100);
 			        			} else {
 			        				// Fixes bug where elements that were initially hovered, but didn't stay long enough
 			        				// to ensure a hover intent, wouldn't display a tooltip during the next hover event
-			        				self.hide();
+			        				tooltip.hide();
 			        			}
 							}, 1000);
 					        
@@ -1809,15 +1878,12 @@ function getTooltipConfig(type, message){
 					  }
 				},
 				style: {
-					// Load custom color scheme
-					name: "userTooltip",
-					// Add a tip to the right middle portion of the tooltip
-					tip: 'rightMiddle',
+					name: "userTooltip",		// Load custom color scheme
+					tip: 'rightMiddle',			// Add a tip to the right middle portion of the tooltip
 			   },			   
 			   api:{
-				   // Before rendering the tooltip, get the user's permissions for the given space
-				   beforeRender: function(){
-						var self = this;
+				   onRender: function(){	// Before rendering the tooltip, get the user's permissions for the given space
+						var tooltip = this;
 						var userId = $(this.elements.target).children('td:first').children('input').val();
 						$.post(
 								'/starexec/services/space/' + spaceId + '/perm/' + userId,
@@ -1826,8 +1892,9 @@ function getTooltipConfig(type, message){
 									if(1 == theResponse){
 										showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
 									} else {
-										// Replace current content (current = loader.gif)										
-										self.updateContent(getPermTable(self, theResponse, 'leader'), true);										
+										// Replace current content (current = loader.gif)		
+										tooltip.updateContent(" ", true);
+										tooltip.updateContent(getPermTable(tooltip, theResponse, 'leader'), true);										
 									}
 									return true;
 								}
@@ -1837,21 +1904,20 @@ function getTooltipConfig(type, message){
 						});	
 						
 				   },
-				   // If a user modifies a tooltip but does not press the 'save' or 'cancel' button
-				   // then this resets the tooltip once it loses focus and fades from view
-				   onHide: function(){
-					   var self = this;
-					   log("permissions = " + $(self.elements.title).text());
-					   if('p' != $(self.elements.title).text()[0]){
-						   self.updateTitle('<center><a>permissions</a></center>');
+				   onHide: function(){			// If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
+					   var tooltip = this;
+					   log("permissions = " + $(tooltip.elements.title).text());
+					   if('p' != $(tooltip.elements.title).text()[0]){
+						   tooltip.updateTitle('<center><a>permissions</a></center>');
 						   var userId = $(this.elements.target).children('td:first').children('input').val();
 						   $.post(
 								   '/starexec/services/space/' + spaceId + '/perm/' + userId,
 								   function(theResponse){
 									   log('AJAX response for permission tooltip received');
-									   self.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
-									   self.updateContent(getPermTable(self, theResponse, 'leader'), true);  
-									   self.updateTitle('<center><a>permissions</a></center>');									   
+									   tooltip.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
+									   tooltip.updateContent(getPermTable(tooltip, theResponse, 'leader'), true);  
+									   tooltip.updateTitle('<center><a>permissions</a></center>');	
+									   tooltip.hide();
 									   return true;
 								   }	
 						   ).error(function(){
@@ -1861,7 +1927,7 @@ function getTooltipConfig(type, message){
 					   }
 					   
 					   // Fixes bug where 'hovered' class doesn't get removed from the no-longer-hovered tr element
-					   var userId = $(self.elements.target).children('td:first').children('input').val();
+					   var userId = $(tooltip.elements.target).children('td:first').children('input').val();
 					   $('#uid'+userId).parent().parent().removeClass('hovered');
 				   }
 				   
@@ -1872,8 +1938,7 @@ function getTooltipConfig(type, message){
 	else if (type[0] == 's'){
 		return {
 				content: {
-	                text: message,
-	                
+					text: getProcessingMessage(),
 	                title: {
 	                    text: '<center>permissions</center>'
 	                }
@@ -1894,37 +1959,29 @@ function getTooltipConfig(type, message){
 					event: "mouseover",
 					effect: {
 						type: function() {
-						    var self = this;
-						    self.css('visibility','visible');
-						    self.css('opacity',1);
-						    
+							var tooltip = this;
 						    var spaceBeingHovered = $('#exploreList').find('.jstree-hovered').parent().attr("id");
-						    
-						    if(spaceBeingHovered == 1){
-						    	self.hide();
-						    	return;
-						    }
-						    
-						    if (self.data('ready')) {
-								self.show('slide', 150);
+						    if (tooltip.data('ready')) {
+						    	tooltip.show('slide', 150);
 								return;
+						    } else {
+						    	tooltip.css('visibility','hidden').data('ready',1);
+						    	setTimeout(function(){
+						    		if($('#exploreList').find('.jstree-hovered').parent().attr("id") == spaceBeingHovered){
+						    			tooltip.css('visibility','visible');
+						    			tooltip.show('slide', 150);
+						    		} else {
+						    			tooltip.hide();
+						    		}
+						    	}, 1000);
 						    }
-						    self.css('visibility','hidden').data('ready',1);
-							setTimeout(function(){
-								if($('#exploreList').find('.jstree-hovered').parent().attr("id") == spaceBeingHovered){
-									self.css('visibility','visible');
-									self.show('slide', 150);
-								} else {
-									self.hide();
-								}
-							}, 1000);
-					        
 					     }
 					  }
 				},
 				hide:{
 					effect: {
-						type: 'fade'
+						type: 'slide',
+						length: 200
 					}
 				},
 				style: {
@@ -1932,13 +1989,13 @@ function getTooltipConfig(type, message){
 					tip: 'bottomLeft',
 			   },
 			   api:{
-				   beforeRender: function(){
-						var self = this;
+				   onRender: function(){
+						var tooltip = this;
 						var hoveredSpaceId = $('#exploreList').find('.jstree-hovered').parent().attr("id");
 						
 						// Destroy the tooltip if the space being hovered is the root space
 						if(hoveredSpaceId == 1 || hoveredSpaceId === undefined){
-							self.destroy();
+							tooltip.destroy();
 					    	return;
 					    }
 						
@@ -1947,8 +2004,8 @@ function getTooltipConfig(type, message){
 								'/starexec/services/space/' + hoveredSpaceId,
 								function(theResponse){
 									log('AJAX response for permission tooltip received');
-									self.updateContent("");
-									self.updateContent(getPermTable(self, theResponse.perm), true);
+									tooltip.updateContent(" ");
+									tooltip.updateContent(getPermTable(tooltip, theResponse.perm), true);
 									return true;
 								}
 						).error(function(){
@@ -1981,23 +2038,18 @@ function getTooltipConfig(type, message){
 				solo: true,
 				delay: 1000,
 				event: "mouseover",
-				effect: {
-					type: 'grow'
+				effect : function() {
+					$(this).show('slide', 150);
 				}
 			},
 			hide:{
 				effect: {
-					type: 'grow'
+					type: 'slide',
+					length: 150
 				}
 			},
 			style: {
 				name: 'expdTooltip'
-			},
-			api:{
-				onRender: function(){
-					// Fixes the bug where sometimes opacity is < 1
-					$('div[qtip="'+this.id+'"]').css('opacity',1);
-				}
 			}
 		};
 	}
@@ -2005,7 +2057,7 @@ function getTooltipConfig(type, message){
 	else if (type[0] == 'p'){
 		return {
 				content: {
-	                text: message,
+					text: getProcessingMessage(),
 	                title: {
 	                    text: '<center><a>permissions</a></center>'
 	                }
@@ -2023,30 +2075,29 @@ function getTooltipConfig(type, message){
 					event: "mouseover",
 					effect: {
 						type: function() {
-						    var self = this;
-						    self.css('visibility','visible');
-						    self.css('opacity',1);
-						    if (self.data('ready')) {
-								self.show('slide');
+						    var tooltip = this;
+						    if (tooltip.data('ready')) {
+						    	tooltip.show('slide', 150);
 								return;
 						    }
-						    self.css('visibility','hidden').data('ready',1);
+						    tooltip.css('visibility','hidden').data('ready',1);
 						    var userId = $("#users tbody tr").find('td:first input[name="currentUser"]').val();
 							setTimeout(function(){
-								if($("#users").children('tbody').children('tr.hovered').children('td:first').children('input').val() == userId){
-									self.css('visibility','visible');
-									self.show('slide');
+								// Only show the 'personal' tooltip when the user hovers over themselves in the userTable
+								if($("#users tbody tr.hovered td:first input").val() == userId){
+									tooltip.css('visibility','visible');
+									tooltip.show('slide', 150);
 			        			} else {
-			        				self.hide('fade');
+			        				tooltip.hide();
 			        			}
 							}, 1000);
-					        
 					     }
 					  }
 				},
 				hide:{
 					effect: {
-						type: 'fade'
+						type: 'fade',
+						length: 100
 					}
 				},
 				style: {
@@ -2054,25 +2105,26 @@ function getTooltipConfig(type, message){
 					tip: 'rightMiddle',
 			   },
 			   api:{
-				   beforeRender: function(){
-						var self = this;
+				   onRender: function(){
+						var tooltip = this;
 						var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
-						if($(this.elements.target).children('td:first').children('input').val() != userId){
-							self.destroy();
-						} else {
+						if($(this.elements.target).children('td:first').children('input').val() == userId){
 							var url = '/starexec/services/space/' + spaceId + '/perm/' + userId;
 							$.post(
 									url,
 									function(theResponse){
 										log('AJAX response for permission tooltip received');
 										// Replace current content (current = loader.gif)
-										self.updateContent(getPermTable(self, theResponse), true);
+										tooltip.updateContent(" ", true);
+										tooltip.updateContent(getPermTable(tooltip, theResponse), true);
 										return true;
 									}
 							).error(function(){
 								alert('Session expired');
 								window.location.reload(true);
 							});	
+						} else {
+							tooltip.destroy();
 						}
 				   }
 		      }

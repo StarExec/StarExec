@@ -748,14 +748,18 @@ public class RESTServices {
 	 * 			3: no add user permission in destination space,<br>
 	 * 			4: user doesn't belong to the 'from space',<br>
 	 * 			5: the 'from space' is locked
-	 * @author Tyler Jensen
+	 * @author Tyler Jensen & Todd Elvers
+	 * @deprecated broken currently
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/user")
 	@Produces("application/json")
 	public String copyUserToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		// Make sure we have a list of users to add and the space it's coming from
-		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+		// Make sure we have a list of users to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+		if(null == request.getParameterValues("selectedIds[]") 
+				|| !Util.paramExists("fromSpace", request)
+				|| !Util.paramExists("copyToSubspaces", request)
+				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
 			return gson.toJson(2);
 		}
 		
@@ -764,6 +768,9 @@ public class RESTServices {
 		
 		// Get the space the user is being copied from
 		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
+		
+		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
+		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		
 		// Check permissions, the user must have add user permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
@@ -786,10 +793,30 @@ public class RESTServices {
 		
 		// Convert the users to copy to a int list
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		boolean success = Users.associate(selectedUsers, spaceId);
 		
-		// Return a value based on results from database operation
-		return success ? gson.toJson(0) : gson.toJson(1);
+		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
+		if (copyToSubspaces == true) {
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId);
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
+			for(Space subspace : subspaces){
+				Permission subspacePerm = Permissions.get(requestUserId, subspace.getId());		
+				if(subspacePerm == null || !subspacePerm.canAddUser()) {
+					return gson.toJson(6);	
+				}			
+				subspaceIds.add(subspace.getId());
+			}
+			
+			// Add the destination space to the list of spaces to associate the user(s) with
+			subspaceIds.add(spaceId);
+			
+			// Add the user(s) to the destination space and its subspaces
+			return Users.associate(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+		} else {
+			// Add the user(s) to the destination space
+			return Users.associate(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		}
 	}
 
 	/**
@@ -809,6 +836,7 @@ public class RESTServices {
 	 * 			5: the 'from space' is locked,<br>
 	 * 			6: user does not belong to one or more of the subspaces of the destination space
 	 * @author Tyler Jensen & Todd Elvers
+	 * @deprecated broken currently
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")

@@ -97,6 +97,59 @@ public class Users {
 	}
 	
 	/**
+	 * Adds an association between a list of users and a space
+	 * 
+	 * @param con the database transaction to use
+	 * @param userIds the ids of the users to add to a space
+	 * @param spaceId the id of the space to add the users to
+	 * @return true iff all users in userIds are successfully 
+	 * added to the space represented by spaceId, false otherwise
+	 * @throws Exception
+	 * @author Todd Elvers
+	 */
+	protected static boolean associate(Connection con, List<Integer> userIds, int spaceId) throws Exception {
+		for(int uid : userIds) {
+			Users.associate(con, uid, spaceId);
+		}
+		return true;
+	}
+	
+	/**
+	 * Adds an association between a list of users and a list of spaces, in an all-or-none fashion
+	 * 
+	 * @param userIds the ids of the users to add to the spaces
+	 * @param spaceIds the ids of the spaces to add the users to
+	 * @return true iff all spaces in spaceIds successfully have all 
+	 * users in userIds add to them, false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean associate(List<Integer> userIds, List<Integer> spaceIds) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			// For each space id in spaceIds, add all the users to it
+			for(int spaceId : spaceIds) {
+				Users.associate(con, userIds, spaceId);
+			}
+			
+			log.info("Successfully added users " + userIds.toString() + " to spaces " + spaceIds.toString());
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		log.error("Failed to add users " + userIds.toString() + " to spaces " + spaceIds.toString());
+		return false;
+	}
+	
+	
+	/**
 	 * Retrieves a user from the database given the email address
 	 * @param email The email of the user to retrieve
 	 * @return The user object associated with the user

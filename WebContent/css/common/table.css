@@ -25,6 +25,11 @@
 	margin-bottom: -4px;
 }
 
+.qtip .processing {
+	margin-top: 45px;
+	text-align: center;
+}
+
 .dataTables_length {
 	width: 40%;
 	float: left;
