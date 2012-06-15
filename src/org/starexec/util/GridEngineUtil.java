@@ -544,6 +544,7 @@ public class GridEngineUtil {
 	 * @return All console output from a job pair run for the given pair
 	 */
 	public static String getStdOut(Job job, JobPair pair, int limit) {
+		pair = Jobs.getPairDetailed(pair.getId());
 		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(0).getName(), pair.getBench().getName(), limit);
 	}
 	
