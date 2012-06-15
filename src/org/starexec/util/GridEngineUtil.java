@@ -544,7 +544,7 @@ public class GridEngineUtil {
 	 * @return All console output from a job pair run for the given pair
 	 */
 	public static String getStdOut(Job job, JobPair pair, int limit) {
-		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(1).getName(), pair.getBench().getName(), limit);
+		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getSolver().getConfigurations().get(0).getName(), pair.getBench().getName(), limit);
 	}
 	
 	/**
@@ -570,6 +570,8 @@ public class GridEngineUtil {
 	 */
 	public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {			
 		String stdoutPath = String.format("%s/%d/%d/%s_%s/%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name, bench_name);
+		log.info("The stdoutPath is: " + stdoutPath);
+		
 		return (new File(stdoutPath));	
 	}
 	
