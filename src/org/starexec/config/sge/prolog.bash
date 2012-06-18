@@ -42,7 +42,7 @@ SHARED_DIR='/home/starexec'
 JOB_IN_DIR="$SHARED_DIR/jobin"
 
 # Actual qualified name of the config run script
-CONFIG_NAME="starexec_run_$CONFIG_NAME"
+CONFIG_NAME="run_$CONFIG_NAME"
 
 # The benchmark's name
 BENCH_NAME="${BENCH_PATH##*/}"

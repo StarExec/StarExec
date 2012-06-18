@@ -49,7 +49,7 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 cd /export/starexec/sandbox/solver/bin
 
 # Compute local worker node path to resources
-NODE_SOLVER_PATH=/export/starexec/sandbox/solver/bin/starexec_run_${CONFIG_NAME}
+NODE_SOLVER_PATH=/export/starexec/sandbox/solver/bin/run_${CONFIG_NAME}
 NODE_BENCH_PATH=/export/starexec/sandbox/benchmark/${BENCH_PATH##*/}
 
 # Execute the solver on the benchmark and send all output to that file

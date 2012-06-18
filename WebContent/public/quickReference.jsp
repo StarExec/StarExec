@@ -40,7 +40,7 @@
 			<ul id="qrTable">
 				<li>upload a compressed directory that contains at least one configuration(run script) that will tell starexec how to run your
 				solver on the execution nodes</li>
-		    	<li>configuration file name must have the prefix "starexec_run_".  Everything after the prefix will be the name of the configuration
+		    	<li>configuration file name must have the prefix "run_".  Everything after the prefix will be the name of the configuration
 		    	within starexec</li>
 		    	<li>configurations must be placed in a /bin folder in the top level directory of the uploaded archive</li>
 		    	<li>Your script has access to a few different arguments and environmental variables, the most important being $1, the

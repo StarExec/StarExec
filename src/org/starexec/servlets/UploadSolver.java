@@ -47,7 +47,7 @@ public class UploadSolver extends HttpServlet {
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
-    private static final String CONFIG_PREFIX = "starexec_run_";
+    private static final String CONFIG_PREFIX = "run_";
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
