@@ -476,8 +476,7 @@ public class GridEngineUtil {
 				log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
 				if(statsPattern.matcher(line).matches()) {
 					// Split it by colons (the delimiter sge uses) and return it
-					if (hackCount>1){
-					log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));}
+					log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
 					return line.split(":");
 				}
 			}
