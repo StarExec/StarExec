@@ -215,7 +215,8 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			
 			// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{pair id}
-			String outputPath = String.format("%s/%d/%d/%d", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getId());
+			//String outputPath = String.format("%s/%d/%d/%d", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getId());
+			String outputPath = String.format("%s/%d/%d/%s_%s/%s", R.JOB_OUTPUT_DIR, userId, j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName());  
 			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format);
 			
 			return fileName;
