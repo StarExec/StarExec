@@ -62,7 +62,7 @@ public class Download extends HttpServlet {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleBenchmark(b, u.getId(), u.getArchiveType(), response);
 			} else if (request.getParameter("type").equals("jp_output")) {
-				JobPair jp = Jobs.getPair(Integer.parseInt(request.getParameter("id")));
+				JobPair jp = Jobs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
 				fileName = handlePairOutput(jp, u.getId(), u.getArchiveType(), response);				
 			}
 			else if (request.getParameter("type").equals("spaceXML")) {
@@ -217,6 +217,7 @@ public class Download extends HttpServlet {
 			// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{pair id}
 			//String outputPath = String.format("%s/%d/%d/%d", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getId());
 			String outputPath = String.format("%s/%d/%d/%s_%s/%s", R.JOB_OUTPUT_DIR, userId, j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName());  
+		    log.info("The download output path is " + outputPath);
 			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format);
 			
 			return fileName;
