@@ -38,6 +38,8 @@ public class JobPair extends Identifiable {
 	private double blockOutput;
 	private double voluntaryContextSwitches;
 	private double involuntaryContextSwitches;
+	private Configuration configuration = null;
+	private Space space = null;//the space that the benchmark is in, not where the job is initiated
 	
 	public JobPair() {
 		this.node = new WorkerNode();
@@ -445,5 +447,33 @@ public class JobPair extends Identifiable {
 	 */
 	public void setInvoluntaryContextSwitches(double involuntaryContextSwitches) {
 		this.involuntaryContextSwitches = involuntaryContextSwitches;
+	}
+
+	/**
+	 * @return the configuration
+	 */
+	public Configuration getConfiguration() {
+		return configuration;
+	}
+
+	/**
+	 * @param configuration the configuration to set
+	 */
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
+
+	/**
+	 * @return the space
+	 */
+	public Space getSpace() {
+		return space;
+	}
+
+	/**
+	 * @param space the space to set
+	 */
+	public void setSpace(Space space) {
+		this.space = space;
 	}
 }

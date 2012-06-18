@@ -532,6 +532,7 @@ public class Jobs {
 			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
 			jp.setAttributes(Jobs.getAttributes(con, pairId));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
@@ -631,6 +632,7 @@ public class Jobs {
 			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
@@ -755,6 +757,7 @@ public class Jobs {
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
 			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
 			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
