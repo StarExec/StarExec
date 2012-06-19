@@ -60,8 +60,8 @@ BIN_PATH="$LOCAL_SOLVER_DIR/bin"
 declare -a BENCH_DEPENDS_ARRAY
 BENCH_DEPENDS_ARRAY=(${BENCH_DEPENDS// / })
 #log "Bench Depends String = '$BENCH_DEPENDS'"
-log "Bench Depends String Length = '${#BENCH_DEPENDS}'"
-log "Local Depends String Length = '${#LOCAL_DEPENDS}'"
+#log "Bench Depends String Length = '${#BENCH_DEPENDS}'"
+#log "Local Depends String Length = '${#LOCAL_DEPENDS}'"
 #log "Local Depends String = '$LOCAL_DEPENDS'"
 
 

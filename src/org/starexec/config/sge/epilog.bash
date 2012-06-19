@@ -68,16 +68,16 @@ function copyOutput {
 	log "creating storage directory on master host"
 
 	# Copy this job's output to /JOBOUT/USERID/STAREXEC JOB ID/PAIR ID	
-	UNIQUE_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$PAIR_ID"
-	createDir "$UNIQUE_OUT_DIR"
+	#UNIQUE_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$PAIR_ID"
+	#createDir "$UNIQUE_OUT_DIR"
 	
-	log "second output dir"
+	#log "second output dir"
 	RZ_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$SOLVER_NAME"
-	log $RZ_OUT_DIR	
+	#log $RZ_OUT_DIR	
         APPEND=_$CONFIG_NAME
-        log $APPEND
+        #log $APPEND
         RZ_OUT_DIR="$RZ_OUT_DIR$APPEND"
-	log $RZ_OUT_DIR
+	#log $RZ_OUT_DIR
 	createDir "$RZ_OUT_DIR"
 
 	log "copying output to master host"
@@ -85,11 +85,11 @@ function copyOutput {
 
 
 	# Copy output from local host output to master host output storage
-	cp -r "$STAREXEC_OUT_DIR"/* "$UNIQUE_OUT_DIR"
+	#cp -r "$STAREXEC_OUT_DIR"/* "$UNIQUE_OUT_DIR"
 	
 	BENCH_NAME="${BENCH_PATH##*/}"
-	log "Bench Name = $BENCH_NAME"
-	log $RZ_OUT_DIR/$BENCH_NAME
+	#log "Bench Name = $BENCH_NAME"
+	#log $RZ_OUT_DIR/$BENCH_NAME
 	cp  "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
 
 	log "job output copy complete"
