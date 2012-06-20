@@ -1272,7 +1272,7 @@ public class Benchmarks {
 	 * @param benchmarkIds the list of benchmark ids that we are adding to
 	 */
 	public static void addBenchmarkIdsInHierarchy(int spaceId, int userId, List<Integer> benchmarkIds) {
-		List<Space> spaces = Spaces.getSubSpaces(spaceId, userId);
+		List<Space> spaces = Spaces.getSubSpaces(spaceId, userId, false);
 		for (Space s : spaces) {    //navigate the subspaces
 			List<Benchmark> benchmarks = Benchmarks.getBySpace(s.getId()); //get the benchmarks in this subspace
 			for (Benchmark b : benchmarks) {
