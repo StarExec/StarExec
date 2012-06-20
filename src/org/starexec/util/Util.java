@@ -291,13 +291,17 @@ public class Util {
 	 * @return A list of ints parsed from the string list
 	 */
 	public static List<Integer> toIntegerList(String[] stringList) {
-		ArrayList<Integer> retList = new ArrayList<Integer>(stringList.length);
+		if (stringList != null) {
+			ArrayList<Integer> retList = new ArrayList<Integer>(stringList.length);
 		
-		for(String s : stringList){
-			retList.add(Integer.parseInt(s));
+			for(String s : stringList){
+				retList.add(Integer.parseInt(s));
+			}
+		
+			return retList;
 		}
 		
-		return retList;
+		return new ArrayList<Integer>();
 	}
 	
 	/**

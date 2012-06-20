@@ -131,8 +131,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 				FROM	jobs
 				
 				-- Exclude Jobs whose name and status don't contain the query string
-				WHERE 	name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%')
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
 										
 				-- Exclude Jobs that aren't in the specified space
 				AND 	id 		IN (SELECT job_id 
@@ -164,8 +164,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
-				WHERE 	name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%')
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
 				AND 	id 		IN (SELECT job_id 
 									FROM job_assoc
 									WHERE space_id = _spaceId)
@@ -298,11 +298,11 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
-				AND		bench.name 		LIKE 	CONCAT('%', _query, '%')
+				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
-				OR		wallclock		LIKE	CONCAT('%', _query, '%')
+				OR		wallclock		LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -340,11 +340,11 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 				WHERE 	job_id = _jobId
-				AND		bench.name 		LIKE 	CONCAT('%', _query, '%')
+				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
-				OR		wallclock		LIKE	CONCAT('%', _query, '%')
+				OR		wallclock		LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN bench.name

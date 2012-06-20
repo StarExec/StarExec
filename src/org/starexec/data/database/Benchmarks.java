@@ -1277,7 +1277,7 @@ public class Benchmarks {
 			List<Benchmark> benchmarks = Benchmarks.getBySpace(s.getId()); //get the benchmarks in this subspace
 			for (Benchmark b : benchmarks) {
 				if (!benchmarkIds.contains(b.getId())) {
-					benchmarkIds.add(b.getId()); //add it only if we don't already have it
+					benchmarkIds.add(b.getId()); //add it only if we don't already have it; this will be changed when we remember the run hierarchy
 				}
 			}
 			Benchmarks.addBenchmarkIdsInHierarchy(s.getId(), userId, benchmarkIds); //recursively navigate the hierarchy

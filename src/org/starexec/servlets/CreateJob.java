@@ -72,6 +72,11 @@ public class CreateJob extends HttpServlet {
 		if (request.getParameter(run).equals("hierarchy")) {
 			//We chose to run the hierarchy, so add subspace benchmark IDs to the list.
 			benchmarkIds = Benchmarks.getBenchmarkIdsInHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), benchmarkIds);
+			if (benchmarkIds.size() == 0) {
+				//No benchmarks in the hierarchy; error out
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No benchmarks in current hierarchy. Could not create job.");
+				return;
+			}
 		}
 		
 		Job j = JobManager.buildJob(
@@ -173,17 +178,22 @@ public class CreateJob extends HttpServlet {
 			if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
 				return false;
 			}
+			
+			// Benchmark related checks; we don't need these when running the hierarchy
+			// as there are possibly no benchmarks in the current space. In that case,
+			// these checks would throw an exception.
+			
+			if (!request.getParameter(run).equals("hierarchy")) {
+				// Check to see if we have a valid list of benchmark ids
+				if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
+					return false;
+				}
 				
-			// Check to see if we have a valid list of benchmark ids
-			if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
-				return false;
+				// Make sure the user is using benchmarks they can see
+				if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
+					return false;
+				}
 			}
-			
-			// Make sure the user is using benchmarks they can see
-			if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
-				return false;
-			}
-			
 			// Passed all checks, return true
 			return true;
 		} catch (Exception e) {

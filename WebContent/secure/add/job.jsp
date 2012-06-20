@@ -55,17 +55,6 @@
 						<td class="label"><p>description</p></td>
 						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
 					</tr>
-					<!-- <tr title="do you want to pre-process benchmark inputs before they are fed to the solver?">
-						<td class="label"><p>pre processor</p></td>
-						<td>
-							<select id="preProcess" name="preProcess">
-							<option value=""></option>
-							<c:forEach var="proc" items="${preProcs}">
-									<option value="${proc.id}">${proc.name}</option>
-							</c:forEach>
-							</select>
-						</td>
-					</tr>-->
 					<tr title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
 						<td>					

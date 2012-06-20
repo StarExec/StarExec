@@ -221,8 +221,8 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				FROM 	benchmarks
 				
 				-- Query Filtering
-				WHERE 	name 									LIKE	CONCAT('%', _query, '%')
-				OR		GetBenchmarkTypeDescription(bench_type)	LIKE 	CONCAT('%', _query, '%')
+				WHERE 	(name 									LIKE	CONCAT('%', _query, '%')
+				OR		GetBenchmarkTypeDescription(bench_type)	LIKE 	CONCAT('%', _query, '%'))
 								
 										
 				-- Exclude benchmarks that aren't in the specified space
@@ -249,8 +249,8 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				FROM 	benchmarks
 				
 				-- Query Filtering
-				WHERE 	name 									LIKE	CONCAT('%', _query, '%')
-				OR		GetBenchmarkTypeDescription(bench_type)	LIKE 	CONCAT('%', _query, '%')
+				WHERE 	(name 									LIKE	CONCAT('%', _query, '%')
+				OR		GetBenchmarkTypeDescription(bench_type)	LIKE 	CONCAT('%', _query, '%'))
 										
 				-- Exclude benchmarks that aren't in the specified space
 				AND 	id 	IN (SELECT 	bench_id

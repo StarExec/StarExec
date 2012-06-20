@@ -131,8 +131,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				FROM 	solvers
 				
 				-- Exclude solvers whose name and description don't contain the query string
-				WHERE 	name 		LIKE	CONCAT('%', _query, '%')
-				OR		description	LIKE 	CONCAT('%', _query, '%')
+				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
+				OR		description	LIKE 	CONCAT('%', _query, '%'))
 										
 				-- Exclude solvers that aren't in the specified space
 				AND 	id 	IN (SELECT	solver_id
@@ -151,8 +151,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 			ELSE
 				SELECT 	*
 				FROM 	solvers
-				WHERE 	name 				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%')
+				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
+				OR		description			LIKE 	CONCAT('%', _query, '%'))
 				AND 	id 	IN (SELECT	solver_id
 								FROM	solver_assoc
 								WHERE	space_id = _spaceId)

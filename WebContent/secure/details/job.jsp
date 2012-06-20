@@ -57,16 +57,7 @@
 				<tr title="the total wallclock elapsed time of the job. calculated by taking the difference between the start time of earliest completed pair and the end time of the latest compelted pair">
 					<td>elapsed time</td>			
 					<td>${pairStats.runtime / 1000} ms</td>
-				</tr>					
-				<tr title="the preprocessor that was used to process input for this job">
-					<td>preprocessor</td>
-					<c:if test="${not empty job.preProcessor}">			
-					<td title="${job.preProcessor.description}">${job.preProcessor.name}</td>
-					</c:if>
-					<c:if test="${empty job.preProcessor}">			
-					<td>none</td>
-					</c:if>
-				</tr>		
+				</tr>						
 				<tr title="the postprocessor that was used to process output for this job">
 					<td>postprocessor</td>
 					<c:if test="${not empty job.postProcessor}">			

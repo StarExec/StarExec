@@ -243,7 +243,7 @@
 			<property key="MYSQL_DATABASE" value="starexec" />
 			<property key="MYSQL_USERNAME" value="star_exec" />
 			<property key="MYSQL_PASSWORD" value="starexec" />
-			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?zeroDateTimeBehavior=convertToNull" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="100" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<!-- Path Configuration -->

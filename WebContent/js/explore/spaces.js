@@ -62,7 +62,7 @@ function initSpaceDetails(){
 	initButtonUI();
 	
 	// Set up comment table
-//	initCommentUI();
+	initCommentUI();
 	
 	// This hides comment table and action list if the space is root space or we aren't looking at a space
 	if (spaceId == 1 || spaceId == undefined){

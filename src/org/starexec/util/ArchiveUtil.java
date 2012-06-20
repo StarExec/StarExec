@@ -21,8 +21,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
 /**
- * Contains helper methods for dealing with archived files (.zip .tar .tar.gz)
- * @author Tyler Jensen
+ * Contains helper methods for dealing with archived files (.zip .tar .tar.gz, .tgz)
  */
 public class ArchiveUtil {
 	private static final Logger log = Logger.getLogger(ArchiveUtil.class);
@@ -34,6 +33,8 @@ public class ArchiveUtil {
 	 * @param fileName The full file path to the archive file
 	 * @param destination The full path to the folder to extract the file to
 	 * @return True if extraction was successful, false otherwise.
+	 * 
+	 * @author Tyler Jense
 	 */
 	public static boolean extractArchive(String fileName, String destination) {
 		log.debug("ExtractingArchive for " + fileName);
@@ -48,7 +49,7 @@ public class ArchiveUtil {
 				ArchiveUtil.extractGZ(fileName, destination);
 				
 				// Then unpack the tar that was the result of the un-gzip
-				ArchiveUtil.extractTAR(fileName.substring(0, fileName.lastIndexOf('.')), destination);
+				ArchiveUtil.extractTAR(fileName.substring(0, fileName.lastIndexOf('.')), destination);	
 			} else {
 				// No valid file type found :(
 				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
@@ -70,6 +71,8 @@ public class ArchiveUtil {
 	 * is deleted. Note if the extraction failed, some files/folders may have been partially created.
 	 * @param fileName The full file path to the archive file
 	 * @return True if extraction was successful, false otherwise.
+	 * 
+	 * @author Tyler Jensen
 	 */
 	public static boolean extractArchive(String fileName) {
 		try {
@@ -86,6 +89,8 @@ public class ArchiveUtil {
 	 * Unzips a zip file and removes the original if the unzip was successful.
 	 * @param fileName The full path to the file
 	 * @param destination Where to unzip the contents to
+	 * 
+	 * @author Tyler Jensen
 	 */
 	private static void extractZIP(String fileName, String destination) throws Exception {
 		// Use the Apache commons compression library to open up the tar file...
@@ -122,6 +127,8 @@ public class ArchiveUtil {
 	 * Unpacks a tar file and removes the original if the unpack was successful.
 	 * @param fileName The full path to the file
 	 * @param destination Where to unpack the contents to
+	 * 
+	 * @author Tyler Jensen
 	 */
 	private static void extractTAR(String fileName, String destination) throws Exception {
 		// Use the Apache commons compression library to open up the tar file...
@@ -159,6 +166,8 @@ public class ArchiveUtil {
 	 * Extracts a GZIP file and removes the original if he extraction was successful.
 	 * @param fileName The full path to the file
 	 * @param destination Where to extract the contents to
+	 * 
+	 * @author Tyler Jensen
 	 */
 	private static void extractGZ(String fileName, String destination) throws Exception {
 		// Use the Apache commons compression library to magically extract a GZIP file...
@@ -195,6 +204,7 @@ public class ArchiveUtil {
 	 * @param path the path to the folder to be archived
 	 * @param destination the path to the output folder
 	 * @param format the preferred archive type
+	 * 
 	 * @author Skylar Stark
 	 */
 	public static void createArchive(File path, File destination, String format) {
@@ -215,6 +225,7 @@ public class ArchiveUtil {
 	 * Creates a .zip file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be zipped
 	 * @param destination where to save the .zip file created
+	 * 
 	 * @author Skylar Stark
 	 */
 	public static void createZip(File path, File destination) throws Exception {
@@ -243,6 +254,7 @@ public class ArchiveUtil {
 	 * @param zOut the zip file we are creating
 	 * @param path the path of the file we are adding
 	 * @param base the base prefix for the name of the zip file entry
+	 * 
 	 * @author Skylar Stark
 	 */
 	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base) throws IOException {
@@ -272,6 +284,7 @@ public class ArchiveUtil {
 	 * Creates a .tar file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tarred
 	 * @param destination where to save the .tar file created
+	 * 
 	 * @author Skylar Stark
 	 */
 	public static void createTar(File path, File destination) throws Exception {
@@ -300,6 +313,7 @@ public class ArchiveUtil {
 	 * @param tOut the tar file we are adding to
 	 * @param path the path of the file we are adding
 	 * @param base the base prefix for the name of the tar file entry
+	 * 
 	 * @author Skylar Stark
 	 */
 	private static void addFileToTar(TarArchiveOutputStream tOut, File path, String base) throws IOException {
@@ -330,6 +344,7 @@ public class ArchiveUtil {
 	 * Creates a .tar.gz file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tar.gz'ed
 	 * @param destination where to save the .tar.gz file created
+	 * 
 	 * @author Skylar Stark
 	 */
 	public static void createTarGz(File path, File destination) throws Exception {
@@ -363,6 +378,7 @@ public class ArchiveUtil {
 	 * @param tOut the tar.gz file we are adding to
 	 * @param path the path of the file we are adding
 	 * @param base the base prefix for the name of the tar.gz file entry
+	 * 
 	 * @author Skylar Stark
 	 */
 	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base) throws IOException {

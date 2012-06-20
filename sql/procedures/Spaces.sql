@@ -127,8 +127,8 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 								AND		user_assoc.user_id = _userId)
 								
 				-- Exclude Spaces whose name and description don't contain the query string
-				AND 	name			LIKE	CONCAT('%', _query, '%')
-				OR		description		LIKE 	CONCAT('%', _query, '%')
+				AND 	(name			LIKE	CONCAT('%', _query, '%')
+				OR		description		LIKE 	CONCAT('%', _query, '%'))
 								
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -149,8 +149,8 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 								JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 								WHERE 	set_assoc.space_id = _spaceId
 								AND		user_assoc.user_id = _userId)											
-				AND 	name			LIKE	CONCAT('%', _query, '%')
-				OR		description		LIKE 	CONCAT('%', _query, '%')
+				AND 	(name			LIKE	CONCAT('%', _query, '%')
+				OR		description		LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY 
 					(CASE _colSortedOn
 						WHEN 0 THEN name

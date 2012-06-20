@@ -110,9 +110,9 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 								WHERE 	space_id = _spaceId)
 							
 				-- Exclude Users whose name and description don't contain the query string
-				AND 	CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
-				OR		email								LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%'))
 								
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -135,9 +135,9 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 				WHERE 	id 	IN (SELECT 	user_id
 								FROM	user_assoc
 								WHERE 	space_id = _spaceId)
-				AND 	CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
-				OR		email								LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY 
 				(CASE _colSortedOn
 					WHEN 0 THEN full_name
