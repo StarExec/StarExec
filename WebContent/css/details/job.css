@@ -6,6 +6,9 @@ fieldset {
 	cursor: pointer;
 }
 
+#jobdownload {
+	margin-right: 111px;	
+}
 #actionList {
 	list-style: none;
 }

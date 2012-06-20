@@ -79,7 +79,9 @@ function attachFormValidation(){
 		},
 		// Place the error messages in the tooltip instead of in the DOM
 		errorPlacement: function (error, element) {
-			$(element).qtip('api').updateContent('<b>'+$(error).text()+'</b>', true);
+			if($(error).text().length > 0){
+				$(element).qtip('api').updateContent('<b>'+$(error).text()+'</b>', true);
+			}
 		},
 		// Hide the error tooltip when no errors are present
 		success: function(label){
@@ -276,12 +278,16 @@ function getErrorTooltip(){
 			when: false,	// Don't tie the showing of this to any event
 			ready: false,	// Don't display tooltip once it has been initialized
 			effect: {
-				type: 'grow'
+				type: 'fade',
+				length: 200
 			}
 		},
 		hide: {
 			when: false,	// Don't tie the hiding of this to any event
-			effect: 'fade'
+			effect: {
+				type: 'fade',
+				length: 200
+			}
 		},
 		style: {
 			tip: 'leftMiddle',
@@ -289,12 +295,8 @@ function getErrorTooltip(){
 		},
 		api:{
 			onContentUpdate: function(){
-				// Hide the tooltip initially by not showing the tooltip when it's empty
-				if($(this.elements.content).text().length > 1){
-					this.show();
-					// Fixes the bug where sometimes opacity is < 1
-					$('div[qtip="'+this.id+'"]').css('opacity',1);
-				}
+				// Fixes the bug where sometimes opacity is < 1
+				$('div[qtip="'+this.id+'"]').css('opacity',1);
 			}
 		}
 	};

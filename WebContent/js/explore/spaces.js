@@ -19,7 +19,7 @@ $(document).ready(function(){
 	
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
-
+	
 });
 
 
@@ -199,14 +199,6 @@ function initDraggable(table) {
 		}
 	});
 	
-	// Make each space in the explorer list be a droppable target
-	$('#exploreList').find('a').droppable( {
-	    drop		: onSpaceDrop,
-	    tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-	    hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
-	    activeClass	: 'active'		// Class applied to the space element when something is being dragged
-	});
-	
 	// Make the trash can in the explorer list be a droppable target
 	$('#trashcan').droppable({
 		drop		: onTrashDrop,
@@ -223,6 +215,17 @@ function initDraggable(table) {
  */
 function onDragStart(event, ui) {
 	log('drag started');
+	
+	// Make each space in the explorer list be a droppable target; moving this from the initDraggable()
+	// fixed the bug where spaces that were expanded after initDraggable() was called would not be 
+	// recognized as a viable drop target
+	$('#exploreList').find('a').droppable( {
+	    drop		: onSpaceDrop,
+	    tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
+	    hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
+	    activeClass	: 'active'		// Class applied to the space element when something is being dragged
+	});
+	
 	$('#trashcan').show();
 }
 
@@ -471,7 +474,7 @@ function onSpaceDrop(event, ui) {
 									break;
 								case 6: // User doesn't have addUser permission in one or more of the subspaces of the 'from space'
 									showMessage('error', "you do not have permissions to copy users to one of the subspaces of" + destName, 5000);
-									break
+									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	
 								}
@@ -519,7 +522,7 @@ function onSpaceDrop(event, ui) {
 									break;
 								case 6: // User doesn't have addUser permission in one or more of the subspaces of the 'from space'
 									showMessage('error', "you do not have permissions to copy users to one of the subspaces of" + destName, 5000);
-									break
+									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	
 								}
@@ -658,7 +661,7 @@ function initSpaceExplorer(){
 		"json_data" : { 
 			"ajax" : { 
 				"url" : "/starexec/services/space/subspaces",	// Where we will be getting json data from 
-				"data" : function (n) {  							
+				"data" : function (n) {
 					return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
 				} 
 			} 
@@ -1844,7 +1847,7 @@ function getTooltipConfig(type, message){
 				},
 				show: { 
 					ready: true,	// Ensures the tooltip is shown the first time it's moused over
-					solo: true,		// Ensures no other tooltip is displayed at the same time
+					solo: false,	// When this is false, all tooltip commands are applied only to the corresponding tooltip (what we want) instead of to all tooltips on the page (which causes weird artifacts to occur)
 					delay: 1000,	// Every mouseover that occurs, after the first mouseover, will have to wait a second before the tooltip is triggered
 					event: "mouseover",
 					effect: {		// CSS custom-effect trick to workaround the necessary ready:true flag, which breaks the 'delay' during the first mouseover event
@@ -1938,6 +1941,7 @@ function getTooltipConfig(type, message){
 	else if (type[0] == 's'){
 		return {
 				content: {
+					prerender: true,
 					text: getProcessingMessage(),
 	                title: {
 	                    text: '<center>permissions</center>'
@@ -1954,12 +1958,13 @@ function getTooltipConfig(type, message){
 				},
 				show: { 
 					ready: true,
-					solo: true,
+					solo: false,		
 					delay: 1000,
 					event: "mouseover",
 					effect: {
 						type: function() {
 							var tooltip = this;
+							tooltip.css('visibility','visible').css('opacity',1);
 						    var spaceBeingHovered = $('#exploreList').find('.jstree-hovered').parent().attr("id");
 						    if (tooltip.data('ready')) {
 						    	tooltip.show('slide', 150);
@@ -2070,25 +2075,26 @@ function getTooltipConfig(type, message){
 				},
 				show: { 
 					ready: true,
-					solo: true,
+					solo: false,
 					delay: 1000,
 					event: "mouseover",
 					effect: {
 						type: function() {
 						    var tooltip = this;
+						    tooltip.css('visibility','visible').css('opacity',1);
 						    if (tooltip.data('ready')) {
 						    	tooltip.show('slide', 150);
 								return;
 						    }
 						    tooltip.css('visibility','hidden').data('ready',1);
-						    var userId = $("#users tbody tr").find('td:first input[name="currentUser"]').val();
+						    var userId = $('#users tbody tr').find('td:first input[name="currentUser"]').val();
 							setTimeout(function(){
 								// Only show the 'personal' tooltip when the user hovers over themselves in the userTable
-								if($("#users tbody tr.hovered td:first input").val() == userId){
+								if(userId != undefined && $("#users tbody tr.hovered td:first input").val() == userId){
 									tooltip.css('visibility','visible');
 									tooltip.show('slide', 150);
 			        			} else {
-			        				tooltip.hide();
+			        				tooltip.qtip("destroy");
 			        			}
 							}, 1000);
 					     }
@@ -2108,7 +2114,7 @@ function getTooltipConfig(type, message){
 				   onRender: function(){
 						var tooltip = this;
 						var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
-						if($(this.elements.target).children('td:first').children('input').val() == userId){
+						if(userId != undefined && $(this.elements.target).children('td:first').children('input').val() == userId){
 							var url = '/starexec/services/space/' + spaceId + '/perm/' + userId;
 							$.post(
 									url,
@@ -2123,8 +2129,6 @@ function getTooltipConfig(type, message){
 								alert('Session expired');
 								window.location.reload(true);
 							});	
-						} else {
-							tooltip.destroy();
 						}
 				   }
 		      }

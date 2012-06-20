@@ -66,7 +66,7 @@ public class RESTServices {
 	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		
-		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId)));
+		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false)));
 	}	
 	
 	/**
@@ -749,7 +749,6 @@ public class RESTServices {
 	 * 			4: user doesn't belong to the 'from space',<br>
 	 * 			5: the 'from space' is locked
 	 * @author Tyler Jensen & Todd Elvers
-	 * @deprecated broken currently
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/user")
@@ -796,7 +795,7 @@ public class RESTServices {
 		
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId);
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId, true);
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
@@ -836,7 +835,6 @@ public class RESTServices {
 	 * 			5: the 'from space' is locked,<br>
 	 * 			6: user does not belong to one or more of the subspaces of the destination space
 	 * @author Tyler Jensen & Todd Elvers
-	 * @deprecated broken currently
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
@@ -887,7 +885,7 @@ public class RESTServices {
 
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId);
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId, true);
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each

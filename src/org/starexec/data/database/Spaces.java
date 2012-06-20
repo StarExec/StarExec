@@ -448,7 +448,7 @@ public class Spaces {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 		
 		// For every subspace of the space to be deleted...
-		for(Space subspace : Spaces.getSubSpaces(spaceId, userId)){
+		for(Space subspace : Spaces.getSubSpaces(spaceId, userId, false)){
 			// Ensure the user is the leader of that space
 			if(Permissions.get(userId, subspace.getId()).isLeader() == false){
 				log.error("User " + userId + " does not have permission to delete space " + subspace.getId() + ".");
@@ -501,30 +501,16 @@ public class Spaces {
 	 * Gets all subspaces belonging to another space
 	 * @param spaceId The id of the parent space. Give an id <= 0 to get the root space
 	 * @param userId The id of the user requesting the subspaces. This is used to verify the user can see the space
+	 * @param isRecursive Whether or not to find all the subspaces recursively for a given space, or just the space's subspaces
 	 * @return A list of child spaces belonging to the parent space that the given user can see
-	 * @author Tyler Jensen
+	 * @author Tyler Jensen & Todd Elvers
 	 */
-	public static List<Space> getSubSpaces(int spaceId, int userId) {
+	public static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
-			procedure.setInt(1, spaceId);
-			procedure.setInt(2, userId);
-			ResultSet results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));				
-				subSpaces.add(s);
-			}			
-						
-			return subSpaces;
+			return Spaces.getSubSpaces(spaceId, userId, isRecursive, con);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -532,6 +518,48 @@ public class Spaces {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Helper method for getSubSpaces() - gets either the first level of subspaces of a space or, recursively, all
+	 * subspaces of a given space
+	 * 
+	 * @param spaceId The id of the space to get the subspaces of
+	 * @param userId The id of the user making the request for the subspaces
+	 * @param isRecursive True if we want all subspaces of a space recursively; False if we want only the first level of subspaces of a space
+	 * @param con the database connection to use
+	 * @return the list of subspaces of the given space
+	 * @throws Exception
+	 * @author Todd Elvers
+	 */
+	protected static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive, Connection con) throws Exception{
+		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
+		procedure.setInt(1, spaceId);
+		procedure.setInt(2, userId);
+		ResultSet results = procedure.executeQuery();
+		List<Space> subSpaces = new LinkedList<Space>();
+		
+		while(results.next()){
+			Space s = new Space();
+			s.setName(results.getString("name"));
+			s.setId(results.getInt("id"));
+			s.setDescription(results.getString("description"));
+			s.setLocked(results.getBoolean("locked"));				
+			subSpaces.add(s);
+		}
+		
+		if(isRecursive){
+			List<Space> additionalSubspaces = new LinkedList<Space>();
+			
+			for(Space s : subSpaces){
+				additionalSubspaces.addAll(Spaces.getSubSpaces(s.getId(), userId, true, con));
+			}
+			
+			log.debug("Found an additional " + additionalSubspaces.size() + " subspaces via recursion");
+			subSpaces.addAll(additionalSubspaces);
+		}
+		
+		return subSpaces;
 	}
 	
 	/**
@@ -613,7 +641,7 @@ public class Spaces {
 			s.setBenchmarks(Benchmarks.getBySpace(spaceId));
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
-			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId));
+			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId, false));
 			
 												
 			return s;			
