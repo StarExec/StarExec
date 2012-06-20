@@ -375,7 +375,10 @@ public class GridEngineUtil {
 				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName());
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
-				String command = processor.getFilePath() + " " + "\"" + stdOut.getAbsolutePath() + "\"";
+				String[] command = new String[2];
+			    command[0] = processor.getFilePath();
+			    command[1] = "\"" + stdOut.getAbsolutePath() + "\"";
+				
 				log.info("Command to execute = " + command);
 				reader = Util.executeCommand(command);			  
 				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null) + ". Reader is ready = " + (reader.ready()));
