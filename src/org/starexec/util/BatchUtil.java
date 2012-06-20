@@ -168,8 +168,8 @@ public class BatchUtil {
             return true;
         } catch (SAXException ex) {
             log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-            log.warn("The file located at [" + file.getParentFile().getAbsolutePath() + "] has been removed since an error occured while parsing.");
-            FileUtils.deleteDirectory(file.getParentFile());
+            //log.warn("The file located at [" + file.getParentFile().getAbsolutePath() + "] has been removed since an error occured while parsing.");
+            //FileUtils.deleteDirectory(file.getParentFile());
             errorMessage = "File is not valid because: \"" + ex.getMessage() + "\"";
             this.spaceCreationSuccess = false;
             return false;
