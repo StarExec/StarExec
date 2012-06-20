@@ -375,7 +375,7 @@ public class GridEngineUtil {
 				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName());
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
-				reader = Util.executeCommand(processor.getFilePath() + " " + stdOut.getAbsolutePath());			  
+				reader = Util.executeCommand(processor.getFilePath() + " " + "\"" + stdOut.getAbsolutePath() + "\"");			  
 				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null) + ". Reader is ready = " + (reader.ready()));
 				// Load results into a properties file
 				Properties prop = new Properties();

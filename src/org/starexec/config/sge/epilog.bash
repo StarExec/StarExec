@@ -73,11 +73,11 @@ function copyOutput {
 	
 	#log "second output dir"
 	RZ_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$SOLVER_NAME"
-	#log $RZ_OUT_DIR	
-        APPEND=_$CONFIG_NAME
-        #log $APPEND
+        #log "solver name = $SOLVER_NAME"
+	APPEND="_$CONFIG_NAME"
+        #log "config part = $APPEND"
         RZ_OUT_DIR="$RZ_OUT_DIR$APPEND"
-	#log $RZ_OUT_DIR
+	#log "target directory = $RZ_OUT_DIR"
 	createDir "$RZ_OUT_DIR"
 
 	log "copying output to master host"
@@ -89,8 +89,8 @@ function copyOutput {
 	
 	BENCH_NAME="${BENCH_PATH##*/}"
 	#log "Bench Name = $BENCH_NAME"
-	#log $RZ_OUT_DIR/$BENCH_NAME
-	cp  "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
+	#log "target = $RZ_OUT_DIR/$BENCH_NAME"
+	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
 
 	log "job output copy complete"
 
@@ -98,11 +98,11 @@ function copyOutput {
 }
 
 function createDir {
-	mkdir -p $1
+	mkdir -p "$1"
 
 	# Check the directory actually does exist
-	if [ ! -d $1 ]; then
-		mkdir $1
+	if [ ! -d "$1" ]; then
+		mkdir "$1"
 		log "job error: cannot create directory '$1' this jobs output cannot be saved"
 	fi
 
