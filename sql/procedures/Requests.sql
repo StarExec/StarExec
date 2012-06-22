@@ -27,8 +27,9 @@ CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VAR
 		END IF;
 	END //
 	
--- Adds a user to USER_ASSOC, USER_ROLES and deletes their entry in INVITES
--- Author: Todd Elvers
+-- Adds a user to USER_ASSOC, deletes their entry in INVITES, and makes their
+-- role 'user' if not so already
+-- Author: Todd Elvers & Skylar Stark
 DROP PROCEDURE IF EXISTS ApproveCommunityRequest;
 CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 	BEGIN
@@ -46,7 +47,7 @@ CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 			INSERT INTO user_assoc(user_id, space_id, proxy, permission)
 			VALUES(_id, _community, _community, _newPermId);
 			
-			-- make the user a user if they are currently unauthorized
+			-- make the user a 'user' if they are currently 'unauthorized'
 			IF EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id) AND role = 'unauthorized') THEN
 				UPDATE user_roles
 				SET role = 'user'
@@ -78,9 +79,10 @@ CREATE PROCEDURE DeclineCommunityRequest(IN _id INT, IN _community INT)
 	BEGIN
 		DELETE FROM community_requests 
 		WHERE user_id = _id and community = _community;
+		
 		DELETE FROM users 
 		WHERE users.id = _id
-		AND users.email IN (SELECT * FROM user_roles WHERE role = 'unauthorized');
+		AND users.email IN (SELECT email FROM user_roles WHERE role = 'unauthorized');
 	END //
 	
 -- Returns the community request associated with given user id
