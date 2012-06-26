@@ -1515,9 +1515,11 @@ function checkPermissions(perms) {
 	}	
 	
 	if(perms.addSpace) {		
-		$('#addSpace').fadeIn('fast');		
+		$('#addSpace').fadeIn('fast');	
+		$('#uploadXML').fadeIn('fast');	
 	} else {
 		$('#addSpace').fadeOut('fast');
+		$('#uploadXML').fadeOut('fast');
 	}
 	
 	if(perms.addBenchmark) {

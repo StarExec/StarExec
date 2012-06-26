@@ -1145,7 +1145,7 @@ public class RESTServices {
 
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);
-		if (perm == null || !perm.isLeader()) {
+		if (perm == null || !perm.canRemoveJob()) {
 			return gson.toJson(2);
 		}
 

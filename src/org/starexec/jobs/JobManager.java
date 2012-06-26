@@ -134,7 +134,7 @@ public abstract class JobManager {
 	        return Integer.parseInt(id);
 		} catch (org.ggf.drmaa.DrmaaException drme) {
 			log.warn("script Path = " + scriptPath);
-			log.warn("sgeTemplate = " +sgeTemplate.toString());
+			//log.warn("sgeTemplate = " +sgeTemplate.toString());
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
 			log.error("submitScript says " + drme.getMessage(), drme);
 		} catch (Exception e) {
