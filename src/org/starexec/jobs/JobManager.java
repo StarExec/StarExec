@@ -215,8 +215,8 @@ public abstract class JobManager {
 			arrayString = arrayString + "" + path + " ";
 		}
 		arrayString = arrayString.trim() + "\"";
-		log.debug(arrayString);
-		log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
+		//log.debug(arrayString);
+		//log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
 		return arrayString;
 	}
 	
@@ -265,6 +265,7 @@ public abstract class JobManager {
 		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
 		
 		// Pair up the solvers and benchmarks
+		int pairCount = 0;//temporarily, we're limiting number of job pairs.
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
@@ -273,6 +274,11 @@ public abstract class JobManager {
 				pair.setCpuTimeout(cpuTimeout);
 				pair.setWallclockTimeout(clockTimeout);
 				j.addJobPair(pair);
+				pairCount++;
+				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+					return j;
+				}	
 			}
 		}
 		
