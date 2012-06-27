@@ -6,6 +6,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -1159,9 +1160,7 @@ public class Spaces {
 	 * @return subspaceId id of found subspace
 	 * @author Benton McCune
 	 */
-	public static Integer getSubSpaceIDbyName(Integer spaceId,
-			Integer userId, String subSpaceName) {
-		// TODO Auto-generated method stub
+	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {
 		Connection con = null;			
 		
 		try {
@@ -1307,4 +1306,92 @@ public class Spaces {
 		
 		return -1;
 	}
+
+	/** 
+	 * Removes users from a space and it's hierarchy. Utilizes transactions so it's all or
+	 * nothing (all users from all spaces, or nothing)
+	 * 
+	 * @param userIds a list containing the id's of the users to remove
+	 * @param subspaceIds a list containing the id's of the spaces to remove them from
+	 * @return true iff all given users are removed from all given spaces
+	 * 
+	 * @author Skylar Stark
+	 */
+	public static boolean removeUsersFromHierarchy(List<Integer> userIds, List<Integer> subspaceIds) {
+		Connection con = null;
+		
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			for (int spaceId : subspaceIds) {
+				Spaces.removeUsers(con, userIds, spaceId);
+			}
+			
+			Common.endTransaction(con);
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Removes users from the space with the given spaceId
+	 * 
+	 * @param con the connection to perform the transaction on
+	 * @param userIds a list containing the id's of the users to remove
+	 * @param spaceId the id of the space to remove the users from
+	 * 
+	 * @author Skylar Stark
+	 */
+	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId) throws SQLException {
+		CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+		for(int userId : userIds){
+			procedure.setInt(1, userId);
+			procedure.setInt(2, spaceId);
+			
+			procedure.executeUpdate();			
+		}
+	}
+
+	/** 
+	 * Removes solvers from a space and it's hierarchy. Utilizes transactions so it's all or
+	 * nothing (all solvers from all spaces, or nothing)
+	 * 
+	 * @param solverIds a list containing the id's of the solvers to remove
+	 * @param subspaceIds a list containing the id's of the spaces to remove them from
+	 * @return true iff all given solvers are removed from all given spaces
+	 * 
+	 * @author Skylar Stark
+	 */
+	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds, List<Integer> subspaceIds) {
+		Connection con = null;
+		
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			for (int spaceId : subspaceIds) {
+				Spaces.removeSolvers(solverIds, spaceId, con);
+			}
+			
+			Common.endTransaction(con);
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+
 }

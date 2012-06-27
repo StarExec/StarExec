@@ -305,7 +305,7 @@ function onSpaceDrop(event, ui) {
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
 		if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
-		} else if(ui.draggable.data('type')[0] == 's') {
+		} else {
 			$('#dialog-confirm-copy-txt').text('are you sure you want to copy ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
@@ -324,7 +324,7 @@ function onSpaceDrop(event, ui) {
 			width: 380,
 			height: 165,
 			buttons: {
-				'space + subspaces': function() {
+				'space hierarchy': function() {
 					log('user confirmed solver copy to'+ destName +' and all of its subspaces');
 					
 					// If the user actually confirms, close the dialog right away
@@ -432,7 +432,7 @@ function onSpaceDrop(event, ui) {
 			width: 380,
 			height: 165,
 			buttons: {
-				'space + subspaces': function() {
+				'space hierarchy': function() {
 					log('user confirmed copy of user(s) to'+ destName +' and all of its subspaces');
 					
 					// If the user actually confirms, close the dialog right away
@@ -764,23 +764,67 @@ function removeBenchmarks(selectedBenches){
 
 /**
  * Handles removal of user(s) from a space
- * @author Todd Elvers
+ * @author Todd Elvers & Skylar Stark
  */
 function removeUsers(selectedUsers){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected users(s) from ' + spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('do you want to remove the user(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '?');
 	
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
+		width: 380,
+		height: 165,
 		buttons: {
-			'yes': function() {
+			'space hierarchy': function() {
+				log('user confirmed user deletion from space and its hierarchy');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
+					"/starexec/services/remove/user/" + spaceId,
+					{selectedUsers : selectedUsers, hierarchy : true},
+					function(returnCode) {
+						log('AJAX response received with code ' + returnCode);
+						switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(userTable);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove other users from this space", 5000);
+								break;
+							case 3:
+								showMessage('error', "you can not remove yourself from this space in that way, " +
+										"instead use the 'leave' button to leave this community", 5000);
+								break;
+							case 4:
+								showMessage('error', "you can not remove other leaders of this space", 5000);
+								break;
+							case 5:
+								showMessage('error', "you do not have permission to remove users from one of the subspaces", 5000);
+								break;
+							case 6:
+								showMessge('error', "one of the users you are trying to remove is a leader of one of the subspaces", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});	
+			},
+			"space": function() {
 				log('user confirmed user deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 				
 				$.post(  
 					"/starexec/services/remove/user/" + spaceId,
-					{selectedUsers : selectedUsers},
+					{selectedUsers : selectedUsers, hierarchy : false},
 					function(returnCode) {
 						log('AJAX response received with code ' + returnCode);
 						switch (returnCode) {
@@ -819,23 +863,57 @@ function removeUsers(selectedUsers){
 
 /**
  * Handles removal of solver(s) from a space
- * @author Todd Elvers
+ * @author Todd Elvers & Skylar Stark
  */
 function removeSolvers(selectedSolvers){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected solver(s) from ' + spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '?');
 	
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
+		width: 380,
+		height: 165,
 		buttons: {
-			'yes': function() {
+			'space hierarchy': function() {
+				log('user confirmed solver deletion from space and its hierarchy');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+				
+				$.post(  
+					"/starexec/services/remove/solver/" + spaceId,
+					{selectedSolvers : selectedSolvers, hierarchy : true},
+					function(returnCode) {
+						log('AJAX response received with code ' + returnCode);
+						switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(solverTable);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove solvers from this space", 5000);
+								break;
+							case 3:
+								showMessage('error', "you do not have permission to remove solvers from one of the subspaces", 5000);
+								break;
+						}
+					},
+					"json"
+				).error(function(){
+					alert('Session expired');
+					window.location.reload(true);
+				});
+			},
+			'space': function() {
 				log('user confirmed solver deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 				
 				$.post(  
 					"/starexec/services/remove/solver/" + spaceId,
-					{selectedSolvers : selectedSolvers},
+					{selectedSolvers : selectedSolvers, hierarchy : false},
 					function(returnCode) {
 						log('AJAX response received with code ' + returnCode);
 						switch (returnCode) {

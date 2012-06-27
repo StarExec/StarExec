@@ -1080,6 +1080,40 @@ public class RESTServices {
 		}
 		
 		// If array of users to remove is valid, attempt to remove them from the space
+		
+		// If we are "cascade removing" the user(s)...
+		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
+			int subspaceId;
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userIdOfRemover, true);
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces remove the user from
+			subspaceIds.add(spaceId);
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has removeUser permissions in each
+			for(Space subspace : subspaces) {
+				subspaceId = subspace.getId();
+				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
+				if (subspacePerm != null && !subspacePerm.canRemoveUser()) { // Null if we don't belong to that space; that's ok! we skip it
+					return gson.toJson(5);	
+				} 
+				if (Users.isMemberOfSpace(userIdOfRemover, subspaceId)) { // Skip the subspace if we don't even belong to it
+					for (int userId : selectedUsers) {
+						// Make sure the users you are trying to remove are not leaders in this subspace
+						perm = Permissions.get(userId, subspace.getId());
+						if (perm != null && perm.isLeader()) {
+							return gson.toJson(6);
+						}
+					}
+					subspaceIds.add(subspaceId);
+				}
+			}
+			
+			// Remove the users from the space and its subspaces
+			return Spaces.removeUsersFromHierarchy(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+		}
+		
+		// Otherwise...
 		return Spaces.removeUsers(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 
@@ -1096,6 +1130,8 @@ public class RESTServices {
 	@Path("/remove/solver/{spaceId}")
 	@Produces("application/json")
 	public String removeSolversFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userIdOfRemover = SessionUtil.getUserId(request);
+		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedSolvers[]")){
 			return gson.toJson(1);
@@ -1113,7 +1149,34 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 
-		// Remove the solver from the space
+		// Passed validation, now remove solver(s) from space(s)
+
+		// If we are "cascade removing" the solver(s)...
+		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
+			int subspaceId;
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userIdOfRemover, true);
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces remove the user from
+			subspaceIds.add(spaceId);
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has removeSolver permissions in each
+			for(Space subspace : subspaces){
+				subspaceId = subspace.getId();
+				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
+				if (subspacePerm != null && !subspacePerm.canRemoveSolver()) { // Null if we don't belong to that space; that's ok! we skip it
+					return gson.toJson(3);	
+				} 
+				if (Users.isMemberOfSpace(userIdOfRemover, subspaceId)) { // Skip the subspace if we don't even belong to it
+					subspaceIds.add(subspaceId);
+				}
+			}
+			
+			return Spaces.removeSolversFromHierarchy(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+
+		}
+		
+		// Otherwise...
 		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
 	

@@ -71,11 +71,13 @@
 	height: 1000px;
 }
 
-#dialog-confirm-copy {
+#dialog-confirm-copy,
+#dialog-confirm-delete {
 	min-height: 70px;
 }
 
-#dialog-confirm-copy-txt {
+#dialog-confirm-copy-txt,
+#dialog-confirm-delete-txt {
 	position: absolute;
 }
 

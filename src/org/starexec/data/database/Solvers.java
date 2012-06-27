@@ -598,6 +598,8 @@ public class Solvers {
 	 * 
 	 * @param configId The id of the configuration of the solver we want to return
 	 * @return a solver with the configuration with the given configuration id
+	 * 
+	 * @author Skylar Stark
 	 */
 	private static Solver getByConfigId(int configId) {
 		Connection con = null;			
