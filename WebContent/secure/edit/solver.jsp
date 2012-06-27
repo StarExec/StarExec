@@ -15,7 +15,7 @@
 		if(s != null) {
 			// Ensure the user visiting this page is the owner of the solver
 			if(userId != s.getUserId()){
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this solver can edit details about it.");
 			} else {
 				request.setAttribute("solver", s);
 				if(s.isDownloadable()){
@@ -50,7 +50,7 @@
 				<tbody>
 					<tr>
 						<td class="label">solver name</td>			
-						<td><input id="name" type="text" name="name" value="${solver.name}" maxlength="32"/></td>
+						<td>${solver.name}</td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			

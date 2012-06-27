@@ -50,7 +50,7 @@
 					<td>owner</td>			
 					<td><star:user value="${usr}" /></td>
 				</tr>							
-				<tr title="the date/time the job was created on starexec">
+				<tr title="the date/time the job was created on StarExec">
 					<td>created</td>			
 					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
 				</tr>

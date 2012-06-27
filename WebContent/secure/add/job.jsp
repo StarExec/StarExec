@@ -47,7 +47,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr title="how do you want this job to be displayed in starexec?">
+					<tr title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
 						<td><input id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 					</tr>

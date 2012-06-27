@@ -157,4 +157,9 @@
 			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfigMargin" class="uploadConfig">add configuration</a>
 		</c:when>
 	</c:choose>
+	<c:choose>
+		<c:when test="${usr.id == user.id}">
+			<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}" id="editSolver">edit</a>
+		</c:when>
+	</c:choose>
 </star:template>
