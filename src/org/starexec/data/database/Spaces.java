@@ -356,8 +356,10 @@ public class Spaces {
 			// Gather the benchmarks and solvers from the jobs being removed
 			List<JobPair> jobPairs = Jobs.getPairsDetailed(jobId);
 			for(JobPair jp : jobPairs) {
-				benchmarks.add(jp.getBench().getId());
-				solvers.add(jp.getSolver().getId());
+				if (jp != null) {
+					if (jp.getBench() != null) benchmarks.add(jp.getBench().getId());
+					if (jp.getSolver() != null) solvers.add(jp.getSolver().getId());
+				}
 			}
 			
 			procedure.setInt(1, jobId);
