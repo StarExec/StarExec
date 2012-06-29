@@ -217,7 +217,7 @@ function attachPasswordMonitor(){
 								$('#pwd-meter').hide();
 								break;
 							case 2:		// Parameter validation failed
-								showMessage('error', "illegal password; please try again", 5000);
+								showMessage('error', "password must be between 6-20 characters, contains at least one character, one number, and one punctuation mark", 10000);
 								break;
 							case 3:		// 'new password' & 'confirm password' fields did not match
 								showMessage('error', "make sure to confirm the new password; please try again", 5000);

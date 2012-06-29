@@ -98,3 +98,8 @@ fieldset {
 #solverDetail tbody tr td:first-child {
 	width: 106px;
 }
+
+#editSolver {
+	float: right;
+	margin-right: 10px;
+}
