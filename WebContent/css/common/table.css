@@ -97,7 +97,7 @@ th.sorting_desc {
 	background-image: url('/starexec/images/tables/forward_enabled.png');
 }
 
-#content tbody tr:hover {
+#content tbody tr:not(.row_selected):hover {
 	background-color: #ae0000;	
 }
 
@@ -141,7 +141,7 @@ tr.even {
 	background-color: #111111;
 }
 
-tbody tr.row_selected{
+tbody tr.row_selected {
 	background-color: #dc6f04;
 }
 
