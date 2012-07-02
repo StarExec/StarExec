@@ -38,7 +38,11 @@
 			<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
-				<a id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
+					<c:choose>
+					<c:when test="${usr.id == user.id}">
+						<a id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
+					</c:when>
+					</c:choose>
 			</td>
 			<td id="solverDetail">
 				<table id="solverInfo" class="shaded">
