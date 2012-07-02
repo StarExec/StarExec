@@ -289,7 +289,7 @@ public class Download extends HttpServlet {
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
         		sb.append(",");
-        		sb.append(pair.getSolver().getConfigurations().get(0));
+        		sb.append(pair.getSolver().getConfigurations().get(0).getName());
         		sb.append(",");
         		sb.append(pair.getStatus().toString());
         		sb.append(",");
