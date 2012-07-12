@@ -1709,6 +1709,52 @@ public class RESTServices {
 		
 		return gson.toJson(1);
 	}
-
 	
+	@POST
+	@Path("/makeLeader/{spaceId}")
+	@Produces("application/json")
+	public String makeLeader(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedUsers[]")){
+			return gson.toJson(1);
+		}		
+		
+		// Get the id of the user who initiated the promotion
+		int userIdOfPromotion = SessionUtil.getUserId(request);
+		
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canRemoveUser()) {
+			return gson.toJson(2);	
+		}
+		
+		// Extract the String user id's and convert them to Integer
+		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedUsers[]"));
+		
+		// Validate the list of users to remove by:
+		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
+		// 2 - Ensuring other leaders of the space aren't in the list of users to remove
+		for(int userId : selectedUsers){
+			if(userId == userIdOfPromotion){
+				return gson.toJson(3);
+			}
+			
+			Permission p = new Permission();
+			p.setAddBenchmark(true);
+			p.setAddJob(true);
+			p.setAddSolver(true);
+			p.setAddSpace(true);
+			p.setAddUser(true);
+			p.setRemoveBench(true);
+			p.setRemoveJob(true);
+			p.setRemoveSolver(true);
+			p.setRemoveSpace(true);
+			p.setRemoveUser(true);
+			p.setLeader(true);
+			
+			Permissions.set(userId, spaceId, p);
+		}
+		return gson.toJson(0);
+	}
 }

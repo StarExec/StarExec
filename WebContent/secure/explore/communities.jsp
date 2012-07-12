@@ -53,6 +53,7 @@
 				<li><a id="leaveComm">leave</a></li>
 				<li><a id="editComm" href="#">edit</a></li>							
 				<li><a id="removeUser">remove user</a></li>
+				<li><a id="makeLeader">make leader</a></li>
 			</ul>
 		</fieldset>				
 	</div>	

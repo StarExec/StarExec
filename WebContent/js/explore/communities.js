@@ -60,6 +60,7 @@ $(document).ready(function(){
 	
 	// Hide the 'remove user' button
 	$("#removeUser").fadeOut('fast');
+	$("#makeLeader").fadeOut('fast');
 	
 	// Handles the removal of user(s) from a space
 	$("#removeUser").click(function(){
@@ -111,6 +112,34 @@ $(document).ready(function(){
 		});				
 	});	
 	
+	$('#makeLeader').click(function(){
+		var selectedUsers = getSelectedRows(memberTable);
+		
+		$.post(  
+				"/starexec/services/makeLeader/" + id ,
+				{selectedUsers : selectedUsers},
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							$("#makeLeader").fadeOut("fast");
+							break;
+						case 1:
+							showMessage('error', "an error occurred while processing your request; please try again", 5000);
+						case 2:
+							showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
+							break;
+						case 3:
+							showMessage('error', "you are already a leader", 5000);
+							break;
+					}
+				},
+				"json"
+			).error(function(){
+				alert('Session expired');
+				window.location.reload(true);
+			});
+    });
+	
 	$('#joinComm').button({
 		icons: {
 			secondary: "ui-icon-plus"
@@ -129,6 +158,11 @@ $(document).ready(function(){
 	$('#removeUser').button({
 		icons: {
 			secondary: "ui-icon-minus"
+    }});
+	
+	$('#makeLeader').button({
+		icons: {
+			secondary: "ui-icon-star"
     }});
 	
 	initDialogs();
@@ -237,6 +271,9 @@ function checkPermissions(perms) {
 		$('#editComm').fadeIn('fast');
 		$("#members").delegate("tr", "click", function(){
 			updateButton(memberTable, $("#removeUser"));
+		});
+		$("#members").delegate("tr", "click", function(){
+			updateButton(memberTable, $("#makeLeader"));
 		});
 	} else {
 		$('#editComm').fadeOut('fast');
