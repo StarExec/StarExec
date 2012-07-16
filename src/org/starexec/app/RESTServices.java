@@ -795,20 +795,23 @@ public class RESTServices {
 		
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId, true);
+			int subspaceId;
+			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
-			
-			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
-			for(Space subspace : subspaces){
-				Permission subspacePerm = Permissions.get(requestUserId, subspace.getId());		
-				if(subspacePerm == null || !subspacePerm.canAddUser()) {
-					return gson.toJson(6);	
-				}			
-				subspaceIds.add(subspace.getId());
-			}
 			
 			// Add the destination space to the list of spaces to associate the user(s) with
 			subspaceIds.add(spaceId);
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
+			for(Space subspace : subspaces){
+				subspaceId = subspace.getId();
+				Permission subspacePerm = Permissions.get(requestUserId, subspaceId);	
+				if(subspacePerm == null || !subspacePerm.canAddUser()) {
+					return gson.toJson(6);	
+				}			
+				subspaceIds.add(subspaceId);
+			}
+			
 			
 			// Add the user(s) to the destination space and its subspaces
 			return Users.associate(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
@@ -885,20 +888,23 @@ public class RESTServices {
 
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, requestUserId, true);
+			int subspaceId;
+			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces to associate the solvers with
+			subspaceIds.add(spaceId);
 			
 			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
 			for(Space subspace : subspaces){
-				Permission subspacePerm = SessionUtil.getPermission(request, subspace.getId());		
+				subspaceId = subspace.getId();
+				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);	
+				
 				if(subspacePerm == null || !subspacePerm.canAddSolver()) {
 					return gson.toJson(6);	
 				}			
 				subspaceIds.add(subspace.getId());
 			}
-			
-			// Add the destination space to the list of spaces to associate the solvers with
-			subspaceIds.add(spaceId);
 
 			// Add the solvers to the destination space and its subspaces
 			return Solvers.associate(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
@@ -1043,7 +1049,7 @@ public class RESTServices {
 	 * 			1: if there was an error on the database level,<br>
 	 * 			3: if the leader initiating the removal is in the list of users to remove,<br>
 	 * 			4: if the list of users t remove contains another leader of the space
-	 * @author Todd Elvers
+	 * @author Todd Elvers & Skylar Stark
 	 */
 	@POST
 	@Path("/remove/user/{spaceId}")
@@ -1084,7 +1090,7 @@ public class RESTServices {
 		// If we are "cascade removing" the user(s)...
 		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
 			int subspaceId;
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userIdOfRemover, true);
+			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaces(spaceId, userIdOfRemover, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Add the destination space to the list of spaces remove the user from
@@ -1096,16 +1102,14 @@ public class RESTServices {
 				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
 				if (subspacePerm != null && !subspacePerm.canRemoveUser()) { // Null if we don't belong to that space; that's ok! we skip it
 					return gson.toJson(5);	
-				} 
-				if (Users.isMemberOfSpace(userIdOfRemover, subspaceId)) { // Skip the subspace if we don't even belong to it
-					for (int userId : selectedUsers) {
-						// Make sure the users you are trying to remove are not leaders in this subspace
-						perm = Permissions.get(userId, subspace.getId());
-						if (perm != null && perm.isLeader()) {
-							return gson.toJson(6);
-						}
+				}
+				for (int userId : selectedUsers) {
+					// Make sure the users you are trying to remove are not leaders in this subspace
+					perm = Permissions.get(userId, subspace.getId());
+					if (perm != null && perm.isLeader()) {
+						return gson.toJson(6);
 					}
-					subspaceIds.add(subspaceId);
+				subspaceIds.add(subspaceId);
 				}
 			}
 			
@@ -1124,7 +1128,7 @@ public class RESTServices {
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
-	 * @author Todd Elvers
+	 * @author Todd Elvers & Skylar Stark
 	 */
 	@POST
 	@Path("/remove/solver/{spaceId}")
@@ -1154,7 +1158,7 @@ public class RESTServices {
 		// If we are "cascade removing" the solver(s)...
 		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
 			int subspaceId;
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userIdOfRemover, true);
+			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaces(spaceId, userIdOfRemover, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Add the destination space to the list of spaces remove the user from
@@ -1167,9 +1171,8 @@ public class RESTServices {
 				if (subspacePerm != null && !subspacePerm.canRemoveSolver()) { // Null if we don't belong to that space; that's ok! we skip it
 					return gson.toJson(3);	
 				} 
-				if (Users.isMemberOfSpace(userIdOfRemover, subspaceId)) { // Skip the subspace if we don't even belong to it
-					subspaceIds.add(subspaceId);
-				}
+				
+				subspaceIds.add(subspaceId);
 			}
 			
 			return Spaces.removeSolversFromHierarchy(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);

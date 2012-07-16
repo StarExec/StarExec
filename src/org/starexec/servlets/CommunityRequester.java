@@ -93,8 +93,8 @@ public class CommunityRequester extends HttpServlet {
 	 * @param communityId the id of the space the forthcoming Invite object will have
 	 * @param message the message written by the user for the leaders of the community
 	 * they're trying to join
-	 * @return true iff communityId is a valid space_id and that the user's message is
-	 * between 1 and 300 characters in length
+	 * @return true iff communityId is a valid space_id that is a child of the root space and 
+	 * that the user's message is between 1 and 300 characters in length
 	 */
 	private boolean validateParameters(int communityId, String message){
 		if(communityId < 0 

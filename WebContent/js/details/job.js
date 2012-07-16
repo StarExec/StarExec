@@ -109,6 +109,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			"json"
 	).error(function(){
 		alert('Session expired');
-		window.location.reload(true);
+		window.location.reload(true); 
 	});
 }

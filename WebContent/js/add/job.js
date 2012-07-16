@@ -54,6 +54,9 @@ function attachFormValidation(){
 			wallclockTimeout: {
 				required: true,			    
 			    max: 259200
+			},
+			queue: {
+				required: true
 			}
 		},
 		messages: {
@@ -75,6 +78,9 @@ function attachFormValidation(){
 			wallclockTimeout: {
 				required: "enter a timeout",			    
 			    max: "3 day max timeout"
+			},
+			queue: {
+				required: "error - no worker queues"
 			}
 		},
 		// Place the error messages in the tooltip instead of in the DOM
@@ -108,7 +114,7 @@ function initUI() {
     });
 	
 	// Place the select all/none buttons in the datatable footer
-	$('#fieldStep2 div.selectWrap').detach().prependTo('#fieldStep2 div.bottom');
+	$('#fieldStep3 div.selectWrap').detach().prependTo('#fieldStep3 div.bottom');
 	$('#fieldStep4 div.selectWrap').detach().prependTo('#fieldStep4 div.bottom');
 	
 	$('#btnNext').button({
@@ -120,13 +126,13 @@ function initUI() {
     	// Make sure the job config form is valid  before moving on
     	if(progress == 0 && false == isValid) {
     		return;
-    	} else if (progress == 1 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {    	
-    		// Make sure the user selects at least one solver before moving on
-    		showMessage('warn', 'you must have at least one solver for this job', 3000);
-    		return;
-    	} else if (progress == 2 && $('#tblSpaceSelection tbody tr.row_selected').length <= 0) {
+    	} else if (progress == 1 && $('#tblSpaceSelection tbody tr.row_selected').length <= 0) { 
     		// Make sure the user has selected a choice for running the space
     		showMessage('warn', 'you must make a selection to continue', 3000);
+    		return;
+    	} else if (progress == 2 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {
+    		// Make sure the user selects at least one solver before moving on
+    		showMessage('warn', 'you must have at least one solver for this job', 3000);
     		return;
     	}
     	
@@ -178,7 +184,7 @@ function initUI() {
 		$(this).toggleClass("row_selected");
 	});
 	
-	// Step 3 related actions
+	// Step 2 related actions
 	// Selection toggling
 	$("#tblSpaceSelection").delegate("tr", "click", function(){
 		$(this).addClass("row_selected");
@@ -186,8 +192,10 @@ function initUI() {
 	});
 	
 	// Run space/hierarchy selected
-	$("#runSpace, #runHierarchy").click(function() {
+	$("#runSpace, #runHierarchy, #keepHierarchy").click(function() {
 		$("#tblBenchConfig tr").addClass("row_selected");
+		$("#tblSolverConfig tr").addClass("row_selected");
+    	$("#tblSolverConfig tr").find('input').attr('checked', 'checked');
 		$('#btnNext').fadeOut('fast');
 		$('#btnDone').fadeIn('fast');
 	});
@@ -195,6 +203,8 @@ function initUI() {
 	// Choose benchmarks selected
 	$("#runChoose").click(function() {
 		$("#tblBenchConfig tr").removeClass("row_selected");
+		$("#tblSolverConfig tr").removeClass("row_selected");
+    	$("#tblSolverConfig tr").find('input').removeAttr('checked');
 		$('#btnDone').fadeOut('fast');
 		$('#btnNext').fadeIn('fast');
 	});
@@ -210,6 +220,7 @@ function initUI() {
     $('#txtDesc').qtip(getErrorTooltip());
     $('#wallclockTimeout').qtip(getErrorTooltip());
     $('#cpuTimeout').qtip(getErrorTooltip());
+    $('#workerQueue').qtip(getErrorTooltip());
 }
 
 /**
@@ -229,15 +240,14 @@ function updateProgress() {
 			$('#btnPrev').fadeOut('fast');
 			$('#btnDone').fadeOut('fast');
 			break;
-		case 1:	// Solver config stage
+		case 1:	// Run space choice stage
 			$('#fieldStep2').fadeIn('fast');
-			$('#btnNext').fadeIn('fast');
-			$('#btnPrev').fadeIn('fast');
-			$('#btnDone').fadeOut('fast');
-			break;
-		case 2:	// Run space choice stage
-			$('#fieldStep3').fadeIn('fast');
 			$('#btnNext').fadeOut('fast');
+			$('#btnPrev').fadeIn('fast');
+			break;
+		case 2:	// Solver config stage
+			$('#fieldStep3').fadeIn('fast');
+			$('#btnNext').fadeIn('fast');
 			$('#btnPrev').fadeIn('fast');
 			$('#btnDone').fadeOut('fast');
 			break;

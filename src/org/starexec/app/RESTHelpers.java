@@ -263,7 +263,7 @@ public class RESTHelpers {
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 4) return null;
 		    			break;
 		    		case JOB_PAIR:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
@@ -733,6 +733,7 @@ public class RESTHelpers {
 		    	}
 		    	
 		    	break;
+		    	
 		    case JOB_PAIR:
 		    	List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
 	    		int totalJobPairsforJob = Jobs.getJobPairCount(id);
@@ -830,6 +831,7 @@ public class RESTHelpers {
 		    		entry.add(new JsonPrimitive(status));
 		    		entry.add(new JsonPrimitive(jp.getWallclockTime() + " ms"));
 		    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
+		    		entry.add(new JsonPrimitive(jp.getSpace().getName()));
 		    		
 		    		dataTablePageEntries.add(entry);
 		    	}

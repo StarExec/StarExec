@@ -79,7 +79,7 @@ CREATE PROCEDURE DeclineCommunityRequest(IN _id INT, IN _community INT)
 	BEGIN
 		DELETE FROM community_requests 
 		WHERE user_id = _id and community = _community;
-		
+
 		DELETE FROM users 
 		WHERE users.id = _id
 		AND users.email IN (SELECT email FROM user_roles WHERE role = 'unauthorized');

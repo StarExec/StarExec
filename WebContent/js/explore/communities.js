@@ -199,7 +199,7 @@ function getCommunityDetails(id) {
  */
 function populateDetails(jsonData) {
 	commName = jsonData.space.name;
-	
+
 	// Populate space defaults
 	$('#commName').fadeOut('fast', function(){
 		$('#commName').text(jsonData.space.name).fadeIn('fast');
@@ -284,7 +284,7 @@ function checkPermissions(perms) {
  * Updates the URLs to perform actions on the current community
  * @param id The id of the current community
  */
-function updateActionId(id) {	
+function updateActionId(id) {
 	$('#joinComm').attr('href', "/starexec/secure/add/to_community.jsp?cid=" + id);
 	$('#editComm').attr('href', "/starexec/secure/edit/community.jsp?cid=" + id);
 	$("#leaveComm").click(function(){

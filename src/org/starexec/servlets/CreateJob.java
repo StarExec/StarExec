@@ -13,6 +13,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
@@ -66,34 +67,67 @@ public class CreateJob extends HttpServlet {
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
 		
-		List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
+		int space = Integer.parseInt((String)request.getParameter(spaceId));
+		int userId = SessionUtil.getUserId(request);
+		
+		//Setup the job's attributes
+		Job j = JobManager.setupJob(
+				userId,
+				(String)request.getParameter(name), 
+				(String)request.getParameter(description),
+				-1, //change to preprocessor ID when implemented
+				Integer.parseInt((String)request.getParameter(postProcessor)), 
+				Integer.parseInt((String)request.getParameter(workerQueue)));
 		
 		
-		if (request.getParameter(run).equals("hierarchy")) {
-			//We chose to run the hierarchy, so add subspace benchmark IDs to the list.
-			benchmarkIds = Benchmarks.getBenchmarkIdsInHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), benchmarkIds);
-			if (benchmarkIds.size() == 0) {
-				//No benchmarks in the hierarchy; error out
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No benchmarks in current hierarchy. Could not create job.");
+		String selection = request.getParameter(run);
+		//Depending on our run selection, handle each case differently
+		if (selection.equals("space")) {
+			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space);
+		} else if (selection.equals("keepHierarchy")) {
+			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
+			spaces.add(0, Spaces.get(space));
+			for (Space s : spaces) {
+				JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId());
+			}
+		} else { //hierarchy OR choice
+			List<Integer> solverIds = Util.toIntegerList(request.getParameterValues(solvers));
+			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
+			
+			if (solverIds.size() == 0 || configIds.size() == 0) {
+				// Either no solvers or no configurations; error out
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.");
 				return;
 			}
+			
+			if (selection.equals("hierarchy")) {
+				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
+				JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit);
+				if (j.getJobPairs().size() == 0) {
+					// No pairs in the job means no benchmarks in the hierarchy; error out
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
+					return;
+				}
+			} else {
+				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
+				if (benchmarkIds.size() == 0) {
+					// No benchmarks selected; error out
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
+					return;
+				}
+				
+				JobManager.buildJob(j, userId, cpuLimit, runLimit, benchmarkIds, solverIds, configIds, space);
+			}
+		}
+	
+		if (j.getJobPairs().size() == 0) {
+			// No pairs in the job means something went wrong; error out
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");
+			return;
 		}
 		
-		Job j = JobManager.buildJob(
-				SessionUtil.getUserId(request), 
-				(String)request.getParameter(name), 
-				(String)request.getParameter(description), 
-				-1, // TODO: Change to pre-processor id when implemented
-				Integer.parseInt((String)request.getParameter(postProcessor)), 
-				Integer.parseInt((String)request.getParameter(workerQueue)), 
-				cpuLimit,
-				runLimit,
-				benchmarkIds, 
-				Util.toIntegerList(request.getParameterValues(solvers)), 
-				Util.toIntegerList(request.getParameterValues(configs)));
-
-		int space = Integer.parseInt((String)request.getParameter(spaceId));
-		boolean submitSuccess = JobManager.submitJob(j, space);		
+		
+		boolean submitSuccess = JobManager.submitJob(j, space);
 		
 		if(true == submitSuccess) {
 			// If the submission was successful, send back to space explorer
@@ -154,16 +188,6 @@ public class CreateJob extends HttpServlet {
 				return false;
 			}		
 			
-			// Check to see if we have a valid list of solver ids
-			if(!Validator.isValidIntegerList(request.getParameterValues(solvers))) {
-				return false;
-			}
-			
-			// Check to see if we have a valid list of configuration ids
-			if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
-				return false;
-			}
-			
 			int sid = Integer.parseInt((String)request.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(request, sid);
 			
@@ -172,18 +196,12 @@ public class CreateJob extends HttpServlet {
 				return false;
 			}
 			
-			// Make sure the user is using solvers they can see
-			int userId = SessionUtil.getUserId(request);
-			
-			if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
-				return false;
-			}
-			
-			// Benchmark related checks; we don't need these when running the hierarchy
-			// as there are possibly no benchmarks in the current space. In that case,
-			// these checks would throw an exception.
-			
-			if (!request.getParameter(run).equals("hierarchy")) {
+			// Only need these checks if we're choosing which solvers and benchmarks to run.
+			// In any other case, we automatically get them so we don't have to pass them
+			// as part of the request.
+			if (request.getParameter(run).equals("choose")) {
+				int userId = SessionUtil.getUserId(request);
+				
 				// Check to see if we have a valid list of benchmark ids
 				if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
 					return false;
@@ -191,6 +209,21 @@ public class CreateJob extends HttpServlet {
 				
 				// Make sure the user is using benchmarks they can see
 				if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
+					return false;
+				}
+				
+				// Check to see if we have a valid list of solver ids
+				if(!Validator.isValidIntegerList(request.getParameterValues(solvers))) {
+					return false;
+				}
+				
+				// Check to see if we have a valid list of configuration ids
+				if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
+					return false;
+				}
+				
+				// Make sure the user is using solvers they can see
+				if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
 					return false;
 				}
 			}

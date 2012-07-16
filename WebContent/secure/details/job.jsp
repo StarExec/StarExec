@@ -89,7 +89,8 @@
 					<th>config</th>
 					<th>status</th>
 					<th>time</th>
-					<th>result</th>				
+					<th>result</th>	
+					<th>space</th>			
 				</tr>		
 			</thead>	
 			<tbody>

@@ -270,14 +270,16 @@ CREATE TABLE job_pairs (
 	block_input DOUBLE,
 	block_output DOUBLE,
 	vol_contex_swtch DOUBLE,
-	invol_contex_swtch DOUBLE,	
+	invol_contex_swtch DOUBLE,
+	space_id INT,
 	PRIMARY KEY(id),
 	UNIQUE KEY(sge_id),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE SET NULL,
 	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL,
 	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,
-	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION
+	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION,
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL
 );
 
 -- All attributes for each job pair

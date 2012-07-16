@@ -128,6 +128,13 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 		this.configurations.add(configuration);
 	}
 
+	/**
+	 * Removes all configurations from the solver
+	 */
+	public void removeConfigurations() {
+		this.configurations.clear();
+	}
+	
 	@Override
 	public Iterator<Configuration> iterator() {
 		return this.configurations.iterator();

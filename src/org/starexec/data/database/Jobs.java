@@ -17,6 +17,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
@@ -207,20 +208,21 @@ public class Jobs {
 	 * @return True if the operation was successful
 	 */
 	private static boolean addJobPair(Connection con, JobPair pair) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setInt(1, pair.getJobId());
 		procedure.setInt(2, pair.getBench().getId());
 		procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
-		procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());				
+		procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());
 		procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
 		procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
+		procedure.setInt(7, pair.getSpace().getId());
 		
 		// The procedure will return the pair's new ID in this parameter
-		procedure.registerOutParameter(7, java.sql.Types.INTEGER);	
+		procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
 		
 		// Update the pair's ID so it can be used outside this method
-		pair.setId(procedure.getInt(7));
+		pair.setId(procedure.getInt(8));
 		
 		return true;
 	}
@@ -1006,7 +1008,6 @@ public class Jobs {
 	 */
 	public static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
 		Connection con = null;			
-		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
@@ -1044,6 +1045,11 @@ public class Jobs {
 				config.setName(results.getString("config.name"));
 				config.setDescription(results.getString("config.description"));
 				
+				Space space = new Space();
+				space.setId(results.getInt("space.id"));
+				space.setName(results.getString("space.name"));
+				space.setDescription(results.getString("space.description"));
+				
 				Status status = new Status();
 				status.setCode(results.getInt("status.code"));
 				status.setStatus(results.getString("status.status"));
@@ -1055,6 +1061,7 @@ public class Jobs {
 				solver.addConfiguration(config);
 				jp.setBench(bench);
 				jp.setSolver(solver);
+				jp.setSpace(space);
 				jp.setStatus(status);
 				jp.setAttributes(attributes);
 				jobPairs.add(jp);		

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="ben_dev_317">
+<starexec-configuration default="skylar_dev_laptop">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -195,7 +195,7 @@
 			<property key="MYSQL_DATABASE" value="starexec" />
 			<property key="MYSQL_USERNAME" value="star_exec" />
 			<property key="MYSQL_PASSWORD" value="starexec" />
-			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?zeroDateTimeBehavior=convertToNull" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?zeroDateTimeBehavior=convertToNull&amp;autoReconnect=true" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="3" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="1" />
 			<!-- Path Configuration -->
@@ -261,6 +261,7 @@
 			<property key="LOG_TO_CONSOLE" value="true" />
 			<property key="CONTACT_EMAIL" value="skylar-stark@uiowa.edu" />
 			<property key="CLUSTER_UPDATE_PERIOD" value="3600" />
+			<property key="TEMP_JOBPAIR_LIMIT" value="5000" />
 			<!-- SGE Configuration -->
 			<property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Global\\-sql.txt" />
 			<property key="QUEUE_USAGE_COMMAND" value="cmdspoof C:\\Global\\-gc.txt" />

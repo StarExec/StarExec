@@ -996,4 +996,21 @@ public class Solvers {
 
 		return 0;
 	}
+
+	/**
+	 * Creates a copy of a given solver; the copy will have the same id, description,
+	 * and name as the original
+	 * 
+	 * @param s the solver to copy
+	 * @return a copy of the given solver
+	 */
+	public static Solver clone(Solver s) {
+		Solver clone = new Solver();
+		
+		clone.setId(s.getId());
+		clone.setDescription(s.getDescription());
+		clone.setName(s.getName());
+		
+		return clone;
+	}
 }

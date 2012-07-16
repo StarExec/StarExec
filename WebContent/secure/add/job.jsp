@@ -59,10 +59,10 @@
 						<td class="label"><p>post processor</p></td>
 						<td>					
 							<select id="postProcess" name="postProcess" default=${defaultPPId}>
-							<option value="-1">none</option>
-							<c:forEach var="proc" items="${postProcs}">
-									<option value="${proc.id}">${proc.name}</option>
-							</c:forEach>
+								<option value="-1">none</option>
+								<c:forEach var="proc" items="${postProcs}">
+										<option value="${proc.id}">${proc.name}</option>
+								</c:forEach>
 							</select>
 						</td>
 					</tr>
@@ -81,7 +81,10 @@
 					<tr title="which queue should this job be submitted to?">
 						<td class="label"><p>worker queue</p></td>
 						<td>
-							<select id="workerQueue" name="queue">							
+							<select id="workerQueue" name="queue">
+								<c:if test="${empty queues}">
+									<option value="" />
+								</c:if>							
 								<c:forEach var="q" items="${queues}">
 	                                <option value="${q.id}">${q.name}</option>
 								</c:forEach>
@@ -92,6 +95,34 @@
 			</table>
 		</fieldset>
 		<fieldset id="fieldStep2">
+			<legend>run space selection</legend>
+			<table id="tblSpaceSelection" class="contentTbl">
+				<thead>
+					<tr>
+						<th>choice</th>
+						<th>description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="runSpace">
+						<td><input type="hidden" name="runChoice" value="space" />run ${space.name}</td>
+						<td>this will run all solvers/configurations on all benchmarks in ${space.name} only.</td>
+					</tr>
+					<tr id="runHierarchy">
+						<td><input type="hidden" name="runChoice" value="hierarchy" />run ${space.name} and hierarchy</td>
+						<td>this will run all solvers/configurations from ${space.name} on all the benchmarks in the space hierarchy.</td>
+					</tr>
+					<tr id="keepHierarchy">
+						<td><input type="hidden" name="runChoice" value="keepHierarchy" />run and keep hierarchy structure</td>
+						<td>this will run all solvers/configurations on all benchmarks in their respective spaces within the space hierarchy.</td>
+					<tr id="runChoose">
+						<td><input type="hidden" name="runChoice" value="choose" />choose</td>
+						<td>you will choose which solvers/configurations and benchmarks to run from ${space.name} only.</td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
+		<fieldset id="fieldStep3">
 			<legend>solver selection</legend>
 			<table id="tblSolverConfig" class="contentTbl">	
 				<thead>
@@ -121,31 +152,6 @@
 				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectDefault"><span class="ui-icon ui-icon-circlesmall-plus"></span>all default</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
-		</fieldset>
-		<fieldset id="fieldStep3">
-			<legend>run space selection</legend>
-			<table id="tblSpaceSelection" class="contentTbl">
-				<thead>
-					<tr>
-						<th>choice</th>
-						<th>description</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr id="runSpace">
-						<td><input type="hidden" name="runChoice" value="space" />run ${space.name}</td>
-						<td>this will run all benchmarks in the current space.</td>
-					</tr>
-					<tr id="runHierarchy">
-						<td><input type="hidden" name="runChoice" value="hierarchy" />run ${space.name} and hierarchy</td>
-						<td>this will run all benchmarks in the current space as well as all benchmarks in the current space's hierarchy.</td>
-					</tr>
-					<tr id="runChoose">
-						<td><input type="hidden" name="runChoice" value="choose" />choose benchmarks</td>
-						<td>you will choose which benchmarks to run from the current space.</td>
-					</tr>
-				</tbody>
-			</table>
 		</fieldset>
 		<fieldset id="fieldStep4">
 			<legend>benchmark selection</legend>

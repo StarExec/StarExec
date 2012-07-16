@@ -5,8 +5,6 @@ USE starexec;
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
-
 -- Begins the registration process by adding a user to the USERS table
 -- Makes their role "unauthorized"
 -- Author: Todd Elvers
@@ -18,7 +16,7 @@ CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), 
 		SELECT LAST_INSERT_ID() INTO _id;
 		
 		INSERT INTO user_roles(email, role)
-		VALUES (_email, "unauthorized");
+		VALUES (_email, 'unauthorized');
 	END //
 
 -- Adds an association between a user and a space

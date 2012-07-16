@@ -87,7 +87,11 @@
 					<td>runtime (wallclock)</td>			
 					<td>${pair.wallclockTime / 1000} ms</td>
 				</tr>			
-				</c:if>											
+				</c:if>
+				<tr>
+					<td>space</td>
+					<td>${pair.space.name}</td>
+				</tr>											
 			</tbody>
 		</table>	
 	</fieldset>		

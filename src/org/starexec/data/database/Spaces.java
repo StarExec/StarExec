@@ -506,7 +506,7 @@ public class Spaces {
 	 * @param userId The id of the user requesting the subspaces. This is used to verify the user can see the space
 	 * @param isRecursive Whether or not to find all the subspaces recursively for a given space, or just the space's subspaces
 	 * @return A list of child spaces belonging to the parent space that the given user can see
-	 * @author Tyler Jensen & Todd Elvers
+	 * @author Tyler Jensen, Todd Elvers & Skylar Stark
 	 */
 	public static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive) {
 		Connection con = null;			
@@ -533,7 +533,7 @@ public class Spaces {
 	 * @param con the database connection to use
 	 * @return the list of subspaces of the given space
 	 * @throws Exception
-	 * @author Todd Elvers
+	 * @author Todd Elvers & Skylar Stark
 	 */
 	protected static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive, Connection con) throws Exception{
 		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
@@ -547,7 +547,7 @@ public class Spaces {
 			s.setName(results.getString("name"));
 			s.setId(results.getInt("id"));
 			s.setDescription(results.getString("description"));
-			s.setLocked(results.getBoolean("locked"));				
+			s.setLocked(results.getBoolean("locked"));
 			subSpaces.add(s);
 		}
 		
@@ -563,6 +563,24 @@ public class Spaces {
 		}
 		
 		return subSpaces;
+	}
+	
+	/**
+	 * Given a list of spaces a user id, removes from the list of spaces any space
+	 * where the given user is not a member of.
+	 * 
+	 * @param userId the id of the user to check membership of
+	 * @param spaces the list of spaces to check membership of
+	 * @return the original list without the spaces the user is not a member of
+	 */
+	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
+		for (Space s : spaces) {
+			if (!Users.isMemberOfSpace(userId, s.getId())) {
+				spaces.remove(s);
+			}
+		}
+		
+		return spaces;
 	}
 	
 	/**

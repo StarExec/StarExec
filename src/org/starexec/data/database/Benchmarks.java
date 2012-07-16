@@ -991,7 +991,8 @@ public class Benchmarks {
 				b.setDescription(results.getString("bench.description"));
 				b.setDownloadable(results.getBoolean("bench.downloadable"));	
 				b.setDiskSize(results.getLong("bench.disk_size"));
-
+				b.setPath(results.getString("bench.path"));
+				
 				Processor t = new Processor();
 				t.setId(results.getInt("types.id"));
 				t.setCommunityId(results.getInt("types.community"));
@@ -1243,32 +1244,5 @@ public class Benchmarks {
 		}
 
 		return 0;
-	}
-	
-	/**
-	 * Returns an integer list of all benchmark ids in a space's hierarchy. The space is given
-	 * as an input. Will only return the benchmark ids that the user can see from only the spaces
-	 * that the user has access to. This will NOT return benchmark ids from the current space;
-	 * those should already be given as an input.
-	 * 
-	 * @param spaceId the id of the space to find the hierarchy of
-	 * @param userId the id of the current user
-	 * @param benchmarkIds a list containing already needed benchmark ids
-	 * @return an integer list containing the benchmark ids of all benchmarks in the space hierarchy
-	 */
-	public static List<Integer> getBenchmarkIdsInHierarchy(int spaceId, int userId, List<Integer> benchmarkIds) {
-		List<Space> spaces = Spaces.getSubSpaces(spaceId, userId, true);
-		int subspaceId;
-		for (Space s : spaces) {    //navigate the subspaces
-			subspaceId = s.getId();
-			if (Users.isMemberOfSpace(userId, subspaceId)) { //if we are a member of this space
-				List<Benchmark> benchmarks = Benchmarks.getBySpace(subspaceId); //get the benchmarks in this subspace
-				for (Benchmark b : benchmarks) {
-					benchmarkIds.add(b.getId());
-				}
-			}
-		}
-		
-		return benchmarkIds;
 	}
 }
