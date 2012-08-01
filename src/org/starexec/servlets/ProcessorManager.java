@@ -212,6 +212,12 @@ public class ProcessorManager extends HttpServlet {
 				// If the file is being updated, save it to disk...
 				File newFile = this.getProcessorFilePath(updatedProc.getCommunityId(), processorFile.getName());
 				processorFile.write(newFile);
+				
+				//updated file needs to be executable
+				if (!newFile.setExecutable(true, false)) {			
+					log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
+				}
+				
 				updatedProc.setFilePath(newFile.getAbsolutePath());					
 				log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), updatedProc.getCommunityId()));	
 			}
