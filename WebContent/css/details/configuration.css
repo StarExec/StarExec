@@ -26,14 +26,9 @@ tr th {
 	height: 125px;
 }
 
-#editConfig {
+#deleteConfig, #returnLinkMargin {
 	float: right;
-	margin-right: 20px;
-}
-
-#deleteConfig {
-	float: right;
-	margin-right: 113px;	
+	margin-right: 185px;	
 }
 
 textarea {

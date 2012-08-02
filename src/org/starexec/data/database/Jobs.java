@@ -535,6 +535,7 @@ public class Jobs {
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
 			jp.setAttributes(Jobs.getAttributes(con, pairId));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			jp.setSpace(Spaces.get(results.getInt("space_id")));
 			
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));

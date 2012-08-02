@@ -16,11 +16,6 @@ function initUI(){
  * Sets up button icons and actions
  */
 function initButtons(){
-	$('#editConfig').button({
-		icons: {
-			secondary: "ui-icon-pencil"
-		}
-	});
 	$('#deleteConfig').button({
 		icons: {
 			secondary: "ui-icon-minus"

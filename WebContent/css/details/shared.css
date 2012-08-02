@@ -99,7 +99,7 @@ fieldset {
 	width: 106px;
 }
 
-#editSolver {
+#editLink, #returnLink {
 	float: right;
 	margin-right: 10px;
 }

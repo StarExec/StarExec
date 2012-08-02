@@ -12,6 +12,16 @@ $(document).ready(function(){
 			secondary: "ui-icon-arrowthick-1-s"
     }});
 	
+	$('#editLink').button({
+		icons: {
+			secondary: "ui-icon-pencil"
+	}});
+	
+	$('#returnLink, #returnLinkMargin').button({
+		icons: {
+			secondary: "ui-icon-arrowreturnthick-1-w"
+		}});
+	
 	$('img').click(function(event){
 		PopUp($(this).attr('enlarge'));
 	});

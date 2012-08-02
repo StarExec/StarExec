@@ -20,8 +20,9 @@ function initUI(){
 		}
     });
 	
-	$('fieldset:first').expandable(false);
-	$('fieldset:not(:first)').expandable(true);
+	// Job details and job pair tables are open by default
+	$('fieldset:first, fieldset:eq(1)').expandable(false);
+	$('fieldset:not(:first, :eq(1))').expandable(true);
 	
 	// Set up row click to send to pair details page
 	$("#pairTbl tbody").delegate("tr", "click", function(){

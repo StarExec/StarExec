@@ -84,7 +84,7 @@
 							<select id="workerQueue" name="queue">
 								<c:if test="${empty queues}">
 									<option value="" />
-								</c:if>							
+								</c:if>				
 								<c:forEach var="q" items="${queues}">
 	                                <option value="${q.id}">${q.name}</option>
 								</c:forEach>

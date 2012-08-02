@@ -149,21 +149,11 @@
 	</div>		
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
-	<c:choose>
-		<c:when test="${usr.id == user.id && solver.downloadable}">
-			<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
-			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig" class="uploadConfig">add configuration</a>
-		</c:when>
-		<c:when test="${usr.id != user.id && solver.downloadable}">
-			<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
-		</c:when>
-		<c:when test="${usr.id == user.id && !solver.downloadable}">
-			<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfigMargin" class="uploadConfig">add configuration</a>
-		</c:when>
-	</c:choose>
-	<c:choose>
-		<c:when test="${usr.id == user.id}">
-			<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}" id="editSolver">edit</a>
-		</c:when>
-	</c:choose>
+	<c:if test="${solver.downloadable}">
+		<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
+	</c:if>
+	<c:if test="${usr.id == user.id}">
+		<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>
+		<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
+	</c:if>
 </star:template>

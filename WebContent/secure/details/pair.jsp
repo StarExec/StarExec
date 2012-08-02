@@ -225,4 +225,5 @@
 		</fieldset>
 	</c:if>
 	<a href="/starexec/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
+	<a href="/starexec/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
 </star:template>

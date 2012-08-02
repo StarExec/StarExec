@@ -330,7 +330,7 @@ public abstract class JobManager {
 				configs = Solvers.getConfigsForSolver(s.getId());
 				for (Configuration c : configs) {
 					
-					Solver clone = Solvers.clone(s);
+					Solver clone = JobManager.cloneSolver(s);
 					// Now we're going to work with this solver with this configuration
 					clone.addConfiguration(c);
 
@@ -340,7 +340,6 @@ public abstract class JobManager {
 					pair.setCpuTimeout(cpuTimeout);
 					pair.setWallclockTimeout(clockTimeout);
 					pair.setSpace(space);
-					
 					j.addJobPair(pair);
 					
 					pairCount++;
@@ -413,6 +412,25 @@ public abstract class JobManager {
 				}
 			}
 		}
+	}
+	
+
+	/**
+	 * Creates a copy of a given solver; the copy will have the same id, description,
+	 * name, and filepath as the original
+	 * 
+	 * @param s the solver to copy
+	 * @return a copy of the given solver
+	 */
+	public static Solver cloneSolver(Solver s) {
+		Solver clone = new Solver();
+		
+		clone.setId(s.getId());
+		clone.setDescription(s.getDescription());
+		clone.setName(s.getName());
+		clone.setPath(s.getPath());
+		
+		return clone;
 	}
 	
 	@Deprecated

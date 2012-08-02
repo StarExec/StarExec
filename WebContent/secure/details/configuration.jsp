@@ -39,7 +39,7 @@ try {
 }
 %>
 
-<star:template title="edit ${config.name}" css="details/configuration" js="details/configuration">
+<star:template title="edit ${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
 	<input type="hidden" id="solverId" value="${solver.id}"/>
 	<fieldset>
 		<legend>details</legend>
@@ -70,11 +70,12 @@ try {
 		<legend>contents</legend>			
 		<textarea id="contents" readonly="readonly">${contents}</textarea>	
 	</fieldset>
-	<c:if test="${ownerId == user.id}">
-		<a id="deleteConfig">delete</a>
-		<a id="editConfig" href="/starexec/secure/edit/configuration.jsp?id=${config.id}">edit</a>
-	</c:if>
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
+	<c:if test="${ownerId == user.id}">
+		<a id="deleteConfig">delete</a>
+		<a id="editLink" href="/starexec/secure/edit/configuration.jsp?id=${config.id}">edit</a>
+	</c:if>
+	<a href="/starexec/secure/details/solver.jsp?id=${solver.id}" id="returnLink<c:if test="${ownerId != user.id}">Margin</c:if>">back to ${solver.name}</a>
 </star:template>
