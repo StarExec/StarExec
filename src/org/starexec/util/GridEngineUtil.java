@@ -304,10 +304,10 @@ public class GridEngineUtil {
 				log.debug("Processing job pair " + safeId);
 				
 				// Execute the processing for this id on a thread from the pool
-				threadPool.execute(new Runnable() {					
-					@Override
-					public void run() {
-						log.debug("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
+				//threadPool.execute(new Runnable() {					
+				//	@Override
+				//	public void run() {
+						log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
 
 						// Process statistics and attributes
 						boolean success = GridEngineUtil.processStatistics(safeId);
@@ -317,8 +317,8 @@ public class GridEngineUtil {
 						Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
 						
 						log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
-					}
-				});
+				//	}
+				//});
 			}
 			
 			if(idsToProcess != null && idsToProcess.size() > 0) {
@@ -389,6 +389,7 @@ public class GridEngineUtil {
 				// Attach the attributes to the benchmark
 				Jobs.addJobAttributes(pair.getId(), prop);
 				log.info("Job " + job.getId() +", sgeId = " +sgeId + ".  added job attributes for pair " + pair.getId());
+				c
 			}
 			else
 			{
