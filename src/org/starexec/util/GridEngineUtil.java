@@ -389,7 +389,7 @@ public class GridEngineUtil {
 				// Attach the attributes to the benchmark
 				Jobs.addJobAttributes(pair.getId(), prop);
 				log.info("Job " + job.getId() +", sgeId = " +sgeId + ".  added job attributes for pair " + pair.getId());
-				c
+
 			}
 			else
 			{
