@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="skylar_dev_laptop">
+<starexec-configuration default="ben_dev_317">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -31,7 +31,7 @@
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />								
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
-			<property key="SGE_STATISTICS_PERIOD" value="60" />
+			<property key="SGE_STATISTICS_PERIOD" value="15" />
 			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />
