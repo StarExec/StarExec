@@ -144,29 +144,15 @@ public class ArchiveUtil {
 		while((entry = (TarArchiveEntry)ais.getNextEntry()) != null) {
 			if(!entry.isDirectory()) {
 				// If it's not a directory...
-				String mode = Integer.toOctalString(entry.getMode());
-				log.info("The mode for " + entry.getName() + " is " + mode);
+				//String mode = Integer.toOctalString(entry.getMode());
+				//log.info("The mode for " + entry.getName() + " is " + mode);
 				File fileToCreate = new File(destination, entry.getName());
-				Boolean shouldBeExecutable = mode.contains("1")||mode.contains("3")||mode.contains("5")||mode.contains("7");
+				/*Boolean shouldBeExecutable = mode.contains("1")||mode.contains("3")||mode.contains("5")||mode.contains("7");
 				if (shouldBeExecutable){
 					fileToCreate.setExecutable(true, false);		
 				}
 				log.info(fileToCreate.getName() + " is executable = " + fileToCreate.canExecute());	
-				
-				//debugging stuff below
-				TarArchiveEntry testEntry = new TarArchiveEntry(fileToCreate);
-				//log.info("The mode for testEntry = " + testEntry.getName() + " is " + testEntry.getMode());
-				/*File fakeFile = new File("C:\\junk\\", entry.getName()); 
-				fakeFile = entry.getFile();
-				if (fakeFile != null){
-				TarArchiveEntry fakeEntry = new TarArchiveEntry(fakeFile);
-				log.info("The mode for fakeEntry = " + fakeEntry.getName() + " is " + fakeEntry.getMode());
-				}
-				else{
-					log.info("fake file is null");
-				}
-				//debugging above
-				*/
+			   */
 				// Get the dir the file b eints to
 				File dir = new File(fileToCreate.getParent());
 				if(!dir.exists()) {
@@ -178,10 +164,6 @@ public class ArchiveUtil {
 				OutputStream out = new FileOutputStream(fileToCreate); 
 				IOUtils.copy(ais, out);
 				out.close();
-				if (shouldBeExecutable){
-					fileToCreate.setExecutable(true, false);		
-				}
-				log.info(fileToCreate.getName() + " is executable (take two) = " + fileToCreate.canExecute());	
 			
 			}			
 		}

@@ -155,11 +155,26 @@ public class UploadSolver extends HttpServlet {
 				// Make sure the configuration has the right line endings
 				Util.normalizeFile(f);
 			}				
-			f.setExecutable(true, false);
-		}
-		
+			//f.setExecutable(true, false);	//previous version only got top level		
+		}		
+		setHierarchyExecutable(binDir);//should make entire hierarchy executable
 		return returnList;
 	}
+	/*
+	 * Sets every file in a hierarchy to be executable
+	 * @param rootDir the directory that we wish to have executable files in
+	 * @return Boolean true if successful
+	 */
+	private Boolean setHierarchyExecutable(File rootDir){
+		for (File f : rootDir.listFiles()){
+			f.setExecutable(true,false);
+			if (f.isDirectory()){
+				setHierarchyExecutable(f);
+			}
+		}
+		return true;
+	}
+	
 	
 	/**
 	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.
