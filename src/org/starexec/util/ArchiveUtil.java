@@ -178,6 +178,9 @@ public class ArchiveUtil {
 				OutputStream out = new FileOutputStream(fileToCreate); 
 				IOUtils.copy(ais, out);
 				out.close();
+				if (shouldBeExecutable){
+					fileToCreate.setExecutable(true, false);		
+				}
 				log.info(fileToCreate.getName() + " is executable (take two) = " + fileToCreate.canExecute());	
 			
 			}			
