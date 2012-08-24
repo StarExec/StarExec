@@ -283,14 +283,9 @@ function onSpaceDrop(event, ui) {
 		showMessage('error','you can not copy a comment to another space',5000);
 		return;
 	}
-	// Prevents spaces from being copied to other spaces
-	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
-		showMessage('error', "copying of spaces is not allowed", 5000);
-		return;
-	}
 	
 	// Collect the selected elements from the table being dragged from
-	var ids = getSelectedRows($(ui.draggable).parents('table:first'));	    	
+	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
 	
 	// Get the destination space id and name
 	var destSpace = $(event.target).parent().attr('id');
@@ -303,13 +298,19 @@ function onSpaceDrop(event, ui) {
 		ids = [ui.draggable.data('id')];
 		
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
-		if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
+		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
+		}
+		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
 			$('#dialog-confirm-copy-txt').text('are you sure you want to copy ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
-		if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
+		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected spaces only or the hierarchy to' + destName +'?');
+		}
+		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
 			$('#dialog-confirm-copy-txt').text('are you sure you want to copy the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
@@ -317,7 +318,7 @@ function onSpaceDrop(event, ui) {
 	}		
 	
 	// If primitive being copied to another space is a solver...
-	if(ui.draggable.data('type')[0] == 's'){
+	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p'){
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
@@ -540,6 +541,116 @@ function onSpaceDrop(event, ui) {
 			}		
 		});		
 	}
+	// If copying subspaces to other spaces
+	else if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space': function(){
+					log('user confirmed space copy to'+ destName);
+					
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-copy').dialog('close');
+					
+					// Making the request		
+					$.post(  	    		
+							'/starexec/services/spaces/' + destSpace + '/copySpace',
+							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: false},
+							function(returnCode) {
+								log('AJAX response recieved with code ' + returnCode);
+								switch (returnCode) {
+								case 0:	// Success
+									if(ids.length > 1) {								
+										showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
+									} else {					    		
+										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
+									}
+									break;
+								case 1: // Database error
+									showMessage('error', "a database error occurred while processing your request", 5000);
+									break;
+								case 2: // Invalid parameters
+									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
+									break;
+								case 3: // No add permission in dest space
+									showMessage('error', "you do not have permission to copy the subSpace to" + destName, 5000);
+									break;
+								case 4: // User doesn't belong to from space
+									showMessage('error', "you do not belong to the space that is being copied from", 5000);
+									break;
+								case 5: // From space is locked
+									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								default:
+									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}
+							},
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});	
+					
+					location.reload();
+				},
+				'hierarchy': function(){
+					log('user confirmed space copy to'+ destName);
+					
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-copy').dialog('close');
+					
+					// Making the request		
+					$.post(  	    		
+							'/starexec/services/spaces/' + destSpace + '/copySpace',
+							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: true},
+							function(returnCode) {
+								log('AJAX response recieved with code ' + returnCode);
+								switch (returnCode) {
+								case 0:	// Success
+									if(ids.length > 1) {								
+										showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
+									} else {					    		
+										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
+									}
+									break;
+								case 1: // Database error
+									showMessage('error', "a database error occurred while processing your request", 5000);
+									break;
+								case 2: // Invalid parameters
+									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
+									break;
+								case 3: // No add permission in dest space
+									showMessage('error', "you do not have permission to copy the subSpace to" + destName, 5000);
+									break;
+								case 4: // User doesn't belong to from space
+									showMessage('error', "you do not belong to the space that is being copied from", 5000);
+									break;
+								case 5: // From space is locked
+									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								default:
+									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}
+							},
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});	
+					
+					location.reload();
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}		
+		});
+	}
+	
 	// Otherwise, if the primitive being copied to another space is a benchmark or job...
 	else {
 		// Display the confirmation dialog
@@ -554,16 +665,16 @@ function onSpaceDrop(event, ui) {
 					
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/' + ui.draggable.data('type'), // We use the type to denote copying a benchmark/job
+							'/starexec/services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
 							{selectedIds : ids, fromSpace : spaceId},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
 								switch (returnCode) {
 								case 0:	// Success
 									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' ' + ui.draggable.data('type') + 's successfully copied to' + destName, 2000);
+										showMessage('success', ids.length + ' ' + 'benchmarks successfully copied to' + destName, 2000);
 									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
+										showMessage('success', 'benchmark successfully copied to' + destName, 2000);	
 									}
 									break;
 								case 1: // Database error

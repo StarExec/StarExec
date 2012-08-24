@@ -588,5 +588,15 @@ CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _nodeName VARCHAR(64), IN _qu
 		WHERE sge_id=_sgeId;
 	END //
 
+-- Retrieves all jobs belonging to a user (but not their job pairs)
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS GetUserJobsById;
+CREATE PROCEDURE GetUserJobsById(IN _userId INT)
+	BEGIN
+		SELECT *
+		FROM jobs
+		WHERE user_id=_userId
+		ORDER BY created DESC;
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file

@@ -1713,6 +1713,16 @@ public class RESTServices {
 		return gson.toJson(1);
 	}
 	
+	/**
+	 * Make a list of users the leaders of a space
+	 * @param spaceId The Id of the space  
+	 * @param request The HttpRequestServlet object containing the list of user's Id
+	 * @return 0: Success.
+	 *         1: Selected userId list is empty.
+	 *         2: User making this request is not a leader
+	 *         3: If one is promoting himself
+	 * @author Ruoyu Zhang
+	 */
 	@POST
 	@Path("/makeLeader/{spaceId}")
 	@Produces("application/json")
@@ -1728,7 +1738,7 @@ public class RESTServices {
 		
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canRemoveUser()) {
+		if(perm == null || !perm.isLeader()) {
 			return gson.toJson(2);	
 		}
 		
@@ -1757,6 +1767,82 @@ public class RESTServices {
 			p.setLeader(true);
 			
 			Permissions.set(userId, spaceId, p);
+		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Handling the copy of subspaces for both single space copy and hierachy
+	 * @param spaceId The Id of the space which is copied into.
+	 * @param request The HttpRequestServlet object containing the list of the space's Id 
+	 * @return 0: Success.
+	 *         1: The copying procedure fails.
+	 *         2: Invalid input.
+	 *         3: User doesn't have the copy permission.
+	 *         4: User can't see the subspaces they are copying.
+	 *         5: The space which is copied from is locked.
+	 */
+	@POST
+	@Path("/spaces/{spaceId}/copySpace")
+	@Produces("application/json")
+	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+		if(null == request.getParameterValues("selectedIds[]") 
+				|| !Util.paramExists("fromSpace", request)
+				|| !Util.paramExists("copyHierarchy", request)
+				|| !Validator.isValidBool(request.getParameter("copyHierarchy"))){
+			return gson.toJson(2);
+		}
+		
+		// Get the id of the user who initiated the request
+		int requestUserId = SessionUtil.getUserId(request);
+		
+		// Get the space the subSpace is being copied from
+		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
+		
+		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
+		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
+		
+		// Convert the subSpaces to copy to an int list
+		List<Integer> selectedSubSpaces = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
+		
+		// Verify the space the subspaces are being copied from is not locked
+		if(Spaces.get(fromSpace).isLocked()) {
+			return gson.toJson(5);
+		}
+		
+		// Verify the user can at least see the space they claim to be copying from
+		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
+			return gson.toJson(4);
+		}	
+
+		// Make sure the user can see the subSpaces they're trying to copy
+		for (int id : selectedSubSpaces) {
+			if (!Permissions.canUserSeeSpace(id, requestUserId)) {
+				return gson.toJson(4);
+			}
+		}
+		
+		// Check permissions - the user must have add space permissions in the destination space
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		if(perm == null || !perm.canAddSpace()) {
+			return gson.toJson(3);	
+		}
+
+		// Add the subSpaces to the destination space
+		if (!copyHierarchy) {
+			for (int id : selectedSubSpaces) {
+				int newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
+				if ( newSpaceId == 0){
+					gson.toJson(1);
+				}
+			}
+		} else {
+			for (int id : selectedSubSpaces) {
+				if (RESTHelpers.copyHierarchy(id, spaceId, requestUserId) == 0){
+					gson.toJson(1);
+				}
+			}
 		}
 		return gson.toJson(0);
 	}

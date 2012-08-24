@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -37,7 +38,7 @@ import com.google.gson.annotations.Expose;
 public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);		
 	private static Gson gson = new Gson();
-	
+
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
@@ -330,7 +331,7 @@ public class RESTHelpers {
 	 * @return HTML representing a job pair's status
 	 * @author Todd Elvers
 	 */
-	private static String getPairStatHtml(String statType, int numerator, int denominator){
+	public static String getPairStatHtml(String statType, int numerator, int denominator){
 		StringBuilder sb = new StringBuilder();
 		sb.append("<p class=\"stat ");
 		sb.append(statType);
@@ -847,6 +848,129 @@ public class RESTHelpers {
 	    
 	    // Return the next DataTable page
     	return nextPage;
+	}
+	
+	/**
+	 * Copy a space into another space
+	 * @param srcId The Id of the space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
+	 * @return The Id of the new copy of the space.
+	 * @author Ruoyu Zhang
+	 */
+	
+	protected static int copySpace(int srcId, int desId, int usrId) {	
+		if (srcId == desId){
+			return 0;
+		}
+		
+		Space sourceSpace = Spaces.getDetails(srcId, usrId);
+		
+		// Create a new space
+		Space tempSpace = new Space();	
+		tempSpace.setName(sourceSpace.getName());
+		tempSpace.setDescription(sourceSpace.getDescription());
+		tempSpace.setLocked(sourceSpace.isLocked());
+		tempSpace.setBenchmarks(sourceSpace.getBenchmarks());
+		tempSpace.setSolvers(sourceSpace.getSolvers());
+		tempSpace.setJobs(sourceSpace.getJobs());
+				
+		// Make the default permissions for the space to be added
+		Permission p = new Permission();
+		p.setAddBenchmark(true);
+		p.setAddJob(true);
+		p.setAddSolver(true);
+		p.setAddSpace(true);
+		p.setAddUser(true);
+		p.setLeader(true);
+		p.setRemoveBench(true);
+		p.setRemoveJob(true);
+		p.setRemoveSolver(true);
+		p.setRemoveSpace(true);
+		p.setRemoveUser(true);
+		
+		// Set the default permission on the space
+		tempSpace.setPermission(p);
+		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
+		
+		if(newSpaceId <= 0) {			
+			// If it failed, notify an error
+			return 0;
+		}
+		
+		if(Permissions.canUserSeeSpace(srcId, usrId)){
+			//Copying the references of benchmarks
+			List<Benchmark> benchmarks = sourceSpace.getBenchmarks();
+			List<Integer> benchmarkIds = new LinkedList<Integer>();
+			int benchId = 0;
+			for (Benchmark benchmark: benchmarks){
+				benchId = benchmark.getId();
+				if(Permissions.canUserSeeBench(benchId, usrId)){
+					benchmarkIds.add(benchId);
+				}
+			}
+			Benchmarks.associate(benchmarkIds, newSpaceId);		
+			
+			//Copying the references of solvers
+			List<Solver> solvers = sourceSpace.getSolvers();
+			List<Integer> solverIds = new LinkedList<Integer>();
+			int solverId = 0;
+			for (Solver solver: solvers) {
+				solverId = solver.getId();
+				if(Permissions.canUserSeeSolver(solverId, usrId)){
+					solverIds.add(solverId);
+				}
+			}
+			Solvers.associate(solverIds, newSpaceId);
+			
+			//Copying the references of jobs
+			List<Job> jobs = sourceSpace.getJobs();
+			List<Integer> jobIds = new LinkedList<Integer>();
+			int jobId = 0;
+			for (Job job : jobs){
+				jobId = job.getId();
+				if(Permissions.canUserSeeJob(jobId, usrId)){
+					jobIds.add(jobId);
+				}
+			}
+			Jobs.associate(jobIds, newSpaceId);
+		}
+		
+		return newSpaceId;
+	}
+	
+	/**
+	 * Copy a hierarchy of the space into another space
+	 * @param srcId The Id of the source space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
+	 * @return The Id of the root space of the copied hierarchy.
+	 * @author Ruoyu Zhang
+	 */
+	protected static int copyHierarchy(int srcId, int desId, int usrId) {
+		if (srcId == desId){
+			return 0;
+		}
+		
+		int newSpaceId = copySpace(srcId, desId, usrId);
+		if (newSpaceId == 0){
+			return 0;
+		}
+		else {
+			List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId, false);
+			if (subSpaces == null){
+				return newSpaceId;
+			}
+			else {
+				for (Space space : subSpaces) {
+					if (RESTHelpers.copyHierarchy(space.getId(), newSpaceId, usrId) == 0)
+						return 0;
+				}
+				
+				System.out.println("\n");
+				return newSpaceId;
+			}
+		}
 	}
 }
 

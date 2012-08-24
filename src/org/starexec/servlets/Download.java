@@ -293,7 +293,7 @@ public class Download extends HttpServlet {
         		sb.append(",");
         		sb.append(pair.getStatus().toString());
         		sb.append(",");
-        		sb.append(pair.getSystemTime()/1000);
+        		sb.append(pair.getWallclockTime());
         		sb.append("ms");
         		sb.append(",");
         		sb.append(pair.getStarexecResult());
