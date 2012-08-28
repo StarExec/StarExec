@@ -67,7 +67,7 @@ public class R {
 	public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 		"this is your personal space";
 	public static String STAREXEC_RESULT = "starexec-result";				// The key used for the starexec result in key-value pairs for a job pair 
-	
+	public static String CONFIGURATION_PREFIX = "starexec_run_";            // The prefix for a file in the solver bin directory to be considered a configuration
 	// Queue and node status strings
 	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)
 	public static String QUEUE_STATUS_INACTIVE = "INACTIVE";				// Inactive status for an SGE queue (indicates the queue is not currently live)

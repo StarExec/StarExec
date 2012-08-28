@@ -42,6 +42,7 @@ public class Jobs {
 				
 		try {
 			con = Common.getConnection();
+			
 			Common.beginTransaction(con);
 			
 			Jobs.addJob(con, job);
@@ -56,7 +57,7 @@ public class Jobs {
 			return true;
 		} catch(Exception e) {
 			Common.doRollback(con);
-			log.error(e.getMessage(), e);
+			log.error("add says " + e.getMessage(), e);
 		} finally {			
 			Common.safeClose(con);	
 		}
