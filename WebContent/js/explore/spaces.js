@@ -562,12 +562,8 @@ function onSpaceDrop(event, ui) {
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
 								switch (returnCode) {
-								case 0:	// Success
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-									}
+								case 0:	// Success							
+									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
 									break;
 								case 1: // Database error
 									showMessage('error', "a database error occurred while processing your request", 5000);
@@ -592,9 +588,7 @@ function onSpaceDrop(event, ui) {
 					).error(function(){
 						alert('Session expired');
 						window.location.reload(true);
-					});	
-					
-					location.reload();
+					});
 				},
 				'hierarchy': function(){
 					log('user confirmed space copy to'+ destName);
@@ -610,11 +604,7 @@ function onSpaceDrop(event, ui) {
 								log('AJAX response recieved with code ' + returnCode);
 								switch (returnCode) {
 								case 0:	// Success
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-									}
+									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
 									break;
 								case 1: // Database error
 									showMessage('error', "a database error occurred while processing your request", 5000);
@@ -639,9 +629,7 @@ function onSpaceDrop(event, ui) {
 					).error(function(){
 						alert('Session expired');
 						window.location.reload(true);
-					});	
-					
-					location.reload();
+					});
 				},
 				"cancel": function() {
 					log('user canceled copy action');
