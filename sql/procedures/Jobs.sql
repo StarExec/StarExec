@@ -182,7 +182,137 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 			END IF;
 		END IF;
 	END //
+
+
 	
+	
+	-- Gets the fewest necessary Jobs in order to service a client's
+-- request for the next page of Jobs in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.
+-- Gets jobs across all spaces for one user.  
+-- Author: Ben and Ruoyu
+DROP PROCEDURE IF EXISTS GetNextPageOfMyJobs;
+CREATE PROCEDURE GetNextPageOfMyJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of Jobs without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs where user_id = _userId
+				
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs where user_id = _userId
+
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Jobs contain _query
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs where user_id = _userId
+				
+				-- Exclude Jobs whose name and status don't contain the query string
+				AND 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+										
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC	 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs where user_id = _userId
+				
+				AND 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
 	
 -- Gets the fewest necessary JobPairs in order to service a client's
 -- request for the next page of JobPairs in their DataTable object.  
