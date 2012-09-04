@@ -870,7 +870,8 @@ public class Jobs {
 		Connection con = null;			
 		
 		try {
-			con = Common.getConnection();									
+			Common.getDataPoolData();
+			con = Common.getConnection();	
 			CallableStatement procedure = con.prepareCall("{CALL UpdatePairStats(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");			
 			procedure.setInt(1, pair.getGridEngineId());			
 			procedure.setString(2, pair.getNode().getName());

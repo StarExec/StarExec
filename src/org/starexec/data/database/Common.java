@@ -17,8 +17,9 @@ import org.starexec.util.Util;
  */
 public class Common {	
 	private static final Logger log = Logger.getLogger(Common.class);
-	private static DataSource dataPool = null;		
-	
+	private static DataSource dataPool = null;		public Common() {
+		// TODO Auto-generated constructor stub
+	}
 	/**
 	 * Configures and sets up the Tomcat JDBC connection pool. This method can only be called once in the
 	 * lifetime of the application.
@@ -50,9 +51,10 @@ public class Common {
 			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
 			poolProp.setRemoveAbandonedTimeout(30);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
 			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too int
-			
+		
 			log.debug("Creating new datapool with supplied properties");		
 			dataPool = new DataSource(poolProp);						// Create the connection pool with the supplied properties
+		
 			log.debug("Datapool successfully created!");
 		} catch (Exception e) {
 			log.fatal(e.getMessage(), e);
@@ -66,6 +68,14 @@ public class Common {
 		if(dataPool != null) {
 			dataPool.close();
 		}
+	}
+	
+	/*
+	 * Gets information on the data pool.  Used to track down connection leak.
+	 */
+	public static void getDataPoolData(){
+		log.info("Data Pool has " + dataPool.getActive() + "active connections.  ");
+		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
 	}
 	
 	/**
@@ -84,7 +94,6 @@ public class Common {
 	 */
 	public static void addLoginRecord(int userId, String ipAddress, String browser) {
 		Connection con = null;		
-		
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
