@@ -337,9 +337,10 @@ public class Jobs {
 				//j.setJobPairs(Jobs.getPairsDetailed(con, j.getId()));
 				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
 				return j;
-			}									
+			}
+			Common.closeResultSet(results);
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error("job get detailed for job id = " + jobId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
@@ -377,7 +378,8 @@ public class Jobs {
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
 				
 				return j;
-			}									
+			}	
+			Common.closeResultSet(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -415,7 +417,8 @@ public class Jobs {
 				j.getPostProcessor().setId(results.getInt("post_processor"));				
 				
 				return j;
-			}									
+			}		
+			Common.closeResultSet(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -450,7 +453,7 @@ public class Jobs {
 				j.setCreateTime(results.getTimestamp("created"));					
 				jobs.add(j);				
 			}			
-						
+			Common.closeResultSet(results);			
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -484,7 +487,8 @@ public class Jobs {
 				jp.getBench().setId(results.getInt("bench_id"));
 				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
 				return jp;
-			}							
+			}		
+			Common.closeResultSet(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -543,7 +547,7 @@ public class Jobs {
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);					
-			
+			Common.closeResultSet(results);
 			return jp;
 		}			
 			
@@ -592,7 +596,7 @@ public class Jobs {
 		if(prop.size() <= 0) {
 			prop = null;
 		}
-		
+		Common.closeResultSet(results);
 		return prop;
 	}
 	
@@ -643,7 +647,7 @@ public class Jobs {
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
-			
+			Common.closeResultSet(results);
 			return jp;
 		}			
 			
@@ -675,7 +679,7 @@ public class Jobs {
 				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
 				returnList.add(jp);
 			}			
-				
+			Common.closeResultSet(results);	
 			return returnList;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -708,7 +712,7 @@ public class Jobs {
 			jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
 			returnList.add(jp);
 		}			
-			
+		Common.closeResultSet(results);
 		return returnList;				
 	}
 	
@@ -726,7 +730,7 @@ public class Jobs {
 			con = Common.getConnection();		
 			return Jobs.getPairsDetailed(con, jobId);
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
@@ -770,7 +774,8 @@ public class Jobs {
 			jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
 			returnList.add(jp);
 		}			
-			
+		
+		Common.closeResultSet(results);
 		return returnList;			
 	}
 	
@@ -849,7 +854,7 @@ public class Jobs {
 			while(results.next()){
 				ids.add(results.getInt("sge_id"));
 			}	
-			
+			Common.closeResultSet(results);
 			return ids;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -868,9 +873,8 @@ public class Jobs {
 	 */
 	public static boolean updatePairStatistics(JobPair pair) {		
 		Connection con = null;			
-		
 		try {
-			Common.getDataPoolData();
+			Common.getDataPoolData();//just for logging
 			con = Common.getConnection();	
 			CallableStatement procedure = con.prepareCall("{CALL UpdatePairStats(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");			
 			procedure.setInt(1, pair.getGridEngineId());			
@@ -955,7 +959,7 @@ public class Jobs {
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
-			
+			Common.closeResultSet(results);
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -982,10 +986,12 @@ public class Jobs {
 			CallableStatement procedure = con.prepareCall("{CALL GetJobCountBySpace(?)}");
 			procedure.setInt(1, spaceId);
 			ResultSet results = procedure.executeQuery();
-
+			int jobCount = 0;
 			if (results.next()) {
-				return results.getInt("jobCount");
+				jobCount = results.getInt("jobCount");
 			}
+			Common.closeResultSet(results);
+			return jobCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -1069,7 +1075,7 @@ public class Jobs {
 				jp.setAttributes(attributes);
 				jobPairs.add(jp);		
 			}	
-			
+			Common.closeResultSet(results);
 			return jobPairs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -1096,10 +1102,12 @@ public class Jobs {
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairCountByJob(?)}");
 			procedure.setInt(1, jobId);
 			ResultSet results = procedure.executeQuery();
-	
+			int jobPairCount=0;
 			if (results.next()) {
-				return results.getInt("jobPairCount");
+				jobPairCount = results.getInt("jobPairCount");
 			}
+			Common.closeResultSet(results);
+			return jobPairCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {

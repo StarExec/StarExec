@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
@@ -167,6 +168,20 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
+		}
+	}
+	
+	/**
+	 * Method which closes a result set
+	 * @param r The result set close
+	 */
+	protected static void closeResultSet(ResultSet r) {
+		try {
+			if(r != null) {
+				r.close();
+			}
+		} catch (Exception e){
+			log.error("Close Result set says " + e);
 		}
 	}
 }
