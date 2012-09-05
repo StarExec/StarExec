@@ -564,6 +564,7 @@ function onSpaceDrop(event, ui) {
 								switch (returnCode) {
 								case 0:	// Success							
 									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
+									$('#exploreList').jstree("refresh");
 									break;
 								case 1: // Database error
 									showMessage('error', "a database error occurred while processing your request", 5000);
@@ -635,7 +636,7 @@ function onSpaceDrop(event, ui) {
 					log('user canceled copy action');
 					$(this).dialog("close");
 				}
-			}		
+			}
 		});
 	}
 	
