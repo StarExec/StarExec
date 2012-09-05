@@ -71,12 +71,19 @@ public class Common {
 		}
 	}
 	
-	/*
+	/**
 	 * Gets information on the data pool.  Used to track down connection leak.
+	 * Returns true if not nearing max active connections
 	 */
-	public static void getDataPoolData(){
-		log.info("Data Pool has " + dataPool.getActive() + "active connections.  ");
+	public static Boolean getDataPoolData(){
+		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");
 		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
+		if (dataPool.getActive() > .8*R.MYSQL_POOL_MAX_SIZE){
+			return false;
+		}
+		else{
+			return true;
+		}
 	}
 	
 	/**

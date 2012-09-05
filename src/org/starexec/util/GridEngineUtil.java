@@ -21,6 +21,7 @@ import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.database.Common;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
 import org.starexec.data.to.Job;
@@ -298,7 +299,8 @@ public class GridEngineUtil {
 			
 			// For each id to process...
 			if (idsToProcess.size()>0){
-			log.info(idsToProcess.size() + "jobs waiting to have stats processed");}
+			log.info(idsToProcess.size() + " jobs waiting to have stats processed");}
+			if (Common.getDataPoolData()){
 			for(int id : idsToProcess) {	
 				final int safeId = id;
 				log.debug("Processing job pair " + safeId);
@@ -320,7 +322,10 @@ public class GridEngineUtil {
 					}
 				});
 			}
-			
+			}
+			else{
+				log.warn("Too many active connections - postponing job result processing");
+			}
 			if(idsToProcess != null && idsToProcess.size() > 0) {
 				log.debug(String.format("Scheduled results processing for %d job pairs", idsToProcess.size()));
 			}
