@@ -962,7 +962,7 @@ public class Jobs {
 			Common.closeResultSet(results);
 			return jobs;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);
+			log.error("getJobsForNextPageSays " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}

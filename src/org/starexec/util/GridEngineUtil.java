@@ -330,7 +330,7 @@ public class GridEngineUtil {
 				log.debug(String.format("Scheduled results processing for %d job pairs", idsToProcess.size()));
 			}
  		} catch (Exception e){
- 			log.error(e.getMessage(), e);
+ 			log.error("processResults() says " + e.getMessage(), e);
  		}
 	}
 	
