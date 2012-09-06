@@ -99,7 +99,7 @@ public class Common {
 	 */
 	protected static Connection getConnection() throws SQLException {	
 		connectionsOpened++;
-		log.info("Connections Opened = " + connectionsOpened);
+		log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
 		return dataPool.getConnection();
 	}							
 	
@@ -181,15 +181,14 @@ public class Common {
 		try {
 			if(c != null) {
 				c.close();
+				connectionsClosed++;
+				log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
 			}
 		} catch (Exception e){
 			// Do nothing
 			log.error("Safe Close says " + e);
 		}
-		finally{
-			connectionsClosed++;
-			log.info("Connections Closed = " + connectionsClosed);
-		}
+
 	}
 	
 	/**
