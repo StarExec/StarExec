@@ -38,13 +38,13 @@ import org.starexec.data.to.WorkerNode;
  */
 public class GridEngineUtil {
 	private static final Logger log = Logger.getLogger(GridEngineUtil.class);
-	
+
 	// The regex patterns used to parse SGE output
 	private static Pattern nodeKeyValPattern;
 	private static Pattern queueKeyValPattern;
 	private static Pattern queueAssocPattern;
 	private static ExecutorService threadPool = null;
-	
+
 	static {
 		// Compile the SGE output parsing patterns when this class is loaded
 		nodeKeyValPattern = Pattern.compile(R.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
@@ -52,7 +52,7 @@ public class GridEngineUtil {
 		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);		
 		threadPool = Executors.newCachedThreadPool();		
 	}
-	
+
 	/**
 	 * Shuts down the reserved threadpool this util uses.
 	 */
@@ -60,7 +60,7 @@ public class GridEngineUtil {
 		threadPool.shutdown();
 		threadPool.awaitTermination(10, TimeUnit.SECONDS);
 	}
-	
+
 	/**
 	 * Gets the queue list from SGE and adds them to the database if they don't already exist. This must
 	 * be done AFTER nodes are loaded as the queues will make associations to the nodes. This also loads
@@ -68,39 +68,39 @@ public class GridEngineUtil {
 	 */
 	public static synchronized void loadQueues() {
 		GridEngineUtil.loadQueueDetails();
-//		GridEngineUtil.loadQueueUsage();
+		//		GridEngineUtil.loadQueueUsage();
 	}
-	
+
 	/**
 	 * Loads the list of active queues on the system, loads their attributes into the database
 	 * as well as their associations to worker nodes that belong to each queue.
 	 */
 	private static void loadQueueDetails() {
 		BufferedReader queueResults = null;
-		
+
 		try {			
 			// Execute the SGE command to get the list of queues
 			queueResults = Util.executeCommand(R.QUEUE_LIST_COMMAND);
-			
+
 			if(queueResults == null) {
 				// If the command failed, return now	
 				return;
 			}
-			
+
 			// Set all queues as inactive (we will set them as active when we see them)
 			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
-			
+
 			// Read the queue names one at a time
 			String line;		
 			while((line = queueResults.readLine()) != null) {
 				String name = line;
-								
+
 				// In the database, update the attributes for the queue
 				Queues.update(name,  GridEngineUtil.getQueueDetails(name));
-				
+
 				// Set the queue as active since we just saw it
 				Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
-				
+
 				// For each of the queue's node's, add an association
 				for(WorkerNode node : GridEngineUtil.getQueueAssociations(name)) {
 					Queues.associate(name, node.getName());	
@@ -113,7 +113,7 @@ public class GridEngineUtil {
 			try { queueResults.close(); } catch (Exception e) { }
 		}
 	}
-	
+
 	/**
 	 * Grabs queue usage information from SGE and dumps it in the database. Usage is in terms of
 	 * job slots available, used, reserved and total.
@@ -122,17 +122,17 @@ public class GridEngineUtil {
 		try {
 			// Call SGE to get details about the usage of all queues
 			BufferedReader buff = Util.executeCommand(R.QUEUE_USAGE_COMMAND);
-			
+
 			// Read line twice to skip past the header info returned
 			buff.readLine();
 			buff.readLine();
-						
+
 			String line = "";
 			// For each queue output...
 			while((line = buff.readLine()) != null) {
 				// The output is separated by white spaces, split on whitespace to get the data in array form
 				String[] data = line.split("\\s+");
-				
+
 				// Create a new queue and pick out the data we want from the output (0 = name, 2-5 = usage stats)
 				Queue q = new Queue();
 				q.setName(data[0]);
@@ -140,7 +140,7 @@ public class GridEngineUtil {
 				q.setSlotsReserved(Integer.parseInt(data[3]));
 				q.setSlotsAvailable(Integer.parseInt(data[4]));
 				q.setSlotsTotal(Integer.parseInt(data[5]));
-				
+
 				// Update the database with the new usage stats
 				Queues.updateUsage(q);
 			}	
@@ -149,7 +149,7 @@ public class GridEngineUtil {
 			log.warn(e.getMessage(), e);
 		}
 	}
-	
+
 	/**
 	 * Gets all of the worker nodes that belong to a queue 
 	 * @param name The name of the queue to find worker nodes for
@@ -158,7 +158,7 @@ public class GridEngineUtil {
 	public static List<WorkerNode> getQueueAssociations(String name) {
 		// Create the list of nodes that will be returned		
 		List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-		
+
 		// Call SGE to get details for the given node (the child worker nodes are contained in the details output)
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
@@ -171,7 +171,7 @@ public class GridEngineUtil {
 		}
 		// Parse the output from the SGE call to get the child worker nodes
 		java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
-		
+
 		// For each match...
 		while(matcher.find()) {
 			// Parse out the worker node name from the regex parser and add it to the return list
@@ -183,7 +183,7 @@ public class GridEngineUtil {
 
 		return nodes;
 	}
-	
+
 	/**
 	 * Calls SGE to get details about the given queue. 
 	 * @param name The name of the queue to get details about
@@ -192,7 +192,7 @@ public class GridEngineUtil {
 	public static HashMap<String, String> getQueueDetails(String name) {
 		// Make the results hashmap that will be returned		
 		HashMap<String, String> details = new HashMap<String, String>();
-		
+
 		// Call SGE to get details for the given node
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
@@ -205,38 +205,38 @@ public class GridEngineUtil {
 		}
 		// Parse the output from the SGE call to get the key/value pairs for the node
 		java.util.regex.Matcher matcher = queueKeyValPattern.matcher(results);
-		
+
 		// For each match...
 		while(matcher.find()) {
 			// Split apart the key from the value
 			String[] keyVal = matcher.group().split("\\s+");
-			
+
 			// Add the results to the details hashmap
 			details.put(keyVal[0], keyVal[1]);
 		}
-		
+
 		return details;
 	}	
-	
+
 	/**
 	 * Gets the worker nodes from SGE and adds them to the database if they don't already exist. This must be done
 	 * BEFORE queues have been loaded as the queues will make associations to the nodes.
 	 */
 	public static synchronized void loadWorkerNodes() {
 		BufferedReader nodeResults = null;
-		
+
 		try {			
 			// Execute the SGE command to get the node list
 			nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
-			
+
 			if(nodeResults == null) {
 				// If the command failed, return now				
 				return;
 			}
-			
+
 			// Set all nodes as inactive (we will update them to active as we see them)
 			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
-			
+
 			// Read the nodes one at a time
 			String line;		
 			while((line = nodeResults.readLine()) != null) {
@@ -253,7 +253,7 @@ public class GridEngineUtil {
 			try { nodeResults.close(); } catch (Exception e) { }
 		}
 	}
-	
+
 	/**
 	 * Calls SGE to get details about the given node. 
 	 * @param name The name of the node to get details about
@@ -262,7 +262,7 @@ public class GridEngineUtil {
 	public static HashMap<String, String> getNodeDetails(String name) {
 		// Make the results hashmap that will be returned		
 		HashMap<String, String> details = new HashMap<String, String>();
-		
+
 		// Call SGE to get details for the given node
 		BufferedReader reader = Util.executeCommand(R.NODE_DETAILS_COMMAND + name);
 		String results = Util.bufferToString(reader);
@@ -272,22 +272,22 @@ public class GridEngineUtil {
 		catch (Exception e) {
 			log.warn("get Node Details says " + e.getMessage(), e);
 		}
-		
+
 		// Parse the output from the SGE call to get the key/value pairs for the node
 		java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(results);
-		
+
 		// For each match...
 		while(matcher.find()) {
 			// Split apart the key from the value
 			String[] keyVal = matcher.group().split("=");
-			
+
 			// Add the results to the details hashmap
 			details.put(keyVal[0], keyVal[1]);
 		}
-		
+
 		return details;
 	}	
-	
+
 	/**
 	 * Finds all starexec jobs that are waiting to have their statistics processed
 	 * and pulls the statistics from the grid engine into the database
@@ -296,44 +296,46 @@ public class GridEngineUtil {
 		try {
 			// First get the SGE ids of all the jobs that need their statistics processed
 			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
-			
+
 			// For each id to process...
 			if (idsToProcess.size()>0){
-			log.info(idsToProcess.size() + " jobs waiting to have stats processed");}
-			if (Common.getDataPoolData()){
-			for(int id : idsToProcess) {	
-				final int safeId = id;
-				log.debug("Processing job pair " + safeId);
-				
-				// Execute the processing for this id on a thread from the pool
-				threadPool.execute(new Runnable() {					
-					@Override
-					public void run() {
-						log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
+				log.info(idsToProcess.size() + " jobs waiting to have stats processed");}
 
-						// Process statistics and attributes
-						boolean success = GridEngineUtil.processStatistics(safeId);
-						log.info("Statistic processing success for " + safeId + " = " + success);
-						success = success && GridEngineUtil.processAttributes(safeId);	
-						log.info("Statistic AND Attribute processing success for " + safeId + " = " + success);
-						Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
-						
-						log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
-					}
-				});
+			for(int id : idsToProcess) {	
+				if (Common.getDataPoolData()){
+					final int safeId = id;
+					log.debug("Processing job pair " + safeId);
+
+					// Execute the processing for this id on a thread from the pool
+					threadPool.execute(new Runnable() {					
+						@Override
+						public void run() {
+							log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
+
+							// Process statistics and attributes
+							boolean success = GridEngineUtil.processStatistics(safeId);
+							log.info("Statistic processing success for " + safeId + " = " + success);
+							success = success && GridEngineUtil.processAttributes(safeId);	
+							log.info("Statistic AND Attribute processing success for " + safeId + " = " + success);
+							Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
+
+							log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
+						}
+					});
+				}
+				else{
+					log.warn("Too many active connections - postponing job result processing for job pair " + id);
+				}
 			}
-			}
-			else{
-				log.warn("Too many active connections - postponing job result processing");
-			}
+
 			if(idsToProcess != null && idsToProcess.size() > 0) {
 				log.debug(String.format("Scheduled results processing for %d job pairs", idsToProcess.size()));
 			}
- 		} catch (Exception e){
- 			log.error("processResults() says " + e.getMessage(), e);
- 		}
+		} catch (Exception e){
+			log.error("processResults() says " + e.getMessage(), e);
+		}
 	}
-	
+
 	/**
 	 * Pulls the statistics from the grid engine and places them into the database
 	 * @param sgeId The sge id of the pair to process statistics for
@@ -346,7 +348,7 @@ public class GridEngineUtil {
 			// Build a job pair based on the statistics
 			log.info("Returned from getting SgeJobStats for sgeId = " + sgeId+".  Now writing stats to pair");
 			JobPair pair = GridEngineUtil.rawStatsToPair(sgeId, jobStats);
-			
+
 			// Update the database with the pair
 			log.info("About to add pair to db for sgeId = " + sgeId);
 			Jobs.updatePairStatistics(pair);
@@ -355,10 +357,10 @@ public class GridEngineUtil {
 		} catch (Exception e) {
 			log.error("processStatistics says " + e.getMessage(), e);			
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Runs the post processor on the output of the job pair and stores the
 	 * resulting attributes in the database
@@ -370,20 +372,20 @@ public class GridEngineUtil {
 		BufferedReader reader = null;		
 		JobPair pair = Jobs.getSGEPairDetailed(sgeId);
 		Job job = Jobs.getDetailed(pair.getJobId());
-		
+
 		try {
 			log.info("getting post processor for job " + job.getId() +", sgeId = " +sgeId);
 			Processor processor = job.getPostProcessor();
-			
+
 			if(processor != null) {
 				log.info("got post processor " + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
 				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName());
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
 				String[] command = new String[2];
-			    command[0] = processor.getFilePath();
-			    command[1] = stdOut.getAbsolutePath();
-				
+				command[0] = processor.getFilePath();
+				command[1] = stdOut.getAbsolutePath();
+
 				log.info("Command to execute = " + command[0] +" " + command[1]);
 				reader = Util.executeCommand(command);			  
 				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null) + ". Reader is ready = " + (reader.ready()));
@@ -400,7 +402,7 @@ public class GridEngineUtil {
 			{
 				log.info("post processor for job " + job.getId() +", sgeId = " +sgeId + " was returned null");
 			}
-			
+
 			return true;
 		} catch (Exception e) {
 			log.error("processAttributes says " + e.getMessage(), e);
@@ -409,10 +411,10 @@ public class GridEngineUtil {
 				try { reader.close(); log.info("Reader closed for sgeId " + sgeId);} catch(Exception e) {log.error("processAttributes failed at closing reader: " + e.getMessage(), e);}
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Populates a job pair object based on the raw statistics from the grid engine
 	 * @param sgeId The sge id of the pair to convert
@@ -444,7 +446,7 @@ public class GridEngineUtil {
 		log.info("Stats written to job pair for sgeId " + sgeId);
 		return jp;		
 	}
-	
+
 	/**
 	 * Converts a string which is the number of seconds since Jan. 1st 1970 to a mysql timestamp
 	 * @param epochTime The string (which is parsed to a long) that is the unix epoch
@@ -459,7 +461,7 @@ public class GridEngineUtil {
 		Timestamp t = new Timestamp(unixTime * 1000);			
 		return t;
 	}
-	
+
 	/**
 	 * Retrieves an array of SGE job statistics
 	 * @param sgeId The id of the job to get statistics for
@@ -474,39 +476,39 @@ public class GridEngineUtil {
 			Pattern statsPattern = Pattern.compile(String.format(R.STATS_ENTRY_PATTERN, sgeId), Pattern.CASE_INSENSITIVE);
 			int hackCount = 60;
 			while (hackCount > 0) {
-			// Open a buffered reader for the sge accounting file to read line by line
-			fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
-			dis = new DataInputStream(fis);
-			br = new BufferedReader(new InputStreamReader(dis));
-			log.debug("Starting search for " + sgeId + ". Attempt # " + (61 - hackCount));
-			//log.info("SGE ACCOUNTING FILE is at " + R.SGE_ACCOUNTING_FILE);
-			// For each line in the sge accounting file 
-			String line = null;
-			while ((line = br.readLine()) != null)   {	
-				// If this is the stats entry we're looking for...
-				log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
-				if(statsPattern.matcher(line).matches()) {
-					// Split it by colons (the delimiter sge uses) and return it
-					log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
-					return line.split(":");
+				// Open a buffered reader for the sge accounting file to read line by line
+				fis = new FileInputStream(R.SGE_ACCOUNTING_FILE);
+				dis = new DataInputStream(fis);
+				br = new BufferedReader(new InputStreamReader(dis));
+				log.debug("Starting search for " + sgeId + ". Attempt # " + (61 - hackCount));
+				//log.info("SGE ACCOUNTING FILE is at " + R.SGE_ACCOUNTING_FILE);
+				// For each line in the sge accounting file 
+				String line = null;
+				while ((line = br.readLine()) != null)   {	
+					// If this is the stats entry we're looking for...
+					log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
+					if(statsPattern.matcher(line).matches()) {
+						// Split it by colons (the delimiter sge uses) and return it
+						log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
+						return line.split(":");
+					}
+				}
+
+				dis.close();
+				fis.close();
+				br.close();	
+				hackCount--;
+				//This method can be called before SGE writes to the accounting file
+				if (hackCount > 0)
+				{
+					try{
+						Thread.sleep(1000);
+					}
+					catch(Exception e){
+
+					}
 				}
 			}
-			
-			dis.close();
-			fis.close();
-			br.close();	
-			hackCount--;
-			//This method can be called before SGE writes to the accounting file
-			if (hackCount > 0)
-			{
-				try{
-					Thread.sleep(1000);
-				}
-				catch(Exception e){
-					
-				}
-			}
-		}
 		} catch (Exception e) {
 			log.error("getSgeJobStats says " + e.getMessage(), e);
 		} finally {
@@ -517,7 +519,7 @@ public class GridEngineUtil {
 		}		
 		throw new Exception("Job statistics for sge job #" + sgeId + " could not be found");
 	}
-	
+
 	/**
 	 * Checks to see if the grid engine is available by attempting to load
 	 * a session (this forces java to try to load the sge native libraries)
@@ -527,12 +529,12 @@ public class GridEngineUtil {
 		try {
 			// Try to load the class, if it does not exist this will cause an exception instead of an error			
 			Class.forName("com.sun.grid.drmaa.SessionImpl");
-			
+
 			// Get a dummy session to force the class and native libraries to be loaded
 			Session s = SessionFactory.getFactory().getSession();
 			s.init("");
 			s.exit();
-			
+
 			// If we got here, the libraries loaded successfully!
 			return true;
 		} catch(Error e) {
@@ -542,10 +544,10 @@ public class GridEngineUtil {
 			// Don't log, expected if the engine isn't available
 			//log.error("Grid Engine isAvailable Exeption - " + e.getMessage());
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Finds the standard output of a job pair and returns it as a string. Null
 	 * is returned if the output doesn't exist or cannot be found
@@ -557,7 +559,7 @@ public class GridEngineUtil {
 		pair = Jobs.getPairDetailed(pair.getId());
 		return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName(), limit);
 	}
-	
+
 	/**
 	 * Finds the standard output of a job pair and returns it as a string. Null
 	 * is returned if the output doesn't exist or cannot be found
@@ -571,7 +573,7 @@ public class GridEngineUtil {
 		File stdoutFile = GridEngineUtil.getStdOutFile(userId, jobId, solver_name, config_name, bench_name);		
 		return Util.readFileLimited(stdoutFile, limit);
 	}
-	
+
 	/**
 	 * Finds the standard output of a job pair and returns its file.
 	 * @param userId The id of the user that submitted the job
@@ -582,10 +584,10 @@ public class GridEngineUtil {
 	public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {			
 		String stdoutPath = String.format("%s/%d/%d/%s_%s/%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name, bench_name);
 		log.info("The stdoutPath is: " + stdoutPath);
-		
+
 		return (new File(stdoutPath));	
 	}
-	
+
 	/**
 	 * Returns the log of a job pair by reading
 	 * in the physical log file into a string.
@@ -595,7 +597,7 @@ public class GridEngineUtil {
 	public static String getJobLog(JobPair pair) {
 		return GridEngineUtil.getJobLog(pair.getId(), pair.getGridEngineId());
 	}
-	
+
 	/**
 	 * Returns the log of a job pair by reading
 	 * in the physical log file into a string.
@@ -609,14 +611,14 @@ public class GridEngineUtil {
 			// in the format job_1.bash.o2 where 1 is the pair id and 2 is the sge id
 			String logPath = String.format("%s/job_%d.bash.o%d", R.JOB_LOG_DIR, pairId, sgeId);			
 			File logFile = new File(logPath);
-			
+
 			if(logFile.exists()) {
 				return FileUtils.readFileToString(logFile);
 			}
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
+
 		return null;
 	}
 }
