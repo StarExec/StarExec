@@ -490,7 +490,7 @@ public class GridEngineUtil {
 				String line = null;
 				while ((line = br.readLine()) != null)   {	
 					// If this is the stats entry we're looking for...
-					log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
+					log.info("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
 					if(statsPattern.matcher(line).matches()) {
 						// Split it by colons (the delimiter sge uses) and return it
 						log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
@@ -509,7 +509,7 @@ public class GridEngineUtil {
 						Thread.sleep(1000);
 					}
 					catch(Exception e){
-
+						log.error("getSgeJobStats on sgeId " + sgeId + " says ");
 					}
 				}
 			}
