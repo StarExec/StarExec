@@ -98,6 +98,7 @@ public class Common {
 	 * @author Tyler Jensen
 	 */
 	protected static Connection getConnection() throws SQLException {	
+		connectionsOpened++;
 		log.info("Connections Opened = " + connectionsOpened);
 		return dataPool.getConnection();
 	}							
@@ -186,6 +187,7 @@ public class Common {
 			log.error("Safe Close says " + e);
 		}
 		finally{
+			connectionsClosed++;
 			log.info("Connections Closed = " + connectionsClosed);
 		}
 	}
