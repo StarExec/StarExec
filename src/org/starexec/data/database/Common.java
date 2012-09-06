@@ -137,7 +137,7 @@ public class Common {
 	}
 	
 	/**
-	 * Ends a transaction by commiting any changes and re-enabling auto-commit
+	 * Ends a transaction by committing any changes and re-enabling auto-commit
 	 */
 	protected static void endTransaction(Connection con){
 		try {
