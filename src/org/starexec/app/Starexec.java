@@ -106,9 +106,9 @@ public class Starexec implements ServletContextListener {
 			@Override
 			public void run() {
 				if(GridEngineUtil.isAvailable()) {
-					//GridEngineUtil.processResults();
-					log.info("Skipping ALL Results Processing...");
-					Common.getDataPoolData();
+					GridEngineUtil.processResults();
+					//log.info("Skipping ALL Results Processing...");
+					//Common.getDataPoolData();
 				}
 			}
 		};		
