@@ -296,11 +296,13 @@ public class GridEngineUtil {
 		try {
 			// First get the SGE ids of all the jobs that need their statistics processed
 			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
-
+			int numLeft = idsToProcess.size();
 			// For each id to process...
 			if (idsToProcess.size()>0){
-				log.info(idsToProcess.size() + " jobs waiting to have stats processed");}
-
+				log.info(idsToProcess.size() + " jobs waiting to have stats processed");
+				
+			}
+				
 			for(int id : idsToProcess) {	
 				if (Common.getDataPoolData()){
 					final int safeId = id;
@@ -322,9 +324,11 @@ public class GridEngineUtil {
 							log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
 						}
 					});
+					numLeft--;
 				}
 				else{
-					log.warn("Too many active connections - postponing job result processing for job pair " + id);
+					log.warn("Too many active connections - postponing job result processing for " + numLeft + " remaining job pairs");
+					break;
 				}
 			}
 
