@@ -1078,7 +1078,7 @@ public class Jobs {
 			Common.closeResultSet(results);
 			return jobPairs;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);
+			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}

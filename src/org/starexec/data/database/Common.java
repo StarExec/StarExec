@@ -18,7 +18,12 @@ import org.starexec.util.Util;
  */
 public class Common {	
 	private static final Logger log = Logger.getLogger(Common.class);
-	private static DataSource dataPool = null;		public Common() {
+	private static DataSource dataPool = null;		
+	
+	protected static Integer connectionsOpened = 0;
+	protected static Integer connectionsClosed = 0;
+	
+	public Common() {
 		// TODO Auto-generated constructor stub
 	}
 	/**
@@ -77,7 +82,9 @@ public class Common {
 	 */
 	public static Boolean getDataPoolData(){
 		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");
+		if (dataPool.getWaitCount()>0){
 		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
+		}
 		if (dataPool.getActive() > .8*R.MYSQL_POOL_MAX_SIZE){
 			return false;
 		}
@@ -90,7 +97,8 @@ public class Common {
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */
-	protected static Connection getConnection() throws SQLException {		
+	protected static Connection getConnection() throws SQLException {	
+		log.info("Connections Opened = " + connectionsOpened);
 		return dataPool.getConnection();
 	}							
 	
@@ -175,6 +183,10 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
+			log.error("Safe Close says " + e);
+		}
+		finally{
+			log.info("Connections Closed = " + connectionsClosed);
 		}
 	}
 	
