@@ -82,8 +82,8 @@ public class Status {
 		EXCEED_RUNTIME(14),
 		EXCEED_CPU_MEM(15),
 		EXCEED_FILE_WRITE(16),
-		ERROR_GENERAL(17);
-		
+		ERROR_GENERAL(17),
+		STATUS_PROCESSING_RESULTS(18);
 		private int val;
 		
 		private StatusCode(int val) {

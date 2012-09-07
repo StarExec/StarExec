@@ -317,7 +317,7 @@ public class GridEngineUtil {
 					//	@Override
 					//	public void run() {
 							log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
-
+							Jobs.setSGEPairStatus(safeId, StatusCode.STATUS_PROCESSING_RESULTS.getVal());
 							// Process statistics and attributes
 							boolean success = GridEngineUtil.processStatistics(safeId);
 							//boolean success = true;
