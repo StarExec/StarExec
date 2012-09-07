@@ -295,28 +295,32 @@ public class GridEngineUtil {
 	public static synchronized void processResults() {
 		try {
 			// First get the SGE ids of all the jobs that need their statistics processed
-			List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
-			int numLeft = idsToProcess.size();
+			final List<Integer> idsToProcess = Jobs.getSgeIdsByStatus(StatusCode.STATUS_WAIT_RESULTS.getVal());					
+			//int numLeft = idsToProcess.size();
 			// For each id to process...
 			if (idsToProcess.size()>0){
 				log.info(idsToProcess.size() + " jobs waiting to have stats processed");
 				
 			}
-				
+			
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run() {
 			for(int id : idsToProcess) {	
+				int numLeft = idsToProcess.size();
 				if (Common.getDataPoolData()){
 					final int safeId = id;
 					log.debug("Processing job pair " + safeId);
 
 					// Execute the processing for this id on a thread from the pool
-					threadPool.execute(new Runnable() {					
-						@Override
-						public void run() {
+					//threadPool.execute(new Runnable() {					
+					//	@Override
+					//	public void run() {
 							log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
 
 							// Process statistics and attributes
-							//boolean success = GridEngineUtil.processStatistics(safeId);
-							boolean success = true;
+							boolean success = GridEngineUtil.processStatistics(safeId);
+							//boolean success = true;
 							log.info("Statistic processing success for " + safeId + " = " + success);
 							
 							success = success && GridEngineUtil.processAttributes(safeId);	
@@ -324,8 +328,8 @@ public class GridEngineUtil {
 							Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
 
 							log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
-						}
-					});
+					//	}
+					//});
 					numLeft--;
 				}
 				else{
@@ -333,10 +337,11 @@ public class GridEngineUtil {
 					break;
 				}
 			}
-
+				}});	
 			if(idsToProcess != null && idsToProcess.size() > 0) {
 				log.debug(String.format("Scheduled results processing for %d job pairs", idsToProcess.size()));
 			}
+		
 		} catch (Exception e){
 			log.error("processResults() says " + e.getMessage(), e);
 		}
