@@ -634,7 +634,7 @@ public class Jobs {
 	 */
 	protected static JobPair getSGEPairDetailed(Connection con, int sgeId) throws Exception {	
 		log.info("Have connection and now getting sgeDetailed pair info for sgeId =  " + sgeId);
-		CallableStatement procedure = con.prepareCall("{CALL GetJobPairBySGE(?)}");
+		CallableStatement procedure = con.prepareCall("{CALL GetJobPairBySgeId(?)}");
 		procedure.setInt(1, sgeId);					
 		ResultSet results = procedure.executeQuery();								
 		if(results.next()){
