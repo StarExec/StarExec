@@ -311,6 +311,7 @@ public class Jobs {
 	 * @author Tyler Jensen
 	 */
 	public static Job getDetailed(int jobId) {
+		log.info("getting detailed info for job " + jobId);
 		Connection con = null;			
 		
 		try {			
@@ -608,7 +609,8 @@ public class Jobs {
 	 * @author Tyler Jensen
 	 */
 	public static JobPair getSGEPairDetailed(int sgeId) {
-		Connection con = null;			
+		log.info("getting SGEPairDetailed for sgeId = " + sgeId);
+		Connection con = null;			 
 		
 		try {			
 			con = Common.getConnection();		
