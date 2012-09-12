@@ -413,7 +413,7 @@ public class GridEngineUtil {
 			{
 				log.info("post processor for job " + job.getId() +", sgeId = " +sgeId + " was returned null");
 			}
-
+			log.info("returning true for processing attributes for sgeId " + sgeId);
 			return true;
 		} catch (Exception e) {
 			log.error("processAttributes says " + e.getMessage(), e);
@@ -422,7 +422,7 @@ public class GridEngineUtil {
 				try { reader.close(); log.info("Reader closed for sgeId " + sgeId);} catch(Exception e) {log.error("processAttributes failed at closing reader: " + e.getMessage(), e);}
 			}
 		}
-
+		log.warn("returning false for processing attributes for sgeId " + sgeId);
 		return false;
 	}
 
