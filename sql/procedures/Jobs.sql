@@ -192,8 +192,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 -- ordering results by a column, and sorting results in ASC or DESC order.
 -- Gets jobs across all spaces for one user.  
 -- Author: Ben and Ruoyu
-DROP PROCEDURE IF EXISTS GetNextPageOfMyJobs;
-CREATE PROCEDURE GetNextPageOfMyJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+DROP PROCEDURE IF EXISTS GetNextPageOfUserJobs;
+CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
 	BEGIN
 		-- If _query is empty, get next page of Jobs without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
@@ -727,6 +727,16 @@ CREATE PROCEDURE GetUserJobsById(IN _userId INT)
 		FROM jobs
 		WHERE user_id=_userId
 		ORDER BY created DESC;
+	END //
+
+-- Get the total count of the jobs belong to a specific user
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS GetJobCountByUser;
+CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
+	BEGIN
+		SELECT COUNT(*) AS jobCount
+		FROM jobs
+		WHERE user_id = _userId;
 	END //
 	
 DELIMITER ; -- This should always be at the end of this file

@@ -1781,6 +1781,7 @@ public class RESTServices {
 	 *         3: User doesn't have the copy permission.
 	 *         4: User can't see the subspaces they are copying.
 	 *         5: The space which is copied from is locked.
+	 * @author Ruoyu Zhang
 	 */
 	@POST
 	@Path("/spaces/{spaceId}/copySpace")
@@ -1833,17 +1834,42 @@ public class RESTServices {
 		if (!copyHierarchy) {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
-				if ( newSpaceId == 0){
-					gson.toJson(1);
+				System.out.println("The Id of the new space is");
+				System.out.println(newSpaceId);
+				System.out.println("\n");
+				
+				if (newSpaceId == 0){
+					return gson.toJson(1);
 				}
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
-				if (RESTHelpers.copyHierarchy(id, spaceId, requestUserId) == 0){
-					gson.toJson(1);
+				int newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
+				if (newSpaceId == 0){
+					return gson.toJson(1);
 				}
 			}
 		}
 		return gson.toJson(0);
+	}
+	
+	/**
+	 * Get the paginated result of the jobs belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of jobs if successful
+	 * 		   1: The get job procedure fails.
+	 * @author Ruoyu Zhang
+	 */
+	@POST
+	@Path("/users/{id}/jobs/pagination")
+	@Produces("application/json")	
+	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextPageOfUserJobs(usrId, request);
+		
+		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
 }

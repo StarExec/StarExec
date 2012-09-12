@@ -103,3 +103,14 @@ fieldset {
 	float: right;
 	margin-right: 10px;
 }
+
+#usrJobsTable p.stat {
+	margin: auto;
+	text-align: center;
+	width: 80px;
+	height: 30px;
+	padding-top: 10px;
+	color: #111;
+	display: block;
+	border: 1px solid #111;
+}

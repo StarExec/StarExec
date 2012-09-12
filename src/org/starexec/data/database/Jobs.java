@@ -613,7 +613,7 @@ public class Jobs {
 		Connection con = null;			 
 		
 		try {			
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			return Jobs.getSGEPairDetailed(con, sgeId);		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1122,5 +1122,125 @@ public class Jobs {
 		}
 		
 		return 0;		
+	}
+	
+	/**
+	 * Get the total count of the jobs belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return The count of the jobs
+	 * @author Ruoyu Zhang
+	 */
+	public static int getJobCountByUser(int userId) {
+		Connection con = null;
+	
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetJobCountByUser(?)}");
+			procedure.setInt(1, userId);
+			ResultSet results = procedure.executeQuery();
+	
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return 0;		
+	}
+	
+	/**
+	 * Get next page of the jobs belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the querry start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Jobs belong to the user
+	 * @author Ruoyu Zhang
+	 */
+	public static List<Job> getJobsByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfUserJobs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, userId);
+			procedure.setString(6, searchQuery);
+				
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+				
+				// Grab the relevant job pair statistics; this prevents a secondary set of queries
+				// to the database in RESTHelpers.java
+				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
+				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
+				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
+				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
+				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
+				
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));
+				j.setLiteJobPairStats(liteJobPairStats);
+				jobs.add(j);		
+			}
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get all the jobs belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Jobs belong to the user
+	 */
+	public static List<Job> getByUserId(int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetUserJobsById(?)}");
+			procedure.setInt(1, userId);					
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));					
+				jobs.add(j);				
+			}			
+						
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
 	}
 }
