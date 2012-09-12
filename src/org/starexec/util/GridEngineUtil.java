@@ -383,7 +383,7 @@ public class GridEngineUtil {
 		BufferedReader reader = null;		
 		JobPair pair = Jobs.getSGEPairDetailed(sgeId);
 		Job job = Jobs.getDetailed(pair.getJobId());
-
+		log.info("successfully retrieved pair id " + pair.getId()  + " and job id " + job.getId() + " from sgeId " + sgeId);
 		try {
 			log.info("getting post processor for job " + job.getId() +", sgeId = " +sgeId);
 			Processor processor = job.getPostProcessor();
