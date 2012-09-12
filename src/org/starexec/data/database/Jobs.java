@@ -653,7 +653,8 @@ public class Jobs {
 			Common.closeResultSet(results);
 			return jp;
 		}			
-			
+		log.info("returning null for sgeDetailed, must have have been no results for GetJobPairBySGE with sgeId = " + sgeId);	
+		
 		return null;		
 	}
 	
@@ -788,6 +789,7 @@ public class Jobs {
 	 * @return A job pair object populated with data from the result set
 	 */
 	private static JobPair resultToPair(ResultSet result) throws Exception {
+		
 		JobPair jp = new JobPair();
 
 		jp.setId(result.getInt("id"));
@@ -814,7 +816,7 @@ public class Jobs {
 		jp.setBlockOutput(result.getDouble("block_output"));
 		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
-
+		log.info("getting job pair from result set for sgeId " + jp.getGridEngineId());
 		return jp;
 	}
 	
