@@ -495,12 +495,14 @@ public class GridEngineUtil {
 				//log.info("SGE ACCOUNTING FILE is at " + R.SGE_ACCOUNTING_FILE);
 				// For each line in the sge accounting file 
 				String line = null;
+				int lineNumber = 0;
 				while ((line = br.readLine()) != null)   {	
 					// If this is the stats entry we're looking for...
+					lineNumber++;
 					log.debug("Continuing search for " + sgeId + ". Attempt # " + (61 - hackCount) +". line is really ===" + line + "===");
 					if(statsPattern.matcher(line).matches()) {
 						// Split it by colons (the delimiter sge uses) and return it
-						log.info("Pattern found for " + sgeId + " on attempt # " + (61 - hackCount));
+						log.info("Pattern found on line " + lineNumber + " for " + sgeId + " on attempt # " + (61 - hackCount));
 						return line.split(":");
 					}
 				}
