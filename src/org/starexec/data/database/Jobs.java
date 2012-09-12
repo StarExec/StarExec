@@ -632,7 +632,8 @@ public class Jobs {
 	 * @return The job pair object with the given id.
 	 * @author Tyler Jensen
 	 */
-	protected static JobPair getSGEPairDetailed(Connection con, int sgeId) throws Exception {			
+	protected static JobPair getSGEPairDetailed(Connection con, int sgeId) throws Exception {	
+		log.info("Have connection and now getting sgeDetailed pair info for sgeId =  " + sgeId);
 		CallableStatement procedure = con.prepareCall("{CALL GetJobPairBySGE(?)}");
 		procedure.setInt(1, sgeId);					
 		ResultSet results = procedure.executeQuery();
