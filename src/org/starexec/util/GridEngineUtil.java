@@ -319,11 +319,11 @@ public class GridEngineUtil {
 							log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
 							//Jobs.setSGEPairStatus(safeId, StatusCode.STATUS_PROCESSING_RESULTS.getVal());
 							// Process statistics and attributes
-							boolean success = GridEngineUtil.processStatistics(safeId);
-							//boolean success = true;
+							//boolean success = GridEngineUtil.processStatistics(safeId);
+							boolean success = true;
 							log.info("Statistic processing success for " + safeId + " = " + success);
 							
-							success = success && GridEngineUtil.processAttributes(safeId);	
+							//success = success && GridEngineUtil.processAttributes(safeId);	
 							log.info("Statistic AND Attribute processing success for " + safeId + " = " + success);
 							Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
 
