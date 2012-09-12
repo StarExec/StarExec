@@ -636,8 +636,7 @@ public class Jobs {
 		log.info("Have connection and now getting sgeDetailed pair info for sgeId =  " + sgeId);
 		CallableStatement procedure = con.prepareCall("{CALL GetJobPairBySGE(?)}");
 		procedure.setInt(1, sgeId);					
-		ResultSet results = procedure.executeQuery();
-										
+		ResultSet results = procedure.executeQuery();								
 		if(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
 			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
@@ -650,11 +649,14 @@ public class Jobs {
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
+			log.info("about to close result set for sgeId " + sgeId);
 			Common.closeResultSet(results);
 			return jp;
-		}			
-		log.info("returning null for sgeDetailed, must have have been no results for GetJobPairBySGE with sgeId = " + sgeId);	
-		
+		}
+		else
+		{
+			log.info("returning null for sgeDetailed, must have have been no results for GetJobPairBySGE with sgeId = " + sgeId);	
+		}
 		return null;		
 	}
 	
