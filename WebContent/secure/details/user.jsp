@@ -4,13 +4,13 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		int id = Integer.parseInt(request.getParameter("id"));			
-		User user = Users.get(id);
-		String userFullName = user.getFullName();
-		List<Job> jList = Jobs.getByUserId(user.getId());
+		int id = Integer.parseInt(request.getParameter("id"));	
+		User t_user = Users.get(id);
+		String userFullName = t_user.getFullName();
+		List<Job> jList = Jobs.getByUserId(t_user.getId());
 		
-		if(user != null) {
-			request.setAttribute("usr", user);
+		if(t_user != null) {
+			request.setAttribute("t_user", t_user);
 			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
@@ -30,34 +30,34 @@
 	}
 %>
 
-<star:template title="${usr.fullName}" js="details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared">
+<star:template title="${t_user.fullName}" js="details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared">
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>				
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${t_user.id == t_user.id}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
 		<table id="infoTablep">
 		<tr>
 			<td id="picSection">
-				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${user.id}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${user.id}&type=uorg"><br>
+				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${t_user.id}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${t_user.id}&type=uorg"><br>
 			</td>
 			<td id="userDetail">
 			<table id="personal" class="shaded">
 				<tr>
 					<td>e-mail address</td>			
-					<td><a href="mailto:${usr.email}">${usr.email}<img class="extLink" src="/starexec/images/external.png"/></a></td>
+					<td><a href="mailto:${t_user.email}">${t_user.email}<img class="extLink" src="/starexec/images/external.png"/></a></td>
 				</tr>				
 				<tr>
 					<td>institution</td>			
-					<td>${usr.institution}</td>
+					<td>${t_user.institution}</td>
 				</tr>
 				<tr>
 					<td>member since</td>			
-					<td><fmt:formatDate pattern="MMM dd yyyy" value="${usr.createDate}" /></td>
+					<td><fmt:formatDate pattern="MMM dd yyyy" value="${t_user.createDate}" /></td>
 				</tr>
 				<tr>
 					<td>member type</td>			
-					<td>${usr.role}</td>
+					<td>${t_user.role}</td>
 				</tr>
 				<c:if test="${not empty sites}">			
 				<tr>
@@ -86,7 +86,7 @@
 	</fieldset>
 	<fieldset id="jobField">
 		<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
-		<table id="usrJobsTable" uid=${usr.id}>
+		<table id="usrJobsTable" uid=${t_user.id}>
 			<thead>
 				<tr>
 					<th>name</th>
