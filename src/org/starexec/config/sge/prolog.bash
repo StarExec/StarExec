@@ -29,6 +29,9 @@
 # Path to local workspace for each node in cluster.
 WORKING_DIR='/export/starexec/sandbox'
 
+# Path to Olivier Roussel's runSolver
+RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
+
 # Path to where the solver will be copied
 LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
@@ -107,6 +110,11 @@ function copyDependencies {
 	log "copying solver ($SOLVER_NAME) to execution host..."
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
 	log "solver copy complete"
+
+	log "copying runSolver to execution host..."
+	cp "$RUNSOLVER_PATH" "$BIN_PATH"
+	log "runsolver copy complete"
+	ls -l "$BIN_PATH"
 
 	log "copying benchmark (${BENCH_PATH##*/}) to execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"

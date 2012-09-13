@@ -91,7 +91,7 @@ function copyOutput {
 	#log "Bench Name = $BENCH_NAME"
 	#log "target = $RZ_OUT_DIR/$BENCH_NAME"
 	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
-
+	ls -l "$STAREXEC_OUT_DIR"
 	log "job output copy complete"
 
 	return $?	
