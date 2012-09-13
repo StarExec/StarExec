@@ -55,7 +55,7 @@ NODE_RUNSOLVER_PATH=/export/starexec/sandbox/solver/bin/runsolver
 
 # Execute the solver on the benchmark and send all output to that file
 $NODE_SOLVER_PATH $NODE_BENCH_PATH &> $STAREXEC_OUT_DIR/stdout.txt
-#$NODE_RUNSOLVER_PATH --timestamp -w watcher.out $NODE_SOLVER_PATH $NODE_BENCH_PATH -o $STAREXEC_OUT_DIR/stdout.txt
+# $NODE_RUNSOLVER_PATH --timestamp -w watcher.out $NODE_SOLVER_PATH $NODE_BENCH_PATH -o $STAREXEC_OUT_DIR/stdout.txt
 
 #==========================================================================
 # Complete (epilog will take care or reporting and data saving) 
