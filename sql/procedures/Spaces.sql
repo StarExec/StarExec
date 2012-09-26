@@ -360,12 +360,31 @@ CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto IN
 		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (_id, _pp, _cto, _clto);
 	END //
 
--- Get the id of the community when the space belongs
+-- Get the id of the community where the space belongs to
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS GetCommunityOfSpace;
 CREATE PROCEDURE GetCommunityOfSpace(IN _id INT)
 	BEGIN
 		SELECT min(ancestor) AS community FROM closure WHERE descendant=_id AND ancestor != 1;
+	END //
+
+-- Querry if a space is a public space
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS IsPublicSpace;
+CREATE PROCEDURE IsPublicSpace(IN _spaceId INT)
+	BEGIN		
+		SELECT public_access
+		FROM spaces
+		WHERE id = _spaceId;
+	END //
+
+-- Change a space to a public space or a private one
+DROP PROCEDURE IF EXISTS setPublicSpace;
+CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
+	BEGIN
+		UPDATE spaces
+		SET public_access = _pbc
+		WHERE id = _spaceId;
 	END //
 
 DELIMITER ; -- This should always be at the end of this file

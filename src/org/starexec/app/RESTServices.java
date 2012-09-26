@@ -1872,4 +1872,56 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
+	
+	/**
+	 * Make a space public
+	 * @param spaceId the space to be made public
+	 * @param request the http request
+	 * @return 0: fails
+	 *         1: success
+	 * @author Ruoyu Zhang 
+	 */
+	@POST
+	@Path("/space/makePublic/{id}")
+	@Produces("application/json")	
+	public String makePublic(@PathParam("id") int spaceId, @Context HttpServletRequest request) {
+		if(Spaces.setPublicSpace(spaceId, true))
+			return gson.toJson(1);
+		else
+			return gson.toJson(0);
+	}
+	
+	/**
+	 * Make a space private
+	 * @param spaceId the space to be made private
+	 * @param request the http request
+	 * @return 0: fails
+	 *         1: success
+	 * @author Ruoyu Zhang 
+	 */
+	@POST
+	@Path("/space/makePrivate/{id}")
+	@Produces("application/json")
+	public String makePrivate(@PathParam("id") int spaceId, @Context HttpServletRequest request) {
+		Spaces.setPublicSpace(spaceId, false);
+		return gson.toJson(1);
+	}
+	
+	/**
+	 * Is a space public
+	 * @param spaceId the space to be check if public
+	 * @param request the http request
+	 * @return 0: it's not public
+	 *         1: it's public
+	 * @author Ruoyu Zhang 
+	 */
+	@POST
+	@Path("/space/isSpacePublic/{id}")
+	@Produces("application/json")	
+	public String isSpacePublic(@PathParam("id") int spaceId, @Context HttpServletRequest request) {
+		if(Spaces.isPublicSpace(spaceId))
+			return gson.toJson(1);
+		else
+			return gson.toJson(0);
+	}
 }

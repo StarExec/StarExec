@@ -18,6 +18,7 @@ public class Space extends Identifiable implements Iterable<Space> {
 	@Expose	private String name;
 	@Expose private String description = "no description";
 	private boolean locked;
+	private boolean isPublic;
 	private Timestamp created;
 	private Permission defaultPermission;
 	@Expose	private List<Solver> solvers;
@@ -206,6 +207,13 @@ public class Space extends Identifiable implements Iterable<Space> {
 		this.subspaces = subspaces;
 	}
 	
+	public boolean isPublic() {
+		return isPublic;
+	}
+	
+	public void setPublic(boolean pbc) {
+		isPublic = pbc;
+	}
 	
 	@Override
 	public Iterator<Space> iterator() {

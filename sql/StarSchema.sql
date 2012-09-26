@@ -75,6 +75,7 @@ CREATE TABLE spaces (
 	description TEXT,
 	locked BOOLEAN DEFAULT 0,
 	default_permission INT,
+	public_access BOOLEAN DEFAULT 0,
 	PRIMARY KEY (id),
 	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
@@ -90,8 +91,8 @@ CREATE TABLE closure (
 );
 
 -- The root space
-INSERT INTO spaces (name, created, description, locked, default_permission) VALUES 
-('root', SYSDATE(), 'this is the starexec container space which holds all communities.', 1, 1);
+INSERT INTO spaces (name, created, description, locked, default_permission, public_access) VALUES 
+('root', SYSDATE(), 'this is the starexec container space which holds all communities.', 1, 1, 1);
 INSERT INTO closure VALUES(1,1);
 
 -- All pre, post and bench processors in the system

@@ -86,7 +86,9 @@
 				<li><a class="btnRun" id="addJob" href="/starexec/secure/add/job.jsp">create job</a></li>
 				<li><a class="btnDown" id="downloadXML" href="/starexec/secure/download">download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">upload space xml</a></li>
-				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>				
+				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>
+				<li><a class="btnRun" id="makePublic">make public</a></li>
+				<li><a class="btnRun" id="makePrivate">make private</a></li>		
 			</ul>
 		</fieldset>	
 		

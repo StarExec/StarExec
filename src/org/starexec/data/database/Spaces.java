@@ -51,6 +51,7 @@ public class Spaces {
 				s.setDescription(results.getString("description"));
 				s.setLocked(results.getBoolean("locked"));
 				s.setCreated(results.getTimestamp("created"));
+				s.setPublic(results.getBoolean("public_access"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -663,7 +664,7 @@ public class Spaces {
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId, false));
-			
+			s.setPublic(Spaces.isPublicSpace(spaceId));
 												
 			return s;			
 		} catch (Exception e){			
@@ -1414,4 +1415,54 @@ public class Spaces {
 		return false;
 	}
 
+	/**
+	 * If a space is public
+	 * @param spaceId the Id of the space to be checked
+	 * @return true if the space is public
+	 * @author Ruoyu Zhang
+	 */
+	public static boolean isPublicSpace(int spaceId){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL IsPublicSpace(?)}");
+			procedure.setInt(1, spaceId);					
+			ResultSet results = procedure.executeQuery();
+		
+			if(results.first()) {
+				return results.getBoolean(1);
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;		
+	}
+	
+	/**
+	 * Set a space to be public or private
+	 * @param spaceId the Id of space to be set public or private
+	 * @param pbc true denote the space to be set public, false to be set private 
+	 * @return true if successful
+	 */
+	public static boolean setPublicSpace(int spaceId, boolean pbc){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setBoolean(2, pbc);
+			procedure.executeUpdate();
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;		
+	}
 }

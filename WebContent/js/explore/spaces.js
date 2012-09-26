@@ -7,6 +7,7 @@ var commentTable;
 var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
+var pbc;
 
 
 $(document).ready(function(){	
@@ -70,6 +71,7 @@ function initSpaceDetails(){
 		$('#actionList').hide();
 	}
 	
+	pbc = false
 }
 
 /**
@@ -163,6 +165,42 @@ function initButtonUI() {
 		icons: {
 			secondary: "ui-icon-closethick"
 	}});
+	
+	$("#makePublic").click(function(){
+		$.post(
+				"/starexec/services/space/makePublic/" + spaceId,
+				{},
+				function(returnCode) {
+			    	switch(returnCode) {
+			    	case 0:
+						showMessage('error', "failed to make the space public", 5000);
+						break;
+			    	default:
+						break;
+			    	}
+			    	window.location.reload(true);
+				},
+				"json"
+		);
+	});
+	
+	$("#makePrivate").click(function(){
+		$.post(
+				"/starexec/services/space/makePrivate/" + spaceId,
+				{},
+				function(returnCode) {
+			    	switch(returnCode) {
+			    	case 0:
+						showMessage('error', "failed to make the space private", 5000);
+						break;
+			    	default:
+						break;
+			    	}
+			    	window.location.reload(true);
+				},
+				"json"
+		);	
+	});
 	
 	log('jQuery UI buttons initialized');
 }
@@ -1524,7 +1562,7 @@ function getSpaceDetails(id) {
 		"/starexec/services/space/" + id,  
 		function(data){ 
 			log('AJAX response received for details of space ' + id);
-			populateSpaceDetails(data);			
+			populateSpaceDetails(data, id);			
 		},  
 		"json"
 	).error(function(){
@@ -1533,13 +1571,34 @@ function getSpaceDetails(id) {
 	});
 }
 
+function isSpacePublic(id) {
+	$('#loader').show();
+	$.post(  
+		"/starexec/services/space/isSpacePublic/" + id,  
+		function(returnCode){
+			switch(returnCode){
+			case 0:
+				pbc = false;
+				break;
+			case 1:
+				pbc = true;
+				break;
+			}	
+		},  
+		"json"
+	).error(function(){
+		alert('Session expired');
+		window.location.reload(true);
+	});
+	return pbc;
+}
 
 /**
  * Populates the space details of the currently selected space and queries
  * for the primitives of any fieldsets that are expanded
  * @param jsonData the basic information about the currently selected space
  */
-function populateSpaceDetails(jsonData) {
+function populateSpaceDetails(jsonData, id) {
 	// If the space is null, the user can see the space but is not a member
 	if(jsonData.space == null) {
 		// Go ahead and show the space's name
@@ -1588,7 +1647,7 @@ function populateSpaceDetails(jsonData) {
     spaceTable.fnDraw();
 	
 	// Check the new permissions for the loaded space
-	checkPermissions(jsonData.perm);
+	checkPermissions(jsonData.perm, id);
 	
 	// Done loading, hide the loader
 	$('#loader').hide();
@@ -1671,7 +1730,7 @@ function createTooltip(element, selector, type, message){
  * the user's permissions
  * @param perms The JSON permission object representing permissions for the current space
  */
-function checkPermissions(perms) {
+function checkPermissions(perms, id) {
 	// Check for no permission and hide entire action list if not present
 	if(perms == null) {
 		log('no permissions found, hiding action bar');
@@ -1686,10 +1745,21 @@ function checkPermissions(perms) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 		
 		$('#editSpace').fadeIn('fast');
+		
+		if(isSpacePublic(id)){
+			$('#makePublic').fadeOut('fast');
+			$('#makePrivate').fadeIn('fast');
+		} else {
+			$('#makePublic').fadeIn('fast');
+			$('#makePrivate').fadeOut('fast');
+		}
+		
 	} else {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
+		$('#makePublic').fadeOut('fast');
+		$('#makePrivate').fadeOut('fast');
 	}	
 	
 	if(perms.addSpace) {		
