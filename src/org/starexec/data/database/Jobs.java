@@ -1243,4 +1243,35 @@ public class Jobs {
 		
 		return null;
 	}
+
+	public static boolean isPublic(int jobId) {
+		log.debug("isPublic called on job " + jobId);
+		Job j = Jobs.getDetailedWithoutJobPairs(jobId);
+		if (j.getUserId()==R.PUBLIC_USER_ID){
+			log.debug("Public User for Job Id" + jobId);
+			return true;
+		}
+		Connection con = null;	
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL JobInPublicSpace(?)}");
+			procedure.setInt(1, jobId);					
+			ResultSet results = procedure.executeQuery();
+			int count = 0;
+			if (results.next()){
+				count = (results.getInt("spaceCount"));
+			}			
+			log.debug("Job " + j.getName() + " is in " + count  + " public spaces");
+			if (count > 0){
+				return true;
+			}
+			
+		} catch (Exception e){			
+			log.error("isPublic says" + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
 }

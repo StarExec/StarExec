@@ -18,6 +18,8 @@ INSERT INTO users (email, first_name, last_name, institution, created, password,
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
 	VALUES ('john.doe@gmail.com', 'John', 'Doe', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
 
+INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
+	VALUES ('noemail@whatever.com', 'Jane ', 'Doe', 'The Great Unwashed', SYSDATE(), 'b109f3bbbc244eb8fgh2441917ed06d618b9008ghfgfhfhgfhdd09b3befd1b5e07394c706a8bb980b', 52428800);
 	
 INSERT INTO user_roles VALUES('tyler-jensen@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('aaron.stump.test@uiowa.edu', 'user');
@@ -61,6 +63,8 @@ INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, rem
 	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0);
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
 	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0);
+INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
+	(0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0);
 	
 -- Starts at 2 (the root space is defined in the schema)
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
@@ -73,6 +77,8 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 	('4SAT', SYSDATE(), 'this is the 3SAT space, the child of SAT space', 0, 4);
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('TPTP', SYSDATE(), 'this is Geoffs example space', 0, 5);
+INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
+	('fakeSpace', SYSDATE(), 'this is the unviewable space for benchmarks and jobs from public', 0, 5);
 
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('no_type', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 1, 3, 1024);

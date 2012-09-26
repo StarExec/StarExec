@@ -13,7 +13,16 @@ CREATE PROCEDURE AssociateJob(IN _jobId INT, IN _spaceId INT)
 	BEGIN
 		INSERT IGNORE INTO job_assoc VALUES (_spaceId, _jobId);
 	END //
-	
+
+-- 	Returns the number of public spaces the job is in
+--  Author: Benton McCune
+DROP PROCEDURE IF EXISTS JobInPublicSpace;
+CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
+	BEGIN 
+		SELECT COUNT(*) AS spaceCount
+		FROM spaces WHERE (public_access = 1)
+		AND id IN (SELECT space_id FROM job_assoc WHERE job_id = _jobId);
+	END //
 	
 -- Adds a new attribute to a job pair 
 -- Author: Tyler Jensen

@@ -197,6 +197,39 @@ public class Solvers {
 	}
 	
 	/**
+	 * @return a list of all solvers that reside in a public space
+	 * @author Benton McCune
+	 */
+	public static List<Solver> getPublicSolvers(){
+		Connection con = null;		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetPublicSolvers()}");				
+			ResultSet results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+			
+			while(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));				
+				s.setUploadDate(results.getTimestamp("uploaded"));
+				s.setDescription(results.getString("description"));
+				s.setDownloadable(results.getBoolean("downloadable"));
+				s.setDiskSize(results.getLong("disk_size"));
+				s.setPath(results.getString("path"));
+				solvers.add(s);
+			}									
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	
+	
+	/**
 	 * Updates the details of a solver
 	 * @param id the id of the solver to update
 	 * @param name the new name to apply to the solver
@@ -228,6 +261,8 @@ public class Solvers {
 		log.debug(String.format("Solver [id=%d] failed to be updated.", id));
 		return false;
 	}
+	
+	
 	
 	/**
 	 * Deletes a solver from the database (cascading deletes handle all dependencies)
@@ -712,6 +747,30 @@ public class Solvers {
 		return null;		
 	}
 	
+	/**
+	 *  A method for the public job page.  Gets a default configuration for a solver
+	 *  and returns a singleton List with its id.  A default configuration is a configuration
+	 *  named "default" if it exists, or simply the first configuration if it doesn't.
+	 * @param solverId The solver id to get configurations for
+	 * @return A list with the default configuration Id for the solver 
+	 * @author Benton McCune
+	 */
+	public static List<Integer> getDefaultConfigForSolver(int solverId){
+		List<Configuration> allConfigs = getConfigsForSolver(solverId);
+		List<Integer> defaultConfigList = new LinkedList<>();
+		if (allConfigs!=null && allConfigs.size()>0){
+		Integer defaultConfig = allConfigs.get(0).getId();
+		for (Configuration c: allConfigs)
+		{
+			if (c.getName()=="default"){
+					defaultConfig = c.getId();
+					break;
+			}
+		}
+		defaultConfigList.add(defaultConfig);
+		}
+		return defaultConfigList;
+	}
 	
 	/**
 	 * Returns a list of solvers owned by a given user

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 
 /**
@@ -184,6 +185,9 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeJob(int jobId, int userId){		
+		if (Jobs.isPublic(jobId)){
+			return true;
+		}
 		Connection con = null;			
 		
 		try {

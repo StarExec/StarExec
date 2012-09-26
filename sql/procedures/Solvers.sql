@@ -18,6 +18,17 @@ CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(32), IN _downloadabl
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
+-- Gets all solvers that reside in public spaces
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetPublicSolvers;
+CREATE PROCEDURE GetPublicSolvers()
+	BEGIN
+		SELECT DISTINCT * from solvers where id in 
+		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
+		(SELECT id from spaces where public_access=1));
+	END //
+	
+	
 -- Adds a Space/Solver association
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolverAssociation;

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,7 +20,9 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
+import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -37,9 +41,19 @@ public class SingleJobPair extends HttpServlet {
     //private static final Integer PUBLIC_USER_ID = R.PUBLIC_USER_ID;
     //private static final Integer PUBLIC_USER_SPACE = R.PUBLIC_SPACE_ID;
     //private static final String SOLVER_ID = "solverId";
-    private static final String SOLVER_ID = "1";
+    private static final String SOLVER_ID = "publicSolver";
     //private static final String CONFIG_CONTENTS = "saveConfigContents";
     //private static final String CONFIG_NAME = "saveConfigName";    		
+    
+    //Constants for Job parameters
+    private Integer queueId = 1;
+    private String jobDescription = "This is a public job.";
+    private Integer preProcessorId = 0;
+    private Integer postProcessorId = 0;
+    private Integer cpuLimit = 30;
+    private Integer clockTimeout = 30;
+    
+    
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
@@ -61,14 +75,14 @@ public class SingleJobPair extends HttpServlet {
 			}
 			*/
 			// Process the configuration file and write it to the parent solver's /bin directory, then update the solver's disk_size attribute
-			Boolean result = handleBenchmark(request);
+			int jobId = handleBenchmark(request);
 			
 			// Redirect user based on how the configuration handling went
-			if(!result) {
+			if(jobId<0) {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to save new benchmark.");	
 			} else {
 				log.debug("success!!");
-				//response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + Integer.parseInt((String)request.getParameter(SOLVER_ID)));	
+				response.sendRedirect("/starexec/public/jobs/job.jsp?id=" + jobId);	
 			}									
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -84,17 +98,19 @@ public class SingleJobPair extends HttpServlet {
      * @return true if successful
      * @author Benton McCune
      */
-	public Boolean handleBenchmark(HttpServletRequest request) {
+	public int handleBenchmark(HttpServletRequest request) {
 		try {
 			
 			// Set up a new configuration object with the submitted information
-			//Solver solver = Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID)));
-			Solvers.get(1);
+			Solver solver = Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID)));
+	
+			//Solver solver = Solvers.get(Integer.parseInt((String)request.getParameter(SOLVER_ID)));
 			Benchmark bench = new Benchmark();
-			bench.setName("ben");
+			bench.setName("public"+shortDate.format(new Date()));
 			log.debug("Public user id = " + R.PUBLIC_USER_ID);
 			bench.setUserId(R.PUBLIC_USER_ID);
 			log.debug("bench user id is " + bench.getUserId());
+			log.debug("Solver is " + solver.getName());
 			//bench.setDownloadable(false);
 			
 			//Configuration newConfig = new Configuration();
@@ -120,15 +136,35 @@ public class SingleJobPair extends HttpServlet {
 			
 			// Pass new configuration, and the parent solver objects, to the database & return the result
 			log.debug("bench has id " + bench.getId());
-			Boolean benchAdded = Benchmarks.add(bench, R.PUBLIC_SPACE_ID);
+			Boolean benchAdded = Benchmarks.add(bench, R.PUBLIC_SPACE_ID);			
 			log.debug("bench now has id " + bench.getId());
-			return benchAdded;
+			if (benchAdded){
+				log.debug("userid " + R.PUBLIC_USER_ID);
+				log.debug("benchname = " + bench.getName());
+				log.debug("jobdescription = " + jobDescription);
+				Job j = JobManager.setupJob(R.PUBLIC_USER_ID, bench.getName(), jobDescription, preProcessorId, postProcessorId, queueId);  
+				log.debug("job id is " + j.getId());
+				List<Integer> benchmarkIds = new LinkedList<Integer>();//Job methods takes lists so need this
+				benchmarkIds.add(bench.getId());
+				List<Integer> solverIds = new LinkedList<Integer>();
+				Integer solverId = Integer.parseInt((String)request.getParameter(SOLVER_ID));
+				solverIds.add(solverId);
+				List<Integer> configIds = Solvers.getDefaultConfigForSolver(solverId);
+				
+				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID);
+				int jobId = JobManager.submitJobReturnId(j, R.PUBLIC_SPACE_ID);
+				return jobId;
+			}
+			else
+			{	
+				return -1;
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	
 		
-		return false;
+		return -1;
 	}	
 	
 	
@@ -144,22 +180,14 @@ public class SingleJobPair extends HttpServlet {
 		log.debug("benchmark contents = " + request.getParameter(BENCHMARK_CONTENTS));
 		try {
 			if( Util.isNullOrEmpty((String) request.getParameter(SOLVER_ID))
-					|| Util.isNullOrEmpty((String)request.getParameter(BENCHMARK_CONTENTS))) 
-					{
-				//return false;
-				return true;
-				}
-			
-			// Ensure the parent solver id is valid
-			Integer.parseInt((String)request.getParameter(SOLVER_ID));
-			
-			// Ensure the configuration's name and description are valid
-/*			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))
-					|| !Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
-				return false;
+					|| Util.isNullOrEmpty((String)request.getParameter(BENCHMARK_CONTENTS))) {
+					return false;
 			}
 			
-	*/		return true;
+			// Ensure the solver id is valid
+			Integer.parseInt((String)request.getParameter(SOLVER_ID));
+						
+			return true;
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}

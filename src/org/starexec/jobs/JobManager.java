@@ -98,6 +98,69 @@ public abstract class JobManager {
 	}	
 	
 	/**
+	 * Submits a job to the grid engine and records it in the database
+	 * @param j The job object containing information about what to run for the job
+	 * @param spaceId The id of the space this job will be placed in
+	 * @author Benton McCune
+	 */
+	public static int submitJobReturnId(Job job, int spaceId) {		
+		try {
+			// Attempt to add the job to the database			
+			boolean jobAdded = Jobs.add(job, spaceId);
+			
+			// If for some reason that failed, don't run on the grid engine
+			if(false == jobAdded) {
+				log.error(String.format("Job failed to be added to the database and was prevented from running on the grid [user=%d] [space=%d]", job.getUserId(), spaceId));
+				return -1;
+			}
+			
+			// Read in the job script template and format it for all the pairs in this job
+			String jobTemplate = FileUtils.readFileToString(new File(R.CONFIG_PATH, "sge/jobscript"));
+			
+			// General job setup
+			jobTemplate = jobTemplate.replace("$$QUEUE$$", job.getQueue().getName());			
+			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
+			jobTemplate = jobTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
+			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+			jobTemplate = jobTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
+			
+			// Impose resource limits
+			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
+			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);							
+			
+			// Optimization, do outside of loop
+			boolean isSGEAvailable = GridEngineUtil.isAvailable();
+			
+			if(false == isSGEAvailable) {
+				log.warn("Grid engine unavailable, building job scripts and skipping SGE execution.");
+			}
+			
+			for(JobPair pair : job) {
+				// Write the script that will run this individual pair
+				String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
+				
+				if(true == isSGEAvailable) {				
+					// Submit to the grid engine
+					int sgeId = JobManager.submitScript(scriptPath, pair);
+					
+					// If the submission was successful
+					if(sgeId >= 0) {											
+						Jobs.updateGridEngineId(pair.getId(), sgeId);
+						Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+					}
+				}
+			}
+			
+			log.info(String.format("Successfully submitted and recorded job #%d with %d pairs by user %d", job.getId(), job.getJobPairs().size(), job.getUserId()));
+			return job.getId();
+		} catch(Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return -1;
+	}
+	
+	/**
 	 * Takes in a job script and submits it to the grid engine
 	 * @param scriptPath The absolute path to the script
 	 * @param pair The pair the script is being submitted for
@@ -239,6 +302,7 @@ public abstract class JobManager {
 	 * @return the new job object with the specified properties
 	 */
 	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId) {
+		log.debug("Setting up job " + name);
 		Job j = new Job();
 		
 		// Set the job's name, submitter user id and description
