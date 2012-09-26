@@ -113,24 +113,26 @@ public class Benchmarks {
 		Connection con = null;			
 
 		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
+			//con = Common.getConnection();
+			//Common.beginTransaction(con);
 
 			// Add benchmark to database
 			boolean benchAdded = Benchmarks.add(con, benchmark, spaceId);
 
 			if(benchAdded){
-				Common.endTransaction(con);
+				//Common.endTransaction(con);
+				log.debug("bench successfully added");
 				return true;
 			} else {
-				Common.doRollback(con);
+				//Common.doRollback(con);
+				log.debug("failed to add bench");
 				return false;
 			}
 		} catch (Exception e){
-			Common.doRollback(con);
+			//Common.doRollback(con);
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+			//Common.safeClose(con);
 		}
 
 		return false;
@@ -474,7 +476,7 @@ public class Benchmarks {
 		
 		CallableStatement procedure = null;			
 		Properties attrs = benchmark.getAttributes();
-		log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
+		log.info("adding benchmark " + benchmark.getName() + " to space " + spaceId);
 		// Setup normal information for the benchmark
 		procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setString(1, benchmark.getName());		
@@ -483,13 +485,26 @@ public class Benchmarks {
 		procedure.setInt(4, benchmark.getUserId());			
 		procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
 		procedure.setInt(6, spaceId);
-		procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
+		procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));		
 		procedure.registerOutParameter(8, java.sql.Types.INTEGER);
 
 		// Execute procedure and get back the benchmark's id
 		procedure.executeUpdate();		
+		
 		benchmark.setId(procedure.getInt(8));
-
+		log.debug("new bench id is " + benchmark.getId());
+		Benchmark newBench = Benchmarks.get(benchmark.getId());
+		if (newBench!=null){
+		log.debug("new bench id is indeed  " + newBench.getId());
+		log.debug("new bench name is " + newBench.getName());
+		log.debug("new bench user is " + newBench.getUserId());
+		log.debug("new bench path is " + newBench.getPath());
+		log.debug("new bench type is " + (Benchmarks.isBenchValid(attrs) ? newBench.getType().getId() : Benchmarks.NO_TYPE));
+		log.debug("new bench disk size is " + FileUtils.sizeOf(new File(newBench.getPath())));
+		}
+		else{
+			log.error("Benchmark was not really added.");
+		}
 		// If the benchmark is valid according to its processor...
 		
 		if(Benchmarks.isBenchValid(attrs)) {

@@ -28,7 +28,9 @@
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />
-			<property key="DEFAULT_USER_QUOTA" value="52428800" />								
+			<property key="DEFAULT_USER_QUOTA" value="52428800" />	
+			<property key="PUBLIC_USER_ID" value="62" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="1731" /> 							
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<property key="SGE_STATISTICS_PERIOD" value="120" />
@@ -100,6 +102,8 @@
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />    
+	  <property key="PUBLIC_USER_ID" value="8" /> 
+	  <property key="PUBLIC_SPACE_ID" value="7" /> 
  <!--   SGE Configuration     --> 
 	  <property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -sql.txt" /> 
 	  <property key="QUEUE_USAGE_COMMAND" value="C:\\Users\\Ben\\CmdSpoof -gc.txt" /> 
