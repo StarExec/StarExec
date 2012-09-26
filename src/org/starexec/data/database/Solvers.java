@@ -757,7 +757,7 @@ public class Solvers {
 	 */
 	public static List<Integer> getDefaultConfigForSolver(int solverId){
 		List<Configuration> allConfigs = getConfigsForSolver(solverId);
-		List<Integer> defaultConfigList = new LinkedList<>();
+		List<Integer> defaultConfigList = new LinkedList<Integer>();
 		if (allConfigs!=null && allConfigs.size()>0){
 		Integer defaultConfig = allConfigs.get(0).getId();
 		for (Configuration c: allConfigs)
