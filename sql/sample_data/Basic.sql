@@ -19,7 +19,7 @@ INSERT INTO users (email, first_name, last_name, institution, created, password,
 	VALUES ('john.doe@gmail.com', 'John', 'Doe', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 52428800);
 
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)
-	VALUES ('noemail@whatever.com', 'Jane ', 'Doe', 'The Great Unwashed', SYSDATE(), 'b109f3bbbc244eb8fgh2441917ed06d618b9008ghfgfhfhgfhdd09b3befd1b5e07394c706a8bb980b', 52428800);
+	VALUES ('public', 'Jane ', 'Doe', 'The Great Unwashed', SYSDATE(), 'd32997e9747b65a3ecf65b82533a4c843c4e16dd30cf371e8c81ab60a341de00051da422d41ff29c55695f233a1e06fac8b79aeb0a4d91ae5d3d18c8e09b8c73', 52428800);
 	
 INSERT INTO user_roles VALUES('tyler-jensen@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('aaron.stump.test@uiowa.edu', 'user');
@@ -27,7 +27,7 @@ INSERT INTO user_roles VALUES('tinelli.test@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('skylar-stark@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('geoff@cs.miami.edu', 'user');
 INSERT INTO user_roles VALUES('todd.elvers@gmail.com', 'user');
-
+INSERT INTO user_roles VALUES('public', 'user');
 INSERT INTO nodes(name) VALUES ("starexec1x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec2x.cs.uiowa.edu");
 INSERT INTO nodes(name) VALUES ("starexec3x.cs.uiowa.edu");

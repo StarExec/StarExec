@@ -221,7 +221,9 @@ public class Permissions {
 			// Can always see root space
 			return true;
 		}
-		
+		if (Spaces.isPublicSpace(spaceId)){
+			return true;
+		}
 		Connection con = null;			
 		
 		try {

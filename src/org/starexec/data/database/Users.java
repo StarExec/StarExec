@@ -673,14 +673,14 @@ public class Users {
 			con = Common.getConnection();
 			CallableStatement procedure;			
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, spaceId);
 			procedure.setString(6, searchQuery);
-			
+			procedure.setInt(7, R.PUBLIC_USER_ID);
 			ResultSet results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			

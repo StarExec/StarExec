@@ -42,7 +42,7 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT, IN _proxy INT)
 -- ordering results by a column, and sorting results in ASC or DESC order.  
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetNextPageOfUsers;
-CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _query TEXT, IN _publicUserId INT)
 	BEGIN
 		-- If _query is empty, get next page of Users without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
@@ -54,10 +54,10 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
 						
-				FROM	users
+				FROM	users WHERE (id != _publicUserId)
 				
 				-- Exclude Users that aren't in the specified space
-				WHERE 	id 	IN (SELECT 	user_id
+				AND 	id 	IN (SELECT 	user_id
 								FROM	user_assoc
 								WHERE 	space_id = _spaceId)
 				
@@ -100,10 +100,10 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
 				
-				FROM	users
+				FROM	users WHERE (id != _publicUserId)
 				
 				-- Exclude Users that aren't in the specified space
-				WHERE 	id 	IN (SELECT 	user_id
+				AND 	id 	IN (SELECT 	user_id
 								FROM	user_assoc
 								WHERE 	space_id = _spaceId)
 							
@@ -129,8 +129,8 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users
-				WHERE 	id 	IN (SELECT 	user_id
+				FROM	users WHERE (id != _publicUserId)
+				AND	id 	IN (SELECT 	user_id
 								FROM	user_assoc
 								WHERE 	space_id = _spaceId)
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')

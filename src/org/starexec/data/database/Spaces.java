@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -1380,6 +1381,7 @@ public class Spaces {
 			procedure.executeUpdate();			
 		}
 	}
+	
 
 	/** 
 	 * Removes solvers from a space and it's hierarchy. Utilizes transactions so it's all or
@@ -1449,10 +1451,22 @@ public class Spaces {
 	 * @return true if successful
 	 */
 	public static boolean setPublicSpace(int spaceId, boolean pbc){
+		if (pbc){
+			Users.associate(R.PUBLIC_USER_ID, spaceId);//adds public user to space;
+			Permission publicPermission = new Permission(false);
+			Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
+		}
+
 		Connection con = null;			
 		
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
+			if(!pbc){
+				List<Integer> userIds = new LinkedList<Integer>();
+				userIds.add(R.PUBLIC_USER_ID);
+				Spaces.removeUsers(con, userIds, spaceId);
+			}
+			
 			CallableStatement procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setBoolean(2, pbc);
