@@ -763,7 +763,7 @@ public class Solvers {
 		for (Configuration c: allConfigs)
 		{
 			log.info("Configuration Name = " + c.getName() + ", id = " + c.getId());
-			if (c.getName() == "default"){
+			if (c.getName().equals("default")){
 					defaultConfig = c.getId();
 					break;
 			}
