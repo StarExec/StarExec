@@ -762,12 +762,13 @@ public class Solvers {
 		Integer defaultConfig = allConfigs.get(0).getId();
 		for (Configuration c: allConfigs)
 		{
-			log.info("Configuration Name = " + c.getName());
-			if (c.getName()=="default"){
+			log.info("Configuration Name = " + c.getName() + ", id = " + c.getId());
+			if (c.getName() == "default"){
 					defaultConfig = c.getId();
 					break;
 			}
 		}
+		log.info("default config has id " + defaultConfig);
 		defaultConfigList.add(defaultConfig);
 		}
 		return defaultConfigList;
