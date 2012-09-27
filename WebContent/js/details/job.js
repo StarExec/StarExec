@@ -29,6 +29,12 @@ function initUI(){
 		var pairId = $(this).find('input').val();
 		window.location.assign("/starexec/secure/details/pair.jsp?id=" + pairId);
 	});
+	
+	// Set up row click to send to public pair details page
+	$("#publicPairTbl tbody").delegate("tr", "click", function(){
+		var pairId = $(this).find('input').val();
+		window.location.assign("/starexec/public/jobs/pair.jsp?id=" + pairId);
+	});
 }
 
 /**

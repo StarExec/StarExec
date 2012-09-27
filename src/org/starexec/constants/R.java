@@ -53,6 +53,8 @@ public class R {
 	//Public user info
 	public static int PUBLIC_USER_ID = 0;							//user id to use when writing benchmarks, submitting jobs without login
 	public static int PUBLIC_SPACE_ID = 0;                           //space id to use when writing benchmarks, submitting jobs without login
+	public static int PUBLIC_CPU_LIMIT = 30;
+	public static int PUBLIC_CLOCK_TIMEOUT = 30;
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
 	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	

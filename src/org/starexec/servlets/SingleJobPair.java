@@ -50,8 +50,8 @@ public class SingleJobPair extends HttpServlet {
     private String jobDescription = "This is a public job.";
     private Integer preProcessorId = 0;
     private Integer postProcessorId = 0;
-    private Integer cpuLimit = 30;
-    private Integer clockTimeout = 30;
+    private Integer cpuLimit = R.PUBLIC_CPU_LIMIT;
+    private Integer clockTimeout = R.PUBLIC_CLOCK_TIMEOUT;
     
     
     
