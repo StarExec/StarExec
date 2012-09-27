@@ -24,12 +24,11 @@ function initUI(){
 	$('fieldset:first, fieldset:eq(1)').expandable(false);
 	$('fieldset:not(:first, :eq(1))').expandable(true);
 	
-	// Set up row click to send to pair details page
-	$("#pairTbl tbody").delegate("tr", "click", function(){
+	// Set up row click to send to public pair details page
+	$("#publicPairTbl tbody").delegate("tr", "click", function(){
 		var pairId = $(this).find('input').val();
-		window.location.assign("/starexec/secure/details/pair.jsp?id=" + pairId);
+		window.location.assign("/starexec/public/jobs/pair.jsp?id=" + pairId);
 	});
-	
 }
 
 /**
@@ -46,8 +45,11 @@ function initDataTables(){
 		"bSort": true        
 	});
 	
-	// Job pairs table
-	$('#pairTbl').dataTable( {
+	// Change the filter so that it only queries the server when the user stops typing
+	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
+	
+	// public Job pairs table
+	$('#publicPairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -58,8 +60,7 @@ function initDataTables(){
     });
 	
 	// Change the filter so that it only queries the server when the user stops typing
-	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
-	
+	$('#publicPairTbl').dataTable().fnFilterOnDoneTyping();
 }
 
 /**
