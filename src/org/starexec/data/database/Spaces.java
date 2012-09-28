@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -1449,12 +1450,25 @@ public class Spaces {
 	 * @param pbc true denote the space to be set public, false to be set private 
 	 * @return true if successful
 	 */
-	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean heirachy){
+	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		Connection con = null;			
 		
-		if(!heirachy){
+		if (!Permissions.get(usrId, spaceId).isLeader()){
+			return false;
+		}
+		if (pbc && !hierarchy){
+			Users.associate(R.PUBLIC_USER_ID, spaceId);//adds public user to space;
+			Permission publicPermission = new Permission(false);
+			Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
+		}
+		if(!hierarchy){
 			try {
-				con = Common.getConnection();		
+				con = Common.getConnection();
+				if(!pbc){
+					List<Integer> userIds = new LinkedList<Integer>();
+					userIds.add(R.PUBLIC_USER_ID);
+					Spaces.removeUsers(con, userIds, spaceId);
+				}
 				CallableStatement procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
 				procedure.setInt(1, spaceId);
 				procedure.setBoolean(2, pbc);
@@ -1464,16 +1478,12 @@ public class Spaces {
 			} finally {
 				Common.safeClose(con);
 			}
-		} else {
+		} else {//is hierarchy, call recursively
 			List<Space> subSpaces = Spaces.getSubSpaces(spaceId, usrId, true);
 			subSpaces.add(Spaces.get(spaceId));
 			for (Space space : subSpaces) {
-				try {
-					con = Common.getConnection();		
-					CallableStatement procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
-					procedure.setInt(1, space.getId());
-					procedure.setBoolean(2, pbc);
-					procedure.executeUpdate();
+				try {				
+					setPublicSpace(spaceId, usrId, pbc, false);
 				} catch (Exception e){			
 					log.error(e.getMessage(), e);		
 				} finally {
