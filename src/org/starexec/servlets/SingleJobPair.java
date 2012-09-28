@@ -82,7 +82,7 @@ public class SingleJobPair extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to save new benchmark.");	
 			} else {
 				log.debug("success!!");
-				response.sendRedirect("/starexec/public/jobs/job.jsp?id=" + jobId);	
+				response.sendRedirect("/starexec/secure/details/job.jsp?id=" + jobId);	
 			}									
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
