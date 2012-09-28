@@ -1882,10 +1882,11 @@ public class RESTServices {
 	 * @author Ruoyu Zhang 
 	 */
 	@POST
-	@Path("/space/makePublic/{id}")
+	@Path("/space/makePublic/{id}/{hierarchy}")
 	@Produces("application/json")	
-	public String makePublic(@PathParam("id") int spaceId, @Context HttpServletRequest request) {
-		if(Spaces.setPublicSpace(spaceId, true))
+	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if(Spaces.setPublicSpace(spaceId, userId, true, hierarchy))
 			return gson.toJson(1);
 		else
 			return gson.toJson(0);
@@ -1900,11 +1901,14 @@ public class RESTServices {
 	 * @author Ruoyu Zhang 
 	 */
 	@POST
-	@Path("/space/makePrivate/{id}")
+	@Path("/space/makePrivate/{id}/{hierarchy}")
 	@Produces("application/json")
-	public String makePrivate(@PathParam("id") int spaceId, @Context HttpServletRequest request) {
-		Spaces.setPublicSpace(spaceId, false);
-		return gson.toJson(1);
+	public String makePrivate(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if(Spaces.setPublicSpace(spaceId, userId, false, hierarchy))
+			return gson.toJson(1);
+		else
+			return gson.toJson(0);
 	}
 	
 	/**

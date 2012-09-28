@@ -166,37 +166,75 @@ function initButtonUI() {
 	}});
 	
 	$("#makePublic").click(function(){
-		$.post(
-				"/starexec/services/space/makePublic/" + spaceId,
-				{},
-				function(returnCode) {
-			    	switch(returnCode) {
-			    	case 0:
-						break;
-			    	default:
-						break;
-			    	}
-			    	window.location.reload(true);
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy-txt').text('do you want to make the single space public or the hierarchy?');
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space': function(){
+					$.post(
+							"/starexec/services/space/makePublic/" + spaceId + "/" + false,
+							{},
+							function(returnCode) {
+						    	window.location.reload(true);
+							},
+							"json"
+							);
 				},
-				"json"
-		);
+				'hierarchy': function(){
+					$.post(
+						"/starexec/services/space/makePublic/" + spaceId + "/" + true,
+						{},
+						function(returnCode) {
+					    	window.location.reload(true);
+						},
+						"json"
+						);
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}
+		});
 	});
 	
 	$("#makePrivate").click(function(){
-		$.post(
-				"/starexec/services/space/makePrivate/" + spaceId,
-				{},
-				function(returnCode) {
-			    	switch(returnCode) {
-			    	case 0:
-						break;
-			    	default:
-						break;
-			    	}
-			    	window.location.reload(true);
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy-txt').text('do you want to make the single space private or the hierarchy?');
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space': function(){
+					$.post(
+							"/starexec/services/space/makePrivate/" + spaceId + "/" + false,
+							{},
+							function(returnCode) {
+						    	window.location.reload(true);
+							},
+							"json"
+							);
 				},
-				"json"
-		);	
+				'hierarchy': function(){
+					$.post(
+							"/starexec/services/space/makePrivate/" + spaceId + "/" + true,
+							{},
+							function(returnCode) {
+						    	window.location.reload(true);
+							},
+							"json"
+							);
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}
+		});
 	});
 	
 	log('jQuery UI buttons initialized');
@@ -576,6 +614,7 @@ function onSpaceDrop(event, ui) {
 			}		
 		});		
 	}
+	
 	// If copying subspaces to other spaces
 	else if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
 		// Display the confirmation dialog
