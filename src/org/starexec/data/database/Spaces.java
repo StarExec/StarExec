@@ -1453,7 +1453,10 @@ public class Spaces {
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		Connection con = null;			
 		
-		if (!Permissions.get(usrId, spaceId).isLeader()){
+		if (Permissions.get(usrId, spaceId) == null){
+			return false;
+		}
+		else if (!Permissions.get(usrId, spaceId).isLeader()) {
 			return false;
 		}
 		if (pbc && !hierarchy){
