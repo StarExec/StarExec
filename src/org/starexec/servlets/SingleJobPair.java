@@ -125,7 +125,7 @@ public class SingleJobPair extends HttpServlet {
 			// Build a path to the newly written benchmark
 		  
 		    File newBenchmarkFile = new File(R.BENCHMARK_PATH, "" + bench.getUserId());
-		    newBenchmarkFile = new File(newBenchmarkFile,  shortDate.format(new Date()));
+		    newBenchmarkFile = new File(newBenchmarkFile,  bench.getName());
 		    bench.setPath(newBenchmarkFile.getAbsolutePath());
 
 			// Write the new benchmark file to disk 

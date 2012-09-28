@@ -30,7 +30,9 @@
 				<tbody>
 					<tr>
 						<td>benchmark contents</td>
-						<td><textarea id="benchmarkContents" name="benchmarkContents" rows="60" cols="50"/></textarea></td>
+						<td><textarea id="benchmarkContents" name="benchmarkContents" rows="60" cols="50"/>
+						benchmark contents
+						</textarea> </td>
 					</tr>
 				</tbody>
 					<tr id="publicSolvers">
@@ -41,9 +43,8 @@
 								</c:forEach>
 						</select></td>
 					</tr>
-			</table>	
-			<button class="cancelBtn" type="button">cancel</button>																
-			<button class="saveBtn" type="submit">save</button>
+			</table>																
+			<button class="saveBtn" type="submit">start job</button>
 		</fieldset>
 	</form>
 </star:template>
