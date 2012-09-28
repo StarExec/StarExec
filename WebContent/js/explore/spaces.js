@@ -7,7 +7,6 @@ var commentTable;
 var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
-var pbc;
 
 
 $(document).ready(function(){	
@@ -71,7 +70,7 @@ function initSpaceDetails(){
 		$('#actionList').hide();
 	}
 	
-	pbc = false
+	pbc = false;
 }
 
 /**
@@ -173,7 +172,6 @@ function initButtonUI() {
 				function(returnCode) {
 			    	switch(returnCode) {
 			    	case 0:
-						showMessage('error', "failed to make the space public", 5000);
 						break;
 			    	default:
 						break;
@@ -191,7 +189,6 @@ function initButtonUI() {
 				function(returnCode) {
 			    	switch(returnCode) {
 			    	case 0:
-						showMessage('error', "failed to make the space private", 5000);
 						break;
 			    	default:
 						break;
@@ -1571,17 +1568,19 @@ function getSpaceDetails(id) {
 	});
 }
 
-function isSpacePublic(id) {
+function handlePublicButton(id) {
 	$('#loader').show();
 	$.post(  
 		"/starexec/services/space/isSpacePublic/" + id,  
 		function(returnCode){
 			switch(returnCode){
 			case 0:
-				pbc = false;
+				$('#makePublic').fadeIn('fast');
+				$('#makePrivate').fadeOut('fast');
 				break;
 			case 1:
-				pbc = true;
+				$('#makePublic').fadeOut('fast');
+				$('#makePrivate').fadeIn('fast');
 				break;
 			}	
 		},  
@@ -1590,7 +1589,6 @@ function isSpacePublic(id) {
 		alert('Session expired');
 		window.location.reload(true);
 	});
-	return pbc;
 }
 
 /**
@@ -1746,14 +1744,7 @@ function checkPermissions(perms, id) {
 		
 		$('#editSpace').fadeIn('fast');
 		
-		if(isSpacePublic(id)){
-			$('#makePublic').fadeOut('fast');
-			$('#makePrivate').fadeIn('fast');
-		} else {
-			$('#makePublic').fadeIn('fast');
-			$('#makePrivate').fadeOut('fast');
-		}
-		
+		handlePublicButton(id);
 	} else {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
@@ -1797,7 +1788,6 @@ function checkPermissions(perms, id) {
 	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));	
 	log('permissions checked and processed');
 }
-
 
 /**
  * Updates the URLs to perform actions on the current space
