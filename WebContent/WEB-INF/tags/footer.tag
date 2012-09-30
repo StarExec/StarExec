@@ -10,7 +10,7 @@
 			<li>|</li>
 			<li><a onclick="javascript:logout();">logout</a></li>
 		    <li>|</li>
-		  <li><a id="writeJob" href="/starexec/secure/add/singleJobPair.jsp">write job</a></li>
+		  <li><a id="writeJob" href="/starexec/secure/add/singleJobPair.jsp">quick job</a></li>
 		   <li>|</li>
 		  <li><a id="about" href="/starexec/public/about.jsp">about</a></li>
 		</ul>

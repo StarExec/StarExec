@@ -1486,7 +1486,7 @@ public class Spaces {
 			subSpaces.add(Spaces.get(spaceId));
 			for (Space space : subSpaces) {
 				try {				
-					setPublicSpace(spaceId, usrId, pbc, false);
+					setPublicSpace(space.getId(), usrId, pbc, false);
 				} catch (Exception e){			
 					log.error(e.getMessage(), e);		
 				} finally {

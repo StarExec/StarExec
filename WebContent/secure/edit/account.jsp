@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -6,11 +6,15 @@
 		User user = SessionUtil.getUser(request);
 		long disk_usage = Users.getDiskUsage(user.getId());
 		int userId = user.getId();
-		
-		request.setAttribute("userId", userId);
-		request.setAttribute("diskQuota", FileUtils.byteCountToDisplaySize(user.getDiskQuota()));
-		request.setAttribute("diskUsage", FileUtils.byteCountToDisplaySize(disk_usage));
-	} catch (Exception e) {
+		if (userId!=R.PUBLIC_USER_ID){
+			request.setAttribute("userId", userId);
+			request.setAttribute("diskQuota", FileUtils.byteCountToDisplaySize(user.getDiskQuota()));
+			request.setAttribute("diskUsage", FileUtils.byteCountToDisplaySize(disk_usage));
+		}
+		else{
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Only registered users can edit their accounts.");	
+		}
+		} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 	}
 %>
