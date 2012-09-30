@@ -21,10 +21,11 @@
 			<%--<li>|</li>--%>
 		   <%--  <li><a href="/starexec/public/registration.jsp">register</a></li>--%>
 		   <li>|</li>
-		  <li><a href="/starexec/public/guest.jsp">guest</a></li>
+		  <li><a href="/starexec/secure/j_security_check?j_username=public&j_password=public">guest</a></li>
 		  		   <li>|</li>
 		   <li><a id="about" href="/starexec/public/about.jsp">about</a></li>
 		</ul>		
 	</c:if>				
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy; 2012 the university of iowa</a>			
 </footer>
+

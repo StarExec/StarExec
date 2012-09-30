@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Space;
 
 /**
@@ -47,6 +48,17 @@ public class Communities {
 		}
 		
 		return null;
+	}
+	
+	public static List<Space> getCommsWithPublicSolvers(){
+		List<Space> commSpaces = Communities.getAll();
+		Solvers.getPublicSolversByCommunity(3);
+		for (Space comm:commSpaces){
+			if (Solvers.getPublicSolversByCommunity(comm.getId()).size() < 1){
+				commSpaces.remove(comm);
+			}
+		}
+		return commSpaces;
 	}
 	
 	/**

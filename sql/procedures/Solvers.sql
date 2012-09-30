@@ -28,6 +28,16 @@ CREATE PROCEDURE GetPublicSolvers()
 		(SELECT id from spaces where public_access=1));
 	END //
 	
+-- Gets all solvers that reside in public spaces of a specific community
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetPublicSolversByCommunity;
+CREATE PROCEDURE GetPublicSolversByCommunity(IN _commId INT, IN _pubUserId INT)
+	BEGIN
+		SELECT DISTINCT * from solvers where id in 
+		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
+		(SELECT id from spaces where (IsPublic(id,_pubUserId) = 1) AND id in (select descendant from closure where ancestor = _commId)));
+	END //
+	
 	
 -- Adds a Space/Solver association
 -- Author: Skylar Stark

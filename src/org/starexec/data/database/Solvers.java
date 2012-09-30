@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.util.Util;
@@ -205,6 +206,41 @@ public class Solvers {
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetPublicSolvers()}");				
+			ResultSet results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+			
+			while(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));				
+				s.setUploadDate(results.getTimestamp("uploaded"));
+				s.setDescription(results.getString("description"));
+				s.setDownloadable(results.getBoolean("downloadable"));
+				s.setDiskSize(results.getLong("disk_size"));
+				s.setPath(results.getString("path"));
+				solvers.add(s);
+			}									
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	
+	/**
+	 * @return a list of all solvers that reside in a public space
+	 * @author Benton McCune
+	 */
+	public static List<Solver> getPublicSolversByCommunity(Integer commId){
+		Connection con = null;	
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetPublicSolversByCommunity(?,?)}");	
+			procedure.setInt(1, commId);
+			procedure.setInt(1, R.PUBLIC_USER_ID);
 			ResultSet results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			

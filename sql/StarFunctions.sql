@@ -151,5 +151,19 @@ CREATE FUNCTION GetWallClock(start_time TIMESTAMP, end_time TIMESTAMP)
 		SET wallclock = TIMESTAMPDIFF(MICROSECOND, start_time, end_time)/1000;
 		RETURN wallclock;
 	END//
+
+--  Tells you whether a space is public or not
+--  returns the number of times public_user is in the space (should be 0 or 1)	
+--  Author: Benton McCune
+DROP FUNCTION IF EXISTS IsPublic;
+CREATE FUNCTION IsPublic(_spaceId int, _pubUserId int)
+	RETURNS INT
+	BEGIN
+		DECLARE isPublic INT;
+	  		select count(*) INTO isPublic 
+	  		from user_assoc 
+	  		where space_id = _spaceId and user_id = _pubUserId;
+	  	RETURN isPublic;	
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file
