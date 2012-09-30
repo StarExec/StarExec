@@ -356,7 +356,6 @@ public class RESTHelpers {
 	 * @author Todd Elvers
 	 */
 	protected static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request){
-		
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
@@ -434,6 +433,7 @@ public class RESTHelpers {
 		    		entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
 		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
 		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+		    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
 		    		
 		    		dataTablePageEntries.add(entry);
 		    	}
@@ -1048,6 +1048,7 @@ public class RESTHelpers {
     		entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
     		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
     		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
     		
     		dataTablePageEntries.add(entry);
     	}

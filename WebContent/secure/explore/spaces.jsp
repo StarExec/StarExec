@@ -23,6 +23,7 @@
 						<th>complete</th>
 						<th>pending</th>
 						<th>error</th>
+						<th>time</th>
 					</tr>
 				</thead>			
 			</table>
