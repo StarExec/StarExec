@@ -186,9 +186,9 @@ CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 
 	
 -- Returns all spaces belonging to the space with the given id.
--- Author: Tyler Jensen
+-- Author: Tyler Jensen & Benton McCune
 DROP PROCEDURE IF EXISTS GetSubSpacesById;
-CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
+CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
 			SELECT *
@@ -203,7 +203,7 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 				(SELECT child_id 
 				 FROM set_assoc 
 					JOIN closure ON set_assoc.child_id=closure.ancestor 
-					JOIN user_assoc ON (user_assoc.user_id=_userId AND user_assoc.space_id=closure.descendant) 
+					JOIN user_assoc ON ( (user_assoc.user_id in (_userId, _publicUserId)) AND user_assoc.space_id=closure.descendant) 
 					WHERE set_assoc.space_id=_spaceId)
 			ORDER BY name;
 		END IF;
@@ -369,13 +369,13 @@ CREATE PROCEDURE GetCommunityOfSpace(IN _id INT)
 	END //
 
 -- Querry if a space is a public space
--- Author: Ruoyu Zhang
+-- Author: Ruoyu Zhang, edited by Benton McCune
 DROP PROCEDURE IF EXISTS IsPublicSpace;
-CREATE PROCEDURE IsPublicSpace(IN _spaceId INT)
+CREATE PROCEDURE IsPublicSpace(IN _spaceId INT, IN _publicUserId INT)
 	BEGIN		
-		SELECT public_access
-		FROM spaces
-		WHERE id = _spaceId;
+		SELECT count(*) 
+		FROM user_assoc
+		WHERE space_id = _spaceId AND user_id = _publicUserId;
 	END //
 
 -- Change a space to a public space or a private one

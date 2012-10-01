@@ -240,7 +240,7 @@ public class Solvers {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetPublicSolversByCommunity(?,?)}");	
 			procedure.setInt(1, commId);
-			procedure.setInt(1, R.PUBLIC_USER_ID);
+			procedure.setInt(2, R.PUBLIC_USER_ID);
 			ResultSet results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			

@@ -33,7 +33,7 @@
 	  		<property key="PUBLIC_SPACE_ID" value="1731" /> 							
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
-			<property key="SGE_STATISTICS_PERIOD" value="120" />
+			<property key="SGE_STATISTICS_PERIOD" value="45" />
 			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />

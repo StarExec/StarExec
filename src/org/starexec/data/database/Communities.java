@@ -52,13 +52,18 @@ public class Communities {
 	
 	public static List<Space> getCommsWithPublicSolvers(){
 		List<Space> commSpaces = Communities.getAll();
-		Solvers.getPublicSolversByCommunity(3);
+		List<Space> returnSpaces = Communities.getAll();
+		log.debug("# of comms = " + commSpaces.size());
 		for (Space comm:commSpaces){
+			log.debug("comm id = " + comm.getId());
+			log.debug("public solvers in this comm = " + Solvers.getPublicSolversByCommunity(comm.getId()).size());
 			if (Solvers.getPublicSolversByCommunity(comm.getId()).size() < 1){
-				commSpaces.remove(comm);
+				returnSpaces.remove(comm);
 			}
+			log.debug("returnSpaces size = " +returnSpaces.size());
 		}
-		return commSpaces;
+		log.debug("returnSpaces size = " +returnSpaces.size());
+		return returnSpaces;
 	}
 	
 	/**

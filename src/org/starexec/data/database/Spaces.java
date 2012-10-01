@@ -536,12 +536,13 @@ public class Spaces {
 	 * @param con the database connection to use
 	 * @return the list of subspaces of the given space
 	 * @throws Exception
-	 * @author Todd Elvers & Skylar Stark
+	 * @author Todd Elvers & Skylar Stark & Benton McCune
 	 */
 	protected static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive, Connection con) throws Exception{
-		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?, ?)}");
 		procedure.setInt(1, spaceId);
 		procedure.setInt(2, userId);
+		procedure.setInt(3, R.PUBLIC_USER_ID);
 		ResultSet results = procedure.executeQuery();
 		List<Space> subSpaces = new LinkedList<Space>();
 		
@@ -1428,12 +1429,13 @@ public class Spaces {
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL IsPublicSpace(?)}");
-			procedure.setInt(1, spaceId);					
+			CallableStatement procedure = con.prepareCall("{CALL IsPublicSpace(?,?)}");
+			procedure.setInt(1, spaceId);	
+			procedure.setInt(2, R.PUBLIC_USER_ID);
 			ResultSet results = procedure.executeQuery();
 		
 			if(results.first()) {
-				return results.getBoolean(1);
+				return (results.getInt(1)>0);
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

@@ -6,7 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 
@@ -85,7 +87,7 @@ public class SessionUtil {
 	 */
 	public static Permission getPermission(HttpSession session, int spaceId) {
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
-		
+		log.debug("get Permission for space " + spaceId);
 		// If the cache doesn't contain the requested permission...
 		if(!cache.containsKey(spaceId)) {
 			// Then cache it
@@ -96,8 +98,12 @@ public class SessionUtil {
 			// If the cache was successful and it was added, return the permission
 			return cache.get(spaceId);
 		}
-		
-		// Return null if the cache couldn't add it, or it doesn't exist
+		//if the cache couldn't add it, or it doesn't exist, but the space is public
+		if (Spaces.isPublicSpace(spaceId)){
+			log.debug("Returning public users permissions");
+			return Permissions.get(R.PUBLIC_USER_ID, spaceId);
+		}
+		// Return null if the cache couldn't add it and space is private, or it doesn't exist
 		return null;
 	}
 	
