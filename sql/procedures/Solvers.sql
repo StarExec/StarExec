@@ -248,6 +248,16 @@ CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 		WHERE user_id = _userId;
 	END //
 
+-- Returns the number of public spaces a solver is in
+-- Benton McCune
+DROP PROCEDURE IF EXISTS IsSolverPublic;
+CREATE PROCEDURE IsSolverPublic(IN _solverId INT, IN _publicUserId INT)
+	BEGIN
+		SELECT count(*) as solverPublic
+		FROM solver_assoc
+		WHERE solver_id = _solverId
+		AND (IsPublic(space_id,_publicUserId) = 1);
+	END //
 	
 -- Removes the association between a solver and a given space;
 -- places the path of the solver in _path if it has no other

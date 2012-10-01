@@ -88,6 +88,10 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeSolver(int solverId, int userId) {
+		if (Solvers.isPublic(solverId)){
+			return true;
+		}
+		
 		Connection con = null;			
 		
 		try {
@@ -118,6 +122,10 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeBench(int benchId, int userId) {
+		if (Benchmarks.isPublic(benchId)){
+			return true;
+		}		
+		
 		Connection con = null;			
 		
 		try {

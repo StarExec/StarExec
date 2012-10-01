@@ -286,7 +286,17 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 				WHERE space_id = _id)
 		ORDER BY bench.name;
 	END //
-	
+
+-- Returns the number of public spaces a benchmark is in
+-- Benton McCune
+DROP PROCEDURE IF EXISTS IsBenchPublic;
+CREATE PROCEDURE IsBenchPublic(IN _benchId INT, IN _publicUserId INT)
+	BEGIN
+		SELECT count(*) as benchPublic
+		FROM bench_assoc
+		WHERE bench_id = _benchId
+		AND (IsPublic(space_id,_publicUserId) = 1);
+	END //
 	
 -- Removes the association between a benchmark and a given space;
 -- places the path of the benchmark in _path if it has no other

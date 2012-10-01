@@ -14,6 +14,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Processor;
@@ -1259,5 +1260,27 @@ public class Benchmarks {
 		}
 
 		return 0;
+	}
+
+	public static boolean isPublic(int benchId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL IsSolverPublic(?,?)}");
+			procedure.setInt(1, benchId);
+			procedure.setInt(2, R.PUBLIC_USER_ID);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return (results.getInt("benchPublic") > 0);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return false;
 	}
 }

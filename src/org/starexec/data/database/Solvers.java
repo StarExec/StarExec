@@ -1094,4 +1094,26 @@ public class Solvers {
 
 		return 0;
 	}
+
+	public static boolean isPublic(int solverId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL IsSolverPublic(?,?)}");
+			procedure.setInt(1, solverId);
+			procedure.setInt(2, R.PUBLIC_USER_ID);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return (results.getInt("solverPublic") > 0);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return false;
+	}
 }
