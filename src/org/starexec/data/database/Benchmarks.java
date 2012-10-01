@@ -1267,7 +1267,7 @@ public class Benchmarks {
 
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL IsSolverPublic(?,?)}");
+			CallableStatement procedure = con.prepareCall("{CALL IsBenchPublic(?,?)}");
 			procedure.setInt(1, benchId);
 			procedure.setInt(2, R.PUBLIC_USER_ID);
 			ResultSet results = procedure.executeQuery();
