@@ -119,11 +119,9 @@ function initUI() {
             	  $('#publicSolver').replaceWith(box);
               });
               
-              $.getJSON('/starexec/services/benchmarks/' + benchId + '/contents?limit=-1',{}, function(result){
+              $.get('/starexec/services/benchmarks/' + benchId + '/contents?limit=-1',{}, function(result){
             	  $('#benchmarkContents').val(result);
-              });
-              
-              
+              });          
               
             });
        
