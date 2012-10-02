@@ -73,7 +73,7 @@ public class RESTServices {
 	
 	/**
 	 * @return a json string representing all public solvers of a community
-	 * @author Benton McCune
+	 * @author Benton McCune and Ruoyu Zhang
 	 */
 	@GET
 	@Path("/communities/solvers/{id}")

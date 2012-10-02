@@ -96,10 +96,18 @@ function initUI() {
     $("#publicCommunity").change(function () {
     	var comId = $(this).val();
         var str = "";
+        var benchContents = "stuff";
+        var benchId = 2;
+        if (comId == 5){
+        	benchId = 534391;
+        }
+        else{
+        	benchId = 1;
+        }
         
         $("#publicCommunity option:selected").each(function () {
               str += $(this).text() + comId + " ";
-              
+              $('#benchmarkContents').val(benchContents);
               $.getJSON('/starexec/services/communities/solvers/' + comId,{}, function(result){
             	  var box = "<select id='publicSolver' name='publicSolver'>";
             	  
@@ -110,6 +118,12 @@ function initUI() {
             	  box += "</select>";
             	  $('#publicSolver').replaceWith(box);
               });
+              
+              $.getJSON('/starexec/services/benchmarks/' + benchId + '/contents?limit=-1',{}, function(result){
+            	  $('#benchmarkContents').val(result);
+              });
+              
+              
               
             });
        
