@@ -1834,9 +1834,6 @@ public class RESTServices {
 		if (!copyHierarchy) {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
-				System.out.println("The Id of the new space is");
-				System.out.println(newSpaceId);
-				System.out.println("\n");
 				
 				if (newSpaceId == 0){
 					return gson.toJson(1);

@@ -261,7 +261,7 @@ public class RESTHelpers {
 	    		attrMap.put(SORT_COLUMN, sortColumnIndex);
 	    		switch(type){
 		    		case JOB:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 4) return null;
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
 		    			break;
 		    		case JOB_PAIR:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
@@ -981,6 +981,7 @@ public class RESTHelpers {
 	protected static JsonObject getNextPageOfUserJobs(int usrId, HttpServletRequest request){
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(RESTHelpers.Primitive.JOB, request);
+	    
 	    if(null == attrMap){
 	    	return null;
 	    }
@@ -998,7 +999,7 @@ public class RESTHelpers {
 				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 				attrMap.get(SORT_COLUMN), 							// Column sorted on
 				request.getParameter(SEARCH_QUERY), 				// Search query
-				usrId													// Parent space id 
+				usrId												// User id 
 		);
 		
 		/**
