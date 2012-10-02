@@ -104,6 +104,10 @@ public class Communities {
 	 * @author Todd Elvers
 	 */
 	public static boolean leave(int userId, int commId) {
+		if (userId==R.PUBLIC_USER_ID){
+			return false;
+		}
+		
 		Connection con = null;			
 		
 		try {
