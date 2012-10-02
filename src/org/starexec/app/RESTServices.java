@@ -44,7 +44,9 @@ import org.starexec.util.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -67,6 +69,32 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		
 		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false)));
+	}
+	
+	/**
+	 * @return a json string representing all public solvers of a community
+	 * @author Benton McCune
+	 */
+	@GET
+	@Path("/communities/solvers/{id}")
+	@Produces("application/json")	
+	public String getPublicSolvers(@PathParam("id") int commId, @Context HttpServletRequest request) {					
+		log.debug("commId = " + commId);
+		List<Solver> publicSolvers = Solvers.getPublicSolversByCommunity(commId);
+		log.debug("# of public solvers = " + publicSolvers.size());
+		
+		JsonObject displayObject = new JsonObject();
+		JsonArray jSSolvers = new JsonArray();
+		for (Solver solver:publicSolvers){
+			JsonArray jSSolver = new JsonArray();
+			jSSolver.add(new JsonPrimitive(solver.getId()));
+			jSSolver.add(new JsonPrimitive(solver.getName()));
+			jSSolvers.add(jSSolver);
+		}
+		displayObject.add("solverData", jSSolvers);
+		log.debug("JsonArray = " + jSSolvers.toString());
+		log.debug("displayObject = " + displayObject.toString());
+		return gson.toJson(jSSolvers);
 	}	
 	
 	/**
@@ -226,7 +254,7 @@ public class RESTServices {
 		Permission p = null;
 		
 		if(Permissions.canUserSeeSpace(spaceId, userId)) {
-			s = Spaces.get(spaceId);
+			s = Spaces.get(spaceId); 
 			p = SessionUtil.getPermission(request, spaceId);
 		}					
 		
@@ -1869,6 +1897,7 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
+	
 	
 	/**
 	 * Make a space public
