@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -82,7 +83,9 @@ public class SingleJobPair extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to save new benchmark.");	
 			} else {
 				log.debug("success!!");
-				response.sendRedirect("/starexec/secure/details/job.jsp?id=" + jobId);	
+				Integer jobPairId = Jobs.getDetailed(jobId).getJobPairs().get(0).getId();
+				response.sendRedirect("/starexec/secure/details/pair.jsp?id=" + jobPairId);
+				//response.sendRedirect("/starexec/secure/details/job.jsp?id=" + jobId);	
 			}									
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
