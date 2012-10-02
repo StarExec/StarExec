@@ -45,7 +45,7 @@
 				</tbody>
 					<tr id="publicSolvers">
 						<td class="label"><p>solvers</p></td>
-						<td><select id="publicSolver" >
+						<td><select id="publicSolver" name="publicSolver">
 								
 								<option value = "whatever"/>
 								

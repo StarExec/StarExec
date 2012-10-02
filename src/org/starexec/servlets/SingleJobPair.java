@@ -64,7 +64,7 @@ public class SingleJobPair extends HttpServlet {
     	try {	
 			// Parameter validation
 			if(!this.isValidRequest(request)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The save configuration request was malformed.");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The quick job request was malformed.");
 				return;
 			} 
 			

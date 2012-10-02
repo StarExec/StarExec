@@ -101,11 +101,11 @@ function initUI() {
               str += $(this).text() + comId + " ";
               
               $.getJSON('/starexec/services/communities/solvers/' + comId,{}, function(result){
-            	  var box = "<select id='publicSolver'>";
+            	  var box = "<select id='publicSolver' name='publicSolver'>";
             	  
             	  for (var i = 0; i < result.length; i++){
             		  
-            		  box += "<option value = '" + result[i][0] + "'>" + result[i][1] + "</option>";
+            		  box += "<option value='" + result[i][0] + "'>" + result[i][1] + "</option>";
             	  }
             	  box += "</select>";
             	  $('#publicSolver').replaceWith(box);
