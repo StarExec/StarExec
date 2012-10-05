@@ -29,8 +29,11 @@
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />	
-			<property key="PUBLIC_USER_ID" value="62" /> 
-	  		<property key="PUBLIC_SPACE_ID" value="1731" /> 							
+			<!--<property key="PUBLIC_USER_ID" value="62" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="1731" /> -->
+	  	    <property key="PUBLIC_USER_ID" value="2" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
+	  									
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
@@ -80,6 +83,9 @@
 	</configuration>
 	<configuration name="ben_dev_317" inherit="production">
    		<class name="org.starexec.constants.R">  
+   		
+   		
+   		
  <!--   MYSQL Configuration   --> 
   		<property key="MYSQL_DATABASE" value="starexec" /> 
 		<property key="MYSQL_USERNAME" value="root" /> 
@@ -102,8 +108,8 @@
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />    
-	  <property key="PUBLIC_USER_ID" value="8" /> 
-	  <property key="PUBLIC_SPACE_ID" value="7" /> 
+	  <property key="PUBLIC_USER_ID" value="2" /> 
+	  <property key="PUBLIC_SPACE_ID" value="4" /> 
  <!--   SGE Configuration     --> 
 	  <property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -sql.txt" /> 
 	  <property key="QUEUE_USAGE_COMMAND" value="C:\\Users\\Ben\\CmdSpoof -gc.txt" /> 
