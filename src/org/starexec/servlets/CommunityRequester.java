@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
 import org.starexec.data.to.CommunityRequest;
@@ -40,7 +41,9 @@ public class CommunityRequester extends HttpServlet {
 			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestNotSent&cid=-1");
 			return;
 		}
-		
+		if (user.getId()==R.PUBLIC_USER_ID){
+			return;
+		}
 		boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
 		if(added){
 			// Send the invite to the leaders of the community 

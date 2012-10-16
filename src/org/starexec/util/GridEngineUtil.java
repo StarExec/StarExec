@@ -163,6 +163,7 @@ public class GridEngineUtil {
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
 		String results = Util.bufferToString(reader);
+		log.debug(R.QUEUE_DETAILS_COMMAND + name + " = " + results);
 		try {
 			reader.close();
 		}
@@ -178,9 +179,9 @@ public class GridEngineUtil {
 			if(matcher.group().length() > 2) {
 				String nodeName = matcher.group().substring(1, matcher.group().length() - 1);
 				nodes.add(new WorkerNode(nodeName));
+				log.debug("Node Name = " + nodeName + ", Queue = " + name);
 			}
 		}
-
 		return nodes;
 	}
 
