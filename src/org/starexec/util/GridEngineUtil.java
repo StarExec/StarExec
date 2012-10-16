@@ -103,6 +103,9 @@ public class GridEngineUtil {
 
 				// For each of the queue's node's, add an association
 				for(WorkerNode node : GridEngineUtil.getQueueAssociations(name)) {
+					log.debug("[loadQueueDetails] Associating queue (" + name + 
+							") with node ("
+							+ node.getName());
 					Queues.associate(name, node.getName());	
 				}				
 			}
@@ -163,7 +166,7 @@ public class GridEngineUtil {
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
 		String results = Util.bufferToString(reader);
-		log.debug(R.QUEUE_DETAILS_COMMAND + name + " = " + results);
+		log.debug("getQueueAssociations called on queue = " + name);
 		try {
 			reader.close();
 		}
@@ -181,7 +184,7 @@ public class GridEngineUtil {
 				nodes.add(new WorkerNode(nodeName));
 				log.debug("Node Name = " + nodeName + ", Queue = " + name);
 			}
-		}
+		}		
 		return nodes;
 	}
 
