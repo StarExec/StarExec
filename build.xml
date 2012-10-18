@@ -53,9 +53,9 @@
 		<replaceregexp file="sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
 		<replaceregexp file="sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
 		
-		<!-- Update the log4j config file to only record INFO level events (temporarily debug) -->
+		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
-	        <entry key="log4j.rootLogger" value="DEBUG, STAREXEC"/>
+	        <entry key="log4j.rootLogger" value="INFO, STAREXEC"/>
 	    </propertyfile>
 		
 		<!-- Clear the build directory if it exists and re-make the dir -->
