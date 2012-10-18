@@ -48,6 +48,30 @@ public class Queues {
 	}
 	
 	/**
+	 * Removes all associations between queues and nodes in db so that only up to date data
+	 * will be stored.
+	 * @return True if the operation was a success, false otherwise. 
+	 * @author Benton McCune
+	 */
+	public static boolean clearQueueAssociations() {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL clearQueueAssociations()}");			
+			procedure.executeUpdate();						
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	
+	/**
 	 * Gets all nodes in the cluster that belong to the queue
 	 * @param id The id of the queue to get nodes for
 	 * @return A list of nodes that belong to the queue

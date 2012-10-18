@@ -25,6 +25,14 @@ CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
 		INSERT IGNORE INTO nodes (name)
 		VALUES (_name);
 	END //
+
+-- Clear all Queue Associations from the db
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS ClearQueueAssociations;
+CREATE PROCEDURE ClearQueueAssociations()
+	BEGIN
+		TRUNCATE queue_assoc;
+	END //
 	
 -- Adds a SGE queue to the database and ignores duplicates
 -- Author: Tyler Jensen

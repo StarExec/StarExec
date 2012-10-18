@@ -44,12 +44,32 @@ public class GridEngineUtil {
 	private static Pattern queueKeyValPattern;
 	private static Pattern queueAssocPattern;
 	private static ExecutorService threadPool = null;
-
+	
+	private static String testString = "queuename                      qtype resv/used/tot. load_avg arch          states\r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"all.q@n001.star.cs.uiowa.edu   BIP   0/0/8          0.05     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"all.q@n002.star.cs.uiowa.edu   BIP   0/0/8          0.02     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"all.q@n003.star.cs.uiowa.edu   BIP   0/0/8          0.07     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"all.q@n004.star.cs.uiowa.edu   BIP   0/0/8          0.02     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"n001.q@n001.star.cs.uiowa.edu  BIP   0/0/1          0.05     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"n002.q@n002.star.cs.uiowa.edu  BIP   0/0/1          0.02     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"n003.q@n003.star.cs.uiowa.edu  BIP   0/0/1          0.07     lx24-amd64    \r\n" + 
+			"---------------------------------------------------------------------------------\r\n" + 
+			"n004.q@n004.star.cs.uiowa.edu  BIP   0/0/1          0.02     lx24-amd64    ";
+	
 	static {
 		// Compile the SGE output parsing patterns when this class is loaded
 		nodeKeyValPattern = Pattern.compile(R.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 		queueKeyValPattern = Pattern.compile(R.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);		
+		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
+		
+		
 		threadPool = Executors.newCachedThreadPool();		
 	}
 
@@ -100,8 +120,8 @@ public class GridEngineUtil {
 
 				// Set the queue as active since we just saw it
 				Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
-
-				// For each of the queue's node's, add an association
+			}
+		/*		// For each of the queue's node's, add an association
 				for(WorkerNode node : GridEngineUtil.getQueueAssociations(name)) {
 					log.debug("[loadQueueDetails] Associating queue (" + name + 
 							") with node ("
@@ -109,6 +129,9 @@ public class GridEngineUtil {
 					Queues.associate(name, node.getName());	
 				}				
 			}
+		*/  
+			//Adds all the associations to the db
+			GridEngineUtil.setQueueAssociationsInDb();
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		} finally {
@@ -154,38 +177,44 @@ public class GridEngineUtil {
 	}
 
 	/**
-	 * Gets all of the worker nodes that belong to a queue 
-	 * @param name The name of the queue to find worker nodes for
-	 * @return A list of worker nodes that belong to the given queue
+	 * Extracts queue-node association from SGE and puts it into the db.
+	 * @return true if successful
+	 * @author Benton McCune
 	 */
-	public static List<WorkerNode> getQueueAssociations(String name) {
-		// Create the list of nodes that will be returned		
-		List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+	public static Boolean setQueueAssociationsInDb() {
 
-		// Call SGE to get details for the given node (the child worker nodes are contained in the details output)
+		// Call SGE to get info on the queues
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
-		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
+		
+		BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
 		String results = Util.bufferToString(reader);
-		log.debug("getQueueAssociations called on queue = " + name);
+		//String results = testString;
+		log.debug("qstat -f results = " + results);
+		
 		try {
 			reader.close();
 		}
 		catch (Exception e) {
-			log.warn("get Queue Associations says " + e.getMessage(), e);
+			log.warn("set Queue Associations says " + e.getMessage(), e);
 		}
+						
 		// Parse the output from the SGE call to get the child worker nodes
 		java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
-
+		log.debug("queueAssociation pattern = " + matcher.pattern());		
+		
+		String[] capture;  // string array to store a queue and its associated node
+		//Remove all association info from db so stale data isn't displayed
+		Queues.clearQueueAssociations();
 		// For each match...
 		while(matcher.find()) {
-			// Parse out the worker node name from the regex parser and add it to the return list
-			if(matcher.group().length() > 2) {
-				String nodeName = matcher.group().substring(1, matcher.group().length() - 1);
-				nodes.add(new WorkerNode(nodeName));
-				log.debug("Node Name = " + nodeName + ", Queue = " + name);
-			}
-		}		
-		return nodes;
+			// Parse out the queue and node names from the regex parser and add it to the return list			
+			capture = matcher.group().split("@");
+			log.debug("queue = " + capture[0]);
+			log.debug("node = " + capture[1]);
+			Queues.associate(capture[0], capture[1]);
+		}
+				
+		return true;
 	}
 
 	/**
