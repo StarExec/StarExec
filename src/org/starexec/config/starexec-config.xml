@@ -29,10 +29,8 @@
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />	
-			<!--<property key="PUBLIC_USER_ID" value="62" /> 
-	  		<property key="PUBLIC_SPACE_ID" value="1731" /> -->
-	  	    <property key="PUBLIC_USER_ID" value="2" /> 
-	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
+			<property key="PUBLIC_USER_ID" value="62" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="1731" />
 	  									
 			<!-- SGE Configuration -->
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
@@ -81,10 +79,14 @@
 			</property>						
 		</class>
 	</configuration>
+	<configuration name="true_production" inherit="production">
+   		<class name="org.starexec.constants.R">   		
+   			<property key="PUBLIC_USER_ID" value="2" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
+   		</class>
+    </configuration>
 	<configuration name="ben_dev_317" inherit="production">
-   		<class name="org.starexec.constants.R">  
-   		
-   		
+   		<class name="org.starexec.constants.R">   		
    		
  <!--   MYSQL Configuration   --> 
   		<property key="MYSQL_DATABASE" value="starexec" /> 
