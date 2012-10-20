@@ -89,7 +89,8 @@
 				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>
 				<li><a class="btnRun" id="makePublic">make public</a></li>
-				<li><a class="btnRun" id="makePrivate">make private</a></li>		
+				<li><a class="btnRun" id="makePrivate">make private</a></li>
+				<li><a class="btnDown" id="downloadSpace">download space</a></li>
 			</ul>
 		</fieldset>	
 		

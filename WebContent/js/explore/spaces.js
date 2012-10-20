@@ -118,7 +118,8 @@ function initCommentUI(){
 /**
  * Basic initialization for jQuery UI buttons (sets style and icons)
  */
-function initButtonUI() {	
+function initButtonUI() {
+	
 	$('.btnAdd').button({
 		icons: {
 			secondary: "ui-icon-plus"
@@ -1840,6 +1841,29 @@ function updateButtonIds(id) {
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
 	$('#downloadXML').attr('href', "/starexec/secure/download?type=spaceXML&id="+id);
 	$('#uploadXML').attr('href', "/starexec/secure/add/batchSpace.jsp?sid=" + id);
+	$("#downloadSpace").click(function(){		
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy-txt').text('do you want to download the single space or the hierarchy?');
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space': function(){
+					window.location.href="/starexec/secure/download?type=space&hierarchy=false&id="+id;
+					$(this).dialog("close");
+				},
+				'hierarchy': function(){
+					window.location.href="/starexec/secure/download?type=space&hierarchy=true&id="+id;
+					$(this).dialog("close");
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
 	log('updated action button space ids to ' + id);
 }
 

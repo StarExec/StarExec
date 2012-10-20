@@ -75,8 +75,15 @@ public class Download extends HttpServlet {
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
 				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response);
+			} else if (request.getParameter("type").equals("space")) {
+				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
+				if(request.getParameter("hierarchy").equals("false")){
+					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response);
+				} else {
+					fileName = handleSpaceHierarchy(space, u.getId(), u.getArchiveType(), response);
+				}
 			}
-		
+			
 			// Redirect based on success/failure
 			if(fileName != null) {
 				response.sendRedirect("/starexec/secure/files/" + fileName);
@@ -88,7 +95,7 @@ public class Download extends HttpServlet {
 			log.error(e.getMessage(), e);
 		}
 	}	
-    
+
 	/**
 	 * Processes a solver to be downloaded. The solver is archived in a format that is
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
@@ -356,6 +363,112 @@ public class Download extends HttpServlet {
     }
     
     /**
+     * Handles download of a single space, return the name of compressed file containing the space.
+     * @param space The space needed to be downloaded
+     * @param uid The id of the user making the request
+     * @param format The file format of the generated compressed file
+     * @param response The servlet response sent back
+     * @return Name of the generated file
+     * @throws IOException
+     * @author Ruoyu Zhang
+     */
+	private String handleSpace(Space space, int uid, String format, HttpServletResponse response) throws IOException {
+		// If we can see this benchmark AND the benchmark is downloadable...
+		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
+			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			uniqueDir.createNewFile();
+			
+			String tempDirName = UUID.randomUUID().toString();
+			File tempDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), tempDirName);
+			tempDir.mkdirs();
+			
+			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
+			for(Benchmark b: benchList){
+				if(b.isDownloadable()){
+					FileUtils.copyFile(new File(b.getPath()), new File(tempDir.getAbsolutePath() + File.separator + b.getName()));
+				}
+			}
+			
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format);
+			
+			return fileName;
+		}
+		else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+		}
+		return null;
+	}
+	
+	/**
+	 * Handles download of the hierarchy of a space, return the name of compressed file containing the space.
+	 * @param space The space needed to be downloaded
+	 * @param uid The id of the user who make the request
+	 * @param format The file format of the generated compressed file
+	 * @param response The servlet response sent back
+	 * @return Name of the generated file
+	 * @throws IOException
+	 * @author Ruoyu Zhang
+	 */
+	private String handleSpaceHierarchy(Space space, int uid, String format, HttpServletResponse response) throws IOException {
+		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
+			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			uniqueDir.createNewFile();
+			
+			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName()); 	
+			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath());
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format);
+			
+			if(tempDir.exists()){
+				tempDir.delete();
+			}
+			
+			return fileName;
+		}
+		else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+		}
+		return null;
+	}
+	
+	/**
+	 * Store a space and all its subspaces into the specified directory with their hierarchy
+	 * @param space The space needed to be stored
+	 * @param uid The user who make the request
+	 * @param dest The destination directory
+	 * @throws IOException
+	 * @author Ruoyu Zhang
+	 */
+	private void storeSpaceHierarchy(Space space, int uid, String dest) throws IOException {
+		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
+			File tempDir = new File(dest);
+			tempDir.mkdirs();
+			
+			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
+			for(Benchmark b: benchList){
+				if(b.isDownloadable()){
+					FileUtils.copyFile(new File(b.getPath()), new File(tempDir.getAbsolutePath() + File.separator + b.getName()));
+					
+				}
+			}
+			
+			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid, false);
+			if(subspaceList ==  null || subspaceList.size() == 0){
+				return;
+			}
+			
+			for(Space s: subspaceList){
+				String subDir = dest + File.separator + s.getName();
+				storeSpaceHierarchy(s, uid, subDir);
+			}
+			
+			return;
+		}
+		return;
+	}
+    
+    /**
      * Validates the download request to make sure the requested data is of the right format
      * 
      * @return true iff the request is valid
@@ -378,7 +491,8 @@ public class Download extends HttpServlet {
     				request.getParameter("type").equals("spaceXML") ||
     				request.getParameter("type").equals("jp_output") ||
     				request.getParameter("type").equals("job") ||
-    				request.getParameter("type").equals("j_outputs"))) {
+    				request.getParameter("type").equals("j_outputs") ||
+    				request.getParameter("type").equals("space"))) {
     			return false;
     		}
     		
