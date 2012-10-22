@@ -60,7 +60,7 @@ public abstract class JobManager {
 			jobTemplate = jobTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
 			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 			jobTemplate = jobTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
-			
+			jobTemplate = jobTemplate.replace("$$REPORT_HOST$$", "" + R.REPORT_HOST);
 			// Impose resource limits
 			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
 			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);							
