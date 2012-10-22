@@ -33,7 +33,7 @@ public class R {
 	public static String MYSQL_DRIVER = "com.mysql.jdbc.Driver";			// MySQL java driver class (we use JDBC)
 	public static int MYSQL_POOL_MAX_SIZE = 1;								// The maximum number of connections in the database pool
 	public static int MYSQL_POOL_MIN_SIZE = 1;								// The minimum number of connections to keep open to the database	
-	public static String REPORT_HOST = "starexec1.star.cs.uiowa.edu";  // where to report job status updates during jobs
+	public static String REPORT_HOST = "starexec1.cs.uiowa.edu";  // where to report job status updates during jobs
 	
 	// Global path information
 	public static String SOLVER_PATH = null;								// The top-level directory in which to save the solver file(s)
