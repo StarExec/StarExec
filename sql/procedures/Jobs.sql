@@ -698,7 +698,7 @@ CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
 		WHERE sge_id=_sgeId;
 	END //		
 
--- Updates a job pair's statistics (used by the job epilog script)
+-- Updates a job pair's statistics 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdatePairStats;
 CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _nodeName VARCHAR(64), IN _queuesubTime TIMESTAMP, IN _startTime TIMESTAMP, IN _endTime TIMESTAMP, IN _exitStatus INT, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _ioData DOUBLE, IN _ioWait DOUBLE, IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
@@ -726,6 +726,28 @@ CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _nodeName VARCHAR(64), IN _qu
 			invol_contex_swtch=_involContexSwtch
 		WHERE sge_id=_sgeId;
 	END //
+	
+-- Updates a job pair's statistics directly from the execution node
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
+CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE,IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
+	BEGIN
+		UPDATE job_pairs
+		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
+			cpu=_cpu,
+			user_time=_userTime,
+			system_time=_systemTime,
+			max_vmem=_maxVmem,
+			max_res_set=_maxResSet,
+			page_reclaims=_pageReclaims,
+			page_faults=_pageFaults,
+			block_input=_blockInput,
+			block_output=_blockOutput,
+			vol_contex_swtch=_volContexSwtch,
+			invol_contex_swtch=_involContexSwtch
+		WHERE id=_jobPairId;
+	END //
+	
 
 -- Retrieves all jobs belonging to a user (but not their job pairs)
 -- Author: Ruoyu Zhang
