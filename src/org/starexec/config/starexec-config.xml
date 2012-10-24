@@ -29,7 +29,7 @@
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
 			<property key="LOG_TO_CONSOLE" value="false" />
-			<property key="CONTACT_EMAIL" value="benton-mccune@uiowa.edu" />
+			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />	
 			<property key="PUBLIC_USER_ID" value="62" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="1731" />

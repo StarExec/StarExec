@@ -386,7 +386,7 @@ public class Download extends HttpServlet {
 			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 			for(Benchmark b: benchList){
 				if(b.isDownloadable()){
-					FileUtils.copyFile(new File(b.getPath()), new File(tempDir.getAbsolutePath() + File.separator + b.getName()));
+					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());
 				}
 			}
 			
@@ -448,7 +448,7 @@ public class Download extends HttpServlet {
 			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 			for(Benchmark b: benchList){
 				if(b.isDownloadable()){
-					FileUtils.copyFile(new File(b.getPath()), new File(tempDir.getAbsolutePath() + File.separator + b.getName()));
+					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());
 					
 				}
 			}
@@ -466,6 +466,10 @@ public class Download extends HttpServlet {
 			return;
 		}
 		return;
+	}
+	
+	private void copyFile(String src, String dest) throws IOException{
+		FileUtils.copyFile(new File(src), new File(dest));
 	}
     
     /**
