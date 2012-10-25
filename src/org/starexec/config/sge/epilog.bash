@@ -42,8 +42,6 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/jobout"
 
-
-
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
@@ -92,8 +90,9 @@ function copyOutput {
 	#log "target = $RZ_OUT_DIR/$BENCH_NAME"
 	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
 	ls -l "$STAREXEC_OUT_DIR"
-	log "job output copy complete"
-
+	log "job output copy complete - now sending stats"
+	updateStats $STAREXEC_OUT_DIR/watcher.out
+	
 	return $?	
 }
 
@@ -128,8 +127,8 @@ fi
 cleanWorkspace
 
 if [ "$JOB_ERROR" = "" ]; then
-	sendStatus $STATUS_WAIT_RESULTS
-	log "STAREXEC job #$JOB_ID completed successfully"
+	sendStatus $STATUS_COMPLETE
+	log "STAREXEC job #$JOB_ID completed successfully"	
 else
 	log "STAREXEC job #$JOB_ID exited with errors"
 fi

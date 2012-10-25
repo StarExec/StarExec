@@ -830,7 +830,7 @@ public class RESTHelpers {
 		    		entry.add(new JsonPrimitive(solverLink));
 		    		entry.add(new JsonPrimitive(configLink));
 		    		entry.add(new JsonPrimitive(status));
-		    		entry.add(new JsonPrimitive(jp.getWallclockTime() + " ms"));
+		    		entry.add(new JsonPrimitive(jp.getUserTime() + " ms"));
 		    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
 		    		entry.add(new JsonPrimitive(jp.getSpace().getName()));
 		    		

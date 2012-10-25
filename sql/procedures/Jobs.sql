@@ -730,7 +730,7 @@ CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _nodeName VARCHAR(64), IN _qu
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
-CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE,IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
+CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
 	BEGIN
 		UPDATE job_pairs
 		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
