@@ -587,7 +587,20 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
+	
+-- Retrieves basic info about pending/rejected job pairs for the given job id
+-- Author:Benton McCune
+DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
+CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _cap INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs 
+		WHERE job_id=_id AND (status_code = 1 OR status_code=8)
+		ORDER BY id ASC
+		LIMIT _cap;
+	END //	
 
+	
 -- Gets the job pair associated with the given sge id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairBySgeId;

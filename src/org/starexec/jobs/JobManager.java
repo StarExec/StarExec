@@ -63,7 +63,7 @@ public abstract class JobManager {
 			}
 			 */
 			log.info("submitting pairs for job " + job.getId());
-			job = Jobs.getDetailed(job.getId());
+			job = Jobs.getDetailedWithoutJobPairs(job.getId());
 			log.info("queue = " + job.getQueue().getName());
 			log.info("user id = " + job.getUserId());
 			// Read in the job script template and format it for all the pairs in this job
@@ -89,8 +89,8 @@ public abstract class JobManager {
 			}
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
-			List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
-			log.info("total # of pairs = " + pairs.size());
+			List<JobPair> pairs = Jobs.getPendingPairsDetailed(job.getId());
+			log.info("total # of pairs to process = " + pairs.size());
 			for(JobPair pair : pairs) {
 				log.info("submitting pair # " + pair.getId() + " with status = " + pair.getStatus());
 				if ((pair.getStatus().getCode() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) || (pair.getStatus().getCode() == StatusCode.ERROR_SGE_REJECT.getVal())){

@@ -786,6 +786,70 @@ public class Jobs {
 	}
 	
 	/**
+	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author Benton McCune
+	 */
+	public static List<JobPair> getPendingPairsDetailed(int jobId) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			return Jobs.getPairsDetailed(con, jobId);
+		} catch (Exception e){			
+			log.error("getPendingPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;		
+	}
+	
+	/**
+	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author TBebnton
+	 */
+	protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId) throws Exception {	
+		
+		if(con.isClosed())
+		{
+			log.warn("GetPendingPairsDetailed with Job Id = " + jobId + " but connection is closed.");
+		}
+		CallableStatement procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
+		procedure.setInt(1, jobId);					
+		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+		ResultSet results = procedure.executeQuery();
+		List<JobPair> returnList = new LinkedList<JobPair>();
+										
+		while(results.next()){
+			JobPair jp = Jobs.resultToPair(results);
+			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			Status s = new Status();
+			s.setCode(results.getInt("status.code"));
+			s.setStatus(results.getString("status.status"));
+			s.setDescription(results.getString("status.description"));
+			jp.setStatus(s);
+			jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
+			returnList.add(jp);
+		}			
+		
+		Common.closeResultSet(results);
+		return returnList;			
+	}
+	
+	/**
 	 * Helper method to extract information from a query for job pairs
 	 * @param result The resultset that is the results from querying for job pairs
 	 * @return A job pair object populated with data from the result set
