@@ -569,7 +569,7 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 	
 -- Retrieves all jobs with pending or rejected job pairs
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetPendingJobs();
+DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs()
 	BEGIN
 		SELECT *
