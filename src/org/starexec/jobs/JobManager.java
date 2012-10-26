@@ -62,7 +62,7 @@ public abstract class JobManager {
 				return false;
 			}
 			 */
-			
+			log.info("submitting pairs for job " + job.getId());
 			// Read in the job script template and format it for all the pairs in this job
 			String jobTemplate = FileUtils.readFileToString(new File(R.CONFIG_PATH, "sge/jobscript"));
 

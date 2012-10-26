@@ -1289,7 +1289,11 @@ public class Jobs {
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));					
+				j.setCreateTime(results.getTimestamp("created"));	
+				
+				j.getQueue().setId(results.getInt("queue_id"));
+				j.getPreProcessor().setId(results.getInt("pre_processor"));
+				j.getPostProcessor().setId(results.getInt("post_processor"));	
 				jobs.add(j);				
 			}			
 					
