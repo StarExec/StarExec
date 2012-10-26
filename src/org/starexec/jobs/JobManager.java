@@ -63,6 +63,9 @@ public abstract class JobManager {
 			}
 			 */
 			log.info("submitting pairs for job " + job.getId());
+			job = Jobs.getDetailed(job.getId());
+			log.info("queue = " + job.getQueue().getName());
+			log.info("user id = " + job.getUserId());
 			// Read in the job script template and format it for all the pairs in this job
 			String jobTemplate = FileUtils.readFileToString(new File(R.CONFIG_PATH, "sge/jobscript"));
 
@@ -86,8 +89,8 @@ public abstract class JobManager {
 			}
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
-			List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
-			for(JobPair pair : pairs) {
+			//List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
+			for(JobPair pair : job) {
 				if (pair.getStatus().equals(StatusCode.STATUS_PENDING_SUBMIT) || pair.getStatus().equals(StatusCode.ERROR_SGE_REJECT)){
 					// Write the script that will run this individual pair				
 					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
@@ -111,7 +114,7 @@ public abstract class JobManager {
 			log.info(String.format("Successfully submitted and recorded job #%d with %d pairs by user %d", job.getId(), R.NUM_JOB_SCRIPTS-count, job.getUserId()));
 			return true;
 		} catch(Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("Submit job says " + e.getMessage(), e);
 		}
 
 		return false;
