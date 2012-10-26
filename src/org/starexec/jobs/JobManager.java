@@ -89,8 +89,9 @@ public abstract class JobManager {
 			}
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
-			//List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
-			for(JobPair pair : job) {
+			List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
+			for(JobPair pair : pairs) {
+		
 				if (pair.getStatus().equals(StatusCode.STATUS_PENDING_SUBMIT) || pair.getStatus().equals(StatusCode.ERROR_SGE_REJECT)){
 					// Write the script that will run this individual pair				
 					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
