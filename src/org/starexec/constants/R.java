@@ -72,7 +72,7 @@ public class R {
 	public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
 	public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
 	public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
-	public static int JOB_SUBMISSION_PERIOD = 30;							// How often (in seconds) to write job scripts and submit to the grid engine
+	public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
 	public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
 	public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 		"this is your personal space";
@@ -104,5 +104,5 @@ public class R {
 	public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
 	public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
 	public static long MAX_PAIR_VMEM = 768000;  							// The largest possible amount of memory (in kilobytes) a job pair is allowed to use
-	public static int NUM_JOB_SCRIPTS = 250;								// The number of job scripts to write/submit each period
+	public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
 }	

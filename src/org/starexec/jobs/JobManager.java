@@ -89,6 +89,7 @@ public abstract class JobManager {
 			}
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
+			log.info("About to get Pending pairs...");
 			List<JobPair> pairs = Jobs.getPendingPairsDetailed(job.getId());
 			log.info("total # of pairs to process = " + pairs.size());
 			for(JobPair pair : pairs) {

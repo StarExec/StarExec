@@ -130,7 +130,9 @@ public class CreateJob extends HttpServlet {
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
-		
+		if (submitSuccess){
+			JobManager.submitJob(j);
+		}
 		if(true == submitSuccess) {
 			// If the submission was successful, send back to space explorer
 			response.sendRedirect("/starexec/secure/explore/spaces.jsp");
