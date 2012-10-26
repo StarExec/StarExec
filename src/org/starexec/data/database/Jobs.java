@@ -837,9 +837,10 @@ public class Jobs {
 			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			Status s = new Status();
-			s.setCode(results.getInt("status.code"));
-			s.setStatus(results.getString("status.status"));
-			s.setDescription(results.getString("status.description"));
+			
+			s.setCode(results.getInt("status_code"));
+			//s.setStatus(results.getString("status.status"));
+			//s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
 			jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
 			returnList.add(jp);
