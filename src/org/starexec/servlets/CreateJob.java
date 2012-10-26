@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -126,8 +127,9 @@ public class CreateJob extends HttpServlet {
 			return;
 		}
 		
-		
-		boolean submitSuccess = JobManager.submitJob(j, space);
+		//decoupling adding job to db and script creation/submission
+		//boolean submitSuccess = JobManager.submitJob(j, space);
+		boolean submitSuccess = Jobs.add(j, space);
 		
 		if(true == submitSuccess) {
 			// If the submission was successful, send back to space explorer

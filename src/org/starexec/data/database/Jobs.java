@@ -1274,4 +1274,32 @@ public class Jobs {
 		
 		return false;
 	}
+	//gets jobs with pending (or rejected) job pairs
+	public static List<Job> getPendingJobs() {
+	Connection con = null;					
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetPendingJobs()}");					
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));					
+				jobs.add(j);				
+			}			
+					
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
 }

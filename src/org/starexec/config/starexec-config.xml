@@ -85,6 +85,7 @@
    		<class name="org.starexec.constants.R">   		
    			<property key="PUBLIC_USER_ID" value="2" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
+	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />;
    		</class>
     </configuration>
 	<configuration name="ben_dev_317" inherit="production">

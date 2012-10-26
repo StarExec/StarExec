@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
+import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
@@ -111,7 +112,19 @@ public class Starexec implements ServletContextListener {
 					//Common.getDataPoolData();
 				}
 			}
-		};		
+		};	
+		
+		// Create a task that submits jobs that have pending/rejected job pairs
+		final Runnable submitJobsTask = new Runnable() {			
+			@Override
+			public void run() {
+				if(GridEngineUtil.isAvailable()) {
+					JobManager.checkPendingJobs();
+					//log.info("Skipping ALL Results Processing...");
+					//Common.getDataPoolData();
+				}
+			}
+		};
 
 		// Create a task that deletes download files older than 1 day
 		final Runnable clearDownloadsTask = new Runnable() {			
@@ -132,6 +145,7 @@ public class Starexec implements ServletContextListener {
 		// Schedule the recurring tasks above to be ran every so often
 		taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
+		taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);
 	}
