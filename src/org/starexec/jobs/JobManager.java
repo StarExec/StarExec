@@ -90,6 +90,7 @@ public abstract class JobManager {
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
 			List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
+			log.info("total # of pairs = " + pairs.size());
 			for(JobPair pair : pairs) {
 		
 				if (pair.getStatus().equals(StatusCode.STATUS_PENDING_SUBMIT) || pair.getStatus().equals(StatusCode.ERROR_SGE_REJECT)){
