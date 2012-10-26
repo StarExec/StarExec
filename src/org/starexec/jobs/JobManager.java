@@ -92,8 +92,8 @@ public abstract class JobManager {
 			List<JobPair> pairs = Jobs.getPairsDetailed(job.getId());
 			log.info("total # of pairs = " + pairs.size());
 			for(JobPair pair : pairs) {
-		
-				if (pair.getStatus().equals(StatusCode.STATUS_PENDING_SUBMIT) || pair.getStatus().equals(StatusCode.ERROR_SGE_REJECT)){
+				log.info("submitting pair # " + pair.getId() + " with status = " + pair.getStatus());
+				if ((pair.getStatus().getCode() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) || (pair.getStatus().getCode() == StatusCode.ERROR_SGE_REJECT.getVal())){
 					// Write the script that will run this individual pair				
 					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
 
