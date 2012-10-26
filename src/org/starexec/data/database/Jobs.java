@@ -797,7 +797,7 @@ public class Jobs {
 		
 		try {			
 			con = Common.getConnection();		
-			return Jobs.getPairsDetailed(con, jobId);
+			return Jobs.getPendingPairsDetailed(con, jobId);
 		} catch (Exception e){			
 			log.error("getPendingPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		} finally {
