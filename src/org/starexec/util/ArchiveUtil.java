@@ -245,6 +245,9 @@ public class ArchiveUtil {
 		String command = "zip -r \"" + destination + "\" \"" + path +"\"";
 		
 	    BufferedReader reader = Util.executeCommand(command);
+	    if (reader == null){
+	    	log.warn("create Zip buffered reader is null");
+	    }
 		String results = Util.bufferToString(reader);
 		log.debug("zipping results = " + results);
 		try {
