@@ -246,6 +246,7 @@ public class ArchiveUtil {
 		
 	    BufferedReader reader = Util.executeCommand(command);
 		String results = Util.bufferToString(reader);
+		log.debug("zipping results = " + results);
 		try {
 			reader.close();
 		}
