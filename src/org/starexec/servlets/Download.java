@@ -413,7 +413,7 @@ public class Download extends HttpServlet {
 	private String handleSpaceHierarchy(Space space, int uid, String format, HttpServletResponse response) throws IOException {
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
 			
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName()); 	
@@ -441,7 +441,7 @@ public class Download extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	private void storeSpaceHierarchy(Space space, int uid, String dest) throws IOException {
-		log.info("storing space " + space.getName());
+		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
 			log.debug("[new directory] temp dir = " + dest);
@@ -470,7 +470,7 @@ public class Download extends HttpServlet {
 	}
 	
 	private void copyFile(String src, String dest) throws IOException{
-		log.debug("copying file - source = " +src + ", dest = " + dest);
+		//log.debug("copying file - source = " +src + ", dest = " + dest);
 		File tempSrcFile = new File(src);
 		File tempDestFile = new File(dest);
 		

@@ -218,6 +218,7 @@ public class ArchiveUtil {
 	 * @author Skylar Stark
 	 */
 	public static void createArchive(File path, File destination, String format) {
+		log.info("creating archive, path = " + path + ", dest = " + destination +", format = " + format);
 		try {
 			if (format.equals(".zip")) {
 				ArchiveUtil.createZip(path, destination);
@@ -239,6 +240,7 @@ public class ArchiveUtil {
 	 * @author Skylar Stark
 	 */
 	public static void createZip(File path, File destination) throws Exception {
+		log.debug("creating zip, path = " + path + ", dest = " + destination);
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -272,7 +274,7 @@ public class ArchiveUtil {
 		ZipArchiveEntry zipEntry = new ZipArchiveEntry(path, entryName);
  
 		zOut.putArchiveEntry(zipEntry);
- 
+		log.debug("adding File to zip = " + entryName);
 		if (path.isFile()) {
 			IOUtils.copy(new FileInputStream(path), zOut);
  
@@ -281,10 +283,12 @@ public class ArchiveUtil {
 			zOut.closeArchiveEntry();
  
 			File[] children = path.listFiles();
- 
+			
 			if (children != null) {
 				for (File child : children) {
-					addFileToZip(zOut, new File(child.getAbsolutePath()), entryName + "/");
+					File tempChild = new File(child.getAbsolutePath());
+					addFileToZip(zOut, tempChild, entryName + File.separator);
+					tempChild = null;
 				}
 			}
 		}
