@@ -244,9 +244,9 @@ public class ArchiveUtil {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
 		String command = "zip -r \"" + destination + "\" \"" + path +"\"";
 		String fakeCommand ="ls -l " + path;
-	    BufferedReader fakereader = Util.executeCommand(command);
+	    BufferedReader fakereader = Util.executeCommand(fakeCommand);
 		String fakeresults = Util.bufferToString(fakereader);
-		log.debug("zipping results = " + fakeresults);
+		log.debug("ls results = " + fakeresults);
 		try {
 			fakereader.close();
 		}
