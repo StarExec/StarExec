@@ -243,6 +243,16 @@ public class ArchiveUtil {
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
 		String command = "zip -r \"" + destination + "\" \"" + path +"\"";
+		String fakeCommand ="ls -l " + path;
+	    BufferedReader fakereader = Util.executeCommand(command);
+		String fakeresults = Util.bufferToString(fakereader);
+		log.debug("zipping results = " + fakeresults);
+		try {
+			fakereader.close();
+		}
+		catch (Exception e) {
+			log.warn("createZip says " + e.getMessage(), e);
+		}
 		
 	    BufferedReader reader = Util.executeCommand(command);
 	    if (reader == null){
