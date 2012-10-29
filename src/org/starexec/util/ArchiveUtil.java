@@ -2,6 +2,7 @@ package org.starexec.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -242,7 +243,15 @@ public class ArchiveUtil {
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
 		String command = "zip -r " + destination+ " " + path;
-		Util.executeCommand(command);
+		
+	    BufferedReader reader = Util.executeCommand(command);
+		String results = Util.bufferToString(reader);
+		try {
+			reader.close();
+		}
+		catch (Exception e) {
+			log.warn("createZip says " + e.getMessage(), e);
+		}
 		/*()
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
