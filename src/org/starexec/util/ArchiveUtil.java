@@ -246,8 +246,8 @@ public class ArchiveUtil {
 		String[] command = new String[4];
 		command[0] = "zip";
 		command[1] ="-r";
-		command[1] = destination.getAbsolutePath();
-		command[2] = path.getAbsolutePath();
+		command[2] = destination.getAbsolutePath();
+		command[3] = path.getAbsolutePath();
 		
 		String fakeCommand ="whoami";
 	    BufferedReader fakereader = Util.executeCommand(fakeCommand);
