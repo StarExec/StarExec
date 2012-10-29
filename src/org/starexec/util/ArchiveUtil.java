@@ -241,6 +241,9 @@ public class ArchiveUtil {
 	 */
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
+		String command = "zip " + destination+ " " + path;
+		Util.executeCommand(command);
+		/*()
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -258,6 +261,7 @@ public class ArchiveUtil {
 			bOut.close();
 			fOut.close();
 		}
+		*/
 	}
 	
 	/**
