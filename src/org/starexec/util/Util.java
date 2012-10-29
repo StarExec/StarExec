@@ -236,7 +236,11 @@ public class Util {
 	public static BufferedReader executeCommand(String[] command) {
 		Runtime r = Runtime.getRuntime();		
 		BufferedReader reader = null;		
-		log.debug("Command from execute command [array] = " + command);
+		String debugString = "";
+		for (int i = 0; i < command.length; i++){
+			debugString += (" " + command[i]);
+		}
+		log.debug("Command from execute command [array] = " + debugString);
 		try {		
 			
 			Process p = r.exec(command);
