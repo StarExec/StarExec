@@ -469,7 +469,13 @@ public class Download extends HttpServlet {
 	}
 	
 	private void copyFile(String src, String dest) throws IOException{
-		FileUtils.copyFile(new File(src), new File(dest));
+		File tempSrcFile = new File(src);
+		File tempDestFile = new File(dest);
+		
+		FileUtils.copyFile(tempSrcFile, tempDestFile);
+		
+		tempSrcFile = null;
+		tempDestFile = null;
 	}
     
     /**
