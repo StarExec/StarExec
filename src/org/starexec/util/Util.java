@@ -212,13 +212,14 @@ public class Util {
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
+
 			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
 			}			
 			
 			return reader;
 		} catch (Exception e) {
-			log.warn(e.getMessage(), e);		
+			log.warn("execute command says " + e.getMessage(), e);		
 		}
 		
 		return null;
@@ -235,7 +236,7 @@ public class Util {
 	public static BufferedReader executeCommand(String[] command) {
 		Runtime r = Runtime.getRuntime();		
 		BufferedReader reader = null;		
-		log.debug("Command from execute command = " + command);
+		log.debug("Command from execute command [array] = " + command);
 		try {		
 			
 			Process p = r.exec(command);
@@ -245,9 +246,9 @@ public class Util {
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
 
-			/*if (p.waitFor() != 0) {
+			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
-			}*/			
+			}		
 			
 			return reader;
 		} catch (Exception e) {
