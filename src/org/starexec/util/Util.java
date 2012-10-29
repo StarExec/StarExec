@@ -205,18 +205,16 @@ public class Util {
 		Runtime r = Runtime.getRuntime();		
 		BufferedReader reader = null;		
 		log.debug("Command from execute command = " + command);
-		try {		
-			
+		try {					
 			Process p = r.exec(command);
 			log.debug("Process is null = " + (p==null));
 			InputStream in = p.getInputStream();
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
-
-			/*if (p.waitFor() != 0) {
+			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
-			}*/			
+			}			
 			
 			return reader;
 		} catch (Exception e) {
