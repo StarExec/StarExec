@@ -441,15 +441,16 @@ public class Download extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	private void storeSpaceHierarchy(Space space, int uid, String dest) throws IOException {
+		log.info("storing space " + space.getName());
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
+			log.debug("[new directory] temp dir = " + dest);
 			tempDir.mkdirs();
 			
 			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 			for(Benchmark b: benchList){
 				if(b.isDownloadable()){
-					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());
-					
+					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());				
 				}
 			}
 			
@@ -469,6 +470,7 @@ public class Download extends HttpServlet {
 	}
 	
 	private void copyFile(String src, String dest) throws IOException{
+		log.debug("copying file - source = " +src + ", dest = " + dest);
 		File tempSrcFile = new File(src);
 		File tempDestFile = new File(dest);
 		
