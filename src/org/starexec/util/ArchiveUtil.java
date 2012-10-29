@@ -242,12 +242,13 @@ public class ArchiveUtil {
 	 */
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
-		String command = "zip -r \"" + destination + "\" \"" + path +"\"";
-		/*String[] command = new String[3];
-		command[0] = "zip -r";
+		//String command = "zip -r \"" + destination + "\" \"" + path +"\"";
+		String[] command = new String[4];
+		command[0] = "zip";
+		command[1] ="-r";
 		command[1] = destination.getAbsolutePath();
 		command[2] = path.getAbsolutePath();
-		*/
+		
 		String fakeCommand ="whoami";
 	    BufferedReader fakereader = Util.executeCommand(fakeCommand);
 		String fakeresults = Util.bufferToString(fakereader);
