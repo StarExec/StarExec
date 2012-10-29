@@ -286,6 +286,7 @@ public class ArchiveUtil {
 			
 			if (children != null) {
 				for (File child : children) {
+					addChildToZip(zOut, child, entryName);
 					File tempChild = new File(child.getAbsolutePath());
 					addFileToZip(zOut, tempChild, entryName + File.separator);
 					tempChild = null;
@@ -294,6 +295,13 @@ public class ArchiveUtil {
 		}
 	}
 	
+	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName) throws IOException{
+		File tempChild = new File(child.getAbsolutePath());
+		addFileToZip(zOut, tempChild, entryName + File.separator);
+		tempChild = null;
+		
+	}
+
 	/**
 	 * Creates a .tar file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tarred
