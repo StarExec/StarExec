@@ -276,6 +276,7 @@ public class ArchiveUtil {
 		zOut.putArchiveEntry(zipEntry);
 		log.debug("adding File to zip = " + entryName);
 		if (path.isFile()) {
+			
 			IOUtils.copy(new FileInputStream(path), zOut);
  
 			zOut.closeArchiveEntry();
@@ -283,13 +284,10 @@ public class ArchiveUtil {
 			zOut.closeArchiveEntry();
  
 			File[] children = path.listFiles();
-			
+			log.debug("Number of files = " + children.length);
 			if (children != null) {
 				for (File child : children) {
 					addChildToZip(zOut, child, entryName);
-					File tempChild = new File(child.getAbsolutePath());
-					addFileToZip(zOut, tempChild, entryName + File.separator);
-					tempChild = null;
 				}
 			}
 		}
