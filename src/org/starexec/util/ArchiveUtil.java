@@ -242,7 +242,7 @@ public class ArchiveUtil {
 	 */
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
-		String command = "zip -r " + destination+ " " + path;
+		String command = "zip -r \"" + destination + "\" \"" + path +"\"";
 		
 	    BufferedReader reader = Util.executeCommand(command);
 		String results = Util.bufferToString(reader);
