@@ -62,7 +62,7 @@ public class R {
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
 	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
-	public static int TEMP_JOBPAIR_LIMIT = 10;								// A temporary limit to the number of job pairs
+	public static int TEMP_JOBPAIR_LIMIT = 1000;						    // A temporary limit to the number of job pairs
 	
 	// Misc application properties
 	public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
