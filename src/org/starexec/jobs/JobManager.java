@@ -210,7 +210,7 @@ public abstract class JobManager {
 			sgeTemplate = session.createJobTemplate();
 			log.debug("submitScript - Create Job Template for  " + pair.getId());
 			// DRMAA needs to be told to expect a shell script and not a binary
-			sgeTemplate.setNativeSpecification("-shell y -b n");
+			sgeTemplate.setNativeSpecification("-shell y -bw n ");
 			log.debug("submitScript - Set Native Specification for  " + pair.getId());
 			// Tell the job where it will deal with files
 			sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
