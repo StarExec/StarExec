@@ -234,6 +234,7 @@ public abstract class JobManager {
 			//get status of queues for hints about why it was rejected
 			BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
 			String results = Util.bufferToString(reader);
+			log.info("q stats says " + results);
 			try {
 				reader.close();
 			}
