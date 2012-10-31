@@ -1,5 +1,6 @@
 package org.starexec.jobs;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.List;
@@ -93,7 +94,7 @@ public abstract class JobManager {
 			List<JobPair> pairs = Jobs.getPendingPairsDetailed(job.getId());
 			log.info("total # of pairs to process = " + pairs.size());
 			for(JobPair pair : pairs) {
-				log.info("submitting pair # " + pair.getId() + " with status = " + pair.getStatus());
+				log.info("submitting pair # " + pair.getId());
 				if ((pair.getStatus().getCode() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) || (pair.getStatus().getCode() == StatusCode.ERROR_SGE_REJECT.getVal())){
 					// Write the script that will run this individual pair				
 					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
@@ -204,25 +205,25 @@ public abstract class JobManager {
 
 			// Initialize session
 			session.init("");
-			log.info("submitScript - Session Initialized for Job Pair " + pair.getId());
+			log.debug("submitScript - Session Initialized for Job Pair " + pair.getId());
 			// Set up the grid engine template
 			sgeTemplate = session.createJobTemplate();
-			log.info("submitScript - Create Job Template for  " + pair.getId());
+			log.debug("submitScript - Create Job Template for  " + pair.getId());
 			// DRMAA needs to be told to expect a shell script and not a binary
 			sgeTemplate.setNativeSpecification("-shell y -b n");
-			log.info("submitScript - Set Native Specification for  " + pair.getId());
+			log.debug("submitScript - Set Native Specification for  " + pair.getId());
 			// Tell the job where it will deal with files
 			sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
-			log.info("submitScript - Set Working Directory for  " + pair.getId());
+			log.debug("submitScript - Set Working Directory for  " + pair.getId());
 			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)
 			sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR);
-			log.info("submitScript - Set Output Path for  " + pair.getId());
+			log.debug("submitScript - Set Output Path for  " + pair.getId());
 			// Tell the job where the script to be executed is
 			sgeTemplate.setRemoteCommand(scriptPath);	        
-			log.info("submitScript - Set Remote Command for  " + pair.getId());
+			log.debug("submitScript - Set Remote Command for  " + pair.getId());
 			// Actually submit the job to the grid engine
 			String id = session.runJob(sgeTemplate);
-			log.info(String.format("Job #%s (\"%s\") has been submitted to the grid engine.", id, scriptPath));	               	       	        
+			log.info(String.format("SGE Job #%s (\"%s\") has been submitted to the grid engine.", id, scriptPath));	               	       	        
 
 			return Integer.parseInt(id);
 		} catch (org.ggf.drmaa.DrmaaException drme) {
@@ -231,7 +232,14 @@ public abstract class JobManager {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
 			log.error("submitScript says " + drme.getMessage(), drme);
 			//get status of queues for hints about why it was rejected
-			//Util.executeCommand(R.QUEUE_STATS_COMMAND);
+			BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
+			String results = Util.bufferToString(reader);
+			try {
+				reader.close();
+			}
+			catch (Exception e) {
+				log.warn("submitscript failed to close buffered reader - " + e.getMessage(), e);
+			}
 			//log.warn("Current queue status = " + Util))
 		} catch (Exception e) {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
