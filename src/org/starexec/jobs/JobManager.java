@@ -232,7 +232,7 @@ public abstract class JobManager {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
 			log.error("submitScript says " + drme.getMessage(), drme);
 			//get status of queues for hints about why it was rejected
-			BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
+			/*BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
 			String results = Util.bufferToString(reader);
 			log.info("q stats says " + results);
 			try {
@@ -241,7 +241,7 @@ public abstract class JobManager {
 			catch (Exception e) {
 				log.warn("submitscript failed to close buffered reader - " + e.getMessage(), e);
 			}
-			//log.warn("Current queue status = " + Util))
+		*/	
 		} catch (Exception e) {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 			log.error(e.getMessage(), e);
