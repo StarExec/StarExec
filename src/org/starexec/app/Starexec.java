@@ -27,7 +27,7 @@ import org.starexec.util.Validator;
  */
 public class Starexec implements ServletContextListener {
 	private static final Logger log = Logger.getLogger(Starexec.class);
-	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(4);	
+	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
