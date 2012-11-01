@@ -353,7 +353,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						space.name,
 						space.description,
 						GetJobPairResult(job_pairs.id) AS result,
-						GetWallclock(start_time, end_time) AS wallclock
+						wallclock
 						
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
@@ -398,7 +398,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						space.name,
 						space.description,
 						GetJobPairResult(job_pairs.id) AS result,
-						GetWallclock(start_time, end_time) AS wallclock
+						wallclock
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
