@@ -310,7 +310,7 @@ public class ArchiveUtil {
 		log.debug("adding File to zip = " + entryName);
 		if (path.isFile()) {
 			FileInputStream fis = new FileInputStream(path);
-			IOUtils.copy(new FileInputStream(path), zOut);
+			IOUtils.copy(fis, zOut);
 			fis.close();
 			zOut.closeArchiveEntry();
 		} else {
@@ -379,7 +379,7 @@ public class ArchiveUtil {
  
 		if (path.isFile()) {
 			FileInputStream fis = new FileInputStream(path);
-			IOUtils.copy(new FileInputStream(path), tOut);
+			IOUtils.copy(fis, tOut);
 			fis.close();
 			tOut.closeArchiveEntry();
 		} else {
