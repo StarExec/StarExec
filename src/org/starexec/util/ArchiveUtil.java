@@ -243,7 +243,7 @@ public class ArchiveUtil {
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
 		//String command = "zip -r \"" + destination + "\" \"" + path +"\"";
-		String[] command = new String[4];
+		/*String[] command = new String[4];
 		command[0] = "zip";
 		command[1] ="-r";
 		command[2] = destination.getAbsolutePath();
@@ -272,7 +272,7 @@ public class ArchiveUtil {
 		catch (Exception e) {
 			log.warn("createZip says " + e.getMessage(), e);
 		}
-		/*()
+		*/
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -290,7 +290,7 @@ public class ArchiveUtil {
 			bOut.close();
 			fOut.close();
 		}
-		*/
+		
 	}
 	
 	/**
@@ -309,9 +309,9 @@ public class ArchiveUtil {
 		zOut.putArchiveEntry(zipEntry);
 		log.debug("adding File to zip = " + entryName);
 		if (path.isFile()) {
-			
+			FileInputStream fis = new FileInputStream(path);
 			IOUtils.copy(new FileInputStream(path), zOut);
- 
+			fis.close();
 			zOut.closeArchiveEntry();
 		} else {
 			zOut.closeArchiveEntry();
@@ -377,8 +377,9 @@ public class ArchiveUtil {
 		tOut.putArchiveEntry(tarEntry);
  
 		if (path.isFile()) {
+			FileInputStream fis = new FileInputStream(path);
 			IOUtils.copy(new FileInputStream(path), tOut);
- 
+			fis.close();
 			tOut.closeArchiveEntry();
 		} else {
 			tOut.closeArchiveEntry();
@@ -394,7 +395,7 @@ public class ArchiveUtil {
 	}
 	
 	/**
-	 * Creates a .tar.gz file of the specified directory "path" and saves it to "destination"
+	 * Creates a .tfar.gz file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tar.gz'ed
 	 * @param destination where to save the .tar.gz file created
 	 * 
@@ -442,8 +443,9 @@ public class ArchiveUtil {
 	    tOut.putArchiveEntry(tarEntry);
 	 
 	    if (path.isFile()) {
-	        IOUtils.copy(new FileInputStream(path), tOut);
-	 
+	        FileInputStream fis = new FileInputStream(path);
+	    	IOUtils.copy(fis, tOut);
+	    	fis.close();
 	        tOut.closeArchiveEntry();
 	    } else {
 	        tOut.closeArchiveEntry();
