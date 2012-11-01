@@ -104,5 +104,5 @@ public class R {
 	public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
 	public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
 	public static long MAX_PAIR_VMEM = 768000;  							// The largest possible amount of memory (in kilobytes) a job pair is allowed to use
-	public static int NUM_JOB_SCRIPTS = 500;								// The number of job scripts to write/submit each period
+	public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
 }	

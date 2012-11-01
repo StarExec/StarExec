@@ -40,8 +40,12 @@ public abstract class JobManager {
 
 	public static boolean checkPendingJobs(){
 		List<Job> jobs = Jobs.getPendingJobs();
+		Integer queueSize = Jobs.getSizeOfQueue();
+		log.info("Current Size of SGE QUEUE = " + queueSize);
+		if (queueSize < 10*R.NUM_JOB_SCRIPTS){		
 		for (Job job : jobs){
 			submitJob(job);
+		}
 		}
 		return false;
 	}

@@ -577,6 +577,14 @@ CREATE PROCEDURE GetPendingJobs()
 		WHERE id in (select distinct job_id from job_pairs where status_code=1 or status_code=8);
 	END //
 	
+-- Retrieves all jobs with pending or rejected job pairs
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
+CREATE PROCEDURE GetNumEnqueuedJobs()
+	BEGIN
+		SELECT COUNT(*) as count from job_pairs where status_code=2;
+	END //	
+	
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairsByJob;

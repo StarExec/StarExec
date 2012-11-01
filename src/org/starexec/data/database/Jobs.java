@@ -1360,9 +1360,29 @@ public class Jobs {
 				j.getPreProcessor().setId(results.getInt("pre_processor"));
 				j.getPostProcessor().setId(results.getInt("post_processor"));	
 				jobs.add(j);				
-			}			
-					
+			}							
 			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+
+	public static Integer getSizeOfQueue() {
+		Connection con = null;					
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetNumEnqueuedJobs()}");					
+			ResultSet results = procedure.executeQuery();
+			
+			Integer qSize = -1;
+			while(results.next()){
+				qSize = results.getInt("count");	
+			}							
+			return qSize;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
