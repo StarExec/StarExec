@@ -323,6 +323,7 @@ public class ArchiveUtil {
 					addChildToZip(zOut, child, entryName);
 				}
 			}
+			children = null;
 		}
 	}
 	
@@ -390,7 +391,7 @@ public class ArchiveUtil {
 				for (File child : children) {
 					addFileToTar(tOut, new File(child.getAbsolutePath()), entryName + "/");
 				}
-			}
+		}
 		}
 	}
 	
