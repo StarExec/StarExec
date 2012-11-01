@@ -85,7 +85,7 @@
 				</tr>
 				<tr>
 					<td>runtime (wallclock)</td>			
-					<td>${pair.wallclockTime / 1000} ms</td>
+					<td>${pair.wallclockTime} seconds</td>
 				</tr>			
 				</c:if>
 				<tr>

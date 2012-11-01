@@ -23,7 +23,7 @@ public class JobPair extends Identifiable {
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;	
 	private int exitStatus;
-	private long wallclockTime;
+	private double wallclockTime;
 	private double cpuUsage;
 	private double userTime;
 	private double systemTime;
@@ -242,7 +242,7 @@ public class JobPair extends Identifiable {
 	/**
 	 * @return the wallclock time it took for this pair to execute in seconds
 	 */
-	public long getWallclockTime() {
+	public double getWallclockTime() {
 		return wallclockTime;
 	}
 
