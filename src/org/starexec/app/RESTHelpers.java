@@ -830,7 +830,6 @@ public class RESTHelpers {
 		    		entry.add(new JsonPrimitive(solverLink));
 		    		entry.add(new JsonPrimitive(configLink));
 		    		entry.add(new JsonPrimitive(status));
-		    		log.info("wallclock time = " + jp.getWallclockTime());
 		    		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    		
 		    		entry.add(new JsonPrimitive(displayWC + " s"));
 		    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
