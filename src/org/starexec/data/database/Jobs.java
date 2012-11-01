@@ -868,7 +868,7 @@ public class Jobs {
 		jp.setStartTime(result.getTimestamp("start_time"));
 		jp.setEndTime(result.getTimestamp("end_time"));
 		jp.setExitStatus(result.getInt("exit_status"));
-		jp.setWallclockTime(result.getLong("wallclock"));
+		jp.setWallclockTime(result.getDouble("wallclock"));
 		jp.setCpuUsage(result.getDouble("cpu"));
 		jp.setUserTime(result.getDouble("user_time"));
 		jp.setSystemTime(result.getDouble("system_time"));
@@ -1109,7 +1109,7 @@ public class Jobs {
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
-				jp.setWallclockTime(results.getLong("wallclock"));
+				jp.setWallclockTime(results.getDouble("wallclock"));
 				
 				Benchmark bench = new Benchmark();
 				bench.setId(results.getInt("bench.id"));

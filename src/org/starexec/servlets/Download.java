@@ -300,8 +300,8 @@ public class Download extends HttpServlet {
         		sb.append(",");
         		sb.append(pair.getStatus().toString());
         		sb.append(",");
-        		sb.append((pair.getWallclockTime())/1000);
-        		sb.append("ms");
+        		sb.append((pair.getWallclockTime()));
+        		sb.append("s");
         		sb.append(",");
         		sb.append(pair.getStarexecResult());
         		sb.append("\r\n");

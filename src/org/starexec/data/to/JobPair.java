@@ -249,7 +249,7 @@ public class JobPair extends Identifiable {
 	/**
 	 * @param wallclockTime the wallclock time to set for this pair
 	 */
-	public void setWallclockTime(long wallclockTime) {
+	public void setWallclockTime(double wallclockTime) {
 		this.wallclockTime = wallclockTime;
 	}
 
