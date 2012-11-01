@@ -39,13 +39,15 @@ public abstract class JobManager {
 
 
 	public static boolean checkPendingJobs(){
-		List<Job> jobs = Jobs.getPendingJobs();
 		Integer queueSize = Jobs.getSizeOfQueue();
-		log.info("Current Size of SGE QUEUE = " + queueSize);
-		if (queueSize < 10*R.NUM_JOB_SCRIPTS){		
-		for (Job job : jobs){
-			submitJob(job);
+		if (queueSize > 0){
+			log.info("Current Size of SGE QUEUE = " + queueSize);
 		}
+		if (queueSize < 10*R.NUM_JOB_SCRIPTS){	
+			List<Job> jobs = Jobs.getPendingJobs();
+			for (Job job : jobs){
+				submitJob(job);
+			}
 		}
 		return false;
 	}
@@ -245,7 +247,7 @@ public abstract class JobManager {
 			catch (Exception e) {
 				log.warn("submitscript failed to close buffered reader - " + e.getMessage(), e);
 			}
-		*/	
+			 */	
 		} catch (Exception e) {
 			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 			log.error(e.getMessage(), e);

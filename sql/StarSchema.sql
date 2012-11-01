@@ -242,7 +242,8 @@ CREATE TABLE configurations (
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
 
--- Table which contains specific information about a job pai
+-- Table which contains specific information about a job pair
+-- When changing to using runsolver, wallclock changed from bigint to double
 CREATE TABLE job_pairs (
 	id INT NOT NULL AUTO_INCREMENT,	
 	job_id INT NOT NULL,
@@ -257,7 +258,7 @@ CREATE TABLE job_pairs (
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
 	exit_status INT,
-	wallclock BIGINT,
+	wallclock DOUBLE,
 	cpu DOUBLE,
 	user_time DOUBLE,
 	system_time DOUBLE,

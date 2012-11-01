@@ -242,37 +242,7 @@ public class ArchiveUtil {
 	 */
 	public static void createZip(File path, File destination) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
-		//String command = "zip -r \"" + destination + "\" \"" + path +"\"";
-		/*String[] command = new String[4];
-		command[0] = "zip";
-		command[1] ="-r";
-		command[2] = destination.getAbsolutePath();
-		command[3] = path.getAbsolutePath();
-		
-		String fakeCommand ="whoami";
-	    BufferedReader fakereader = Util.executeCommand(fakeCommand);
-		String fakeresults = Util.bufferToString(fakereader);
-		log.debug("fake command results = " + fakeresults);
-		try {
-			fakereader.close();
-		}
-		catch (Exception e) {
-			log.warn("createZip says " + e.getMessage(), e);
-		}
-		
-	    BufferedReader reader = Util.executeCommand(command);
-	    if (reader == null){
-	    	log.warn("create Zip buffered reader is null");
-	    }
-		String results = Util.bufferToString(reader);
-		log.debug("zipping results = " + results);
-		try {
-			reader.close();
-		}
-		catch (Exception e) {
-			log.warn("createZip says " + e.getMessage(), e);
-		}
-		*/
+
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;

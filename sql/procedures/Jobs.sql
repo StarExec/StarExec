@@ -442,7 +442,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						space.name,
 						space.description,
 						GetJobPairResult(job_pairs.id) AS result,
-						GetWallclock(start_time, end_time) AS wallclock
+						wallclock
 						
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
@@ -496,7 +496,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						space.name,
 						space.description,
 						GetJobPairResult(job_pairs.id) AS result,
-						GetWallclock(start_time, end_time) AS wallclock
+						wallclock
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
@@ -728,43 +728,15 @@ CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
 		SET status_code=_statusCode
 		WHERE sge_id=_sgeId;
 	END //		
-
--- Updates a job pair's statistics 
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdatePairStats;
-CREATE PROCEDURE UpdatePairStats(IN _sgeId INT, IN _nodeName VARCHAR(64), IN _queuesubTime TIMESTAMP, IN _startTime TIMESTAMP, IN _endTime TIMESTAMP, IN _exitStatus INT, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _ioData DOUBLE, IN _ioWait DOUBLE, IN _memUsage DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
-	BEGIN
-		UPDATE job_pairs
-		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
-			queuesub_time=_queuesubTime,
-			start_time=_startTime,
-			end_time=_endTime,
-			exit_status=_exitStatus,
-			wallclock=TIMESTAMPDIFF(MICROSECOND , _startTime, _endTime),
-			cpu=_cpu,
-			user_time=_userTime,
-			system_time=_systemTime,
-			io_data=_ioData,
-			io_wait=_ioWait,
-			mem_usage=_memUsage,
-			max_vmem=_maxVmem,
-			max_res_set=_maxResSet,
-			page_reclaims=_pageReclaims,
-			page_faults=_pageFaults,
-			block_input=_blockInput,
-			block_output=_blockOutput,
-			vol_contex_swtch=_volContexSwtch,
-			invol_contex_swtch=_involContexSwtch
-		WHERE sge_id=_sgeId;
-	END //
 	
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
-CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
+CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
 	BEGIN
 		UPDATE job_pairs
 		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
+			wallclock = _wallClock,
 			cpu=_cpu,
 			user_time=_userTime,
 			system_time=_systemTime,
