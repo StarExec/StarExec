@@ -343,7 +343,27 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
-	
+	/**
+	 * Returns the HTML representing a job pair's status
+	 *
+	 * @param statType 'asc' or 'desc'
+	 * @param numerator a job pair's completePairs, pendingPairs, or errorPairs variable
+	 * @param denominator a job pair's totalPairs variable
+	 * @return HTML representing a job pair's status
+	 * @author Todd Elvers
+	 */
+	public static String getPercentStatHtml(String statType, int value, Boolean percentage){
+		StringBuilder sb = new StringBuilder();
+		sb.append("<p class=\"stat ");
+		sb.append(statType);
+		sb.append("\">");
+		sb.append(value);
+		if (percentage){
+			sb.append(" %");
+		}
+		sb.append("</p>");
+		return sb.toString();
+	}
 	/**
 	 * Gets the next page of entries for a DataTable object
 	 *
@@ -430,9 +450,9 @@ public class RESTHelpers {
 					JsonArray entry = new JsonArray();
 		    		entry.add(new JsonPrimitive(jobLink));
 		    		entry.add(new JsonPrimitive(status));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+		    		entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
+		    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("totalPairs"), false)));
+		    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
 		    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
 		    		
 		    		dataTablePageEntries.add(entry);

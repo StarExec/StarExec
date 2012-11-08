@@ -21,7 +21,7 @@
 						<th>name</th>
 						<th>status</th>
 						<th>complete</th>
-						<th>pending</th>
+						<th>total</th>
 						<th>error</th>
 						<th>time</th>
 					</tr>
