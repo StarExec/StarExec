@@ -71,7 +71,7 @@ public class BenchmarkUploader extends HttpServlet {
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
 			
 			// If the request is valid to act on...
-			if(this.isRequestValid(form)) {
+			if(this.isRequestValid(form)) {		
 				// If the user has benchmark adding permissions
 				Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
 				String uploadMethod = (String)form.get(UPLOAD_METHOD);
@@ -131,8 +131,12 @@ public class BenchmarkUploader extends HttpServlet {
 		log.info("about to upload benchmarks to space " + spaceId + "for user " + userId);
 		if(uploadMethod.equals("convert")) {
 			
+			log.debug("convert");
 			Space result = this.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, this.extractPermissions(form));
-			
+			if (result == null) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark should have a unique name in the space.");
+				return;
+			}
 			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
 			result.setId(spaceId);
 			if (!hasDependencies){
@@ -144,6 +148,15 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> results = this.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+			
+			for (Benchmark bench : results) {
+				// Make sure that the benchmark has a unique name in the space.
+				if(Spaces.notUniquePrimitiveName(bench.getName(), spaceId, 2)) {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark should have a unique name in the space.");
+					return;
+				}
+			}
+			
 			if (!hasDependencies){	
 				Benchmarks.add(results, spaceId);
 			}
@@ -225,6 +238,12 @@ public class BenchmarkUploader extends HttpServlet {
 				b.setType(t);
 				b.setUserId(userId);
 				b.setDownloadable(downloadable);
+				
+				// Make sure that the benchmark has a unique name in the space.
+				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
+					return null;
+				}
+				
 				space.addBenchmark(b);
 			}
 		}

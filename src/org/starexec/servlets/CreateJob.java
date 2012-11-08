@@ -71,6 +71,12 @@ public class CreateJob extends HttpServlet {
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 		
+		// Make sure that the job has a unique name in the space.
+		if(Spaces.notUniquePrimitiveName((String)request.getParameter(name), space, 3)) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
+			return;
+		}
+		
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,

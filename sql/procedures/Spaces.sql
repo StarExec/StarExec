@@ -379,12 +379,50 @@ CREATE PROCEDURE IsPublicSpace(IN _spaceId INT, IN _publicUserId INT)
 	END //
 
 -- Change a space to a public space or a private one
+-- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS setPublicSpace;
 CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
 	BEGIN
 		UPDATE spaces
 		SET public_access = _pbc
 		WHERE id = _spaceId;
+	END //
+	
+-- Count the number of solvers in a specific space
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS countSpaceSolversByName;
+CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(32), IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) FROM solvers NATURAL JOIN solver_assoc WHERE name = _name AND space_id = _spaceId;		
+	END //
+
+-- Count the number of benchmarks in a specific space
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS countSpaceBenchmarksByName;
+CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(32), IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) FROM benchmarks JOIN bench_assoc ON id = bench_id WHERE name = _name AND space_id = _spaceId;		
+	END //
+
+-- Count the number of jobs in a specific space
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS countSpaceJobsByName;
+CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(32), IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) FROM jobs JOIN job_assoc ON id = job_id WHERE name = _name AND space_id = _spaceId;		
+	END //
+
+-- Count the number of subspaces in a specific space
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS countSubspacesByName;
+CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(32), IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) 
+		FROM spaces AS parent
+		     JOIN set_assoc ON parent.id = set_assoc.space_id
+		     JOIN spaces AS child ON set_assoc.child_id = child.id
+		WHERE parent.id = _spaceId AND child.name = _name
+		;
 	END //
 
 DELIMITER ; -- This should always be at the end of this file

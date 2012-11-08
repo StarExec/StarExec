@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -864,7 +865,8 @@ public class RESTServices {
 	 * 			3: no add permission in destination space,<br>
 	 * 			4: user doesn't belong to the 'from space',<br> 
 	 * 			5: the 'from space' is locked,<br>
-	 * 			6: user does not belong to one or more of the subspaces of the destination space
+	 * 			6: user does not belong to one or more of the subspaces of the destination space,<br>
+	 *          7: there exists a primitive with the same name
 	 * @author Tyler Jensen & Todd Elvers
 	 */
 	@POST
@@ -905,6 +907,11 @@ public class RESTServices {
 		for (int id : selectedSolvers) {
 			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
 				return gson.toJson(4);
+			}
+			
+			// Make sure that the solver has a unique name in the space.
+			if(Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), spaceId, 1)) {
+				return gson.toJson(7);
 			}
 		}
 		
@@ -954,7 +961,8 @@ public class RESTServices {
 	 * 			2: missing parameters,<br>
 	 * 			3: no add user permission in destination space,<br>
 	 * 			4: user doesn't belong to the 'from space',<br>
-	 * 			5: the 'from space' is locked
+	 * 			5: the 'from space' is locked,<br>
+	 *          6: there exist a primitive with the same name
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -996,7 +1004,12 @@ public class RESTServices {
 			if(!Permissions.canUserSeeBench(id, requestUserId)) {
 				return gson.toJson(4);
 			}
-		}		
+			
+			// Make sure that the benchmark has a unique name in the space.
+			if(Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), spaceId, 2)) {
+				return gson.toJson(6);
+			}
+		}
 		
 		// Make the associations
 		boolean success = Benchmarks.associate(selectedBenchs, spaceId);
@@ -1018,6 +1031,7 @@ public class RESTServices {
 	 * 			3: no add user permission in destination space,<br>
 	 * 			4: user doesn't belong to the 'from space',<br>
 	 * 			5: the 'from space' is locked
+	 *          6. there exists a primitive with the same name
 	 * @author Tyler Jensen
 	 */
 	@POST
@@ -1058,6 +1072,11 @@ public class RESTServices {
 		for(int id : selectedJobs) {
 			if(!Permissions.canUserSeeJob(id, requestUserId)) {
 				return gson.toJson(4);
+			}
+			
+			// Make sure that the job has a unique name in the space.
+			if(Spaces.notUniquePrimitiveName(Jobs.getDetailed(id).getName(), spaceId, 3)) {
+				return gson.toJson(6);
 			}
 		}		
 		
@@ -1391,6 +1410,7 @@ public class RESTServices {
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions,<br>
 	 * 			3: invalid parameters
+	 *          4: there exist a primitive with the same name
 	 * @author Todd Elvers
 	 */
 	@POST
@@ -1809,6 +1829,7 @@ public class RESTServices {
 	 *         3: User doesn't have the copy permission.
 	 *         4: User can't see the subspaces they are copying.
 	 *         5: The space which is copied from is locked.
+	 *         6: There exists a primitive with the same name.
 	 * @author Ruoyu Zhang
 	 */
 	@POST
@@ -1849,6 +1870,11 @@ public class RESTServices {
 		for (int id : selectedSubSpaces) {
 			if (!Permissions.canUserSeeSpace(id, requestUserId)) {
 				return gson.toJson(4);
+			}
+			
+			// Make sure that the subspace has a unique name in the space.
+			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), spaceId, 4)) {
+				return gson.toJson(6);
 			}
 		}
 		

@@ -82,6 +82,12 @@ public class AddSpace extends HttpServlet {
 		
 		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
 		int userId = SessionUtil.getUserId(request);
+		
+		if (Spaces.getSubSpaceIDbyName(spaceId, userId, s.getName()) != -1) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The subspace should have a unique name in the space.");
+			return;
+		}
+				
 		int newSpaceId = Spaces.add(s, spaceId, userId);
 		
 		if(newSpaceId <= 0) {			

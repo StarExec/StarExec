@@ -195,7 +195,7 @@ function initButtonUI() {
 						);
 				},
 				"cancel": function() {
-					log('user canceled copy action');
+					log('user canceled making public action');
 					$(this).dialog("close");
 				}
 			}
@@ -231,7 +231,7 @@ function initButtonUI() {
 							);
 				},
 				"cancel": function() {
-					log('user canceled copy action');
+					log('user canceled making private action');
 					$(this).dialog("close");
 				}
 			}
@@ -437,6 +437,9 @@ function onSpaceDrop(event, ui) {
 								case 6: // User doesn't have addSolver permission in one or more of the subspaces of the 'from space'
 									showMessage('error', "you do not have permissions to copy solvers to one of the subspaces of" + destName, 5000);
 									break;
+								case 7: // There exists a solver with the same name
+									showMessage('error', "there exists a solver with the same name in " + destName, 5000);
+									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	
 								}
@@ -481,6 +484,9 @@ function onSpaceDrop(event, ui) {
 									break;
 								case 5: // From space is locked
 									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								case 7: // There exists a solver with the same name
+									showMessage('error', "there exists a solver with the same name in " + destName, 5000);
 									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	
@@ -656,6 +662,9 @@ function onSpaceDrop(event, ui) {
 								case 5: // From space is locked
 									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
 									break;
+								case 6: // There exists a subspace with the same name.
+									showMessage('error', "there exists a subspace with the same name.", 5000);
+									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	
 								}
@@ -696,6 +705,9 @@ function onSpaceDrop(event, ui) {
 									break;
 								case 5: // From space is locked
 									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								case 6: // There exists a subspace with the same name.
+									showMessage('error', "there exists a subspace with the same name.", 5000);
 									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	
@@ -755,6 +767,9 @@ function onSpaceDrop(event, ui) {
 									break;
 								case 5: // From space is locked
 									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								case 6: // There exist a primitive with the same name
+									showMessage('error', "there exist a primitive with the same name.", 5000);
 									break;
 								default:
 									showMessage('error', "the operation failed with an unknown return code", 5000);	

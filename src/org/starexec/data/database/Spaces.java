@@ -1451,6 +1451,7 @@ public class Spaces {
 	 * @param spaceId the Id of space to be set public or private
 	 * @param pbc true denote the space to be set public, false to be set private 
 	 * @return true if successful
+	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		Connection con = null;			
@@ -1499,5 +1500,101 @@ public class Spaces {
 		}
 		
 		return false;		
+	}
+	
+	/**
+	 * Check if there already exists a primitive has the same name as given by prim in the space.
+	 * @param prim The content of the primitive, such as a job's name
+	 * @param space_id The if of the space needed to be checked
+	 * @param type The type of the primitive
+	 *        1: solver
+	 *        2: benchmark
+	 *        3: job
+	 *        4: subspace
+	 * @return True when there exists a primitive with the same name.
+	 * @author Ruoyu Zhang
+	 */
+	public static boolean notUniquePrimitiveName(String prim, int space_id, int type) {
+		// Initiate sql connection facilities.
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		try {
+			// If the type of the primitive is solver.
+			if(type == 1) {
+				con = Common.getConnection();		
+				procedure = con.prepareCall("{CALL countSpaceSolversByName(?, ?)}");
+				procedure.setString(1, prim);
+				procedure.setInt(2, space_id);
+				
+				results = procedure.executeQuery();		
+				
+				if(results.next()){
+					if(results.getInt(1) != 0) {
+						return true;
+					}
+					return false;
+				}
+			}
+			
+			//If the type of the primitive is benchmark.
+			else if(type == 2) {
+				con = Common.getConnection();
+				procedure = con.prepareCall("{CALL countSpaceBenchmarksByName(?, ?)}");
+				procedure.setString(1, prim);
+				procedure.setInt(2, space_id);
+				
+				results = procedure.executeQuery();		
+				
+				if(results.next()){
+					if(results.getInt(1) != 0) {
+						return true;
+					}
+					return false;
+				}
+			}
+			
+			//If the type of the primitive is job.
+			else if(type == 3) {
+				con = Common.getConnection();
+				procedure = con.prepareCall("{CALL countSpaceJobsByName(?, ?)}");
+				procedure.setString(1, prim);
+				procedure.setInt(2, space_id);
+				
+				results = procedure.executeQuery();		
+				
+				if(results.next()){
+					if(results.getInt(1) != 0) {
+						return true;
+					}
+					return false;
+				}
+			}
+			
+			//If the type of the primitive is subspace.
+			else if(type == 4) {
+				con = Common.getConnection();
+				procedure = con.prepareCall("{CALL countSubspacesByName(?, ?)}");
+				procedure.setString(1, prim);
+				procedure.setInt(2, space_id);
+				
+				results = procedure.executeQuery();		
+				
+				if(results.next()){
+					if(results.getInt(1) != 0) {
+						return true;
+					}
+					return false;
+				}
+			}
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return true;
 	}
 }

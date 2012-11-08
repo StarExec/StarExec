@@ -20,6 +20,7 @@ import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.util.ArchiveUtil;
@@ -61,6 +62,12 @@ public class UploadSolver extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload solver request was malformed");
 					return;
 				} 
+				
+				// Make sure that the solver has a unique name in the space.
+				if(Spaces.notUniquePrimitiveName((String)form.get(UploadSolver.SOLVER_NAME), Integer.parseInt((String)form.get(SPACE_ID)), 1)) {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The solver should have a unique name in the space.");
+					return;
+				}
 				
 				// Parse the request as a solver
 				int result = handleSolver(userId, form);				
