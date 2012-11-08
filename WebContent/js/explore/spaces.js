@@ -1389,7 +1389,7 @@ function colorizeJobStatistics(){
 				return eval($(this).text());
 			},
 			{ 
-				maxval: 1,
+				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
 				lightness: 0 
@@ -1402,7 +1402,7 @@ function colorizeJobStatistics(){
 				return eval($(this).text());
 			},
 			{ 
-				maxval: 1,
+				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
 				reverseOrder: true,
