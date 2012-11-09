@@ -1386,7 +1386,8 @@ function colorizeJobStatistics(){
 	$("#jobs p.asc").heatcolor(
 			function() {
 				// Return the floating point value of the stat
-				return eval($(this).text());
+				var value = $(this).text();
+				return eval(value.slice(0, value.length-1));				
 			},
 			{ 
 				maxval: 100,
@@ -1399,7 +1400,8 @@ function colorizeJobStatistics(){
 	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
 	$("#jobs p.desc").heatcolor(
 			function() {
-				return eval($(this).text());
+				var value = $(this).text();
+				return eval(value.slice(0, value.length-1));	
 			},
 			{ 
 				maxval: 100,
