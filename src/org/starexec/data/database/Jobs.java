@@ -778,7 +778,7 @@ public class Jobs {
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
 			//jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
-			log.info("about to get attributes for jp + " + jp.getId());
+			log.info("about to get attributes for jp " + jp.getId());
 			jp.setAttributes(Jobs.getAttributes(jp.getId()));
 			log.info("just got attributes from jp + " + jp.getId());
 			returnList.add(jp);
@@ -886,7 +886,7 @@ public class Jobs {
 		jp.setBlockOutput(result.getDouble("block_output"));
 		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
-		//log.info("getting job pair from result set for sgeId " + jp.getGridEngineId());
+		log.info("getting job pair from result set for sgeId " + jp.getGridEngineId());
 		return jp;
 	}
 	
