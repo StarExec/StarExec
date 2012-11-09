@@ -765,13 +765,18 @@ public class Jobs {
 										
 		while(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
+			log.info("got result to pair for " + jp.getId());
 			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
 			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			log.info("set node for " + jp.getId());
 			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			log.info("set bench for " + jp.getId());
 			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
 			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			log.info("got solver for " + jp.getId());
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			log.info("got configuration for " + jp.getId());
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
