@@ -539,7 +539,7 @@ public class Jobs {
 			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
-			jp.setAttributes(Jobs.getAttributes(con, pairId));
+			jp.setAttributes(Jobs.getAttributes(pairId));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			jp.setSpace(Spaces.get(results.getInt("space_id")));
 			
