@@ -777,7 +777,10 @@ public class Jobs {
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
-			jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
+			//jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
+			log.info("about to get attributes for jp + " + jp.getId());
+			jp.setAttributes(Jobs.getAttributes(jp.getId()));
+			log.info("just got attributes from jp + " + jp.getId());
 			returnList.add(jp);
 		}			
 		
