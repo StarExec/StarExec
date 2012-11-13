@@ -92,6 +92,9 @@ public abstract class JobManager {
 			if(processor != null) {
 				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "" + processor.getFilePath());		
 			}
+			else{
+				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");	
+			}
 			
 			// Optimization, do outside of loop
 			boolean isSGEAvailable = GridEngineUtil.isAvailable();
