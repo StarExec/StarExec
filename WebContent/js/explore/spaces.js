@@ -727,8 +727,8 @@ function onSpaceDrop(event, ui) {
 		});
 	}
 	
-	// Otherwise, if the primitive being copied to another space is a benchmark or job...
-	else {
+	// Otherwise, if the primitive being copied to another space is a benchmark
+	else if(ui.draggable.data('type')[0] == 'b') {
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
@@ -751,6 +751,69 @@ function onSpaceDrop(event, ui) {
 										showMessage('success', ids.length + ' ' + 'benchmarks successfully copied to' + destName, 2000);
 									} else {					    		
 										showMessage('success', 'benchmark successfully copied to' + destName, 2000);	
+									}
+									break;
+								case 1: // Database error
+									showMessage('error', "a database error occurred while processing your request", 5000);
+									break;
+								case 2: // Invalid parameters
+									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
+									break;
+								case 3: // No add permission in dest space
+									showMessage('error', "you do not have permission to add " + ui.draggable.data('type') + "s to" + destName, 5000);
+									break;
+								case 4: // User doesn't belong to from space
+									showMessage('error', "you do not belong to the space that is being copied from", 5000);
+									break;
+								case 5: // From space is locked
+									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+									break;
+								case 6: // There exist a primitive with the same name
+									showMessage('error', "there exist a primitive with the same name.", 5000);
+									break;
+								default:
+									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}
+							},
+							"json"
+					).error(function(){
+						alert('Session expired');
+						window.location.reload(true);
+					});	 									
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}		
+		});			   		    	    	
+		
+	}
+	
+	// Otherwise, if the primitive being copied to another space is a job
+	else {
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			buttons: {
+				'yes': function() {
+					log('user confirmed copy action');
+					
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-copy').dialog('close');
+					
+					// Make the request to the server				
+					$.post(  	    		
+							'/starexec/services/spaces/' + destSpace + '/add/job',
+							{selectedIds : ids, fromSpace : spaceId},	
+							function(returnCode) {
+								log('AJAX response recieved with code ' + returnCode);
+								switch (returnCode) {
+								case 0:	// Success
+									if(ids.length > 1) {								
+										showMessage('success', ids.length + ' ' + 'jobs successfully copied to' + destName, 2000);
+									} else {					    		
+										showMessage('success', 'job successfully copied to' + destName, 2000);	
 									}
 									break;
 								case 1: // Database error
