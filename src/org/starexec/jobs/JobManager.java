@@ -23,6 +23,7 @@ import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
@@ -86,7 +87,12 @@ public abstract class JobManager {
 			// Impose resource limits
 			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
 			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);							
-
+			//Post processor
+			Processor processor = job.getPostProcessor();
+			if(processor != null) {
+				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "" + processor.getFilePath());		
+			}
+			
 			// Optimization, do outside of loop
 			boolean isSGEAvailable = GridEngineUtil.isAvailable();
 
