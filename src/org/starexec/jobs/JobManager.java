@@ -44,7 +44,7 @@ public abstract class JobManager {
 		if (queueSize > 0){
 			log.info("Current Size of SGE QUEUE = " + queueSize);
 		}
-		if (queueSize < 10*R.NUM_JOB_SCRIPTS){	
+		if (queueSize < R.NUM_JOB_SCRIPTS){	
 			List<Job> jobs = Jobs.getPendingJobs();
 			for (Job job : jobs){
 				submitJob(job);

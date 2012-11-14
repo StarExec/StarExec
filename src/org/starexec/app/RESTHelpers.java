@@ -451,7 +451,7 @@ public class RESTHelpers {
 		    		entry.add(new JsonPrimitive(jobLink));
 		    		entry.add(new JsonPrimitive(status));
 		    		entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
-		    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("totalPairs"), false)));
+		    		entry.add(new JsonPrimitive(getPercentStatHtml("static", job.getLiteJobPairStats().get("totalPairs"), false)));
 		    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
 		    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
 		    		

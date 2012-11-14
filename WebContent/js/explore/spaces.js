@@ -1459,7 +1459,19 @@ function colorizeJobStatistics(){
 				lightness: 0 
 			}
 	);
-	
+	//colorize the unchanging totals
+	$("#jobs p.static").heatcolor(
+			function() {
+				// Return the floating point value of the stat
+				return eval(1);				
+			},
+			{ 
+				maxval: 1,
+				minval: 0,
+				colorStyle: 'greentored',
+				lightness: 0 
+			}
+	);
 	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
 	$("#jobs p.desc").heatcolor(
 			function() {
