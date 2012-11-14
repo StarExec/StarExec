@@ -48,13 +48,28 @@ function limitExceeded {
 # processes the attributes for a pair
 # Ben McCune
 function processAttributes {
+
+if [ -z $1 ]; then
+  log "No argument passed to processAttributes"
+  exit 1
+fi
+
 a=0
 while read line
 do a=$(($a+1));
 key=${line%=*};
 value=${line#*=};
-log "processing attribute $a"
-mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value')"
+keySize=${#key}
+valueSize=${#value}
+product=$[keySize*valueSize]
+#testing to see if key or value is empty
+if (( $product ))
+   then
+	log "processing attribute $a"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value')"
+else
+        log "bad post processing - cannot process attribute $a"
+fi
 done < $1
 }
 
@@ -62,6 +77,11 @@ done < $1
 # updates stats for the pair - parameter is watcher.out from runsolver
 # Ben McCune
 function updateStats {
+
+if [ -z $1 ]; then
+  log "No argument passed"
+  exit 1
+fi
 
 WALLCLOCK_TIME=`awk '/Real time \(s\):/ { print $4 }' $1`
 CPU_USAGE=`awk '/CPU usage/ { print $4 }' $1`

@@ -53,11 +53,7 @@
 				<tr title="the date/time the job was created on StarExec">
 					<td>created</td>			
 					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
-				</tr>
-				<tr title="the total wallclock elapsed time of the job. calculated by taking the difference between the start time of earliest completed pair and the end time of the latest compelted pair">
-					<td>elapsed time</td>			
-					<td>${pairStats.runtime / 1000} ms</td>
-				</tr>						
+				</tr>					
 				<tr title="the postprocessor that was used to process output for this job">
 					<td>postprocessor</td>
 					<c:if test="${not empty job.postProcessor}">			

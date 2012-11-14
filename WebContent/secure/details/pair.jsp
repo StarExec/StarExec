@@ -72,18 +72,6 @@
 					<td><a href="/starexec/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/starexec/images/external.png"/></a></td>
 				</tr>				
 				<tr>
-					<td>submit time</td>			
-					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss.SSS a" value="${pair.queueSubmitTime}" /></td>
-				</tr>							
-				<tr>
-					<td>start time</td>			
-					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss.SSS a" value="${pair.startTime}" /></td>
-				</tr>
-				<tr>
-					<td>end time</td>			
-					<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss.SSS a" value="${pair.endTime}" /></td>
-				</tr>
-				<tr>
 					<td>runtime (wallclock)</td>			
 					<td>${pair.wallclockTime} seconds</td>
 				</tr>			
