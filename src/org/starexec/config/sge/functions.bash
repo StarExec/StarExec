@@ -45,6 +45,20 @@ function limitExceeded {
 	exit 1
 }
 
+# processes the attributes for a pair
+# Ben McCune
+function processAttributes {
+a=0
+while read line
+do a=$(($a+1));
+key=${line%=*};
+value=${line#*=};
+log "processing attribute $a"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value')"
+done < $1
+}
+
+
 # updates stats for the pair - parameter is watcher.out from runsolver
 # Ben McCune
 function updateStats {

@@ -80,8 +80,6 @@ function copyOutput {
 
 	log "copying output to master host"
 	
-
-
 	# Copy output from local host output to master host output storage
 	#cp -r "$STAREXEC_OUT_DIR"/* "$UNIQUE_OUT_DIR"
 	
@@ -89,10 +87,16 @@ function copyOutput {
 	#log "Bench Name = $BENCH_NAME"
 	#log "target = $RZ_OUT_DIR/$BENCH_NAME"
 	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
-	ls -l "$STAREXEC_OUT_DIR"
+	#ls -l "$STAREXEC_OUT_DIR"
 	log "job output copy complete - now sending stats"
 	updateStats $STAREXEC_OUT_DIR/watcher.out
-	
+	log "getting postprocessor"
+	cp $POST_PROCESSOR_PATH $STAREXEC_OUT_DIR/postProcessor
+	log "executing post processor"
+	$STAREXEC_OUT_DIR/postProcessor $STAREXEC_OUT_DIR/stdout.txt > "$STAREXEC_OUT_DIR"/attributes.txt
+	log "processing attributes"
+	#cat $STAREXEC_OUT_DIR/attributes.txt
+	processAttributes $STAREXEC_OUT_DIR/attributes.txt
 	return $?	
 }
 
