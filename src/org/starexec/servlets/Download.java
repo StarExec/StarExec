@@ -248,7 +248,7 @@ public class Download extends HttpServlet {
      * @author Ruoyu Zhang
      */
     private static String handleJob(Integer jobId, int userId, String format, HttpServletResponse response) throws IOException {    	
-		log.info("Request for job " + jobId + "csv from user " + userId);
+		log.info("Request for job " + jobId + " csv from user " + userId);
     	if (Permissions.canUserSeeJob(jobId, userId)) {
     		Job job = Jobs.getDetailed(jobId);
 			String fileName = UUID.randomUUID().toString() + format;

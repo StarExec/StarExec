@@ -28,7 +28,7 @@ import org.starexec.util.Util;
  */
 public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
-	
+
 	/**
 	 * Adds a new job to the database. NOTE: This only records the job in the 
 	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
@@ -39,20 +39,20 @@ public class Jobs {
 	 */
 	public static boolean add(Job job, int spaceId) {
 		Connection con = null;
-				
+
 		try {
 			con = Common.getConnection();
-			
+
 			Common.beginTransaction(con);
-			
+
 			Jobs.addJob(con, job);
 			Jobs.associate(con, job.getId(), spaceId);
-			
+
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
 				Jobs.addJobPair(con, pair);
 			}
-			
+
 			Common.endTransaction(con);
 			return true;
 		} catch(Exception e) {
@@ -61,7 +61,7 @@ public class Jobs {
 		} finally {			
 			Common.safeClose(con);	
 		}
-		
+
 		return false;
 	}
 
@@ -77,7 +77,7 @@ public class Jobs {
 		procedure.setString(2, job.getName());
 		procedure.setString(3, job.getDescription());		
 		procedure.setInt(4, job.getQueue().getId());
-		
+
 		// Only set pre and post processors if they're specified, else set to null
 		if(job.getPreProcessor().getId() > 0) {
 			procedure.setInt(5, job.getPreProcessor().getId());
@@ -89,17 +89,17 @@ public class Jobs {
 		} else {
 			procedure.setNull(6, java.sql.Types.INTEGER);
 		}		
-		
+
 		// The procedure will return the job's new ID in this parameter
 		procedure.registerOutParameter(7, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
-		
+
 		// Update the job's ID so it can be used outside this method
 		job.setId(procedure.getInt(7));		
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Adds a new attribute to a job pair
 	 * @param con The connection to make the update on
@@ -114,11 +114,11 @@ public class Jobs {
 		procedure.setInt(1, pairId);
 		procedure.setString(2, key);
 		procedure.setString(3, val);
-		
+
 		procedure.executeUpdate();
 		return true;			
 	}
-	
+
 	/**
 	 * Adds a set of attributes to a job pair
 	 * @param pairId The id of the job pair the attribute is for
@@ -128,27 +128,27 @@ public class Jobs {
 	 */
 	public static boolean addJobAttributes(int pairId, Properties attributes) {
 		Connection con = null;
-		
+
 		try {
 			con = Common.getConnection();
-			
+
 			// For each attribute (key, value)...
 			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
 			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
 				// Add the attribute to the database
 				Jobs.addJobAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
 			}	
-			
+
 			return true;
 		} catch(Exception e) {			
 			log.error("error adding Job Attributes = " + e.getMessage(), e);
 		} finally {			
 			Common.safeClose(con);	
 		}
-		
+
 		return false;		
 	}
-	
+
 	/**
 	 * @param pairId the id of the pair to update the status of
 	 * @param statusCode the status code to set for the pair
@@ -156,14 +156,14 @@ public class Jobs {
 	 */
 	public static boolean setPairStatus(int pairId, int statusCode) {
 		Connection con = null;
-				
+
 		try {
 			con = Common.getConnection();
-			
+
 			CallableStatement procedure = con.prepareCall("{CALL UpdatePairStatus(?, ?)}");
 			procedure.setInt(1, pairId);
 			procedure.setInt(2, statusCode);
-			
+
 			procedure.executeUpdate();								
 			return true;
 		} catch(Exception e) {			
@@ -171,10 +171,10 @@ public class Jobs {
 		} finally {			
 			Common.safeClose(con);	
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Updates a pair's status given the pair's sge id
 	 * @param sgeId the SGE id of the pair to update the status of
@@ -183,14 +183,14 @@ public class Jobs {
 	 */
 	public static boolean setSGEPairStatus(int sgeId, int statusCode) {
 		Connection con = null;
-				
+
 		try {
 			con = Common.getConnection();
-			
+
 			CallableStatement procedure = con.prepareCall("{CALL UpdateSGEPairStatus(?, ?)}");
 			procedure.setInt(1, sgeId);
 			procedure.setInt(2, statusCode);
-			
+
 			procedure.executeUpdate();								
 			return true;
 		} catch(Exception e) {			
@@ -198,7 +198,7 @@ public class Jobs {
 		} finally {			
 			Common.safeClose(con);	
 		}
-		
+
 		return false;
 	}
 
@@ -217,17 +217,17 @@ public class Jobs {
 		procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
 		procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
 		procedure.setInt(7, pair.getSpace().getId());
-		
+
 		// The procedure will return the pair's new ID in this parameter
 		procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
-		
+
 		// Update the pair's ID so it can be used outside this method
 		pair.setId(procedure.getInt(8));
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Adds an association between all the given job ids and the given space
 	 * @param jobIds the ids of the jobs we are associating to the space
@@ -237,15 +237,15 @@ public class Jobs {
 	 */
 	public static boolean associate(List<Integer> jobIds, int spaceId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);								
-			
+
 			for(int jid : jobIds) {
 				Jobs.associate(con, jid, spaceId);			
 			}			
-			
+
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e){			
@@ -254,10 +254,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Adds an association between all the given job ids and the given space
 	 * @param con The connection to make the association on
@@ -272,10 +272,10 @@ public class Jobs {
 		procedure.setInt(1, jobId);
 		procedure.setInt(2, spaceId);			
 		procedure.executeUpdate();							
-		
+
 		return true;		
 	}
-	
+
 	/**
 	 * Update's a job pair's grid engine id
 	 * @param pairId The id of the pair to update
@@ -284,25 +284,25 @@ public class Jobs {
 	 */
 	public static boolean updateGridEngineId(int pairId, int sgeId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();									
 			CallableStatement procedure = con.prepareCall("{CALL SetSGEJobId(?, ?)}");
-			
+
 			procedure.setInt(1, pairId);
 			procedure.setInt(2, sgeId);			
 			procedure.executeUpdate();			
-			
+
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Retrieves a job from the database as well as its job pairs and its queue/processor info
 	 * 
@@ -313,21 +313,20 @@ public class Jobs {
 	public static Job getDetailed(int jobId) {
 		log.info("getting detailed info for job " + jobId);
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
 			ResultSet results = procedure.executeQuery();
-			
+			Job j = new Job();
 			if(results.next()){
-				Job j = new Job();
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));				
-				
+
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
@@ -336,19 +335,25 @@ public class Jobs {
 					log.warn("getDetailed - About to getPairs detailed for job " + jobId + " but connection to pass is closed.");
 				}
 				//j.setJobPairs(Jobs.getPairsDetailed(con, j.getId()));
-				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
-				return j;
+			}
+			else{
+				j=null;
 			}
 			Common.closeResultSet(results);
+			if (j != null){
+				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+			}
+			return j;
+
 		} catch (Exception e){			
 			log.error("job get detailed for job id = " + jobId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Retrieves a job from the database as well as its queue and processor information
 	 * (excludes job pairs)
@@ -359,13 +364,13 @@ public class Jobs {
 	 */
 	public static Job getDetailedWithoutJobPairs(int jobId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
 			ResultSet results = procedure.executeQuery();
-			
+
 			if(results.next()){
 				Job j = new Job();
 				j.setId(results.getInt("id"));
@@ -373,11 +378,11 @@ public class Jobs {
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));				
-				
+
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
-				
+
 				return j;
 			}	
 			Common.closeResultSet(results);
@@ -386,10 +391,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Retrieves a job with basic info from the database (excludes pair and queue/processor info) 
 	 * @param jobId The id of the job to get information for 
@@ -398,13 +403,13 @@ public class Jobs {
 	 */
 	public static Job getShallow(int jobId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
 			ResultSet results = procedure.executeQuery();
-			
+
 			if(results.next()){
 				Job j = new Job();
 				j.setId(results.getInt("id"));
@@ -412,11 +417,11 @@ public class Jobs {
 				j.setName(results.getString("name"));
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));				
-				
+
 				j.getQueue().setId(results.getInt("queue_id"));
 				j.getPreProcessor().setId(results.getInt("pre_processor"));
 				j.getPostProcessor().setId(results.getInt("post_processor"));				
-				
+
 				return j;
 			}		
 			Common.closeResultSet(results);
@@ -425,10 +430,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Gets a list of jobs belonging to a space (without its job pairs but with job pair statistics)
 	 * @param spaceId The id of the space to get jobs for
@@ -437,14 +442,14 @@ public class Jobs {
 	 */
 	public static List<Job> getBySpace(int spaceId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceJobsById(?)}");
 			procedure.setInt(1, spaceId);					
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
-			
+
 			while(results.next()){
 				Job j = new Job();
 				j.setId(results.getInt("id"));
@@ -461,10 +466,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Gets the job pair with the given id non-recursively 
 	 * (Worker node, status, benchmark and solver will NOT be populated) 
@@ -474,13 +479,13 @@ public class Jobs {
 	 */
 	public static JobPair getPair(int pairId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 			procedure.setInt(1, pairId);					
 			ResultSet results = procedure.executeQuery();
-											
+
 			if(results.next()){
 				JobPair jp = Jobs.resultToPair(results);
 				jp.getNode().setId(results.getInt("node_id"));
@@ -495,10 +500,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;		
 	}
-	
+
 	/**
 	 * Gets the job pair with the given id recursively 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
@@ -508,7 +513,7 @@ public class Jobs {
 	 */
 	public static JobPair getPairDetailed(int pairId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			return Jobs.getPairDetailed(con, pairId);		
@@ -517,10 +522,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;		
 	}
-	
+
 	/**
 	 * Gets the job pair with the given id recursively 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -533,7 +538,7 @@ public class Jobs {
 		CallableStatement procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 		procedure.setInt(1, pairId);					
 		ResultSet results = procedure.executeQuery();
-										
+
 		if(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
 			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
@@ -542,7 +547,7 @@ public class Jobs {
 			jp.setAttributes(Jobs.getAttributes(pairId));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			jp.setSpace(Spaces.get(results.getInt("space_id")));
-			
+
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
@@ -551,10 +556,10 @@ public class Jobs {
 			Common.closeResultSet(results);
 			return jp;
 		}			
-			
+
 		return null;		
 	}
-	
+
 	/**
 	 * Retrieves all attributes (key/value) of the given job pair
 	 * @param pairId The id of the job pair to get the attributes of
@@ -563,7 +568,7 @@ public class Jobs {
 	 */
 	public static Properties getAttributes(int pairId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();		
 			return Jobs.getAttributes(con, pairId);
@@ -572,10 +577,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Retrieves all attributes (key/value) of the given job pair
 	 * @param con The connection to make the query on
@@ -587,20 +592,20 @@ public class Jobs {
 		CallableStatement procedure = con.prepareCall("{CALL GetPairAttrs(?)}");
 		procedure.setInt(1, pairId);					
 		ResultSet results = procedure.executeQuery();
-		
+
 		Properties prop = new Properties();
-		
+
 		while(results.next()){
 			prop.put(results.getString("attr_key"), results.getString("attr_value"));				
 		}			
-		
+
 		if(prop.size() <= 0) {
 			prop = null;
 		}
 		Common.closeResultSet(results);
 		return prop;
 	}
-	
+
 	/**
 	 * Gets the job pair with the given id recursively 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
@@ -611,7 +616,7 @@ public class Jobs {
 	public static JobPair getSGEPairDetailed(int sgeId) {
 		log.info("getting SGEPairDetailed for sgeId = " + sgeId);
 		Connection con = null;			 
-		
+
 		try {			
 			con = Common.getConnection();
 			return Jobs.getSGEPairDetailed(con, sgeId);		
@@ -620,10 +625,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;		
 	}
-	
+
 	/**
 	 * Gets the job pair with the given id recursively 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -643,7 +648,7 @@ public class Jobs {
 			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			
+
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
@@ -659,7 +664,7 @@ public class Jobs {
 		}
 		return null;		
 	}
-	
+
 	/**
 	 * Gets all job pairs for the given job non-recursively 
 	 * (Worker node, status, benchmark and solver will NOT be populated) 
@@ -669,14 +674,14 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPairs(int jobId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);					
 			ResultSet results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
-											
+
 			while(results.next()){
 				JobPair jp = Jobs.resultToPair(results);
 				jp.getNode().setId(results.getInt("node_id"));
@@ -692,10 +697,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;		
 	}
-	
+
 	/**
 	 * Gets all job pairs for the given job non-recursively 
 	 * (Worker node, status, benchmark and solver will NOT be populated)
@@ -709,7 +714,7 @@ public class Jobs {
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
 		List<JobPair> returnList = new LinkedList<JobPair>();
-										
+
 		while(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
 			jp.getNode().setId(results.getInt("node_id"));
@@ -721,7 +726,7 @@ public class Jobs {
 		Common.closeResultSet(results);
 		return returnList;				
 	}
-	
+
 	/**
 	 * Gets all job pairs for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
@@ -731,7 +736,7 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPairsDetailed(int jobId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			return Jobs.getPairsDetailed(con, jobId);
@@ -740,10 +745,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;		
 	}
-	
+
 	/**
 	 * Gets all job pairs for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -753,7 +758,7 @@ public class Jobs {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JobPair> getPairsDetailed(Connection con, int jobId) throws Exception {	
-		
+
 		if(con.isClosed())
 		{
 			log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
@@ -762,7 +767,7 @@ public class Jobs {
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
 		List<JobPair> returnList = new LinkedList<JobPair>();
-										
+
 		while(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
 			log.info("got result to pair for " + jp.getId());
@@ -788,11 +793,11 @@ public class Jobs {
 			log.info("just got attributes from jp + " + jp.getId());
 			returnList.add(jp);
 		}			
-		
+
 		Common.closeResultSet(results);
 		return returnList;			
 	}
-	
+
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
@@ -802,7 +807,7 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPendingPairsDetailed(int jobId) {
 		Connection con = null;			
-		
+
 		try {			
 			con = Common.getConnection();		
 			return Jobs.getPendingPairsDetailed(con, jobId);
@@ -811,10 +816,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;		
 	}
-	
+
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -824,7 +829,7 @@ public class Jobs {
 	 * @author TBebnton
 	 */
 	protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId) throws Exception {	
-		
+
 		if(con.isClosed())
 		{
 			log.warn("GetPendingPairsDetailed with Job Id = " + jobId + " but connection is closed.");
@@ -834,7 +839,7 @@ public class Jobs {
 		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
 		ResultSet results = procedure.executeQuery();
 		List<JobPair> returnList = new LinkedList<JobPair>();
-										
+
 		while(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
 			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
@@ -845,7 +850,7 @@ public class Jobs {
 			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			Status s = new Status();
-			
+
 			s.setCode(results.getInt("status_code"));
 			//s.setStatus(results.getString("status.status"));
 			//s.setDescription(results.getString("status.description"));
@@ -853,18 +858,18 @@ public class Jobs {
 			jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
 			returnList.add(jp);
 		}			
-		
+
 		Common.closeResultSet(results);
 		return returnList;			
 	}
-	
+
 	/**
 	 * Helper method to extract information from a query for job pairs
 	 * @param result The resultset that is the results from querying for job pairs
 	 * @return A job pair object populated with data from the result set
 	 */
 	private static JobPair resultToPair(ResultSet result) throws Exception {
-		
+
 		JobPair jp = new JobPair();
 
 		jp.setId(result.getInt("id"));
@@ -894,14 +899,14 @@ public class Jobs {
 		log.info("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
-	
+
 	/** 
 	 * @param code The status code to retrieve the status for
 	 * @return A status object containing information about  the given status code
 	 */
 	public static Status getStatus(int code) throws Exception {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();									
 			return Jobs.getStatus(code);
@@ -910,27 +915,27 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
 
-	
+
+
 	/**
 	 * @param statusCode which status to filter grid engine ids by
 	 * @return A list of SGE job id's that have the specified status
 	 */
 	public static List<Integer> getSgeIdsByStatus(int statusCode) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();									
 			CallableStatement procedure = con.prepareCall("{CALL GetSGEIdsByStatus(?)}");			
 			procedure.setInt(1, statusCode);
-				
+
 			ResultSet results = procedure.executeQuery();
 			List<Integer> ids = new ArrayList<Integer>();
-			
+
 			while(results.next()){
 				ids.add(results.getInt("sge_id"));
 			}	
@@ -941,10 +946,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Updates a pair's statistics in the database with statistics contained within the given
 	 * pair TO
@@ -977,7 +982,7 @@ public class Jobs {
 			procedure.setDouble(18, pair.getBlockOutput());
 			procedure.setDouble(19, pair.getVoluntaryContextSwitches());
 			procedure.setDouble(20, pair.getInvoluntaryContextSwitches());							
-				
+
 			procedure.executeUpdate();						
 			return true;
 		} catch (Exception e){			
@@ -985,10 +990,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Gets the minimal number of Jobs necessary in order to service the client's
 	 * request for the next page of Jobs in their DataTables object
@@ -1004,11 +1009,11 @@ public class Jobs {
 	 */
 	public static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
-			
+
 			procedure = con.prepareCall("{CALL GetNextPageOfJobs(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
@@ -1016,12 +1021,12 @@ public class Jobs {
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, spaceId);
 			procedure.setString(6, searchQuery);
-				
+
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
-			
+
 			while(results.next()){
-				
+
 				// Grab the relevant job pair statistics; this prevents a secondary set of queries
 				// to the database in RESTHelpers.java
 				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
@@ -1029,13 +1034,13 @@ public class Jobs {
 				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
 				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
 				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
-				
+
 				Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
 				liteJobPairStats.put("completionPercentage", completionPercentage);
-				
+
 				Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
 				liteJobPairStats.put("errorPercentage", errorPercentage);
-				
+
 				Job j = new Job();
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
@@ -1052,11 +1057,11 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
 
-	
+
 	/**
 	 * Gets the number of Jobs in a given space
 	 * 
@@ -1086,8 +1091,8 @@ public class Jobs {
 
 		return 0;
 	}
-	
-	
+
+
 	/**
 	 * Gets the minimal number of Job Pairs necessary in order to service the client's
 	 * request for the next page of Job Pairs in their DataTables object
@@ -1106,7 +1111,7 @@ public class Jobs {
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
-			
+
 			procedure = con.prepareCall("{CALL GetNextPageOfJobPairs(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
@@ -1114,45 +1119,45 @@ public class Jobs {
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, jobId);
 			procedure.setString(6, searchQuery);
-				
+
 			ResultSet results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
-			
+
 			while(results.next()){
-				
+
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
-				
+
 				Benchmark bench = new Benchmark();
 				bench.setId(results.getInt("bench.id"));
 				bench.setName(results.getString("bench.name"));
 				bench.setDescription(results.getString("bench.description"));
-				
+
 				Solver solver = new Solver();
 				solver.setId(results.getInt("solver.id"));
 				solver.setName(results.getString("solver.name"));
 				solver.setDescription(results.getString("solver.description"));
-				
+
 				Configuration config = new Configuration();
 				config.setId(results.getInt("config.id"));
 				config.setName(results.getString("config.name"));
 				config.setDescription(results.getString("config.description"));
-				
+
 				Space space = new Space();
 				space.setId(results.getInt("space.id"));
 				space.setName(results.getString("space.name"));
 				space.setDescription(results.getString("space.description"));
-				
+
 				Status status = new Status();
 				status.setCode(results.getInt("status.code"));
 				status.setStatus(results.getString("status.status"));
 				status.setDescription(results.getString("status.description"));
-				
+
 				Properties attributes = new Properties();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
-				
+
 				solver.addConfiguration(config);
 				jp.setBench(bench);
 				jp.setSolver(solver);
@@ -1168,7 +1173,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
 
@@ -1182,7 +1187,7 @@ public class Jobs {
 	 */
 	public static int getJobPairCount(int jobId) {
 		Connection con = null;
-	
+
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairCountByJob(?)}");
@@ -1199,10 +1204,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return 0;		
 	}
-	
+
 	/**
 	 * Get the total count of the jobs belong to a specific user
 	 * @param userId Id of the user we are looking for
@@ -1211,13 +1216,13 @@ public class Jobs {
 	 */
 	public static int getJobCountByUser(int userId) {
 		Connection con = null;
-	
+
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetJobCountByUser(?)}");
 			procedure.setInt(1, userId);
 			ResultSet results = procedure.executeQuery();
-	
+
 			if (results.next()) {
 				return results.getInt("jobCount");
 			}
@@ -1226,10 +1231,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return 0;		
 	}
-	
+
 	/**
 	 * Get next page of the jobs belong to a specific user
 	 * @param startingRecord specifies the number of the entry where should the querry start
@@ -1243,11 +1248,11 @@ public class Jobs {
 	 */
 	public static List<Job> getJobsByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
-			
+
 			procedure = con.prepareCall("{CALL GetNextPageOfUserJobs(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
@@ -1255,12 +1260,12 @@ public class Jobs {
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, userId);
 			procedure.setString(6, searchQuery);
-				
+
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
-			
+
 			while(results.next()){
-				
+
 				// Grab the relevant job pair statistics; this prevents a secondary set of queries
 				// to the database in RESTHelpers.java
 				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
@@ -1268,7 +1273,7 @@ public class Jobs {
 				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
 				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
 				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
-				
+
 				Job j = new Job();
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
@@ -1284,10 +1289,10 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Get all the jobs belong to a specific user
 	 * @param userId Id of the user we are looking for
@@ -1295,14 +1300,14 @@ public class Jobs {
 	 */
 	public static List<Job> getByUserId(int userId) {
 		Connection con = null;			
-		
+
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetUserJobsById(?)}");
 			procedure.setInt(1, userId);					
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
-			
+
 			while(results.next()){
 				Job j = new Job();
 				j.setId(results.getInt("id"));
@@ -1312,14 +1317,14 @@ public class Jobs {
 				j.setCreateTime(results.getTimestamp("created"));					
 				jobs.add(j);				
 			}			
-						
+
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
 
@@ -1344,24 +1349,24 @@ public class Jobs {
 			if (count > 0){
 				return true;
 			}
-			
+
 		} catch (Exception e){			
 			log.error("isPublic says" + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return false;
 	}
 	//gets jobs with pending (or rejected) job pairs
 	public static List<Job> getPendingJobs() {
-	Connection con = null;					
+		Connection con = null;					
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetPendingJobs()}");					
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
-			
+
 			while(results.next()){
 				Job j = new Job();
 				j.setId(results.getInt("id"));
@@ -1369,7 +1374,7 @@ public class Jobs {
 				j.setName(results.getString("name"));				
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));	
-				
+
 				j.getQueue().setId(results.getInt("queue_id"));
 				j.getPreProcessor().setId(results.getInt("pre_processor"));
 				j.getPostProcessor().setId(results.getInt("post_processor"));	
@@ -1381,7 +1386,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
 
@@ -1391,7 +1396,7 @@ public class Jobs {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetNumEnqueuedJobs()}");					
 			ResultSet results = procedure.executeQuery();
-			
+
 			Integer qSize = -1;
 			while(results.next()){
 				qSize = results.getInt("count");	
@@ -1402,7 +1407,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
 }
