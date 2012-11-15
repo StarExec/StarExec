@@ -771,30 +771,30 @@ public class Jobs {
 
 		while(results.next()){
 			JobPair jp = Jobs.resultToPair(results);
-			log.info("got result to pair for " + jp.getId());
+			log.info("got result to pair for " + jp.getId() + "result set closed = " + results.isClosed());
 			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
 			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			log.info("set node for " + jp.getId());
+			log.info("set node for " + jp.getId() + "result set closed = " + results.isClosed());
 			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			log.info("set bench for " + jp.getId());
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")) );
+			log.info("set bench for " + jp.getId() + "result set closed = " + results.isClosed());
 			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
 			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
-			log.info("got solver for " + jp.getId());
+			log.info("got solver for " + jp.getId() + "result set closed = "+ results.isClosed());
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			log.info("got configuration for " + jp.getId());
+			log.info("got configuration for " + jp.getId() + "result set closed = " + results.isClosed());
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
 			//jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
-			log.info("about to get attributes for jp " + jp.getId());
+			log.info("about to get attributes for jp " + jp.getId() + "result set closed = " + results.isClosed());
 			jp.setAttributes(Jobs.getAttributes(jp.getId()));
-			log.info("just got attributes from jp + " + jp.getId());
+			log.info("just got attributes from jp + " + jp.getId()+ "result set closed = " + results.isClosed());
 			returnList.add(jp);
 		}			
-
+	
 		Common.closeResultSet(results);
 		return returnList;			
 	}
