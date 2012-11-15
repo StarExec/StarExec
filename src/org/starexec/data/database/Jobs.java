@@ -340,6 +340,7 @@ public class Jobs {
 				j=null;
 			}
 			Common.closeResultSet(results);
+			Common.safeClose(con);
 			if (j != null){
 				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
 			}
