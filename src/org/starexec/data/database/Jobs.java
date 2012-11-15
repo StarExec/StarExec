@@ -770,11 +770,12 @@ public class Jobs {
 		List<JobPair> returnList = new LinkedList<JobPair>();
 
 		while(results.next()){
+			log.info("getting result to pair, result set closed = " + results.isClosed());
 			JobPair jp = Jobs.resultToPair(results);
-			log.info("got result to pair for " + jp.getId() + "result set closed = " + results.isClosed());
+			log.info("got result to pair for " + jp.getId() + " result set closed = " + results.isClosed());
 			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
 			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			log.info("set node for " + jp.getId() + "result set closed = " + results.isClosed());
+			log.info("set node for " + jp.getId() + " result set closed = " + results.isClosed());
 			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")) );
 			log.info("set bench for " + jp.getId() + "result set closed = " + results.isClosed());
