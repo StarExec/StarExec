@@ -70,8 +70,8 @@ public class Download extends HttpServlet {
 				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);
 			}
 			else if (request.getParameter("type").equals("job")) {
-				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
-				fileName = handleJob(job, u.getId(), u.getArchiveType(), response);
+				Integer jobId = Integer.parseInt(request.getParameter("id"));			
+				fileName = handleJob(jobId, u.getId(), u.getArchiveType(), response);
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
 				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response);
@@ -247,8 +247,10 @@ public class Download extends HttpServlet {
      * @throws IOException
      * @author Ruoyu Zhang
      */
-    private static String handleJob(Job job, int userId, String format, HttpServletResponse response) throws IOException {    	
-		if (Permissions.canUserSeeJob(job.getId(), userId)) {
+    private static String handleJob(Integer jobId, int userId, String format, HttpServletResponse response) throws IOException {    	
+		log.info("Request for job " + jobId + "csv from user " + userId);
+    	if (Permissions.canUserSeeJob(jobId, userId)) {
+    		Job job = Jobs.getDetailed(jobId);
 			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
