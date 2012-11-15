@@ -67,7 +67,7 @@ public class Cluster {
 				}
 			}				
 		}			
-					
+		Common.closeResultSet(results);			
 		return node;		
 	}
 	

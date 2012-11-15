@@ -66,6 +66,7 @@ public class Solvers {
 			s.setDescription(results.getString("description"));
 			s.setDownloadable(results.getBoolean("downloadable"));
 			s.setDiskSize(results.getLong("disk_size"));
+			Common.closeResultSet(results);
 			return s;
 		}								
 		
@@ -606,6 +607,7 @@ public class Solvers {
 			c.setName(results.getString("name"));			
 			c.setSolverId(results.getInt("solver_id"));
 			c.setDescription(results.getString("description"));
+			Common.closeResultSet(results);
 			return c;
 		}								
 				

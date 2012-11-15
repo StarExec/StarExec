@@ -951,6 +951,7 @@ public class Benchmarks {
 			t.setDiskSize(results.getLong("types.disk_size"));
 
 			b.setType(t);
+			Common.closeResultSet(results);
 			return b;				
 		}													
 
