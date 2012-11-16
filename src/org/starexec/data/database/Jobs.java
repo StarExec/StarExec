@@ -756,7 +756,7 @@ public class Jobs {
 	 * @param con The connection to make the query on 
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given job.
-	 * @author Tyler Jensen
+	 * @author Tyler Jensen, modified heavily by Benton McCune
 	 */
 	protected static List<JobPair> getPairsDetailed(Connection con, int jobId) throws Exception {	
 
@@ -767,36 +767,40 @@ public class Jobs {
 		CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
-		List<JobPair> returnList = new LinkedList<JobPair>();
-
+		List<JobPair> returnList = new ArrayList<JobPair>();
+		List<Integer> nodeIdList = new ArrayList<Integer>();
+		List<Integer> benchIdList = new ArrayList<Integer>();
+		List<Integer> configIdList = new ArrayList<Integer>();
 		while(results.next()){
 			log.info("getting result to pair, result set closed = " + results.isClosed());
 			JobPair jp = Jobs.resultToPair(results);
-			log.info("got result to pair for " + jp.getId() + " result set closed = " + results.isClosed());
-			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
-			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			log.info("set node for " + jp.getId() + " result set closed = " + results.isClosed());
-			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")) );
-			log.info("set bench for " + jp.getId() + "result set closed = " + results.isClosed());
-			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
-			log.info("got solver for " + jp.getId() + "result set closed = "+ results.isClosed());
-			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			log.info("got configuration for " + jp.getId() + "result set closed = " + results.isClosed());
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
-			//jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
+			returnList.add(jp);
+			nodeIdList.add(results.getInt("node_id"));
+			benchIdList.add(results.getInt("bench_id"));
+			configIdList.add(results.getInt("config_id"));
+			log.info("Finished with results for pair " + jp.getId());
+		}
+		Common.closeResultSet(results);
+		for (Integer i =0; i < returnList.size(); i++){
+			JobPair jp = returnList.get(i);
+			jp.setNode(Cluster.getNodeDetails(nodeIdList.get(i)));	
+			log.info("set node for " + jp.getId());
+			jp.setBench(Benchmarks.get(benchIdList.get(i)));
+			log.info("set bench for " + jp.getId());
+			jp.setSolver(Solvers.getSolverByConfig(configIdList.get(i)));
+			log.info("set solver for " + jp.getId() + "result set closed = "+ results.isClosed());
+			jp.setConfiguration(Solvers.getConfiguration(configIdList.get(i)));
+			log.info("set configuration for " + jp.getId() + "result set closed = " + results.isClosed());
 			log.info("about to get attributes for jp " + jp.getId() + "result set closed = " + results.isClosed());
 			jp.setAttributes(Jobs.getAttributes(jp.getId()));
 			log.info("just got attributes from jp + " + jp.getId()+ "result set closed = " + results.isClosed());
 			returnList.add(jp);
-		}			
-	
-		Common.closeResultSet(results);
+		}
 		return returnList;			
 	}
 
