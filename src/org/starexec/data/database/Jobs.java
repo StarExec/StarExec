@@ -799,7 +799,6 @@ public class Jobs {
 			log.info("about to get attributes for jp " + jp.getId() + "result set closed = " + results.isClosed());
 			jp.setAttributes(Jobs.getAttributes(jp.getId()));
 			log.info("just got attributes from jp + " + jp.getId()+ "result set closed = " + results.isClosed());
-			returnList.add(jp);
 		}
 		return returnList;			
 	}
