@@ -759,7 +759,7 @@ public class Jobs {
 	 * @author Tyler Jensen, modified heavily by Benton McCune
 	 */
 	protected static List<JobPair> getPairsDetailed(Connection con, int jobId) throws Exception {	
-
+		log.info("getting detailed pairs for job " + jobId );
 		if(con.isClosed())
 		{
 			log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
@@ -772,7 +772,7 @@ public class Jobs {
 		List<Integer> benchIdList = new ArrayList<Integer>();
 		List<Integer> configIdList = new ArrayList<Integer>();
 		while(results.next()){
-			log.info("getting result to pair, result set closed = " + results.isClosed());
+			log.debug("getting result to pair, result set closed = " + results.isClosed());
 			JobPair jp = Jobs.resultToPair(results);
 			Status s = new Status();
 			s.setCode(results.getInt("status.code"));
@@ -783,23 +783,24 @@ public class Jobs {
 			nodeIdList.add(results.getInt("node_id"));
 			benchIdList.add(results.getInt("bench_id"));
 			configIdList.add(results.getInt("config_id"));
-			log.info("Finished with results for pair " + jp.getId());
+			log.debug("Finished with results for pair " + jp.getId());
 		}
 		Common.closeResultSet(results);
 		for (Integer i =0; i < returnList.size(); i++){
 			JobPair jp = returnList.get(i);
 			jp.setNode(Cluster.getNodeDetails(nodeIdList.get(i)));	
-			log.info("set node for " + jp.getId());
+			log.debug("set node for " + jp.getId());
 			jp.setBench(Benchmarks.get(benchIdList.get(i)));
-			log.info("set bench for " + jp.getId());
+			log.debug("set bench for " + jp.getId());
 			jp.setSolver(Solvers.getSolverByConfig(configIdList.get(i)));
-			log.info("set solver for " + jp.getId() + "result set closed = "+ results.isClosed());
+			log.debug("set solver for " + jp.getId());
 			jp.setConfiguration(Solvers.getConfiguration(configIdList.get(i)));
-			log.info("set configuration for " + jp.getId() + "result set closed = " + results.isClosed());
-			log.info("about to get attributes for jp " + jp.getId() + "result set closed = " + results.isClosed());
+			log.debug("set configuration for " + jp.getId());
+			log.debug("about to get attributes for jp " + jp.getId());
 			jp.setAttributes(Jobs.getAttributes(jp.getId()));
-			log.info("just got attributes from jp + " + jp.getId()+ "result set closed = " + results.isClosed());
+			log.debug("just got attributes from jp + " + jp.getId());
 		}
+		log.info("returning detailed pairs for job " + jobId );
 		return returnList;			
 	}
 
