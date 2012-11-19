@@ -1,5 +1,5 @@
 #!/bin/bash
-
+whoami
 # /////////////////////////////////////////////
 # NAME:        
 # StarExec Epilog Script
@@ -48,7 +48,7 @@ JOB_OUT_DIR="$SHARED_DIR/jobout"
 
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
-
+	sudo chown -R tomcat $WORKING_DIR
 	# Remove all existing files in the workspace
 	rm -f "$WORKING_DIR"/*.*
 	rm -rf "$LOCAL_SOLVER_DIR"/*

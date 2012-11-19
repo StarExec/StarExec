@@ -153,10 +153,18 @@ function verifyWorkspace {
 	return $?
 }
 
+function sandboxWorkspace {
+	sudo chown -R sandbox $WORKING_DIR 
+	ls -lR "$WORKING_DIR"
+	return 0
+}
+
+
 # /////////////////////////////////////////////
 # MAIN
 # /////////////////////////////////////////////
 
+whoami
 echo "STAREXEC Job Log"
 echo "(C) `date +%Y` The University of Iowa"
 echo "====================================="
@@ -173,6 +181,7 @@ sendStatus $STATUS_PREPARING
 cleanWorkspace
 copyDependencies
 verifyWorkspace
+sandboxWorkspace
 
 # Determine if there were errors in the job setup
 JOB_ERROR=`grep 'job error:' $SGE_STDOUT_PATH`

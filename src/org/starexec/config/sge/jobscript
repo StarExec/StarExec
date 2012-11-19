@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #==========================================================================
 # Standard SGE job script setup
 #==========================================================================
@@ -55,7 +54,10 @@ NODE_RUNSOLVER_PATH=/export/starexec/sandbox/solver/bin/runsolver
 
 # Execute the solver on the benchmark and send all output to that file
 # $NODE_SOLVER_PATH $NODE_BENCH_PATH &> $STAREXEC_OUT_DIR/stdout.txt
-$NODE_RUNSOLVER_PATH --timestamp -w $STAREXEC_OUT_DIR/watcher.out -o $STAREXEC_OUT_DIR/stdout.txt $NODE_SOLVER_PATH $NODE_BENCH_PATH
+#sleep 1h
+#sudo -u sandbox ls -l $NODE_SOLVER_PATH
+#sudo -u sandbox "$NODE_SOLVER_PATH $NODE_BENCH_PATH"
+sudo -u sandbox "$NODE_RUNSOLVER_PATH" --timestamp -w "$STAREXEC_OUT_DIR/watcher.out" -o "$STAREXEC_OUT_DIR/stdout.txt" "$NODE_SOLVER_PATH" "$NODE_BENCH_PATH"
 
 #==========================================================================
 # Complete (epilog will take care or reporting and data saving) 

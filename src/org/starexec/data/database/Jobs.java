@@ -786,6 +786,7 @@ public class Jobs {
 			log.debug("Finished with results for pair " + jp.getId());
 		}
 		Common.closeResultSet(results);
+		log.info("result set closed for job " + jobId);
 		for (Integer i =0; i < returnList.size(); i++){
 			JobPair jp = returnList.get(i);
 			jp.setNode(Cluster.getNodeDetails(nodeIdList.get(i)));	
@@ -902,7 +903,7 @@ public class Jobs {
 		jp.setBlockOutput(result.getDouble("block_output"));
 		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
-		log.info("getting job pair from result set for id " + jp.getId());
+		log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
 
