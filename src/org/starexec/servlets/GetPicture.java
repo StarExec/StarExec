@@ -106,7 +106,17 @@ public class GetPicture extends HttpServlet{
 			sb.append("_org.jpg");
 			
 			defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
+		} else if (request.getParameter("type").equals("corg")) {
+			System.out.println("GetPicture for corg");
+			sb.delete(0, sb.length());
+			sb.append("resultChart");
+			sb.append(File.separator);
+			sb.append(request.getParameter("Id").toString());
+			sb.append(".jpg");
+			
+			defaultPicFilename = GetPicture.getDefaultPicture("chart");
 		}
+		
 		picFilename = sb.toString();
 		
     	sb.delete(0, sb.length());
@@ -154,7 +164,8 @@ public class GetPicture extends HttpServlet{
     			  request.getParameter("type").equals("sthn") ||
     			  request.getParameter("type").equals("sorg") ||
     			  request.getParameter("type").equals("bthn") ||
-    			  request.getParameter("type").equals("borg")
+    			  request.getParameter("type").equals("borg") ||
+    			  request.getParameter("type").equals("corg")
     			  )) {
     			return false;
     		}
@@ -191,6 +202,11 @@ public class GetPicture extends HttpServlet{
 	    		break;
 	    	case 's':
 	    		sb.append("solvers");
+	    		sb.append(File.separator);
+	    		sb.append("Pic0.jpg");
+	    		break;
+	    	case 'c':
+	    		sb.append("resultCharts");
 	    		sb.append(File.separator);
 	    		sb.append("Pic0.jpg");
 	    		break;

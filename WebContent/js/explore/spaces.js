@@ -4,6 +4,7 @@ var benchTable;
 var solverTable;
 var spaceTable;
 var commentTable;
+var resultTable;
 var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
@@ -1567,6 +1568,15 @@ function initDataTables(){
         "aaSorting"		: [],	// On page load, don't sort by any column - tells server to sort by 'created'
         "fnServerData"	: fnPaginationHandler 
 	});
+	resultTable = $('#results').dataTable( {
+		"sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": 10,
+        "bServerSide"	: true,
+        "sAjaxSource"	: "/starexec/services/space/",
+        "sServerMethod" : "POST",
+        "fnServerData"	: fnPaginationHandler
+	});
 	spaceTable = $('#spaces').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
@@ -1763,6 +1773,8 @@ function populateSpaceDetails(jsonData, id) {
 	$('#spaceDesc').fadeOut('fast', function(){
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
+
+	$('#chartPicture').attr('src', "/starexec/secure/get/pictures?type=corg&Id=" + spaceId);
 	
 	/*
 	 * Issue a redraw to all DataTable objects to force them to requery for
@@ -1933,6 +1945,7 @@ function updateButtonIds(id) {
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
 	$('#downloadXML').attr('href', "/starexec/secure/download?type=spaceXML&id="+id);
 	$('#uploadXML').attr('href', "/starexec/secure/add/batchSpace.jsp?sid=" + id);
+	$('#generateResultChart').attr('href', "/starexec/secure/generateResultChart?sid=" + id);
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy-txt').text('do you want to download the single space or the hierarchy?');

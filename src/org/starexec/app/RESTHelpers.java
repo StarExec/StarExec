@@ -12,6 +12,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -996,7 +997,7 @@ public class RESTHelpers {
 	 * Get the next page of jobs belongs to a specific user identified by usrId
 	 * @param usrId Id of the user we are looking for
 	 * @param request The http request
-	 * @return JsonObject containing the result of the querry
+	 * @return JsonObject containing the result of the query
 	 * @author Ruoyu Zhang
 	 */
 	protected static JsonObject getNextPageOfUserJobs(int usrId, HttpServletRequest request){
@@ -1083,6 +1084,89 @@ public class RESTHelpers {
 	    
 	    // Return the next DataTable page
     	return nextPage;
+	}
+	
+	/**
+	 * Get the result table for all the jobs in a space.
+	 * @param spaceId The id of the space for which the result table is generated
+	 * @param request The http request
+	 * @return JsonObject containing the result of the query
+	 * @throws Exception
+	 * @author Ruoyu Zhang
+	 */
+	public static JsonObject getResultTable(int spaceId, HttpServletRequest request) throws Exception {
+		// Parameter validation
+		
+	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(Primitive.JOB, request);
+	    if(null == attrMap){
+	    	return null;
+	    }
+	    
+	    JsonObject nextPage = new JsonObject();		// JSON object representing next page for client's DataTable object
+	    JsonArray dataTablePageEntries = null;		// JSON array containing the DataTable primitive entries
+
+    	List<Job> jobsToDisplay = new LinkedList<Job>();
+		int totalJobsInSpace = Jobs.getCountInSpace(spaceId);
+		
+		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+		jobsToDisplay = Jobs.getJobsForNextPage(0, 20, true, 1, "", spaceId);
+		
+		/**
+    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+    	 */
+    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobsInSpace);
+    	} 
+    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+    	else {
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
+    	}
+	    attrMap.put(TOTAL_RECORDS, totalJobsInSpace);
+		
+	    
+    	/**
+    	 * Generate the HTML for the next DataTable page of entries
+    	 */
+	    
+    	dataTablePageEntries = new JsonArray();
+    	for(Job job : jobsToDisplay){
+    		StringBuilder sb = new StringBuilder();
+			String hiddenJobId;
+			
+			// Create the hidden input tag containing the job id
+			sb.append("<input type=\"hidden\" value=\"");
+			sb.append(job.getId());
+			sb.append("\" prim=\"job\"/>");
+			hiddenJobId = sb.toString();
+    		
+    		// Create the job "details" link and append the hidden input element
+    		sb = new StringBuilder();
+    		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
+    		sb.append(job.getId());
+    		sb.append("\" target=\"blank\">");
+    		sb.append(job.getName());
+    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+    		sb.append(hiddenJobId);
+			String jobLink = sb.toString();
+			
+			Integer score = job.getLiteJobPairStats().get("totalPairs");
+			
+			// Create an object, and inject the above HTML, to represent an entry in the DataTable
+			JsonArray entry = new JsonArray();
+    		entry.add(new JsonPrimitive(jobLink));
+    		entry.add(new JsonPrimitive(score));
+    		entry.add(new JsonPrimitive(score));
+    		
+    		dataTablePageEntries.add(entry);
+    	}
+    	
+    	nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
+	    nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
+	    nextPage.add("aaData", dataTablePageEntries);
+		return nextPage;
 	}
 }
 

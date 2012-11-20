@@ -78,6 +78,29 @@
 			</table>
 		</fieldset>		
 		
+		<fieldset id="resultField">
+			<legend class="expd" id="resultExpd"><span>0</span> result</legend>
+			<table id="results">
+				<thead>
+					<tr>
+						<th style="width:150px;">name</th>
+						<th>score</th>
+						<th>runtime</th>
+					</tr>
+				</thead>			
+			</table>			
+		</fieldset>		
+		
+		<fieldset id="resultChart">
+		<table id="chartTable">
+			<tr>
+				<td id="chart">
+					<img id="chartPicture"><br>
+				</td>
+			</tr>
+		</table>
+		</fieldset>	
+		
 		<fieldset id="actions">
 			<legend>actions</legend>
 			<ul id="actionList">
@@ -88,9 +111,11 @@
 				<li><a class="btnDown" id="downloadXML" href="/starexec/secure/download">download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/starexec/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/starexec/secure/edit/space.jsp">edit space</a></li>
+				<li><a class="btnRun" id="generateResultChart" href="/starexec/secure/generateResultChart.jsp">generate chart</a></li>
 				<li><a class="btnRun" id="makePublic">make public</a></li>
 				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
+				
 			</ul>
 		</fieldset>	
 		

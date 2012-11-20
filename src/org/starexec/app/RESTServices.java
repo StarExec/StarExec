@@ -301,11 +301,12 @@ public class RESTServices {
 	 * 		1 if the request fails parameter validation,<br> 
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Todd Elvers
+	 * @throws Exception 
 	 */
 	@POST
 	@Path("/space/{id}/{primType}/pagination")
 	@Produces("application/json")	
-	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {			
+	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		
@@ -325,6 +326,8 @@ public class RESTServices {
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
 		} else if(primType.startsWith("b")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
+		} else if(primType.startsWith("r")){
+			nextDataTablesPage = RESTHelpers.getResultTable(spaceId, request);
 		}
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
