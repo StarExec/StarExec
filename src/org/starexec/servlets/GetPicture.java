@@ -107,10 +107,10 @@ public class GetPicture extends HttpServlet{
 			
 			defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
 		} else if (request.getParameter("type").equals("corg")) {
-			System.out.println("GetPicture for corg");
 			sb.delete(0, sb.length());
-			sb.append("resultChart");
+			sb.append("resultCharts");
 			sb.append(File.separator);
+			sb.append("Pic");
 			sb.append(request.getParameter("Id").toString());
 			sb.append(".jpg");
 			

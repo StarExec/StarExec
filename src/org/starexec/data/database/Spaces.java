@@ -27,6 +27,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DatasetUtilities;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
@@ -1625,13 +1626,20 @@ public class Spaces {
 	public static void generateResultChart(int space_id) {
 		List<Job> jobsToDisplay = Jobs.getJobsForNextPage(0, 20, true, 1, "", space_id);
 		
+		/*
 		final double[][] data = new double[jobsToDisplay.size()][1];
 		for (int i = 0; i < data.length; i++) {
 			data[i][0] = (double)jobsToDisplay.get(i).getLiteJobPairStats().get("totalPairs");  
         }
 		      
         final CategoryDataset dataset = DatasetUtilities.createCategoryDataset("", "", data);
-        final JFreeChart chart = createChart(dataset);
+        */
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		for (int i = 0; i < jobsToDisplay.size(); i++) {
+			dataset.setValue(jobsToDisplay.get(i).getLiteJobPairStats().get("totalPairs"), "Score", "Solver" + i);
+        }
+		
+		JFreeChart chart = ChartFactory.createBarChart("Solver Score", "Solver", "Score", dataset, PlotOrientation.VERTICAL, false, true, false);
 
 		try {
 			String fileName = R.PICTURE_PATH + File.separator + "resultCharts" + File.separator + "Pic" + space_id + ".jpg";
@@ -1649,6 +1657,7 @@ public class Spaces {
 	 * @return A JFreeChart Object which is a block chart
 	 * @author Ruoyu Zhang
 	 */
+	/*
 	private static JFreeChart createChart(final CategoryDataset dataset) {   
 	      final JFreeChart chart = ChartFactory.createBarChart(
 	          "Competition Result",
@@ -1675,6 +1684,7 @@ public class Spaces {
 
 	      return chart;
 	  }
+	*/
 	
 	/**
 	 * Save a JFreeChart object into a jpg file in starexec resource directory.
