@@ -52,8 +52,7 @@ public class ArchiveUtil {
 					log.info("old name = " + oldName);
 					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
 					log.info("new name = " + fileName);
-					Util.executeCommand("ls -l " + oldName);
-					return false;
+					Util.executeCommand("mv " + oldName + " " + fileName);
 				}
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
