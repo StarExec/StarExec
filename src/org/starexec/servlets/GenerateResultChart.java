@@ -36,6 +36,12 @@ public class GenerateResultChart extends HttpServlet{
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
 		try {	
+			if (request == null){
+				log.info("Request is null = " + (request == null));
+			}
+			else{
+				log.info((String)request.getParameter(SPACE_ID));
+			}
 			int space_id = Integer.parseInt((String)request.getParameter(SPACE_ID));
 			
 			// If the request is valid
