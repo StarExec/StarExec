@@ -46,9 +46,16 @@ public class ArchiveUtil {
 			} else if(fileName.endsWith(".tar")) {
 				ArchiveUtil.extractTAR(fileName, destination);
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
+				// First rename it if it's a .tgz
+				if (fileName.endsWith(".tgz")){
+					String oldName = fileName;
+					log.info("old name = " + oldName);
+					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
+					log.info("new name = " + fileName);
+					Util.executeCommand("ls -l " + oldName);
+					return false;
+				}
 				// First un-GZIP it
-								
-				
 				ArchiveUtil.extractGZ(fileName, destination);
 				
 				// Then unpack the tar that was the result of the un-gzip
