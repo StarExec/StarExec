@@ -49,9 +49,7 @@ public class ArchiveUtil {
 				// First rename it if it's a .tgz
 				if (fileName.endsWith(".tgz")){
 					String oldName = fileName;
-					log.info("old name = " + oldName);
 					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
-					log.info("new name = " + fileName);
 					Util.executeCommand("mv " + oldName + " " + fileName);
 				}
 				// First un-GZIP it
