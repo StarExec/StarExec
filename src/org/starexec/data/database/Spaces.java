@@ -750,13 +750,13 @@ public class Spaces {
 		
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
-			con = Common.getConnection();
-			Common.beginTransaction(con);
+			//con = Common.getConnection();
+			//Common.beginTransaction(con);
 			
 			// For each subspace...
 			for(Space s : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
-				Spaces.traverse(con, s, parent.getId(), userId);
+				Spaces.traverse(s, parent.getId(), userId);
 			}
 
 			// Add any new benchmarks in the space to the database			
@@ -832,16 +832,59 @@ public class Spaces {
 	 */
 	protected static void traverse(Connection con, Space space, int parentId, int userId) throws Exception {
 		// Add the new space to the database and get it's ID		
-		int spaceId = Spaces.add(con, space, parentId, userId);
-		
+		con = null;
+		try{
+			con = Common.getConnection();	
+			Common.beginTransaction(con);	
+			int spaceId = Spaces.add(con, space, parentId, userId);
+			Common.endTransaction(con);	
+			Common.safeClose(con);
 		for(Space s : space.getSubspaces()) {
 			// Recursively go through and add all of it's subspaces with itself as the parent
 			Spaces.traverse(con, s, spaceId, userId);
 		}			
 		
 		// Finally, add the benchmarks in the space to the database
-		Benchmarks.add(space.getBenchmarks(), spaceId);
+		//not really using connection parameter right now due to problems
+		Benchmarks.add(con, space.getBenchmarks(), spaceId);
+		}
+		catch (Exception e){			
+			log.error("traverse says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
 	}
+	
+	//no connection
+	protected static void traverse(Space space, int parentId, int userId) throws Exception {
+		// Add the new space to the database and get it's ID		
+		Connection con = null;
+		try{
+			con = Common.getConnection();	
+			Common.beginTransaction(con);	
+			int spaceId = Spaces.add(con, space, parentId, userId);
+			Common.endTransaction(con);	
+			Common.safeClose(con);
+		for(Space s : space.getSubspaces()) {
+			// Recursively go through and add all of it's subspaces with itself as the parent
+			Spaces.traverse(con, s, spaceId, userId);
+		}			
+		
+		// Finally, add the benchmarks in the space to the database
+		//not really using connection parameter right now due to problems
+		Benchmarks.addNoCon(space.getBenchmarks(), spaceId);
+		}
+		catch (Exception e){			
+			log.error("traverse says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+	}
+	
+	
+	
 	
 	/**
 	 * Internal recursive method that adds a space and it's benchmarks to the database

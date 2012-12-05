@@ -114,8 +114,8 @@ public class Benchmarks {
 		Connection con = null;			
 
 		try {
-			//con = Common.getConnection();
-			//Common.beginTransaction(con);
+			con = Common.getConnection();
+			Common.beginTransaction(con);
 
 			// Add benchmark to database
 			boolean benchAdded = Benchmarks.add(con, benchmark, spaceId);
@@ -130,10 +130,10 @@ public class Benchmarks {
 				return false;
 			}
 		} catch (Exception e){
-			//Common.doRollback(con);
+			Common.doRollback(con);
 			log.error(e.getMessage(), e);		
 		} finally {
-			//Common.safeClose(con);
+			Common.safeClose(con);
 		}
 
 		return false;
@@ -160,14 +160,14 @@ public class Benchmarks {
 				log.info(benchmarks.size() + " benchmarks being added to space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
-
+				Common.endTransaction(con);
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				Benchmarks.attachBenchAttrs(benchmarks, p);
 
 				// Next add them to the database (must happen AFTER they are processed);
-				Benchmarks.add(con, benchmarks, spaceId);		
-
-				Common.endTransaction(con);
+				//Benchmarks.add(con, benchmarks, spaceId);		
+				Benchmarks.addNoCon(benchmarks, spaceId);
+				//Common.endTransaction(con);
 
 				return true;
 			} catch (Exception e){			
@@ -526,7 +526,8 @@ public class Benchmarks {
 			}							
 			 
 		}				
-		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
+		Common.endTransaction(con);
+		log.info("(within internal add method) Added Benchmark " + benchmark.getName());	
 		return true;
 		}
 		catch (Exception e){			
@@ -777,7 +778,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	protected static void add(Connection conParam, List<Benchmark> benchmarks, int spaceId) throws Exception {		
-		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+		log.info("in add (list) method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 			for(Benchmark b : benchmarks) {
 			if(!Benchmarks.add(conParam, b, spaceId)) {
 				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
@@ -786,9 +787,19 @@ public class Benchmarks {
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 	
+	protected static void addNoCon(List<Benchmark> benchmarks, int spaceId) throws Exception {		
+		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+			for(Benchmark b : benchmarks) {
+			if(!Benchmarks.add(b, spaceId)) {
+				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+			}
+		}		
+		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+	}
+	
 	//
 	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct) throws Exception {		
-		log.info("in add method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 			
 		Benchmark b = new Benchmark();
 		for(int i = 0; i < benchmarks.size(); i++) {
