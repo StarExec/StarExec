@@ -496,18 +496,6 @@ public class Benchmarks {
 		
 		benchmark.setId(procedure.getInt(8));
 		log.debug("new bench id is " + benchmark.getId());
-		Benchmark newBench = Benchmarks.get(benchmark.getId());
-		if (newBench!=null){
-		log.debug("new bench id is indeed  " + newBench.getId());
-		log.debug("new bench name is " + newBench.getName());
-		log.debug("new bench user is " + newBench.getUserId());
-		log.debug("new bench path is " + newBench.getPath());
-		log.debug("new bench type is " + (Benchmarks.isBenchValid(attrs) ? newBench.getType().getId() : Benchmarks.NO_TYPE));
-		log.debug("new bench disk size is " + FileUtils.sizeOf(new File(newBench.getPath())));
-		}
-		else{
-			log.error("Benchmark was not really added.");
-		}
 		// If the benchmark is valid according to its processor...
 		
 		if(Benchmarks.isBenchValid(attrs)) {
@@ -515,9 +503,7 @@ public class Benchmarks {
 			attrs.remove("starexec-valid");
 			log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
 			// For each attribute (key, value)...
-			int count = 0;
-			int bigSetAtts = attrs.entrySet().size()/10;
-			
+			int count = 0;			
 			for(Entry<Object, Object> keyVal : attrs.entrySet()) {
 				// Add the attribute to the database
 				count++;
@@ -592,8 +578,9 @@ public class Benchmarks {
 				Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 			}							
 			//do previously validated dependencies here
+			Common.endTransaction(con);// benchmarks should be in db now
 			ArrayList<Integer> axiomIdList = dataStruct.getAxiomMap().get(benchIndex);
-			ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);
+			ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);			
 			Benchmarks.introduceDependencies(benchmark.getId(), axiomIdList, pathList);
 		}				
 		log.info("(within internal add method) Added Benchmark " + benchmark.getName());
@@ -670,7 +657,7 @@ public class Benchmarks {
 
 			// Execute procedure and get back the benchmark's id
 			procedure.executeUpdate();		
-
+			Common.endTransaction(con);
 			return true;
 		}catch (Exception e){			
 			log.error(e.getMessage(), e);
