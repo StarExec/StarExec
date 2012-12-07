@@ -72,7 +72,7 @@ function copyOutput {
 	#log "second output dir"
 	RZ_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$SOLVER_NAME"
         #log "solver name = $SOLVER_NAME"
-	APPEND="_$CONFIG_NAME"
+	APPEND="___$CONFIG_NAME"
         #log "config part = $APPEND"
         RZ_OUT_DIR="$RZ_OUT_DIR$APPEND"
 	#log "target directory = $RZ_OUT_DIR"
