@@ -114,7 +114,8 @@ public class UploadConfiguration extends HttpServlet {
 					}
 				}
 			}
-			
+			//Makes executable
+			newConfigFile.setExecutable(true);
 			// Write the new configuration file to disk 
 			uploadedFile.write(newConfigFile);
 			
