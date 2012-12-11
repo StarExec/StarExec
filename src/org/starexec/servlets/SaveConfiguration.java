@@ -108,6 +108,9 @@ public class SaveConfiguration extends HttpServlet {
 			// Make sure the configuration has the right line endings
 			Util.normalizeFile(newConfigFile);
 			
+			//Makes executable
+			newConfigFile.setExecutable(true);
+			
 			// Pass new configuration, and the parent solver objects, to the database & return the result
 			return Solvers.addConfiguration(solver, newConfig);
 		} catch (Exception e) {

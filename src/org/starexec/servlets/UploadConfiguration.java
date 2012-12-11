@@ -114,13 +114,15 @@ public class UploadConfiguration extends HttpServlet {
 					}
 				}
 			}
-			//Makes executable
-			newConfigFile.setExecutable(true);
+
 			// Write the new configuration file to disk 
 			uploadedFile.write(newConfigFile);
 			
 			// Make sure the configuration has the right line endings
 			Util.normalizeFile(newConfigFile);
+			
+			//Makes executable
+			newConfigFile.setExecutable(true);
 			
 			// Delete underlying storage for the file item now that it's on disk elsewhere
 			uploadedFile.delete();
