@@ -393,7 +393,7 @@ CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
 DROP PROCEDURE IF EXISTS countSpaceSolversByName;
 CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(32), IN _spaceId INT)
 	BEGIN
-		SELECT COUNT(*) FROM solvers NATURAL JOIN solver_assoc WHERE name = _name AND space_id = _spaceId;		
+		SELECT COUNT(*) FROM solvers JOIN solver_assoc ON id = solver_id WHERE name = _name AND space_id = _spaceId;		
 	END //
 
 -- Count the number of benchmarks in a specific space
