@@ -149,6 +149,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	public static boolean add(List<Benchmark> benchmarks, int spaceId) {
+		log.info("adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
 		{

@@ -140,6 +140,7 @@ public class BenchmarkUploader extends HttpServlet {
 			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
 			result.setId(spaceId);
 			if (!hasDependencies){
+				log.info("Calling add with benchmarks and no dependencies for user " + userId);
 				Spaces.addWithBenchmarks(result, userId);
 			}
 			else
@@ -216,7 +217,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 */
 	private Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm) {
 		// Create a space for the current directory and set it's name		
-		log.info("Extracing Spaces and Benchmarks for " + userId);
+		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);

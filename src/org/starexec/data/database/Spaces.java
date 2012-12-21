@@ -747,20 +747,24 @@ public class Spaces {
 	 */
 	public static boolean addWithBenchmarks(Space parent, int userId) {
 		//Connection con = null;
-		
+		//
+		log.info("adding with benchmarks and no dependencies for user " + userId);
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
 			//con = Common.getConnection();
 			//Common.beginTransaction(con);
 			
 			// For each subspace...
+			log.info("about to begin traversing (no deps)");
 			for(Space s : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
 				Spaces.traverse(s, parent.getId(), userId);
 			}
 
 			// Add any new benchmarks in the space to the database			
+			
 			if (parent.getBenchmarks().size() > 0){
+				log.info("adding benchmarks in main space");
 				Benchmarks.add(parent.getBenchmarks(), parent.getId());
 			}
 
@@ -859,6 +863,7 @@ public class Spaces {
 	//no connection
 	protected static void traverse(Space space, int parentId, int userId) throws Exception {
 		// Add the new space to the database and get it's ID		
+		log.info("traversing space without deps for user " + userId);
 		Connection con = null;
 		try{
 			con = Common.getConnection();	
@@ -868,6 +873,7 @@ public class Spaces {
 			Common.safeClose(con);
 		for(Space s : space.getSubspaces()) {
 			// Recursively go through and add all of it's subspaces with itself as the parent
+			log.info("about to traverse space " + spaceId);
 			Spaces.traverse(s, spaceId, userId);
 		}			
 		
