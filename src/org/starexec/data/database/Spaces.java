@@ -879,7 +879,7 @@ public class Spaces {
 		
 		// Finally, add the benchmarks in the space to the database
 		//not really using connection parameter right now due to problems
-		Benchmarks.addNoCon(space.getBenchmarks(), spaceId);
+		Benchmarks.add(space.getBenchmarks(), spaceId);
 		}
 		catch (Exception e){			
 			log.error("traverse says " + e.getMessage(), e);		
