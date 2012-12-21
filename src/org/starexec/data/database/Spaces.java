@@ -746,7 +746,7 @@ public class Spaces {
 	 * @author Tyler Jensen
 	 */
 	public static boolean addWithBenchmarks(Space parent, int userId) {
-		Connection con = null;
+		//Connection con = null;
 		
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
@@ -765,13 +765,13 @@ public class Spaces {
 			}
 
 			// We're done (notice that 'parent' is never added because it should already exist)
-			Common.endTransaction(con);			
+			//Common.endTransaction(con);			
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
-			Common.doRollback(con);
+			//Common.doRollback(con);
 		} finally {					
-			Common.safeClose(con);
+			//Common.safeClose(con);
 		}
 		
 		return false;
@@ -868,7 +868,7 @@ public class Spaces {
 			Common.safeClose(con);
 		for(Space s : space.getSubspaces()) {
 			// Recursively go through and add all of it's subspaces with itself as the parent
-			Spaces.traverse(con, s, spaceId, userId);
+			Spaces.traverse(s, spaceId, userId);
 		}			
 		
 		// Finally, add the benchmarks in the space to the database

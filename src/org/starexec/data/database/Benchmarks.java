@@ -475,8 +475,8 @@ public class Benchmarks {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 		
-		log.info("Driver Name = " + con.getMetaData().getDriverName());
-		log.info("Driver Version = " + con.getMetaData().getDriverVersion());
+		log.debug("Driver Name = " + con.getMetaData().getDriverName());
+		log.debug("Driver Version = " + con.getMetaData().getDriverVersion());
 		CallableStatement procedure = null;			
 		Properties attrs = benchmark.getAttributes();
 		log.info("adding benchmark " + benchmark.getName() + " to space " + spaceId);
