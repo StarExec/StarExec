@@ -167,7 +167,7 @@ public class Verify extends HttpServlet {
     	StringBuilder sb = new StringBuilder();
 		sb.append(user.getFirstName().toLowerCase());
 		sb.append("_");
-		sb.append(user.getLastName().toLowerCase().charAt(0));
+		sb.append(user.getLastName().toLowerCase());
 		sb.toString();
 		
     	// Set the space's attributes
