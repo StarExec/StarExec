@@ -70,7 +70,7 @@ INSERT INTO permissions VALUES (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 -- as a folder)
 CREATE TABLE spaces (
 	id INT NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(64) NOT NULL,
+	name VARCHAR(128) NOT NULL,
 	created TIMESTAMP DEFAULT 0,
 	description TEXT,
 	locked BOOLEAN DEFAULT 0,
@@ -116,7 +116,7 @@ INSERT INTO processors (name, description, path, community, processor_type, disk
 CREATE TABLE benchmarks (
 	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,
-	name VARCHAR(128) NOT NULL,
+	name VARCHAR(256) NOT NULL,
 	bench_type INT,
 	uploaded TIMESTAMP NOT NULL,
 	path TEXT NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE bench_attributes (
 CREATE TABLE solvers (
 	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,
-	name VARCHAR(64) NOT NULL,
+	name VARCHAR(128) NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
 	path TEXT NOT NULL,
 	description TEXT,
@@ -236,7 +236,7 @@ CREATE TABLE jobs (
 CREATE TABLE configurations (
 	id INT NOT NULL AUTO_INCREMENT,
 	solver_id INT,
-	name VARCHAR(64) NOT NULL,
+	name VARCHAR(128) NOT NULL,
 	description TEXT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE

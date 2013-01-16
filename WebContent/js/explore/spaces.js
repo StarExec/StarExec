@@ -965,7 +965,7 @@ function initSpaceExplorer(){
 	log('Space explorer node list initialized');
 	
 	// Create the space tooltips on <a> elements that are children of $(#exploreList)
-	createTooltip($('#exploreList'), 'a', 'space');
+	//createTooltip($('#exploreList'), 'a', 'space');
 }
 
 /**
@@ -1926,10 +1926,10 @@ function checkPermissions(perms, id) {
 
 	// Create tooltips for the expd class
 	createTooltip($("#userExpd"), null, 'expd', getSinglePermTable('user', perms.addUser, perms.removeUser));
-	createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBenchmark, perms.removeBench));
-	createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
-	createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
-	createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));	
+	//createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBenchmark, perms.removeBench));
+	//createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
+	//createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
+	//createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));	
 	log('permissions checked and processed');
 }
 

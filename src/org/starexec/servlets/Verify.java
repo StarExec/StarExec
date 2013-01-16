@@ -163,7 +163,7 @@ public class Verify extends HttpServlet {
      * @return true if the personal subspace was successfully created, false otherwise
      */
     public static boolean createPersonalSubspace(int parentSpaceId, User user){
-    	// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_e)
+    	// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
     	StringBuilder sb = new StringBuilder();
 		sb.append(user.getFirstName().toLowerCase());
 		sb.append("_");
