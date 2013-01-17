@@ -10,7 +10,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddBenchmark;
-CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(128), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT, OUT _benchId INT)
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _spaceId INT, IN _diskSize BIGINT, OUT _benchId INT)
 	BEGIN	
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
@@ -83,7 +83,7 @@ CREATE PROCEDURE GetBenchAttrs(IN _benchmarkId INT)
 	END //
 	
 DROP PROCEDURE IF EXISTS GetBenchByName;
-CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(128))
+CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 	BEGIN
 		SELECT *
 		FROM benchmarks AS bench
@@ -328,7 +328,7 @@ CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT, OUT _pat
 -- Updates the details associated with a given benchmark
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateBenchmarkDetails;
-CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(32), IN _description TEXT, IN _downloadable BOOLEAN, IN _type INT)
+CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(256), IN _description TEXT, IN _downloadable BOOLEAN, IN _type INT)
 	BEGIN
 		UPDATE benchmarks
 		SET name = _name,
