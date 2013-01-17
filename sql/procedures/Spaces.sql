@@ -391,7 +391,7 @@ CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
 -- Count the number of solvers in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSpaceSolversByName;
-CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(32), IN _spaceId INT)
+CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(128), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM solvers JOIN solver_assoc ON id = solver_id WHERE name = _name AND space_id = _spaceId;		
 	END //
@@ -399,7 +399,7 @@ CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(32), IN _spaceId INT)
 -- Count the number of benchmarks in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSpaceBenchmarksByName;
-CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(32), IN _spaceId INT)
+CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(256), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM benchmarks JOIN bench_assoc ON id = bench_id WHERE name = _name AND space_id = _spaceId;		
 	END //
@@ -407,7 +407,7 @@ CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(32), IN _spaceId IN
 -- Count the number of jobs in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSpaceJobsByName;
-CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(32), IN _spaceId INT)
+CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(128), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM jobs JOIN job_assoc ON id = job_id WHERE name = _name AND space_id = _spaceId;		
 	END //
@@ -415,7 +415,7 @@ CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(32), IN _spaceId INT)
 -- Count the number of subspaces in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSubspacesByName;
-CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(32), IN _spaceId INT)
+CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(128), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) 
 		FROM spaces AS parent
