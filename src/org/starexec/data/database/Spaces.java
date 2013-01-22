@@ -40,10 +40,10 @@ import org.starexec.data.to.User;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
+/*import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
-
+*/
 
 /**
  * Handles all database interaction for spaces
@@ -1747,7 +1747,7 @@ public class Spaces {
 	 * @author Ruoyu Zhang
 	 */
 	public static void saveToFile(JFreeChart chart, String fileName, int width, int height, double quality) throws FileNotFoundException, IOException {
-    	BufferedImage img = draw( chart, width, height );
+    /*	BufferedImage img = draw( chart, width, height );
 
     	FileOutputStream fos = new FileOutputStream(fileName);
     	JPEGImageEncoder encoder2 = JPEGCodec.createJPEGEncoder(fos);
@@ -1755,7 +1755,8 @@ public class Spaces {
     	param2.setQuality((float) quality, true);
     	encoder2.encode(img,param2);
     	fos.close();
-    }
+    */
+	}
 
     protected static BufferedImage draw(JFreeChart chart, int width, int height) {
     	BufferedImage img = new BufferedImage(width , height, BufferedImage.TYPE_INT_RGB);
