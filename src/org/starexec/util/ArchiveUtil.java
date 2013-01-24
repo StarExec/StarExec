@@ -55,8 +55,11 @@ public class ArchiveUtil {
 					*/
 					//extract from command line (initially only for .tgz.
 					
-					Util.executeCommand("tar -xvf " + fileName);
-				
+					String command = "tar -xvf " + fileName;
+					log.info("about to execute command: " + command);
+					Util.executeCommand(command);
+					log.info("command was executed");
+					
 				}
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
