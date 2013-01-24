@@ -48,9 +48,15 @@ public class ArchiveUtil {
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
 				// First rename it if it's a .tgz
 				if (fileName.endsWith(".tgz")){
+					/*
 					String oldName = fileName;
 					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
 					Util.executeCommand("mv " + oldName + " " + fileName);
+					*/
+					//extract from command line (initially only for .tgz.
+					
+					Util.executeCommand("tar -xvf " + fileName);
+				
 				}
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
