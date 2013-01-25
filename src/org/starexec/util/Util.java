@@ -206,9 +206,9 @@ public class Util {
 		BufferedReader reader = null;		
 		log.debug("Command from execute command = " + command);
 		try {					
-			//Process p = r.exec(command);
-			ProcessBuilder pb = new ProcessBuilder(command);
-			Process p = pb.start();
+			Process p = r.exec(command);
+			//ProcessBuilder pb = new ProcessBuilder(command);
+			//Process p = pb.start();
 			log.debug("Process is null = " + (p==null));
 			InputStream in = p.getInputStream();
 			BufferedInputStream buf = new BufferedInputStream(in);
