@@ -57,9 +57,13 @@ public class ArchiveUtil {
 					BufferedReader reader = Util.executeCommand("ls -l " + fileName);
 					String results = Util.bufferToString(reader);
 					log.info("ls -l results = " + results);
-					String command = "tar -xvf " + fileName;
-					log.info("about to execute command: " + command);
-					reader = Util.executeCommand(command);
+					String commandString = "tar -xvf " + fileName;
+					log.info("about to execute command: " + commandString);
+					String[] commandArray = new String[3];
+					commandArray[0] = "tar";
+					commandArray[1] = "-xvf";
+					commandArray[2] = fileName;
+					reader = Util.executeCommand(commandArray);
 					results = Util.bufferToString(reader);
 					log.info("command was executed, results = " + results);
 					
