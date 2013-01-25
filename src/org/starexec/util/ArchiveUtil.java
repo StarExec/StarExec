@@ -61,11 +61,13 @@ public class ArchiveUtil {
 					log.info("command was executed");
 					
 				}
+				else{
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
 				
 				// Then unpack the tar that was the result of the un-gzip
 				ArchiveUtil.extractTAR(fileName.substring(0, fileName.lastIndexOf('.')), destination);	
+				}
 			} else {
 				// No valid file type found :(
 				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
