@@ -54,9 +54,9 @@ public class ArchiveUtil {
 					Util.executeCommand("mv " + oldName + " " + fileName);
 					*/
 					//extract from command line (initially only for .tgz.
-					BufferedReader reader = Util.executeCommand("which tar");
+					BufferedReader reader = Util.executeCommand("ls -l " + fileName);
 					String results = Util.bufferToString(reader);
-					log.info("which tar results = " + results);
+					log.info("ls -l results = " + results);
 					String command = "tar -xvf " + fileName;
 					log.info("about to execute command: " + command);
 					reader = Util.executeCommand(command);
