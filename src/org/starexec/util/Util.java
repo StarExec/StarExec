@@ -243,7 +243,7 @@ public class Util {
 		for (int i = 0; i < command.length; i++){
 			debugString += (" " + command[i]);
 		}
-		log.debug("Command from execute command [array] = " + debugString);
+		log.info("Command from execute command [array] = " + debugString);
 		try {		
 			
 			Process p = r.exec(command);
@@ -252,7 +252,8 @@ public class Util {
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
-
+			String results = Util.bufferToString(reader);
+			log.info("within executeCommand, command results = " + results);
 			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
 			}		
