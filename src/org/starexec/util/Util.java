@@ -202,11 +202,13 @@ public class Util {
 	 * @return A buffered reader holding the output from the command.
 	 */
 	public static BufferedReader executeCommand(String command) {
-		Runtime r = Runtime.getRuntime();		
+		Runtime r = Runtime.getRuntime();
 		BufferedReader reader = null;		
 		log.debug("Command from execute command = " + command);
 		try {					
-			Process p = r.exec(command);
+			//Process p = r.exec(command);
+			ProcessBuilder pb = new ProcessBuilder(command);
+			Process p = pb.start();
 			log.debug("Process is null = " + (p==null));
 			InputStream in = p.getInputStream();
 			BufferedInputStream buf = new BufferedInputStream(in);
@@ -224,6 +226,7 @@ public class Util {
 		
 		return null;
 	}
+	
 	
 	/**
 	 * Runs a command on the system command line (bash for unix, command line for windows)
