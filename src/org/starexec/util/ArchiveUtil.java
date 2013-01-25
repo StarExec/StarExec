@@ -61,7 +61,7 @@ public class ArchiveUtil {
 					log.info("about to execute command: " + commandString);
 					String[] commandArray = new String[3];
 					commandArray[0] = "tar";
-					commandArray[1] = "-xf";
+					commandArray[1] = "-xvf";
 					commandArray[2] = fileName;
 					reader = Util.executeCommand(commandArray);
 					results = Util.bufferToString(reader);
