@@ -214,7 +214,6 @@ public class Util {
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
-			Thread.sleep(5000);	
 			
 			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				

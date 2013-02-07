@@ -64,7 +64,8 @@ public class ArchiveUtil {
 					results = Util.bufferToString(reader);
 					log.info("ls -l destination results = " + results);
 					
-					String commandString = "tar -xvf " + fileName + " -C " + destination;
+					//not verbose in case it's an issue with the buffer size
+					String commandString = "tar -xf " + fileName + " -C " + destination;
 					log.info("about to execute command: " + commandString);
 					/*String[] commandArray = new String[3];
 					commandArray[0] = "tar";
