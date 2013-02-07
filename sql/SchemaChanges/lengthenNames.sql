@@ -1,4 +1,4 @@
-USE starexec;
+USE prod_starexec;
 
 alter table spaces
 modify name varchar(128);

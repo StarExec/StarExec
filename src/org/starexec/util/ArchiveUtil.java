@@ -59,14 +59,23 @@ public class ArchiveUtil {
 					log.info("ls -l results = " + results);
 					String commandString = "tar -xvf " + fileName;
 					log.info("about to execute command: " + commandString);
-					String[] commandArray = new String[2];
+					String[] commandArray = new String[3];
 					commandArray[0] = "tar";
 					commandArray[1] = "-xvf";
 					commandArray[2] = fileName;
-					reader = Util.executeCommand(commandArray);
+					Runtime r = Runtime.getRuntime();	
+					try {
+						r.exec(commandArray);
+						}
+					catch (IOException e) {
+							log.error("extract error: " + e);
+					}
+					//reader = Util.executeCommand(commandArray);
+					//results = Util.bufferToString(reader);
+					//log.info("command was executed, results = " + results);
+					reader = Util.executeCommand("ls -l " + fileName);
 					results = Util.bufferToString(reader);
-					log.info("command was executed, results = " + results);
-					
+					log.info("after extraction ls -l results = " + results);
 				}
 				else{
 				// First un-GZIP it

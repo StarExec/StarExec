@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
@@ -745,7 +747,7 @@ public class Spaces {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean addWithBenchmarks(Space parent, int userId) {
+	public static boolean addWithBenchmarks(Space parent, int userId, int statusId) throws Exception{
 		//Connection con = null;
 		//
 		log.info("adding with benchmarks and no dependencies for user " + userId);
@@ -756,29 +758,30 @@ public class Spaces {
 			
 			// For each subspace...
 			log.info("about to begin traversing (no deps)");
+			Boolean returnValue = true;
 			for(Space s : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
-				Spaces.traverse(s, parent.getId(), userId);
+				returnValue = returnValue && Spaces.traverse(s, parent.getId(), userId, statusId);
 			}
 
 			// Add any new benchmarks in the space to the database			
 			
 			if (parent.getBenchmarks().size() > 0){
 				log.info("adding benchmarks in main space");
-				Benchmarks.add(parent.getBenchmarks(), parent.getId());
+				Benchmarks.add(parent.getBenchmarks(), parent.getId(), statusId);
 			}
 
 			// We're done (notice that 'parent' is never added because it should already exist)
 			//Common.endTransaction(con);			
-			return true;
+			return returnValue;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);
+			//log.error(e.getMessage(), e);
+			throw e;
 			//Common.doRollback(con);
 		} finally {					
 			//Common.safeClose(con);
 		}
 		
-		return false;
 	}
 	
 	/**
@@ -861,10 +864,12 @@ public class Spaces {
 	}
 	
 	//no connection
-	protected static void traverse(Space space, int parentId, int userId) throws Exception {
+	protected static Boolean traverse(Space space, int parentId, int userId, int statusId) throws Exception {
 		// Add the new space to the database and get it's ID		
 		log.info("traversing space without deps for user " + userId);
 		Connection con = null;
+		
+		Boolean returnValue = true;
 		try{
 			con = Common.getConnection();	
 			Common.beginTransaction(con);	
@@ -874,15 +879,18 @@ public class Spaces {
 		for(Space s : space.getSubspaces()) {
 			// Recursively go through and add all of it's subspaces with itself as the parent
 			log.info("about to traverse space " + spaceId);
-			Spaces.traverse(s, spaceId, userId);
+			returnValue = returnValue && Spaces.traverse(s, spaceId, userId, statusId);
 		}			
 		
 		// Finally, add the benchmarks in the space to the database
 		//not really using connection parameter right now due to problems
-		Benchmarks.add(space.getBenchmarks(), spaceId);
+		Benchmarks.add(space.getBenchmarks(), spaceId, statusId);
+		Uploads.incrementCompletedSpaces(statusId);		
+		return returnValue;
 		}
 		catch (Exception e){			
-			log.error("traverse says " + e.getMessage(), e);		
+			log.error("traverse says " + e.getMessage(), e);
+			return false;//need to pass up
 		} finally {
 			Common.safeClose(con);
 		}

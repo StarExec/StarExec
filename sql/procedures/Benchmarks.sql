@@ -337,6 +337,85 @@ CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(25
 		bench_type = _type
 		WHERE id = _benchmarkId;
 	END //
+
+-- Creates a new UpdateStatus entry when user uploads a benchmark
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS CreateUploadStatus;
+CREATE PROCEDURE CreateUploadStatus(IN _spaceId INT, IN _userId INT, OUT id INT)
+	BEGIN
+		INSERT INTO benchmark_uploads (space_id, user_id, upload_time) VALUES (_spaceId, _userId, NOW());
+		SELECT LAST_INSERT_ID() INTO id;
+	END //
+
+-- Updates status when file upload is complete
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS FileUploadComplete;
+CREATE PROCEDURE FileUploadComplete(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET file_upload_complete = 1
+		WHERE id = _id;
+	END //
+	
+-- Updates status when file extraction is complete
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS FileExtractComplete;
+CREATE PROCEDURE FileExtractComplete(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET file_extraction_complete = 1
+		WHERE id = _id;
+	END //
+	
+-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS ProcessingBegun;
+CREATE PROCEDURE ProcessingBegun(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET processing_begun = 1
+		WHERE id = _id;
+	END //
+	
+-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS IncrementTotalSpaces;
+CREATE PROCEDURE IncrementTotalSpaces(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET total_spaces = total_spaces + 1
+		WHERE id = _id;
+	END //	
+	
+-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS IncrementTotalBenchmarks;
+CREATE PROCEDURE IncrementTotalBenchmarks(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET total_benchmarks = total_benchmarks + 1
+		WHERE id = _id;
+	END //
+	
+	-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS IncrementCompletedSpaces;
+CREATE PROCEDURE IncrementCompletedSpaces(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET completed_spaces = completed_spaces + 1
+		WHERE id = _id;
+	END //
+	
+	-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS IncrementCompletedBenchmarks;
+CREATE PROCEDURE IncrementCompletedBenchmarks(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET completed_benchmarks = completed_benchmarks + 1
+		WHERE id = _id;
+	END //
 	
 	
 DELIMITER ; -- This should always be at the end of this file

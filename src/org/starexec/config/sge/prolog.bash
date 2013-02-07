@@ -124,9 +124,9 @@ function copyDependencies {
 	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
 	do
 		#log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
-		NEW_D=$(dirname "$BIN_PATH/${LOCAL_DEPENDS_ARRAY[$i]}")
+		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
-		cp "${BENCH_DEPENDS_ARRAY[$i]}" "$BIN_PATH/${LOCAL_DEPENDS_ARRAY[$i]}"
+		cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 	done
 	log "benchmark dependencies copy complete"
 	return $?	

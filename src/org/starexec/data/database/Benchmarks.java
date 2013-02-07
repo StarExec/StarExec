@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
 import org.starexec.util.DependValidator;
@@ -110,7 +111,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(Benchmark benchmark, int spaceId) {
+	public static boolean add(Benchmark benchmark, int spaceId) throws Exception{
 		Connection con = null;			
 
 		try {
@@ -131,12 +132,13 @@ public class Benchmarks {
 			}
 		} catch (Exception e){
 			Common.doRollback(con);
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);	
+			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return false;
+		//return false;
 	}
 
 	/**
@@ -148,7 +150,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(List<Benchmark> benchmarks, int spaceId) {
+	public static boolean add(List<Benchmark> benchmarks, int spaceId, int statusId) {
 		log.info("adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
@@ -167,7 +169,7 @@ public class Benchmarks {
 
 				// Next add them to the database (must happen AFTER they are processed);
 				//Benchmarks.add(con, benchmarks, spaceId);		
-				Benchmarks.addNoCon(benchmarks, spaceId);
+				Benchmarks.addNoCon(benchmarks, spaceId, statusId);
 				//Common.endTransaction(con);
 
 				return true;
@@ -430,7 +432,7 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
-	protected static void attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
+	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 
 		// For each benchmark in the list to process...
@@ -454,12 +456,15 @@ public class Benchmarks {
 				b.setAttributes(prop);
 			} catch (Exception e) {
 				log.warn(e.getMessage(), e);
+				return false;
+				//TODO handle 
 			} finally {
 				if(reader != null) {
 					try { reader.close(); } catch(Exception e) {}
 				}
 			}
 		}
+		return true;
 	}	
 
 	/**
@@ -775,11 +780,14 @@ public class Benchmarks {
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 	
-	protected static void addNoCon(List<Benchmark> benchmarks, int spaceId) throws Exception {		
+	protected static void addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 			for(Benchmark b : benchmarks) {
 			if(!Benchmarks.add(b, spaceId)) {
 				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+			}
+			else{
+				Uploads.incrementCompletedBenchmarks(statusId);
 			}
 		}		
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
@@ -1285,4 +1293,90 @@ public class Benchmarks {
 
 		return false;
 	}
+	
+	/**
+	 * Creates a space named after the directory and finds any benchmarks within the directory.
+	 * Then the process recursively adds any subspaces found (other directories) until all directories
+	 * under the original one are traversed.
+	 * @param directory The directory to extract data from
+	 * @param typeId The bench type id to set for all the found benchmarks
+	 * @param userId The user is of the owner of all the benchmarks found
+	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
+	 * @param perm The default permissions to set for this space
+	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given directory.
+	 */
+	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) {
+		// Create a space for the current directory and set it's name		
+		log.info("Extracting Spaces and Benchmarks for " + userId);
+		Space space = new Space();
+		space.setName(directory.getName());
+		space.setPermission(perm);
+		// For each file within the directory...
+		for(File f : directory.listFiles()) {
+			// If it's a subdirectory			
+			if(f.isDirectory()) {
+				// Recursively extract spaces/benchmarks from that directory
+				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm, statusId));
+				Uploads.incrementTotalSpaces(statusId);//for upload status page
+			} else {
+				// Or else we're just a file, so assume it's a benchmark and create an object for it
+				Processor t = new Processor();
+				t.setId(typeId);
+				
+				Benchmark b = new Benchmark();
+				b.setPath(f.getAbsolutePath());
+				b.setName(f.getName());
+				b.setType(t);
+				b.setUserId(userId);
+				b.setDownloadable(downloadable);
+				Uploads.incrementTotalBenchmarks(statusId);//for upload status page
+				// Make sure that the benchmark has a unique name in the space.
+				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
+					return null;
+				}
+				
+				space.addBenchmark(b);
+			}
+		}
+		
+		return space;
+	}
+
+	/**
+	 * Recursively walks through the given directory and subdirectory to find all benchmark files within them
+	 * @param directory The directory to extract benchmark files from
+	 * @param typeId The bench type id to set for all the found benchmarks
+	 * @param userId The user id of the owner of all the benchmarks found
+	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
+	 * @return A flat list of benchmarks containing all the benchmarks found under the given directory and it's subdirectories and so on
+	 */
+	public static List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
+		// Initialize the list we will return at the end...
+		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+		
+		// For each file in the directory
+		for(File f : directory.listFiles()) {
+			if(f.isDirectory()) {
+				// If it's a directory, recursively extract all benchmarks from it and add them to our list
+				benchmarks.addAll(Benchmarks.extractBenchmarks(f, typeId, userId, downloadable));
+			} else {
+				// Or else it's just a benchmark, create an object for it and add it to the list
+				Processor t = new Processor();
+				t.setId(typeId);
+				
+				Benchmark b = new Benchmark();
+				b.setPath(f.getAbsolutePath());
+				b.setName(f.getName());
+				b.setType(t);
+				b.setUserId(userId);
+				b.setDownloadable(downloadable);
+				benchmarks.add(b);
+			}
+		}
+		
+		return benchmarks;
+	}
+
 }
+
+
