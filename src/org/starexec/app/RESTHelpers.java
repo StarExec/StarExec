@@ -5,11 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
@@ -68,11 +70,19 @@ public class RESTHelpers {
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
-	protected static List<JSTreeItem> toSpaceTree(List<Space> spaces){
+	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList, int userID){
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		
-		for(Space space: spaces){
-			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
+		
+		for(Space space: spaceList){
+			JSTreeItem t;
+			
+			if (Spaces.getSubSpaces(space.getId(), userID, false).size()>0) {
+				 t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
+			} else {
+				t = new JSTreeItem(space.getName(), space.getId(), "leaf", "space");	
+			}
+			
 			list.add(t);
 		}
 
@@ -109,9 +119,14 @@ public class RESTHelpers {
 	 */
 	protected static List<JSTreeItem> toQueueList(List<Queue> queues){
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
-		
+		JSTreeItem t;
 		for(Queue q : queues){
-			JSTreeItem t = new JSTreeItem(q.getName(), q.getId(), "closed", "queue");	
+			if (Queues.getNodes(q.getId()).size()>0) {
+				t = new JSTreeItem(q.getName(), q.getId(), "closed", "queue");	
+			} else {
+				t = new JSTreeItem(q.getName(), q.getId(), "leaf", "queue");	
+			}
+			
 			list.add(t);
 		}
 

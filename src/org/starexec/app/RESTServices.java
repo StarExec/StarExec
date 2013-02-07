@@ -69,7 +69,7 @@ public class RESTServices {
 	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		
-		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false)));
+		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false),userId));
 	}
 	
 	/**
@@ -309,7 +309,6 @@ public class RESTServices {
 	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		
 		// Ensure user can view the space containing the primitive(s)
 		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
 			return gson.toJson(2);
