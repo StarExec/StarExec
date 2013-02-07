@@ -446,8 +446,8 @@ CREATE TABLE space_default_settings (
 -- Author: Benton McCune
 CREATE TABLE benchmark_uploads (
 	id INT NOT NULL AUTO_INCREMENT, 
-    space_id INT,
-    user_id INT,
+    space_id INT REFERENCES spaces(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
     upload_time TIMESTAMP NOT NULL,
     file_upload_complete BOOLEAN DEFAULT 0,
     file_extraction_complete BOOLEAN DEFAULT 0,
@@ -458,7 +458,5 @@ CREATE TABLE benchmark_uploads (
     completed_benchmarks INT DEFAULT 0,
     completed_spaces INT DEFAULT 0,
     error_message VARCHAR(512) DEFAULT "no error",
-	PRIMARY KEY (id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	PRIMARY KEY (id)
 );
