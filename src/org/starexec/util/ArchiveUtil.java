@@ -56,7 +56,16 @@ public class ArchiveUtil {
 					//extract from command line (initially only for .tgz.
 					BufferedReader reader = Util.executeCommand("ls -l " + fileName);
 					String results = Util.bufferToString(reader);
+					log.info("ls -l of tgz results = " + results);
+					
+					reader = Util.executeCommand("pwd");
+					results = Util.bufferToString(reader);
+					log.info("pwd results = " + results);
+					
+					reader = Util.executeCommand("ls -l ");
+					results = Util.bufferToString(reader);
 					log.info("ls -l results = " + results);
+					
 					String commandString = "tar -xvf " + fileName;
 					log.info("about to execute command: " + commandString);
 					String[] commandArray = new String[3];
@@ -70,12 +79,9 @@ public class ArchiveUtil {
 					catch (IOException e) {
 							log.error("extract error: " + e);
 					}
-					//reader = Util.executeCommand(commandArray);
-					//results = Util.bufferToString(reader);
-					//log.info("command was executed, results = " + results);
-					reader = Util.executeCommand("ls -l " + fileName);
+					reader = Util.executeCommand(commandArray);
 					results = Util.bufferToString(reader);
-					log.info("after extraction ls -l results = " + results);
+					log.info("command was executed, results = " + results);
 				}
 				else{
 				// First un-GZIP it
