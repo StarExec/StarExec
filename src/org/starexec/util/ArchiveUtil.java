@@ -77,11 +77,9 @@ public class ArchiveUtil {
 					catch (IOException e) {
 							log.error("extract error: " + e);
 					}*/
-					Util.executeCommand(commandString);
-					/*reader = Util.executeCommand(commandString);
+					reader = Util.executeCommand(commandString);
 					results = Util.bufferToString(reader);
 					log.info("command was executed, results = " + results);
-					*/
 					reader = Util.executeCommand("ls -l " + destination);
 					results = Util.bufferToString(reader);
 					log.info("command was executed - ls -l destination results = " + results);
