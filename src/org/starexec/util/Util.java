@@ -214,10 +214,15 @@ public class Util {
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
-
+/*
 			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
-			}			
+			}
+	*/		
+			while (p.exitValue() != 0){
+				log.warn("Command not yet succeeded = " + p.exitValue() + ": " + command);	
+				Thread.sleep(1000);	
+			}
 			
 			return reader;
 		} catch (Exception e) {
