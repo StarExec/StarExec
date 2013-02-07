@@ -60,17 +60,13 @@ public class ArchiveUtil {
 					String results = Util.bufferToString(reader);
 					log.info("ls -l of tgz results = " + results);
 					
-					reader = Util.executeCommand("pwd");
+					reader = Util.executeCommand("ls -l " + destination);
 					results = Util.bufferToString(reader);
-					log.info("pwd results = " + results);
-					
-					reader = Util.executeCommand("ls -l ");
-					results = Util.bufferToString(reader);
-					log.info("ls -l results = " + results);
+					log.info("ls -l destination results = " + results);
 					
 					String commandString = "tar -xvf " + fileName + " -C " + destination;
 					log.info("about to execute command: " + commandString);
-					String[] commandArray = new String[3];
+					/*String[] commandArray = new String[3];
 					commandArray[0] = "tar";
 					commandArray[1] = "-xvf";
 					commandArray[2] = fileName;
@@ -80,10 +76,15 @@ public class ArchiveUtil {
 						}
 					catch (IOException e) {
 							log.error("extract error: " + e);
-					}
-					reader = Util.executeCommand(commandString);
+					}*/
+					Util.executeCommand(commandString);
+					/*reader = Util.executeCommand(commandString);
 					results = Util.bufferToString(reader);
 					log.info("command was executed, results = " + results);
+					*/
+					reader = Util.executeCommand("ls -l " + destination);
+					results = Util.bufferToString(reader);
+					log.info("command was executed - ls -l destination results = " + results);
 				}
 				else{
 				// First un-GZIP it
