@@ -54,6 +54,8 @@ public class ArchiveUtil {
 					Util.executeCommand("mv " + oldName + " " + fileName);
 					*/
 					//extract from command line (initially only for .tgz.
+					log.debug("destination is " + destination);
+					
 					BufferedReader reader = Util.executeCommand("ls -l " + fileName);
 					String results = Util.bufferToString(reader);
 					log.info("ls -l of tgz results = " + results);
@@ -66,7 +68,7 @@ public class ArchiveUtil {
 					results = Util.bufferToString(reader);
 					log.info("ls -l results = " + results);
 					
-					String commandString = "tar -xvf " + fileName;
+					String commandString = "tar -xvf " + fileName + " -C " + destination;
 					log.info("about to execute command: " + commandString);
 					String[] commandArray = new String[3];
 					commandArray[0] = "tar";
@@ -79,7 +81,7 @@ public class ArchiveUtil {
 					catch (IOException e) {
 							log.error("extract error: " + e);
 					}
-					reader = Util.executeCommand(commandArray);
+					reader = Util.executeCommand(commandString);
 					results = Util.bufferToString(reader);
 					log.info("command was executed, results = " + results);
 				}
