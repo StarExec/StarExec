@@ -214,7 +214,7 @@ public class Util {
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
 			reader = new BufferedReader(inread);			
-			
+			//This will hang indefinitely if the stream is too large.  TODO: fix
 			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
 			}

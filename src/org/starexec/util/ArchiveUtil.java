@@ -47,7 +47,7 @@ public class ArchiveUtil {
 				ArchiveUtil.extractTAR(fileName, destination);
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
 				// First rename it if it's a .tgz
-				if (fileName.endsWith(".tgz")){
+				
 					/*
 					String oldName = fileName;
 					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
@@ -84,7 +84,8 @@ public class ArchiveUtil {
 					reader = Util.executeCommand("ls -l " + destination);
 					results = Util.bufferToString(reader);
 					log.info("command was executed - ls -l destination results = " + results);
-				}
+				
+					/* no longer use apache on .tgz since it fails on some
 				else{
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
@@ -92,6 +93,7 @@ public class ArchiveUtil {
 				// Then unpack the tar that was the result of the un-gzip
 				ArchiveUtil.extractTAR(fileName.substring(0, fileName.lastIndexOf('.')), destination);	
 				}
+				*/
 			} else {
 				// No valid file type found :(
 				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
