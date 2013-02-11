@@ -89,14 +89,17 @@ public class BenchmarkUploader extends HttpServlet {
 					// They don't have permissions, send forbidden error
 					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to upload benchmarks and subspaces to this space");
 				} else { 
+					// create status object
+					Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
+					Integer userId = SessionUtil.getUserId(request);					
+					Integer statusId = Uploads.createUploadStatus(spaceId, userId);
+					log.debug("upload status id is " + statusId);
 					// Go ahead and process the request
-					
-					
-					this.handleUploadRequest(form, request, response);
+					this.handleUploadRequest(form, request, response, statusId);
 					
 					//response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
 					//doStuff(form, request, response);
-					response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
+					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId); 
 				}
 			} else {
 				// Or else the request was invalid, send bad request error
@@ -135,7 +138,7 @@ public class BenchmarkUploader extends HttpServlet {
     	});
     }
     
-	private void handleUploadRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	private void handleUploadRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response, Integer sId) throws Exception {
 		//First extract all data from requests
 		final int userId = SessionUtil.getUserId(request);
 		final FileItem fileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
@@ -147,7 +150,7 @@ public class BenchmarkUploader extends HttpServlet {
 		final boolean linked = Boolean.parseBoolean((String)form.get(LINKED));
 		final int depRootSpaceId = Integer.parseInt((String)form.get(DEP_ROOT_SPACE_ID));
 		final Permission perm = this.extractPermissions(form);
-		final Integer statusId = Uploads.createUploadStatus(spaceId, userId);
+		final Integer statusId = sId;
 		log.debug("upload status id is " + statusId);
 		
 		threadPool = Executors.newCachedThreadPool();

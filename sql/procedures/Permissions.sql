@@ -76,6 +76,17 @@ CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
 		> 0, 1, 0) AS verified;                             -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
 	END //
 	
+-- Returns 1 if the given user can somehow see the given upload status, 0 otherwise
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS CanViewStatus;
+CREATE PROCEDURE CanViewStatus(IN _statusId INT, IN _userId INT)
+	BEGIN		
+		SELECT IF((
+			SELECT COUNT(*)
+			FROM benchmark_uploads 
+			WHERE id=_statusId AND user_id=_userId)	> 0, 1, 0) AS verified; -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+	END //	
+	
 -- Finds the maximal set of permissions for the given user on the given space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetUserPermissions;

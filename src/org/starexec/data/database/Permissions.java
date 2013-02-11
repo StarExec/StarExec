@@ -254,6 +254,36 @@ public class Permissions {
 	}
 	
 	/**
+	 * Checks to see if the user belongs to the given upload status
+	 * @param statusId The space to check if the user can see
+	 * @param userId The user that is requesting to view the given upload status
+	 * @return True if the user owns the status, false otherwise
+	 * @author Benton McCune
+	 */
+	public static boolean canUserSeeStatus(int statusId, int userId) {		
+	
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL CanViewStatus(?, ?)}");
+			procedure.setInt(1, statusId);					
+			procedure.setInt(2, userId);
+			ResultSet results = procedure.executeQuery();
+		
+			if(results.first()) {
+				return results.getBoolean(1);
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;		
+	}
+	
+	/**
 	 * Retrieves the user's maximum set of permissions in a space.
 	 * @param userId The user to get permissions for	
 	 * @param spaceId The id of the space to get the user's permissions on

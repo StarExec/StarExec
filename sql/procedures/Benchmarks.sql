@@ -127,6 +127,15 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 		WHERE bench.id = _id;
 	END //
 	
+-- Retrieves the upload status with the given id
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetUploadStatusById;
+CREATE PROCEDURE GetUploadStatusById(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM benchmark_uploads 
+		WHERE id = _id;
+	END //	
 -- Returns the number of benchmarks in a given space
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpace;
