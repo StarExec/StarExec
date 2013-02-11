@@ -434,13 +434,14 @@ public class Benchmarks {
 	 */
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
-
+		int count = benchmarks.size();
 		// For each benchmark in the list to process...
 		for(Benchmark b : benchmarks) {
 			BufferedReader reader = null;
 
 			try {
 				// Run the processor on the benchmark file
+				log.info("executing - " + p.getFilePath() + " " + b.getPath());
 				reader = Util.executeCommand(p.getFilePath() + " " + b.getPath());
 				log.debug("reader is null = " + (reader == null));
 				if (reader == null){
@@ -454,14 +455,17 @@ public class Benchmarks {
 				}
 				// Attach the attributes to the benchmark
 				b.setAttributes(prop);
+				count--;
+				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
 			} catch (Exception e) {
 				log.warn(e.getMessage(), e);
 				return false;
 				//TODO handle 
 			} finally {
 				if(reader != null) {
-					try { reader.close(); } catch(Exception e) {}
+					try { reader.close(); } catch(Exception e) {log.error(e);}
 				}
+				
 			}
 		}
 		return true;
