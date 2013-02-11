@@ -64,7 +64,7 @@
 				</tr>	
 				<tr>
 					<td>completed spaces</td>			
-					<td>${status.totalSpaces}</td>
+					<td>${status.completedSpaces}</td>
 				</tr>	
 				<tr>
 					<td>completed benchmarks</td>			
