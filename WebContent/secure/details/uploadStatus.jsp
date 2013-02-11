@@ -59,7 +59,7 @@
 					<td>${status.totalSpaces}</td>
 				</tr>	
 				<tr>
-					<td>total benchmarkss</td>			
+					<td>total benchmarks</td>			
 					<td>${status.totalBenchmarks}</td>
 				</tr>	
 				<tr>
