@@ -213,12 +213,22 @@ public class Util {
 			InputStream in = p.getInputStream();
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
-			reader = new BufferedReader(inread);			
-			//This will hang indefinitely if the stream is too large.  TODO: fix
+			reader = new BufferedReader(inread);		
+			
+			//Also handle error stream
+			InputStream err = p.getErrorStream();
+			BufferedInputStream bufErr = new BufferedInputStream(err);
+			InputStreamReader inreadErr = new InputStreamReader(bufErr);
+			BufferedReader errReader = new BufferedReader(inreadErr);
+			String errLine = null;
+			while ((errLine = errReader.readLine()) != null){
+				log.error("stdErr = " + errLine);
+			}
+			errReader.close();
+			//This will hang indefinitely if the stream is too large.  TODO: fix increase size?
 			if (p.waitFor() != 0) {
 				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
 			}
-		
 			return reader;
 		} catch (Exception e) {
 			log.warn("execute command says " + e.getMessage(), e);		
