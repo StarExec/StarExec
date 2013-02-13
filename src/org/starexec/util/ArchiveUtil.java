@@ -58,11 +58,11 @@ public class ArchiveUtil {
 					
 					BufferedReader reader = Util.executeCommand("ls -l " + fileName);
 					String results = Util.bufferToString(reader);
-					log.info("ls -l of tgz results = " + results);
+					log.debug("ls -l of tgz results = " + results);
 					
 					reader = Util.executeCommand("ls -l " + destination);
 					results = Util.bufferToString(reader);
-					log.info("ls -l destination results = " + results);
+					log.debug("ls -l destination results = " + results);
 					
 					//not verbose in case it's an issue with the buffer size
 					String commandString = "tar -xf " + fileName + " -C " + destination;
@@ -81,10 +81,12 @@ public class ArchiveUtil {
 					reader = Util.executeCommand(commandString);
 					results = Util.bufferToString(reader);
 					log.info("command was executed, results = " + results);
+					log.info("now removing the archived file " + fileName);
+					ArchiveUtil.removeArchive(fileName);
 					reader = Util.executeCommand("ls -l " + destination);
 					results = Util.bufferToString(reader);
 					log.info("command was executed - ls -l destination results = " + results);
-				
+					
 					/* no longer use apache on .tgz since it fails on some
 				else{
 				// First un-GZIP it

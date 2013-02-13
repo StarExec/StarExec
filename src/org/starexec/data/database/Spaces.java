@@ -797,7 +797,7 @@ public class Spaces {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithBenchmarksAndDeps(Space parent, int userId, Integer depRootSpaceId, boolean linked) {
+	public static boolean addWithBenchmarksAndDeps(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId) {
 		Connection con = null;
 		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
@@ -808,14 +808,14 @@ public class Spaces {
 			// For each subspace...
 			for(Space sub : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
-				Spaces.traverseWithDeps(con, sub, parent.getId(), userId, depRootSpaceId, linked);
+				Spaces.traverseWithDeps(con, sub, parent.getId(), userId, depRootSpaceId, linked, statusId);
 			}
 			
 			// Add any new benchmarks in the space to the database
 			if (parent.getBenchmarks().size()>0){
-				Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId);
+				Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId, statusId);
 			}
-
+			Uploads.incrementCompletedSpaces(statusId);
 			// We're done (notice that 'parent' is never added because it should already exist)
 			Common.endTransaction(con);			
 			return true;
@@ -908,7 +908,7 @@ public class Spaces {
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Benton McCune
 	 */
-	protected static void traverseWithDeps(Connection conParam, Space space, int parentId, int userId, Integer depRootSpaceId, Boolean linked) throws Exception {
+	protected static void traverseWithDeps(Connection conParam, Space space, int parentId, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
 		Connection con = null;		
 		try{
 
@@ -921,11 +921,11 @@ public class Spaces {
 			log.info("traversing (with deps) space " + space.getName() );
 			for(Space sub : space.getSubspaces()) {
 				// Recursively go through and add all of it's subspaces with itself as the parent
-				Spaces.traverseWithDeps(con, sub, spaceId, userId, depRootSpaceId, linked);
+				Spaces.traverseWithDeps(con, sub, spaceId, userId, depRootSpaceId, linked, statusId);
 			}			
-
 			// Finally, add the benchmarks in the space to the database
-			Benchmarks.addWithDeps(space.getBenchmarks(), spaceId, con, depRootSpaceId, linked, userId);
+			Benchmarks.addWithDeps(space.getBenchmarks(), spaceId, con, depRootSpaceId, linked, userId, statusId);
+			Uploads.incrementCompletedSpaces(statusId);
 		}
 		catch (Exception e){			
 			log.error("traverseWithDeps says " + e.getMessage(), e);		

@@ -207,7 +207,7 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 			else
 			{				
-				Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked);
+				Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked, statusId);
 			}
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
@@ -225,7 +225,7 @@ public class BenchmarkUploader extends HttpServlet {
 				Benchmarks.add(results, spaceId, statusId);
 			}
 			else{
-				Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId);
+				Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId, statusId);
 			}
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);				
@@ -236,6 +236,7 @@ public class BenchmarkUploader extends HttpServlet {
     				//todo send to upload status page
     			}
     			finally{
+    				Uploads.everythingComplete(statusId);
     				threadPool.shutdown();
     				//threadPool.awaitTermination(10, TimeUnit.SECONDS);
     			}

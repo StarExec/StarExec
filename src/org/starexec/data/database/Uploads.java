@@ -82,6 +82,28 @@ public class Uploads {
 		}
 	}
 	
+	public static Boolean everythingComplete(Integer statusId){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			CallableStatement procedure = con.prepareCall("{CALL EverythingComplete(?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+	
 	/**
 	 * Gets the upload status object when given its id
 	 * @param statusId The id of the status to get information for
@@ -106,10 +128,12 @@ public class Uploads {
 				s.setProcessingBegun(results.getBoolean("processing_begun"));
 				s.setSpaceId(results.getInt("space_id"));
 				s.setTotalBenchmarks(results.getInt("total_benchmarks"));
+				s.setValidatedBenchmarks(results.getInt("validated_benchmarks"));
 				s.setTotalSpaces(results.getInt("total_spaces"));
 				s.setUploadDate(results.getTimestamp("upload_time"));
 				s.setUserId(results.getInt("user_id"));
 				s.setFileUploadComplete(results.getBoolean("file_upload_complete"));
+				s.setEverythingComplete(results.getBoolean("everything_complete"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -173,6 +197,29 @@ public class Uploads {
 			Common.beginTransaction(con);
 				
 			CallableStatement procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+	
+	
+	public static Boolean incrementValidatedBenchmarks(Integer statusId){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			CallableStatement procedure = con.prepareCall("{CALL IncrementValidatedBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			

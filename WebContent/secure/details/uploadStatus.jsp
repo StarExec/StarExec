@@ -16,10 +16,12 @@
 		
 		if(s != null) {
 			request.setAttribute("status", s);
+			if (!s.isEverythingComplete()){
+				response.setIntHeader("Refresh", 10);
+			}
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Upload Status does not exist or is restricted");			
 		}
-		response.setIntHeader("Refresh", 10);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given upload status id was in an invalid format");		
 	} catch (Exception e) {
@@ -55,20 +57,28 @@
 					<td>${status.processingBegun}</td>
 				</tr>	
 				<tr>
-					<td>total spaces</td>			
-					<td>${status.totalSpaces}</td>
-				</tr>	
-				<tr>
 					<td>total benchmarks</td>			
 					<td>${status.totalBenchmarks}</td>
+				</tr>
+				<tr>
+					<td>validated benchmarks</td>			
+					<td>${status.validatedBenchmarks}</td>
+				</tr>	
+				<tr>
+					<td>completed benchmarks</td>			
+					<td>${status.completedBenchmarks}</td>
+				</tr>	
+				<tr>
+					<td>total spaces</td>			
+					<td>${status.totalSpaces}</td>
 				</tr>	
 				<tr>
 					<td>completed spaces</td>			
 					<td>${status.completedSpaces}</td>
 				</tr>	
 				<tr>
-					<td>completed benchmarks</td>			
-					<td>${status.completedBenchmarks}</td>
+					<td>entire upload complete</td>			
+					<td>${status.everythingComplete}</td>
 				</tr>		
 			</tbody>
 		</table>	

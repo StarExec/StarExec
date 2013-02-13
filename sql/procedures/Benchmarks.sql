@@ -388,6 +388,16 @@ CREATE PROCEDURE ProcessingBegun(IN _id INT)
 	
 -- Updates status when java object is created and processing/entering of benchmarks in db has begun
 -- Author: Benton McCune
+DROP PROCEDURE IF EXISTS EverythingComplete;
+CREATE PROCEDURE EverythingComplete(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET everything_complete = 1
+		WHERE id = _id;
+	END //	
+	
+-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
 DROP PROCEDURE IF EXISTS IncrementTotalSpaces;
 CREATE PROCEDURE IncrementTotalSpaces(IN _id INT)
 	BEGIN
@@ -425,6 +435,16 @@ CREATE PROCEDURE IncrementCompletedBenchmarks(IN _id INT)
 		SET completed_benchmarks = completed_benchmarks + 1
 		WHERE id = _id;
 	END //
+	
+-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS IncrementValidatedBenchmarks;
+CREATE PROCEDURE IncrementValidatedBenchmarks(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET validated_benchmarks = validated_benchmarks + 1
+		WHERE id = _id;
+	END //	
 	
 	
 DELIMITER ; -- This should always be at the end of this file

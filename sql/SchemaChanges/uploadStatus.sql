@@ -13,6 +13,7 @@ CREATE TABLE benchmark_uploads (
     everything_complete BOOLEAN DEFAULT 0,
     total_spaces INT DEFAULT 0,
     total_benchmarks INT DEFAULT 0,
+    validated_benchmarks INT DEFAULT 0,
     completed_benchmarks INT DEFAULT 0,
     completed_spaces INT DEFAULT 0,
     error_message VARCHAR(512) DEFAULT "no error",

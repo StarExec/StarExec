@@ -20,9 +20,11 @@ public class UploadStatus {
 	private boolean fileUploadComplete;
 	private boolean fileExtractionComplete;
 	private boolean processingBegun;
+	private boolean everythingComplete;
 	private int totalSpaces;
 	private int completedSpaces;
 	private int totalBenchmarks;
+	private int validatedBenchmarks;
 	private int completedBenchmarks;
 	/**
 	 * @return the id
@@ -155,6 +157,30 @@ public class UploadStatus {
 	 */
 	public void setCompletedBenchmarks(int completedBenchmarks) {
 		this.completedBenchmarks = completedBenchmarks;
+	}
+	/**
+	 * @return the everythingComplete
+	 */
+	public boolean isEverythingComplete() {
+		return everythingComplete;
+	}
+	/**
+	 * @param everythingComplete the everythingComplete to set
+	 */
+	public void setEverythingComplete(boolean everythingComplete) {
+		this.everythingComplete = everythingComplete;
+	}
+	/**
+	 * @return the validatedBenchmarks
+	 */
+	public int getValidatedBenchmarks() {
+		return validatedBenchmarks;
+	}
+	/**
+	 * @param validatedBenchmarks the validatedBenchmarks to set
+	 */
+	public void setValidatedBenchmarks(int validatedBenchmarks) {
+		this.validatedBenchmarks = validatedBenchmarks;
 	}
 	
 }

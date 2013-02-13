@@ -165,7 +165,7 @@ public class Benchmarks {
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
 				Common.endTransaction(con);
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
-				Benchmarks.attachBenchAttrs(benchmarks, p);
+				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
 
 				// Next add them to the database (must happen AFTER they are processed);
 				//Benchmarks.add(con, benchmarks, spaceId);		
@@ -201,7 +201,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId) {
+	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		if (benchmarks.size()>0){
 			try {			
@@ -214,7 +214,7 @@ public class Benchmarks {
 				Common.safeClose(con);
 				log.info("About to attach attributes to " + benchmarks.size());
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
-				Benchmarks.attachBenchAttrs(benchmarks, p);
+				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
 				
 				//Datastructure to make sure dependencies are all valid before benchmarks are uploaded.
 				DependValidator dataStruct = new DependValidator();
@@ -229,7 +229,7 @@ public class Benchmarks {
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
 				if (dataStruct != null){
 				
-				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct);
+				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
 
 				}
 				else{
@@ -402,7 +402,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId) {
+	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		log.info("Going to add " + benchmarks.size() + "benchmarks (with dependencies) to space " + spaceId);
 		try {			
@@ -410,7 +410,7 @@ public class Benchmarks {
 
 			Common.beginTransaction(con);
 
-			Boolean value = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId);
+			Boolean value = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
 
 			Common.endTransaction(con);
 
@@ -432,7 +432,7 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
-	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
+	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
@@ -456,6 +456,9 @@ public class Benchmarks {
 				// Attach the attributes to the benchmark
 				b.setAttributes(prop);
 				count--;
+				if (Benchmarks.isBenchValid(prop)){
+					Uploads.incrementValidatedBenchmarks(statusId);
+				}
 				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
 			} catch (Exception e) {
 				log.warn(e.getMessage(), e);
@@ -798,7 +801,7 @@ public class Benchmarks {
 	}
 	
 	//
-	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct) throws Exception {		
+	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, Integer statusId) throws Exception {		
 		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 			
 		Benchmark b = new Benchmark();
@@ -808,6 +811,7 @@ public class Benchmarks {
 			if(b == null) {
 				throw new Exception(String.format("Failed to add benchmark to space [%d]", spaceId));
 			}
+			Uploads.incrementCompletedBenchmarks(statusId);
 		}
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 		return benchmarks;	
