@@ -114,9 +114,9 @@
 						title="are some of these benchmarks dependent on previously uploaded benchmarks?">
 						<td class="label"><p>dependencies</p></td>
 						<td><input id="radioDependency" type="radio"
-							name="dependency" value="true"  checked="checked"/> <label
+							name="dependency" value="true" /> <label
 							for="radioDependency">yes</label> <input id="radioNoDependency"
-							type="radio" name="dependency" value="false"/> <label
+							type="radio" name="dependency" value="false" checked="checked"/> <label
 							for="radioNoDependency">no</label></td>
 					</tr>
 					<tr id="depSpaces">

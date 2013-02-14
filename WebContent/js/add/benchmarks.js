@@ -25,6 +25,10 @@ function attachFormValidation(){
 	// Attach a tooltip to 'benchFile' to display validation errors to the client
 	$('#benchFile').qtip(getErrorTooltip());
 	
+	//initially hide dependency related fields
+	  $('#depSpaces').fadeOut(0);
+	  $('#depLinked').fadeOut(0);
+	
 	// Form validation rules/messages
 	$("#uploadForm").validate({
 		rules: {

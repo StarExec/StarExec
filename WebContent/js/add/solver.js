@@ -47,7 +47,7 @@ function attachFormValidation(){
 				regex 	 : getPrimNameRegex()
 			},
 			desc: {
-				required : true,
+				required : false,
 				maxlength: 1024,
 				regex    : getPrimDescRegex()
 			}
@@ -63,7 +63,6 @@ function attachFormValidation(){
 				regex 	: "invalid character(s)"
 			},
 			desc: {
-				required: "description required",
 				maxlength: "1024 characters maximum",
 				regex: "invalid character(s)"
 			}
