@@ -386,7 +386,7 @@ CREATE PROCEDURE ProcessingBegun(IN _id INT)
 		WHERE id = _id;
 	END //
 	
--- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Updates status when the entire upload benchmark process has comploeted
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS EverythingComplete;
 CREATE PROCEDURE EverythingComplete(IN _id INT)
@@ -396,7 +396,7 @@ CREATE PROCEDURE EverythingComplete(IN _id INT)
 		WHERE id = _id;
 	END //	
 	
--- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Updates status when a directory is encountered when traversing extracted file
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS IncrementTotalSpaces;
 CREATE PROCEDURE IncrementTotalSpaces(IN _id INT)
@@ -406,7 +406,7 @@ CREATE PROCEDURE IncrementTotalSpaces(IN _id INT)
 		WHERE id = _id;
 	END //	
 	
--- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Updates status when a file is encountered when traversing extracted file
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS IncrementTotalBenchmarks;
 CREATE PROCEDURE IncrementTotalBenchmarks(IN _id INT)
@@ -415,8 +415,8 @@ CREATE PROCEDURE IncrementTotalBenchmarks(IN _id INT)
 		SET total_benchmarks = total_benchmarks + 1
 		WHERE id = _id;
 	END //
-	
-	-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+
+-- Indicates a space is completely added to the db.
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS IncrementCompletedSpaces;
 CREATE PROCEDURE IncrementCompletedSpaces(IN _id INT)
@@ -426,7 +426,7 @@ CREATE PROCEDURE IncrementCompletedSpaces(IN _id INT)
 		WHERE id = _id;
 	END //
 	
-	-- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Updates status when a benchmark is completed and entered into the db
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS IncrementCompletedBenchmarks;
 CREATE PROCEDURE IncrementCompletedBenchmarks(IN _id INT)
@@ -436,7 +436,7 @@ CREATE PROCEDURE IncrementCompletedBenchmarks(IN _id INT)
 		WHERE id = _id;
 	END //
 	
--- Updates status when java object is created and processing/entering of benchmarks in db has begun
+-- Updates status when a benchmark is validated
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS IncrementValidatedBenchmarks;
 CREATE PROCEDURE IncrementValidatedBenchmarks(IN _id INT)

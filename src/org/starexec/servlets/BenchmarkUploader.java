@@ -34,7 +34,7 @@ import org.starexec.util.Util;
 
 
 /**
- * @deprecated This class is out of date and needs to be re-implemented
+ * @deprecated This class is out of date and needs to be re-implemented - why??
  */
 @SuppressWarnings("serial")
 public class BenchmarkUploader extends HttpServlet {
@@ -96,9 +96,7 @@ public class BenchmarkUploader extends HttpServlet {
 					log.debug("upload status id is " + statusId);
 					// Go ahead and process the request
 					this.handleUploadRequest(form, request, response, statusId);
-					
-					//response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
-					//doStuff(form, request, response);
+					//go to upload status page
 					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId); 
 				}
 			} else {
@@ -111,35 +109,8 @@ public class BenchmarkUploader extends HttpServlet {
 		}
 	}
     
-    protected void doStuff(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception{
-    	log.info("about to do stuff.");
-    	threadPool = Executors.newCachedThreadPool();	
-    	final int whatever = 4;
-    	final HttpServletRequest fRequest = request;
-    	threadPool.execute(new Runnable() {
-    		@Override
-    		public void run(){
-    			try{
-    				//this.handleUploadRequest(form, request, response);
-    				for (int i = 0; i <14; i++){
-    					log.info("doing stuff....");
-    					Thread.sleep(1000);
-    				}
-    				log.info("done with stuff!!");
-    			}
-    			catch (Exception e){
-    				log.error("doStuff says " + e);
-    			}
-    			finally{
-    				threadPool.shutdown();
-    				//threadPool.awaitTermination(10, TimeUnit.SECONDS);
-    			}
-    		}
-    	});
-    }
-    
 	private void handleUploadRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response, Integer sId) throws Exception {
-		//First extract all data from requests
+		//First extract all data from request
 		final int userId = SessionUtil.getUserId(request);
 		final FileItem fileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
 		final int spaceId = Integer.parseInt((String)form.get(SPACE_ID));
@@ -229,7 +200,6 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);				
-        //response.sendRedirect("/starexec/secure/explore/spaces.jsp"); 
     			}
     			catch (Exception e){
     				log.error("upload Benchmarks says " + e);
@@ -238,7 +208,6 @@ public class BenchmarkUploader extends HttpServlet {
     			finally{
     				Uploads.everythingComplete(statusId);
     				threadPool.shutdown();
-    				//threadPool.awaitTermination(10, TimeUnit.SECONDS);
     			}
     		}
     	});
