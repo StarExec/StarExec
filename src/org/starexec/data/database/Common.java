@@ -55,7 +55,7 @@ public class Common {
 			poolProp.setMinIdle(R.MYSQL_POOL_MIN_SIZE);					// The minimum number of connections to keep "ready to go"
 			poolProp.setDefaultAutoCommit(true);						// Turn autocommit on (turn transactions off by default)
 			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
-			poolProp.setRemoveAbandonedTimeout(300);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
+			poolProp.setRemoveAbandonedTimeout(3600);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
 			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too int
 		
 			log.debug("Creating new datapool with supplied properties");		
