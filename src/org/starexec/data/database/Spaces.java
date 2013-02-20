@@ -439,7 +439,7 @@ public class Spaces {
 				// else on StarExec, delete them
 				
 				//temporarily commented out to narrow down bug
-				//Spaces.smartDelete(subspaceId, con);
+				Spaces.smartDelete(subspaceId, con);
 				
 				procedure.setInt(1, subspaceId);
 				procedure.executeUpdate();
@@ -489,8 +489,7 @@ public class Spaces {
 			Spaces.removeSubspaces(subspace.getId(), parentSpaceId, userId, con);
 			
 			// Checks the space's solvers, benchmarks, and jobs to see if any are safe to be deleted from disk
-			//temporarily commented out
-			//Spaces.smartDelete(subspace.getId(), con);
+			Spaces.smartDelete(subspace.getId(), con);
 			
 			procedure.setInt(1, subspace.getId());
 			procedure.executeUpdate();			
