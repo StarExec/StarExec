@@ -437,7 +437,9 @@ public class Spaces {
 				
 				// Check the primitives of this subspace - if they aren't referenced anywhere 
 				// else on StarExec, delete them
-				Spaces.smartDelete(subspaceId, con);
+				
+				//temporarily commented out to narrow down bug
+				//Spaces.smartDelete(subspaceId, con);
 				
 				procedure.setInt(1, subspaceId);
 				procedure.executeUpdate();
@@ -487,7 +489,8 @@ public class Spaces {
 			Spaces.removeSubspaces(subspace.getId(), parentSpaceId, userId, con);
 			
 			// Checks the space's solvers, benchmarks, and jobs to see if any are safe to be deleted from disk
-			Spaces.smartDelete(subspace.getId(), con);
+			//temporarily commented out
+			//Spaces.smartDelete(subspace.getId(), con);
 			
 			procedure.setInt(1, subspace.getId());
 			procedure.executeUpdate();			
