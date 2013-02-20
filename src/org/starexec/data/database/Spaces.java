@@ -815,7 +815,7 @@ public class Spaces {
 			if (parent.getBenchmarks().size()>0){
 				Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId, statusId);
 			}
-			Uploads.incrementCompletedSpaces(statusId);
+			
 			// We're done (notice that 'parent' is never added because it should already exist)
 			Common.endTransaction(con);			
 			return true;
