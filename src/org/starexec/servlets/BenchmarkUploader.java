@@ -94,10 +94,11 @@ public class BenchmarkUploader extends HttpServlet {
 					Integer userId = SessionUtil.getUserId(request);					
 					Integer statusId = Uploads.createUploadStatus(spaceId, userId);
 					log.debug("upload status id is " + statusId);
-					// Go ahead and process the request
-					this.handleUploadRequest(form, request, response, statusId);
+			
 					//go to upload status page
 					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId); 
+					// Go ahead and process the request
+					this.handleUploadRequest(form, userId, statusId);
 				}
 			} else {
 				// Or else the request was invalid, send bad request error
@@ -109,9 +110,9 @@ public class BenchmarkUploader extends HttpServlet {
 		}
 	}
     
-	private void handleUploadRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response, Integer sId) throws Exception {
+	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
 		//First extract all data from request
-		final int userId = SessionUtil.getUserId(request);
+		final int userId = uId;
 		final FileItem fileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
 		final int spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 		final String uploadMethod = (String)form.get(UPLOAD_METHOD);
@@ -124,13 +125,14 @@ public class BenchmarkUploader extends HttpServlet {
 		final Integer statusId = sId;
 		log.debug("upload status id is " + statusId);
 		
+		//It will delay the redirect until this method is finished which is why a new thread is used
+		//TODO: figure out a way to do this without calling new thread
 		threadPool = Executors.newCachedThreadPool();
 		threadPool.execute(new Runnable() {
     		@Override
     		public void run(){
     			try{
 		log.info("Handling upload request for user " + userId + " in space " + spaceId);
-		
 		// Create a unique path the zip file will be extracted to
 		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
 		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
