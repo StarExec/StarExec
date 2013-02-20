@@ -27,7 +27,7 @@ function attachFormValidation(){
 				regex : getPrimNameRegex()
 			},
 			desc: {
-				required: true,
+				required: false,
 				maxlength: 1024,
 				regex: getPrimDescRegex()
 			}

@@ -43,8 +43,8 @@ function attachFormValidation(){
 				regex	 : getPrimNameRegex()
 			},
 			description: {
-				required : true,
-				minlength: 2,
+				required : false,
+				minlength: 0,
 				maxlength: 1024,
 				regex	 : getPrimDescRegex()
 			}

@@ -480,7 +480,9 @@ public class RESTHelpers {
 		    case USER:
 	    		List<User> usersToDisplay = new LinkedList<User>();
 	    		int totalUsersInSpace = Users.getCountInSpace(id);
-	    		
+	    		if (Spaces.isPublicSpace(id)){
+	    			totalUsersInSpace--;
+	    		}
 	    		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
 	    		usersToDisplay = Users.getUsersForNextPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  

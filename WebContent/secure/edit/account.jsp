@@ -97,11 +97,11 @@
 			<tbody>
 				<tr>
 					<td>disk quota</td>
-					<td><input type="text" readonly="readonly" value="${diskQuota}"/></td>
+					<td>${diskQuota}</td>
 				</tr>
 				<tr>
 					<td>current disk usage</td>
-					<td><input type="text" readonly="readonly" value="${diskUsage}"/></td>
+					<td>${diskUsage}</td>
 				</tr>
 			</tbody>			
 		</table>

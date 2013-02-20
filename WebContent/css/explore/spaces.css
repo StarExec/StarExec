@@ -22,8 +22,7 @@
 }
 
 
-#exploreList a.hover,
-#trashcan.hover {
+#exploreList a.hover{
 	background-color: #008d03;
 	border-radius:2px;
 }
@@ -91,7 +90,14 @@
 	height: 50px;
 	background: transparent;
 	text-align: left;
-	float: right;
+	float:right;
+	position:relative;
+	left:60px;
+}
+
+#trashcan:hover {
+	background-color: #008d03;
+	border-radius:2px;
 }
 
 #trashcan .ui-icon {

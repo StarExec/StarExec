@@ -692,7 +692,10 @@ public class Users {
 				u.setLastName(results.getString("last_name"));
 				u.setEmail(results.getString("email"));
 				
-				users.add(u);			
+				//Prevents public user from appearing in table.
+				users.add(u);
+				
+							
 			}	
 			
 			return users;

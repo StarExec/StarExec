@@ -181,6 +181,7 @@ function initDialogs() {
  */
 function getCommunityDetails(id) {
 	$('#loader').show();
+	
 	$.get(  
 		"/starexec/services/communities/details/" + id,  
 		function(data){  			
@@ -208,15 +209,23 @@ function populateDetails(jsonData) {
 		$('#commDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
 	
-	// Populate members table	
+	// Populate members table
+	
 	$('#memberField legend').children('span:first-child').text(jsonData.space.users.length);
 	memberTable.fnClearTable();	
+	
 	$.each(jsonData.space.users, function(i, user) {
+		
 		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';				
-		memberTable.fnAddData([userLink, user.institution, emailLink]);
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';			
+		if (!user.isPublic) {
+			memberTable.fnAddData([userLink, user.institution, emailLink]);
+			} else {
+				$('#memberField legend').children('span:first-child').text(jsonData.space.users.length-1);
+			}
+		
 	});
 	
 	// Populate leaders table

@@ -1,11 +1,12 @@
 #explorer {
 	margin-top: 15px;
 	float:left;
-	width: 28%;		
+	width: 28%;
 	min-height: 90%;
 	height: 90%;
-	overflow: hidden;	
-	position: relative;
+	overflow: auto;
+	overflow-y:hidden;
+	position: relative; 
 }
 
 #explorer a:link {
@@ -14,9 +15,10 @@
 
 #detailPanel {
 	padding-left: 10px;
+	padding-right:50px;
 	margin-top: 15px;
 	float:right;	
-	width: 70%;
+	width: 65%;
 	border-left: solid 3px #111111;	
 }
 

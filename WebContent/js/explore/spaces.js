@@ -284,6 +284,21 @@ function initDraggable(table) {
 	
 	log($(table).attr('id') + ' table initialized as draggable');
 }
+
+/*
+ * @Author Eric Burns
+ * The following function is executed while the page scrolls
+ * and moves the trashcan draggable target along with the page*/
+
+
+$(window).scroll(function(){
+	var scrolldown= ($(document).scrollTop());
+	$("#trashcan").css("top", scrolldown+"px");
+	if (!$("#trashcan").css("display")=="none") {
+		$("#trashcan").hide();
+		$("#trashcan").show();
+	}
+});
  
 /**
  * Called when any item is starting to be dragged within the browser
@@ -297,7 +312,7 @@ function onDragStart(event, ui) {
 	$('#exploreList').find('a').droppable( {
 	    drop		: onSpaceDrop,
 	    tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-	    hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
+
 	    activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
 	
@@ -911,7 +926,7 @@ function initSpaceExplorer(){
 	$.jstree._themes = "/starexec/css/jstree/";
 	var id;
 	 // Initialize the jstree plugin for the explorer list
-	jQuery("#exploreList").jstree({  
+	$("#exploreList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
 				"url" : "/starexec/services/space/subspaces",	// Where we will be getting json data from 
@@ -1595,24 +1610,43 @@ function initDataTables(){
         "aaSorting": [[ 1, "asc" ]]
     }); 
 	
+	var items=["#users","#solvers","#benchmarks","#jobs","#spaces","#comments"];
 	
+	function unselectAll(except) {
+		var items=["#users","#solvers","#benchmarks","#jobs","#spaces","#comments"];
+		for (x=0;x<6;x++) {
+			
+			if (except==items[x]) {
+				continue;
+			}
+			$(items[x]).find("tr").removeClass("row_selected");
+		}
+	}
+	
+
 	// Setup the tables to have multi-select
-	$("#users").delegate("tr", "click", function(){
+	$("#users").delegate("tr", "mousedown", function(){
+		unselectAll("#users");
 		$(this).toggleClass("row_selected");
 	});
-	$("#solvers").delegate("tr", "click", function(){
+	$("#solvers").delegate("tr", "mousedown", function(){
+		unselectAll("#solvers");
 		$(this).toggleClass("row_selected");
 	});
-	$("#benchmarks").delegate("tr", "click", function(){
+	$("#benchmarks").delegate("tr", "mousedown", function(){
+		unselectAll("#benchmarks");
 		$(this).toggleClass("row_selected");
 	});
-	$("#jobs").delegate("tr", "click", function(){
+	$("#jobs").delegate("tr", "mousedown", function(){
+		unselectAll("#jobs");
 		$(this).toggleClass("row_selected");
 	});
-	$("#spaces").delegate("tr", "click", function(){
+	$("#spaces").delegate("tr", "mousedown", function(){
+		unselectAll("#spaces");
 		$(this).toggleClass("row_selected");
 	});
-	$("#comments").delegate("tr", "click", function(){
+	$("#comments").delegate("tr", "mousedown", function(){
+		unselectAll("#comments");
 		$(this).toggleClass("row_selected");
 	});
 	
@@ -1624,7 +1658,7 @@ function initDataTables(){
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset:not(:#actions)').expandable(true);
 	
-	// Set the DataTable filters to only query the server if when the user finishes typing
+	// Set the DataTable filters to only query the server when the user finishes typing
 	jobTable.fnFilterOnDoneTyping();
 	solverTable.fnFilterOnDoneTyping();
 	benchTable.fnFilterOnDoneTyping();
@@ -2452,6 +2486,7 @@ function getTooltipConfig(type, message){
 				delay: 1000,
 				event: "mouseover",
 				effect : function() {
+					
 					$(this).show('slide', 150);
 				}
 			},

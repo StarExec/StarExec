@@ -4,13 +4,14 @@
 <star:template title="space explorer" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, common/comments">			
 	<div id="explorer">
 		<h3>spaces</h3>
-		<a id="trashcan"></a>
+		 
 		<ul id="exploreList">
 		</ul>
 	</div>
 	
 	<div id="detailPanel">				
 		<h3 id="spaceName"></h3>
+		<a id="trashcan"></a>
 		<p id="spaceDesc" class="accent"></p>
 			
 		<fieldset id="jobField">
@@ -77,7 +78,7 @@
 				</thead>			
 			</table>
 		</fieldset>		
-	<!-- 	
+		
 		<fieldset id="resultField">
 			<legend class="expd" id="resultExpd"><span>0</span> result</legend>
 			<table id="results">
@@ -90,7 +91,7 @@
 				</thead>			
 			</table>			
 		</fieldset>		
-		
+	<!--  	
 		<fieldset id="resultChart">
 		<table id="chartTable">
 			<tr>
