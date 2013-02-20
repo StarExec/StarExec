@@ -421,7 +421,7 @@ public class Spaces {
 			// Instantiate a transaction so subspaces in 'subspaceIds' get removed in an all-or-none fashion
 			Common.beginTransaction(con);
 			
-			CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
+			//CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 			log.info("Beginning smart deletion...");
 			
 			// For each subspace in the list of subspaces to be deleted...
@@ -440,7 +440,7 @@ public class Spaces {
 				
 				//temporarily commented out to narrow down bug
 				Spaces.smartDelete(subspaceId, con);
-				
+				CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 				procedure.setInt(1, subspaceId);
 				procedure.executeUpdate();
 				log.info("Space " + subspaceId +  " has been deleted.");
@@ -475,7 +475,7 @@ public class Spaces {
 	 */
 	public static void removeSubspaces(int spaceId, int parentSpaceId, int userId, Connection con) throws Exception {
 		
-		CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
+		//CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 		
 		// For every subspace of the space to be deleted...
 		for(Space subspace : Spaces.getSubSpaces(spaceId, userId, false)){
@@ -491,6 +491,7 @@ public class Spaces {
 			// Checks the space's solvers, benchmarks, and jobs to see if any are safe to be deleted from disk
 			Spaces.smartDelete(subspace.getId(), con);
 			
+			CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 			procedure.setInt(1, subspace.getId());
 			procedure.executeUpdate();			
 			
@@ -1108,12 +1109,9 @@ public class Spaces {
 		// Remove them from the space, triggering the database to check if 
 		// any of these primitives aren't referenced anywhere else and,
 		// if so, deleting them
-		/*removeJobs(jobs, spaceId, con);
+		removeJobs(jobs, spaceId, con);
 		removeBenches(benches, spaceId, con);
-		removeSolvers(solvers, spaceId, con);*/
-		removeJobs(jobs, spaceId);
-		removeBenches(benches, spaceId);
-		removeSolvers(solvers, spaceId);
+		removeSolvers(solvers, spaceId, con);
 	}
 
 	/** Updates the details of a space in the database. The given Space object should contain 
