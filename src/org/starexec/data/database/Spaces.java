@@ -1076,6 +1076,7 @@ public class Spaces {
 		return false;
 	}
 	
+
 	
 	/**
 	 * Checks if the primitives of a space that is about to be deleted
@@ -1107,9 +1108,12 @@ public class Spaces {
 		// Remove them from the space, triggering the database to check if 
 		// any of these primitives aren't referenced anywhere else and,
 		// if so, deleting them
-		//removeJobs(jobs, spaceId, con);
+		/*removeJobs(jobs, spaceId, con);
 		removeBenches(benches, spaceId, con);
-		removeSolvers(solvers, spaceId, con);
+		removeSolvers(solvers, spaceId, con);*/
+		removeJobs(jobs, spaceId);
+		removeBenches(benches, spaceId);
+		removeSolvers(solvers, spaceId);
 	}
 
 	/** Updates the details of a space in the database. The given Space object should contain 
