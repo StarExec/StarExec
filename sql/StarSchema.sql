@@ -456,8 +456,18 @@ CREATE TABLE benchmark_uploads (
     total_spaces INT DEFAULT 0,
     total_benchmarks INT DEFAULT 0,
     validated_benchmarks INT DEFAULT 0,
+    failed_benchmarks INT DEFAULT 0,
     completed_benchmarks INT DEFAULT 0,
     completed_spaces INT DEFAULT 0,
     error_message VARCHAR(512) DEFAULT "no error",
+	PRIMARY KEY (id)
+);
+
+-- For benchmarks that fail validation
+-- Author: Benton McCune
+CREATE TABLE unvalidated_benchmarks (
+	id INT NOT NULL AUTO_INCREMENT, 
+    status_id INT REFERENCES benchmark_uploads(id) ON DELETE CASCADE,
+    bench_name VARCHAR(256) NOT NULL,
 	PRIMARY KEY (id)
 );

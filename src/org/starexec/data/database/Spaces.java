@@ -890,6 +890,8 @@ public class Spaces {
 		}
 		catch (Exception e){			
 			log.error("traverse says " + e.getMessage(), e);
+			String message = "Major Error encountered traversing spaces";
+			Uploads.setErrorMessage(statusId, message);
 			return false;//need to pass up
 		} finally {
 			Common.safeClose(con);

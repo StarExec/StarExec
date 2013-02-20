@@ -11,6 +11,7 @@
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId), ProcessorType.BENCH);
 		userSpaces = Spaces.GetSpacesByUser(userId);
+		//TODO:  rewrite how we get no type benchmark processor
 		postProcs.add(Processors.getByCommunity(1, ProcessorType.BENCH).get(0));
 
 		request.setAttribute("space", Spaces.get(spaceId));

@@ -3,6 +3,8 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Space;
@@ -155,6 +157,8 @@ public class Uploads {
 				s.setUserId(results.getInt("user_id"));
 				s.setFileUploadComplete(results.getBoolean("file_upload_complete"));
 				s.setEverythingComplete(results.getBoolean("everything_complete"));
+				s.setErrorMessage(results.getString("error_message"));
+				s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -166,6 +170,33 @@ public class Uploads {
 		return null;
 	}
 	
+	/**
+	 * Gets the upload status object when given its id
+	 * @param statusId The id of the status to get information for
+	 * @return An upload status object
+	 * @author Benton McCune
+	 */
+	public static List<String> getFailedBenches(int statusId) {
+		Connection con = null;			
+		
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetUnvalidatedBenchmarks(?)}");
+			procedure.setInt(1, statusId);					
+			ResultSet results = procedure.executeQuery();		
+			List<String> badBenches = new LinkedList<String>();
+			while(results.next()){
+				badBenches.add(results.getString("bench_name"));
+			}
+			return badBenches;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
 	/**
 	 * Indicates that benchmark and space java objects have been created for the entire space hierarchy.  
 	 * This is called when the benchmarks are being validated and entered into the database.
@@ -324,6 +355,93 @@ public class Uploads {
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+	
+	/**
+	 * Adds 1 to the count of failed benchmarks when a benchmark fails validation.
+	 * @param statusId - id of status object being incremented
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementFailedBenchmarks(Integer statusId){
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			CallableStatement procedure = con.prepareCall("{CALL IncrementFailedBenchmarks(?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+	
+	/**
+	 * Sets error message
+	 * @param statusId - id of status object being changed
+	 * @return true if successful, false if not
+	 */
+	public static Boolean setErrorMessage(Integer statusId, String message){
+		Connection con = null;			
+		if (message.length() > 512){
+			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
+		}
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			CallableStatement procedure = con.prepareCall("{CALL SetErrorMessage(?,?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.setString(2,message);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+	
+	/**
+	 * Adds failed benchmark name to db
+	 * @param statusId - id of status object being changed
+	 * @return true if successful, false if not
+	 */
+	public static Boolean addFailedBenchmark(Integer statusId, String name){
+		Connection con = null;			
+		if (name.length() > 512){
+			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + name.length());
+		}
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			CallableStatement procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.setString(2,name);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error("addFailedBenchmark says " + e.getMessage(), e);	
 			Common.doRollback(con);
 			return false;
 		} finally {

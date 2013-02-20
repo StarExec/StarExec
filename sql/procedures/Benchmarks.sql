@@ -446,5 +446,52 @@ CREATE PROCEDURE IncrementValidatedBenchmarks(IN _id INT)
 		WHERE id = _id;
 	END //	
 	
+-- Updates status when a benchmark fails validation
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS IncrementFailedBenchmarks;
+CREATE PROCEDURE IncrementFailedBenchmarks(IN _id INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET failed_benchmarks = failed_benchmarks + 1
+		WHERE id = _id;
+	END //		
+	
+
+-- Updates status when an error occurs
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS SetErrorMessage;
+CREATE PROCEDURE SetErrorMessage(IN _id INT, IN _message VARCHAR(512))
+	BEGIN
+		UPDATE benchmark_uploads
+		SET error_message = _message
+		WHERE id = _id;
+	END //	
+	
+-- Updates status when  benchmark fails validation
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS AddUnvalidatedBenchmark;
+CREATE PROCEDURE AddUnvalidatedBenchmark(IN _id INT, IN _name VARCHAR(256))
+	BEGIN
+		INSERT INTO unvalidated_benchmarks (status_id, bench_name)
+		VALUES (_id, _name);
+	END //	
+	
+-- Gets direct count of unvalidated benchmarks if there are no more than maximum
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS UnvalidatedBenchmarkCount;
+CREATE PROCEDURE UnvalidatedBenchmarkCount(IN _status_id INT)
+	BEGIN
+		select count(*) from unvalidated_benchmarks 
+		WHERE status_id = _status_id;
+	END //	
+	
+-- Gets unvalidated benchmark names
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetUnvalidatedBenchmarks;
+CREATE PROCEDURE GetUnvalidatedBenchmarks(IN _status_id INT)
+	BEGIN
+		select bench_name from unvalidated_benchmarks 
+		WHERE status_id = _status_id;
+	END //		
 	
 DELIMITER ; -- This should always be at the end of this file

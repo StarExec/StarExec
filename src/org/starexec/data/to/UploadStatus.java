@@ -26,6 +26,8 @@ public class UploadStatus {
 	private int totalBenchmarks;
 	private int validatedBenchmarks;
 	private int completedBenchmarks;
+	private int failedBenchmarks;
+	private String errorMessage;
 	/**
 	 * @return the id
 	 */
@@ -181,6 +183,30 @@ public class UploadStatus {
 	 */
 	public void setValidatedBenchmarks(int validatedBenchmarks) {
 		this.validatedBenchmarks = validatedBenchmarks;
+	}
+	/**
+	 * @return the failedBenchmarks
+	 */
+	public int getFailedBenchmarks() {
+		return failedBenchmarks;
+	}
+	/**
+	 * @param failedBenchmarks the failedBenchmarks to set
+	 */
+	public void setFailedBenchmarks(int failedBenchmarks) {
+		this.failedBenchmarks = failedBenchmarks;
+	}
+	/**
+	 * @return the errorMessage
+	 */
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	/**
+	 * @param errorMessage the errorMessage to set
+	 */
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 	
 }

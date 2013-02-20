@@ -76,6 +76,7 @@ public class R {
 	public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
 	public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 		"this is your personal space";
+	public static int MAX_FAILED_VALIDATIONS=50;							//More than this number of benchmark validation failures triggers a message and ends
 	
 	//Reserved Names for users
 	public static String STAREXEC_RESULT = "starexec-result";				// The key used for the starexec result in key-value pairs for a job pair 

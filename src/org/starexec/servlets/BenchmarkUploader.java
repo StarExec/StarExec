@@ -146,8 +146,9 @@ public class BenchmarkUploader extends HttpServlet {
 		Uploads.fileUploadComplete(statusId);
 		// Extract the downloaded benchmark zip file
 		if(!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath())) {
-			//response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server failed to uncompress the given file");
-			//TODO:send error
+			String message = "StarExec has failed to extract your uploaded file.";
+			Uploads.setErrorMessage(statusId, message);
+			log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
 			return;
 		}
 		log.info("Extraction Complete");
@@ -164,8 +165,9 @@ public class BenchmarkUploader extends HttpServlet {
 			log.debug("convert");
 			Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
 			if (result == null) {
-				//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark should have a unique name in the space.");
-				//TODO sendError
+				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
+				Uploads.setErrorMessage(statusId, message);
+				log.error(message + " - status id = " + statusId);
 				return;
 			}
 			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
@@ -185,9 +187,11 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			for (Benchmark bench : results) {
 				// Make sure that the benchmark has a unique name in the space.
+				//TODO: verify that this is being done correctly. particularly whether benchmarks in THIS upload have unique names
 				if(Spaces.notUniquePrimitiveName(bench.getName(), spaceId, 2)) {
-					//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark should have a unique name in the space.");
-					
+					String message = "Benchmarks must have unique names within this space.  The following benchmark fails " + bench.getName();
+					Uploads.setErrorMessage(statusId, message);
+					log.error(message + " - status id = " + statusId);				
 					return;
 				}
 			}

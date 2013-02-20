@@ -77,7 +77,7 @@
 				</thead>			
 			</table>
 		</fieldset>		
-		
+	<!-- 	
 		<fieldset id="resultField">
 			<legend class="expd" id="resultExpd"><span>0</span> result</legend>
 			<table id="results">
@@ -90,7 +90,7 @@
 				</thead>			
 			</table>			
 		</fieldset>		
-	<!--  	
+		
 		<fieldset id="resultChart">
 		<table id="chartTable">
 			<tr>
