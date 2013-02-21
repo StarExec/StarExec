@@ -28,13 +28,19 @@ $(document).ready(function(){
 	$("#pageHeader nav ul li").hover(function() {
 		// When we hover over a menu item...
 		// Find their submenu and slide it down
+		$(this).find("ul.subnav").stop(true,true);
 		$(this).find("ul.subnav").slideDown('fast').show();
+		
+		
 		
 		// Then attach a hover out event  
 		$(this).hover(function() {}, 
 			function(){  
 				// When I'm hovered out of, slide up my submenu 
-	           	$(this).find("ul.subnav").slideUp('fast');  
+				
+				$(this).find("ul.subnav").slideUp('fast'); 
+				
+	           	 
 	        });
 		}, function () {});	 
 
