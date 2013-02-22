@@ -1,6 +1,13 @@
 $(document).ready(function(){
 	initUI();
 	attachFormValidation();
+	if($('#radioNoDependency').is(':checked')) {
+		  $('#depSpaces').hide();
+		  $('#depLinked').hide();
+	  } else {
+		  $('#depSpaces').show();
+		  $('#depLinked').show();
+	  }
 });
 
 
