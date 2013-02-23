@@ -27,6 +27,10 @@
 	border-radius:2px;
 }
 
+#trashcan.hover {
+	background-color: #008d03;
+	border-radius:2px;
+}
 #spaceField a.spaceLink {
 	cursor: pointer;
 }
