@@ -1236,12 +1236,11 @@ public class RESTServices {
 	/**
 	 * Removes a job's association with a space, thereby removing the job from
 	 * the space
-	 * 
+	 * TODO: improve performance
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
 	 * @author Todd Elvers
-	 * @deprecated not yet tested
 	 */
 	@POST
 	@Path("/remove/job/{spaceId}")

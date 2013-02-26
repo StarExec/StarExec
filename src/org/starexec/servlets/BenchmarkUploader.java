@@ -94,11 +94,11 @@ public class BenchmarkUploader extends HttpServlet {
 					Integer userId = SessionUtil.getUserId(request);					
 					Integer statusId = Uploads.createUploadStatus(spaceId, userId);
 					log.debug("upload status id is " + statusId);
-			
-					//go to upload status page
-					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId); 
+					
 					// Go ahead and process the request
 					this.handleUploadRequest(form, userId, statusId);
+					//go to upload status page
+					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId); 
 				}
 			} else {
 				// Or else the request was invalid, send bad request error

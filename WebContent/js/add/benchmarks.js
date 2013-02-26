@@ -8,6 +8,8 @@ $(document).ready(function(){
 		  $('#depSpaces').show();
 		  $('#depLinked').show();
 	  }
+	//hide message until upload clicked
+	$('#messageField').hide();
 });
 
 
@@ -99,6 +101,11 @@ function initUI(){
 			secondary: "ui-icon-arrowthick-1-n"
 		}
 	});
+	
+	$("#btnUpload").click(function(){		
+		$('#messageField').show();
+	});
+	
 }
 
 /**

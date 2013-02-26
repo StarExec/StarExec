@@ -139,6 +139,9 @@
 			</table>
 			<button id="btnUpload" type="submit">upload</button>
 		</fieldset>
+		<fieldset id="messageField">
+			After the file is uploaded, you will be sent to an upload status page as your upload is processed.
+		</fieldset>
 	</form>
 
 </star:template>
