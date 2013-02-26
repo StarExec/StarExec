@@ -277,7 +277,7 @@ function initDraggable(table) {
 	// Make the trash can in the explorer list be a droppable target
 	$('#trashcan').droppable({
 		drop		: onTrashDrop,
-		tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
+		tolerance	: 'touch',	// Use the pointer to determine drop position instead of the middle of the drag clone element
 	    hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
 	    activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
@@ -288,7 +288,8 @@ function initDraggable(table) {
 /*
  * @Author Eric Burns
  * The following function is executed while the page scrolls
- * and moves the trashcan draggable target along with the page*/
+ * and moves the trashcan draggable target along with the page
+ */
 
 
 $(window).scroll(function(){
@@ -296,7 +297,7 @@ $(window).scroll(function(){
 	$("#trashcan").css("top", scrolldown+"px");
 	if (!$("#trashcan").css("display")=="none") {
 		$("#trashcan").hide();
-		$("#trashcan").show();
+		$("#trashcan").show(); //required to move drop target
 	}
 });
  
@@ -2667,7 +2668,7 @@ function saveChanges(obj, save){
 				  removeJob		: perms.removeJob,
 				  addSpace		: perms.addSpace,
 				  removeSpace	: perms.removeSpace,
-				  isLeader		: perms.isLeader },
+				  isLeader		: perms.isLeader},
 				function(theResponse){
 					log('AJAX response received for permission edit request with code ' + theResponse);
 					switch(theResponse){					
