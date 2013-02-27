@@ -403,6 +403,78 @@ public class Spaces {
 	
 	
 	/**
+	 * Removes a list of subspaces from connection to parent
+	 * 
+	 * @param subspaceIds the list of subspaces to remove
+	 * @param parentSpaceId the id of the space to remove the subspaces from
+	 * @return true iff all subspaces in 'subspaceIds' are removed from the space referenced by 'spaceId',
+	 * false otherwise
+	 * @author Ben McCune
+	 */
+	public static boolean quickRemoveSubspaces(List<Integer> subspaceIds, int parentSpaceId, int userId) {
+		// Ensure the user can remove subspaces
+		if (Permissions.checkSpaceHierRemovalPerms(subspaceIds, parentSpaceId, userId) == false){
+			log.warn("Permission failure in removing spaces for user " + userId);
+			return false;
+		}
+		else{
+			log.info("Permission success in removing spaces for user " + userId);
+		}
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+			
+			// Instantiate a transaction so subspaces in 'subspaceIds' get removed in an all-or-none fashion
+			Common.beginTransaction(con);
+			
+			// For each subspace in the list of subspaces to be deleted...
+			for(int subspaceId : subspaceIds){				
+				Spaces.quickRemoveSubspace(subspaceId, parentSpaceId, userId, con);
+			}
+			
+			// Commit changes to database
+			Common.endTransaction(con);
+			
+			log.info("quick space deletion complete.");
+			
+			return true;
+		} catch (Exception e){			
+			log.error("quick remove supbspaces says " + e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	
+	/**
+	 * Removes a list of subspaces from connection to parent
+	 * 
+	 * @param subspaceIds the list of subspaces to remove
+	 * @param parentSpaceId the id of the space to remove the subspaces from
+	 * @return true iff all subspaces in 'subspaceIds' are removed from the space referenced by 'spaceId',
+	 * false otherwise
+	 * @author Ben McCune
+	 */
+	public static boolean quickRemoveSubspace(int subspaceId, int parentSpaceId, int userId, Connection con) {				
+		
+		try {		
+				CallableStatement procedure = con.prepareCall("{CALL QuickRemoveSubspace(?,?)}");
+				procedure.setInt(1, subspaceId);
+				procedure.setInt(2, parentSpaceId);
+				procedure.executeUpdate();		
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} 
+		
+		return false;
+	}
+	/**
 	 * Removes a list of subspaces, and all of their subspaces, from a given space 
 	 * in an all-or-none fashion (creates a transaction)
 	 * 
@@ -426,9 +498,10 @@ public class Spaces {
 			
 			// For each subspace in the list of subspaces to be deleted...
 			for(int subspaceId : subspaceIds){
+				log.debug("subspaceId = " + subspaceId);
 				
-				// Ensure the user is the leader of that subspace
-				if(Permissions.get(userId, subspaceId).isLeader() == false){
+				// Ensure the user can remove that subspace
+				if(Permissions.get(userId, parentSpaceId).canRemoveSpace() == false){
 					throw new Exception();
 				}
 				

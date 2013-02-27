@@ -1297,11 +1297,48 @@ public class RESTServices {
 		if(null == perm || !perm.isLeader()) {
 			return gson.toJson(2);	
 		}
-
+		
 		// Remove the subspaces from the space
 		return Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(3);
 	}
 
+	
+	/**
+	 * Only removes a subspace's association with a space, thereby removing the subspace
+	 * from the space
+	 * 
+	 * @param parentSpaceId the id the space to remove the subspace from
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters,<br>
+	 * 			2: insufficient permissions,<br>
+	 * 			3: error on the database level
+	 * @author Ben McCune
+	 */
+	@POST
+	@Path("/quickRemove/subspace/{spaceId}")
+	@Produces("application/json")
+	public String quickRemoveSubspacesFromSpace(@PathParam("spaceId") int parentSpaceId, @Context HttpServletRequest request) {
+		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+		log.debug("quickRemove called from " + parentSpaceId);
+		try{
+			// Extract the String subspace id's and convert them to Integers
+			for(String id : request.getParameterValues("selectedSubspaces[]")){
+				selectedSubspaces.add(Integer.parseInt(id));
+			}
+		} catch(Exception e){
+			return gson.toJson(1);
+		}
+		
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
+		if(null == perm || !perm.isLeader()) {
+			return gson.toJson(2);	
+		}
+		
+		// Remove the associations
+		
+		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(3);
+	}
 	/**
 	 * Updates the details of a solver. Solver id is required in the path. First
 	 * checks if the parameters of the update are valid, then performs the
