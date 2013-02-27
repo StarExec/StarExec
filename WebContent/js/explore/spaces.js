@@ -1298,7 +1298,7 @@ function removeSubspaces(selectedSubspaces){
 			},
 			"json"
 	).error(function(){
-		alert('remove subspace error');
+		log('remove subspace error');
 	});
 }
 
@@ -1349,7 +1349,7 @@ function quickRemove(selectedSubspaces){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					log('quick remove subspace error');
 					window.location.reload(true);
 				});
 			},
