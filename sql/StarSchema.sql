@@ -432,11 +432,13 @@ CREATE TABLE comments (
 -- Default settings for a community space.
 -- The settings contains post processor, CPU timeout and clock timeout at the moment.
 -- Author: Ruoyu Zhang
+
 CREATE TABLE space_default_settings (
     space_id INT,
     post_processor INT,
     cpu_timeout INT DEFAULT 1,
 	clock_timeout INT DEFAULT 1,
+	
 	PRIMARY KEY (space_id, post_processor, cpu_timeout, clock_timeout),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE CASCADE

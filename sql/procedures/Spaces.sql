@@ -333,7 +333,7 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(32), IN _d
 DROP PROCEDURE IF EXISTS GetSpaceDefaultSettingsById;
 CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
 	BEGIN
-		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor
+		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor, dependencies_enabled
 		FROM space_default_settings AS settings
 		LEFT OUTER JOIN processors AS pros
 		ON settings.post_processor = pros.id
@@ -360,15 +360,20 @@ CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _settin
 		UPDATE space_default_settings
 		SET clock_timeout = _setting
 		WHERE space_id = _id;
+		
+		WHEN 4 THEN
+		UPDATE space_default_settings
+		SET dependencies_enabled=_setting
+		WHERE space_id=_id;
     END CASE;
 	END //
 
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS InitSpaceDefaultSettingsById;
-CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT)
+CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN)
 	BEGIN
-		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout) VALUES (_id, _pp, _cto, _clto);
+		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled) VALUES (_id, _pp, _cto, _clto, _dp);
 	END //
 
 -- Get the id of the community where the space belongs to
