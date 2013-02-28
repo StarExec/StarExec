@@ -43,8 +43,8 @@
 			<property key="QUEUE_DETAILS_COMMAND" value="qconf -sq " />
 			<property key="NODE_LIST_COMMAND" value="qconf -sel" />
 			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
-			<property key="MAX_PAIR_RUNTIME" value="259200" />
-			<property key="MAX_PAIR_CPUTIME" value="259200" />
+			<property key="MAX_PAIR_RUNTIME" value="86400" />
+			<property key="MAX_PAIR_CPUTIME" value="86400" />
 			<property key="MAX_PAIR_FILE_WRITE" value="2097152" />
 			<property key="MAX_PAIR_VMEM" value="7680000" />
 		</class>

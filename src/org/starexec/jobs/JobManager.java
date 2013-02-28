@@ -328,6 +328,7 @@ public abstract class JobManager {
 	{
 		String arrayString ="\"";
 		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
+		log.info("Number of dependencies = " + dependencies.size());
 		for (BenchmarkDependency bd:dependencies)
 		{
 			//spaces in the paths not allowed
@@ -335,8 +336,8 @@ public abstract class JobManager {
 			arrayString = arrayString + "" + path + " ";
 		}
 		arrayString = arrayString.trim() + "\"";
-		//log.debug(arrayString);
-		//log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
+		log.info(arrayString);
+		log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
 		return arrayString;
 	}
 
