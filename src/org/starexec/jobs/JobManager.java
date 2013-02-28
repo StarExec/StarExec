@@ -307,7 +307,7 @@ public abstract class JobManager {
 			log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
 			return "";
 		}
-
+		log.info("jobScript = " + jobScript);
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
 		out.close();
