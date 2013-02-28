@@ -877,15 +877,15 @@ function onSpaceDrop(event, ui) {
  */
 function getDragClone(event) {	
 	var src = $(event.currentTarget);	
+	if(false == $(src).hasClass('row_selected')){ //change
+		$(src).addClass('row_selected');
+	}
 	var ids = getSelectedRows($(src).parents('table:first'));
 	var txtDisplay = $(src).children(':first-child').text();
 	var icon = 'ui-icon ';	
 	var primType = $(src).data('type');
 	log(src);
 
-	if(false == $(src).hasClass('row_selected')){
-		$(src).addClass('row_selected');
-	}
 
 	if(ids.length > 1) {
 		txtDisplay = ids.length + ' ' + primType + 's';
