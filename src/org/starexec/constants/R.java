@@ -50,7 +50,7 @@ public class R {
 	public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
 	public static String PICTURE_PATH = null;								// Where the pictures are located
 	public static String BATCH_SPACE_XML_DIR = null;                        // Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
-	
+	public static String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description
 	
 	//Public user info
 	public static int PUBLIC_USER_ID = 0;							//user id to use when writing benchmarks, submitting jobs without login
