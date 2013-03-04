@@ -47,10 +47,14 @@ function attachFormValidation(){
 				regex 	 : getPrimNameRegex()
 			},
 			desc: {
-				required : false,
+				required: false,
 				maxlength: 1024,
 				regex    : getPrimDescRegex()
-			}
+			},
+			d: {
+			    required : false,
+				regex	 : "(\.txt$)"
+			},
 		},
 		messages: {
 			f: {
@@ -63,8 +67,12 @@ function attachFormValidation(){
 				regex 	: "invalid character(s)"
 			},
 			desc: {
+				required: "Description required",
 				maxlength: "1024 characters maximum",
 				regex: "invalid character(s)"
+			},
+			d: {
+				regex: ".txt file only",
 			}
 		}
 	});
