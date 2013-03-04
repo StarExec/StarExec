@@ -18,6 +18,8 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	private int userId = -1;
 	@Expose	private String name;
 	@Expose private String description = "no description";
+	@Expose private String description_File = "no description";
+	@Expose private String zip_description_File = "no description";
 	private Timestamp uploadDate;	
 	private transient String path;
 	private boolean isDownloadable;	
@@ -64,6 +66,20 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	}
 	
 	/**
+	 * @return the user defined description of the solver
+	 */
+	public String getFileDescription() {
+		return description_File;
+	}
+	
+	/**
+	 * @return the user defined description of the solver
+	 */
+	public String getZipFileDescription() {
+		return zip_description_File;
+	}
+	
+	/**
 	 * @param description the description to set for the solver
 	 */
 	public void setDescription(String description) {
@@ -71,6 +87,24 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 			this.description = description;
 		}
 	}	
+	
+	/**
+	 * @param description the description to set for the solver
+	 */
+	public void setFileDescription(String description) {
+		if(!Util.isNullOrEmpty(description)) {
+			this.description_File = description;
+		}
+	}
+	
+	/**
+	 * @param description the description to set for the solver
+	 */
+	public void setZipFileDescription(String description) {
+		if(!Util.isNullOrEmpty(description)) {
+			this.zip_description_File = description;
+		}
+	}
 	
 	/**
 	 * @return the date the solver was added to the system
