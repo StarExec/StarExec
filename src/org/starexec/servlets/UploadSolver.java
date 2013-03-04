@@ -44,6 +44,7 @@ public class UploadSolver extends HttpServlet {
     
     // Some param constants to process the form
     private static final String SOLVER_DESC = "desc";
+    private static final String SOLVER_DESC_FILE = "d";
     private static final String SOLVER_DOWNLOADABLE = "dlable";
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
@@ -99,12 +100,16 @@ public class UploadSolver extends HttpServlet {
 	public int handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			FileItem item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);
+			FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 			
+
+
 			//Set up a new solver with the submitted information
 			Solver newSolver = new Solver();
 			newSolver.setUserId(userId);
 			newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
-			newSolver.setDescription((String)form.get(SOLVER_DESC));
+			newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
+			newSolver.setFileDescription(item_desc.getString());
 			newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
 			
 			//Set up the unique directory to store the solver
@@ -116,14 +121,23 @@ public class UploadSolver extends HttpServlet {
 			newSolver.setPath(uniqueDir.getAbsolutePath());
 
 			uniqueDir.mkdirs();
+
 			
 			//Process the archive file and extract
 			File archiveFile = new File(uniqueDir,  item.getName());
 			new File(archiveFile.getParent()).mkdir();
-			item.write(archiveFile);
+			item.write(archiveFile);		
+
+			//Extract the description file if there exists one
+			String item_desc_file = ArchiveUtil.extractArchiveDesc(archiveFile.getAbsolutePath());
+			newSolver.setZipFileDescription(item_desc_file);
+			
+			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
 
+
+		
 			//Find configurations from the top-level "bin" directory
 			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
@@ -193,6 +207,7 @@ public class UploadSolver extends HttpServlet {
 	private boolean isValidRequest(HashMap<String, Object> form) {
 		try {
 			if (!form.containsKey(UploadSolver.UPLOAD_FILE) ||
+					!form.containsKey(SOLVER_DESC_FILE) ||
 					!form.containsKey(SPACE_ID) ||
 					!form.containsKey(UploadSolver.SOLVER_NAME) || 
 					!form.containsKey(SOLVER_DESC) ||
@@ -202,9 +217,14 @@ public class UploadSolver extends HttpServlet {
 			
 			Integer.parseInt((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
+			FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+
+			String item_desc_file = ArchiveUtil.extractArchiveDesc(SOLVER_NAME);
 			
 			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) || 
-					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC))) {
+					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)) ||
+					!Validator.isValidPrimDescription(item_desc.getString()) ||			//file upload
+					!Validator.isValidPrimDescription(item_desc_file)){					//archive file upload
 				return false;
 			}
 			
