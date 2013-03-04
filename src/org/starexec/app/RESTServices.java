@@ -289,6 +289,24 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
+	/*
+	 * Returns the next page of solvers in a job
+	 * @param jobID the id of the job to get the next page of solvers for
+	 * @author Eric Burns*/
+	@POST
+	@Path("/jobs/{id}/solvers/pagination")
+	@Produces("application/json")
+	public String getSolverStatsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		if (!Permissions.canUserSeeJob(jobId, userId)) {
+			return gson.toJson(2);
+		}
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER_STATS, jobId, request);
+		
+		return nextDataTablesPage==null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		
+	}
 	
 	
 	/**
@@ -613,6 +631,8 @@ public class RESTServices {
 			success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
 		}else if (attribute.equals("ClockTimeout")) {
 			success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
+		} else if (attribute.equals("DependenciesEnabled")) {
+			success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
 		}
 		
 		// Passed validation AND Database update successful
@@ -964,7 +984,7 @@ public class RESTServices {
 	 * 			3: no add user permission in destination space,<br>
 	 * 			4: user doesn't belong to the 'from space',<br>
 	 * 			5: the 'from space' is locked,<br>
-	 *          6: there exist a primitive with the same name
+	 *          6: there exists a primitive with the same name
 	 * @author Tyler Jensen
 	 */
 	@POST

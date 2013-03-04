@@ -7,6 +7,7 @@
 	try {
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
+		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 		int userId = SessionUtil.getUserId(request);
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId), ProcessorType.BENCH);
@@ -17,6 +18,7 @@
 		request.setAttribute("space", Spaces.get(spaceId));
 		request.setAttribute("types", postProcs);
 		request.setAttribute("userSpaces",userSpaces);
+		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if (!p.canAddBenchmark()) {
@@ -114,10 +116,10 @@
 					<tr
 						title="are some of these benchmarks dependent on previously uploaded benchmarks?">
 						<td class="label"><p>dependencies</p></td>
-						<td><input id="radioDependency" type="radio"
+						<td id="selectDep" default="${dependenciesEnabled}"><input id="radioDependency" type="radio"
 							name="dependency" value="true" /> <label
 							for="radioDependency">yes</label> <input id="radioNoDependency"
-							type="radio" name="dependency" value="false" checked="checked"/> <label
+							type="radio" name="dependency" value="false"/> <label
 							for="radioNoDependency">no</label></td>
 					</tr>
 					<tr id="depSpaces">

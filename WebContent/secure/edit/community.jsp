@@ -22,6 +22,8 @@
 		request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
+		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
+
 	}
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -139,6 +141,15 @@
 			<tr>
 				<td>cpu timeout</td>
 				<td id="editCpuTimeout">${defaultCpuTimeout}</td>
+			</tr>
+			<tr>
+				<td>dependencies enabled</td>
+				<td>
+					<select id="editDependenciesEnabled" name="editDependenciesEnabled" default=${dependenciesEnabled}>
+						<option value="1">True</option>
+						<option value="0">False</option>
+					</select>
+				</td>
 			</tr>
 		</tbody>
 	</table>

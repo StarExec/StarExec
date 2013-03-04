@@ -58,10 +58,13 @@ $(document).ready(function(){
 	// Make leaders and members expandable
 	$('.expd').parent().expandable(true);
 	
-	// Hide the 'remove user' button
+	// Hide all buttons initially
 	$("#removeUser").fadeOut('fast');
 	$("#makeLeader").fadeOut('fast');
-	
+	$("#joinComm").fadeOut('fast');
+	$("#leaveComm").fadeOut('fast');
+	$("#editComm").fadeOut('fast');
+
 	// Handles the removal of user(s) from a space
 	$("#removeUser").click(function(){
 		var selectedUsers = getSelectedRows(memberTable);

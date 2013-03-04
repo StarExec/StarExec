@@ -77,6 +77,7 @@ function initUI(){
 	editable("desc");
 	editable("CpuTimeout");
 	editable("ClockTimeout");
+	
 	processorEditable($('#benchTypeTbl'));
 	processorEditable($('#preProcessorTbl'));
 	processorEditable($('#postProcessorTbl'));
@@ -105,11 +106,17 @@ function initUI(){
 	$('#editPostProcess').click(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
+	
+	$('#editDependenciesEnabled').click(function() {
+		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
+	});
 		
 	// Set the selected post processor to be the default one
 	defaultPPId = $('#editPostProcess').attr('default');
 	$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
 	
+	defaultDepEnb=$('#editDependenciesEnabled').attr('default');
+	$('#editDependenciesEnabled option[value=' + defaultDepEnb+']').attr('selected','selected');
 	
 	$('#newWebsite').hide();
 	$('#newTypeTbl').hide();
@@ -268,6 +275,8 @@ function saveChanges(obj, save, attr, old) {
 			newVal = $(obj).siblings('input:first').val();
 		} else if (attr == "ClockTimeout"){
 			newVal = $(obj).siblings('input:first').val();
+		} else if (attr == "DependenciesEnabled") {
+			newVal=obj;
 		}
 		
 		// Fixes 'session expired' bug that would occur if user inputed the empty String
