@@ -457,7 +457,15 @@ public class Solvers {
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
 			procedure.setString(4, s.getPath());
-			procedure.setString(5, s.getDescription());
+			if (s.getFileDescription() != "no description") {
+				procedure.setString(5, s.getFileDescription());
+			}
+			else if (s.getDescription() != "no description") {
+				procedure.setString(5, s.getDescription());
+			}
+			else {
+				procedure.setString(5,s.getZipFileDescription());
+			}
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			procedure.setLong(7, FileUtils.sizeOf(new File(s.getPath())));
 			
