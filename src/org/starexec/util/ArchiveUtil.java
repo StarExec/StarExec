@@ -1,5 +1,8 @@
 package org.starexec.util;
 
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -26,7 +29,7 @@ import org.starexec.constants.R;
  */
 public class ArchiveUtil {
 	private static final Logger log = Logger.getLogger(ArchiveUtil.class);
-	
+
 	/**
 	 * Extracts/unpacks/uncompresses an archive file to a folder with the same name at the given destination.
 	 * This method supports .zip, .tar and .tar.gz files. Once the contents are extracted the original archive file
@@ -47,27 +50,27 @@ public class ArchiveUtil {
 				ArchiveUtil.extractTAR(fileName, destination);
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
 				// First rename it if it's a .tgz
-				
-					/*
+
+				/*
 					String oldName = fileName;
 					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
 					Util.executeCommand("mv " + oldName + " " + fileName);
-					*/
-					//extract from command line (initially only for .tgz.
-					log.debug("destination is " + destination);
-					
-					BufferedReader reader = Util.executeCommand("ls -l " + fileName);
-					String results = Util.bufferToString(reader);
-					log.debug("ls -l of tgz results = " + results);
-					
-					reader = Util.executeCommand("ls -l " + destination);
-					results = Util.bufferToString(reader);
-					log.debug("ls -l destination results = " + results);
-					
-					//not verbose in case it's an issue with the buffer size
-					String commandString = "tar -xf " + fileName + " -C " + destination;
-					log.info("about to execute command: " + commandString);
-					/*String[] commandArray = new String[3];
+				 */
+				//extract from command line (initially only for .tgz.
+				log.debug("destination is " + destination);
+
+				BufferedReader reader = Util.executeCommand("ls -l " + fileName);
+				String results = Util.bufferToString(reader);
+				log.debug("ls -l of tgz results = " + results);
+
+				reader = Util.executeCommand("ls -l " + destination);
+				results = Util.bufferToString(reader);
+				log.debug("ls -l destination results = " + results);
+
+				//not verbose in case it's an issue with the buffer size
+				String commandString = "tar -xf " + fileName + " -C " + destination;
+				log.info("about to execute command: " + commandString);
+				/*String[] commandArray = new String[3];
 					commandArray[0] = "tar";
 					commandArray[1] = "-xvf";
 					commandArray[2] = fileName;
@@ -78,39 +81,39 @@ public class ArchiveUtil {
 					catch (IOException e) {
 							log.error("extract error: " + e);
 					}*/
-					reader = Util.executeCommand(commandString);
-					results = Util.bufferToString(reader);
-					log.info("command was executed, results = " + results);
-					log.info("now removing the archived file " + fileName);
-					ArchiveUtil.removeArchive(fileName);
-					reader = Util.executeCommand("ls -l " + destination);
-					results = Util.bufferToString(reader);
-					log.info("command was executed - ls -l destination results = " + results);
-					
-					/* no longer use apache on .tgz since it fails on some
+				reader = Util.executeCommand(commandString);
+				results = Util.bufferToString(reader);
+				log.info("command was executed, results = " + results);
+				log.info("now removing the archived file " + fileName);
+				ArchiveUtil.removeArchive(fileName);
+				reader = Util.executeCommand("ls -l " + destination);
+				results = Util.bufferToString(reader);
+				log.info("command was executed - ls -l destination results = " + results);
+
+				/* no longer use apache on .tgz since it fails on some
 				else{
 				// First un-GZIP it
 				ArchiveUtil.extractGZ(fileName, destination);
-				
+
 				// Then unpack the tar that was the result of the un-gzip
 				ArchiveUtil.extractTAR(fileName.substring(0, fileName.lastIndexOf('.')), destination);	
 				}
-				*/
+				 */
 			} else {
 				// No valid file type found :(
 				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
 				return false;
 			}
-		    
-		    log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
-		    return true;
+
+			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
+			return true;
 		} catch (Exception e) {
 			log.error("Archive Util says " + e.getMessage(), e);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Extracts/unpacks/uncompresses an archive file to the same folder the archive file exists within.
 	 * This method supports .zip, .tar and .tar.gz files. Once the contents are extracted the original archive file
@@ -127,9 +130,35 @@ public class ArchiveUtil {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		
+
 		return false;
 	}
+
+	/**
+	 * Extracts a given description file from within 
+	 * @param fileName The full file path to the archive file
+	 * @return
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	public static String extractArchiveDesc(String fileName) {
+		try {
+			if(fileName.endsWith(".zip")) {
+				return ArchiveUtil.extractZIP_Desc(fileName);
+			} else if(fileName.endsWith(".tar")) {
+				return ArchiveUtil.extractTAR_Desc(fileName);
+			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
+				return ArchiveUtil.extractGZ_Desc(fileName);
+			} else {
+				return "Unsupported file extension for" + fileName;
+			}
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+			return "Unsupported file extension for" + fileName;
+		}
+	}
+	
+	
 	
 	/**
 	 * Unzips a zip file and removes the original if the unzip was successful.
@@ -144,31 +173,32 @@ public class ArchiveUtil {
 		BufferedInputStream bis = new BufferedInputStream(is);
 		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("zip", bis); 
 		ZipArchiveEntry entry = null;
-		
+
 		// For each 'file' in the tar file...
 		while((entry = (ZipArchiveEntry)ais.getNextEntry()) != null) {
 			if(!entry.isDirectory()) {
 				// If it's not a directory...
 				File fileToCreate = new File(destination, entry.getName());
-				
+
 				// Get the dir the file b eints to
 				File dir = new File(fileToCreate.getParent());
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
 					dir.mkdirs();
 				}
-				
+
 				// Finally, extract the file
 				OutputStream out = new FileOutputStream(fileToCreate); 
 				IOUtils.copy(ais, out);
 				out.close();
 			}			
 		}
-				
+
 		ais.close();
 		ArchiveUtil.removeArchive(fileName);
 	}	
-	
+
+
 	/**
 	 * Unpacks a tar file and removes the original if the unpack was successful.
 	 * @param fileName The full path to the file
@@ -181,9 +211,9 @@ public class ArchiveUtil {
 		log.debug("extracting tar");
 		InputStream is = new FileInputStream(fileName);
 		BufferedInputStream bis = new BufferedInputStream(is);
-	    ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("tar", bis); 
+		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("tar", bis); 
 		TarArchiveEntry entry = null;
-	
+
 		// For each 'file' in the tar file...
 		while((entry = (TarArchiveEntry)ais.getNextEntry()) != null) {
 			if(!entry.isDirectory()) {
@@ -196,26 +226,26 @@ public class ArchiveUtil {
 					fileToCreate.setExecutable(true, false);		
 				}
 				log.info(fileToCreate.getName() + " is executable = " + fileToCreate.canExecute());	
-			   */
+				 */
 				// Get the dir the file b eints to
 				File dir = new File(fileToCreate.getParent());
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
 					dir.mkdirs();
 				}
-				
+
 				// Finally, extract the file
 				OutputStream out = new FileOutputStream(fileToCreate); 
 				IOUtils.copy(ais, out);
 				out.close();
-			
+
 			}			
 		}
-				
+
 		ais.close();
 		ArchiveUtil.removeArchive(fileName);
 	}
-	
+
 	/**
 	 * Extracts a GZIP file and removes the original if he extraction was successful.
 	 * @param fileName The full path to the file
@@ -231,12 +261,88 @@ public class ArchiveUtil {
 		CompressorInputStream in = new CompressorStreamFactory().createCompressorInputStream("gz", bis);
 		FileOutputStream out = new FileOutputStream(new File(destination, Util.getFileNameOnly(fileName)));
 		IOUtils.copy(in, out);				
-		
+
 		in.close();
 		out.close();
 		ArchiveUtil.removeArchive(fileName);
 	}
 	
+	/**
+	 * Searches a zip file for the description file, and returns its contents if it exists
+	 * @param fileName The full path to the file
+	 * @return The text within the description file, or No description if file doesn't exist
+	 * 
+	 * @author Wyatt Kaiser
+	 */	
+	public static String extractZIP_Desc(String fileName) throws Exception {
+		String strUnzipped = "";
+		try {
+
+			InputStream fin = new FileInputStream(fileName);
+			BufferedInputStream bis = new BufferedInputStream(fin);
+			ArchiveInputStream zin = new ArchiveStreamFactory().createArchiveInputStream("zip", bis); 
+			ZipArchiveEntry ze = null;
+			
+			// For each 'file' in the zip file...
+			while((ze = (ZipArchiveEntry) zin.getNextEntry()) != null) {
+				if(ze.getName().toString().contains("description")) {
+					byte[] bytes = new byte[(int) ze.getSize()];
+					if(zin.read(bytes,0,bytes.length) == bytes.length) {
+						strUnzipped = new String(bytes, "UTF-8");
+					}
+					else {
+						strUnzipped = "no description";
+					}	
+				}
+			}
+			zin.close();
+		} catch (Exception e){
+		}
+		return strUnzipped;
+	}
+
+	/**
+	 * Searches a tar file for the description file, and returns its contents if it exists
+	 * @param fileName the full path to the file
+	 * @return the text within the description file, or No Description if file doesn't exist
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	public static String extractTAR_Desc(String fileName) throws Exception {
+		String strUnzipped = "";
+		try {
+			FileInputStream fin = new FileInputStream(fileName);
+			//BufferedInputStream bis = new BufferedInputStream(is);
+			ArchiveInputStream tin = new ArchiveStreamFactory().createArchiveInputStream("tar", fin); 
+			TarArchiveEntry te = null;
+			
+			// For each 'file' in the tar file...
+			while((te = (TarArchiveEntry) tin.getNextEntry()) != null) {
+				if(te.getName().toString().contains(R.SOLVER_DESC_PATH)) {
+					byte[] bytes = new byte[(int) te.getSize()];
+					if(tin.read(bytes,0,bytes.length) == bytes.length) {
+						strUnzipped = new String(bytes, "UTF-8");
+					}
+					else {
+						strUnzipped = "No Description";
+					}	
+				}
+			}
+			tin.close();
+		} catch (Exception e) {
+		}
+		return strUnzipped;
+	}
+
+	/**
+	 * Searches a tar file for the description file, and returns its contents if it exists
+	 * @param fileName the full path to the file
+	 * @return the text within the description file, or No Description if file doesn't exist
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	public static String extractGZ_Desc(String fileName) throws Exception {return "nope";}
+
 	/**
 	 * Checks the global remove archive setting and removes the archive file if the setting is true.
 	 * @param fileName The path to the archive file to remove
@@ -251,7 +357,7 @@ public class ArchiveUtil {
 			}
 		}
 	}
-	
+
 	/**
 	 * Creates an archive in the specified format (between .zip, .tar, and .tar.gz) of the folder
 	 * in directory "path", and saves it in the File "destination"
@@ -275,7 +381,7 @@ public class ArchiveUtil {
 			log.error(e.getMessage(), e);
 		}
 	}
-	
+
 	/**
 	 * Creates a .zip file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be zipped
@@ -289,23 +395,23 @@ public class ArchiveUtil {
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
- 
+
 		try {
 			fOut = new FileOutputStream(destination);
 			bOut = new BufferedOutputStream(fOut);
 			zOut = new ZipArchiveOutputStream(bOut);
- 
+
 			addFileToZip(zOut, path, "");
 		} finally {
 			zOut.finish();
- 
+
 			zOut.close();
 			bOut.close();
 			fOut.close();
 		}
-		
+
 	}
-	
+
 	/**
 	 * Adds a file to the .zip archive. If the file is a folder, recursively adds the contents of the
 	 * folder to the archive
@@ -318,7 +424,7 @@ public class ArchiveUtil {
 	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base) throws IOException {
 		String entryName = base + path.getName();
 		ZipArchiveEntry zipEntry = new ZipArchiveEntry(path, entryName);
- 
+
 		zOut.putArchiveEntry(zipEntry);
 		log.debug("adding File to zip = " + entryName);
 		if (path.isFile()) {
@@ -328,7 +434,7 @@ public class ArchiveUtil {
 			zOut.closeArchiveEntry();
 		} else {
 			zOut.closeArchiveEntry();
- 
+
 			File[] children = path.listFiles();
 			log.debug("Number of files = " + children.length);
 			if (children != null) {
@@ -339,12 +445,12 @@ public class ArchiveUtil {
 			children = null;
 		}
 	}
-	
+
 	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName) throws IOException{
 		File tempChild = new File(child.getAbsolutePath());
 		addFileToZip(zOut, tempChild, entryName + File.separator);
 		tempChild = null;
-		
+
 	}
 
 	/**
@@ -358,22 +464,22 @@ public class ArchiveUtil {
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		TarArchiveOutputStream tOut = null;
- 
+
 		try {
 			fOut = new FileOutputStream(destination);
 			bOut = new BufferedOutputStream(fOut);
 			tOut = new TarArchiveOutputStream(bOut);
- 
+
 			addFileToTar(tOut, path, "");
 		} finally {
 			tOut.finish();
- 
+
 			tOut.close();
 			bOut.close();
 			fOut.close();
 		}
 	}
-	
+
 	/**
 	 * Adds a file to a .tar archive. If the file is a folder, recursively adds the contents of the
 	 * folder to the archive
@@ -386,10 +492,10 @@ public class ArchiveUtil {
 	private static void addFileToTar(TarArchiveOutputStream tOut, File path, String base) throws IOException {
 		String entryName = base + path.getName();
 		TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
- 
+
 		tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 		tOut.putArchiveEntry(tarEntry);
- 
+
 		if (path.isFile()) {
 			FileInputStream fis = new FileInputStream(path);
 			IOUtils.copy(fis, tOut);
@@ -397,17 +503,17 @@ public class ArchiveUtil {
 			tOut.closeArchiveEntry();
 		} else {
 			tOut.closeArchiveEntry();
- 
+
 			File[] children = path.listFiles();
- 
+
 			if (children != null) {
 				for (File child : children) {
 					addFileToTar(tOut, new File(child.getAbsolutePath()), entryName + "/");
 				}
-		}
+			}
 		}
 	}
-	
+
 	/**
 	 * Creates a .tfar.gz file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tar.gz'ed
@@ -417,29 +523,29 @@ public class ArchiveUtil {
 	 */
 	public static void createTarGz(File path, File destination) throws Exception {
 		FileOutputStream fOut = null;
-	    BufferedOutputStream bOut = null;
-	    GzipCompressorOutputStream gzOut = null;
-	    TarArchiveOutputStream tOut = null;
-	 
-	    try {
-	        fOut = new FileOutputStream(destination);
-	        bOut = new BufferedOutputStream(fOut);
-	        gzOut = new GzipCompressorOutputStream(bOut);
-	        tOut = new TarArchiveOutputStream(gzOut);
-	 
-	        addFileToTarGz(tOut, path, "");
-	    } catch (Exception e) {
-	    	log.error(e.getMessage(), e);
-	    } finally {
-	        tOut.finish();
-	 
-	        tOut.close();
-	        gzOut.close();
-	        bOut.close();
-	        fOut.close();
-	    }
+		BufferedOutputStream bOut = null;
+		GzipCompressorOutputStream gzOut = null;
+		TarArchiveOutputStream tOut = null;
+
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			gzOut = new GzipCompressorOutputStream(bOut);
+			tOut = new TarArchiveOutputStream(gzOut);
+
+			addFileToTarGz(tOut, path, "");
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			tOut.finish();
+
+			tOut.close();
+			gzOut.close();
+			bOut.close();
+			fOut.close();
+		}
 	}
-	
+
 	/**
 	 * Adds a file to a .tar.gz archive. If the file is a folder, recursively adds the contents of the
 	 * folder to the archive
@@ -450,27 +556,27 @@ public class ArchiveUtil {
 	 * @author Skylar Stark
 	 */
 	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base) throws IOException {
-	    String entryName = base + path.getName();
-	    TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
-	 
-	    tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-	    tOut.putArchiveEntry(tarEntry);
-	 
-	    if (path.isFile()) {
-	        FileInputStream fis = new FileInputStream(path);
-	    	IOUtils.copy(fis, tOut);
-	    	fis.close();
-	        tOut.closeArchiveEntry();
-	    } else {
-	        tOut.closeArchiveEntry();
-	 
-	        File[] children = path.listFiles();
-	 
-	        if (children != null) {
-	            for (File child : children) {
-	                addFileToTarGz(tOut, new File(child.getAbsolutePath()), entryName + "/");
-	            }
-	        }
-	    }
+		String entryName = base + path.getName();
+		TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
+
+		tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+		tOut.putArchiveEntry(tarEntry);
+
+		if (path.isFile()) {
+			FileInputStream fis = new FileInputStream(path);
+			IOUtils.copy(fis, tOut);
+			fis.close();
+			tOut.closeArchiveEntry();
+		} else {
+			tOut.closeArchiveEntry();
+
+			File[] children = path.listFiles();
+
+			if (children != null) {
+				for (File child : children) {
+					addFileToTarGz(tOut, new File(child.getAbsolutePath()), entryName + "/");
+				}
+			}
+		}
 	}
 }
