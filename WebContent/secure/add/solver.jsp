@@ -42,8 +42,11 @@
 					</tr>
 					<tr>
 						<td>solver description</td>
-						<td><textarea rows="6" cols="40" name="desc"></textarea></td>
-					</tr>
+						<td>
+						    <textarea rows="6" cols="40" name="desc"></textarea>
+						    <input name="d" type="file" id="fileLoc"/>
+						</td>
+					</tr>					
 					<tr>
 						<td>downloadable</td>
 						<td>
