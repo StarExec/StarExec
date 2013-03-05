@@ -45,7 +45,7 @@ public class RESTHelpers {
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
-		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR
+		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, SOLVER_STATS
 	}
 	
     private static final String SEARCH_QUERY = "sSearch";
@@ -282,6 +282,8 @@ public class RESTHelpers {
 		    		case JOB_PAIR:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
+		    		case SOLVER_STATS:
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    			break;
