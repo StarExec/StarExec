@@ -1,13 +1,17 @@
 $(document).ready(function(){
 	initUI();
 	attachFormValidation();
-	if($('#radioNoDependency').is(':checked')) {
+	DepEnb=$("#selectDep").attr("default");
+	if (DepEnb=="1") {
+		$('#depSpaces').show();
+		$('#depLinked').show();
+		$("#radioDependency").attr("checked", "checked");
+	}else{
+		
 		  $('#depSpaces').hide();
 		  $('#depLinked').hide();
-	  } else {
-		  $('#depSpaces').show();
-		  $('#depLinked').show();
-	  }
+		  $("#radioNoDependency").attr("checked", "checked");
+	}
 	//hide message until upload clicked
 	$('#messageField').hide();
 });

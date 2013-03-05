@@ -773,4 +773,209 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 		WHERE user_id = _userId;
 	END //
 	
+	
+	
+	
+-- Gets the fewest necessary solvers statistics in order to service a client's
+-- request for the next page of solvers in their DataTable object on the Job details page.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.  
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetNextPageOfSolverStats;
+CREATE PROCEDURE GetNextPageOfSolverStats(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _jobId INT, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of JobPairs without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF (_sortASC = TRUE) THEN
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						space.id,
+						space.name,
+						space.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						wallclock
+						
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+				
+				WHERE 	job_id = _jobId
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 	WHEN 6 THEN space.name
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of JobPairs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						job_pairs.space_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						space.id,
+						space.name,
+						space.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						wallclock
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+									
+				WHERE 	job_id = _jobId
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 	WHEN 6 THEN space.name
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Jobs contain _query
+		ELSE
+			IF (_sortASC = TRUE) THEN
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						job_pairs.space_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						space.id,
+						space.name,
+						space.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						wallclock
+						
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+
+				WHERE 	job_id = _jobId
+				
+				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
+				-- don't include the query
+				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config.name		LIKE	CONCAT('%', _query, '%')
+				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				OR 		space.name		LIKE	CONCAT('%', _query, '%')
+				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		wallclock		LIKE	CONCAT('%', _query, '%'))
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 	WHEN 6 THEN space.name
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of JobPairs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	job_pairs.id, 
+						job_pairs.bench_id,
+						job_pairs.config_id,
+						job_pairs.space_id,
+						config.id,
+						config.name,
+						config.description,
+						status.code,
+						status.status,
+						status.description,
+						solver.id,
+						solver.name,
+						solver.description,
+						bench.id,
+						bench.name,
+						bench.description,
+						space.id,
+						space.name,
+						space.description,
+						GetJobPairResult(job_pairs.id) AS result,
+						wallclock
+				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+
+				WHERE 	job_id = _jobId
+				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config.name		LIKE	CONCAT('%', _query, '%')
+				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				OR		space.name		LIKE	CONCAT('%', _query, '%')
+				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		wallclock		LIKE	CONCAT('%', _query, '%'))
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN bench.name
+					 	WHEN 1 THEN solver.name
+					 	WHEN 2 THEN config.name
+					 	WHEN 3 THEN status.status
+					 	WHEN 4 THEN wallclock
+					 	WHEN 5 THEN result
+					 	WHEN 6 THEN space.name 
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+	
 DELIMITER ; -- This should always be at the end of this file
