@@ -44,7 +44,7 @@ CREATE TABLE logins (
 
 -- A convienience table, this contains a specific set of
 -- permissions that can be associated with a user (or set as
--- the default of a space so when a new user is added, they take on
+-- the default of a space so when a new user is ed, they take on
 -- these permissions)
 CREATE TABLE permissions (
 	id INT NOT NULL AUTO_INCREMENT, 
@@ -438,7 +438,7 @@ CREATE TABLE space_default_settings (
     post_processor INT,
     cpu_timeout INT DEFAULT 1,
 	clock_timeout INT DEFAULT 1,
-	ADD dependencies_enabled BOOLEAN DEFAULT FALSE;
+	dependencies_enabled BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE CASCADE
