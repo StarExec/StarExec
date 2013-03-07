@@ -20,7 +20,7 @@ public class R {
 	}
 	
 	// Email properties
-	public static String EMAIL_SMTP = "mta.divms.uiowa.edu/";
+	public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
 	public static int EMAIL_SMTP_PORT = 25;
 	public static String EMAIL_USER = null;
 	public static String EMAIL_PWD = null;
