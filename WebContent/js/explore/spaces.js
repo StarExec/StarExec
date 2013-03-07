@@ -103,7 +103,7 @@ function initCommentUI(){
 					if(returnCode == '0') {
 						$("#comment_text").val("");
 						$.getJSON('/starexec/services/comments/space/' + spaceId, displayComments).error(function(){
-							alert('Session expired');
+							//alert('Session expired');
 							window.location.reload(true);
 						});
 					} else {
@@ -463,7 +463,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	 									
 				},
@@ -511,7 +511,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	 			
 				},
@@ -579,7 +579,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});							
 				},
@@ -627,7 +627,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	 	
 				},
@@ -688,7 +688,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});
 				},
@@ -732,7 +732,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});
 				},
@@ -794,7 +794,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	 									
 				},
@@ -857,7 +857,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	 									
 				},
@@ -1020,7 +1020,7 @@ function removeBenchmarks(selectedBenches){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});		
 			},
@@ -1083,7 +1083,7 @@ function removeUsers(selectedUsers){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});	
 			},
@@ -1119,7 +1119,7 @@ function removeUsers(selectedUsers){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});	
 			},
@@ -1172,7 +1172,7 @@ function removeSolvers(selectedSolvers){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});
 			},
@@ -1201,7 +1201,7 @@ function removeSolvers(selectedSolvers){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});
 			},
@@ -1251,7 +1251,7 @@ function removeJobs(selectedJobs){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});
 			},
@@ -1393,7 +1393,7 @@ function removeComment(ids){
 							},
 							"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});
 				},
@@ -1467,7 +1467,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }
@@ -1786,7 +1786,7 @@ function getSpaceDetails(id) {
 			},  
 			"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }
@@ -1809,7 +1809,7 @@ function handlePublicButton(id) {
 			},  
 			"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }
@@ -1890,7 +1890,7 @@ function getSpaceComments(id) {
 	}
 	//get comment information for the given space
 	$.getJSON('/starexec/services/comments/space/' + id, displayComments).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});	
 }
@@ -2391,7 +2391,7 @@ function getTooltipConfig(type, message){
 								return true;
 							}
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	
 
@@ -2413,7 +2413,7 @@ function getTooltipConfig(type, message){
 									return true;
 								}	
 						).error(function(){
-							alert('Session expired');
+							//alert('Session expired');
 							window.location.reload(true);
 						});		
 					}
@@ -2503,7 +2503,7 @@ function getTooltipConfig(type, message){
 								return true;
 							}
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});	
 				}
@@ -2616,7 +2616,7 @@ function getTooltipConfig(type, message){
 									return true;
 								}
 						).error(function(){
-							alert('Session expired');
+							//alert('Session expired');
 							window.location.reload(true);
 						});	
 					}
@@ -2735,7 +2735,7 @@ function saveChanges(obj, save){
 						return true;
 					}
 		).error(function(){
-			alert('Session expired');
+			//alert('Session expired');
 			window.location.reload(true);
 		});	
 	} else {  
