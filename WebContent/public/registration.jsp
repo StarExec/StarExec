@@ -49,7 +49,7 @@
 				</tr>
 				<tr>
 					<td class="label">confirm password</td>
-					<td><input id="confirm_password" type="password" name="confirm_password" maxlength="16"/></td>
+					<td><input id="confirm_password" type="password" name="confirm_password" maxlength="20"/></td>
 				</tr>
 				<tr>
 					<td class="label">preferred archive type</td>
