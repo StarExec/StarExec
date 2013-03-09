@@ -1520,7 +1520,8 @@ function initDataTables(){
 		"oLanguage": {
 			"sProcessing": getProcessingMessage()
 		},
-		"fnServerData"	: fnPaginationHandler 
+		"fnServerData"	: fnPaginationHandler,
+		"sScrollX" : "100%"
 	});
 	commentTable = $('#comments').dataTable( {
 		"sDom": 'rt<"bottom"flpi><"clear">',
