@@ -19,6 +19,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobSolver;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
@@ -283,7 +284,7 @@ public class RESTHelpers {
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
 		    		case SOLVER_STATS:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    			break;
@@ -875,6 +876,65 @@ public class RESTHelpers {
 		    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
 		    		entry.add(new JsonPrimitive(jp.getSpace().getName()));
 		    		
+		    		dataTablePageEntries.add(entry);
+		    	}
+		    	
+		    	break;
+		    
+		    case SOLVER_STATS:
+		    	List<JobSolver> jobSolversToDisplay = new LinkedList<JobSolver>();
+	    		int totalJobPairs = Jobs.getJobPairCount(id);
+	    		
+	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+	    		jobSolversToDisplay = Jobs.getSolverStatsForNextPage(
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id													// Job id 
+				);
+	    		
+	    		
+	    		/**
+		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+		    	 */
+		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobSolversToDisplay.size());
+		    	}
+			    attrMap.put(TOTAL_RECORDS, totalJobPairs);
+			    
+		    	/**
+		    	 * Generate the HTML for the next DataTable page of entries
+		    	 */
+		    	dataTablePageEntries = new JsonArray();
+		    	for(JobSolver jp : jobSolversToDisplay){
+		    		StringBuilder sb = new StringBuilder();
+					String hiddenJobPairId;
+					
+					// Create the solver link
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(jp.getSolver().getDescription());
+		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
+		    		sb.append(jp.getSolver().getId());
+		    		sb.append("\">");
+		    		sb.append(jp.getSolver().getName());
+		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+					String solverLink = sb.toString();
+					//TODO: Add in HTML strings for the "completed" and "error" tabs
+					// Create an object, and inject the above HTML, to represent an entry in the DataTable
+					JsonArray entry = new JsonArray();
+		    		entry.add(new JsonPrimitive(solverLink));
+		    		entry.add(new JsonPrimitive(jp.getCorrectJobPairs()));
+		    		entry.add(new JsonPrimitive(jp.getIncorrectJobPairs()));
+		    		entry.add(new JsonPrimitive(jp.getIncompleteJobPairs()));
 		    		dataTablePageEntries.add(entry);
 		    	}
 		    	

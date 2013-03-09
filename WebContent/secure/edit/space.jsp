@@ -78,7 +78,7 @@
 				<tbody>
 					<tr>
 						<td class="label">space name</td>			
-						<td><input id="name" type="text" name="name" value="${space.name}" maxlength="32"/></td>
+						<td><input id="name" type="text" name="name" value="${space.name}"></td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			

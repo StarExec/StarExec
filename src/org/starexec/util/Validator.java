@@ -50,7 +50,7 @@ public class Validator {
 	    	patternEmail = Pattern.compile(EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternUrl = Pattern.compile(URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternPrimName = Pattern.compile(PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternPrimDesc = Pattern.compile(PRIMITIVE_DESC_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternPrimDesc = Pattern.compile(PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	    	patternPassword = Pattern.compile(PASSWORD_PATTERN);
 	    	patternRequestMsg = Pattern.compile(REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
 	    	log.debug("Validator patterns successfully compiled");
@@ -119,7 +119,7 @@ public class Validator {
      * Validates a name and checks that it contains only letters, numbers and dashes
      * 
      * @param name the space's name to check
-     * @return true iff name isn't null, is between 1 and 32 characters and
+     * @return true iff name isn't null, is between 1 and 128 characters and
      * contains only letters, numbers and dashes
      */
     public static boolean isValidPrimName(String name){    	
@@ -144,7 +144,9 @@ public class Validator {
      * @param desc the description to check
      * @return true iff name isn't null or empty and is less than 1024 characters
      */
-    public static boolean isValidPrimDescription(String desc){    	    	
+    public static boolean isValidPrimDescription(String desc){
+    	System.out.println(desc);
+    	
     	return patternPrimDesc.matcher(desc).matches();
     }
     

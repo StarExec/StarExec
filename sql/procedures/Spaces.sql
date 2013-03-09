@@ -10,7 +10,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddSpace;
-CREATE PROCEDURE AddSpace(IN _name VARCHAR(32), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, OUT id INT)
+CREATE PROCEDURE AddSpace(IN _name VARCHAR(128), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, OUT id INT)
 	BEGIN		
 		INSERT INTO spaces (name, created, description, locked, default_permission)
 		VALUES (_name, SYSDATE(), _desc, _locked, _permission);
@@ -294,7 +294,7 @@ CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT, IN _parentspaceId INT)
 -- Updates the name of the space with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateSpaceName;
-CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(32))
+CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(128))
 	BEGIN
 		UPDATE spaces
 		SET name = _name
@@ -315,7 +315,7 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 -- help update default permissions.
 -- Author: Skylar Stark	
 DROP PROCEDURE IF EXISTS UpdateSpaceDetails;
-CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(32), IN _desc TEXT, IN _locked BOOLEAN, OUT _perm INT)
+CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(128), IN _desc TEXT, IN _locked BOOLEAN, OUT _perm INT)
 	BEGIN
 		UPDATE spaces
 		SET name = _name,

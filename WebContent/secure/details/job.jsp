@@ -96,6 +96,23 @@
 	</fieldset>
 	
 	<fieldset>
+	<legend>solver accuracy</legend>	
+		<table id="solveTbl" class="shaded">
+			<thead>
+				<tr>
+					<th>solver</th>
+					<th>correct</th>
+					<th>error</th>
+					<th>incomplete</th>		
+				</tr>		
+			</thead>	
+			<tbody>
+				<!-- This will be populated by a pagination feature -->
+			</tbody>
+		</table>
+	</fieldset>
+	
+	<fieldset>
 	<legend>actions</legend>
 		<ul id="actionList">
 			<li><a id="jobOutputDownload" href="/starexec/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>

@@ -184,7 +184,7 @@ function getPrimNameRegex(){
  * Returns the regular expression used to validate primitive descriptions
  */
 function getPrimDescRegex(){
-	return "^[\\w\\s\\-\\[\\]\\\\~!@#$%^&*():;`,{}'\"/|=+?.]+$";
+	return "[\\w\\s\\-\\[\\]\\\\~!@#$%^&*():;`,{}'\"/|=+?.]+$";
 }
 
 /**

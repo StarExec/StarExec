@@ -39,26 +39,26 @@ function attachFormValidation(){
 		rules: {
 			name: {
 				required : true,
-				maxlength: 64,
+				maxlength: 128,
 				regex	 : getPrimNameRegex()
 			},
 			description: {
 				required : false,
 				minlength: 0,
-				maxlength: 1024,
-				regex	 : getPrimDescRegex()
+				maxlength: 1024
+				//regex	 : getPrimDescRegex()
 			}
 		},
 		messages: {
 			name:{
 				required : "enter a space name",
-				maxlength: "too many characters",
+				maxlength: "128 characters maximum",
 				regex	 : "invalid character(s)"
 			},
 			description: {
 				required : "enter a description",
-				maxlength: "too many characters",
-				regex	 : "invalid character(s)"
+				maxlength: "1024 characters maximum"
+				//regex	 : "invalid character(s)"
 			}
 		}
 	});

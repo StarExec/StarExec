@@ -10,7 +10,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolver;
-CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(32), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT)
+CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT)
 	BEGIN
 		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size)
 		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize);
@@ -50,7 +50,7 @@ CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 -- Adds a run configuration to the specified solver
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddConfiguration;
-CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(64), IN _description TEXT, OUT configId INT)
+CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(128), IN _description TEXT, OUT configId INT)
 	BEGIN
 		INSERT INTO configurations (solver_id, name, description)
 		VALUES (_solverId, _name, _description);
@@ -303,7 +303,7 @@ CREATE PROCEDURE UpdateSolverDiskSize(IN _solverId INT, IN _newDiskSize BIGINT)
 -- Updates the details associated with a given configuration
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateConfigurationDetails;
-CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(64), IN _description TEXT)
+CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(128), IN _description TEXT)
 	BEGIN
 		UPDATE configurations
 		SET name = _name,
@@ -315,7 +315,7 @@ CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(6
 -- Updates the details associated with a given solver
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateSolverDetails;
-CREATE PROCEDURE UpdateSolverDetails(IN _solverId INT, IN _name VARCHAR(32), IN _description TEXT, IN _downloadable BOOLEAN)
+CREATE PROCEDURE UpdateSolverDetails(IN _solverId INT, IN _name VARCHAR(128), IN _description TEXT, IN _downloadable BOOLEAN)
 	BEGIN
 		UPDATE solvers
 		SET name = _name,

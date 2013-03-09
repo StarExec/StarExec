@@ -102,6 +102,11 @@ function attachFormValidation(){
 				minlength 	: 2,
 				maxlength 	: 64
 			},
+			pwd : {
+				required: true,
+				maxlength : 20,
+				minlength : 5
+			},
 			confirm_password : {
 				required 	: true,
 				equalTo 	: "#password"
@@ -137,6 +142,10 @@ function attachFormValidation(){
 				minlength 	: "2 characters minimum",
 				maxlength 	: "64 characters maximum",
 				regex 		: "invalid character(s)"
+			},
+			pwd : {
+				required : "please provide a password",
+				maxlength : "20 characters maximum"
 			},
 			confirm_password : {
 				required 	: "please provide a password",

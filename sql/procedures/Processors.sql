@@ -9,7 +9,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new processor with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddProcessor;
-CREATE PROCEDURE AddProcessor(IN _name VARCHAR(32), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT, IN _diskSize BIGINT)
+CREATE PROCEDURE AddProcessor(IN _name VARCHAR(64), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT, IN _diskSize BIGINT)
 	BEGIN		
 		INSERT INTO processors (name, description, path, community, processor_type, disk_size)
 		VALUES (_name, _desc, _path, _comId, _type, _diskSize);

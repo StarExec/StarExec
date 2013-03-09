@@ -33,6 +33,11 @@
 	display: inline-block;
 }
 
+#detailPanel #spaceName {
+	width:100%;
+	word-wrap: break-word;
+}
+
 #detailPanel p.accent {
 	color: #666666;
 	font-style: italic;

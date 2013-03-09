@@ -38,7 +38,7 @@
 				<tr>
 					<td class="label">password</td>
 					<td>
-						<input id="password" type="password" name="pwd" maxlength="20"/>
+						<input id="password" type="password" name="pwd"/>
 						<div class="password-meter" id="pwd-meter">
 							<div class="password-meter-message"> </div>
 							<div class="password-meter-bg">
@@ -49,7 +49,7 @@
 				</tr>
 				<tr>
 					<td class="label">confirm password</td>
-					<td><input id="confirm_password" type="password" name="confirm_password" maxlength="20"/></td>
+					<td><input id="confirm_password" type="password" name="confirm_password"/></td>
 				</tr>
 				<tr>
 					<td class="label">preferred archive type</td>

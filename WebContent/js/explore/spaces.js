@@ -278,7 +278,7 @@ function initDraggable(table) {
 	$('#trashcan').droppable({
 		drop		: onTrashDrop,
 		tolerance	: 'touch',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-		hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
+		//hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
 
@@ -365,6 +365,39 @@ function onTrashDrop(event, ui){
 	}
 }
 
+function processErrorCode(errorCode, prim, destName) {
+	switch (errorCode) {
+	case 1: // Database error
+		showMessage('error', "a database error occurred while processing your request", 5000);
+		break;
+	case 2: // Invalid parameters
+		showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
+		break;
+	case 3: // No add permission in dest space
+		showMessage('error', "you do not have permission to add " +prim+ " to" + destName, 5000);
+		break;
+	case 4: // User doesn't belong to from space
+		showMessage('error', "you do not belong to the space that is being copied from", 5000);
+		break;
+	case 5: // From space is locked
+		showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+		break;
+	case 6: // User doesn't have addSolver permission in one or more of the subspaces of the 'from space'
+		if (prim=="solvers" || prim=="users") {
+			showMessage('error', "you do not have permissions to copy " +prim+ " to one of the subspaces of" + destName, 5000);
+		} else if (prim=="benchmarks" || prim==subspaces) {
+			showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name.", 5000);
+		}
+		break;
+	case 7: // There exists a solver with the same name
+		showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name in " + destName, 5000);
+		break;
+	default:
+		showMessage('error', "the operation failed with an unknown return code", 5000);	
+	}
+}
+
+
 /**
  * Called when a draggable item (primitive) is dropped on a space
  */
@@ -428,38 +461,15 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
 									if(ids.length > 1) {								
 										showMessage('success', ids.length + ' solvers successfully copied to' + destName + ' and its subspaces', 2000);
 									} else {					    		
 										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
 									}
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to add solvers to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // User doesn't have addSolver permission in one or more of the subspaces of the 'from space'
-									showMessage('error', "you do not have permissions to copy solvers to one of the subspaces of" + destName, 5000);
-									break;
-								case 7: // There exists a solver with the same name
-									showMessage('error', "there exists a solver with the same name in " + destName, 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
-								}
+								}else {
+										processErrorCode(returnCode,"solvers", destName);
+									}
 							},
 							"json"
 					).error(function(){
@@ -479,35 +489,15 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
 									if(ids.length > 1) {								
 										showMessage('success', ids.length + ' solvers successfully copied to' + destName, 2000);
 									} else {					    		
 										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
 									}
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to add solvers to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 7: // There exists a solver with the same name
-									showMessage('error', "there exists a solver with the same name in " + destName, 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
-								}
+								} else {
+										processErrorCode(returnCode,"solvers", destName);
+									}
 							},
 							"json"
 					).error(function(){
@@ -542,8 +532,9 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
+									
+									//TODO: Remove one of the following blocks
 									if(ids.length > 1) {								
 										showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
 									} else {					    		
@@ -554,28 +545,9 @@ function onSpaceDrop(event, ui) {
 									} else {					    		
 										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
 									}
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to add users to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // User doesn't have addUser permission in one or more of the subspaces of the 'from space'
-									showMessage('error', "you do not have permissions to copy users to one of the subspaces of" + destName, 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
-								}
+								}else {
+										processErrorCode(returnCode, "users",destName);
+									}
 							},
 							"json"
 					).error(function(){
@@ -595,34 +567,14 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
 									if(ids.length > 1) {								
 										showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
 									} else {					    		
 										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
 									}
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to add users to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // User doesn't have addUser permission in one or more of the subspaces of the 'from space'
-									showMessage('error', "you do not have permissions to copy users to one of the subspaces of" + destName, 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								} else {
+									processErrorCode(returnCode,"users",destName);
 								}
 							},
 							"json"
@@ -659,31 +611,11 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: false},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success							
+								if (returnCode==0) {							
 									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
 									$('#exploreList').jstree("refresh");
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to copy the subSpace to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // There exists a subspace with the same name.
-									showMessage('error', "there exists a subspace with the same name.", 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								} else {
+									processErrorCode(returnCode, "subspaces", destName);
 								}
 							},
 							"json"
@@ -704,30 +636,10 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: true},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
 									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to copy the subSpace to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // There exists a subspace with the same name.
-									showMessage('error', "there exists a subspace with the same name.", 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								} else {
+									processErrorCode(returnCode,"subspaces", destName);
 								}
 							},
 							"json"
@@ -762,34 +674,14 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
 									if(ids.length > 1) {								
 										showMessage('success', ids.length + ' ' + 'benchmarks successfully copied to' + destName, 2000);
 									} else {					    		
 										showMessage('success', 'benchmark successfully copied to' + destName, 2000);	
 									}
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to add " + ui.draggable.data('type') + "s to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // There exist a primitive with the same name
-									showMessage('error', "there exist a primitive with the same name.", 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}else {
+									processErrorCode(returnCode,"benchmarks",destName);
 								}
 							},
 							"json"
@@ -825,34 +717,14 @@ function onSpaceDrop(event, ui) {
 							{selectedIds : ids, fromSpace : spaceId},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
-								switch (returnCode) {
-								case 0:	// Success
+								if (returnCode==0) {
 									if(ids.length > 1) {								
 										showMessage('success', ids.length + ' ' + 'jobs successfully copied to' + destName, 2000);
 									} else {					    		
 										showMessage('success', 'job successfully copied to' + destName, 2000);	
 									}
-									break;
-								case 1: // Database error
-									showMessage('error', "a database error occurred while processing your request", 5000);
-									break;
-								case 2: // Invalid parameters
-									showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-									break;
-								case 3: // No add permission in dest space
-									showMessage('error', "you do not have permission to add " + ui.draggable.data('type') + "s to" + destName, 5000);
-									break;
-								case 4: // User doesn't belong to from space
-									showMessage('error', "you do not belong to the space that is being copied from", 5000);
-									break;
-								case 5: // From space is locked
-									showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
-									break;
-								case 6: // There exist a primitive with the same name
-									showMessage('error', "there exist a primitive with the same name.", 5000);
-									break;
-								default:
-									showMessage('error', "the operation failed with an unknown return code", 5000);	
+								}else {
+									processErrorCode(returnCode, "jobs",destName);
 								}
 							},
 							"json"
@@ -1582,7 +1454,7 @@ function displayComments(data) {
  * Initializes the DataTable objects and adds multi-select to them
  */
 function initDataTables(){
-
+	
 	// Extend the DataTables api and add our custom features
 	extendDataTableFunctions();
 
@@ -1655,47 +1527,27 @@ function initDataTables(){
 		"aaSorting": [[ 1, "asc" ]]
 	}); 
 
-	var items=["#users","#solvers","#benchmarks","#jobs","#spaces","#comments"];
+	var tables=["#users","#solvers","#benchmarks","#jobs","#spaces","#comments"];
 
 	function unselectAll(except) {
-		var items=["#users","#solvers","#benchmarks","#jobs","#spaces","#comments"];
+		var tables=["#users","#solvers","#benchmarks","#jobs","#spaces","#comments"];
 		for (x=0;x<6;x++) {
 
-			if (except==items[x]) {
+			if (except==tables[x]) {
 				continue;
 			}
-			$(items[x]).find("tr").removeClass("row_selected");
+			$(tables[x]).find("tr").removeClass("row_selected");
 		}
 	}
-
-
-	// Setup the tables to have multi-select
-	$("#users").delegate("tr", "mousedown", function(){
-		unselectAll("#users");
-		$(this).toggleClass("row_selected");
-	});
-	$("#solvers").delegate("tr", "mousedown", function(){
-		unselectAll("#solvers");
-		$(this).toggleClass("row_selected");
-	});
-	$("#benchmarks").delegate("tr", "mousedown", function(){
-		unselectAll("#benchmarks");
-		$(this).toggleClass("row_selected");
-	});
-	$("#jobs").delegate("tr", "mousedown", function(){
-		unselectAll("#jobs");
-		$(this).toggleClass("row_selected");
-	});
-	$("#spaces").delegate("tr", "mousedown", function(){
-		unselectAll("#spaces");
-		$(this).toggleClass("row_selected");
-	});
-	$("#comments").delegate("tr", "mousedown", function(){
-		unselectAll("#comments");
-		$(this).toggleClass("row_selected");
-	});
-
-	// Setup user permission tooltip
+	//TODO: Keep long names from flowing over 
+	$('#spaces').find('*').css("word-wrap","break-word");
+	for (x=0;x<6;x++) {
+		$(tables[x]).delegate("tr","mousedown", function(){
+			unselectAll("#"+$(this).parent().parent().attr("id"));
+			$(this).toggleClass("row_selected");
+		});
+	}
+		// Setup user permission tooltip
 	$('#users tbody').delegate('tr', 'hover', function(){
 		$(this).toggleClass('hovered');
 	});

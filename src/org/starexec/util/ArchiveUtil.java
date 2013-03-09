@@ -30,6 +30,42 @@ import org.starexec.constants.R;
 public class ArchiveUtil {
 	private static final Logger log = Logger.getLogger(ArchiveUtil.class);
 
+	
+	/*
+	 * Gets the uncompressed size of a compressed folder. Returns a long on success and -1 on failure.
+	 * Used to determine whether a user has a sufficiently large disk quota to perform an upload
+	 * 
+	 *  @author Eric Burns
+	
+	public static long folderSize(String fileName) {
+		try {
+			if (fileName.endsWith(".zip")){
+				return getZipSize(fileName);
+			} else {
+				return -1;
+			}
+			
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+			return -1;
+		}
+	}
+	
+	private static long getZipSize(String fileName) {
+		try {
+			long answer=0;
+			ZipFile temp=new ZipFile(fileName);
+			while (temp.getEntries().hasMoreElements()) {
+				answer=answer+temp.getEntries().nextElement().getSize();
+			}
+			return answer;
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+			return -1;
+		}
+	}*/
+	
+	
 	/**
 	 * Extracts/unpacks/uncompresses an archive file to a folder with the same name at the given destination.
 	 * This method supports .zip, .tar and .tar.gz files. Once the contents are extracted the original archive file
@@ -170,6 +206,7 @@ public class ArchiveUtil {
 	private static void extractZIP(String fileName, String destination) throws Exception {
 		// Use the Apache commons compression library to open up the tar file...
 		InputStream is = new FileInputStream(fileName);
+		
 		BufferedInputStream bis = new BufferedInputStream(is);
 		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("zip", bis); 
 		ZipArchiveEntry entry = null;

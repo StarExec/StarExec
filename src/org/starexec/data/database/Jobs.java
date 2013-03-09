@@ -9,12 +9,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobSolver;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -673,7 +675,8 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen
 	 */
-	public static List<JobPair> getPairs(int jobId) {
+	public static List<JobPair> getPairs
+	(int jobId) {
 		Connection con = null;			
 
 		try {			
@@ -1182,6 +1185,69 @@ public class Jobs {
 		}
 
 		return null;
+	}
+	
+	
+	
+	/*
+	 * Gets next page of solver statistics for job details page
+	 * @author Eric Burns
+	 */
+	//TODO: Implement The GetNextPageOfJobSolvers
+	public static List<JobSolver> getSolverStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
+		return new LinkedList<JobSolver>();
+		/*
+		Connection con = null;			
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+
+			procedure = con.prepareCall("{CALL GetNextPageOfJobSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, jobId);
+			procedure.setString(6, searchQuery);
+
+			ResultSet results = procedure.executeQuery();
+			List<JobSolver> jobSolvers = new LinkedList<JobSolver>();
+
+			while(results.next()){
+
+				JobSolver jp = new JobSolver();
+
+				Solver solver = new Solver();
+				solver.setId(results.getInt("solver.id"));
+				solver.setName(results.getString("solver.name"));
+				solver.setDescription(results.getString("solver.description"));
+
+				Configuration config = new Configuration();
+				config.setId(results.getInt("config.id"));
+				config.setName(results.getString("config.name"));
+				config.setDescription(results.getString("config.description"));
+				
+
+				Properties attributes = new Properties();
+				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+
+				solver.addConfiguration(config);
+			
+				jp.setSolver(solver);
+				jp.setCorrectJobPairs(Integer.parseInt(results.getString("correctPairs")));
+				jp.setIncorrectJobPairs(Integer.parseInt(results.getString("incorrectPairs")));
+				jp.setIncompleteJobPairs(Integer.parseInt(results.getString("incompletePairs")));
+				jobSolvers.add(jp);		
+			}	
+			Common.closeResultSet(results);
+			return jobSolvers;
+		} catch (Exception e){			
+			log.error("get JobSolvers for Next Page of Job " + jobId + " says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;*/
 	}
 
 
