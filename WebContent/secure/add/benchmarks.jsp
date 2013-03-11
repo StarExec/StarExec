@@ -39,6 +39,9 @@
 	<form id="uploadForm" enctype="multipart/form-data" method="POST"
 		action="/starexec/secure/upload/benchmarks">
 		<input type="hidden" name="space" value="${space.id}" />
+		<fieldset id="messageField">
+			After the file is uploaded, you will be sent to an upload status page as your upload is processed.
+		</fieldset>
 		<fieldset>
 			<legend>upload benchmarks</legend>
 			<table id="tblUploadBench" class="shaded">
@@ -140,9 +143,6 @@
 				</tbody>
 			</table>
 			<button id="btnUpload" type="submit">upload</button>
-		</fieldset>
-		<fieldset id="messageField">
-			After the file is uploaded, you will be sent to an upload status page as your upload is processed.
 		</fieldset>
 	</form>
 

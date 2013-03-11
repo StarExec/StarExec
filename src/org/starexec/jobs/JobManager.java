@@ -105,11 +105,11 @@ public abstract class JobManager {
 			}
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
-			log.info("About to get Pending pairs...");
+			log.debug("About to get Pending pairs...");
 			List<JobPair> pairs = Jobs.getPendingPairsDetailed(job.getId());
 			log.info("total # of pairs to process = " + pairs.size());
 			for(JobPair pair : pairs) {
-				log.info("submitting pair # " + pair.getId());
+				log.debug("submitting pair # " + pair.getId());
 				if ((pair.getStatus().getCode() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) || (pair.getStatus().getCode() == StatusCode.ERROR_SGE_REJECT.getVal())){
 					// Write the script that will run this individual pair				
 					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
@@ -307,7 +307,7 @@ public abstract class JobManager {
 			log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
 			return "";
 		}
-		log.info("jobScript = " + jobScript);
+		log.debug("jobScript = " + jobScript);
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
 		out.close();
