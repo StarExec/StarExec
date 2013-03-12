@@ -93,9 +93,9 @@ public class BatchUtil {
 	public Element generateSpacesXML(Space space, int userId){		
 		log.debug("Generating Space XML for space " + space.getId());
 		
-		Element spacesElement = doc.createElementNS("http://starexec.cs.uiowa.edu/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
+		Element spacesElement = doc.createElementNS("https://www.starexec.org/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
 		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		spacesElement.setAttribute("xsi:schemaLocation", "http://starexec.cs.uiowa.edu/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
+		spacesElement.setAttribute("xsi:schemaLocation", "https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
 		
 		Element rootSpaceElement = generateSpaceXML(space, userId);
 		spacesElement.appendChild(rootSpaceElement);
