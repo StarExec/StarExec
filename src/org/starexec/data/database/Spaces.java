@@ -61,7 +61,7 @@ public class Spaces {
 	 */
 	public static Space get(int spaceId) {
 		Connection con = null;			
-		
+		System.out.println("testing eclipse console " + spaceId);
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceById(?)}");
