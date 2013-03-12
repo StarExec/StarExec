@@ -1,6 +1,8 @@
 $(document).ready(function(){
+	$("#solveTblField").hide();
 	initUI();
 	initDataTables();
+	
 });
 
 

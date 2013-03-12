@@ -95,7 +95,7 @@
 		</table>
 	</fieldset>
 	
-	<fieldset>
+	<fieldset id="solveTblField">
 	<legend>solver accuracy</legend>	
 		<table id="solveTbl" class="shaded">
 			<thead>
