@@ -278,7 +278,7 @@ function initDraggable(table) {
 	$('#trashcan').droppable({
 		drop		: onTrashDrop,
 		tolerance	: 'touch',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-		//hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
+		hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
 
@@ -313,7 +313,7 @@ function onDragStart(event, ui) {
 	$('#exploreList').find('a').droppable( {
 		drop		: onSpaceDrop,
 		tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-
+        
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
 
@@ -1520,8 +1520,7 @@ function initDataTables(){
 		"oLanguage": {
 			"sProcessing": getProcessingMessage()
 		},
-		"fnServerData"	: fnPaginationHandler,
-		"sScrollX" : "100%"
+		"fnServerData"	: fnPaginationHandler
 	});
 	commentTable = $('#comments').dataTable( {
 		"sDom": 'rt<"bottom"flpi><"clear">',
@@ -1540,13 +1539,14 @@ function initDataTables(){
 			$(tables[x]).find("tr").removeClass("row_selected");
 		}
 	}
-	//TODO: Keep long names from flowing over 
-	$('#spaces').find('*').css("word-wrap","break-word");
+	
 	for (x=0;x<6;x++) {
 		$(tables[x]).delegate("tr","mousedown", function(){
 			unselectAll("#"+$(this).parent().parent().attr("id"));
 			$(this).toggleClass("row_selected");
 		});
+		$(tables[x]).css("table-layout", "fixed");
+		$(tables[x]).css("word-wrap", "break-word");
 	}
 		// Setup user permission tooltip
 	$('#users tbody').delegate('tr', 'hover', function(){
