@@ -52,7 +52,7 @@ function PopUp(uri) {
 			resizable: false,
 			draggable: false,
 			height: 'auto',
-			width: 'auto',
+			width: 'auto'
 		});
 	});  
 }
