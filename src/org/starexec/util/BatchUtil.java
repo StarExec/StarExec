@@ -25,6 +25,7 @@ import org.apache.log4j.xml.SAXErrorHandler;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
@@ -237,7 +238,7 @@ public class BatchUtil {
 				Element solverElement = (Element)solverNode;
 				String id = solverElement.getAttribute("id");
 				Boolean canSee = Permissions.canUserSeeSolver(Integer.parseInt(id), userId);
-				log.debug("Solver Id = " + id + ", User can see = " + canSee);
+				log.info("Solver Id = " + id + ", User can see = " + canSee);
 				if (!canSee){
 					errorMessage = "You do not have access to a solver with id = " + id;
 					return false;
@@ -326,7 +327,7 @@ public class BatchUtil {
 			Benchmarks.associate(benchmarks, spaceId);
 		}
 		if (!solvers.isEmpty()){
-			Benchmarks.associate(solvers, spaceId);
+			Solvers.associate(solvers, spaceId);
 		}	
 		return true;
 	}
