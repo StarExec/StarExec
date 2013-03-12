@@ -207,11 +207,11 @@ public class BatchUtil {
 		String name = "";//name variable to check
         //Check Benchmarks and Solvers
         NodeList listOfSpaces = doc.getElementsByTagName("Space");
-		log.debug("# of Spaces = " + listOfSpaces.getLength());
+		log.info("# of Spaces = " + listOfSpaces.getLength());
         NodeList listOfSolvers = doc.getElementsByTagName("Solver");
-		log.debug("# of Solvers = " + listOfSolvers.getLength());
+		log.info("# of Solvers = " + listOfSolvers.getLength());
         NodeList listOfBenchmarks = doc.getElementsByTagName("Benchmark");
-		log.debug("# of Benchmarks = " + listOfBenchmarks.getLength());
+		log.info("# of Benchmarks = " + listOfBenchmarks.getLength());
 		
 		//Make sure spaces all have names
 		for (int i = 0; i < listOfSpaces.getLength(); i++){
@@ -227,7 +227,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.warn("Node should be an element, but isn't");
+				log.warn("Space Node should be an element, but isn't");
 			}
 		}
 		//Verify user has access to solvers
@@ -244,7 +244,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.warn("Node should be an element, but isn't");
+				log.warn("solver Node should be an element, but isn't");
 			}
 		}
 		//Verify user has access to benchmarks
@@ -263,7 +263,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.warn("Node should be an element, but isn't");
+				log.warn("benchmark Node should be an element, but isn't");
 			}
 		}
 		//Create Space Hierarchies as children of parent space	
