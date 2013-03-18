@@ -1070,13 +1070,14 @@ public class Benchmarks {
 	}
 	
 	/**
+	 * Might not use this method anymore
+	 * 
 	 * @param spaceId The id of the space to get benchmarks with minimal info
 	 * @return A list of all benchmarks belonging to the space
 	 * @author Benton McCune
 	 */
 	public static List<Benchmark> getMinBySpace(int spaceId) {
 		Connection con = null;			
-
 		try {
 			con = Common.getConnection();	
 			//Test performance before writing new SQL method
@@ -1110,16 +1111,33 @@ public class Benchmarks {
 	 * @author Benton McCune
 	 */
 	public static List<Benchmark> getMinForHierarchy(int spaceId, int userId) {
-		List<Space> spaces = Spaces.getSubSpaces(spaceId, userId, true);
-		log.debug("found " + spaces.size() + " spaces");
-		List<Benchmark> benchs = Benchmarks.getMinBySpace(spaceId);
-		List<Benchmark> newBenchs = null;
-		for (Space space:spaces){
-			newBenchs = Benchmarks.getMinBySpace(space.getId());
-			log.debug("Adding " + newBenchs.size() + " benchs from space " + space.getId());
-			benchs.addAll(newBenchs);
+		Connection con = null;			
+		try {
+			con = Common.getConnection();	
+			//Test performance before writing new SQL method
+			CallableStatement procedure = con.prepareCall("{CALL GetHierBenchmarksById(?,?,?)}");
+			procedure.setInt(1, spaceId);	
+			procedure.setInt(2, userId);	
+			procedure.setInt(3, R.PUBLIC_USER_ID);	
+			ResultSet results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+
+			while(results.next()){
+				Benchmark b = new Benchmark();
+				b.setId(results.getInt("bench.id"));
+				b.setName(results.getString("bench.name"));
+
+				benchmarks.add(b);
+			}			
+
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
 		}
-		return benchs;
+
+		return null;
 	}
 	
 

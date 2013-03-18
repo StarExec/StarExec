@@ -296,6 +296,28 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 		ORDER BY bench.name;
 	END //
 
+-- Retrieves all names and ids of benchmarks belonging to a hierarchy that a user can see
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetHierBenchmarksById;
+CREATE PROCEDURE GetHierBenchmarksById(IN _id INT, IN _userId INT, IN _publicUserId INT)
+	BEGIN
+		SELECT id, name
+		FROM benchmarks AS bench
+		WHERE bench.id IN
+				(SELECT bench_id
+				FROM bench_assoc
+				WHERE space_id IN 
+					( -- check whole hierarchy
+						SELECT descendant from closure where ancestor = _id AND
+							EXISTS
+							(	SELECT *
+								FROM user_assoc 
+								WHERE space_id=descendant AND user_id IN (_userId, _publicUserId)	-- check if user sees space
+							)
+					)
+				)
+		ORDER BY bench.name;
+	END //
 -- Returns the number of public spaces a benchmark is in
 -- Benton McCune
 DROP PROCEDURE IF EXISTS IsBenchPublic;
