@@ -6,8 +6,10 @@ import java.util.zip.ZipInputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,9 +76,9 @@ public class ArchiveUtil {
 	 * @param destination The full path to the folder to extract the file to
 	 * @return True if extraction was successful, false otherwise.
 	 * 
-	 * @author Tyler Jense
+	 * @author Tyler Jensen
 	 */
-	public static boolean extractArchive(String fileName, String destination) {
+	public static Boolean extractArchive(String fileName, String destination) {
 		log.debug("ExtractingArchive for " + fileName);
 		try {
 			// Check for the appropriate file extension and hand off to the appropriate method
@@ -140,7 +142,7 @@ public class ArchiveUtil {
 				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
 				return false;
 			}
-
+			
 			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
 			return true;
 		} catch (Exception e) {
@@ -159,7 +161,7 @@ public class ArchiveUtil {
 	 * 
 	 * @author Tyler Jensen
 	 */
-	public static boolean extractArchive(String fileName) {
+	public static Boolean extractArchive(String fileName) {
 		try {
 			String parent = new File(fileName).getParentFile().getCanonicalPath() + File.separator;
 			return ArchiveUtil.extractArchive(fileName, parent);			
@@ -167,34 +169,8 @@ public class ArchiveUtil {
 			log.error(e.getMessage(), e);
 		}
 
-		return false;
+		return true;
 	}
-
-	/**
-	 * Extracts a given description file from within 
-	 * @param fileName The full file path to the archive file
-	 * @return
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	public static String extractArchiveDesc(String fileName) {
-		try {
-			if(fileName.endsWith(".zip")) {
-				return ArchiveUtil.extractZIP_Desc(fileName);
-			} else if(fileName.endsWith(".tar")) {
-				return ArchiveUtil.extractTAR_Desc(fileName);
-			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
-				return ArchiveUtil.extractGZ_Desc(fileName);
-			} else {
-				return "Unsupported file extension for" + fileName;
-			}
-		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
-			return "Unsupported file extension for" + fileName;
-		}
-	}
-	
-	
 	
 	/**
 	 * Unzips a zip file and removes the original if the unzip was successful.
@@ -303,82 +279,6 @@ public class ArchiveUtil {
 		out.close();
 		ArchiveUtil.removeArchive(fileName);
 	}
-	
-	/**
-	 * Searches a zip file for the description file, and returns its contents if it exists
-	 * @param fileName The full path to the file
-	 * @return The text within the description file, or No description if file doesn't exist
-	 * 
-	 * @author Wyatt Kaiser
-	 */	
-	public static String extractZIP_Desc(String fileName) throws Exception {
-		String strUnzipped = "";
-		try {
-
-			InputStream fin = new FileInputStream(fileName);
-			BufferedInputStream bis = new BufferedInputStream(fin);
-			ArchiveInputStream zin = new ArchiveStreamFactory().createArchiveInputStream("zip", bis); 
-			ZipArchiveEntry ze = null;
-			
-			// For each 'file' in the zip file...
-			while((ze = (ZipArchiveEntry) zin.getNextEntry()) != null) {
-				if(ze.getName().toString().contains("description")) {
-					byte[] bytes = new byte[(int) ze.getSize()];
-					if(zin.read(bytes,0,bytes.length) == bytes.length) {
-						strUnzipped = new String(bytes, "UTF-8");
-					}
-					else {
-						strUnzipped = "no description";
-					}	
-				}
-			}
-			zin.close();
-		} catch (Exception e){
-		}
-		return strUnzipped;
-	}
-
-	/**
-	 * Searches a tar file for the description file, and returns its contents if it exists
-	 * @param fileName the full path to the file
-	 * @return the text within the description file, or No Description if file doesn't exist
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	public static String extractTAR_Desc(String fileName) throws Exception {
-		String strUnzipped = "";
-		try {
-			FileInputStream fin = new FileInputStream(fileName);
-			//BufferedInputStream bis = new BufferedInputStream(is);
-			ArchiveInputStream tin = new ArchiveStreamFactory().createArchiveInputStream("tar", fin); 
-			TarArchiveEntry te = null;
-			
-			// For each 'file' in the tar file...
-			while((te = (TarArchiveEntry) tin.getNextEntry()) != null) {
-				if(te.getName().toString().contains(R.SOLVER_DESC_PATH)) {
-					byte[] bytes = new byte[(int) te.getSize()];
-					if(tin.read(bytes,0,bytes.length) == bytes.length) {
-						strUnzipped = new String(bytes, "UTF-8");
-					}
-					else {
-						strUnzipped = "No Description";
-					}	
-				}
-			}
-			tin.close();
-		} catch (Exception e) {
-		}
-		return strUnzipped;
-	}
-
-	/**
-	 * Searches a tar file for the description file, and returns its contents if it exists
-	 * @param fileName the full path to the file
-	 * @return the text within the description file, or No Description if file doesn't exist
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	public static String extractGZ_Desc(String fileName) throws Exception {return "nope";}
 
 	/**
 	 * Checks the global remove archive setting and removes the archive file if the setting is true.

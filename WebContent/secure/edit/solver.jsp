@@ -54,7 +54,10 @@
 					</tr>
 					<tr>
 						<td class="label">description</td>			
-						<td><textarea id="description" name="description" >${solver.description}</textarea></td>
+						<td>
+							<textarea id="description" name="description" >${solver.description}</textarea>
+							<input name="d" type="file" id="fileLoc"/>
+						</td>
 					</tr>
 					<tr>
 						<td>downloadable</td>

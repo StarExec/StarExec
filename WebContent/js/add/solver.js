@@ -67,7 +67,6 @@ function attachFormValidation(){
 				regex 	: "invalid character(s)"
 			},
 			desc: {
-				required: "Description required",
 				maxlength: "1024 characters maximum",
 				regex: "invalid character(s)"
 			},
