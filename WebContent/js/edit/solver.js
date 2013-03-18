@@ -65,14 +65,10 @@ function attachFormValidation(){
 				regex 	 : getPrimNameRegex()
 			},
 			description : {
-				required : true,
+				required : false,
 				maxlength: 1024,
 				regex	 : getPrimDescRegex()
 			},
-			d: {
-				required : true,
-				regex	 : "(\.txt$)"
-			}
 		},
 		messages : {
 			name : {
@@ -84,9 +80,6 @@ function attachFormValidation(){
 				required : "description required",
 				maxlength: "1024 characters maximum",
 				regex	 : "invalid character(s)"
-			},
-			d : {
-				regex : ".txt file only"
 			}
 		}
 	});
@@ -128,32 +121,41 @@ function attachButtonActions(){
 	// updates the solver details via AJAX, then redirects to edit/solver.jsp
 	$("#update").click(function(){
 		var isFormValid = $("#editSolverForm").valid();
+		if (isFormValid == true) {		}
 		if(isFormValid == true){
-			var name = $("#name").val();
-			var description = $("#description").val();
-			var isDownloadable = $("#downloadable").is(':checked');
-			var data = {name: name, description: description, downloadable: isDownloadable};
-			$.post(
-					"/starexec/services/edit/solver/" + getParameterByName("id"),
-					data,
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = '/starexec/secure/details/solver.jsp?id=' + getParameterByName("id");
-								break;
-							case 1:
-								showMessage('error', "solver details were not updated; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "only the owner of this solver can modify its details", 5000);
-								break;
-							default:
-								showMessage('error', "invalid parameters", 5000);
-								break;
-						}
-					},
-					"json"
-			);
+			var confirm = window.confirm("are you sure you want to edit this solver?");
+			if (confirm == true) {
+				//Extract Relevant Data from Page
+				var data = 
+				{
+						name		: $("#name").val(), 
+						description	: $("#description").val(), 
+						downloadable: $("#downloadable").is(':checked')
+				};
+				
+				//Pass data to server via AJAX
+				$.post(
+						"/starexec/services/edit/solver/" + getParameterByName("id"),
+						data,
+						function(returnCode) {
+							switch (returnCode) {
+								case 0:
+									window.location = '/starexec/secure/details/solver.jsp?id=' + getParameterByName("id");
+									break;
+								case 1:
+									showMessage('error', "solver details were not updated; please try again", 5000);
+									break;
+								case 2:
+									showMessage('error', "only the owner of this solver can modify its details", 5000);
+									break;
+								default:
+									showMessage('error', "whyyyyyyyyyy", 5000);
+									break;
+							}
+						},
+						"json"
+				);
+			}	
 		}
 	});
 	

@@ -50,13 +50,13 @@
 				<tbody>
 					<tr>
 						<td class="label">solver name</td>			
-						<td>${solver.name}</td>
+						<td><input id="name" type="text" name="name" value="${solver.name}"></td>
+
 					</tr>
 					<tr>
 						<td class="label">description</td>			
 						<td>
 							<textarea id="description" name="description" >${solver.description}</textarea>
-							<input name="d" type="file" id="fileLoc"/>
 						</td>
 					</tr>
 					<tr>
