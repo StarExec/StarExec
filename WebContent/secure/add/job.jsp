@@ -19,6 +19,7 @@
 			request.setAttribute("queues", Queues.getAll());
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
+			request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
@@ -94,8 +95,9 @@
 				</tbody>					
 			</table>
 		</fieldset>
-		<fieldset id="fieldStep2">
-			<legend>run space selection</legend>
+		<%-- <fieldset id="fieldStep2"> --%>
+		<fieldset id="fieldSolverMethod">
+			<legend>solver selection method</legend>
 			<table id="tblSpaceSelection" class="contentTbl">
 				<thead>
 					<tr>
@@ -104,25 +106,47 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr id="runSpace">
-						<td><input type="hidden" name="runChoice" value="space" />run ${space.name}</td>
-						<td>this will run all solvers/configurations on all benchmarks in ${space.name} only.</td>
-					</tr>
-					<tr id="runHierarchy">
-						<td><input type="hidden" name="runChoice" value="hierarchy" />run ${space.name} and hierarchy</td>
-						<td>this will run all solvers/configurations from ${space.name} on all the benchmarks in the space hierarchy.</td>
-					</tr>
 					<tr id="keepHierarchy">
 						<td><input type="hidden" name="runChoice" value="keepHierarchy" />run and keep hierarchy structure</td>
 						<td>this will run all solvers/configurations on all benchmarks in their respective spaces within the space hierarchy.</td>
 					<tr id="runChoose">
 						<td><input type="hidden" name="runChoice" value="choose" />choose</td>
-						<td>you will choose which solvers/configurations and benchmarks to run from ${space.name} only.</td>
+						<td>you will choose which solvers/configurations to run from ${space.name} only.</td>
 					</tr>
 				</tbody>
 			</table>
 		</fieldset>
-		<fieldset id="fieldStep3">
+		<%--<fieldset id="fieldStep22"> --%>
+				<fieldset id="fieldBenchMethod">
+			<legend>benchmark selection method</legend>
+			<table id="tblBenchMethodSelection" class="contentTbl">
+				<thead>
+					<tr>
+						<th>choice</th>
+						<th>description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="allBenchInSpace">
+						<td><input type="hidden" name="runChoice" value="runAllBenchInSpace" />all in ${space.name}</td>
+						<td>this will run chosen solvers/configurations on all benchmarks in ${space.name}</td>
+					<tr id="allBenchInHierarchy">
+						<td><input type="hidden" name="runChoice" value="runAllBenchInHierarchy" />all in hierarchy</td>
+						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
+					</tr>
+						<tr id="someBenchInSpace">
+						<td><input type="hidden" name="runChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
+						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
+					</tr>
+					<tr id="someBenchInHierarchy">
+						<td><input type="hidden" name="runChoice" value="runChosenFromHierarchy" />choose in hierarchy</td>
+						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
+		<%-- <fieldset id="fieldStep3"> --%>
+		<fieldset id="fieldSolverSelection">
 			<legend>solver selection</legend>
 			<table id="tblSolverConfig" class="contentTbl">	
 				<thead>
@@ -153,8 +177,9 @@
 			</div>
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>
-		<fieldset id="fieldStep4">
-			<legend>benchmark selection</legend>
+		<%--<fieldset id="fieldStep4"> --%>
+		 <fieldset id="fieldSelectBenchSpace"> 
+			<legend>benchmark selection from space</legend>
 			<table id="tblBenchConfig" class="contentTbl">
 				<thead>
 					<tr>
@@ -171,6 +196,28 @@
 						<td>
 							<p>${b.type.name}</p>							
 						</td>																		
+					</tr>
+				</c:forEach>
+				</tbody>					
+			</table>	
+			<div class="selectWrap">
+				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+			</div>	
+		</fieldset>
+				<fieldset id="fieldSelectBenchHierarchy">
+			<legend>benchmark selection from hierarchy</legend>
+			<table id="tblBenchHier" class="contentTbl">
+				<thead>
+					<tr>
+						<th>benchmark</th>					
+					</tr>
+				</thead>	
+				<tbody>
+				<c:forEach var="b" items="${allBenchs}">
+					<tr id="bench_${b.id}">
+						<td>
+							<input type="hidden" name="bench" value="${b.id}"/>
+							<star:benchmark value='${b}'/></td>																
 					</tr>
 				</c:forEach>
 				</tbody>					

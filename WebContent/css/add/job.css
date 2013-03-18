@@ -34,6 +34,8 @@ button {
 
 #tblSolverConfig tr td,
 #tblSolverConfig tr th,
+#tblBenchHier tr td,
+#tblBenchHier tr th,
 #tblBenchConfig tr td,
 #tblBenchConfig tr th {
 	width: 50%;
@@ -41,6 +43,8 @@ button {
 
 #tblSolverConfig tbody tr,
 #tblBenchConfig tbody tr,
+#tblBenchHier tbody tr,
+#tblBenchMethodSelection tbody tr,
 #tblSpaceSelection tbody tr {	
 	cursor: pointer;
 }

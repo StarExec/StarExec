@@ -89,7 +89,7 @@ public class CreateJob extends HttpServlet {
 		
 		String selection = request.getParameter(run);
 		//Depending on our run selection, handle each case differently
-		if (selection.equals("space")) {
+		if (selection.equals("runAllBenchInSpace")) {
 			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space);
 		} else if (selection.equals("keepHierarchy")) {
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
@@ -107,7 +107,7 @@ public class CreateJob extends HttpServlet {
 				return;
 			}
 			
-			if (selection.equals("hierarchy")) {
+			if (selection.equals("runAllBenchInHierarchy")) {
 				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
 				JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit);
 				if (j.getJobPairs().size() == 0) {
