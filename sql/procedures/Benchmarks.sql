@@ -301,7 +301,7 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 DROP PROCEDURE IF EXISTS GetHierBenchmarksById;
 CREATE PROCEDURE GetHierBenchmarksById(IN _id INT, IN _userId INT, IN _publicUserId INT)
 	BEGIN
-		SELECT id, name
+		SELECT DISTINCT id, name
 		FROM benchmarks AS bench
 		WHERE bench.id IN
 				(SELECT bench_id
