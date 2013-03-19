@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="eric_dev">
+<starexec-configuration default="ben_dev_317">
 	<configuration name="production">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
@@ -28,6 +28,7 @@
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
+			<property key="DEPENDFILE_FORMAT" value="depend_%d.txt" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />	

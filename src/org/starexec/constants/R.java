@@ -61,6 +61,7 @@ public class R {
 	public static String PUBLIC_USER_PASSWORD ="public";
 	// Job Manager (JM) constants
 	public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
+	public static String DEPENDFILE_FORMAT = null;							// The filename format for dependencies
 	public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
 	public static int TEMP_JOBPAIR_LIMIT = 999999;						    // A temporary limit to the number of job pairs
 	

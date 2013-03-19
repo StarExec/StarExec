@@ -101,7 +101,7 @@ public abstract class JobManager {
 
 			if(false == isSGEAvailable) {
 				log.warn("Grid engine unavailable -skipping SGE execution.");
-				return false;
+				//return false;
 			}
 			int count = R.NUM_JOB_SCRIPTS;
 			//TODO - method to get only the needed pairs
@@ -291,8 +291,17 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
 		//Dependencies
-		jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
+		/*jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
 		jobScript = jobScript.replace("$$LOCAL_DEPENDS$$", writeDependencyArray(pair.getBench(), false));	
+		*/
+		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
+		{
+			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
+			writeDependencyFile(pair.getId(), pair.getBench().getId());
+		}
+		else{
+			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
+		}
 		// Resource limits
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));		
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
@@ -311,10 +320,40 @@ public abstract class JobManager {
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
 		out.close();
+		log.debug("about to write dependency file");
 		return scriptPath;
 	}	
 
+	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
+		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
+		StringBuilder sb = new StringBuilder();
+		String separator = ",,,";
+		for (BenchmarkDependency bd:dependencies)
+		{
+			sb.append(bd.getSecondaryBench().getPath());
+			sb.append(separator);		
+			sb.append(bd.getDependencyPath());
+			sb.append("\n");
+		}
+		if (sb.length() > 0){
+			sb.setLength(sb.length()-1);
+			log.debug("dropping last return");
+		}
+		String dependFilePath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.DEPENDFILE_FORMAT, pairId));
+		File f = new File(dependFilePath);
+		f.createNewFile();
 
+		if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
+			log.error("Can't change owner permissions on job dependencies file. This will prevent the grid engine from being able to open the file. File path: " + dependFilePath);
+			return false;
+		}
+		log.debug("dependencies file = " + sb.toString());
+		FileWriter out = new FileWriter(f);
+		out.write(sb.toString());
+		out.close();
+		log.debug("done writing dependency file");
+		return true;
+	}
 	/**
 	 * Creates an array for the bash script.  This array will consist of all the paths for the copies of the secondary 
 	 * benchmarks on the execution host or the paths of the secondary benchmarks on the starexec system depending on the local Boolean paramter. 
