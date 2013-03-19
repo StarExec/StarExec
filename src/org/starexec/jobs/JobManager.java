@@ -291,17 +291,17 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
 		//Dependencies
-		/*jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
+		jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
 		jobScript = jobScript.replace("$$LOCAL_DEPENDS$$", writeDependencyArray(pair.getBench(), false));	
-		*/
-		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
+		
+		/*if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
 			writeDependencyFile(pair.getId(), pair.getBench().getId());
 		}
 		else{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
-		}
+		}*/
 		// Resource limits
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));		
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
