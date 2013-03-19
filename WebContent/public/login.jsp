@@ -25,10 +25,41 @@
 				<td><button type="submit">login</button></td>
 			</tr>
 		</table>
-		</fieldset>					
+		</fieldset>	
+		<input type="hidden" name="cookieexists" value="false">				
 	</form>
+	<body onload="cc()">
 	<c:if test="${not empty param.result and param.result == 'failed'}">
 		<div class='error message'>invalid username or password</div>
-	</c:if>			
+	</c:if>	
+	
+		
+	<script language="JavaScript">
+		<!--
+		function cc()
+		{
+		 /* check for a cookie */
+		  if (document.cookie == "") 
+		  {
+		    /* if a cookie is not found - alert user -
+		     change cookieexists field value to false */
+		    alert("COOKIES need to be enabled!");
+		
+		    /* If the user has Cookies disabled an alert will let him know 
+		        that cookies need to be enabled to log on.*/ 
+		
+		    document.Form1.cookieexists.value ="false"  
+		  } else {
+		   /* this sets the value to true and nothing else will happen,
+		       the user will be able to log on*/
+		    document.Form1.cookieexists.value ="true"
+		  }
+		}
+		
+		/* Set a cookie to be sure that one exists.
+		   Note that this is outside the function*/
+		document.cookie = 'killme' + escape('nothing')
+		// -->
+		</script>
 	
 </star:template>
