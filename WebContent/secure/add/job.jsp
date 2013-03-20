@@ -19,7 +19,8 @@
 			request.setAttribute("queues", Queues.getAll());
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
-			request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
+			//This is for the currently shuttered select from hierarchy
+			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
@@ -136,12 +137,12 @@
 					</tr>
 						<tr id="someBenchInSpace">
 						<td><input type="hidden" name="runChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
-						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
+						<td>this will run chosen solvers/configurations on your selection of benchmarks in the hierarchy</td>
 					</tr>
-					<tr id="someBenchInHierarchy">
+					<%--<tr id="someBenchInHierarchy">
 						<td><input type="hidden" name="runChoice" value="runChosenFromHierarchy" />choose in hierarchy</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
-					</tr>
+					</tr>--%>
 				</tbody>
 			</table>
 		</fieldset>

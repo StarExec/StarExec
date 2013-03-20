@@ -6,7 +6,7 @@ var progress = 0;
 2 = choose the method to select benchmarks
 3 = choose the solvers and configurations from the space
 4 = choose the benchmarks from the space  - whether 4 or 5 happens depends on choice in 2
-5 = choose the benchmarks from the hierarchy
+5 = choose the benchmarks from the hierarchy - this is currently disabled so this step should never be reached
 */
 var defaultPPId = 0;
 var solverUndo = [];
