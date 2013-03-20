@@ -316,7 +316,7 @@ public abstract class JobManager {
 			log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
 			return "";
 		}
-		log.debug("jobScript = " + jobScript);
+		//log.debug("jobScript = " + jobScript);
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
 		out.close();
@@ -335,10 +335,7 @@ public abstract class JobManager {
 			sb.append(bd.getDependencyPath());
 			sb.append("\n");
 		}
-		/*if (sb.length() > 0){
-			sb.setLength(sb.length()-1);
-			log.debug("dropping last return");
-		}*/
+
 		String dependFilePath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.DEPENDFILE_FORMAT, pairId));
 		File f = new File(dependFilePath);
 		f.createNewFile();

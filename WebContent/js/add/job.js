@@ -6,7 +6,8 @@ var progress = 0;
 2 = choose the method to select benchmarks
 3 = choose the solvers and configurations from the space
 4 = choose the benchmarks from the space  - whether 4 or 5 happens depends on choice in 2
-5 = choose the benchmarks from the hierarchy - this is currently disabled so this step should never be reached
+5 = choose the benchmarks from the hierarchy - this is currently disabled so this step should never be reached.  some code is left
+in case we find a need for this option and an efficient table for large #s of rows
 */
 var defaultPPId = 0;
 var solverUndo = [];
@@ -22,7 +23,7 @@ $(document).ready(function(){
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {
 		$('#tblBenchConfig tbody').children('tr').not('.row_selected').find('input').remove();
-		$('#tblBenchHier tbody').children('tr').not('.row_selected').find('input').remove();
+		//$('#tblBenchHier tbody').children('tr').not('.row_selected').find('input').remove();
 		$('#tblSpaceSelection tbody').children('tr').not('.row_selected').find('input').remove();
 		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('input').remove();
 		$('#tblBenchMethodSelection tbody').children('tr').not('.row_selected').find('input').remove();
@@ -119,7 +120,7 @@ function initUI() {
 	$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
 	
 	// Set up datatables
-	$('#tblSolverConfig, #tblBenchConfig, #tblBenchHier').dataTable( {
+	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
         "sDom": 'rt<"bottom"f><"clear">',        
         "bPaginate": false,        
         "bSort": true        
@@ -164,10 +165,11 @@ function initUI() {
     		if (benchMethodVal == 1){
     			progress = 4;
     		}	
-    		//if choosing bench from hierarchy
+    		/*//if choosing bench from hierarchy
     		else if (benchMethodVal == 2){
     			progress = 5;
     		}
+    		*/
     	}
     	updateProgress();
     });
@@ -193,7 +195,7 @@ function initUI() {
 		}
     }).click(function(){
     	// Make sure the user has at least one benchmark in the table
-    	if ((progress == 4 && $('#tblBenchConfig tbody tr.row_selected').length <= 0) || (progress == 5 && $('#tblBenchHier tbody tr.row_selected').length <= 0)) {
+    	if ((progress == 4 && $('#tblBenchConfig tbody tr.row_selected').length <= 0)) {
     		showMessage('warn', 'you must have at least one benchmark for this job', 3000);
     		return false;
     	}
@@ -222,7 +224,7 @@ function initUI() {
     });
     
     // Enable row selection
-	$("#tblSolverConfig, #tblBenchConfig, #tblBenchHier").delegate("tr", "click", function(){
+	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
 	});
 	
@@ -239,7 +241,7 @@ function initUI() {
 	//$("#runSpace, #runHierarchy, #keepHierarchy").click(function() {
 	$("#keepHierarchy").click(function() {
 		$("#tblBenchConfig tr").addClass("row_selected");
-		$("#tblBenchHier tr").addClass("row_selected");
+		//$("#tblBenchHier tr").addClass("row_selected");
 		$("#tblSolverConfig tr").addClass("row_selected");
     	$("#tblSolverConfig tr").find('input').attr('checked', 'checked');
 		$('#btnNext').fadeOut('fast');
@@ -249,7 +251,7 @@ function initUI() {
 	// Choose benchmarks selected
 	$("#runChoose").click(function() {
 		$("#tblBenchConfig tr").removeClass("row_selected");
-		$("#tblBenchHier tr").removeClass("row_selected");
+		//$("#tblBenchHier tr").removeClass("row_selected");
 		$("#tblSolverConfig tr").removeClass("row_selected");
     	$("#tblSolverConfig tr").find('input').removeAttr('checked');
 		$('#btnDone').fadeOut('fast');
@@ -260,25 +262,25 @@ function initUI() {
 	$("#someBenchInSpace").click(function() {
 		benchMethodVal = 1;
 		$("#tblBenchConfig tr").removeClass("row_selected");
-		$("#tblBenchHier tr").removeClass("row_selected");
+		//$("#tblBenchHier tr").removeClass("row_selected");
 		$("#tblSolverConfig tr").removeClass("row_selected");
     	$("#tblSolverConfig tr").find('input').removeAttr('checked');
 	});
 	
 	// Choose benchmarks in hierarchy selected
-	$("#someBenchInHierarchy").click(function() {
+	/*$("#someBenchInHierarchy").click(function() {
 		benchMethodVal = 2;
 		$("#tblBenchConfig tr").removeClass("row_selected");
-		$("#tblBenchHier tr").removeClass("row_selected");
+		//$("#tblBenchHier tr").removeClass("row_selected");
 		$("#tblSolverConfig tr").removeClass("row_selected");
     	$("#tblSolverConfig tr").find('input').removeAttr('checked');
-	});
+	});*/
 	
 	// all benchmarks in space 
 	$("#allBenchInSpace").click(function() {
 		benchMethodVal = 0;
 		$("#tblBenchConfig tr").addClass("row_selected");
-		$("#tblBenchHier tr").removeClass("row_selected");
+		//$("#tblBenchHier tr").removeClass("row_selected");
 		$("#tblSolverConfig tr").removeClass("row_selected");
     	$("#tblSolverConfig tr").find('input').removeAttr('checked');
 	});
@@ -287,7 +289,7 @@ function initUI() {
 	$("#allBenchInHierarchy").click(function() {
 		benchMethodVal = 0;
 		$("#tblBenchConfig tr").removeClass("row_selected");
-		$("#tblBenchHier tr").addClass("row_selected");
+		//$("#tblBenchHier tr").addClass("row_selected");
 		$("#tblSolverConfig tr").removeClass("row_selected");
     	$("#tblSolverConfig tr").find('input').removeAttr('checked');
 	});
@@ -320,7 +322,7 @@ function updateProgress() {
 	$('#fieldSolverSelection').hide();
 	$('#fieldBenchMethod').hide();
 	$('#fieldSelectBenchSpace').hide();
-	$('#fieldSelectBenchHierarchy').hide();
+	//$('#fieldSelectBenchHierarchy').hide();
 		
 	switch(progress) {
 		case 0:	// Job setup stage
@@ -360,12 +362,12 @@ function updateProgress() {
 			$('#btnPrev').fadeIn('fast');
 			$('#btnDone').fadeIn('fast');
 			break;
-		case 5:	// selecting benchmarks from the hierarchy
+		/*case 5:	// selecting benchmarks from the hierarchy - never reached
 			$('#fieldSelectBenchHierarchy').fadeIn('fast');
 			$('#btnNext').fadeOut('fast');
 			$('#btnPrev').fadeIn('fast');
 			$('#btnDone').fadeIn('fast');
-			break;	
+			break;	*/
 	}
 }
 

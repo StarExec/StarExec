@@ -129,14 +129,14 @@
 				</thead>
 				<tbody>
 					<tr id="allBenchInSpace">
-						<td><input type="hidden" name="runChoice" value="runAllBenchInSpace" />all in ${space.name}</td>
+						<td><input type="hidden" name="benchChoice" value="runAllBenchInSpace" />all in ${space.name}</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in ${space.name}</td>
 					<tr id="allBenchInHierarchy">
-						<td><input type="hidden" name="runChoice" value="runAllBenchInHierarchy" />all in hierarchy</td>
+						<td><input type="hidden" name="benchChoice" value="runAllBenchInHierarchy" />all in hierarchy</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
 					</tr>
 						<tr id="someBenchInSpace">
-						<td><input type="hidden" name="runChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
+						<td><input type="hidden" name="benchChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
 						<td>this will run chosen solvers/configurations on your selection of benchmarks in the hierarchy</td>
 					</tr>
 					<%--<tr id="someBenchInHierarchy">
@@ -205,7 +205,7 @@
 				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>	
 		</fieldset>
-				<fieldset id="fieldSelectBenchHierarchy">
+	<%--	<fieldset id="fieldSelectBenchHierarchy">
 			<legend>benchmark selection from hierarchy</legend>
 			<table id="tblBenchHier" class="contentTbl">
 				<thead>
@@ -226,7 +226,7 @@
 			<div class="selectWrap">
 				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>	
-		</fieldset>
+		</fieldset>--%>
 		<div id="actionBar">
 			<button type="submit" class="round" id="btnDone">submit</button>			
 			<button type="button" class="round" id="btnNext">next</button>			
