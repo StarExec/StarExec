@@ -47,7 +47,7 @@
 			<property key="MAX_PAIR_RUNTIME" value="86400" />
 			<property key="MAX_PAIR_CPUTIME" value="86400" />
 			<property key="MAX_PAIR_FILE_WRITE" value="2097152" />
-			<property key="MAX_PAIR_VMEM" value="7680000" />
+			<property key="MAX_PAIR_VMEM" value="4194304" />
 		</class>
 		<class name="org.starexec.util.Validator">					
 			<property key="BOOLEAN_PATTERN">
