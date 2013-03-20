@@ -291,9 +291,9 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
 		//Dependencies
-		jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
+		/*jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
 		jobScript = jobScript.replace("$$LOCAL_DEPENDS$$", writeDependencyArray(pair.getBench(), false));	
-		
+		*/
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");

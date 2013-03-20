@@ -57,6 +57,7 @@ function cleanWorkspace {
 
 	# Remove original jobscript
 	rm -f "$JOB_IN_DIR/job_$PAIR_ID.bash"
+	rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 
 	log "execution host $HOSTNAME cleaned"
 	return $?

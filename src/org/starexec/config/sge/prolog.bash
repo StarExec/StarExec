@@ -1,4 +1,4 @@
-#!/bin/bash
+\#!/bin/bash
 
 # /////////////////////////////////////////////
 # NAME:        
@@ -61,20 +61,35 @@ BIN_PATH="$LOCAL_SOLVER_DIR/bin"
 
 # Array of secondary benchmarks starexec paths
 declare -a BENCH_DEPENDS_ARRAY
-BENCH_DEPENDS_ARRAY=(${BENCH_DEPENDS// / })
-#log "Bench Depends String = '$BENCH_DEPENDS'"
-#log "Bench Depends String Length = '${#BENCH_DEPENDS}'"
-#log "Local Depends String Length = '${#LOCAL_DEPENDS}'"
-#log "Local Depends String = '$LOCAL_DEPENDS'"
-
 
 # Array of secondary benchmarks execution host paths
 declare -a LOCAL_DEPENDS_ARRAY
-LOCAL_DEPENDS_ARRAY=(${LOCAL_DEPENDS// / })
 
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
+
+#fills arrays from file
+function fillDependArrays {
+#separator
+sep=',,,'
+
+INDEX=0
+
+log "has depends = $HAS_DEPENDS"
+
+if [ $HAS_DEPENDS -eq 1 ]
+then
+while read line
+do
+  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+  INDEX=$((INDEX + 1))
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+fi
+
+return $?
+}
 
 function createDir {
 	mkdir $1
@@ -179,6 +194,7 @@ echo ""
 
 sendStatus $STATUS_PREPARING
 cleanWorkspace
+fillDependArrays
 copyDependencies
 verifyWorkspace
 sandboxWorkspace
