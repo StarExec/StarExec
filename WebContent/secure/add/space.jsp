@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%	
 	try {		
@@ -6,7 +6,8 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
-		
+		request.setAttribute("nameLength", R.SPACE_NAME_LEN);
+		request.setAttribute("descLength", R.SPACE_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if(!p.canAddSpace()) {
@@ -34,11 +35,11 @@
 				<tbody>
 					<tr>
 						<td class="label"><p>name</p></td>
-						<td><input id="txtName" name="name" type="text"></input></td>
+						<td><input id="txtName" name="name" type="text" length=${nameLength}></input></td>
 					</tr>
 					<tr>
 						<td class="label"><p>description</p></td>
-						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
+						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false" length=${descLength}></textarea></td>
 					</tr>
 					<tr>
 						<td class="label"><p>default</p></td>

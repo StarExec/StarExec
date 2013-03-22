@@ -1194,7 +1194,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	//TODO: Implement The GetNextPageOfJobSolvers
-	public static List<JobSolver> getSolverStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
+	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
 		return new LinkedList<JobSolver>();
 		/*
 		Connection con = null;			

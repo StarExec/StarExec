@@ -12,6 +12,10 @@ $(document).ready(function(){
 		  $('#depLinked').hide();
 		  $("#radioNoDependency").attr("checked", "checked");
 	}
+	
+	$("#radioLocal").attr("checked", "checked");
+	$("#benchFile").show();
+	$("#fileURL").hide();
 	//hide message until upload clicked
 	$('#messageField').hide();
 });
@@ -30,6 +34,24 @@ function attachFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
+	$("#radioLocal").change(function() {
+		if ($("#radioLocal").is(":checked")) {
+			$("#fileURL").fadeOut('fast', function() {
+				$("#benchFile").fadeIn('fast');
+			});
+			
+			
+		}
+	});
+	$("#radioURL").change(function() {
+		if ($("#radioURL").is(":checked")) {
+			$("#benchFile").fadeOut('fast', function() {
+				$("#fileURL").fadeIn('fast');
+			});
+			
+		}
+	});
+	
 	// Re-validate the 'file location' field when it loses focus
 	$("#benchFile").change(function(){
 		 $("#benchFile").blur().focus(); 
@@ -46,14 +68,22 @@ function attachFormValidation(){
 	$("#uploadForm").validate({
 		rules: {
 			benchFile: {
-				required: true,
+				required: "#radioLocal:checked",
 				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			}
 		},
+		url : {
+			required: "#radioURL:checked",
+			regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+		 },
 		messages: {
 			benchFile:{
 				required: "please select a file",
 				regex: ".zip, .tar and .tar.gz only"
+			},
+			url : {
+				required: "please enter a URL",
+				regex: "URL must be .zip, .tar, or .tar.gz"	
 			}
 		},
 		// Place the error messages in the tooltip instead of in the DOM

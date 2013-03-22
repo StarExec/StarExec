@@ -8,6 +8,10 @@ fieldset ul {
 	width: 100%;
 }
 
+#infoTable {
+	table-layout:auto;
+}
+
 tr .label {
 	width: 25%;
 }
@@ -109,6 +113,18 @@ input[type="text"] {
 
 #picSection{
 	width: 133px;
+}
+
+#infoTable tbody tr:hover {
+	background-color: #222222 !important;
+}
+
+#infoTable #userDetail #personal thead tr:hover {
+	background-color: #111111 !important;
+}	
+
+#infoTable #userDetail #personal tbody tr:hover {
+	background-color: #ae0000 !important;
 }
 
 #uploadPicture{

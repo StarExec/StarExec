@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import java.net.URL;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +34,8 @@ import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
+import org.apache.commons.io.FileUtils;
+
 
 /**
  * @deprecated This class is out of date and needs to be re-implemented - why??
@@ -39,21 +43,23 @@ import org.starexec.util.Util;
 @SuppressWarnings("serial")
 public class BenchmarkUploader extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	
-	
+
 	//In order to head to update page and not wait for upload to finish
 	private static ExecutorService threadPool = null;
 	// The unique date stamped file name format
-    private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
-    
-    // Valid file types for uploads
-    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-    
-    // Request attributes
-    private static final String SPACE_ID = "space";
-    private static final String UPLOAD_METHOD = "upMethod";
-    private static final String BENCHMARK_FILE = "benchFile";
-    private static final String BENCHMARK_TYPE = "benchType";
-    private static final String BENCH_DOWNLOADABLE = "download";
+	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
+
+	// Valid file types for uploads
+	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+
+	// Request attributes
+	private static final String SPACE_ID = "space";
+	private static final String UPLOAD_METHOD = "upMethod";
+	private static final String BENCHMARK_FILE = "benchFile";
+	private static final String BENCHMARK_TYPE = "benchType";
+	private static final String BENCH_DOWNLOADABLE = "download";
+    private static final String FILE_URL="url";
+    private static final String FILE_LOC="localOrURL";
 	private static final String addSolver = "addSolver";
 	private static final String addBench = "addBench";
 	private static final String addUser = "addUser";
@@ -64,19 +70,19 @@ public class BenchmarkUploader extends HttpServlet {
 	private static final String removeUser = "removeUser";
 	private static final String removeSpace = "removeSpace";
 	private static final String removeJob = "removeJob";
-	
+
 	private static final String HAS_DEPENDENCIES = "dependency";
-    private static final String LINKED = "linked";
-    private static final String DEP_ROOT_SPACE_ID = "depRoot";
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-    
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
+	private static final String LINKED = "linked";
+	private static final String DEP_ROOT_SPACE_ID = "depRoot";
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
 		try {	
 			// Extract data from the multipart request
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
-			
+
 			// If the request is valid to act on...
 			if(this.isRequestValid(form)) {		
 				// If the user has benchmark adding permissions
@@ -109,11 +115,11 @@ public class BenchmarkUploader extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error uploading the benchmarks.");
 		}
 	}
-    
+
 	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
 		//First extract all data from request
 		final int userId = uId;
-		final FileItem fileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
+		
 		final int spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 		final String uploadMethod = (String)form.get(UPLOAD_METHOD);
 		final int typeId = Integer.parseInt((String)form.get(BENCHMARK_TYPE));
@@ -123,102 +129,131 @@ public class BenchmarkUploader extends HttpServlet {
 		final int depRootSpaceId = Integer.parseInt((String)form.get(DEP_ROOT_SPACE_ID));
 		final Permission perm = this.extractPermissions(form);
 		final Integer statusId = sId;
-		log.debug("upload status id is " + statusId);
+		final String localOrUrl=(String)form.get(FILE_LOC);
 		
+		URL tempURL=null;
+		String tempName=null;
+		FileItem tempFileToUpload=null;
+		if (localOrUrl.equals("URL")) {
+			tempURL=new URL((String)form.get(FILE_URL));
+			try {
+				tempName=tempURL.toString().substring(tempURL.toString().lastIndexOf('/'));
+			} catch (Exception e) {
+				tempName=tempURL.toString().replace('/', '-');
+			}
+			
+		} else {
+			tempFileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
+		}
+		
+		final String name=tempName;
+		final URL url=tempURL;
+		final FileItem fileToUpload=tempFileToUpload;
+		
+		log.debug("upload status id is " + statusId);
+
 		//It will delay the redirect until this method is finished which is why a new thread is used
 		//TODO: figure out a way to do this without calling new thread
 		threadPool = Executors.newCachedThreadPool();
 		threadPool.execute(new Runnable() {
-    		@Override
-    		public void run(){
-    			try{
-		log.info("Handling upload request for user " + userId + " in space " + spaceId);
-		// Create a unique path the zip file will be extracted to
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
-		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
-		// Create the paths on the filesystem
-		uniqueDir.mkdirs();
-		
-		// Create the zip file object-to-be
-		File archiveFile = new File(uniqueDir,  fileToUpload.getName());										
-						
-		// Copy the benchmark zip to the server from the client
-		fileToUpload.write(archiveFile);															
-		log.info("upload complete - now extracting");
-		Uploads.fileUploadComplete(statusId);
-		// Extract the downloaded benchmark zip file
-		if(!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath())) {
-			String message = "StarExec has failed to extract your uploaded file.";
-			Uploads.setErrorMessage(statusId, message);
-			log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
-			return;
-		}
-		log.info("Extraction Complete");
-		//update upload status
-		Uploads.fileExtractComplete(statusId);
-	
-		log.debug("has dependencies = " + hasDependencies);
-		log.debug("linked = " + linked);
-		log.debug("depRootSpaceIds = " + depRootSpaceId);
+			@Override
+			public void run(){
+				try{
+					log.info("Handling upload request for user " + userId + " in space " + spaceId);
+					// Create a unique path the zip file will be extracted to
+					File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+					uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
+					// Create the paths on the filesystem
+					uniqueDir.mkdirs();
+					
+					File archiveFile=null;
+					if (localOrUrl.equals("local")) {
+						archiveFile = new File(uniqueDir,  fileToUpload.getName());
+						fileToUpload.write(archiveFile);
+					} else {
+						archiveFile=new File(uniqueDir,name);
+						FileUtils.copyURLToFile(url,archiveFile);
+					}
+					// Create the zip file object-to-be
+															
 
-		log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
-		if(uploadMethod.equals("convert")) {
-			
-			log.debug("convert");
-			Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
-			if (result == null) {
-				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
-				Uploads.setErrorMessage(statusId, message);
-				log.error(message + " - status id = " + statusId);
-				return;
-			}
-			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
-			result.setId(spaceId);
-			//update Status
-			Uploads.processingBegun(statusId);
-			if (!hasDependencies){
-				log.info("Now have the space java object.  Calling add with benchmarks and no dependencies for user " + userId + " to process and add to db.");
-				Spaces.addWithBenchmarks(result, userId, statusId);
-			}
-			else
-			{				
-				Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked, statusId);
-			}
-		} else if(uploadMethod.equals("dump")) {
-			List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-			
-			for (Benchmark bench : results) {
-				// Make sure that the benchmark has a unique name in the space.
-				//TODO: verify that this is being done correctly. particularly whether benchmarks in THIS upload have unique names
-				if(Spaces.notUniquePrimitiveName(bench.getName(), spaceId, 2)) {
-					String message = "Benchmarks must have unique names within this space.  The following benchmark fails " + bench.getName();
-					Uploads.setErrorMessage(statusId, message);
-					log.error(message + " - status id = " + statusId);				
-					return;
+					// Copy the benchmark zip to the server from the client
+																				
+					log.info("upload complete - now extracting");
+					Uploads.fileUploadComplete(statusId);
+					// Extract the downloaded benchmark zip file
+					if(!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath())) {
+						String message = "StarExec has failed to extract your uploaded file.";
+						Uploads.setErrorMessage(statusId, message);
+						log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
+						return;
+					}
+					log.info("Extraction Complete");
+					//update upload status
+					Uploads.fileExtractComplete(statusId);
+
+					log.debug("has dependencies = " + hasDependencies);
+					log.debug("linked = " + linked);
+					log.debug("depRootSpaceIds = " + depRootSpaceId);
+
+					log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
+					if(uploadMethod.equals("convert")) {
+
+						log.debug("convert");
+						Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
+						if (result == null) {
+							String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
+							Uploads.setErrorMessage(statusId, message);
+							log.error(message + " - status id = " + statusId);
+							return;
+						}
+						// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
+						result.setId(spaceId);
+						//update Status
+						Uploads.processingBegun(statusId);
+						if (!hasDependencies){
+							log.info("Now have the space java object.  Calling add with benchmarks and no dependencies for user " + userId + " to process and add to db.");
+							Spaces.addWithBenchmarks(result, userId, statusId);
+						}
+						else
+						{				
+							Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked, statusId);
+						}
+					} else if(uploadMethod.equals("dump")) {
+						List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+
+						for (Benchmark bench : results) {
+							// Make sure that the benchmark has a unique name in the space.
+							//TODO: verify that this is being done correctly. particularly whether benchmarks in THIS upload have unique names
+							if(Spaces.notUniquePrimitiveName(bench.getName(), spaceId, 2)) {
+								String message = "Benchmarks must have unique names within this space.  The following benchmark fails " + bench.getName();
+								Uploads.setErrorMessage(statusId, message);
+								log.error(message + " - status id = " + statusId);				
+								return;
+							}
+						}
+
+						if (!hasDependencies){	
+							Benchmarks.add(results, spaceId, statusId);
+						}
+						else{
+							Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId, statusId);
+						}
+					}
+					log.info("Handle upload method complete in " + spaceId + "for user " + userId);				
+				}
+				catch (Exception e){
+					log.error("upload Benchmarks says " + e);
+					//todo send to upload status page
+				}
+				finally{
+					Uploads.everythingComplete(statusId);
+					threadPool.shutdown();
 				}
 			}
-			
-			if (!hasDependencies){	
-				Benchmarks.add(results, spaceId, statusId);
-			}
-			else{
-				Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId, statusId);
-			}
-		}
-		log.info("Handle upload method complete in " + spaceId + "for user " + userId);				
-    			}
-    			catch (Exception e){
-    				log.error("upload Benchmarks says " + e);
-    				//todo send to upload status page
-    			}
-    			finally{
-    				Uploads.everythingComplete(statusId);
-    				threadPool.shutdown();
-    			}
-    		}
-    	});
-    }		
-	
+		});
+	}		
+
 	/**
 	 * Recursively walks through the given directory and subdirectory to find all benchmark files within them
 	 * @param directory The directory to extract benchmark files from
@@ -230,7 +265,7 @@ public class BenchmarkUploader extends HttpServlet {
 	private List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
 		// Initialize the list we will return at the end...
 		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-		
+
 		// For each file in the directory
 		for(File f : directory.listFiles()) {
 			if(f.isDirectory()) {
@@ -240,7 +275,7 @@ public class BenchmarkUploader extends HttpServlet {
 				// Or else it's just a benchmark, create an object for it and add it to the list
 				Processor t = new Processor();
 				t.setId(typeId);
-				
+
 				Benchmark b = new Benchmark();
 				b.setPath(f.getAbsolutePath());
 				b.setName(f.getName());
@@ -250,10 +285,10 @@ public class BenchmarkUploader extends HttpServlet {
 				benchmarks.add(b);
 			}
 		}
-		
+
 		return benchmarks;
 	}
-	
+
 	/**
 	 * Creates a space named after the directory and finds any benchmarks within the directory.
 	 * Then the process recursively adds any subspaces found (other directories) until all directories
@@ -281,26 +316,26 @@ public class BenchmarkUploader extends HttpServlet {
 				// Or else we're just a file, so assume it's a benchmark and create an object for it
 				Processor t = new Processor();
 				t.setId(typeId);
-				
+
 				Benchmark b = new Benchmark();
 				b.setPath(f.getAbsolutePath());
 				b.setName(f.getName());
 				b.setType(t);
 				b.setUserId(userId);
 				b.setDownloadable(downloadable);
-				
+
 				// Make sure that the benchmark has a unique name in the space.
 				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
 					return null;
 				}
-				
+
 				space.addBenchmark(b);
 			}
 		}
-		
+
 		return space;
 	}
-	
+
 	/**
 	 * Extracts the permissions object contained in the given form
 	 * @param form The form to extract permissions from
@@ -318,10 +353,10 @@ public class BenchmarkUploader extends HttpServlet {
 		p.setRemoveSpace(form.containsKey(removeSpace));
 		p.setRemoveUser(form.containsKey(removeUser));
 		p.setRemoveJob(form.containsKey(removeJob));
-		
+
 		return p;
 	}
-	
+
 	/**
 	 * Validates a benchmark upload request to determine if it can be acted on or not.
 	 * @param form A list of form items contained in the request
@@ -331,38 +366,49 @@ public class BenchmarkUploader extends HttpServlet {
 	private boolean isRequestValid(HashMap<String, Object> form) {
 		try {			
 			if(!form.containsKey(SPACE_ID) ||
-			   !form.containsKey(BENCHMARK_FILE) ||
-			   !form.containsKey(BENCHMARK_TYPE) ||
-			   !form.containsKey(UPLOAD_METHOD)  ||
-			   !form.containsKey(BENCH_DOWNLOADABLE)) {
+					!form.containsKey(BENCHMARK_FILE) ||
+					!form.containsKey(BENCHMARK_TYPE) ||
+					!form.containsKey(UPLOAD_METHOD)  ||
+					!form.containsKey(BENCH_DOWNLOADABLE) ||
+					!form.containsKey(FILE_LOC)) {
 				return false;
 			}													
-						
+
 			// Try parsing to ensure we have valid numbers
 			Integer.parseInt((String)form.get(BENCHMARK_TYPE));			
 			Integer.parseInt((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(BENCH_DOWNLOADABLE));
-			
+
 			// Make sure we have a valid upload method
 			String uploadMethod = ((String)form.get(UPLOAD_METHOD));
 			if(!(uploadMethod.equals("convert") || uploadMethod.equals("dump"))) {
 				return false;
 			}
-			
-			// Last test, return true when we find a valid file extension			
-			String fileName = ((FileItem)form.get(BENCHMARK_FILE)).getName();
-			for(String ext : BenchmarkUploader.extensions) {
-				if(fileName.endsWith(ext)) {
-					return true;
+
+			// Last test, return true when we find a valid file extension
+			if (((String)form.get(FILE_LOC)).equals("local")) {
+				String fileName = ((FileItem)form.get(BENCHMARK_FILE)).getName();
+				for(String ext : BenchmarkUploader.extensions) {
+					if(fileName.endsWith(ext)) {
+						return true;
+					}
+				}
+			} else {
+				String URL=(String)form.get(FILE_URL);
+				for (String ext : BenchmarkUploader.extensions) {
+					if (URL.endsWith(ext)) {
+						return true;
+					}
 				}
 			}
 			
+
 			// If we got here we failed file extension validation
 			return false;
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
+
 		// Return false control flow is broken and ends up here
 		return false;	
 	}

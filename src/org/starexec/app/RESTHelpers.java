@@ -46,7 +46,7 @@ public class RESTHelpers {
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
-		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, SOLVER_STATS
+		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS
 	}
 	
     private static final String SEARCH_QUERY = "sSearch";
@@ -283,7 +283,7 @@ public class RESTHelpers {
 		    		case JOB_PAIR:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
-		    		case SOLVER_STATS:
+		    		case JOB_STATS:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
@@ -881,12 +881,12 @@ public class RESTHelpers {
 		    	
 		    	break;
 		    
-		    case SOLVER_STATS:
+		    case JOB_STATS:
 		    	List<JobSolver> jobSolversToDisplay = new LinkedList<JobSolver>();
 	    		int totalJobPairs = Jobs.getJobPairCount(id);
 	    		
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-	    		jobSolversToDisplay = Jobs.getSolverStatsForNextPage(
+	    		jobSolversToDisplay = Jobs.getJobStatsForNextPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  
 	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)

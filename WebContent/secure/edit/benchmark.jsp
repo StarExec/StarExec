@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -6,7 +6,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int benchId = Integer.parseInt(request.getParameter("id"));
-		
+		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
+		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
 		Benchmark b = null;
 		if(Permissions.canUserSeeBench(benchId, userId)) {
 			b = Benchmarks.get(benchId);
@@ -51,11 +52,11 @@
 				<tbody>
 					<tr>
 						<td class="label">name</td>			
-						<td><input id="name" type="text" name="name" value="${bench.name}" maxlength="32"/></td>
+						<td><input id="name" type="text" name="name" value="${bench.name}" maxlength="${benchNameLen}"/></td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			
-						<td><textarea id="description" name="description" >${bench.description}</textarea></td>
+						<td><textarea id="description" name="description" length="${benchDescLen}" >${bench.description}</textarea></td>
 					</tr>
 					<tr>
 						<td class="label">type</td>

@@ -4,6 +4,7 @@ package org.starexec.util;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 
 /**
  * Contains methods for validating strings from user input to be stored in the database. 
@@ -13,7 +14,7 @@ public class Validator {
 	private static final Logger log = Logger.getLogger(Validator.class);
 	
 	// Regex patterns loaded from configuration
-	public static String BOOLEAN_PATTERN;										
+	/*public static String BOOLEAN_PATTERN;										
 	public static String LONG_PATTERN;
 	public static String USER_NAME_PATTERN;
 	public static String INSTITUTION_PATTERN;
@@ -22,7 +23,7 @@ public class Validator {
 	public static String PRIMITIVE_NAME_PATTERN;
 	public static String PRIMITIVE_DESC_PATTERN;
 	public static String PASSWORD_PATTERN;
-	public static String REQUEST_MESSAGE;
+	public static String REQUEST_MESSAGE;*/
 
 	// Compiled patterns used for validation	
 	private static Pattern patternBoolean;
@@ -40,19 +41,19 @@ public class Validator {
 	
     public static void initialize() {
     	// Make sure some patterns were loaded first before we compile them
-    	if(Util.isNullOrEmpty(USER_NAME_PATTERN)) {
+    	if(Util.isNullOrEmpty(R.USER_NAME_PATTERN)) {
     		log.error("Validator was initialized before patterns were loaded from configuration");    		
     	} else {    		
-	    	patternBoolean = Pattern.compile(BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
-	    	patternInteger = Pattern.compile(LONG_PATTERN);
-	    	patternUserName = Pattern.compile(USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternInstitution = Pattern.compile(INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternEmail = Pattern.compile(EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternUrl = Pattern.compile(URL_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternPrimName = Pattern.compile(PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternPrimDesc = Pattern.compile(PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
-	    	patternPassword = Pattern.compile(PASSWORD_PATTERN);
-	    	patternRequestMsg = Pattern.compile(REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
+	    	patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
+	    	patternInteger = Pattern.compile(R.LONG_PATTERN);
+	    	patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
+	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
+	    	patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
 	    	log.debug("Validator patterns successfully compiled");
     	}
     }
@@ -74,7 +75,7 @@ public class Validator {
 	 * Validates an institution field
 	 * 
 	 * @param institute the institution to validate
-	 * @return true iff institute is less than 64 characters 
+	 * @return true iff institute is less than R.INSTITUTION_LEN characters 
 	 * and not null or the empty string
 	 */
 	public static boolean isValidInstitution(String institute){		
@@ -85,7 +86,7 @@ public class Validator {
 	 * Validates an email address and checks if it is in proper email address format
 	 * 
 	 * @param email the email address to validate
-	 * @return true iff the email address is less than 64 characters,
+	 * @return true iff the email address is less than R.EMAIL_LEN characters,
 	 * not null or the empty string, and is in email address format
 	 */
     public static boolean isValidEmail(String email){
@@ -119,7 +120,7 @@ public class Validator {
      * Validates a name and checks that it contains only letters, numbers and dashes
      * 
      * @param name the space's name to check
-     * @return true iff name isn't null, is between 1 and 128 characters and
+     * @return true iff name isn't null, is between 1 and SPACE_NAME_LEN characters and
      * contains only letters, numbers and dashes
      */
     public static boolean isValidPrimName(String name){    	
@@ -145,8 +146,6 @@ public class Validator {
      * @return true iff name isn't null or empty and is less than 1024 characters
      */
     public static boolean isValidPrimDescription(String desc){
-    	System.out.println(desc);
-    	
     	return patternPrimDesc.matcher(desc).matches();
     }
     

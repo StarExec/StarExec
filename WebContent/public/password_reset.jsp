@@ -1,5 +1,12 @@
+<%@page import="org.starexec.constants.*" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<%
+	request.setAttribute("firstNameLen", R.USER_FIRST_LEN);
+	request.setAttribute("lastNameLen", R.USER_LAST_LEN);
+	request.setAttribute("emailLen", R.EMAIL_LEN);
+%>
 
 <star:template title="password reset" css="accounts/password_reset" js="lib/jquery.validate.min, accounts/password_reset">	
 	<p>enter your credentials to reset your password</p>
@@ -16,15 +23,15 @@
 			<tbody>
 				<tr>
 					<td class="label">first name: </td>
-					<td><input id="firstname" type="text" name="fn" maxlength="32"/></td>
+					<td><input id="firstname" type="text" name="fn" maxlength="${firstNameLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">last name: </td>
-					<td><input id="lastname" type="text" name="ln" maxlength="32"/></td>
+					<td><input id="lastname" type="text" name="ln" maxlength="${lastNameLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">email: </td>
-					<td><input id="email" type="text" name="em" maxlength="64"/></td>
+					<td><input id="email" type="text" name="em" maxlength="${emailLen}"/></td>
 				</tr>
 				<tr>
 					<td colspan="2"><button type="submit" id="submit" value="Submit">reset</button></td>

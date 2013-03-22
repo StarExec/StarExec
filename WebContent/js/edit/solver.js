@@ -61,24 +61,24 @@ function attachFormValidation(){
 		rules : {
 			name : {
 				required : true,
-				maxlength: 64,
+				maxlength: $("#name").attr("length"),
 				regex 	 : getPrimNameRegex()
 			},
 			description : {
 				required : false,
-				maxlength: 1024,
+				maxlength: $("#description").attr("length"),
 				regex	 : getPrimDescRegex()
 			},
 		},
 		messages : {
 			name : {
 				required : "name required",
-				maxlength: "64 characters maximum",
+				maxlength: $("#name").attr("length") + " characters maximum",
 				regex 	 : "invalid character(s)"
 			},
 			description : {
 				required : "description required",
-				maxlength: "1024 characters maximum",
+				maxlength: $("#description").attr("length") + " characters maximum",
 				regex	 : "invalid character(s)"
 			}
 		}

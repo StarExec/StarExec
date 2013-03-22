@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -8,6 +8,8 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
+		request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
+		request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 		List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
 		
@@ -51,11 +53,11 @@
 				<tbody>
 					<tr title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
-						<td><input id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
+						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 					</tr>
 					<tr title="are there any additional details that you want to document with the job?">
 						<td class="label"><p>description</p></td>
-						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
+						<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
 					</tr>
 					<tr title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>

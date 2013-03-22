@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -6,7 +6,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int solverId = Integer.parseInt(request.getParameter("id"));
-		
+		request.setAttribute("solverNameLen", R.SOLVER_NAME_LEN);
+		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
 		Solver s = null;
 		if(Permissions.canUserSeeSolver(solverId, userId)) {
 			s = Solvers.get(solverId);
@@ -50,12 +51,11 @@
 				<tbody>
 					<tr>
 						<td class="label">solver name</td>			
-						<td>${solver.name}</td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			
 						<td>
-							<textarea id="description" name="description" >${solver.description}</textarea>
+							<textarea id="description" name="description" length="${solverDescLen}">${solver.description}</textarea>
 						</td>
 					</tr>
 					<tr>

@@ -33,13 +33,13 @@ function attachFormValidation(){
 				required 	: true,
 				regex 		: getUserNameRegex(),
 				minlength 	: 2,
-				maxlength	: 32
+				maxlength	: $("#firstname").attr("maxlength")
 			},
 			ln : {
 				required 	: true,
 				regex 		: getUserNameRegex(),
 				minlength 	: 2,
-				maxlength	: 32
+				maxlength	: $("#lastname").attr("maxlength")
 			},
 			em : {
 				required 	: true,
@@ -50,13 +50,13 @@ function attachFormValidation(){
 			fn : {
 				required 	: "enter your first name",
 				minlength 	: "2 characters minimum",
-				maxlength	: "32 characters maximum",
+				maxlength	: $("#firstname").attr("maxlength") +  " characters maximum",
 				regex 		: "invalid character(s)"
 			},
 			ln : {
 				required 	: "enter your first name",
 				minlength 	: "2 characters minimum",
-				maxlength	: "32 characters maximum",
+				maxlength	: $("#lastname").attr("maxlength") + " characters maximum",
 				regex 		: "invalid character(s)"
 			},
 			em : {

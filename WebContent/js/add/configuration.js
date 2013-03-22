@@ -62,7 +62,7 @@ function attachFormValidation() {
 			},
 			uploadConfigDesc: { 
 				required: true,
-				maxlength: 1024,
+				maxlength: $("#uploadConfigDesc").attr("maxlength"),
 				regex: getPrimDescRegex()
 			}
 		},
@@ -76,7 +76,7 @@ function attachFormValidation() {
 			},
 			uploadConfigDesc: {
 				required: "description required",
-				maxlength: "max length is 1024",
+				maxlength: "max length is " + $("#uploadConfigDesc").attr("maxlength"),
 				regex: "invalid character(s)"
 			}
 		}
@@ -91,7 +91,7 @@ function attachFormValidation() {
 			},
 			saveConfigDesc: { 
 				required: true,
-				maxlength: 1024,
+				maxlength: $("#saveConfigDesc").attr("maxlength"),
 				regex: getPrimDescRegex()
 			},
 			saveConfigContents: {
@@ -105,7 +105,7 @@ function attachFormValidation() {
 			},
 			saveConfigDesc: {
 				required: "description required",
-				maxlength: "max length is 1024",
+				maxlength: "max length is " + $("#saveConfigDesc").attr("maxlength"),
 				regex: "invalid characters"
 			},
 			saveConfigContents: {

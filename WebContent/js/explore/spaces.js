@@ -1545,8 +1545,8 @@ function initDataTables(){
 			unselectAll("#"+$(this).parent().parent().attr("id"));
 			$(this).toggleClass("row_selected");
 		});
-		$(tables[x]).css("table-layout", "fixed");
-		$(tables[x]).css("word-wrap", "break-word");
+		//$(tables[x]).css("table-layout", "fixed");
+		//$(tables[x]).css("word-wrap", "break-word");
 	}
 		// Setup user permission tooltip
 	$('#users tbody').delegate('tr', 'hover', function(){

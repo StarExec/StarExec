@@ -11,6 +11,14 @@
 	padding: 10px;
 }
 
+#fileURL {
+	width:90%;
+}
+
+select {
+	width:95%;
+}
+
 .label {
 	width: 160px;
 	vertical-align: middle;

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -6,7 +6,10 @@
 	int id = Integer.parseInt((String)request.getParameter("cid"));
 	Space com = Communities.getDetails(id);
 	Permission perm = SessionUtil.getPermission(request, id);
-	
+	request.setAttribute("communityNameLen", R.COMMUNITY_NAME_LEN);
+	request.setAttribute("communityDescLen", R.COMMUNITY_DESC_LEN);
+	request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
+	request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
 	if(com == null) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
 	} else if (perm == null || !perm.isLeader()) {
@@ -45,11 +48,11 @@
 			<tbody>
 				<tr>
 					<td>community name </td>
-					<td id="editname">${com.name}</td>
+					<td id="editname" length="${communityNameLen}">${com.name}</td>
 				</tr>
 				<tr>
 					<td>description</td>
-					<td id="editdesc">${com.description}</td>
+					<td id="editdesc" length="${communityDescLen}">${com.description}</td>
 				</tr>		
 			</tbody>
 		</table>
@@ -212,8 +215,8 @@
 			<table id="postProcessorTbl" class="shaded">
 				<thead>
 					<tr>
-						<th>name</th>				
-						<th>description</th>
+						<th id="procName" length="${processorNameLen}">name</th>				
+						<th id="procDesc" length="${processorDescLen}">description</th>
 						<th>file name</th>
 					</tr>								
 				</thead>

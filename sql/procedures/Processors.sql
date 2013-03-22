@@ -72,7 +72,7 @@ CREATE PROCEDURE UpdateProcessorDescription(IN _id INT, IN _desc TEXT)
 -- Updates a processor's name
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateProcessorName;
-CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(32))
+CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(64))
 	BEGIN		
 		UPDATE processors
 		SET name=_name

@@ -36,12 +36,12 @@
 	</div>				
 	<fieldset>
 		<legend>details<c:if test="${t_user.id == t_user.id}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
-		<table id="infoTablep">
+		<table id="infoTable">
 		<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${t_user.id}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${t_user.id}&type=uorg"><br>
 			</td>
-			<td id="userDetail">
+			<td id="userDetail" class="detail">
 			<table id="personal" class="shaded">
 				<tr>
 					<td>e-mail address</td>			

@@ -84,13 +84,13 @@ function attachFormValidation(){
 				required 	: true,
 				regex 		: getUserNameRegex(),
 				minlength 	: 2,
-				maxlength 	: 32
+				maxlength 	: $("#firstname").attr("maxlength")
 			},
 			ln : {
 				required 	: true,
 				regex 		: getUserNameRegex(),
 				minlength 	: 2,
-				maxlength 	: 32
+				maxlength 	: $("#lastname").attr("maxlength");
 			},
 			em : {
 				required 	: true,
@@ -100,11 +100,11 @@ function attachFormValidation(){
 				required 	: true,
 				regex		: "^[\\w\\-\\s']+$",
 				minlength 	: 2,
-				maxlength 	: 64
+				maxlength 	: $("institution").attr("maxlength")
 			},
 			pwd : {
 				required: true,
-				maxlength : 20,
+				maxlength : $("#password").attr("length"),
 				minlength : 5
 			},
 			confirm_password : {
@@ -121,31 +121,31 @@ function attachFormValidation(){
 				required	: true,
 				regex 		: getPrimDescRegex(),
 				minlength	: 2,
-				maxlength	: 512
+				maxlength	: $("#reason").attr("length")
 			}			
 		},
 		messages : {
 			fn : {
 				required  	: "enter a first name",
 				minlength 	: "2 characters minimum",
-				maxlength 	: "32 characters maximum",
+				maxlength 	: $("#firstname").attr("maxlength") + " characters maximum",
 				regex 		: "invalid character(s)"
 			},
 			ln : {
 				required 	: "enter a last name",
 				minlength 	: "2 characters minimum",
-				maxlength 	: "32 characters maximum",
+				maxlength 	: $("#lastname").attr("maxlength") + " characters maximum",
 				regex 		: "invalid character(s)"
 			},
 			inst : {
 				required 	: "enter your institution's name",
 				minlength 	: "2 characters minimum",
-				maxlength 	: "64 characters maximum",
+				maxlength 	: $("#institution").attr("maxlength") + " characters maximum",
 				regex 		: "invalid character(s)"
 			},
 			pwd : {
 				required : "please provide a password",
-				maxlength : "20 characters maximum"
+				maxlength : $("#password").attr("length") + " characters maximum"
 			},
 			confirm_password : {
 				required 	: "please provide a password",
@@ -163,7 +163,7 @@ function attachFormValidation(){
 			},
 			msg : {
 				minlength 	: "2 characters minimum",
-				maxlength 	: "512 characters maximum",
+				maxlength 	: $("#reason").attr("length") + " characters maximum",
 				regex		: "unsafe character(s)",
 				required 	: "enter your reason for joining"
 			}

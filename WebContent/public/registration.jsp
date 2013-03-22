@@ -1,8 +1,14 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*" session="false"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*;" session="false"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	request.setAttribute("coms", Communities.getAll());
+	request.setAttribute("firstNameLen", R.USER_FIRST_LEN);
+	request.setAttribute("lastNameLen", R.USER_LAST_LEN);
+	request.setAttribute("institutionLen", R.INSTITUTION_LEN);
+	request.setAttribute("emailLen",R.EMAIL_LEN);
+	request.setAttribute("passwordLen",R.PASSWORD_LEN);
+	request.setAttribute("msgLen", R.MSG_LEN);
 %>
 
 <star:template title="user registration" css="common/pass_strength_meter, accounts/registration" js="lib/jquery.validate.min, lib/jquery.validate.password, accounts/registration">	
@@ -21,24 +27,24 @@
 			<tbody>						
 				<tr>
 					<td class="label">first name</td>
-					<td><input id="firstname" type="text" name="fn" maxlength="32"/></td>
+					<td><input id="firstname" type="text" name="fn" maxlength="${firstNameLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">last name</td>
-					<td><input id="lastname" type="text" name="ln" maxlength="32"/></td>
+					<td><input id="lastname" type="text" name="ln" maxlength="${lastNameLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">email</td>
-					<td><input id="email" type="text" name="em" maxlength="64"/></td>
+					<td><input id="email" type="text" name="em" maxlength="${emailLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">institution</td>
-					<td><input id="institution" type="text" name="inst" maxlength="64"/></td>
+					<td><input id="institution" type="text" name="inst" maxlength="${institutionLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">password</td>
 					<td>
-						<input id="password" type="password" name="pwd"/>
+						<input id="password" type="password" name="pwd" length=${passwordLen}/>
 						<div class="password-meter" id="pwd-meter">
 							<div class="password-meter-message"> </div>
 							<div class="password-meter-bg">
@@ -89,7 +95,7 @@
 					</tr>
 					<tr>
 						<td class="label">reason for joining</td>
-						<td><textarea name="msg" id="reason"></textarea></td>
+						<td><textarea name="msg" id="reason" length=${msgLen}></textarea></td>
 					</tr>		
 					<tr>
 						<td colspan="3"><button type="submit" id="submit" value="Submit">register</button></td>

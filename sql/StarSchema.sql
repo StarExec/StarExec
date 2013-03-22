@@ -473,3 +473,18 @@ CREATE TABLE unvalidated_benchmarks (
     bench_name VARCHAR(256) NOT NULL,
 	PRIMARY KEY (id)
 );
+
+--For keeping statisitcs related to the performance of solver/configuration pairs
+--in particular jobs
+--Author: Eric Burns
+
+CREATE TABLE job_stats (
+	id INT NOT NULL,
+	job_id INT NOT NULL,
+	solver_id INT NOT NULL,
+	config_ID INT NOT NULL,
+	jp_complete INT DEFAULT 0,
+	jp_incomplete INT DEFAULT 0,
+	jp_error INT DEFAULT 0,
+	PRIMARY KEY (id)
+);

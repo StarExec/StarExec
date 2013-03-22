@@ -17,6 +17,8 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Processors;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -68,6 +70,7 @@ public class Download extends HttpServlet {
 			else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);
+				
 			}
 			else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));			
@@ -82,6 +85,14 @@ public class Download extends HttpServlet {
 				} else {
 					fileName = handleSpaceHierarchy(space, u.getId(), u.getArchiveType(), response);
 				}
+			} else if (request.getParameter("type").equals("proc")) {
+				List<Processor> proc=null;
+				if (request.getParameter("procClass").equals("post")) {
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.POST);
+				} else {
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
+				}
+				fileName=handleProc(proc,u.getId(),u.getArchiveType(),Integer.parseInt(request.getParameter("id")) , response);
 			}
 			
 			// Redirect based on success/failure
@@ -122,6 +133,30 @@ public class Download extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
 		}
     	
+    	return null;
+    }
+    
+    /*
+     * Handles requests for downloading post processors for a given community
+     * @return the filename of the created archive
+     * @author Eric Burns
+     */
+    
+    private static String handleProc(List<Processor> procs, int userId, String format, int spaceId, HttpServletResponse response) throws IOException {
+    	
+    	if (Permissions.canUserSeeSpace(spaceId, userId)) {
+    		
+    		String fileName="Community "+String.valueOf(spaceId)+"Procs" + "_("+UUID.randomUUID().toString()+")" +format;
+    		File uniqueDir=new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+    		uniqueDir.createNewFile();
+    		List<File> files=new LinkedList<File>();
+    		for (Processor x : procs) {
+    			files.add(new File(x.getFilePath()));
+    		}
+    		ArchiveUtil.createArchive(files, uniqueDir, format);
+    		
+    		return fileName;
+    	}
     	return null;
     }
     
@@ -506,7 +541,8 @@ public class Download extends HttpServlet {
     				request.getParameter("type").equals("jp_output") ||
     				request.getParameter("type").equals("job") ||
     				request.getParameter("type").equals("j_outputs") ||
-    				request.getParameter("type").equals("space"))) {
+    				request.getParameter("type").equals("space") ||
+    				request.getParameter("type").equals("proc"))) {
     			return false;
     		}
     		

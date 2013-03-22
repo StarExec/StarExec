@@ -46,6 +46,10 @@ th.sorting_desc {
 	cursor: pointer;
 }
 
+select {
+	width:95%;
+}
+
 
 .dataTables_filter {
 	width: 50%;
@@ -97,8 +101,17 @@ th.sorting_desc {
 	background-image: url('/starexec/images/tables/forward_enabled.png');
 }
 
+table {
+	table-layout:fixed;
+	word-wrap:break-word;
+}
+
 #content tbody tr:not(.row_selected):hover {
 	background-color: #ae0000;	
+}
+
+#content tbody tr .dataTables_empty:hover {
+	background-color: #222222;
 }
 
 #content tbody td {
@@ -164,6 +177,10 @@ tbody tr.row_selected {
 
 .dataTables_empty {
 	text-align: center;
+}
+
+tbody tr.row_selected .dataTables_empty {
+	background-color:#222222;
 }
 
 tfoot input {

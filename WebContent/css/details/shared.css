@@ -2,6 +2,10 @@ table {
 	width: 100%;	
 }
 
+#infoTable {
+	table-layout:auto;
+}
+
 fieldset {
 	width: 600px;
 	margin-top: 30px;
@@ -103,6 +107,19 @@ fieldset {
 	float: right;
 	margin-right: 10px;
 }
+
+#infoTable tbody tr:hover {
+	background-color: #222222 !important;
+}
+
+#infoTable .detail .shaded thead tr:hover {
+	background-color: #111111 !important;
+}	
+
+#infoTable .detail .shaded tbody tr:hover {
+	background-color: #ae0000 !important;
+}
+
 
 #usrJobsTable p.stat {
 	margin: auto;

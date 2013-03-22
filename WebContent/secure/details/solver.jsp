@@ -44,7 +44,7 @@
 					</c:when>
 					</c:choose>
 			</td>
-			<td id="solverDetail">
+			<td id="solverDetail" class="detail">
 				<table id="solverInfo" class="shaded">
 					<thead>
 						<tr>

@@ -2,6 +2,7 @@ package org.starexec.util;
 
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.List;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -318,6 +319,27 @@ public class ArchiveUtil {
 			log.error(e.getMessage(), e);
 		}
 	}
+	
+	/*
+	 * Creates an archive in the same way as above, but with a list of files
+	 * @author Eric Burns
+	 */
+	
+	public static void createArchive(List<File> files, File destination, String format) {
+		log.info("creating archive with multiple paths, dest = "+destination+", format = "+format);
+		try {
+			if (format.equals(".zip")) {
+				ArchiveUtil.createZip(files, destination);
+			} else if (format.equals(".tar")) {
+				ArchiveUtil.createTar(files, destination);
+			} else if (format.equals(".tar.gz") || format.equals(".tgz")) {
+				ArchiveUtil.createTarGz(files, destination);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+	}
 
 	/**
 	 * Creates a .zip file of the specified directory "path" and saves it to "destination"
@@ -348,6 +370,29 @@ public class ArchiveUtil {
 		}
 
 	}
+	/*
+	 * Creates a zip in the same way as above, but with multiple files
+	 * @author Eric Burns
+	 */
+	public static void createZip(List<File> paths, File destination) throws Exception {
+		log.debug("creating zip, of multiple files, dest = " + destination);
+		FileOutputStream fOut=null;
+		BufferedOutputStream bOut = null;
+		ZipArchiveOutputStream zOut = null;
+		try {
+			fOut=new FileOutputStream(destination);
+			bOut=new BufferedOutputStream(fOut);
+			zOut = new ZipArchiveOutputStream(bOut);
+			for (File x : paths ) {
+				addFileToZip(zOut,x,"");
+			}
+		} finally {
+			zOut.finish();
+			zOut.close();
+			bOut.close();
+			fOut.close();
+		}
+	}
 
 	/**
 	 * Adds a file to the .zip archive. If the file is a folder, recursively adds the contents of the
@@ -371,9 +416,14 @@ public class ArchiveUtil {
 			zOut.closeArchiveEntry();
 		} else {
 			zOut.closeArchiveEntry();
-
+			
 			File[] children = path.listFiles();
-			log.debug("Number of files = " + children.length);
+			if (children!=null) {
+				log.debug("Number of files = " + children.length);
+			} else {
+				log.debug("Number of files = " + 1);
+			}
+			
 			if (children != null) {
 				for (File child : children) {
 					addChildToZip(zOut, child, entryName);
@@ -408,6 +458,33 @@ public class ArchiveUtil {
 			tOut = new TarArchiveOutputStream(bOut);
 
 			addFileToTar(tOut, path, "");
+		} finally {
+			tOut.finish();
+
+			tOut.close();
+			bOut.close();
+			fOut.close();
+		}
+	}
+	
+	/*
+	 * Creates a Tar as above, but with a list of files
+	 * @author Eric Burns
+	 */
+	
+	public static void createTar(List<File> files, File destination) throws Exception {
+		FileOutputStream fOut = null;
+		BufferedOutputStream bOut = null;
+		TarArchiveOutputStream tOut = null;
+
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			tOut = new TarArchiveOutputStream(bOut);
+			for (File x: files) {
+				addFileToTar(tOut, x, "");
+			}
+			
 		} finally {
 			tOut.finish();
 
@@ -481,6 +558,39 @@ public class ArchiveUtil {
 			bOut.close();
 			fOut.close();
 		}
+	}
+	
+	/*
+	 * Creates a TarGz as above, but with a list of files
+	 * @author Eric Burns
+	 */
+	
+	public static void createTarGz(List<File> files, File destination) throws Exception {
+		FileOutputStream fOut = null;
+		BufferedOutputStream bOut = null;
+		GzipCompressorOutputStream gzOut = null;
+		TarArchiveOutputStream tOut = null;
+
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			gzOut = new GzipCompressorOutputStream(bOut);
+			tOut = new TarArchiveOutputStream(gzOut);
+			for (File x : files) {
+				addFileToTarGz(tOut, x, "");
+			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			tOut.finish();
+
+			tOut.close();
+			gzOut.close();
+			bOut.close();
+			fOut.close();
+		}
+		
 	}
 
 	/**

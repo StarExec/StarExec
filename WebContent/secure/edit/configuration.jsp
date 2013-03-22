@@ -1,10 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%
 try {
 	// Grab relevant user id & configuration info
+	request.setAttribute("configNameLen", R.CONFIGURATION_NAME_LEN);
+	request.setAttribute("configDescLen", R.CONFIGURATION_DESC_LEN);
 	int configId = Integer.parseInt((String)request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
 	Configuration con = Solvers.getConfiguration(configId);
@@ -52,11 +54,11 @@ try {
 			<tbody>
 				<tr>
 					<td>name</td>
-					<td><input id="name" type="text" name="name" maxlength="64" value="${config.name}"/></td>
+					<td><input id="name" type="text" name="name" maxlength="${configNameLen}" value="${config.name}"/></td>
 				</tr>
 				<tr>
 					<td>description</td>
-					<td><textarea id="description" name="description">${config.description}</textarea></td>
+					<td><textarea id="description" name="description" length="${configDescLen}" >${config.description}</textarea></td>
 				</tr>
 				<tr>
 					<td>contents</td>

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -7,7 +7,8 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
-		
+		request.setAttribute("solverNameLen", R.SOLVER_NAME_LEN);
+		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if(!p.canAddSolver()) {
@@ -33,17 +34,22 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>solver location</td>
-						<td><input name="f" type="file" id="fileLoc"/></td>
+						<td>upload method</td>
+						<td>local file<input type="radio" id="radioLocal" name="upMethod" value="local"/> URL <input type=radio id="radioURL" name="upMethod" value="URL"/></td>
 					</tr>
+					<tr id="localRow">
+						<td>solver location</td>
+						<td><input type="file" name="f" id="fileLoc"/><input name="url" type="text" id="fileURL"/></td>	
+					</tr>
+					
 					<tr>
 						<td>solver name</td>
-						<td><input name="sn" type="text" size="42" /></td>
+						<td><input id="name" name="sn" type="text" size="42" length="${solverNameLen}" /></td>
 					</tr>
 					<tr>
 						<td>solver description</td>
 						<td>
-						    <textarea rows="6" cols="40" name="desc"></textarea>
+						    <textarea id="description" rows="6" cols="40" name="desc" length="${solverDescLen}"></textarea>
 						    <input name="d" type="file" id="fileLoc"/>
 						</td>
 					</tr>					

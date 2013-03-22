@@ -52,9 +52,13 @@
 					</tr>
 				</thead>
 				<tbody>
+					<tr>
+						<td>upload method</td>
+						<td>local file<input type="radio" id="radioLocal" name="localOrURL" value="local"/> URL <input type=radio id="radioURL" name="localOrURL" value="URL"/></td>
+					</tr>
 					<tr title="select the archive file containing your benchmarks">
 						<td><label for="typeFile">benchmarks</label></td>
-						<td><input name="benchFile" type="file" id="benchFile" /></td>
+						<td><input name="benchFile" type="file" id="benchFile" /><input name="url" type="text" id="fileURL"/></td>
 					</tr>
 					<tr>
 						<td class="label"><p>upload method</p></td>

@@ -39,25 +39,25 @@ function attachFormValidation(){
 		rules: {
 			name: {
 				required : true,
-				maxlength: 128,
+				maxlength: $("#name").attr("length"),
 				regex	 : getPrimNameRegex()
 			},
 			description: {
 				required : false,
 				minlength: 0,
-				maxlength: 1024
+				maxlength: $("#description").attr("length")
 				//regex	 : getPrimDescRegex()
 			}
 		},
 		messages: {
 			name:{
 				required : "enter a space name",
-				maxlength: "128 characters maximum",
+				maxlength: $("#name").attr("length")+" characters maximum",
 				regex	 : "invalid character(s)"
 			},
 			description: {
 				required : "enter a description",
-				maxlength: "1024 characters maximum"
+				maxlength: $("#description").attr("length")+" characters maximum"
 				//regex	 : "invalid character(s)"
 			}
 		}

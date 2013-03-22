@@ -1,11 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%		
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int spaceId = Integer.parseInt(request.getParameter("id"));
-
+		request.setAttribute("nameLength", R.SPACE_NAME_LEN);
+		request.setAttribute("descLength", R.SPACE_DESC_LEN);
 		Space s = null;
 		if (Permissions.canUserSeeSpace(spaceId,userId)) {
 			s = Spaces.get(spaceId);
@@ -78,11 +79,11 @@
 				<tbody>
 					<tr>
 						<td class="label">space name</td>			
-						<td><input id="name" type="text" name="name" value="${space.name}"></td>
+						<td><input id="name" type="text" name="name" value="${space.name}" length=${nameLength}></td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			
-						<td><textarea id="description" name="description" >${space.description}</textarea></td>
+						<td><textarea id="description" name="description" length=${descLength}>${space.description}</textarea></td>
 					</tr>
 					<tr>
 						<td class="label"><p>default</p></td>

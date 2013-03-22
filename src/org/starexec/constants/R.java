@@ -19,6 +19,42 @@ public class R {
 		throw new Exception("Cannot instantiate class because it is static.");
 	}
 	
+	
+	//maximum length properties
+	public static int SPACE_NAME_LEN=128;
+	public static int SPACE_DESC_LEN=1024;
+	public static int USER_FIRST_LEN=32;
+	public static int USER_LAST_LEN=32;
+	public static int INSTITUTION_LEN=64;
+	public static int EMAIL_LEN=64;
+	public static int PASSWORD_LEN=20;
+	public static int MSG_LEN=512;
+	public static int BENCH_NAME_LEN=64;
+	public static int BENCH_DESC_LEN=1024;
+	public static int COMMUNITY_NAME_LEN=64;
+	public static int COMMUNITY_DESC_LEN=300;
+	public static int CONFIGURATION_NAME_LEN=64;
+	public static int CONFIGURATION_DESC_LEN=1024;
+	public static int SOLVER_NAME_LEN=64;
+	public static int SOLVER_DESC_LEN=1024;
+	public static int JOB_NAME_LEN=64;
+	public static int JOB_DESC_LEN=1024;
+	public static int URL_LEN=128;
+	public static int PROCESSOR_NAME_LEN=64;
+	public static int PROCESSOR_DESC_LEN=1024;
+	//Regex patterns
+	public static String BOOLEAN_PATTERN="true|false";
+	public static String LONG_PATTERN="^\\-?\\d+$";
+	public static String USER_NAME_PATTERN="^[A-Za-z\\-\\s']{2," +String.valueOf(USER_FIRST_LEN)+ "}$";
+	public static String INSTITUTION_PATTERN="^[\\w\\-\\s']{2," +String.valueOf(INSTITUTION_LEN) +"}$";
+	public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
+	public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
+	public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. ]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
+	public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$";
+	public static String PRIMITIVE_DESC_PATTERN="^.{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
+	public static String PASSWORD_PATTERN="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$";
+	
+	
 	// Email properties
 	public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
 	public static int EMAIL_SMTP_PORT = 25;

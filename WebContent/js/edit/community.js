@@ -175,13 +175,15 @@ function attachFormValidation(){
 			rules : {
 				name : {
 					required : true,
-					regex : getPrimNameRegex(),
-					maxlength: 64
+					maxlength: $("#procName").attr("length"),
+					regex : getPrimNameRegex()
+					
 				},
 				desc: {
 					required : true,	
-					regex : getPrimDescRegex(),
-					maxlength: 300
+					maxlength: $("#procDesc").attr("length"),
+					regex : getPrimDescRegex()
+					
 				},
 				file: {
 					required : true				
@@ -190,12 +192,12 @@ function attachFormValidation(){
 			messages : {
 				name : {
 					required : "enter a processor name",
-					maxlength : "64 characters maximum",
+					maxlength : $("#procName").attr("length") + " characters maximum",
 					regex : "invalid character(s)"
 				},
 				desc : {				
 					required : "enter a processor description",
-					maxlength : "300 characters maximum",	
+					maxlength : $("#procDesc").attr("length") + " characters maximum",	
 					regex : "invalid character(s)"
 				},
 				file : {
@@ -381,6 +383,7 @@ function deleteProcessor(pid, parent){
 						"/starexec/services/processors/delete/" + pid,
 						function(returnCode) {
 							if(returnCode == '0') {
+								alert("this happened");
 								var table = $(parent).parents('table');
 								parent.siblings('tr:first-child').children('th:last').remove();
 								parent.remove();

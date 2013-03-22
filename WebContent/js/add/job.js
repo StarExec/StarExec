@@ -52,12 +52,12 @@ function attachFormValidation(){
 			name: {
 				required: true,
 				minlength: 2,
-				maxlength: 32,
+				maxlength: $("#txtJobName").attr("length"),
 				regex : getPrimNameRegex()
 			},
 			desc: {
 				required: false,
-				maxlength: 1024,
+				maxlength: $("#txtDesc").attr("length"),
 				regex: getPrimDescRegex()
 			},
 			cpuTimeout: {
@@ -76,12 +76,12 @@ function attachFormValidation(){
 			name:{
 				required: "enter a job name",
 				minlength: "2 characters minimum",
-				maxlength: "32 characters maximum",
+				maxlength: $("#txtJobName").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
 			},
 			desc: {
 				required: "enter a job description",
-				maxlength: "1024 characters maximum",
+				maxlength: $("#txtDesc").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
 			},
 			cpuTimeout: {

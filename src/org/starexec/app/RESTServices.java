@@ -296,13 +296,13 @@ public class RESTServices {
 	@POST
 	@Path("/jobs/{id}/solvers/pagination")
 	@Produces("application/json")
-	public String getSolverStatsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(2);
 		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER_STATS, jobId, request);
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
 		return nextDataTablesPage==null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 		

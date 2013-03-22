@@ -16,11 +16,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import java.net.URL;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -56,6 +59,8 @@ public class UploadSolver extends HttpServlet {
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
     private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
+    private static final String UPLOAD_METHOD="upMethod";
+    private static final String FILE_URL="url";
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -114,9 +119,28 @@ public class UploadSolver extends HttpServlet {
 	@SuppressWarnings("deprecation")
 	public int handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
-			FileItem item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);
+			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
+			FileItem item=null;
+			String name=null;
+			URL url=null;
+			if (upMethod.equals("local")) {
+				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);		
+			} else {
+				url=new URL((String)form.get(UploadSolver.FILE_URL));
+				try {
+					name=url.toString().substring(url.toString().lastIndexOf('/'));
+				} catch (Exception e) {
+					name=url.toString().replace('/', '-');
+				}
+				
+				
+				
+			}
+			
+
 			FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
-	
+			
+		
 
 			//Set up a new solver with the submitted information
 			Solver newSolver = new Solver();
@@ -138,12 +162,22 @@ public class UploadSolver extends HttpServlet {
 
 			
 			//Process the archive file and extract
-			File archiveFile = new File(uniqueDir,  item.getName());
-			new File(archiveFile.getParent()).mkdir();
-			item.write(archiveFile);		
+			File archiveFile=null;
+			String FileName=null;
+			if (upMethod.equals("local")) {
+				archiveFile = new File(uniqueDir,  item.getName());
+				new File(archiveFile.getParent()).mkdir();
+				item.write(archiveFile);		
+				FileName = item.getName().split("\\.")[0];
+			} else {
+				archiveFile=new File(uniqueDir, name);
+				new File(archiveFile.getParent()).mkdir();
+				FileUtils.copyURLToFile(url, archiveFile);
+				FileName=name.split("\\.")[0];
+			}
+			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
-			
 			//Find configurations from the top-level "bin" directory
 			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
@@ -151,7 +185,7 @@ public class UploadSolver extends HttpServlet {
 			
 			
 			//Search for Description within File, and extract its contents if it exists
-			String FileName = item.getName().split("\\.")[0];
+			
 			String Destination = archiveFile.getParentFile().getCanonicalPath() + File.separator;
 			String strUnzipped = "";		
 		    try {
@@ -250,7 +284,8 @@ public class UploadSolver extends HttpServlet {
 					!form.containsKey(SPACE_ID) ||
 					!form.containsKey(UploadSolver.SOLVER_NAME) || 
 					!form.containsKey(SOLVER_DESC) ||
-					!form.containsKey(SOLVER_DOWNLOADABLE)) {
+					!form.containsKey(SOLVER_DOWNLOADABLE) || 
+					!form.containsKey(UPLOAD_METHOD)) {
 				return false;
 			}
 			
@@ -264,13 +299,22 @@ public class UploadSolver extends HttpServlet {
 					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC))) {					
 				return false;
 			}
-			
-			String fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
-			for(String ext : UploadSolver.extensions) {
-				if(fileName.endsWith(ext)) {
-					return true;
+			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
+				String fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
+				for(String ext : UploadSolver.extensions) {
+					if(fileName.endsWith(ext)) {
+						return true;
+					}
+				}
+			} else {
+				String url=(String)form.get(UploadSolver.FILE_URL);
+				for (String ext:UploadSolver.extensions) {
+					if (url.endsWith(ext)) {
+						return true;
+					}
 				}
 			}
+			
 			
 			
 			return false;

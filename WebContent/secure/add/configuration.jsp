@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -7,7 +7,8 @@
 		int solverId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
-		
+		request.setAttribute("configNameLen", R.CONFIGURATION_NAME_LEN-4);
+		request.setAttribute("configDescLen", R.CONFIGURATION_DESC_LEN);
 		// Verify this user is the owner of the solver they are trying to upload configurations to
 		if(solver.getUserId() == userId) {
 			request.setAttribute("solver", solver);
@@ -40,11 +41,11 @@
 					</tr>
 					<tr>
 						<td>configuration name</td>
-						<td><input id="uploadConfigName" name="uploadConfigName" type="text" size="64" maxlength="60"/></td>
+						<td><input id="uploadConfigName" name="uploadConfigName" type="text" size="64" maxlength="${configNameLen}"/></td>
 					</tr>
 					<tr>
 						<td>configuration description</td>
-						<td><textarea id="uploadConfigDesc" name="uploadConfigDesc" rows="6" cols="40" maxlength="1024"></textarea></td>
+						<td><textarea id="uploadConfigDesc" name="uploadConfigDesc" rows="6" cols="40" maxlength="${configDescLen}"></textarea></td>
 					</tr>
 				</tbody>
 			</table>	
@@ -66,11 +67,11 @@
 				<tbody>
 					<tr>
 						<td>configuration name</td>
-						<td><input id="saveConfigName" name="saveConfigName" type="text" size="64" maxlength="60"/></td>
+						<td><input id="saveConfigName" name="saveConfigName" type="text" size="64" maxlength="${configNameLen}"/></td>
 					</tr>
 					<tr>
 						<td>configuration description</td>
-						<td><textarea id="saveConfigDesc" name="saveConfigDesc" rows="6" cols="40" maxlength="1024"></textarea></td>
+						<td><textarea id="saveConfigDesc" name="saveConfigDesc" rows="6" cols="40" maxlength="${configDescLen}"></textarea></td>
 					</tr>
 					<tr>
 						<td>configuration contents</td>

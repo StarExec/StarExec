@@ -1,9 +1,11 @@
 $(document).ready(function(){
 	initUI();
 	attachFormValidation();
+	
+	$("#radioLocal").attr("checked", "checked");
+	$("#fileLoc").show();
+	$("#fileURL").hide();
 });
-
-
 
 /**
  * Initializes user-interface 
@@ -21,6 +23,27 @@ function initUI(){
  */
 function attachFormValidation(){
 	
+	
+	$("#radioLocal").change(function() {
+		if ($("#radioLocal").is(":checked")) {
+			$("#fileURL").fadeOut('fast', function() {
+				$("#fileLoc").fadeIn('fast');
+			});
+			
+			
+		}
+	});
+
+	$("#radioURL").change(function() {
+		if ($("#radioURL").is(":checked")) {
+			$("#fileLoc").fadeOut('fast', function() {
+				$("#fileURL").fadeIn('fast');
+			});
+			
+		}
+	});
+	
+	
 	// Add regular expression handler to jQuery validator
 	$.validator.addMethod(
 			"regex", 
@@ -28,6 +51,8 @@ function attachFormValidation(){
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
+	
+	
 	
 	// Re-validate the 'solver location' field when it loses focus
 	$("#fileLoc").change(function(){
@@ -38,40 +63,48 @@ function attachFormValidation(){
 	$("#upForm").validate({
 		rules: {
 			f: {
-				required : true,
+				required : "#radioLocal:checked",
+				regex	 : "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+			},
+			url: {
+				required : "#radioURL:checked",
 				regex	 : "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			sn: {
 				required : true,
-				maxlength: 64,
+				maxlength: $("#name").attr("length"),
 				regex 	 : getPrimNameRegex()
 			},
 			desc: {
 				required: false,
-				maxlength: 1024,
+				maxlength: $("#description").attr("length"),
 				regex    : getPrimDescRegex()
 			},
 			d: {
 			    required : false,
 				regex	 : "(\.txt$)"
-			},
+			}
 		},
 		messages: {
 			f: {
 				required: "please select a file",
 				regex 	: ".zip, .tar and .tar.gz only"
 			},
+			url: {
+				required :"please enter a URL",
+				regex	 :"URL must be .zip, .tar, or .tar.gz"	
+			},
 			sn: {
 				required: "solver name required",
-				maxlength: "64 characters maximum",
+				maxlength: $("#name").attr("length") + " characters maximum",
 				regex 	: "invalid character(s)"
 			},
 			desc: {
-				maxlength: "1024 characters maximum",
+				maxlength: $("#description").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
 			},
 			d: {
-				regex: ".txt file only",
+				regex: ".txt file only"
 			}
 		}
 	});

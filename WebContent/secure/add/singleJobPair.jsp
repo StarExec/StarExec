@@ -1,9 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
 	try {	
+		
 		List<Space> publicCommunities = Communities.getCommsWithPublicSolvers();
 		List<Solver> publicSolvers = Solvers.getPublicSolvers();
 		request.setAttribute("publicSolvers",publicSolvers);

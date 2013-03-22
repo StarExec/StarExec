@@ -64,7 +64,8 @@ $(document).ready(function(){
 	$("#joinComm").fadeOut('fast');
 	$("#leaveComm").fadeOut('fast');
 	$("#editComm").fadeOut('fast');
-
+	$("#downloadPostProcessors").fadeOut('fast');
+	$("#downloadBenchProcessors").fadeOut('fast');
 	// Handles the removal of user(s) from a space
 	$("#removeUser").click(function(){
 		var selectedUsers = getSelectedRows(memberTable);
@@ -167,6 +168,18 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-star"
     }});
+	
+	$('#downloadPostProcessors').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-s"
+		}
+	});
+	
+	$("#downloadBenchProcessors").button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-s"
+		}
+	});
 	
 	initDialogs();
 });
@@ -273,10 +286,14 @@ function checkPermissions(perms) {
 		$('#joinComm').fadeIn('fast');
 		$('#leaveComm').fadeOut('fast');
 		$('#editComm').fadeOut('fast');
+		$('#downloadPostProcessors').fadeOut('fast');
+		$('#downloadBenchProcessors').fadeOut('fast');
 		return;
 	} else {
 		$('#joinComm').fadeOut('fast');
 		$('#leaveComm').fadeIn('fast');
+		$('#downloadPostProcessors').fadeIn('fast');
+		$('#downloadBenchProcessors').fadeIn('fast');
 	}
 	
 	if(perms.isLeader) {
@@ -317,6 +334,16 @@ function updateActionId(id) {
 			}		
 		});
 	});
+	$("#downloadPostProcessors").click(function(){
+		downloadProcs(id, "post");
+	});
+	$("#downloadBenchProcessors").click(function(){
+		downloadProcs(id, "bench");
+	});
+}
+
+function downloadProcs(id, procClass) {
+	window.location.href="/starexec/secure/download?type=proc&procClass="+procClass+"&id="+id;
 }
 
 /**

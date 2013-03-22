@@ -8,6 +8,10 @@ table {
 	width: 100%;	
 }
 
+h1 {
+	word-wrap: break-word;
+}
+
 #content ul li {
 	list-style: none;
 	float: left;
