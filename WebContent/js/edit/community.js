@@ -316,6 +316,10 @@ function saveChanges(obj, save, attr, old) {
 
 function processorEditable(table) {			
 	$(table).delegate('tr', 'click', function(){
+		if ($(this).is('.headerRow')) {
+			
+			return;
+		}
 		$(table).undelegate('tr');
 		$(table).find('tr:not(:first)').css('cursor', 'default');		
 		
@@ -340,7 +344,9 @@ function processorEditable(table) {
 		
 		$(saveBtn).click(function(){updateProcessor(this, true, attribute);});
 		$(cancelBtn).click(function(){ restoreProcessorRow(table, old); });			
-		$(deleteBtn).click(function(){ deleteProcessor($("[name=pid]").val(), $(this).parent().parent()); });
+		$(deleteBtn).click(function(){ 
+			deleteProcessor($("[name=pid]").val(), $(this).parent().parent(), table);
+		});
 		
 		$(saveBtn).button({
 			icons: {
@@ -357,7 +363,6 @@ function processorEditable(table) {
 				secondary: "ui-icon-minus"
 	    }});
 	});
-	
 	$(table).find('tr:not(:first)').css('cursor', 'pointer');
 }
 
@@ -368,7 +373,7 @@ function restoreProcessorRow(table, oldHtml) {
 	processorEditable(table);
 }
 
-function deleteProcessor(pid, parent){		
+function deleteProcessor(pid, parent, table){		
 	$('#dialog-confirm-delete-txt').text('are you sure you want to delete this processor?');
 	
 	// Display the confirmation dialog
@@ -383,9 +388,8 @@ function deleteProcessor(pid, parent){
 						"/starexec/services/processors/delete/" + pid,
 						function(returnCode) {
 							if(returnCode == '0') {
-								alert("this happened");
 								var table = $(parent).parents('table');
-								parent.siblings('tr:first-child').children('th:last').remove();
+								$(table).find('tr:first').find('th:last').remove();	
 								parent.remove();
 								processorEditable(table);
 							} else {

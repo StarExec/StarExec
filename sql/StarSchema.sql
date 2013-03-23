@@ -481,9 +481,9 @@ CREATE TABLE unvalidated_benchmarks (
 	PRIMARY KEY (id)
 );
 
---For keeping statisitcs related to the performance of solver/configuration pairs
---in particular jobs
---Author: Eric Burns
+-- For keeping statisitcs related to the performance of solver configuration pairs
+-- in particular jobs
+-- Author: Eric Burns
 
 CREATE TABLE job_stats (
 	id INT NOT NULL,

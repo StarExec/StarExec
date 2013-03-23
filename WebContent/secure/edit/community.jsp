@@ -40,7 +40,7 @@
 		<legend>community details</legend>
 		<table id="detailsTbl" class="shaded">
 			<thead>
-				<tr>
+				<tr class="headerRow">
 					<th class="label">attribute</th>
 					<th>current value</th>
 				</tr>
@@ -76,7 +76,7 @@
 			<input type="hidden" name="type" value="bench"/>
 			<table id="benchTypeTbl" class="shaded">
 				<thead>
-					<tr>
+					<tr class="headerRow">
 						<th>name</th>				
 						<th>description</th>
 						<th>file name</th>
@@ -121,7 +121,7 @@
 	<legend class="expd"><span></span>default settings</legend>
 	<table id="settings" class ="shaded">
 		<thead>
-			<tr>
+			<tr class="headerRow">
 				<th class="label">name</th>
 				<th>values</th>
 			</tr>
@@ -165,7 +165,7 @@
 			<input type="hidden" name="type" value="pre"/>
 			<table id="preProcessorTbl" class="shaded">
 				<thead>
-					<tr>
+					<tr class="headerRow">
 						<th>name</th>				
 						<th>description</th>
 						<th>file name</th>
@@ -214,7 +214,7 @@
 			<input type="hidden" name="type" value="post"/>
 			<table id="postProcessorTbl" class="shaded">
 				<thead>
-					<tr>
+					<tr class="headerRow">
 						<th id="procName" length="${processorNameLen}">name</th>				
 						<th id="procDesc" length="${processorDescLen}">description</th>
 						<th>file name</th>
