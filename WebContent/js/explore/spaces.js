@@ -1545,8 +1545,6 @@ function initDataTables(){
 			unselectAll("#"+$(this).parent().parent().attr("id"));
 			$(this).toggleClass("row_selected");
 		});
-		//$(tables[x]).css("table-layout", "fixed");
-		//$(tables[x]).css("word-wrap", "break-word");
 	}
 		// Setup user permission tooltip
 	$('#users tbody').delegate('tr', 'hover', function(){
@@ -1950,7 +1948,7 @@ function updateTable(dataTable){
  */
 function getPermTable(tooltip, perms, type) {	
 	var permWrap = $('<div>');	// A wrapper for the table and leader info
-	var table = $('<table>');	// The table where the permissions are displayed
+	var table = $('<table class="tooltipTable">');	// The table where the permissions are displayed
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
 
 	// Resolves bug where tooltip is empty
@@ -2062,7 +2060,7 @@ function makeLeader(e) {
  * @returns HTML representing a table to be displayed in a qtip for the table
  */
 function getSinglePermTable(name, add, remove) {
-	var table = $('<table></table>');
+	var table = $('<table class="tooltipTable"></table>');
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');	
 	$(table).append(wrapPermRow(name, add, remove));
 

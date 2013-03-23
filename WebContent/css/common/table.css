@@ -106,6 +106,10 @@ table {
 	word-wrap:break-word;
 }
 
+table.tooltipTable {
+	word-wrap:normal;
+}
+
 #content tbody tr:not(.row_selected):hover {
 	background-color: #ae0000;	
 }

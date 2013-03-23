@@ -227,7 +227,9 @@ function initUI() {
 	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
 	});
-	
+	$("#tblSolverConfig, #tblBenchConfig").delegate('input[type="checkbox"]', "click", function(){
+		$(this).parent().parent().parent().toggleClass("row_selected");
+	});
 	
 	// Step 2 related actions
 	// Selection toggling
