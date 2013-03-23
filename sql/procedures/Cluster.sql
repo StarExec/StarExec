@@ -76,6 +76,22 @@ CREATE PROCEDURE GetAllQueues()
 		ORDER BY name;	
 	END //
 	
+-- Gets the id, name and status of all queues in the cluster that are active and the user can use
+-- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetUserQueues;
+CREATE PROCEDURE GetUserQueues(IN _userID INT)
+	BEGIN		
+		SELECT id, name, status
+		FROM queues
+		WHERE status="ACTIVE"
+		AND 
+			(id NOT IN (select queue_id from comm_queue))
+			   OR
+			(id IN (select queue_id from comm_queue WHERE (IsLeader(space_id,_userId) = 1)))
+		ORDER BY name;	
+	END //	
+	
 -- Gets worker node with the given ID
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetNodeDetails;

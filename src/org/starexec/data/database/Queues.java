@@ -203,6 +203,39 @@ public class Queues {
 	}
 	
 	/**
+	 * Gets all queues in the starexec cluster (with no detailed information)
+	 * @return A list of queues that are defined the cluster
+	 * @author Ben McCune
+	 */
+	public static List<Queue> getUserQueues(int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetUserQueues(?)}");
+			procedure.setInt(1, userId);
+			ResultSet results = procedure.executeQuery();
+			List<Queue> queues = new LinkedList<Queue>();
+			
+			while(results.next()){
+				Queue q = new Queue();
+				q.setName(results.getString("name"));
+				q.setId(results.getInt("id"));	
+				q.setStatus(results.getString("status"));
+				queues.add(q);
+			}			
+						
+			return queues;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Takes in a queue name and a hashmap representing queue attributes their values. This method will add a column 
 	 * to the database for the attribute if it does not exist. If it does exist, the attribute for the given queue is 
 	 * updated with the current value. If the given queue does not exist, it is added to the database, or else all of 

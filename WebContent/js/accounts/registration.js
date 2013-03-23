@@ -90,7 +90,7 @@ function attachFormValidation(){
 				required 	: true,
 				regex 		: getUserNameRegex(),
 				minlength 	: 2,
-				maxlength 	: $("#lastname").attr("maxlength");
+				maxlength 	: $("#lastname").attr("maxlength")
 			},
 			em : {
 				required 	: true,

@@ -166,4 +166,17 @@ CREATE FUNCTION IsPublic(_spaceId int, _pubUserId int)
 	  	RETURN isPublic;	
 	END //
 	
+--  Determines if User is Leader of Space
+--  Author: Benton McCune
+DROP FUNCTION IF EXISTS IsLeader;
+CREATE FUNCTION IsLeader(_spaceId int, _userId int)
+	RETURNS BOOLEAN
+	BEGIN
+		DECLARE isLeader BOOLEAN;
+	  		select is_Leader INTO isLeader  
+	  		from permissions 
+	  		where id = (select permission from user_assoc where space_id=_spaceId and user_id = _userId LIMIT 1);
+	  	RETURN isLeader;	
+	END //	
+	
 DELIMITER ; -- This should always be at the end of this file

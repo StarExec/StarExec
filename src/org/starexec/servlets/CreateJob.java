@@ -13,10 +13,12 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Queue;
 import org.starexec.data.to.Space;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
@@ -189,12 +191,22 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidInteger((String)request.getParameter(workerQueue))) {
 				return false;
 			}
-
-			// Ensure the job name is valid (alphanumeric < 32 chars)
-			if(!Validator.isValidPrimName((String)request.getParameter(name))) {
+			
+			// Make sure the queue is a valid selection and user has access to it
+			Integer queueId = Integer.parseInt((String)request.getParameter(workerQueue));
+			int userId = SessionUtil.getUserId(request);
+			List<Queue> userQueues = Queues.getUserQueues(userId); 
+			Boolean queueFound=false;
+			for (Queue queue:userQueues){
+				if (queue.getId() == queueId){
+					queueFound=true;
+					break;
+				}
+			}
+			if (queueFound=false){
 				return false;
 			}
-
+			
 			// Ensure the job description is valid
 			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
 				return false;
@@ -214,7 +226,6 @@ public class CreateJob extends HttpServlet {
 			log.debug("selection = " + request.getParameter(run));
 			log.debug("benchChoice = " + request.getParameter(benchChoice));
 			if (request.getParameter(run).equals("choose")) {
-				int userId = SessionUtil.getUserId(request);
 
 				// Check to see if we have a valid list of benchmark ids
 				if (!request.getParameter(benchChoice).equals("runAllBenchInHierarchy")){
