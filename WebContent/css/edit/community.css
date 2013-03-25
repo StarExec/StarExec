@@ -4,10 +4,6 @@ fieldset {
 	margin-top: 30px;
 }
 
-#benchTypeTbl {
-	table-layout:auto;
-}
-
 fieldset table,
 fieldset ul {
 	width: 100%;

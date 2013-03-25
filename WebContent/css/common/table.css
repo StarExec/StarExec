@@ -110,7 +110,7 @@ table.tooltipTable {
 	word-wrap:normal;
 }
 
-#content tbody tr:not(.row_selected):hover {
+#content tbody tr:not(.row_selected):not(.noHover):hover {
 	background-color: #ae0000;	
 }
 

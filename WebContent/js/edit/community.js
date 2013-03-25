@@ -168,7 +168,37 @@ function attachFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
-	var formsToValidate = ['#addPreProcessorForm', '#addPostProcessorForm', '#newTypeForm'];
+	var formsToValidate = ['#addPreProcessorForm', '#addPostProcessorForm', '#newTypeForm', '#updatePstPrcssForm'];
+	
+	$('#updateBenchTypeForm').validate({
+		rules : {
+			name : {
+				required : true,
+				maxlength: $("#benchName").attr("length")
+			},
+			desc: {
+				required : true,
+				maxlength: $('#benchDesc').attr('length')
+			},
+			file: {
+				required: true
+			}
+			
+		},
+		messages : {
+			name : {
+				required : 'please input a name',
+				maxlength: $("#benchName").attr("length")+" characters maximum"
+			},
+			desc : {
+				required : "please input a description",
+				maxlength: $('#benchDesc').attr('length') + " characters maximum"
+			},
+			file: {
+				required: "please choose a file"
+			}
+		}
+	});
 	
 	$.each(formsToValidate, function(i, selector) {
 		$(selector).validate({
@@ -269,8 +299,17 @@ function saveChanges(obj, save, attr, old) {
 		//from the correct object
 		if (attr == 'desc') {
 			newVal = $(obj).siblings('textarea:first').val();
+			
+			if (newVal.length>$('#descRow').attr('length')) {
+				showMessage('error', $('#descRow').attr('length')+ " characters maximum");
+				return;
+			}
 		} else if (attr == 'name') {
 			newVal = $(obj).siblings('input:first').val();
+			if (newVal.length>$('#nameRow').attr('length')) {
+				showMessage('error', $('#nameRow').attr('length')+ " characters maximum");
+				return;
+			}
 		} else if (attr == "PostProcess"){
 			newVal = obj;
 		} else if (attr == "CpuTimeout"){
@@ -322,7 +361,7 @@ function processorEditable(table) {
 		}
 		$(table).undelegate('tr');
 		$(table).find('tr:not(:first)').css('cursor', 'default');		
-		
+		$(table).find('tr:not(:first)').addClass('noHover');
 		$(table).find('tr:first').append('<th>action</th>');
 		var old = $(this).html();
 		$(this).addClass('selected');
@@ -367,13 +406,15 @@ function processorEditable(table) {
 }
 
 function restoreProcessorRow(table, oldHtml) {	
+	$(table).find('tr:not(:first)').removeClass('noHover');
 	$(table).find('tr:first').find('th:last').remove();	
 	$(table).find('tr.selected').html(oldHtml);
 	$(table).find('tr.selected').removeClass('selected');	
 	processorEditable(table);
 }
 
-function deleteProcessor(pid, parent, table){		
+function deleteProcessor(pid, parent, table){	
+	$(table).find('tr:not(:first)').removeClass('noHover');
 	$('#dialog-confirm-delete-txt').text('are you sure you want to delete this processor?');
 	
 	// Display the confirmation dialog
@@ -410,6 +451,7 @@ function deleteProcessor(pid, parent, table){
 }
 
 function updateProcessor(obj, save, attr, old) {
+	$(table).find('tr:not(:first)').removeClass('noHover');
 	if (true == save) {
 		var newVal = $(obj).siblings('input:first').val();
 		if(newVal == null) {
@@ -417,7 +459,7 @@ function updateProcessor(obj, save, attr, old) {
 		}		
 		
 		$.post(  
-			    "/starexec/services/space/" + $('#comId').val() + "/procesors/edit/" + attr,
+			    "/starexec/services/space/" + $('#comId').val() + "/processors/edit/" + attr,
 			    {val: newVal},
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {

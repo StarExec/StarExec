@@ -3,19 +3,22 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-	int id = Integer.parseInt((String)request.getParameter("cid"));
-	Space com = Communities.getDetails(id);
-	Permission perm = SessionUtil.getPermission(request, id);
-	request.setAttribute("communityNameLen", R.COMMUNITY_NAME_LEN);
-	request.setAttribute("communityDescLen", R.COMMUNITY_DESC_LEN);
-	request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
-	request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
-	if(com == null) {
-		response.sendError(HttpServletResponse.SC_NOT_FOUND);
-	} else if (perm == null || !perm.isLeader()) {
-		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
-	} else {
-		List<String> listOfDefaultSettings = Communities.getDefaultSettings(com.getId());
+		request.setAttribute("communityNameLen", R.COMMUNITY_NAME_LEN);
+		request.setAttribute("communityDescLen", R.COMMUNITY_DESC_LEN);
+		request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
+		request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
+		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
+		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
+		int id = Integer.parseInt((String)request.getParameter("cid"));
+		Space com = Communities.getDetails(id);
+		Permission perm = SessionUtil.getPermission(request, id);
+		
+		if(com == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} else if (perm == null || !perm.isLeader()) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
+		} else {
+			List<String> listOfDefaultSettings = Communities.getDefaultSettings(com.getId());
 
 		request.setAttribute("com", com);	
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
@@ -46,13 +49,13 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
+				<tr id="nameRow" length="${communityNameLen}">
 					<td>community name </td>
-					<td id="editname" length="${communityNameLen}">${com.name}</td>
+					<td id="editname">${com.name}</td>
 				</tr>
-				<tr>
+				<tr id="descRow" length="${communityDescLen}">
 					<td>description</td>
-					<td id="editdesc" length="${communityDescLen}">${com.description}</td>
+					<td id="editdesc">${com.description}</td>
 				</tr>		
 			</tbody>
 		</table>
@@ -77,9 +80,9 @@
 			<table id="benchTypeTbl" class="shaded">
 				<thead>
 					<tr class="headerRow">
-						<th>name</th>				
-						<th>description</th>
-						<th>file name</th>
+						<th id="benchName" length="${benchNameLen}">name</th>				
+						<th id="benchDesc" length="${benchDescLen}">description</th>
+						<th id="benchFile">file name</th>
 					</tr>
 				</thead>				
 				<tbody>
