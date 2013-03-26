@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -945,16 +946,57 @@ public class Benchmarks {
 		ResultSet results = procedure.executeQuery();
 
 		Properties prop = new Properties();
-
+		HashMap<String,String> attrMap = new HashMap<String, String>();
 		while(results.next()){
-			prop.put(results.getString("attr_key"), results.getString("attr_value"));				
-		}			
-
+			attrMap.put(results.getString("attr_key"), results.getString("attr_value"));
+		}
+		
 		if(prop.size() <= 0) {
 			prop = null;
 		}
 
 		return prop;
+	}
+	
+	
+
+	/**
+	 * Retrieves all attributes (key/value of the given benchmark in alphabetic order
+	 * @param benchId the id of the benchmark to get the attributes of
+	 * @return The properties object which holds all the benchmark's attributes
+	 * @author Wyatt Kaiser
+	 */
+	public static TreeMap<String,String> getSortedAttributes(int benchId) {
+		Connection con = null;			
+
+		try {
+			con = Common.getConnection();		
+			return Benchmarks.getSortedAttributes(con, benchId);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+
+	/** Retrieves all attributes (key/value) of the given benchmark in order
+	 * @param con The connection to make the query on
+	 * @param benchId The id of the benchmark to get the attributes of
+	 * @return The properties object which holds all the benchmark's attributes
+	 * @author Wyatt Kaiser
+	 */
+	protected static TreeMap<String,String> getSortedAttributes (Connection con, int benchId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL GetBenchAttrs(?)}");
+		procedure.setInt(1, benchId);					
+		ResultSet results = procedure.executeQuery();
+
+		TreeMap<String,String> sortedMap2 = new TreeMap<String,String>();
+		while (results.next()){
+			sortedMap2.put(results.getString("attr_key"), results.getString("attr_value"));
+		}
+		return sortedMap2;
 	}
 
 	/**

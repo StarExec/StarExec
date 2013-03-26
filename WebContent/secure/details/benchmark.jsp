@@ -1,4 +1,5 @@
 <%@page import="java.util.ArrayList, java.util.List"%>
+<%@page import="java.util.TreeMap" %>
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -9,9 +10,11 @@
 		int benchId = Integer.parseInt(request.getParameter("id"));
 		
 		Benchmark b = null;
+		TreeMap<String,String> attrs = new TreeMap<String,String>();
 		List<BenchmarkDependency> deps = new ArrayList<BenchmarkDependency>();
 		if(Permissions.canUserSeeBench(benchId, userId)) {
 			b = Benchmarks.get(benchId, true);
+			attrs = Benchmarks.getSortedAttributes(benchId);
 			deps = Benchmarks.getBenchDependencies(benchId);
 		}		
 		
@@ -22,6 +25,7 @@
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			request.setAttribute("com", s);
 			request.setAttribute("depends", deps);
+			request.setAttribute("attributes",attrs);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");			
 		}
@@ -92,7 +96,7 @@
 		</table>	
 	</fieldset>			
 	
-	<c:if test="${not empty bench.attributes}">
+	<c:if test="${not empty attributes}">
 		<fieldset id="fieldAttributes">
 			<legend>attributes</legend>
 			<table class="shaded">
@@ -103,7 +107,7 @@
 					</tr>
 				</thead>
 				<tbody>
-				<c:forEach var="entry" items="${bench.attributes}">
+				<c:forEach var="entry" items="${attributes}">
 					<tr>
 						<td>${entry.key}</td>
 						<td>${entry.value}</td>
