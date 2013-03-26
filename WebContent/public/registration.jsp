@@ -44,7 +44,7 @@
 				<tr>
 					<td class="label">password</td>
 					<td>
-						<input id="password" type="password" name="pwd" length=${passwordLen}/>
+						<input id="password" type="password" name="pwd"/>
 						<div class="password-meter" id="pwd-meter">
 							<div class="password-meter-message"> </div>
 							<div class="password-meter-bg">

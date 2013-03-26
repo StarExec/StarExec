@@ -104,7 +104,7 @@ function attachFormValidation(){
 			},
 			pwd : {
 				required: true,
-				maxlength : $("#password").attr("length"),
+				maxlength : 20,
 				minlength : 5
 			},
 			confirm_password : {
