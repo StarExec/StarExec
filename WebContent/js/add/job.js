@@ -19,7 +19,7 @@ $(document).ready(function(){
 	
 	initUI();
 	attachFormValidation();
-	
+
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {
 		$('#tblBenchConfig tbody').children('tr').not('.row_selected').find('input').remove();
@@ -222,10 +222,16 @@ function initUI() {
     	$(this).parents('.dataTables_wrapper').find('input').removeAttr('checked');
     	$(this).parents('.dataTables_wrapper').find('div>input:first-child').attr('checked', 'checked');
     });
-    
+	
     // Enable row selection
 	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
 		$(this).toggleClass("row_selected");
+		if ( $('input[name="configs"]:checked').length > 0) {
+			$(this).addClass("row_selected");
+		};
+		if(!($(this).hasClass("row_selected"))) {
+			$(this).closest('tr').find('input').removeAttr('checked');
+		};	
 	});
 	$("#tblSolverConfig, #tblBenchConfig").delegate('input[type="checkbox"]', "click", function(){
 		$(this).parent().parent().parent().toggleClass("row_selected");

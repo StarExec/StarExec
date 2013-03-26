@@ -167,7 +167,7 @@
 						<td>
 							<div class="selectConfigs">
 								<c:forEach var="c" items="${s.configurations}">
-									<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name}</input><br />
+									<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
 								</c:forEach>
 							</div>
 						</td>																			
