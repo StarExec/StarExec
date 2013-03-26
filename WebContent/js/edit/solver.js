@@ -121,10 +121,7 @@ function attachButtonActions(){
 	// updates the solver details via AJAX, then redirects to edit/solver.jsp
 	$("#update").click(function(){
 		var isFormValid = $("#editSolverForm").valid();
-		if (isFormValid == true) {		}
 		if(isFormValid == true){
-			var confirm = window.confirm("are you sure you want to edit this solver?");
-			if (confirm == true) {
 				//Extract Relevant Data from Page
 				var data = 
 				{
@@ -149,13 +146,12 @@ function attachButtonActions(){
 									showMessage('error', "only the owner of this solver can modify its details", 5000);
 									break;
 								default:
-									showMessage('error', "whyyyyyyyyyy", 5000);
+									showMessage('error', "Invalid Parameters", 5000);
 									break;
 							}
 						},
 						"json"
-				);
-			}	
+				);	
 		}
 	});
 	
