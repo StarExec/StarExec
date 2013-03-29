@@ -161,16 +161,16 @@
 				<tbody>
 				<c:forEach var="s" items="${solvers}">
 					<tr id="solver_${s.id}">
-						<td>
-							<input type="hidden" name="solver" value="${s.id}"/>
-							<star:solver value='${s}'/></td>
-						<td>
-							<div class="selectConfigs">
-								<c:forEach var="c" items="${s.configurations}">
-									<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
-								</c:forEach>
-							</div>
-						</td>																			
+							<td>
+								<input type="hidden" name="solver" value="${s.id}"/>
+								<star:solver value='${s}'/></td>
+							<td>
+								<div class="selectConfigs">
+									<c:forEach var="c" items="${s.configurations}">
+										<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
+									</c:forEach>
+								</div>
+							</td>
 					</tr>
 				</c:forEach>			
 				</tbody>						

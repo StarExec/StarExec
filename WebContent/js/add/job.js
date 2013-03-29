@@ -225,18 +225,15 @@ function initUI() {
 	
     // Enable row selection
 	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
-		$(this).toggleClass("row_selected");
-		if ( $('input[name="configs"]:checked').length > 0) {
+		if ( $(this).find('div>input').is(':checked')) {
 			$(this).addClass("row_selected");
+		}; 
+		if ( !$(this).find('div>input').is(':checked')) {
+			$(this).removeClass("row_selected");
 		};
-		if(!($(this).hasClass("row_selected"))) {
-			$(this).closest('tr').find('input').removeAttr('checked');
-		};	
 	});
-	$("#tblSolverConfig, #tblBenchConfig").delegate('input[type="checkbox"]', "click", function(){
-		$(this).parent().parent().parent().toggleClass("row_selected");
-	});
-	
+
+
 	// Step 2 related actions
 	// Selection toggling
 	$("#tblSpaceSelection, #tblBenchMethodSelection").delegate("tr", "click", function(){
