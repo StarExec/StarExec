@@ -38,6 +38,20 @@ CREATE FUNCTION GetBenchmarkTypeName(_benchTypeId INT)
 		RETURN benchTypeName;
 	END //
 	
+-- Returns a configurations's name for a given solver ID
+-- Author: Eric Burns
+DROP FUNCTION IF EXISTS GetConfigName;
+CREATE FUNCTION GetConfigName(_configID INT)
+	RETURNS VARCHAR(128)
+	BEGIN
+		DECLARE configName VARCHAR(128);
+		
+		SELECT name INTO configName
+		FROM configurations
+		WHERE id = _configID;
+		
+		RETURN configName;
+	END //
 	
 -- Gets the number of completed job pairs for a given job id
 -- Author: Todd Elvers
@@ -138,7 +152,22 @@ CREATE FUNCTION GetTotalPairs(_jobId INT)
 		
 		RETURN totalPairs;
 	END //
-
+	
+	
+-- Returns a solver's name for a given solver ID
+-- Author: Eric Burns
+DROP FUNCTION IF EXISTS GetSolverName;
+CREATE FUNCTION GetSolverName(_solverID INT)
+	RETURNS VARCHAR(128)
+	BEGIN
+		DECLARE spaceName VARCHAR(128);
+		
+		SELECT name INTO spaceName
+		FROM solvers
+		WHERE id = _solverID;
+		
+		RETURN spaceName;
+	END //
 	
 -- Determines the wallclock time difference between two timestamps
 -- and returns that in milliseconds

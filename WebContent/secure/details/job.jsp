@@ -101,9 +101,11 @@
 			<thead>
 				<tr>
 					<th>solver</th>
+					<th>configuration</th>
 					<th>correct</th>
-					<th>error</th>
-					<th>incomplete</th>		
+					<th>incorrect</th>
+					<th>incomplete</th>
+					<th>error</th>	
 				</tr>		
 			</thead>	
 			<tbody>

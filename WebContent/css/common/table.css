@@ -107,6 +107,7 @@ table {
 }
 
 table.tooltipTable {
+	table-layout:auto;
 	word-wrap:normal;
 }
 

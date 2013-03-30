@@ -63,7 +63,9 @@
 		if (!password || password.length < 5){
 			return rating(1, "too-short");
 		}
-		if (password.length > 32){
+		
+		
+		if (password.length > $("#password").attr("length")){
 			return rating(2, "too-long");
 		}
 		if (lower && upper && digit && punct){

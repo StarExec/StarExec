@@ -284,7 +284,7 @@ public class RESTHelpers {
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
 		    		case JOB_STATS:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    			break;
@@ -882,7 +882,7 @@ public class RESTHelpers {
 		    	break;
 		    
 		    case JOB_STATS:
-		    	List<JobSolver> jobSolversToDisplay = new LinkedList<JobSolver>();
+		    	List<JobSolver> jobSolversToDisplay = null;
 	    		int totalJobPairs = Jobs.getJobPairCount(id);
 	    		
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
@@ -914,27 +914,42 @@ public class RESTHelpers {
 		    	 * Generate the HTML for the next DataTable page of entries
 		    	 */
 		    	dataTablePageEntries = new JsonArray();
-		    	for(JobSolver jp : jobSolversToDisplay){
+		    	for(JobSolver js : jobSolversToDisplay){
 		    		StringBuilder sb = new StringBuilder();
 					String hiddenJobPairId;
 					
 					// Create the solver link
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
-		    		sb.append(jp.getSolver().getDescription());
+		    		sb.append(js.getSolver().getName());
 		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
-		    		sb.append(jp.getSolver().getId());
+		    		sb.append(js.getSolver().getId());
 		    		sb.append("\">");
-		    		sb.append(jp.getSolver().getName());
+		    		sb.append(js.getSolver().getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 					String solverLink = sb.toString();
-					//TODO: Add in HTML strings for the "completed" and "error" tabs
+					
+					sb= new StringBuilder();
+					sb.append("<a title=\"");
+		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
+		    		sb.append("\" href=\"/starexec/secure/details/configuration.jsp?id=");
+		    		sb.append(js.getSolver().getConfigurations().get(0).getId());
+		    		sb.append("\">");
+		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
+		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+					String configLink = sb.toString();
+					
+					
+					
 					// Create an object, and inject the above HTML, to represent an entry in the DataTable
 					JsonArray entry = new JsonArray();
 		    		entry.add(new JsonPrimitive(solverLink));
-		    		entry.add(new JsonPrimitive(jp.getCorrectJobPairs()));
-		    		entry.add(new JsonPrimitive(jp.getIncorrectJobPairs()));
-		    		entry.add(new JsonPrimitive(jp.getIncompleteJobPairs()));
+		    		entry.add(new JsonPrimitive(configLink));
+		    		entry.add(new JsonPrimitive(js.getCorrectJobPairs()));
+		    		entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
+		    		entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+		    		entry.add(new JsonPrimitive(js.getErrorJobPairs()));
+		    		
 		    		dataTablePageEntries.add(entry);
 		    	}
 		    	

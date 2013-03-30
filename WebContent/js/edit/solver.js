@@ -68,7 +68,7 @@ function attachFormValidation(){
 				required : false,
 				maxlength: $("#description").attr("length"),
 				regex	 : getPrimDescRegex()
-			},
+			}
 		},
 		messages : {
 			name : {

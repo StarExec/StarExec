@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -22,6 +24,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Util;
 
 /**
@@ -736,77 +739,180 @@ public class Jobs {
 	 * (Worker node, status, benchmark and solver WILL be populated) 
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given job.
-	 * @author Tyler Jensen
+	 * @author Tyler Jensen + Eric Burns
 	 */
 	public static List<JobPair> getPairsDetailed(int jobId) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return Jobs.getPairsDetailed(con, jobId);
+			log.info("getting detailed pairs for job " + jobId );
+			if(con.isClosed())
+			{
+				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
+			}
+			
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
+			procedure.setInt(1, jobId);
+			ResultSet results = procedure.executeQuery();
+			Common.safeClose(con);
+			List<JobPair> returnList = new ArrayList<JobPair>();
+			Set<Integer> nodeIdSet = new HashSet<Integer>();
+			Set<Integer> benchIdSet = new HashSet<Integer>();
+			Set<Integer> configIdSet = new HashSet<Integer>();
+			List<Integer> nodeIdList=new ArrayList<Integer>();
+			List<Integer> benchIdList=new ArrayList<Integer>();
+			List<Integer> configIdList=new ArrayList<Integer>();
+			int curNode,curBench,curConfig;
+			while(results.next()){
+				log.debug("getting result to pair, result set closed = " + results.isClosed());
+				JobPair jp = Jobs.resultToPair(results);
+				
+				Status s = new Status();
+				s.setCode(results.getInt("status.code"));
+				s.setStatus(results.getString("status.status"));
+				s.setDescription(results.getString("status.description"));
+				jp.setStatus(s);
+				returnList.add(jp);
+				curNode=results.getInt("node_id");
+				curBench=results.getInt("bench_id");
+				curConfig=results.getInt("config_id");
+				nodeIdSet.add(curNode);
+				benchIdSet.add(curBench);
+				configIdSet.add(curConfig);
+				nodeIdList.add(curNode);
+				benchIdList.add(curBench);
+				configIdList.add(curConfig);
+				log.debug("Finished with results for pair " + jp.getId());
+			}
+			
+			Object [] benchIdListSet=benchIdSet.toArray();
+			Object [] nodeIdListSet=nodeIdSet.toArray();
+			Object [] configIdListSet=configIdSet.toArray();
+			
+			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
+			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
+			Hashtable<Integer,Benchmark> neededBenchmarks=new Hashtable<Integer,Benchmark>();
+			Hashtable <Integer, WorkerNode> neededNodes = new Hashtable<Integer, WorkerNode>();
+			Common.closeResultSet(results);
+			log.info("result set closed for job " + jobId);
+			int curId=0;
+			for (int i=0; i<configIdListSet.length;i++) {
+				curId=(Integer)configIdListSet[i];
+				neededConfigs.put(curId, Solvers.getConfiguration(curId));
+				neededSolvers.put(curId, Solvers.getSolverByConfig(curId));
+			}
+			
+			for (int i=0; i<nodeIdListSet.length; i++) {
+				curId=(Integer)nodeIdListSet[i];
+				neededNodes.put(curId, Cluster.getNodeDetails(curId));
+			}
+			
+			for (int i=0; i<benchIdListSet.length;i++) {
+				curId=(Integer)benchIdListSet[i];
+				neededBenchmarks.put(curId,Benchmarks.get(curId));
+			}
+			
+			for (Integer i =0; i < returnList.size(); i++){
+				JobPair jp = returnList.get(i);
+				jp.setNode(neededNodes.get(nodeIdList.get(i)));
+				log.debug("set node for " + jp.getId());
+				jp.setBench(neededBenchmarks.get(benchIdList.get(i)));
+				log.debug("set bench for " + jp.getId());
+				jp.setSolver(neededSolvers.get(configIdList.get(i)));
+				log.debug("set solver for " + jp.getId());
+				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
+				log.debug("set configuration for " + jp.getId());
+				log.debug("about to get attributes for jp " + jp.getId());
+				jp.setAttributes(Jobs.getAttributes(jp.getId()));
+				log.debug("just got attributes from jp + " + jp.getId());
+			}
+			log.info("returning detailed pairs for job " + jobId );
+			return returnList;	
+			
 		} catch (Exception e){			
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
 		}
 
 		return null;		
 	}
-
+	
+	
 	/**
-	 * Gets all job pairs for the given job and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
-	 * @param con The connection to make the query on 
+	 * Gets all job pairs for the given job and populates fields needed for getting relevant stats
+	 * (Solver and Configuration populates, benchmark, and worker node are not) 
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given job.
-	 * @author Tyler Jensen, modified heavily by Benton McCune
+	 * @author Eric Burns
 	 */
-	protected static List<JobPair> getPairsDetailed(Connection con, int jobId) throws Exception {	
-		log.info("getting detailed pairs for job " + jobId );
-		if(con.isClosed())
-		{
-			log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
+	public static List<JobPair> getPairsDetailedForStats(int jobId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			log.info("getting detailed pairs for job " + jobId );
+			if(con.isClosed())
+			{
+				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
+			}
+			
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
+			procedure.setInt(1, jobId);
+			ResultSet results = procedure.executeQuery();
+			Common.safeClose(con);
+			List<JobPair> returnList = new ArrayList<JobPair>();
+			Set<Integer> configIdSet = new HashSet<Integer>();
+			List<Integer> configIdList=new ArrayList<Integer>();
+			int curConfig;
+			while(results.next()){
+				log.debug("getting result to pair, result set closed = " + results.isClosed());
+				JobPair jp = Jobs.resultToPair(results);
+				
+				Status s = new Status();
+				s.setCode(results.getInt("status.code"));
+				s.setStatus(results.getString("status.status"));
+				s.setDescription(results.getString("status.description"));
+				jp.setStatus(s);
+				returnList.add(jp);
+
+				curConfig=results.getInt("config_id");
+				configIdSet.add(curConfig);
+				configIdList.add(curConfig);
+				log.debug("Finished with results for pair " + jp.getId());
+			}
+
+			Object [] configIdListSet=configIdSet.toArray();
+			
+			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
+			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
+			Common.closeResultSet(results);
+			log.info("result set closed for job " + jobId);
+			int curId=0;
+			for (int i=0; i<configIdListSet.length;i++) {
+				curId=(Integer)configIdListSet[i];
+				neededConfigs.put(curId, Solvers.getConfiguration(curId));
+				neededSolvers.put(curId, Solvers.getSolverByConfig(curId));
+			}
+
+			
+			for (Integer i =0; i < returnList.size(); i++){
+				JobPair jp = returnList.get(i);
+				jp.setSolver(neededSolvers.get(configIdList.get(i)));
+				log.debug("set solver for " + jp.getId());
+				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
+				log.debug("set configuration for " + jp.getId());
+				jp.setAttributes(Jobs.getAttributes(jp.getId()));
+			}
+			log.info("returning detailed pairs for job " + jobId );
+			return returnList;	
+			
+		} catch (Exception e){			
+			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		}
-		CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
-		procedure.setInt(1, jobId);					
-		ResultSet results = procedure.executeQuery();
-		List<JobPair> returnList = new ArrayList<JobPair>();
-		List<Integer> nodeIdList = new ArrayList<Integer>();
-		List<Integer> benchIdList = new ArrayList<Integer>();
-		List<Integer> configIdList = new ArrayList<Integer>();
-		while(results.next()){
-			log.debug("getting result to pair, result set closed = " + results.isClosed());
-			JobPair jp = Jobs.resultToPair(results);
-			Status s = new Status();
-			s.setCode(results.getInt("status.code"));
-			s.setStatus(results.getString("status.status"));
-			s.setDescription(results.getString("status.description"));
-			jp.setStatus(s);
-			returnList.add(jp);
-			nodeIdList.add(results.getInt("node_id"));
-			benchIdList.add(results.getInt("bench_id"));
-			configIdList.add(results.getInt("config_id"));
-			log.debug("Finished with results for pair " + jp.getId());
-		}
-		Common.closeResultSet(results);
-		log.info("result set closed for job " + jobId);
-		for (Integer i =0; i < returnList.size(); i++){
-			JobPair jp = returnList.get(i);
-			jp.setNode(Cluster.getNodeDetails(nodeIdList.get(i)));	
-			log.debug("set node for " + jp.getId());
-			jp.setBench(Benchmarks.get(benchIdList.get(i)));
-			log.debug("set bench for " + jp.getId());
-			jp.setSolver(Solvers.getSolverByConfig(configIdList.get(i)));
-			log.debug("set solver for " + jp.getId());
-			jp.setConfiguration(Solvers.getConfiguration(configIdList.get(i)));
-			log.debug("set configuration for " + jp.getId());
-			log.debug("about to get attributes for jp " + jp.getId());
-			jp.setAttributes(Jobs.getAttributes(jp.getId()));
-			log.debug("just got attributes from jp + " + jp.getId());
-		}
-		log.info("returning detailed pairs for job " + jobId );
-		return returnList;			
+		return null;		
 	}
+
+	
 
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
@@ -1193,16 +1299,65 @@ public class Jobs {
 	 * Gets next page of solver statistics for job details page
 	 * @author Eric Burns
 	 */
-	//TODO: Implement The GetNextPageOfJobSolvers
+
 	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
+		
 		return new LinkedList<JobSolver>();
+		/*List<JobPair> pairs=getPairsDetailedForStats(jobId);
+		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
+		String key=null;
+		for (JobPair jp : pairs) {
+			key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
+			if (JobSolvers.containsKey(key)) {
+				Integer statusCode=jp.getStatus().getCode();
+				if (statusCode>=8 && statusCode<=17) {
+					JobSolvers.get(key).incrementErrorJobPairs();
+				} else if (statusCode<=6) {
+					JobSolvers.get(key).incrementIncompleteJobPairs();
+					
+				} else if (statusCode==7) {
+					JobSolvers.get(key).incrementCorrectJobPairs();
+				} else {
+					
+				}
+			} else {
+				JobSolver newSolver=new JobSolver();
+				
+				newSolver.setSolver(jp.getSolver());
+				newSolver.setConfiguration(jp.getConfiguration());
+				JobSolvers.put(key, newSolver);
+			}
+		}
+		List<JobSolver> returnValues=new LinkedList<JobSolver>();
+		for (JobSolver js : JobSolvers.values()) {
+			returnValues.add(js);
+		}
+		
+		//carry out filtering function
+		if (!searchQuery.equals("")) {
+			searchQuery=searchQuery.toLowerCase();
+			List<JobSolver> toRemove=new LinkedList<JobSolver>();
+			for (JobSolver js : returnValues) {
+				if ( (!js.getSolver().getName().toLowerCase().contains(searchQuery)) &&
+				(!js.getConfiguration().getName().toLowerCase().contains(searchQuery)) ) {
+					toRemove.add(js);
+				}
+			}
+			for (JobSolver js : toRemove) {
+				returnValues.remove(js);
+			}
+		}
+		
+		return returnValues;*/
+		
+		
 		/*
-		Connection con = null;			
+		Connection con = null;	
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
 
-			procedure = con.prepareCall("{CALL GetNextPageOfJobSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfJobStats(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
@@ -1211,38 +1366,31 @@ public class Jobs {
 			procedure.setString(6, searchQuery);
 
 			ResultSet results = procedure.executeQuery();
-			List<JobSolver> jobSolvers = new LinkedList<JobSolver>();
-
+			List<JobSolver> jobSolvers=new LinkedList<JobSolver>();
 			while(results.next()){
 
 				JobSolver jp = new JobSolver();
-
+				
 				Solver solver = new Solver();
-				solver.setId(results.getInt("solver.id"));
-				solver.setName(results.getString("solver.name"));
-				solver.setDescription(results.getString("solver.description"));
+				solver.setId(results.getInt("solver_id"));
+				solver.setName(results.getString("solverName"));
 
 				Configuration config = new Configuration();
-				config.setId(results.getInt("config.id"));
-				config.setName(results.getString("config.name"));
-				config.setDescription(results.getString("config.description"));
-				
-
-				Properties attributes = new Properties();
-				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+				config.setId(results.getInt("config_id"));
+				config.setName(results.getString("configName"));
 
 				solver.addConfiguration(config);
 			
 				jp.setSolver(solver);
-				jp.setCorrectJobPairs(Integer.parseInt(results.getString("correctPairs")));
-				jp.setIncorrectJobPairs(Integer.parseInt(results.getString("incorrectPairs")));
-				jp.setIncompleteJobPairs(Integer.parseInt(results.getString("incompletePairs")));
+				jp.setCorrectJobPairs(Integer.parseInt(results.getString("jp_complete")));
+				jp.setIncorrectJobPairs(Integer.parseInt(results.getString("jp_incomplete")));
+				jp.setIncompleteJobPairs(Integer.parseInt(results.getString("jp_error")));
 				jobSolvers.add(jp);		
 			}	
 			Common.closeResultSet(results);
 			return jobSolvers;
 		} catch (Exception e){			
-			log.error("get JobSolvers for Next Page of Job " + jobId + " says " + e.getMessage(), e);
+			log.error("get JobStats for Next Page of Job " + jobId + " says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}

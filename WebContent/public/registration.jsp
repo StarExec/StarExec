@@ -27,24 +27,24 @@
 			<tbody>						
 				<tr>
 					<td class="label">first name</td>
-					<td><input id="firstname" type="text" name="fn" maxlength="${firstNameLen}"/></td>
+					<td><input id="firstname" type="text" name="fn" maxlength=${firstNameLen}/></td>
 				</tr>
 				<tr>
 					<td class="label">last name</td>
-					<td><input id="lastname" type="text" name="ln" maxlength="${lastNameLen}"/></td>
+					<td><input id="lastname" type="text" name="ln" maxlength=${lastNameLen}/></td>
 				</tr>
 				<tr>
 					<td class="label">email</td>
-					<td><input id="email" type="text" name="em" maxlength="${emailLen}"/></td>
+					<td><input id="email" type="text" name="em" maxlength=${emailLen}/></td>
 				</tr>
 				<tr>
 					<td class="label">institution</td>
-					<td><input id="institution" type="text" name="inst" maxlength="${institutionLen}"/></td>
+					<td><input id="institution" type="text" name="inst" maxlength=${institutionLen}/></td>
 				</tr>
 				<tr>
 					<td class="label">password</td>
 					<td>
-						<input id="password" type="password" name="pwd"/>
+						<input id="password" type="password" name="pwd" length="${passwordLen}"/>
 						<div class="password-meter" id="pwd-meter">
 							<div class="password-meter-message"> </div>
 							<div class="password-meter-bg">
@@ -95,7 +95,7 @@
 					</tr>
 					<tr>
 						<td class="label">reason for joining</td>
-						<td><textarea name="msg" id="reason" length=${msgLen}></textarea></td>
+						<td><textarea name="msg" id="reason" length="${msgLen}"></textarea></td>
 					</tr>		
 					<tr>
 						<td colspan="3"><button type="submit" id="submit" value="Submit">register</button></td>

@@ -10,9 +10,10 @@ public class JobSolver extends Identifiable {
 	private Solver solver=null;
 	private int totalJobPairs=0;
 	private int correctJobPairs=0;
+	private int errorJobPairs=0;
 	private int incorrectJobPairs=0;
 	private int incompleteJobPairs=0;
-	private List<Configuration> config=new LinkedList<Configuration>();
+	private Configuration config=null;
 	public JobSolver() {
 		this.solver=new Solver();
 	}
@@ -36,11 +37,19 @@ public class JobSolver extends Identifiable {
 	public int getCorrectJobPairs() {
 		return correctJobPairs;
 	}
+	
+	public void incrementCorrectJobPairs() {
+		correctJobPairs++;
+	}
 	public void setIncorrectJobPairs(int incorrectJobPairs) {
 		this.incorrectJobPairs = incorrectJobPairs;
 	}
 	public int getIncorrectJobPairs() {
 		return incorrectJobPairs;
+	}
+	
+	public void incrementIncorrectJobPairs() {
+		incorrectJobPairs++;
 	}
 
 
@@ -52,14 +61,32 @@ public class JobSolver extends Identifiable {
 	public int getIncompleteJobPairs() {
 		return incompleteJobPairs;
 	}
-
-
-	public void addConfiguration(Configuration config) {
-		this.config.add(config);
+	
+	public void incrementIncompleteJobPairs() {
+		incompleteJobPairs++;
 	}
 
 
-	public List<Configuration> getConfiguration() {
+	public void setConfiguration(Configuration config) {
+		this.config=config;
+	}
+
+
+	public Configuration getConfiguration() {
 		return config;
+	}
+
+
+	public void setErrorJobPairs(int errorJobPairs) {
+		this.errorJobPairs = errorJobPairs;
+	}
+
+
+	public int getErrorJobPairs() {
+		return errorJobPairs;
+	}
+	
+	public void incrementErrorJobPairs() {
+		errorJobPairs++;
 	}
 }

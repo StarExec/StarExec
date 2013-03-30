@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	initUI();
 	attachFormValidation();
+	
 });
 
 /**
@@ -100,7 +101,7 @@ function attachFormValidation(){
 				required 	: true,
 				regex		: "^[\\w\\-\\s']+$",
 				minlength 	: 2,
-				maxlength 	: $("institution").attr("maxlength")
+				maxlength 	: $("#institution").attr("maxlength")
 			},
 			pwd : {
 				required: true,
