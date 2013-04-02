@@ -27,19 +27,19 @@
 			<tbody>						
 				<tr>
 					<td class="label">first name</td>
-					<td><input id="firstname" type="text" name="fn" maxlength=${firstNameLen}/></td>
+					<td><input id="firstname" type="text" name="fn" maxlength="${firstNameLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">last name</td>
-					<td><input id="lastname" type="text" name="ln" maxlength=${lastNameLen}/></td>
+					<td><input id="lastname" type="text" name="ln" maxlength="${lastNameLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">email</td>
-					<td><input id="email" type="text" name="em" maxlength=${emailLen}/></td>
+					<td><input id="email" type="text" name="em" maxlength="${emailLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">institution</td>
-					<td><input id="institution" type="text" name="inst" maxlength=${institutionLen}/></td>
+					<td><input id="institution" type="text" name="inst" maxlength="${institutionLen}"/></td>
 				</tr>
 				<tr>
 					<td class="label">password</td>
