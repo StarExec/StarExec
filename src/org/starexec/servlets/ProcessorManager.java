@@ -11,6 +11,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -23,10 +30,17 @@ import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 
 /**
  * Servlet which handles incoming requests to add and update processors
  * @author Tyler Jensen
+ * TODO: edit out of this file everything unneccesary.
  */
 @SuppressWarnings("serial")
 public class ProcessorManager extends HttpServlet {		
@@ -54,9 +68,12 @@ public class ProcessorManager extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}	
-		
+	
+	@GET
+	@Path("/update")
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 		try {			
+			
 			if(ServletFileUpload.isMultipartContent(request)) {								
 				HashMap<String, Object> form = Util.parseMultipartRequest(request);
 				String action = (String)form.get(ACTION);
@@ -66,8 +83,8 @@ public class ProcessorManager extends HttpServlet {
 					// Delegate the request based on the action
 					if(action.equals(ADD_ACTION)) {
 						this.handleAddRequest(form, request, response);
-					} else if(action.equals(UPDATE_ACTION)) {
-						this.handleUpdateRequest(form, request, response);
+					//} else if(action.equals(UPDATE_ACTION)) {
+					//	this.handleUpdateRequest(form, request, response);
 					} else {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid form action");	
 					}
@@ -84,7 +101,8 @@ public class ProcessorManager extends HttpServlet {
 	
 	/**
 	 * Handles requests to update a benchmark type
-	 */
+	 *
+	
 	private void handleUpdateRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 			// If we're dealing with an update request...			
@@ -115,7 +133,7 @@ public class ProcessorManager extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.error(e.getMessage(), e);
 		}	
-	}
+	}*/
 	
 	/**
 	 * Handles requests to add a processor
@@ -195,7 +213,7 @@ public class ProcessorManager extends HttpServlet {
 	 * Also writes a new processor file and deletes the old one if the user specifies a new file
 	 * @param form The request's form items
 	 * @return The Processor that was updated in the database if it was successful
-	 */
+	 *
 	private Processor updateProcessor(HashMap<String, Object> form) {		
 		try {						
 			Processor updatedProc = new Processor();						
@@ -255,7 +273,7 @@ public class ProcessorManager extends HttpServlet {
 		}				
 		
 		return null;
-	}
+	}*/
 	
 	/**
 	 * @param type The string version of the type as retrieved from the HTML form
@@ -345,22 +363,24 @@ public class ProcessorManager extends HttpServlet {
 	 * and content length requirements to ensure it is not malicious.
 	 * @param form The form to validate
 	 * @return True if the request is ok to act on, false otherwise
-	 */
+	 *
 	private boolean isValidUpdateRequest(HashMap<String, Object> form) {
 		try {	
 			// Make sure we have a type ID 
-			if(!form.containsKey(PROCESSOR_ID)) {
+			if(!form.containsKey(PROCESSOR_ID) || 
+					!form.containsKey(PROCESSOR_NAME) ||
+					!form.containsKey(PROCESSOR_DESC)) {
 				return false;
 			} else if(!Validator.isValidInteger((String)form.get(PROCESSOR_ID))) {
 				return false;
 			}
 			
 			// Now run through the create request validator, they share the same fields			
-			return this.isValidCreateRequest(form);
+			//return this.isValidCreateRequest(form);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
 		return false;
-	}
+	}*/
 }

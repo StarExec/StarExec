@@ -78,9 +78,9 @@ function initUI(){
 	editable("CpuTimeout");
 	editable("ClockTimeout");
 	
-	processorEditable($('#benchTypeTbl'));
-	processorEditable($('#preProcessorTbl'));
-	processorEditable($('#postProcessorTbl'));
+	//processorEditable($('#benchTypeTbl'));
+	//processorEditable($('#preProcessorTbl'));
+	//processorEditable($('#postProcessorTbl'));
 	
 	// Add toggles for the "add new" buttons and hide them by default
 	$('#toggleWebsite').click(function() {
@@ -168,7 +168,7 @@ function attachFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
-	var formsToValidate = ['#addPreProcessorForm', '#addPostProcessorForm', '#newTypeForm', '#updatePstPrcssForm'];
+	var formsToValidate = ['#addPreProcessorForm', '#newTypeForm'];
 	
 	$('#updateBenchTypeForm').validate({
 		rules : {
@@ -389,7 +389,7 @@ function processorEditable(table) {
 		
 		$(saveBtn).button({
 			icons: {
-				secondary: "ui-icon-check"
+				secondary: "ui-ficon-check"
 	    }});
 		
 		$(cancelBtn).button({
@@ -426,7 +426,7 @@ function deleteProcessor(pid, parent, table){
 				$('#dialog-confirm-delete').dialog('close');
 				
 				$.post(
-						"/starexec/services/processors/delete/" + pid,
+						"/starexec/services/delete/processor" + pid,
 						function(returnCode) {
 							if(returnCode == '0') {
 								var table = $(parent).parents('table');
@@ -457,7 +457,6 @@ function updateProcessor(obj, save, attr, old) {
 		if(newVal == null) {
 			newVal = $(obj).siblings('textarea:first').val();			
 		}		
-		
 		$.post(  
 			    "/starexec/services/space/" + $('#comId').val() + "/processors/edit/" + attr,
 			    {val: newVal},

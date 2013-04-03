@@ -739,11 +739,11 @@ public class Jobs {
 	 * (Worker node, status, benchmark and solver WILL be populated) 
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given job.
-	 * @author Tyler Jensen + Eric Burns
+	 * @author Tyler Jense, Benton Mccune, Eric Burns
 	 */
 	public static List<JobPair> getPairsDetailed(int jobId) {
 		Connection con = null;			
-
+		
 		try {			
 			con = Common.getConnection();		
 			log.info("getting detailed pairs for job " + jobId );
@@ -757,9 +757,11 @@ public class Jobs {
 			ResultSet results = procedure.executeQuery();
 			Common.safeClose(con);
 			List<JobPair> returnList = new ArrayList<JobPair>();
+			
 			Set<Integer> nodeIdSet = new HashSet<Integer>();
 			Set<Integer> benchIdSet = new HashSet<Integer>();
 			Set<Integer> configIdSet = new HashSet<Integer>();
+			
 			List<Integer> nodeIdList=new ArrayList<Integer>();
 			List<Integer> benchIdList=new ArrayList<Integer>();
 			List<Integer> configIdList=new ArrayList<Integer>();

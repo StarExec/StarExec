@@ -710,7 +710,7 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/processors/delete/{procId}")
+	@Path("/delete/processor/{procId}")
 	@Produces("application/json")
 	public String deleteProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
 		Processor p = Processors.get(pid);
@@ -722,6 +722,45 @@ public class RESTServices {
 		}
 		
 		return Processors.delete(pid) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	@POST
+	@Path("/edit/processor/{procId}")
+	@Produces("applicatoin/json")
+	public String editProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
+		Processor p=Processors.get(pid);
+		Permission perm= SessionUtil.getPermission(request, p.getCommunityId());
+		if (perm==null || !perm.isLeader()) {
+			return gson.toJson(2);
+		}
+		
+		if(!Util.paramExists("name", request)
+				|| !Util.paramExists("desc", request)){
+			return gson.toJson(3);
+		}
+		String name=request.getParameter("name");
+		String desc=request.getParameter("desc");
+		// Ensure the parameters are valid
+		if(!Validator.isValidPrimName(name)
+				|| !Validator.isValidPrimDescription(desc)){
+			return gson.toJson(3);
+		}
+		
+		if (!p.getName().equals(name)) {
+			boolean x=Processors.updateName(pid, name);
+			if (!x) {
+				return gson.toJson(1);
+			}
+		}
+		
+		if (!p.getDescription().equals(desc)) {
+			boolean x=Processors.updateDescription(pid, desc);
+			if (!x) {
+				return gson.toJson(1);
+			}
+		}
+		
+		return gson.toJson(0);
 	}
 	
 	/**
@@ -785,6 +824,8 @@ public class RESTServices {
 		// Remove the benchmark from the space
 		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(1);
 	}
+	
+	
 	
 	/**
 	 * Associates (i.e. 'copies') a user from one space into another

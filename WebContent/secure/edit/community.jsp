@@ -73,10 +73,6 @@
 	</fieldset>
 	<fieldset>
 		<legend>benchmark types</legend>
-		<form id="updateBenchTypeForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			
-			<input type="hidden" name="com" value="${com.id}"/>
-			<input type="hidden" name="action" value="update"/>
-			<input type="hidden" name="type" value="bench"/>
 			<table id="benchTypeTbl" class="shaded">
 				<thead>
 					<tr class="headerRow">
@@ -88,14 +84,13 @@
 				<tbody>
 				<c:forEach var="proc" items="${bench_proc}">
 					<tr id="proc_${proc.id}">
-						<td>${proc.name}</td>
+						<td><a href="${'/starexec/secure/edit/processor.jsp?type=bench&id='}${proc.id}">${proc.name}</a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
 				</c:forEach>
 				</tbody>									
 			</table>
-		</form>
 		<span id="toggleBenchType" class="caption">+ add new</span>
 		<form id=newTypeForm class="newForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
@@ -177,7 +172,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${pre_proc}">
 						<tr id="proc_${proc.id}">
-							<td>${proc.name}</td>
+							<td><a href="${'/starexec/secure/edit/processor.jsp?type=pre&id='}${proc.id}">${proc.name}</a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -211,10 +206,6 @@
 	</fieldset>-->
 	<fieldset>
 		<legend>post processors</legend>
-		<form id="updatePstPrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/starexec/secure/processors/manager">			
-			<input type="hidden" name="com" value="${com.id}"/>
-			<input type="hidden" name="action" value="update"/>
-			<input type="hidden" name="type" value="post"/>
 			<table id="postProcessorTbl" class="shaded">
 				<thead>
 					<tr class="headerRow">
@@ -226,14 +217,13 @@
 				<tbody>
 					<c:forEach var="proc" items="${post_proc}">
 						<tr id="proc_${proc.id}">
-							<td>${proc.name}</td>
+							<td><a href="${'/starexec/secure/edit/processor.jsp?type=bench&id='}${proc.id}">${proc.name}</a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
 					</c:forEach>					
 				</tbody>
 			</table>
-		</form>
 		<span id="togglePostProcessor" class="caption">+ add new</span>
 		<form id="addPostProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/starexec/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>

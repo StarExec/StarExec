@@ -12,18 +12,6 @@ import org.starexec.constants.R;
  */
 public class Validator {
 	private static final Logger log = Logger.getLogger(Validator.class);
-	
-	// Regex patterns loaded from configuration
-	public static String BOOLEAN_PATTERN;										
-	public static String LONG_PATTERN;
-	public static String USER_NAME_PATTERN;
-	public static String INSTITUTION_PATTERN;
-	public static String EMAIL_PATTERN;
-	public static String URL_PATTERN;
-	public static String PRIMITIVE_NAME_PATTERN;
-	public static String PRIMITIVE_DESC_PATTERN;
-	public static String PASSWORD_PATTERN;
-	public static String REQUEST_MESSAGE;
 
 	// Compiled patterns used for validation	
 	private static Pattern patternBoolean;

@@ -26,18 +26,12 @@ tr th {
 	height: 125px;
 }
 
-#cancelConfig {
-	float: right;
-	margin-right: 113px;	
+#name{
+	width:80%
 }
 
-#updateConfig {
-	float: right;
-	margin-right: 20px;
-}
-
-input, textarea {
-	width: 60%;
+#description {
+	width: 80%;
 	height: 100px;
 }
 
