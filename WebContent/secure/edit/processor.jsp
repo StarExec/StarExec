@@ -4,7 +4,7 @@
 
 <%
 try {
-	// Grab relevant user id & configuration info
+	// Grab relevant user id & processor info
 	request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
 	request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
 	int procId = Integer.parseInt((String)request.getParameter("id"));
@@ -28,7 +28,7 @@ try {
 		proc=null;
 	}
 
-	// The solver and configuration objects are valid...
+	// The user has permissions and the processor is valid
 	if(proc != null) {
 		request.setAttribute("proc", proc);
 		
@@ -40,7 +40,7 @@ try {
 }
 %>
 
-<star:template title="edit ${config.name}" css="edit/processor, edit/shared" js="lib/jquery.validate.min, edit/processor">
+<star:template title="edit ${proc.name}" css="edit/processor, edit/shared" js="lib/jquery.validate.min, edit/processor">
 	<input type="hidden" id="cid" value="${proc.communityId}"/>
 	<form id="editProcForm">
 	<fieldset>
