@@ -5,6 +5,11 @@ $(document).ready(function(){
 	$("#radioLocal").attr("checked", "checked");
 	$("#fileLoc").show();
 	$("#fileURL").hide();
+	
+	$("#radioUpload").attr("checked", "checked");
+	$("#default").show();	
+	$("#fileLoc2").hide();
+	$("#description").hide();
 });
 
 /**
@@ -43,6 +48,36 @@ function attachFormValidation(){
 		}
 	});
 	
+	$("#radioUpload").change(function() {
+		if ($("#radioUpload").is(":checked")) {
+			$("#description").fadeOut('fast', function() {
+				$("#fileLoc2").fadeOut('fast', function() {
+						$("#default").fadeIn('fast');
+				});
+			});
+		}
+	});
+	
+	$("#radioText").change(function() {
+		if ($("#radioText").is(":checked")) {
+			$("#fileLoc2").fadeOut('fast', function() {
+				$("#default").fadeOut('fast',function() {
+					$("#description").fadeIn('fast');
+				});
+			});
+		}
+	});
+	
+	$("#radioFile").change(function() {
+		if ($("#radioFile").is(":checked")) {
+			$("#description").fadeOut('fast', function() {
+				$("#default").fadeOut('fast', function() {
+					$("#fileLoc2").fadeIn('fast');
+				});
+			});
+		}
+	});
+	
 	
 	// Add regular expression handler to jQuery validator
 	$.validator.addMethod(
@@ -76,12 +111,12 @@ function attachFormValidation(){
 				regex 	 : getPrimNameRegex()
 			},
 			desc: {
-				required: false,
+				required: "#radioText:checked",
 				maxlength: $("#description").attr("length"),
 				regex    : getPrimDescRegex()
 			},
 			d: {
-			    required : false,
+			    required : "#radioFile:checked",
 				regex	 : "(\.txt$)"
 			}
 		},
@@ -100,10 +135,12 @@ function attachFormValidation(){
 				regex 	: "invalid character(s)"
 			},
 			desc: {
+				required: "Description Required",
 				maxlength: $("#description").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
 			},
 			d: {
+				required: "Description Required",
 				regex: ".txt file only"
 			}
 		}

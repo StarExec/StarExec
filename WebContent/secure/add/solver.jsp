@@ -35,24 +35,43 @@
 				<tbody>
 					<tr>
 						<td>upload method</td>
-						<td>local file<input type="radio" id="radioLocal" name="upMethod" value="local"/> URL <input type=radio id="radioURL" name="upMethod" value="URL"/></td>
+						<td>
+							local file<input type="radio" id="radioLocal" name="upMethod" value="local"/> 
+							URL <input type=radio id="radioURL" name="upMethod" value="URL"/>
+						</td>
 					</tr>
+					
 					<tr id="localRow">
 						<td>solver location</td>
-						<td><input type="file" name="f" id="fileLoc"/><input name="url" type="text" id="fileURL"/></td>	
+						<td>
+							<input type="file" name="f" id="fileLoc"/>
+							<input name="url" type="text" id="fileURL"/>
+						</td>	
 					</tr>
 					
 					<tr>
 						<td>solver name</td>
 						<td><input id="name" name="sn" type="text" size="42" length="${solverNameLen}" /></td>
 					</tr>
+					
 					<tr>
+						<td>description method</td>
+						<td>
+							Archive<input type="radio" id="radioUpload" name="descMethod" value="upload"/> 
+							Text<input type="radio" id="radioText" name="descMethod" value="text"/> 
+							Local File<input type="radio" id="radioFile" name="descMethod" value="file"/>
+						</td>
+					</tr>
+					
+					<tr id="textBoxRow">
 						<td>solver description</td>
 						<td>
 						    <textarea id="description" rows="6" cols="40" name="desc" length="${solverDescLen}"></textarea>
-						    <input name="d" type="file" id="fileLoc"/>
+						    <input name="d" type="file" id="fileLoc2"/>
+						    <input id="default" type="text" name="name" value="'starexec_description.txt'" readonly>
 						</td>
-					</tr>					
+					</tr>
+										
 					<tr>
 						<td>downloadable</td>
 						<td>

@@ -43,7 +43,7 @@
 		  {
 		    /* if a cookie is not found - alert user -
 		     change cookieexists field value to false */
-		    alert("COOKIES need to be enabled!");
+		    alert("Cookies need to be enabled");
 		
 		    /* If the user has Cookies disabled an alert will let him know 
 		        that cookies need to be enabled to log on.*/ 

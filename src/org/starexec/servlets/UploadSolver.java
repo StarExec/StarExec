@@ -15,13 +15,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
 import java.net.URL;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -60,8 +59,9 @@ public class UploadSolver extends HttpServlet {
     private static final String SOLVER_NAME = "sn";    		
     private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
     private static final String UPLOAD_METHOD="upMethod";
+    private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
-    
+        
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
     	try {	
@@ -71,13 +71,15 @@ public class UploadSolver extends HttpServlet {
 				
 				// Make sure the request is valid
 				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
-				
+				String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 
-				if (!Validator.isValidPrimDescription(item_desc.getString())) {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The uploaded description file exceeds 1024 Characters");
-					return;
+				if (DescMethod.equals("file")) {
+					if (!Validator.isValidPrimDescription(item_desc.getString())) {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The local description file is malformed. Make sure it does not exceed 1024 characters.");
+						return;
+					}
 				}
-								
+				
 				if(!this.isValidRequest(form)) {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload solver request was malformed");
 					return;
@@ -131,14 +133,11 @@ public class UploadSolver extends HttpServlet {
 					name=url.toString().substring(url.toString().lastIndexOf('/'));
 				} catch (Exception e) {
 					name=url.toString().replace('/', '-');
-				}
-				
-				
-				
+				}	
 			}
 			
 
-			FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+			//FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 			
 		
 
@@ -146,8 +145,6 @@ public class UploadSolver extends HttpServlet {
 			Solver newSolver = new Solver();
 			newSolver.setUserId(userId);
 			newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
-			newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
-			newSolver.setFileDescription(item_desc.getString());
 			newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
 			
 			//Set up the unique directory to store the solver
@@ -182,38 +179,41 @@ public class UploadSolver extends HttpServlet {
 			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
 			}
-			
-			
-			//Search for Description within File, and extract its contents if it exists
-			
-			String Destination = archiveFile.getParentFile().getCanonicalPath() + File.separator;
-			String strUnzipped = "";		
-		    try {
-		        FileInputStream fis = new FileInputStream(Destination + FileName +"/" + R.SOLVER_DESC_PATH);
-		        BufferedInputStream bis = new BufferedInputStream(fis);
-		        DataInputStream dis = new DataInputStream(bis);
-		        String text;
-		        //dis.available() returns 0 if the file does not have more lines
-		        while(dis.available() !=0) {
-		            text=dis.readLine().toString();
-		            strUnzipped = strUnzipped + text;
-		        }
-		        fis.close();
-		        bis.close();
-		        dis.close();
-		    } catch (FileNotFoundException e) {
-		        e.printStackTrace();
-		    } catch (IOException e) {
-		    	e.printStackTrace();
-		    }
-		    //Temporary
-		    if (strUnzipped.length() > 1024)
-		    	strUnzipped = strUnzipped.substring(0,1024);
-		    newSolver.setZipFileDescription(strUnzipped);
-		    
 
-	        
-			
+			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
+			if (DescMethod.equals("text")){
+				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
+			} else if (DescMethod.equals("file")) {
+				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+				newSolver.setDescription(item_desc.getString());
+			} else {	//Upload starexec_description.txt
+				String Destination = archiveFile.getParentFile().getCanonicalPath() + File.separator;
+				String strUnzipped = "";		
+			    try {
+			        FileInputStream fis = new FileInputStream(Destination + FileName +"/" + R.SOLVER_DESC_PATH);
+			        BufferedInputStream bis = new BufferedInputStream(fis);
+			        DataInputStream dis = new DataInputStream(bis);
+			        String text;
+			        //dis.available() returns 0 if the file does not have more lines
+			        while(dis.available() !=0) {
+			            text=dis.readLine().toString();
+			            strUnzipped = strUnzipped + text;
+			        }
+			        fis.close();
+			        bis.close();
+			        dis.close();
+			    } catch (FileNotFoundException e) {
+			        e.printStackTrace();
+			    } catch (IOException e) {
+			    	e.printStackTrace();
+			    }
+			    //Temporary
+			    if (strUnzipped.length() > 1024) {
+			    	strUnzipped = strUnzipped.substring(0,1024);
+			    }
+			    newSolver.setDescription(strUnzipped);
+			}
+
 			//Try adding the solver to the database
 			return Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
 		} catch (Exception e) {
@@ -285,7 +285,8 @@ public class UploadSolver extends HttpServlet {
 					!form.containsKey(UploadSolver.SOLVER_NAME) || 
 					!form.containsKey(SOLVER_DESC) ||
 					!form.containsKey(SOLVER_DOWNLOADABLE) || 
-					!form.containsKey(UPLOAD_METHOD)) {
+					!form.containsKey(UPLOAD_METHOD) ||
+					!form.containsKey (DESC_METHOD)) {
 				return false;
 			}
 			
@@ -295,10 +296,12 @@ public class UploadSolver extends HttpServlet {
 
 			//String item_desc_file = ArchiveUtil.extractArchiveDesc(SOLVER_NAME);
 			
-			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) || 
-					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC))) {					
+			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) ||
+					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
 				return false;
 			}
+			
+
 			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
 				String fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
 				for(String ext : UploadSolver.extensions) {
