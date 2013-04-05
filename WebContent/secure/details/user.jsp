@@ -6,10 +6,17 @@
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));	
 		User t_user = Users.get(id);
+		int userId = SessionUtil.getUserId(request);
+		boolean owner = true;
 		String userFullName = t_user.getFullName();
 		List<Job> jList = Jobs.getByUserId(t_user.getId());
 		
 		if(t_user != null) {
+			// Ensure the user visiting this page is the owner of the solver
+			if(userId != id){
+				owner = false;
+			}
+			request.setAttribute("owner", owner);
 			request.setAttribute("t_user", t_user);
 			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
 		} else {
@@ -35,7 +42,7 @@
   		<img id="popImage" src=""/>
 	</div>				
 	<fieldset>
-		<legend>details<c:if test="${t_user.id == t_user.id}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${owner}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
 		<table id="infoTable">
 		<tr>
 			<td id="picSection">
@@ -84,6 +91,7 @@
 		<legend>benchmarks</legend>
 		<p>coming soon...</p>
 	</fieldset>
+	<c:if test="${owner}"> 
 	<fieldset id="jobField">
 		<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
 		<table id="usrJobsTable" uid=${t_user.id}>
@@ -99,4 +107,5 @@
 			</thead>			
 		</table>
 	</fieldset>	
+	</c:if>
 </star:template>
