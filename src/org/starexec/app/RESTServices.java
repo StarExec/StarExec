@@ -724,6 +724,15 @@ public class RESTServices {
 		return Processors.delete(pid) ? gson.toJson(0) : gson.toJson(1);
 	}
 	
+	/**
+	 * Handles an update request for a processor
+	 * 
+	 * @return a json string containing 0 for success, 1 for a server error,
+	 *  2 for a permissions error, or 3 for a malformed request error.
+	 * 
+	 * @author Eric Burns
+	 */
+	
 	@POST
 	@Path("/edit/processor/{procId}")
 	@Produces("applicatoin/json")

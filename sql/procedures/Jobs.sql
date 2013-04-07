@@ -29,7 +29,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 DROP PROCEDURE IF EXISTS AddJobAttr;
 CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
-		INSERT INTO job_attributes VALUES (_pairId, _key, _val);
+		INSERT INTO job_attributes VALUES (GetJobId(_pairId),_jobId, _pairId, _key, _val);
 	END //
 
 -- Returns the number of jobs in a given space
@@ -536,6 +536,15 @@ CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 		WHERE pair_id=_pairId
 		ORDER BY attr_key ASC;
 	END //
+
+DROP PROCEDURE IF EXISTS GetJobAttrs;
+CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
+	BEGIN
+		SELECT *
+		FROM job_attributes
+		WHERE job_id=_jobId
+		ORDER BY job_id ASC;
+	END //
 	
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
@@ -772,139 +781,3 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 		FROM jobs
 		WHERE user_id = _userId;
 	END //
-	
-	
-	
-	
-	
--- Gets the fewest necessary Solver/Configuraiton pairs to satisfy a
--- request for the next page of Job Stats in their DataTable object.  
--- This services the DataTable object by supporting filtering by a query, 
--- ordering results by a column, and sorting results in ASC or DESC order.  
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetNextPageOfJobStats;
-CREATE PROCEDURE GetNextPageOfJobStats(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _jobId INT, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of Jobs without filtering for _query
-		IF (_query = '' OR _query = NULL) THEN
-			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						job_id, 
-						solver_id, 
-						config_id, 
-						jp_complete,
-						jp_incomplete,
-						jp_error,
-						GetSolverName(solver_id) AS solverName,
-						GetConfigName(config_id) AS configName
-						
-				FROM	job_stats
-				
-				-- Exclude Jobs that aren't in the specified space
-				WHERE 	job_id=_jobId
-				
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN solverName
-					 	WHEN 1 THEN configName
-					 	WHEN 2 THEN jp_complete
-					 	WHEN 3 THEN jp_incomplete
-					 	WHEN 4 THEN jp_error
-						ELSE solverName
-					 END) ASC
-			 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id, 
-						job_id, 
-						solver_id, 
-						config_id, 
-						jp_complete,
-						jp_incomplete,
-						jp_error,
-						GetSolverName(solver_id) AS solverName,
-						GetConfigName(config_id) AS configName
-				FROM	job_stats
-				
-				WHERE 	job_id=_jobId
-				
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN solverName
-					 	WHEN 1 THEN configName
-					 	WHEN 2 THEN jp_complete
-					 	WHEN 3 THEN jp_incomplete
-					 	WHEN 4 THEN jp_error
-						ELSE solverName
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-
-		-- Otherwise, ensure the target job_stats contain _query
-		ELSE
-			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						job_id, 
-						solver_id, 
-						config_id, 
-						jp_complete,
-						jp_incomplete,
-						jp_error,
-						GetSolverName(solver_id) AS solverName,
-						GetConfigName(config_id) AS configName
-				
-				FROM	job_stats
-				
-				-- Exclude Jobs whose name and status don't contain the query string
-				WHERE 	(getSolverName(solver_id)	LIKE	CONCAT('%', _query, '%'))
-					
-				-- Exclude Jobs that aren't in the specified space
-				AND 	job_id=_jobId
-										
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN solverName
-					 	WHEN 1 THEN configName
-					 	WHEN 2 THEN jp_complete
-					 	WHEN 3 THEN jp_incomplete
-					 	WHEN 4 THEN jp_error
-						ELSE solverName
-					 END) ASC
-					 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id, 
-						job_id, 
-						solver_id, 
-						config_id, 
-						jp_complete,
-						jp_incomplete,
-						jp_error,
-						GetSolverName(solver_id) AS solverName,
-						GetConfigName(config_id) AS configName
-						
-				FROM	job_stats
-				
-				WHERE 	(name				LIKE	CONCAT('%', _query, '%'))
-				
-				AND 	job_id=_jobId
-				
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN solverName
-					 	WHEN 1 THEN configName
-					 	WHEN 2 THEN jp_complete
-					 	WHEN 3 THEN jp_incomplete
-					 	WHEN 4 THEN jp_error
-						ELSE solverName
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		END IF;
-	END //
-	
-DELIMITER ; -- This should always be at the end of this file

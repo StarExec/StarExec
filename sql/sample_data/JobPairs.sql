@@ -1001,4 +1001,4 @@ INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, 
 INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code) VALUES (1, 999, 1, 999, 1, SYSDATE(), SYSDATE(), 7);
 INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code) VALUES (1, 1000, 1, 1000, 1, SYSDATE(), SYSDATE(), 7);
 
-INSERT INTO job_attributes (pair_id, attr_key, attr_value) VALUES (1, 'starexec-result', 'sat');
+INSERT INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 1, 'starexec-result', 'sat');

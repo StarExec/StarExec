@@ -19,6 +19,7 @@ public class JobPair extends Identifiable {
 	private Benchmark bench = null;	
 	private Status status = null;
 	private Properties attributes = null;
+	
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;	

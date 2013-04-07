@@ -119,7 +119,7 @@ public class Jobs {
 		procedure.setInt(1, pairId);
 		procedure.setString(2, key);
 		procedure.setString(3, val);
-
+		
 		procedure.executeUpdate();
 		return true;			
 	}
@@ -862,6 +862,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			ResultSet results = procedure.executeQuery();
 			Common.safeClose(con);
+			
 			List<JobPair> returnList = new ArrayList<JobPair>();
 			Set<Integer> configIdSet = new HashSet<Integer>();
 			List<Integer> configIdList=new ArrayList<Integer>();
@@ -882,13 +883,37 @@ public class Jobs {
 				configIdList.add(curConfig);
 				log.debug("Finished with results for pair " + jp.getId());
 			}
-
-			Object [] configIdListSet=configIdSet.toArray();
 			
-			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
-			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
 			Common.closeResultSet(results);
 			log.info("result set closed for job " + jobId);
+			
+			con=Common.getConnection();
+			CallableStatement procedure2 =con.prepareCall("{CALL GetJobAttrs(?)}");
+			procedure2.setInt(1, jobId);
+			ResultSet attrResults=procedure2.executeQuery();
+			Common.safeClose(con);
+			
+			
+			Hashtable<Integer, List<String>>attrs=new Hashtable<Integer, List<String>>();
+			while (attrResults.next()) {
+				
+				int pairId=attrResults.getInt("pair_id");
+				if (!attrs.contains(pairId)) {
+					attrs.put(pairId, new LinkedList<String>());
+				}
+				List<String> curList=attrs.get(pairId);
+				curList.add(attrResults.getString("attr_key"));
+				curList.add(attrResults.getString("attr_value"));
+			}
+			
+			Common.closeResultSet(attrResults);
+			
+			
+			
+			Object [] configIdListSet=configIdSet.toArray();
+			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
+			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
+			
 			int curId=0;
 			for (int i=0; i<configIdListSet.length;i++) {
 				curId=(Integer)configIdListSet[i];
@@ -903,7 +928,18 @@ public class Jobs {
 				log.debug("set solver for " + jp.getId());
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
 				log.debug("set configuration for " + jp.getId());
-				jp.setAttributes(Jobs.getAttributes(jp.getId()));
+				
+				List<String> attrList=attrs.get(jp.getId());
+				if (attrList==null) {
+					continue;
+				}
+				int index=0;
+				Properties newProps=new Properties();
+				while (index<attrList.size()) {
+					newProps.setProperty(attrList.get(index), attrList.get(index+1));
+				}
+				jp.setAttributes(newProps);
+				
 			}
 			log.info("returning detailed pairs for job " + jobId );
 			return returnList;	
@@ -1295,17 +1331,80 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * Helper function for sortJobSolvers-- compares two JobSolvers based on the indexOfColumnSortedBy
+	 * @return true if first<= second, false otherwise.
+	 * @author Eric Burns
+	 */
 	
 	
-	/*
+	private static boolean compareJobSolvers(JobSolver first, JobSolver second, int indexOfColumnSortedBy) {
+		switch (indexOfColumnSortedBy) {
+		case 0:
+			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
+		case 1: 
+			return (first.getConfiguration().getName().compareTo(second.getConfiguration().getName())<=0);
+		case 2:
+			return first.getCorrectJobPairs()<=second.getCorrectJobPairs();
+		case 3:
+			return first.getIncorrectJobPairs()<=second.getIncorrectJobPairs();
+		case 4:
+			return first.getIncompleteJobPairs()<=second.getIncompleteJobPairs();
+		case 5:
+			return first.getErrorJobPairs()<=second.getErrorJobPairs();
+		default:
+			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
+		}
+	}
+	
+	/**
+	 * Helper function for GetJobStatsForNextPage-- sorts JobSolver objects based on column and ASC sent from client
+	 * @author Eric Burns
+	 */
+	private static List<JobSolver> sortJobSolvers(List<JobSolver> rows, int indexOfSortedColumn, boolean isSortedASC) {
+		if (rows.size()<=1) {
+			return rows;
+		}
+		
+		List<JobSolver> answer=new LinkedList<JobSolver>();
+		answer.add(rows.get(0));
+		for (int index=1;index<rows.size();index++) {
+			boolean inserted=false;
+			for (int index2=0;index2<answer.size();index2++) {
+				if (compareJobSolvers(rows.get(index), answer.get(index2), indexOfSortedColumn)) {
+					answer.add(index2, rows.get(index));
+					inserted=true;
+					break;
+				}
+				
+				}
+			if (!inserted) {
+				answer.add(rows.get(index));
+			}
+		}
+		
+		if (!isSortedASC) {
+			List<JobSolver> reversed=new LinkedList<JobSolver>();
+			for (JobSolver js : answer) {
+				reversed.add(0,js);
+			}
+			
+			return reversed;
+		}
+		
+		return answer;
+	}
+	
+	
+	
+	/**
 	 * Gets next page of solver statistics for job details page
+	 * @param total-- a reference to a 1-element int array used to return the total number of JobSolver objects
 	 * @author Eric Burns
 	 */
 
-	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
-		
-		return new LinkedList<JobSolver>();
-		/*List<JobPair> pairs=getPairsDetailedForStats(jobId);
+	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
+		List<JobPair> pairs=getPairsDetailedForStats(jobId);
 		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
 		String key=null;
 		for (JobPair jp : pairs) {
@@ -1334,7 +1433,7 @@ public class Jobs {
 		for (JobSolver js : JobSolvers.values()) {
 			returnValues.add(js);
 		}
-		
+		total[0]=returnValues.size();
 		//carry out filtering function
 		if (!searchQuery.equals("")) {
 			searchQuery=searchQuery.toLowerCase();
@@ -1349,55 +1448,25 @@ public class Jobs {
 				returnValues.remove(js);
 			}
 		}
-		
-		return returnValues;*/
-		
-		
-		/*
-		Connection con = null;	
-		try {
-			con = Common.getConnection();
-			CallableStatement procedure;	
-
-			procedure = con.prepareCall("{CALL GetNextPageOfJobStats(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, jobId);
-			procedure.setString(6, searchQuery);
-
-			ResultSet results = procedure.executeQuery();
-			List<JobSolver> jobSolvers=new LinkedList<JobSolver>();
-			while(results.next()){
-
-				JobSolver jp = new JobSolver();
-				
-				Solver solver = new Solver();
-				solver.setId(results.getInt("solver_id"));
-				solver.setName(results.getString("solverName"));
-
-				Configuration config = new Configuration();
-				config.setId(results.getInt("config_id"));
-				config.setName(results.getString("configName"));
-
-				solver.addConfiguration(config);
+		returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
+		List<JobSolver> sublist=null;
+		if (recordsPerPage>returnValues.size()) {
+			sublist=returnValues;
+		} else if (startingRecord+recordsPerPage>returnValues.size()) {
+			sublist=returnValues.subList(startingRecord, returnValues.size());
+		} else {
+			try {
+				sublist=returnValues.subList(startingRecord, startingRecord+recordsPerPage); 
+			} catch (IndexOutOfBoundsException e) {  //bad request-- starting record out of bounds
+				if (recordsPerPage>returnValues.size()) {
+					sublist=returnValues;
+				} else {
+					sublist=returnValues.subList(0, recordsPerPage);
+				}
+			}
 			
-				jp.setSolver(solver);
-				jp.setCorrectJobPairs(Integer.parseInt(results.getString("jp_complete")));
-				jp.setIncorrectJobPairs(Integer.parseInt(results.getString("jp_incomplete")));
-				jp.setIncompleteJobPairs(Integer.parseInt(results.getString("jp_error")));
-				jobSolvers.add(jp);		
-			}	
-			Common.closeResultSet(results);
-			return jobSolvers;
-		} catch (Exception e){			
-			log.error("get JobStats for Next Page of Job " + jobId + " says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
 		}
-
-		return null;*/
+		return sublist;
 	}
 
 

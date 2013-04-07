@@ -293,6 +293,7 @@ CREATE TABLE job_pairs (
 
 -- All attributes for each job pair
 CREATE TABLE job_attributes (
+	job_id INT NOT NULL,
 	pair_id INT NOT NULL,
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
@@ -481,17 +482,3 @@ CREATE TABLE unvalidated_benchmarks (
 	PRIMARY KEY (id)
 );
 
--- For keeping statisitcs related to the performance of solver configuration pairs
--- in particular jobs
--- Author: Eric Burns
-
-CREATE TABLE job_stats (
-	id INT NOT NULL,
-	job_id INT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-	solver_id INT NOT NULL,
-	config_id INT NOT NULL,
-	jp_complete INT DEFAULT 0,
-	jp_incomplete INT DEFAULT 0,
-	jp_error INT DEFAULT 0,
-	PRIMARY KEY (id)
-);

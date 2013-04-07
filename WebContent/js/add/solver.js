@@ -31,8 +31,13 @@ function attachFormValidation(){
 	
 	$("#radioLocal").change(function() {
 		if ($("#radioLocal").is(":checked")) {
+			$("#fileURL").stop(true,true,true);
 			$("#fileURL").fadeOut('fast', function() {
-				$("#fileLoc").fadeIn('fast');
+				if ($("#radioLocal").is(":checked")) {
+					$("#fileLoc").fadeIn('fast');
+					$("#upForm").validate().element("#fileURL");
+				}
+				
 			});
 			
 			
@@ -41,8 +46,13 @@ function attachFormValidation(){
 
 	$("#radioURL").change(function() {
 		if ($("#radioURL").is(":checked")) {
+			$("#fileLoc").stop(true,true,true);
 			$("#fileLoc").fadeOut('fast', function() {
-				$("#fileURL").fadeIn('fast');
+				if ($("#radioURL").is(":checked")) {
+					$("#fileURL").fadeIn('fast'); 
+					$("#upForm").validate().element("#fileLoc");
+				}
+				
 			});
 			
 		}

@@ -95,10 +95,14 @@ public class UploadSolver extends HttpServlet {
 				int result = handleSolver(userId, form);				
 			
 				// Redirect based on success/failure
-				if(result != -1) {
+				if(result != -1 && result != -2) {
 					response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + result);	
 				} else {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");	
+					if (result==-2) {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File could not be accessed at URL"); 
+					} else {
+						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver."); 
+					}	
 				}									
 			} else {
 				// Got a non multi-part request, invalid
@@ -128,7 +132,13 @@ public class UploadSolver extends HttpServlet {
 			if (upMethod.equals("local")) {
 				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);		
 			} else {
-				url=new URL((String)form.get(UploadSolver.FILE_URL));
+				try {
+					url=new URL((String)form.get(UploadSolver.FILE_URL));
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					return -2;
+				}
+					
 				try {
 					name=url.toString().substring(url.toString().lastIndexOf('/'));
 				} catch (Exception e) {

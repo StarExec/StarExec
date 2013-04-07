@@ -22,7 +22,6 @@ CREATE FUNCTION GetBenchmarkTypeDescription(_benchTypeId INT)
 		RETURN benchTypeDescription;
 	END //
 	
-	
 -- Returns a benchmark type's name for a given benchmark id
 -- Author: Todd Elvers 
 DROP FUNCTION IF EXISTS GetBenchmarkTypeName;
@@ -36,21 +35,6 @@ CREATE FUNCTION GetBenchmarkTypeName(_benchTypeId INT)
 		WHERE id = _benchTypeId;
 		
 		RETURN benchTypeName;
-	END //
-	
--- Returns a configurations's name for a given solver ID
--- Author: Eric Burns
-DROP FUNCTION IF EXISTS GetConfigName;
-CREATE FUNCTION GetConfigName(_configID INT)
-	RETURNS VARCHAR(128)
-	BEGIN
-		DECLARE configName VARCHAR(128);
-		
-		SELECT name INTO configName
-		FROM configurations
-		WHERE id = _configID;
-		
-		RETURN configName;
 	END //
 	
 -- Gets the number of completed job pairs for a given job id
@@ -100,6 +84,21 @@ CREATE FUNCTION GetJobPairResult(_jobPairId INT)
 		AND attr_key = "starexec-result";
 		
 		RETURN IFNULL(result, '--');
+	END //
+	
+-- Gets the job ID of the job that contains the job pair with the given id
+-- Author: Eric Burns
+DROP FUNCTION IF EXISTS GetJobId;
+CREATE FUNCTION GetJobId(_pairId INT)
+	RETURNS INT
+	BEGIN
+		DECLARE jobId INT;
+		
+		SELECT job_id INTO jobId
+		FROM job_pairs
+		WHERE id=_pairid;
+		
+		RETURN jobId;
 	END //
 	
 -- Returns "complete" if the job represented by the given id had no pending job pairs,
@@ -153,21 +152,6 @@ CREATE FUNCTION GetTotalPairs(_jobId INT)
 		RETURN totalPairs;
 	END //
 	
-	
--- Returns a solver's name for a given solver ID
--- Author: Eric Burns
-DROP FUNCTION IF EXISTS GetSolverName;
-CREATE FUNCTION GetSolverName(_solverID INT)
-	RETURNS VARCHAR(128)
-	BEGIN
-		DECLARE spaceName VARCHAR(128);
-		
-		SELECT name INTO spaceName
-		FROM solvers
-		WHERE id = _solverID;
-		
-		RETURN spaceName;
-	END //
 	
 -- Determines the wallclock time difference between two timestamps
 -- and returns that in milliseconds

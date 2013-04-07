@@ -36,8 +36,13 @@ function attachFormValidation(){
 	
 	$("#radioLocal").change(function() {
 		if ($("#radioLocal").is(":checked")) {
+			$("#fileURL").stop(true,true,true);
 			$("#fileURL").fadeOut('fast', function() {
-				$("#benchFile").fadeIn('fast');
+				if ($("#radioLocal").is(":checked")) {
+					$("#benchFile").fadeIn('fast');
+					$("#uploadForm").validate().element("#fileURL");
+				}
+				
 			});
 			
 			
@@ -45,8 +50,13 @@ function attachFormValidation(){
 	});
 	$("#radioURL").change(function() {
 		if ($("#radioURL").is(":checked")) {
+			$("#benchFile").stop(true,true,true);
 			$("#benchFile").fadeOut('fast', function() {
-				$("#fileURL").fadeIn('fast');
+				if ($("#radioURL").is(":checked")) {
+					$("#fileURL").fadeIn('fast');
+					$("#uploadForm").validate().element("#benchFile");
+				}
+				
 			});
 			
 		}
@@ -58,7 +68,7 @@ function attachFormValidation(){
     });
 	
 	// Attach a tooltip to 'benchFile' to display validation errors to the client
-	$('#benchFile').qtip(getErrorTooltip());
+	//$('#benchFile').qtip(getErrorTooltip());
 	
 	//initially hide dependency related fields
 	  $('#depSpaces').fadeOut(0);
@@ -70,12 +80,12 @@ function attachFormValidation(){
 			benchFile: {
 				required: "#radioLocal:checked",
 				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+			},
+			url : {
+				required: "#radioURL:checked",
+				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			}
 		},
-		url : {
-			required: "#radioURL:checked",
-			regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
-		 },
 		messages: {
 			benchFile:{
 				required: "please select a file",
@@ -85,9 +95,9 @@ function attachFormValidation(){
 				required: "please enter a URL",
 				regex: "URL must be .zip, .tar, or .tar.gz"	
 			}
-		},
+		}
 		// Place the error messages in the tooltip instead of in the DOM
-		errorPlacement: function (error, element) {
+		/*errorPlacement: function (error, element) {
 			if($(error).text().length > 0){
 				$(element).qtip('api').updateContent('<b>'+$(error).text()+'</b>', true);
 			}
@@ -95,7 +105,7 @@ function attachFormValidation(){
 		// Hide the error tooltip when no errors are present
 		success: function(label){
 			$('#' + $(label).attr('for')).qtip('api').hide();
-		}
+		}*/
 	});
 }
 
@@ -145,6 +155,7 @@ function initUI(){
 /**
  * Returns the tooltip configuration used to display error messages to the client
  */
+/*
 function getErrorTooltip(){
 	// Sets up the tooltip look & feel
 	$.fn.qtip.styles.errorTooltip = {
@@ -189,5 +200,5 @@ function getErrorTooltip(){
 				$('div[qtip="'+this.id+'"]').css('opacity',1);
 			}
 		}
-	};
-}
+	}; 
+}*/

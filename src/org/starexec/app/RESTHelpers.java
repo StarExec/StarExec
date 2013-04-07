@@ -285,6 +285,7 @@ public class RESTHelpers {
 		    			break;
 		    		case JOB_STATS:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
+		    			break;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
 		    			break;
@@ -299,6 +300,8 @@ public class RESTHelpers {
 		    			break;
 	    		}
 	    	}
+	    	
+	    	
 	    	
 	    	// Validates that the sort direction is specified and valid
 	    	if (Util.isNullOrEmpty(sDir)) {
@@ -323,7 +326,7 @@ public class RESTHelpers {
 	    	} else {
 	    		attrMap.put(SEARCH_QUERY, 1);
 	    	}
-
+	    	
 	    	// The request is valid if it makes it this far;
 	    	// Finish the validation by adding the remaining attributes to the map
 	    	attrMap.put(RECORDS_PER_PAGE, Integer.parseInt(iDisplayLength));
@@ -883,8 +886,7 @@ public class RESTHelpers {
 		    
 		    case JOB_STATS:
 		    	List<JobSolver> jobSolversToDisplay = null;
-	    		int totalJobPairs = Jobs.getJobPairCount(id);
-	    		
+	    		int [] totalJobSolvers= new int[1];
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
 	    		jobSolversToDisplay = Jobs.getJobStatsForNextPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -892,7 +894,8 @@ public class RESTHelpers {
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id													// Job id 
+	    				id,													// Job id 
+	    				totalJobSolvers										// reference for storing TOTAL_ENTRIES
 				);
 	    		
 	    		
@@ -902,13 +905,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobSolvers[0]);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobSolversToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobPairs);
+			    attrMap.put(TOTAL_RECORDS, totalJobSolvers[0]);
 			    
 		    	/**
 		    	 * Generate the HTML for the next DataTable page of entries

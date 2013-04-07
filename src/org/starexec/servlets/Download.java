@@ -324,7 +324,7 @@ public class Download extends HttpServlet {
         Iterator<JobPair> itr = pairs.iterator();
        
         sb.delete(0, sb.length());
-        sb.append("benchmark,solver,configuration,status,time,result\r\n");
+        sb.append("benchmark,solver,configuration,status,time(s),result\r\n");
         
         while(itr.hasNext()) {
         	JobPair pair = itr.next();
@@ -338,7 +338,6 @@ public class Download extends HttpServlet {
         		sb.append(pair.getStatus().toString());
         		sb.append(",");
         		sb.append((pair.getWallclockTime()));
-        		sb.append("s");
         		sb.append(",");
         		sb.append(pair.getStarexecResult());
         		sb.append("\r\n");
