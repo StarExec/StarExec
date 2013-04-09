@@ -1,4 +1,4 @@
-USE prod_starexec;
+USE starexec;
 
 -- Association between exclusive queues and spaces (initially only communities)
 CREATE TABLE comm_queue (

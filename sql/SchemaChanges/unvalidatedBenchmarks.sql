@@ -1,4 +1,4 @@
-USE prod_starexec;
+USE starexec;
 
 ALTER TABLE benchmark_uploads
 ADD failed_benchmarks INT DEFAULT 0;

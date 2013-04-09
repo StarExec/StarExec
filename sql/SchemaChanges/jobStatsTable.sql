@@ -1,4 +1,4 @@
-USE prod_starexec;
+USE starexec;
 
 -- For keeping stats for solvers
 -- Author: Eric Burns

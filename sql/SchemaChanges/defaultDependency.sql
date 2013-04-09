@@ -1,4 +1,4 @@
-USE prod_starexec;
+USE starexec;
 
 -- For updating the space settings table to include a new boolean
 -- Author: Eric Burns

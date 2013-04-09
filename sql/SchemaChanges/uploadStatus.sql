@@ -1,4 +1,4 @@
-USE prod_starexec;
+USE starexec;
 
 -- For Status Updates on a Benchmark upload
 -- Author: Benton McCune

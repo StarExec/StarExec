@@ -1,7 +1,7 @@
 -- Benton McCune
 -- Data to initialize StarExec
 
-USE prod_starexec;
+USE starexec;
 
 -- initial user, password="password"
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota)

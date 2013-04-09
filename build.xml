@@ -1,26 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- This build file must be configured for local use, using a file
+     called local.properties, in this directory.  The properties which
+     should be set in that file are:
+
+     1. configuration, the name of the configuration from starexec-config.xml to use.
+     2. db_name, the name of the local SQL database.
+     3. tomcat-dir, the path to tomcat 
+     4. sge_script_dir, the path to the directory for sge scripts
+
+     See example.local.properties in this directory for an example. -->
+
+
 <!-- Starexec production build script. Author: Tyler Jensen -->
 <project name="starexec" default="war" basedir=".">
+
+        <loadproperties srcFile="local.properties"/>
+
 	<!-- Set up path information for use throughout this script -->
 	<property name="project-name" value="${ant.project.name}" />	
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-directory" value="src" />
-	<property name="config-directory" value="${source-directory}/org/starexec/config" />
 	<property name="build-directory" value="build" />
 	<property name="class-directory" value="${build-directory}/classes" />		
+	<property name="config-directory" value="${class-directory}/org/starexec/config" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
-	<property name="tomcat-dir" value="/project/tomcat/apache-tomcat-7" />
-	<property name="db_name" value="prod_starexec" />
-	<property name="sge_script_dir" value="/home/starexec/sge_scripts"/>
 	
-	<!-- Specify to java where to look for JAR files while compiling (our application lib and the apache lib) -->
+	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
         <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
     </path>
 	
-	<!-- Action for compiling the project and building the WAR file -->
+	<!-- Action for compiling the project and building the WAR file.
+
+             1. we first compile the Java sources and copy over scripts and
+                configurations to ${build-directory}.
+             2. then we rewrite some of the configurations, using information
+	        from local.properties.
+         -->
 	<target name="war" depends="">		
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
@@ -29,40 +47,11 @@
 	    <exec executable="svnversion" outputproperty="svnversion"/>
 	    <exec executable="whoami" outputproperty="whoami"/>
 		
-		<!-- Create/update the build property file -->
-	    <propertyfile file="${config-directory}/build.properties"
-	        comment="This file contains automatically generated build metadata. DO NOT EDIT!">        
-	        <entry key="buildtime" value="${builtat}"/>
-	        <entry key="build" value="${svnversion}"/>
-	        <entry key="builder" value="${whoami}"/>
-	    </propertyfile>
-		
-		<!-- Update the starexec-config file to use the production configuration -->
-		<replaceregexp file="${config-directory}/starexec-config.xml"
-		               match="default=(.+)"
-		               replace="default=&quot;production&quot;&gt;"
-		               byline="false"
-		/>
-		
-		<!-- Update the sql scripts to use the correct database -->
-		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
-			<fileset dir="sql" includes="**/*.sql"/>
-		</replaceregexp>
-		
-		<!-- Update the sql schema to use the correct database -->
-		<replaceregexp file="sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
-		<replaceregexp file="sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
-		
-		<!-- Update the log4j config file to only record INFO level events  -->
-		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
-	        <entry key="log4j.rootLogger" value="INFO, STAREXEC"/>
-	    </propertyfile>
-		
 		<!-- Clear the build directory if it exists and re-make the dir -->
 		<delete dir="${build-directory}" />
 		<mkdir dir="${build-directory}" />
 		<mkdir dir="${class-directory}" />
-		
+
 		<!-- Compile the source code to get the java classes -->
 		<javac srcdir="src" destdir="${class-directory}" classpathref="classpath" nowarn="on">
 			<compilerarg value="-Xlint:unchecked"/>
@@ -97,6 +86,37 @@
 			<fileset dir="${sge_script_dir}" includes="**/*.bash"/>
 	    </chown>
 		
+
+		<!-- Create/update the build property file -->
+	    <propertyfile file="${config-directory}/build.properties"
+	        comment="This file contains automatically generated build metadata. DO NOT EDIT!">        
+	        <entry key="buildtime" value="${builtat}"/>
+	        <entry key="build" value="${svnversion}"/>
+	        <entry key="builder" value="${whoami}"/>
+	    </propertyfile>
+		
+		<!-- Update the starexec-config file to use the production configuration -->
+		<replaceregexp file="${config-directory}/starexec-config.xml"
+		               match="default=(.+)"
+		               replace="default=&quot;${configuration}&quot;&gt;"
+		               byline="false"
+		/>
+		
+		<!-- Update the sql scripts to use the correct database -->
+		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
+			<fileset dir="sql" includes="**/*.sql"/>
+		</replaceregexp>
+		
+		<!-- Update the sql schema to use the correct database -->
+		<replaceregexp file="sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
+		<replaceregexp file="sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
+		
+		<!-- Update the log4j config file to only record INFO level events  -->
+		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
+	        <entry key="log4j.rootLogger" value="INFO, STAREXEC"/>
+  	        </propertyfile>
+		
+	
 		<!-- Create the war file! -->		
 		<war warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-directory}" />	
