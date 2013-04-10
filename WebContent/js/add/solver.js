@@ -96,7 +96,7 @@ function attachFormValidation(){
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
-	
+		
 	
 	
 	// Re-validate the 'solver location' field when it loses focus
@@ -121,12 +121,10 @@ function attachFormValidation(){
 				regex 	 : getPrimNameRegex()
 			},
 			desc: {
-				required: "#radioText:checked",
 				maxlength: $("#description").attr("length"),
 				regex    : getPrimDescRegex()
 			},
 			d: {
-			    required : "#radioFile:checked",
 				regex	 : "(\.txt$)"
 			}
 		},
@@ -145,12 +143,10 @@ function attachFormValidation(){
 				regex 	: "invalid character(s)"
 			},
 			desc: {
-				required: "Description Required",
 				maxlength: $("#description").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
 			},
 			d: {
-				required: "Description Required",
 				regex: ".txt file only"
 			}
 		}

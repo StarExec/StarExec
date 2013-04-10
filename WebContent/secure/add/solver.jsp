@@ -68,7 +68,7 @@
 						<td>
 						    <textarea id="description" rows="6" cols="40" name="desc" length="${solverDescLen}"></textarea>
 						    <input name="d" type="file" id="fileLoc2"/>
-						    <input id="default" type="text" name="name" value="'starexec_description.txt'" readonly>
+						    <p id = "default">Will search the archive upload for starexec_description.txt and extract the description</p>
 						</td>
 					</tr>
 										

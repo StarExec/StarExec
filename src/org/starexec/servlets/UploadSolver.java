@@ -84,7 +84,7 @@ public class UploadSolver extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload solver request was malformed");
 					return;
 				} 
-				
+								
 				// Make sure that the solver has a unique name in the space.
 				if(Spaces.notUniquePrimitiveName((String)form.get(UploadSolver.SOLVER_NAME), Integer.parseInt((String)form.get(SPACE_ID)), 1)) {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The solver should have a unique name in the space.");
@@ -95,13 +95,18 @@ public class UploadSolver extends HttpServlet {
 				int result = handleSolver(userId, form);				
 			
 				// Redirect based on success/failure
-				if(result != -1 && result != -2) {
+				if(result != -1 && result != -2 && result != -3) {
 					response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + result);	
 				} else {
-					if (result==-2) {
+					if (result == -3) {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The archive description file is malformed. Make sure it does not exceed 1024 characters.");
+						return;
+					} else if (result == -2) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File could not be accessed at URL"); 
+						return;
 					} else {
-						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver."); 
+						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
+						return;
 					}	
 				}									
 			} else {
@@ -217,11 +222,11 @@ public class UploadSolver extends HttpServlet {
 			    } catch (IOException e) {
 			    	e.printStackTrace();
 			    }
-			    //Temporary
-			    if (strUnzipped.length() > 1024) {
-			    	strUnzipped = strUnzipped.substring(0,1024);
-			    }
+			    if (!Validator.isValidPrimDescription(strUnzipped)) {
+			    	return -3;
+			    } else {
 			    newSolver.setDescription(strUnzipped);
+			    }
 			}
 
 			//Try adding the solver to the database
