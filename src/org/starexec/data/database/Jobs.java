@@ -1345,13 +1345,15 @@ public class Jobs {
 		case 1: 
 			return (first.getConfiguration().getName().compareTo(second.getConfiguration().getName())<=0);
 		case 2:
-			return first.getCorrectJobPairs()<=second.getCorrectJobPairs();
+			return first.getCompleteJobPairs()<=second.getCompleteJobPairs();
 		case 3:
-			return first.getIncorrectJobPairs()<=second.getIncorrectJobPairs();
-		case 4:
 			return first.getIncompleteJobPairs()<=second.getIncompleteJobPairs();
+		case 4:
+			return first.getIncorrectJobPairs()<=second.getIncorrectJobPairs();
 		case 5:
 			return first.getErrorJobPairs()<=second.getErrorJobPairs();
+		case 6:
+			return first.getTime()<=second.getTime();
 		default:
 			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
 		}
@@ -1409,24 +1411,23 @@ public class Jobs {
 		String key=null;
 		for (JobPair jp : pairs) {
 			key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
-			if (JobSolvers.containsKey(key)) {
-				Integer statusCode=jp.getStatus().getCode();
-				if (statusCode>=8 && statusCode<=17) {
-					JobSolvers.get(key).incrementErrorJobPairs();
-				} else if (statusCode<=6) {
-					JobSolvers.get(key).incrementIncompleteJobPairs();
-					
-				} else if (statusCode==7) {
-					JobSolvers.get(key).incrementCorrectJobPairs();
-				} else {
-					
-				}
-			} else {
+			if (!JobSolvers.containsKey(key)) {
 				JobSolver newSolver=new JobSolver();
-				
 				newSolver.setSolver(jp.getSolver());
 				newSolver.setConfiguration(jp.getConfiguration());
 				JobSolvers.put(key, newSolver);
+			}
+			JobSolver curSolver=JobSolvers.get(key);
+			Integer statusCode=jp.getStatus().getCode();
+			curSolver.incrementTotalJobPairs();
+			curSolver.incrementTime(jp.getWallclockTime());
+			if (statusCode>=8 && statusCode<=17) { //status codes specified in STATUS.java
+				curSolver.incrementErrorJobPairs();
+			} else if (statusCode<=6 || statusCode==18) {
+				curSolver.incrementIncompleteJobPairs();
+			} else if (statusCode==7) {
+				curSolver.incrementCompleteJobPairs();
+				//TODO: see if there is anything to compare starexec-result to
 			}
 		}
 		List<JobSolver> returnValues=new LinkedList<JobSolver>();

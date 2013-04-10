@@ -284,7 +284,7 @@ public class RESTHelpers {
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
 		    		case JOB_STATS:
-		    			if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
+		    			if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
 		    			break;
 		    		case USER:
 		    			if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
@@ -948,10 +948,11 @@ public class RESTHelpers {
 					JsonArray entry = new JsonArray();
 		    		entry.add(new JsonPrimitive(solverLink));
 		    		entry.add(new JsonPrimitive(configLink));
-		    		entry.add(new JsonPrimitive(js.getCorrectJobPairs()));
-		    		entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
+		    		entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
 		    		entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+		    		entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
 		    		entry.add(new JsonPrimitive(js.getErrorJobPairs()));
+		    		entry.add(new JsonPrimitive(js.getTime()));
 		    		
 		    		dataTablePageEntries.add(entry);
 		    	}

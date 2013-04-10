@@ -74,13 +74,36 @@
 				</tr>				
 			</tbody>
 		</table>	
-	</fieldset>		
+	</fieldset>
+	
+	
+	<fieldset id="solveTblField">
+	<legend>summary</legend>	
+		<table id="solveTbl" class="shaded">
+			<thead>
+				<tr>
+					<th>solver</th>
+					<th id="configHead">configuration</th>
+					<th id="completeHead">complete</th>
+					<th id="incompleteHead">incomplete</th>
+					<th>wrong</th>
+					<th>error</th>	
+					<th>time(s)</th>
+				</tr>		
+			</thead>	
+			<tbody>
+				<!-- This will be populated by a pagination feature -->
+			</tbody>
+		</table>
+	</fieldset>
+			
 	<fieldset>
+	
 	<legend>job pairs</legend>	
 		<table id="pairTbl" class="shaded">
 			<thead>
 				<tr>
-					<th>benchmark</th>
+					<th id="benchHead">benchmark</th>
 					<th>solver</th>
 					<th>config</th>
 					<th>status</th>
@@ -95,24 +118,7 @@
 		</table>
 	</fieldset>
 	
-	<fieldset id="solveTblField">
-	<legend>solver accuracy</legend>	
-		<table id="solveTbl" class="shaded">
-			<thead>
-				<tr>
-					<th>solver</th>
-					<th>configuration</th>
-					<th>correct</th>
-					<th>incorrect</th>
-					<th>incomplete</th>
-					<th>error</th>	
-				</tr>		
-			</thead>	
-			<tbody>
-				<!-- This will be populated by a pagination feature -->
-			</tbody>
-		</table>
-	</fieldset>
+	
 	
 	<fieldset>
 	<legend>actions</legend>

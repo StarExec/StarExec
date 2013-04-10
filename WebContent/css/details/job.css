@@ -17,3 +17,9 @@ fieldset {
 	float: left;
 	margin: 5px;
 }
+
+#incompleteHead, #benchHead, #completeHead, #configHead {
+	width: 18%;
+}
+
+

@@ -9,37 +9,51 @@ import java.util.LinkedList;
 public class JobSolver extends Identifiable {
 	private Solver solver=null;
 	private int totalJobPairs=0;
-	private int correctJobPairs=0;
+	private int completeJobPairs=0;
 	private int errorJobPairs=0;
 	private int incorrectJobPairs=0;
 	private int incompleteJobPairs=0;
+	private double time=0;
 	private Configuration config=null;
 	public JobSolver() {
 		this.solver=new Solver();
 	}
 	
-	
+	public void incrementTime(double newTime) {
+		this.time+=newTime;
+	}
+	public void setTime(double newTime) {
+		this.time=newTime;
+	}
+	public double getTime() {
+		return this.time;
+	}
 	public void setTotalJobPairs(int totalJobPairs) {
 		this.totalJobPairs = totalJobPairs;
 	}
 	public int getTotalJobPairs() {
 		return totalJobPairs;
 	}
+	
+	public void incrementTotalJobPairs() {
+		this.totalJobPairs++;
+	}
+	
 	public void setSolver(Solver solver) {
 		this.solver = solver;
 	}
 	public Solver getSolver() {
 		return solver;
 	}
-	public void setCorrectJobPairs(int correctJobPairs) {
-		this.correctJobPairs = correctJobPairs;
+	public void setCompleteJobPairs(int completeJobPairs) {
+		this.completeJobPairs = completeJobPairs;
 	}
-	public int getCorrectJobPairs() {
-		return correctJobPairs;
+	public int getCompleteJobPairs() {
+		return completeJobPairs;
 	}
 	
-	public void incrementCorrectJobPairs() {
-		correctJobPairs++;
+	public void incrementCompleteJobPairs() {
+		completeJobPairs++;
 	}
 	public void setIncorrectJobPairs(int incorrectJobPairs) {
 		this.incorrectJobPairs = incorrectJobPairs;

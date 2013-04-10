@@ -38,12 +38,10 @@ tr th {
 
 input {
 	width: 60%;
-	font-family: monospace;
 }
 
 textarea {
 	width: 60%;
 	height: 100px;
-	font-family: monospace;
 	margin-left: 1px;
 }

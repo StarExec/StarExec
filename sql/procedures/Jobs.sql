@@ -536,7 +536,7 @@ CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 		WHERE pair_id=_pairId
 		ORDER BY attr_key ASC;
 	END //
-
+	
 DROP PROCEDURE IF EXISTS GetJobAttrs;
 CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
@@ -781,3 +781,5 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 		FROM jobs
 		WHERE user_id = _userId;
 	END //
+	
+DELIMITER ; -- this should always be at the end of the file
