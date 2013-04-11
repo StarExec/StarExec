@@ -1401,11 +1401,13 @@ public class Jobs {
 	
 	/**
 	 * Gets next page of solver statistics for job details page
+	 * @param recordsPerPage-- returns a list of this size, or every record if value is less than 0
 	 * @param total-- a reference to a 1-element int array used to return the total number of JobSolver objects
 	 * @author Eric Burns
 	 */
 
 	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
+		
 		List<JobPair> pairs=getPairsDetailedForStats(jobId);
 		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
 		String key=null;
@@ -1421,13 +1423,17 @@ public class Jobs {
 			Integer statusCode=jp.getStatus().getCode();
 			curSolver.incrementTotalJobPairs();
 			curSolver.incrementTime(jp.getWallclockTime());
-			if (statusCode>=8 && statusCode<=17) { //status codes specified in STATUS.java
+			if ( (statusCode>=8 && statusCode<=17 ) || statusCode==0) { //status codes specified in STATUS.java
 				curSolver.incrementErrorJobPairs();
 			} else if (statusCode<=6 || statusCode==18) {
 				curSolver.incrementIncompleteJobPairs();
 			} else if (statusCode==7) {
 				curSolver.incrementCompleteJobPairs();
-				//TODO: see if there is anything to compare starexec-result to
+				if (jp.getAttributes().contains("starexec-result") && jp.getAttributes().contains("starexec-expected")) {
+					if (!jp.getAttributes().get("starexec-result").equals(jp.getAttributes().get("starexec-expected"))) {
+						curSolver.incrementIncorrectJobPairs();
+					}
+				}
 			}
 		}
 		List<JobSolver> returnValues=new LinkedList<JobSolver>();
@@ -1449,6 +1455,11 @@ public class Jobs {
 				returnValues.remove(js);
 			}
 		}
+		
+		if (recordsPerPage<0) {
+			recordsPerPage=returnValues.size()+1;
+		}
+		
 		returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
 		List<JobSolver> sublist=null;
 		if (recordsPerPage>returnValues.size()) {
@@ -1468,6 +1479,17 @@ public class Jobs {
 			
 		}
 		return sublist;
+	}
+	
+	/**
+	 * Gets all JobSolver objects for a given job
+	 * @param jobId the job in question
+	 * @return every JobSolver associated with the given job
+	 * @author Eric Burns
+	 */
+	
+	public static List<JobSolver> getAllJobStats(int jobId) {
+		return getJobStatsForNextPage(0 , -1, true , 0 , "" , jobId , new int [1] );
 	}
 
 

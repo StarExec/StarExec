@@ -59,15 +59,13 @@ function initDataTables(){
         "fnServerData"	: fnPaginationHandler 
     });
 	
-	//solver accuracy table
+	//summary table
 	$('#solveTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
-        "bServerSide"	: true,
-        "sAjaxSource"	: "/starexec/services/jobs/",
-        "sServerMethod" : "POST",
-        "fnServerData"	: solverPaginationHandler 
+        "bSort": true,
+        "bPaginate": true
     });
 	
 	// Change the filter so that it only queries the server when the user stops typing

@@ -2,21 +2,26 @@ package org.starexec.data.to;
 
 import java.util.List;
 import java.util.LinkedList;
-/*Represents the accuracy of a solver for a single job
+
+import com.google.gson.annotations.Expose;
+/*Represents the accuracy of a solver/configuration pair for a single job
  * @author Eric Burns
  */
 
 public class JobSolver extends Identifiable {
-	private Solver solver=null;
-	private int totalJobPairs=0;
-	private int completeJobPairs=0;
-	private int errorJobPairs=0;
-	private int incorrectJobPairs=0;
-	private int incompleteJobPairs=0;
-	private double time=0;
-	private Configuration config=null;
+	@Expose private Solver solver=null;
+	@Expose private Configuration configuration=null;
+	@Expose private int totalJobPairs=0;
+	@Expose private int completeJobPairs=0;
+	@Expose private int errorJobPairs=0;
+	@Expose private int incorrectJobPairs=0;
+	@Expose private int incompleteJobPairs=0;
+	@Expose private double time=0;
+	
+	
 	public JobSolver() {
 		this.solver=new Solver();
+		this.configuration=new Configuration();
 	}
 	
 	public void incrementTime(double newTime) {
@@ -82,12 +87,12 @@ public class JobSolver extends Identifiable {
 
 
 	public void setConfiguration(Configuration config) {
-		this.config=config;
+		this.configuration=config;
 	}
 
 
 	public Configuration getConfiguration() {
-		return config;
+		return configuration;
 	}
 
 

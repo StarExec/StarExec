@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -11,7 +11,7 @@
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
 		}
-		
+		request.setAttribute("stats",Jobs.getAllJobStats(jobId));
 		if(j != null) {			
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
@@ -88,11 +88,21 @@
 					<th id="incompleteHead">incomplete</th>
 					<th>wrong</th>
 					<th>error</th>	
-					<th>time(s)</th>
+					<th>time</th>
 				</tr>		
 			</thead>	
 			<tbody>
-				<!-- This will be populated by a pagination feature -->
+				<c:forEach var="cs" items="${stats}">
+					<tr id="statRow">
+						<td><a href="${'/starexec/secure/details/solver.jsp?id='}${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/starexec/images/external.png"/></a></td>
+						<td><a href="${'/starexec/secure/details/configuration.jsp?id='}${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/starexec/images/external.png"/></a></td>
+						<td>${cs.completeJobPairs} </td>
+						<td>${cs.incompleteJobPairs} </td>
+						<td>${cs.incorrectJobPairs}</td>
+						<td>${cs.errorJobPairs}</td>
+						<td>${cs.time}</td>
+					</tr>
+				</c:forEach>
 			</tbody>
 		</table>
 	</fieldset>

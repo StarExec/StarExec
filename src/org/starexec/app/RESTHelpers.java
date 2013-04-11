@@ -460,7 +460,7 @@ public class RESTHelpers {
 		    		sb = new StringBuilder();
 		    		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
 		    		sb.append(job.getId());
-		    		sb.append("\" target=\"blank\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(job.getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 		    		sb.append(hiddenJobId);
@@ -541,7 +541,7 @@ public class RESTHelpers {
 		    		sb = new StringBuilder();
 		    		sb.append("<a href=\"/starexec/secure/details/user.jsp?id=");
 		    		sb.append(user.getId());
-		    		sb.append("\" target=\"blank\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(user.getFullName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 		    		sb.append(hiddenUserId);
@@ -615,7 +615,7 @@ public class RESTHelpers {
 		    		sb = new StringBuilder();
 		    		sb.append("<a href=\"/starexec/secure/details/solver.jsp?id=");
 		    		sb.append(solver.getId());
-		    		sb.append("\" target=\"blank\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(solver.getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 		    		sb.append(hiddenSolverId);
@@ -682,7 +682,7 @@ public class RESTHelpers {
 		    		sb.append(bench.getDescription());
 		    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
 		    		sb.append(bench.getId());
-		    		sb.append("\" target=\"blank\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(bench.getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 		    		sb.append(hiddenBenchId);
@@ -830,7 +830,7 @@ public class RESTHelpers {
 		    		sb.append(jp.getBench().getDescription());
 		    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
 		    		sb.append(jp.getBench().getId());
-		    		sb.append("\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(jp.getBench().getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 		    		sb.append(hiddenJobPairId);
@@ -842,7 +842,7 @@ public class RESTHelpers {
 		    		sb.append(jp.getSolver().getDescription());
 		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
 		    		sb.append(jp.getSolver().getId());
-		    		sb.append("\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(jp.getSolver().getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 					String solverLink = sb.toString();
@@ -853,7 +853,7 @@ public class RESTHelpers {
 		    		sb.append(jp.getSolver().getConfigurations().get(0).getDescription());
 		    		sb.append("\" href=\"/starexec/secure/details/configuration.jsp?id=");
 		    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
-		    		sb.append("\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 					String configLink = sb.toString();
@@ -927,7 +927,7 @@ public class RESTHelpers {
 		    		sb.append(js.getSolver().getName());
 		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
 		    		sb.append(js.getSolver().getId());
-		    		sb.append("\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(js.getSolver().getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 					String solverLink = sb.toString();
@@ -937,7 +937,7 @@ public class RESTHelpers {
 		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
 		    		sb.append("\" href=\"/starexec/secure/details/configuration.jsp?id=");
 		    		sb.append(js.getSolver().getConfigurations().get(0).getId());
-		    		sb.append("\">");
+		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 					String configLink = sb.toString();
@@ -1154,7 +1154,7 @@ public class RESTHelpers {
     		sb = new StringBuilder();
     		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
     		sb.append(job.getId());
-    		sb.append("\" target=\"blank\">");
+    		sb.append("\" target=\"_blank\">");
     		sb.append(job.getName());
     		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
     		sb.append(hiddenJobId);
@@ -1243,7 +1243,7 @@ public class RESTHelpers {
     		sb = new StringBuilder();
     		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
     		sb.append(job.getId());
-    		sb.append("\" target=\"blank\">");
+    		sb.append("\" target=\"_blank\">");
     		sb.append(job.getName());
     		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
     		sb.append(hiddenJobId);
