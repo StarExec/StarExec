@@ -48,6 +48,37 @@
 			<property key="MAX_PAIR_CPUTIME" value="86400" />
 			<property key="MAX_PAIR_FILE_WRITE" value="2097152" />
 			<property key="MAX_PAIR_VMEM" value="4194304" />
+
+			<property key="BOOLEAN_PATTERN">
+				<value><![CDATA[true|false]]></value>
+			</property>		
+			<property key="LONG_PATTERN">
+				<value><![CDATA[^\-?\d+$]]></value>
+			</property>									
+			<property key="USER_NAME_PATTERN">
+				<value><![CDATA[^[A-Za-z\-\s']{2,32}$]]></value>
+			</property>						
+			<property key="INSTITUTION_PATTERN">
+				<value><![CDATA[^[\w\-\s']{2,64}$]]></value>
+			</property>						
+			<property key="EMAIL_PATTERN">
+				<value><![CDATA[^[\w.%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$]]></value>
+			</property>						
+			<property key="URL_PATTERN">
+				<value><![CDATA[https?://([-\w\.]+)+(:\d+)?(/([\w/_\.]*(\?\S+)?)?){1,128}]]></value>
+			</property>						
+			<property key="PRIMITIVE_NAME_PATTERN">
+				<value><![CDATA[^[\w\-\. ]{1,128}$]]></value>
+			</property>									
+			<property key="PASSWORD_PATTERN">
+				<value><![CDATA[^(?=.*[A-Za-z0-9~`!@#\$%\^&\*\(\)_\-\+\=]+$)(?=.*[0-9~`!@#\$%\^&\*\(\)_\-\+\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$]]></value>
+			</property>						
+			<property key="REQUEST_MESSAGE">				
+				<value><![CDATA[^[\w\]\[\\!\"#\$%&'()\*\+,\./:;=\?@\^_`{\|}~\- ]{2,512}$]]></value>				
+			</property>						
+			<property key="PRIMITIVE_DESC_PATTERN">
+				<value><![CDATA[^.{0,1024}$]]></value>
+			</property>						
 		</class>
 	</configuration>
 	<configuration name="true_production" inherit="production">
@@ -184,7 +215,6 @@
 	  <property key="CONFIG_PATH" value="/home/astump/starexec/src/org/starexec/config" /> 
 	  <property key="JOB_INBOX_DIR" value="/home/astump/lstarexec/jobs" /> 
 	  <property key="NODE_WORKING_DIR" value="/home/astump/lstarexec/nodes" /> 
-	  <property key="BENCH_TYPE_DIR" value="/home/astump/lstarexec/types" /> 
 	  <property key="SPACE_XML_SCHEMA_LOC" value="/home/astump/lstarexec/batch/batchSpaceSchema.xsd" /> 
 	  <property key="SOLVER_BIN_DIR" value="/bin" />   
 	  <property key="DOWNLOAD_FILE_DIR" value="/secure/files/" />

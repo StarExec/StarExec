@@ -26,8 +26,8 @@ import org.starexec.util.Validator;
  * @author Tyler Jensen
  */
 public class Starexec implements ServletContextListener {
-	private static final Logger log = Logger.getLogger(Starexec.class);
-	private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
+    private Logger log;
+    private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
@@ -48,10 +48,10 @@ public class Starexec implements ServletContextListener {
 			
 			// Wait for the task scheduler to finish
 			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
-			log.info("Starexec successfully shutdown");
+			log.info("StarExec successfully shutdown");
 		} catch (Exception e) {
 			log.error(e);
-			log.error("Starexec unclean shutdown");
+			log.error("StarExec unclean shutdown");
 		}		
 	}
 
@@ -62,10 +62,12 @@ public class Starexec implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
-		log.info(String.format("Application started at [%s]", R.STAREXEC_ROOT));
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 										
+		log = Logger.getLogger(Starexec.class);
+		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
+
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 		
@@ -97,8 +99,9 @@ public class Starexec implements ServletContextListener {
 		final Runnable updateClusterTask = new Runnable() {			
 			@Override
 			public void run() {
-				GridEngineUtil.loadWorkerNodes();
-				GridEngineUtil.loadQueues();
+			    log.info("updateClusterTask (periodic)");
+			    GridEngineUtil.loadWorkerNodes();
+			    GridEngineUtil.loadQueues();
 			}
 		};	
 		
@@ -106,6 +109,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable processJobStatsTask = new Runnable() {			
 			@Override
 			public void run() {
+			    log.info("processJobStats (periodic)");
 				if(GridEngineUtil.isAvailable()) {
 					GridEngineUtil.processResults();
 					//log.info("Skipping ALL Results Processing...");
@@ -118,6 +122,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable submitJobsTask = new Runnable() {			
 			@Override
 			public void run() {
+			    log.info("submitJobsTask (periodic)");
 				if(GridEngineUtil.isAvailable()) {
 					JobManager.checkPendingJobs();
 					//log.info("Skipping ALL Results Processing...");
@@ -130,6 +135,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable clearDownloadsTask = new Runnable() {			
 			@Override
 			public void run() {
+			    log.info("clearDownloadsTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1);
 			}
 		};	
@@ -138,6 +144,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable clearJobLogTask = new Runnable() {			
 			@Override
 			public void run() {
+			    log.info("clearJobLogTask (periodic)");
 				Util.clearOldFiles(R.JOB_LOG_DIR, 30);
 			}
 		};	

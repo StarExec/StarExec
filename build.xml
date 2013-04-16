@@ -113,7 +113,7 @@
 		
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
-	        <entry key="log4j.rootLogger" value="INFO, STAREXEC"/>
+	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
   	        </propertyfile>
 		
 	

@@ -65,7 +65,10 @@ public class ConfigUtil {
 			}
 			
 			// Find the name of the configuration to use
-			String defaultConfigName = starexecConfigDoc.getDocumentElement().getAttributes().getNamedItem(ATTR_DEFAULT).getNodeValue();			
+			String defaultConfigName = 
+			    starexecConfigDoc.getDocumentElement().getAttributes().getNamedItem(ATTR_DEFAULT).getNodeValue(); 
+			log.info("Loading default configuration "+defaultConfigName);
+
 			Node defaultConfigNode = findConfigNode(starexecConfigDoc.getDocumentElement(), defaultConfigName);
 			
 			if(defaultConfigNode == null) {
@@ -143,7 +146,7 @@ public class ConfigUtil {
 		
 		// For each class node in the configuration file...
 		for(int i = 0; i < classNodes.getLength(); i++) {
-			// Get that class node and it's child nodes
+			// Get that class node and its child nodes
 			Node currentClassNode = classNodes.item(i);				
 			
 			if(!currentClassNode.getNodeName().equals(NODE_CLASS)){
@@ -157,6 +160,8 @@ public class ConfigUtil {
 			String className = currentClassNode.getAttributes().getNamedItem(ATTR_NAME).getNodeValue();
 			Class currentClass = Class.forName(className);
 			
+			log.debug("Loading class "+className);
+
 			// For each property node under the current class node...
 			for(int j = 0; j < classNodeChildren.getLength(); j++) {
 				// Get the property node and parse out the key/value from its attributes
