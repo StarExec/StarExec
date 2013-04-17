@@ -83,29 +83,47 @@
 			</tr>
 		</table>
 	</fieldset>	
-	<fieldset>
-		<legend>solvers</legend>
-		<p>coming soon...</p>
-	</fieldset>
-	<fieldset>
-		<legend>benchmarks</legend>
-		<p>coming soon...</p>
-	</fieldset>
+	<c:if test="${owner}">
+		<fieldset id="solverField">
+			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
+			<table id="solvers" uid=${t_user.id}>
+				<thead>
+					<tr>
+						<th> name </th>
+						<th> description </th>
+					</tr>
+				</thead>
+			</table>
+		</fieldset>
+	</c:if>
+	<c:if test="${owner}">
+		<fieldset id="benchField">
+			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
+			<table id="benchmarks" uid=${t_user.id}>
+				<thead>
+					<tr>
+						<th> name</th>
+						<th> type</th>											
+					</tr>
+				</thead>		
+			</table>
+		</fieldset>			
+	</c:if>
 	<c:if test="${owner}"> 
-	<fieldset id="jobField">
-		<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
-		<table id="usrJobsTable" uid=${t_user.id}>
-			<thead>
-				<tr>
-					<th>name</th>
-					<th>status</th>
-					<th>complete</th>
-					<th>pending</th>
-					<th>error</th>
-					<th>time</th>
-				</tr>
-			</thead>			
-		</table>
-	</fieldset>	
+		<fieldset id="jobField">
+			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+			<table id="jobs" uid=${t_user.id}>
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>status</th>
+						<th>complete</th>
+						<th>pending</th>
+						<th>error</th>
+						<th>time</th>
+					</tr>
+				</thead>			
+			</table>
+		</fieldset>	
 	</c:if>
 </star:template>

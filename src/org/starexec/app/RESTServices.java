@@ -2027,10 +2027,52 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextPageOfUserJobs(usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.JOB, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
+	
+	/**
+	 * Get the paginated result of the solvers belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of solvers if successful
+	 * 		   1: The get solver procedure fails.
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/users/{id}/solvers/pagination")
+	@Produces("application/json")	
+	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		
+		// Query for the next page of solver pairs and return them to the user
+		log.debug(usrId);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.SOLVER, usrId, request);
+		
+		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+	}
+	
+	/**
+	 * Get the paginated result of the benchmarks belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of benchmarks if successful
+	 * 		   1: The get benchmark procedure fails.
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/users/{id}/benchmarks/pagination")
+	@Produces("application/json")	
+	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		
+		// Query for the next page of solver pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.BENCHMARK, usrId, request);
+		
+		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+	}
+	
 	
 	
 	/**

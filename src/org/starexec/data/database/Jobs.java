@@ -1549,7 +1549,7 @@ public class Jobs {
 
 		return 0;		
 	}
-
+	
 	/**
 	 * Get next page of the jobs belong to a specific user
 	 * @param startingRecord specifies the number of the entry where should the querry start

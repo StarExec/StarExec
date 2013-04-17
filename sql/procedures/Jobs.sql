@@ -782,4 +782,5 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 		WHERE user_id = _userId;
 	END //
 	
+	
 DELIMITER ; -- this should always be at the end of the file

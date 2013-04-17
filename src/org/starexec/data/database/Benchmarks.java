@@ -20,6 +20,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
@@ -1518,6 +1519,91 @@ public class Benchmarks {
 
 		return benchmarks;
 	}
+
+	/**
+	 * Get the total count of the benchmarks belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return The count of the benchmarks
+	 * @author Wyatt Kaiser
+	 */
+	public static int getBenchmarkCountByUser(int userId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkCountByUser(?)}");
+			procedure.setInt(1, userId);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("benchmarkCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;		
+	}
+
+	/**
+	 * Get next page of the solvers belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the query start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Solvers belong to the user
+	 * @author Wyatt Kaiser
+	 */
+	public static List<Benchmark> getBenchmarkByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		Connection con = null;			
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+
+			procedure = con.prepareCall("{CALL GetNextPageOfUserBenchmarks(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, userId);
+			procedure.setString(6, searchQuery);
+
+			ResultSet results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+
+			while(results.next()){
+				// Build benchmark object
+				Benchmark b = new Benchmark();
+
+				b.setId(results.getInt("id"));
+				b.setUserId(results.getInt("user_id"));
+				b.setName(results.getString("name"));
+				b.setDescription(results.getString("description"));
+				
+				Processor t = new Processor();
+				t.setName(results.getString("benchTypeName"));
+				t.setDescription(results.getString("benchTypeDescription"));
+
+				// Add benchmark object to listOfBenchmarks
+				b.setType(t);
+				benchmarks.add(b);	
+			}
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+
+
 
 }
 

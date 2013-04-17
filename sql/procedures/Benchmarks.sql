@@ -535,4 +535,109 @@ CREATE PROCEDURE GetUnvalidatedBenchmarks(IN _status_id INT)
 		WHERE status_id = _status_id;
 	END //		
 	
+-- Get the total count of the benchmarks belong to a specific user
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetBenchmarkCountByUser;
+CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
+	BEGIN
+		SELECT COUNT(*) AS benchmarkCount
+		FROM benchmarks
+		WHERE user_id = _userId;
+	END //
+	
+	-- Gets the fewest necessary Benchmarks in order to service a client's
+-- request for the next page of Benchmarks in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.
+-- Gets benchmarks across all spaces for one user.  
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNextPageOfUserBenchmarks;
+CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of Solvers without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id,
+						description,
+						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
+						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
+
+				
+				FROM	benchmarks where user_id = _userId
+				
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+						ELSE benchTypeName
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of Solvers
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id,
+						description,
+						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
+						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
+						
+				FROM	benchmarks where user_id = _userId
+
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+						ELSE benchTypeName
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Solvers contain _query
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id,
+						description,
+						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
+						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
+						
+				FROM	benchmarks where user_id = _userId
+				
+				-- Exclude Solvers whose name doesn't contain the query string
+				AND 	(name				LIKE	CONCAT('%', _query, '%'))										
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+						ELSE benchTypeName
+					 END) ASC	 
+				-- Shrink the results to only those required for the next page of Solvers
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id,
+						description,
+						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
+						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
+						
+				FROM	benchmarks where user_id = _userId
+				
+				AND 	(name				LIKE	CONCAT('%', _query, '%'))
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+						ELSE benchTypeName
+					 END) DESC
+				
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+	
 DELIMITER ; -- This should always be at the end of this file

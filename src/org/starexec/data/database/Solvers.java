@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.util.Util;
 
@@ -1117,5 +1119,80 @@ public class Solvers {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the total count of the solvers belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return The count of the solvers
+	 * @author Wyatt Kaiser
+	 */
+	public static int getSolverCountByUser(int userId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSolverCountByUser(?)}");
+			procedure.setInt(1, userId);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("solverCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;		
+	}
+
+	/**
+	 * Get next page of the solvers belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the query start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Solvers belong to the user
+	 * @author Wyatt Kaiser
+	 */
+	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		Connection con = null;			
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure;	
+
+			procedure = con.prepareCall("{CALL GetNextPageOfUserSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, userId);
+			procedure.setString(6, searchQuery);
+
+			ResultSet results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+
+			while(results.next()){
+
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setUserId(results.getInt("user_id"));
+				s.setName(results.getString("name"));				
+				s.setDescription(results.getString("description"));				
+				solvers.add(s);		
+			}
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
 	}
 }
