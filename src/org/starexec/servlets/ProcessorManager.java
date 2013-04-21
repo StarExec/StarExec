@@ -100,42 +100,6 @@ public class ProcessorManager extends HttpServlet {
 	}	
 	
 	/**
-	 * Handles requests to update a benchmark type
-	 *
-	
-	private void handleUpdateRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		try {
-			// If we're dealing with an update request...			
-				
-			// Make sure the request is valid
-			if(!isValidUpdateRequest(form)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The processor request was malformed");
-				return;
-			}
-			
-			// Make sure this user has the ability to update processors for this community
-			int community = Integer.parseInt((String)form.get(OWNING_COMMUNITY));
-			if(!SessionUtil.getPermission(request, community).isLeader()) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit processors for their community");
-				return;
-			}
-			
-			// Update the benchmark type
-			Processor result = this.updateProcessor(form);
-			
-			// And redirect based on the results of the update
-			if(result != null) {
-				response.sendRedirect("/starexec/secure/edit/community.jsp?cid=" + result.getCommunityId());	
-			} else {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update the processor. A partial update may have been applied");	
-			}												
-		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			log.error(e.getMessage(), e);
-		}	
-	}*/
-	
-	/**
 	 * Handles requests to add a processor
 	 */
 	private void handleAddRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -208,72 +172,7 @@ public class ProcessorManager extends HttpServlet {
 		return null;
 	}
 	
-	/**
-	 * Parses through form items and updates the processor based on the form's contents.
-	 * Also writes a new processor file and deletes the old one if the user specifies a new file
-	 * @param form The request's form items
-	 * @return The Processor that was updated in the database if it was successful
-	 *
-	private Processor updateProcessor(HashMap<String, Object> form) {		
-		try {						
-			Processor updatedProc = new Processor();						
-			updatedProc.setName((String)form.get(PROCESSOR_NAME));
-			updatedProc.setDescription((String)form.get(PROCESSOR_DESC));					
-			updatedProc.setCommunityId(Integer.parseInt((String)form.get(OWNING_COMMUNITY)));					
-			updatedProc.setId(Integer.parseInt((String)form.get(PROCESSOR_ID)));
-			
-			String procType = (String)form.get(PROCESSOR_TYPE);
-			updatedProc.setType(toProcessorEnum(procType));	
-			
-			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
-			if(!Util.isNullOrEmpty(processorFile.getName())) {
-				// If the file is being updated, save it to disk...
-				File newFile = this.getProcessorFilePath(updatedProc.getCommunityId(), processorFile.getName());
-				processorFile.write(newFile);
-				
-				//updated file needs to be executable
-				if (!newFile.setExecutable(true, false)) {			
-					log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
-				}
-				
-				updatedProc.setFilePath(newFile.getAbsolutePath());					
-				log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), updatedProc.getCommunityId()));	
-			}
-			
-			// Get the original type information from the database
-			Processor originalProc = Processors.get(updatedProc.getId());
-			
-			// If there's a difference between names, update it
-			if(!originalProc.getName().equals(updatedProc.getName())) {
-				Processors.updateName(originalProc.getId(), updatedProc.getName());
-			}
-
-			// If there's a difference between descriptions, update it
-			if(!originalProc.getDescription().equals(updatedProc.getDescription())) {
-				Processors.updateDescription(originalProc.getId(), updatedProc.getDescription());
-			}
-			
-			// If the user specified a new processor script, update it
-			if(!org.starexec.util.Util.isNullOrEmpty(updatedProc.getFilePath())) {
-				// Update the new path
-				Processors.updatePath(originalProc.getId(), updatedProc.getFilePath());
-				
-				// And remove the old processor script from disk
-				File f = new File(originalProc.getFilePath());
-				File parentDir = new File(f.getParent());
-				f.delete();				
-				parentDir.delete();
-				
-				log.info(String.format("Removed files [%s] and directory [%s] due to an updated benchmark type processor script", f.getAbsolutePath(), parentDir.getAbsolutePath()));
-			}
-			
-			return updatedProc;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		}				
-		
-		return null;
-	}*/
+	
 	
 	/**
 	 * @param type The string version of the type as retrieved from the HTML form
@@ -358,29 +257,4 @@ public class ProcessorManager extends HttpServlet {
 		return false;
 	}
 	
-	/**
-	 * Uses the Validate util to ensure the incoming type upload  request is valid. This checks for illegal characters
-	 * and content length requirements to ensure it is not malicious.
-	 * @param form The form to validate
-	 * @return True if the request is ok to act on, false otherwise
-	 *
-	private boolean isValidUpdateRequest(HashMap<String, Object> form) {
-		try {	
-			// Make sure we have a type ID 
-			if(!form.containsKey(PROCESSOR_ID) || 
-					!form.containsKey(PROCESSOR_NAME) ||
-					!form.containsKey(PROCESSOR_DESC)) {
-				return false;
-			} else if(!Validator.isValidInteger((String)form.get(PROCESSOR_ID))) {
-				return false;
-			}
-			
-			// Now run through the create request validator, they share the same fields			
-			//return this.isValidCreateRequest(form);
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
-		}
-		
-		return false;
-	}*/
 }

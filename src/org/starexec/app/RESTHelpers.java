@@ -402,6 +402,7 @@ public class RESTHelpers {
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
+	    	
 	    	return null;
 	    }
 	    
@@ -634,6 +635,7 @@ public class RESTHelpers {
 		    	
 		    	
 		    case BENCHMARK:
+		    	
 		    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
 		    	int totalBenchmarksInSpace = Benchmarks.getCountInSpace(id);
 		    	
@@ -942,8 +944,6 @@ public class RESTHelpers {
 		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
 		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
 					String configLink = sb.toString();
-					
-					
 					
 					// Create an object, and inject the above HTML, to represent an entry in the DataTable
 					JsonArray entry = new JsonArray();

@@ -16,8 +16,7 @@ $(document).ready(function(){
 	$("#radioLocal").attr("checked", "checked");
 	$("#benchFile").show();
 	$("#fileURL").hide();
-	//hide message until upload clicked
-	$('#messageField').hide();
+	
 });
 
 
@@ -95,6 +94,11 @@ function attachFormValidation(){
 				required: "please enter a URL",
 				regex: "URL must be .zip, .tar, or .tar.gz"	
 			}
+		},
+		submitHandler: function(form) {
+			createDialog("Uploading benchmarks to server, please wait. This will take some time for large archives.");
+			form.submit();
+			
 		}
 		// Place the error messages in the tooltip instead of in the DOM
 		/*errorPlacement: function (error, element) {
@@ -144,10 +148,6 @@ function initUI(){
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
 		}
-	});
-	
-	$("#btnUpload").click(function(){		
-		$('#messageField').show();
 	});
 	
 }

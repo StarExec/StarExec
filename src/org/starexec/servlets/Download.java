@@ -209,7 +209,7 @@ public class Download extends HttpServlet {
 			
 			file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
 			
-			String fileNamewoFormat = UUID.randomUUID().toString();
+			String fileNamewoFormat = space.getName() +"_XML_("+ UUID.randomUUID().toString()+")";
 			String fileName = fileNamewoFormat + format;
 			
 			//container has the xml schema and the newly created xml file.  uniqueDir is the compressed file downloaded by user

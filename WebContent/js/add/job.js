@@ -95,16 +95,6 @@ function attachFormValidation(){
 			queue: {
 				required: "error - no worker queues"
 			}
-		},
-		// Place the error messages in the tooltip instead of in the DOM
-		errorPlacement: function (error, element) {
-			if($(error).text().length > 0){
-				$(element).qtip('api').updateContent('<b>'+$(error).text()+'</b>', true);
-			}
-		},
-		// Hide the error tooltip when no errors are present
-		success: function(label){
-			$('#' + $(label).attr('for')).qtip('api').hide();
 		}
 	});
 };
@@ -204,6 +194,7 @@ function initUI() {
      		showMessage('warn', 'you must have at least one solver for this job', 3000);
      		return false;
     	 }
+ 		createDialog("Creating your job, please wait. This will take some time for large jobs.");
     });
     
     // Hook up select all/none buttons
@@ -224,13 +215,17 @@ function initUI() {
     });
 	
     // Enable row selection
-	$("#tblSolverConfig, #tblBenchConfig").delegate("tr", "click", function(){
+	$("#tblSolverConfig").delegate("tr", "click", function(){
 		if ( $(this).find('div>input').is(':checked')) {
 			$(this).addClass("row_selected");
 		}; 
 		if ( !$(this).find('div>input').is(':checked')) {
 			$(this).removeClass("row_selected");
 		};
+	});
+	
+	$("#tblBenchConfig").delegate("tr", "click", function() {
+		$(this).toggleClass("row_selected");
 	});
 
 
@@ -305,12 +300,13 @@ function initUI() {
     // Initialize the state of the job creator by forcing a progress update
     updateProgress();           
     
+    /**
     // Have the validation errors appear in tooltips instead of plain text
     $('#txtJobName').qtip(getErrorTooltip());
     $('#txtDesc').qtip(getErrorTooltip());
     $('#wallclockTimeout').qtip(getErrorTooltip());
     $('#cpuTimeout').qtip(getErrorTooltip());
-    $('#workerQueue').qtip(getErrorTooltip());
+    $('#workerQueue').qtip(getErrorTooltip());*/
 }
 
 /**
@@ -380,7 +376,7 @@ function updateProgress() {
 
 /**
  * Returns the tooltip configuration used to display error messages to the client
- */
+
 function getErrorTooltip(){
 	// Sets up the tooltip look & feel
 	$.fn.qtip.styles.errorTooltip = {
@@ -426,4 +422,4 @@ function getErrorTooltip(){
 			}
 		}
 	};
-}
+}*/

@@ -168,7 +168,7 @@ public class Communities {
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
-		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0");
+		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0");
 		
 		try {			
 			con = Common.getConnection();
@@ -189,6 +189,7 @@ public class Communities {
 				listOfDefaultSettings.set(3, results.getString("clock_timeout"));
 				listOfDefaultSettings.set(4, results.getString("post_processor"));
 				listOfDefaultSettings.set(5, results.getString("dependencies_enabled"));
+				listOfDefaultSettings.set(6, results.getString("default_benchmark"));
 			}
 			else {
 				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?)}");

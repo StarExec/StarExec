@@ -1,0 +1,40 @@
+.delaySpinner .ui-dialog {
+	word-wrap:break-word;
+	max-height:40%;
+	max-width:40%;
+	border:20px outset;
+}
+
+.delaySpinner .ui-dialog-content {
+	border:2px outset;
+}
+
+.delaySpinner .ui-dialog-titlebar-close {
+	display:none;
+}
+
+.delaySpinner .ui-dialog-titlebar {
+	text-align:center;	
+}
+
+.delaySpinner .ui-dialog-title {
+	float: none !important;
+	display:block;
+	text-align:center;	
+}
+
+.delaySpinner #delayMessage {
+	width: 95%;
+	text-align:center;
+	margin-top: 10px;
+	margin-bottom:30px;
+}
+
+.delaySpinner #spinnerImage {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	margin-bottom:10px;
+	width:25px;
+	height:25px;
+}

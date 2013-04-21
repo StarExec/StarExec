@@ -329,7 +329,9 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
 		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
+			
 			return gson.toJson(2);
+			
 		}
 		
 		// Query for the next page of primitives and return them to the user
@@ -342,6 +344,7 @@ public class RESTServices {
 		} else if(primType.startsWith("sp")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
 		} else if(primType.startsWith("b")){
+			
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
 		} else if(primType.startsWith("r")){
 			nextDataTablesPage = RESTHelpers.getResultTable(spaceId, request);
@@ -603,40 +606,50 @@ public class RESTServices {
 	@Path("/edit/space/{attr}/{id}")
 	@Produces("application/json")
 	public String editSpaceDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
-		Permission perm = SessionUtil.getPermission(request, id);		
-		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(2);	
-		}
 		
-		if(Util.isNullOrEmpty((String)request.getParameter("val"))){
+		
+		try {
+			Permission perm = SessionUtil.getPermission(request, id);		
+			if(perm == null || !perm.isLeader()) {
+				return gson.toJson(2);	
+			}
+			
+			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
+				return gson.toJson(1);
+			}
+			
+			boolean success = false;
+			
+			// Go through all the cases, depending on what attribute we are changing.
+			if (attribute.equals("name")) {
+				String newName = (String)request.getParameter("val");
+				if (true == Validator.isValidPrimName(newName)) {
+					success = Spaces.updateName(id, newName);
+				}
+			} else if (attribute.equals("description")) {
+				String newDesc = (String)request.getParameter("val");
+				if (true == Validator.isValidPrimDescription(newDesc)) {
+					success = Spaces.updateDescription(id, newDesc);				
+				}
+			} else if (attribute.equals("PostProcess")) {
+				success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
+			}else if (attribute.equals("CpuTimeout")) {
+				success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
+			}else if (attribute.equals("ClockTimeout")) {
+				success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
+			} else if (attribute.equals("DependenciesEnabled")) {
+				success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
+			} else if (attribute.equals("default_benchmark")) {
+				success=Communities.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
+			}
+			
+			// Passed validation AND Database update successful
+			return success ? gson.toJson(0) : gson.toJson(1);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 			return gson.toJson(1);
 		}
 		
-		boolean success = false;
-		
-		// Go through all the cases, depending on what attribute we are changing.
-		if (attribute.equals("name")) {
-			String newName = (String)request.getParameter("val");
-			if (true == Validator.isValidPrimName(newName)) {
-				success = Spaces.updateName(id, newName);
-			}
-		} else if (attribute.equals("description")) {
-			String newDesc = (String)request.getParameter("val");
-			if (true == Validator.isValidPrimDescription(newDesc)) {
-				success = Spaces.updateDescription(id, newDesc);				
-			}
-		} else if (attribute.equals("PostProcess")) {
-			success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
-		}else if (attribute.equals("CpuTimeout")) {
-			success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
-		}else if (attribute.equals("ClockTimeout")) {
-			success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
-		} else if (attribute.equals("DependenciesEnabled")) {
-			success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
-		}
-		
-		// Passed validation AND Database update successful
-		return success ? gson.toJson(0) : gson.toJson(1);
 	}
 
 	/** Updates all details of a space in the database. Space id is included in the path.

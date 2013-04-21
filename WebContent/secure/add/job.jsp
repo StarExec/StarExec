@@ -38,7 +38,7 @@
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
-<star:template title="run ${space.name}" css="common/table, add/job" js="lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
 	<form id="addForm" method="post" action="/starexec/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>
 		<fieldset id="fieldStep1">
@@ -51,15 +51,15 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr title="how do you want this job to be displayed in StarExec?">
+					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
 						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 					</tr>
-					<tr title="are there any additional details that you want to document with the job?">
+					<tr class="noHover" title="are there any additional details that you want to document with the job?">
 						<td class="label"><p>description</p></td>
 						<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
 					</tr>
-					<tr title="do you want to extract any custom attributes from the job results?">
+					<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
 						<td>					
 							<select id="postProcess" name="postProcess" default=${defaultPPId}>
@@ -70,19 +70,19 @@
 							</select>
 						</td>
 					</tr>
-					<tr title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
+					<tr class="noHover" title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>wallclock timeout</p></td>
 						<td>	
 							<input type="text" name="wallclockTimeout" id="wallclockTimeout" value="${defaultClockTimeout}"/>
 						</td>
 					</tr>
-					<tr title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
+					<tr class="noHover" title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>cpu timeout</p></td>
 						<td>	
 							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
 						</td>
 					</tr>
-					<tr title="which queue should this job be submitted to?">
+					<tr class="noHover" title="which queue should this job be submitted to?">
 						<td class="label"><p>worker queue</p></td>
 						<td>
 							<select id="workerQueue" name="queue">

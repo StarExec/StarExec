@@ -20,7 +20,7 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to upload solvers to this space or the space does not exist");		
 	}
 %>
-<star:template title="upload solver to ${space.name}" css="add/solver" js="lib/jquery.validate.min, add/solver">
+<star:template title="upload solver to ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner ,lib/jquery.validate.min, add/solver">
 	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/solvers" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
@@ -79,6 +79,7 @@
 							<input name="dlable" type="radio" value="false" /><label>no</label>
 						</td>
 					<tr>
+						
 						<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 					</tr>
 				</tbody>

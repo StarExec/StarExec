@@ -131,3 +131,7 @@ tr th {
 	vertical-align: bottom;
 }}
 
+#selectBenchmark {
+	float:right;
+}
+

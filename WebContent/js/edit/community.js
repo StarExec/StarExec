@@ -1,6 +1,7 @@
 var defaultPPId = 0;
 
 $(document).ready(function(){
+	$("#defaultBenchRow").hide(); //feature not yet complete
 	refreshSpaceWebsites();
 	initUI();
 	attachFormValidation();

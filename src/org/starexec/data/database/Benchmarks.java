@@ -1345,7 +1345,6 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
 		Connection con = null;			
-
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;			

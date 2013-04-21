@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	initUI();
 	attachFormValidation();
-	
+
 	$("#radioLocal").attr("checked", "checked");
 	$("#fileLoc").show();
 	$("#fileURL").hide();
@@ -20,6 +20,8 @@ function initUI(){
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
     }});
+	
+	
 }
 
 
@@ -149,6 +151,14 @@ function attachFormValidation(){
 			d: {
 				regex: ".txt file only"
 			}
+		},
+		submitHandler: function(form) {
+			createDialog("Uploading solver, please wait. This will take some time for large files.");
+			form.submit();
+			
+			
+			
 		}
 	});
+	
 }
