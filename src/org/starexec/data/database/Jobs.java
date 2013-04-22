@@ -928,7 +928,6 @@ public class Jobs {
 				log.debug("set solver for " + jp.getId());
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
 				log.debug("set configuration for " + jp.getId());
-				
 				List<String> attrList=attrs.get(jp.getId());
 				if (attrList==null) {
 					continue;
@@ -937,6 +936,7 @@ public class Jobs {
 				Properties newProps=new Properties();
 				while (index<attrList.size()) {
 					newProps.setProperty(attrList.get(index), attrList.get(index+1));
+					index+=2;
 				}
 				jp.setAttributes(newProps);
 				
@@ -1407,81 +1407,87 @@ public class Jobs {
 	 */
 
 	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
-	    log.debug("getJobStatsForNextPage() begins for jobId "+jobId);
-		List<JobPair> pairs=getPairsDetailedForStats(jobId);
-		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
-		String key=null;
-		log.debug("getJobStatsForNextPage(): about to get stats for the job's solvers");
-		for (JobPair jp : pairs) {
-			key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
-			if (!JobSolvers.containsKey(key)) {
-				JobSolver newSolver=new JobSolver();
-				newSolver.setSolver(jp.getSolver());
-				newSolver.setConfiguration(jp.getConfiguration());
-				JobSolvers.put(key, newSolver);
+		try {
+			List<JobPair> pairs=getPairsDetailedForStats(jobId);
+			Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
+			String key=null;
+			for (JobPair jp : pairs) {
+				key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
+				if (!JobSolvers.containsKey(key)) {
+					JobSolver newSolver=new JobSolver();
+					newSolver.setSolver(jp.getSolver());
+					newSolver.setConfiguration(jp.getConfiguration());
+					JobSolvers.put(key, newSolver);
+				}
+				JobSolver curSolver=JobSolvers.get(key);
+				Integer statusCode=jp.getStatus().getCode();
+				curSolver.incrementTotalJobPairs();
+				curSolver.incrementTime(jp.getWallclockTime());
+				if ( (statusCode>=8 && statusCode<=17 ) || statusCode==0) { //status codes specified in STATUS.java
+					curSolver.incrementErrorJobPairs();
+				} else if (statusCode<=6 || statusCode==18) {
+					curSolver.incrementIncompleteJobPairs();
+				} else if (statusCode==7) {
+					curSolver.incrementCompleteJobPairs();
+					try {
+						if (jp.getAttributes().contains("starexec-result") && jp.getAttributes().contains("starexec-expected")) {
+							if (!jp.getAttributes().get("starexec-result").equals(jp.getAttributes().get("starexec-expected"))) {
+								curSolver.incrementIncorrectJobPairs();
+							}
+						}
+					} catch (Exception e) {
+						
+					}
+					
+				}
 			}
-			JobSolver curSolver=JobSolvers.get(key);
-			Integer statusCode=jp.getStatus().getCode();
-			curSolver.incrementTotalJobPairs();
-			curSolver.incrementTime(jp.getWallclockTime());
-			if ( (statusCode>=8 && statusCode<=17 ) || statusCode==0) { //status codes specified in STATUS.java
-				curSolver.incrementErrorJobPairs();
-			} else if (statusCode<=6 || statusCode==18) {
-				curSolver.incrementIncompleteJobPairs();
-			} else if (statusCode==7) {
-				curSolver.incrementCompleteJobPairs();
-				if (jp.getAttributes().contains("starexec-result") && jp.getAttributes().contains("starexec-expected")) {
-					if (!jp.getAttributes().get("starexec-result").equals(jp.getAttributes().get("starexec-expected"))) {
-						curSolver.incrementIncorrectJobPairs();
+			List<JobSolver> returnValues=new LinkedList<JobSolver>();
+			for (JobSolver js : JobSolvers.values()) {
+				returnValues.add(js);
+			}
+			total[0]=returnValues.size();
+			//carry out filtering function
+			if (!searchQuery.equals("")) {
+				searchQuery=searchQuery.toLowerCase();
+				List<JobSolver> toRemove=new LinkedList<JobSolver>();
+				for (JobSolver js : returnValues) {
+					if ( (!js.getSolver().getName().toLowerCase().contains(searchQuery)) &&
+					(!js.getConfiguration().getName().toLowerCase().contains(searchQuery)) ) {
+						toRemove.add(js);
 					}
 				}
-			}
-		}
-		List<JobSolver> returnValues=new LinkedList<JobSolver>();
-		for (JobSolver js : JobSolvers.values()) {
-			returnValues.add(js);
-		}
-		total[0]=returnValues.size();
-		//carry out filtering function
-		log.debug("getJobStatsForNextPage(): about to filter stats based on search query "+searchQuery);
-		if (!searchQuery.equals("")) {
-			searchQuery=searchQuery.toLowerCase();
-			List<JobSolver> toRemove=new LinkedList<JobSolver>();
-			for (JobSolver js : returnValues) {
-				if ( (!js.getSolver().getName().toLowerCase().contains(searchQuery)) &&
-				(!js.getConfiguration().getName().toLowerCase().contains(searchQuery)) ) {
-					toRemove.add(js);
-				}
-			}
-			for (JobSolver js : toRemove) {
-				returnValues.remove(js);
-			}
-		}
-		
-		if (recordsPerPage<0) {
-			recordsPerPage=returnValues.size()+1;
-		}
-		log.debug("getJobStatsForNextPage(): about to sort results");
-		returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
-		List<JobSolver> sublist=null;
-		if (recordsPerPage>returnValues.size()) {
-			sublist=returnValues;
-		} else if (startingRecord+recordsPerPage>returnValues.size()) {
-			sublist=returnValues.subList(startingRecord, returnValues.size());
-		} else {
-			try {
-				sublist=returnValues.subList(startingRecord, startingRecord+recordsPerPage); 
-			} catch (IndexOutOfBoundsException e) {  //bad request-- starting record out of bounds
-				if (recordsPerPage>returnValues.size()) {
-					sublist=returnValues;
-				} else {
-					sublist=returnValues.subList(0, recordsPerPage);
+				for (JobSolver js : toRemove) {
+					returnValues.remove(js);
 				}
 			}
 			
+			if (recordsPerPage<0) {
+				recordsPerPage=returnValues.size()+1;
+			}
+			
+			returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
+			List<JobSolver> sublist=null;
+			if (recordsPerPage>returnValues.size()) {
+				sublist=returnValues;
+			} else if (startingRecord+recordsPerPage>returnValues.size()) {
+				sublist=returnValues.subList(startingRecord, returnValues.size());
+			} else {
+				try {
+					sublist=returnValues.subList(startingRecord, startingRecord+recordsPerPage); 
+				} catch (IndexOutOfBoundsException e) {  //bad request-- starting record out of bounds
+					if (recordsPerPage>returnValues.size()) {
+						sublist=returnValues;
+					} else {
+						sublist=returnValues.subList(0, recordsPerPage);
+					}
+				}
+				
+			}
+			return sublist;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		log.debug("getJobStatsForNextPage() ends for jobId "+jobId);
-		return sublist;
+		return null;
 	}
 	
 	/**

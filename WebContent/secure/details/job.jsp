@@ -11,14 +11,21 @@
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
 		}
-		request.setAttribute("stats",Jobs.getAllJobStats(jobId));
-		if(j != null) {			
+		List<JobSolver> stats=Jobs.getAllJobStats(jobId);
+		
+		if(j != null && stats!=null) {	
+			request.setAttribute("stats",stats);
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+			if (j==null) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+			} else {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Error processesing job summary");
+			}
+			
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
