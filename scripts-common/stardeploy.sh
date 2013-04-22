@@ -49,7 +49,7 @@ ant -buildfile build.xml -q
 echo Starexec compilation and configuration SUCCESSFUL
 
 echo Moving existing war file: $STAR_WAR
-rm -f $STAR_WAR
+rm -f $STAR_WAR 
 #mkdir $NEW_DIR
 #mv $STAR_WAR $NEW_DIR/starBackup.war
 
@@ -74,5 +74,6 @@ sudo /sbin/service tomcat7 restart
 #rm -rf $STAR_DEPLOY
 echo See $STAR_DEPLOY for deployed code.
 
-echo Starexec production deployment SUCCESSFUL
+echo Starexec production deployment SUCCESSFUL.
+echo The svn revision number is `svnversion`.
 echo Please manually update the database as needed. Schema and stored procedure updates are not included in this deployment

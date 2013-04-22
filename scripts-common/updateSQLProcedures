@@ -1,3 +1,8 @@
 #!/bin/bash
 
-mysql -u"root" -p"star3x3c2011!" < /project/tomcat-webapps/webapps/starexec/WEB-INF/sql/StarProcedures.sql
+sqldir=/home/starexec/deployed/deployed-sql
+
+echo "Reloading procedures using $sqldir/StarProcedures.sql"
+cd $sqldir
+
+mysql -u"root" -p"star3x3c2011!" < StarProcedures.sql
