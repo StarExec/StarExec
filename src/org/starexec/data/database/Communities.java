@@ -192,12 +192,13 @@ public class Communities {
 				listOfDefaultSettings.set(6, results.getString("default_benchmark"));
 			}
 			else {
-				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?)}");
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?)}");
 				procedure.setInt(1, id);
 				procedure.setInt(2, 1);
 				procedure.setInt(3, 1);
 				procedure.setInt(4, 1);
 				procedure.setInt(5, 0);
+				procedure.setInt(6,-1);
 				procedure.executeUpdate();
 			}
 		} catch (Exception e){			
