@@ -214,7 +214,7 @@ public class ConfigUtil {
 						field.set(null,Boolean.parseBoolean(value));
 					}	            
 					
-					log.debug(String.format("Loaded property [%s = %s] into class %s", key, field.get(null), className));
+					//log.debug(String.format("Loaded property [%s = %s] into class %s", key, field.get(null), className));
 				} catch (Exception e){
 					log.error(String.format("Failed to load property [%s]. Error [%s]", key, e.getMessage()));
 				}

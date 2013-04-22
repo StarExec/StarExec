@@ -1411,6 +1411,7 @@ public class Jobs {
 		List<JobPair> pairs=getPairsDetailedForStats(jobId);
 		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
 		String key=null;
+		log.debug("getJobStatsForNextPage(): about to get stats for the job's solvers");
 		for (JobPair jp : pairs) {
 			key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
 			if (!JobSolvers.containsKey(key)) {
@@ -1442,6 +1443,7 @@ public class Jobs {
 		}
 		total[0]=returnValues.size();
 		//carry out filtering function
+		log.debug("getJobStatsForNextPage(): about to filter stats based on search query "+searchQuery);
 		if (!searchQuery.equals("")) {
 			searchQuery=searchQuery.toLowerCase();
 			List<JobSolver> toRemove=new LinkedList<JobSolver>();
@@ -1459,7 +1461,7 @@ public class Jobs {
 		if (recordsPerPage<0) {
 			recordsPerPage=returnValues.size()+1;
 		}
-		
+		log.debug("getJobStatsForNextPage(): about to sort results");
 		returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
 		List<JobSolver> sublist=null;
 		if (recordsPerPage>returnValues.size()) {
