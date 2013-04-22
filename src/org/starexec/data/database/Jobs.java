@@ -1407,7 +1407,7 @@ public class Jobs {
 	 */
 
 	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
-		
+	    log.debug("getJobStatsForNextPage() begins for jobId "+jobId);
 		List<JobPair> pairs=getPairsDetailedForStats(jobId);
 		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
 		String key=null;
@@ -1478,6 +1478,7 @@ public class Jobs {
 			}
 			
 		}
+		log.debug("getJobStatsForNextPage() ends for jobId "+jobId);
 		return sublist;
 	}
 	
