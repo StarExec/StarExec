@@ -174,8 +174,8 @@
    		
  <!--   MYSQL Configuration   --> 
   		<property key="MYSQL_DATABASE" value="starexec" /> 
-		<property key="MYSQL_USERNAME" value="astump" /> 
-		<property key="MYSQL_PASSWORD" value="astump" /> 
+		<property key="MYSQL_USERNAME" value="tomcat" /> 
+		<property key="MYSQL_PASSWORD" value="tomcat" /> 
 		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    

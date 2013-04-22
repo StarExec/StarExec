@@ -6,7 +6,7 @@
 
      1. configuration, the name of the configuration from starexec-config.xml to use.
      2. db_name, the name of the local SQL database.
-     3. tomcat-dir, the path to tomcat 
+     3. tomcat-dir, the path to tomcat, for jar files
      4. sge_script_dir, the path to the directory for sge scripts
 
      See example.local.properties in this directory for an example. -->
@@ -65,9 +65,10 @@
 			</fileset>
 		</copy>		
 		
-		<!-- Copy over SQL files to the WEB-INF directory -->
-		<mkdir dir="${web-inf}/sql" />
-		<copy todir="${web-inf}/sql">
+		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
+                     deployment.  They do not need to go in the WAR file. -->
+		<mkdir dir="deployed-sql" />
+		<copy todir="deployed-sql">
 			<fileset dir="sql">
 				<include name="**/*" />
 			</fileset>
@@ -104,12 +105,12 @@
 		
 		<!-- Update the sql scripts to use the correct database -->
 		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
-			<fileset dir="sql" includes="**/*.sql"/>
+			<fileset dir="deployed-sql" includes="**/*.sql"/>
 		</replaceregexp>
 		
 		<!-- Update the sql schema to use the correct database -->
-		<replaceregexp file="sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
-		<replaceregexp file="sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
+		<replaceregexp file="deployed-sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
+		<replaceregexp file="deployed-sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
 		
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
