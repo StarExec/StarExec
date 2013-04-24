@@ -92,29 +92,44 @@ function attachButtonActions(){
 	// Prompts user to confirm deletion and, if they confirm,
 	// deletes the solver via AJAX, then redirects to explore/spaces.jsp
 	$("#delete").click(function(){
-		var confirm = window.confirm("are you sure you want to delete this solver?");
-		if(confirm == true){
-			$.post(
-					"/starexec/services/delete/solver/" + getParameterByName("id"),
-					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = '/starexec/secure/explore/spaces.jsp';
-								break;
-							case 1:
-								showMessage('error', "solver was not deleted; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "only the owner of this solver can modify its details", 5000);
-								break;
-							default:
-								showMessage('error', "invalid parameters", 5000);
-								break;
-						}
-					},
-					"json"
-			);
-		}
+		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this solver?');
+		
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed solver deletion.');
+					$('#dialog-confirm-delete').dialog('close');
+					
+					$.post(
+							"/starexec/services/delete/solver/" + getParameterByName("id"),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										window.location = '/starexec/secure/explore/spaces.jsp';
+										break;
+									case 1:
+										showMessage('error', "solver was not deleted; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the owner of this solver can modify its details", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled solver deletion');
+					$(this).dialog("close");
+				}
+			}
+		});
 	});
 
 	// Triggers validation and, if that passes,

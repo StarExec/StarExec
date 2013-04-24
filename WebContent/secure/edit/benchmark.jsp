@@ -86,6 +86,9 @@
 			</table>	
 			<button type="button" id="delete">delete</button>
 			<button type="button" id="update">update</button>
-		</fieldset>		
+		</fieldset>
+		<div id="dialog-confirm-delete" title="confirm delete">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+		</div>		
 	</form>
 </star:template>

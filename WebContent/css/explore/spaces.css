@@ -115,3 +115,25 @@
 	border-radius:2px;
 }
 
+div.selectWrap p, div.selectWrap span {
+	display: inline-block;	
+}
+
+div.selectWrap {
+	font-size: 13px;
+	display: inline-block;
+}
+
+div.selectWrap p {
+	cursor: pointer;
+}
+
+div.selectWrap p:hover {
+	text-decoration: underline;
+}
+
+div.selectWrap span {
+	position: relative;
+	top: 3px;
+}
+
