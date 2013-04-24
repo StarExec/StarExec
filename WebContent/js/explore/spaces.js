@@ -1907,6 +1907,8 @@ function checkPermissions(perms, id) {
 	log('permissions checked and processed');
 }
 
+
+
 /**
  * Updates the URLs to perform actions on the current space
  * @param id The id of the current space
@@ -1917,7 +1919,18 @@ function updateButtonIds(id) {
 	$('#uploadBench').attr('href', "/starexec/secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', "/starexec/secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
-	$('#downloadXML').attr('href', "/starexec/secure/download?type=spaceXML&id="+id);
+	$('#downloadXML').attr('href', "/starexec/secure/download?token=test&type=spaceXML&id="+id);
+	
+	
+	//TODO: Figure out why this event seems to fire twice per click
+	$('#downloadXML').click(function() {
+		createDialog("Processing your download request, please wait. This will take some time for large spaces.");
+		token=Math.floor(Math.random()*100000000);
+		$('#downloadXML').attr('href', "/starexec/secure/download?token=" +token+ "&type=spaceXML&id="+id);
+		destroyOnReturn(token);
+	});
+	
+	
 	$('#uploadXML').attr('href', "/starexec/secure/add/batchSpace.jsp?sid=" + id);
 	$('#generateResultChart').attr('href', "/starexec/secure/generateResultChart?sid=" + id);
 	$("#downloadSpace").click(function(){		

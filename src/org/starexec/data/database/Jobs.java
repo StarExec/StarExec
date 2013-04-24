@@ -1412,13 +1412,24 @@ public class Jobs {
 			Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
 			String key=null;
 			for (JobPair jp : pairs) {
+				
+				//entries in the stats table determined by solver/configuration pairs
 				key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
-				if (!JobSolvers.containsKey(key)) {
+				
+				if (!JobSolvers.containsKey(key)) { // current stats entry does not yet exist
 					JobSolver newSolver=new JobSolver();
+					try {
+						log.debug("adding solver "+jp.getSolver().getName()+ " with configuration "+jp.getConfiguration().getName()+" to stats");
+					} catch (Exception e) {
+						
+					}
 					newSolver.setSolver(jp.getSolver());
 					newSolver.setConfiguration(jp.getConfiguration());
 					JobSolvers.put(key, newSolver);
 				}
+				
+				
+				//update stats info for entry that current job-pair belongs to
 				JobSolver curSolver=JobSolvers.get(key);
 				Integer statusCode=jp.getStatus().getCode();
 				curSolver.incrementTotalJobPairs();
@@ -1429,15 +1440,13 @@ public class Jobs {
 					curSolver.incrementIncompleteJobPairs();
 				} else if (statusCode==7) {
 					curSolver.incrementCompleteJobPairs();
-					try {
+					if (jp.getAttributes()!=null) {
 						if (jp.getAttributes().contains("starexec-result") && jp.getAttributes().contains("starexec-expected")) {
 							if (!jp.getAttributes().get("starexec-result").equals(jp.getAttributes().get("starexec-expected"))) {
 								curSolver.incrementIncorrectJobPairs();
 							}
 						}
-					} catch (Exception e) {
-						
-					}
+					} 
 					
 				}
 			}
@@ -1446,6 +1455,7 @@ public class Jobs {
 				returnValues.add(js);
 			}
 			total[0]=returnValues.size();
+			
 			//carry out filtering function
 			if (!searchQuery.equals("")) {
 				searchQuery=searchQuery.toLowerCase();
@@ -1465,6 +1475,7 @@ public class Jobs {
 				recordsPerPage=returnValues.size()+1;
 			}
 			
+			//carry out sorting function
 			returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
 			List<JobSolver> sublist=null;
 			if (recordsPerPage>returnValues.size()) {
@@ -1487,6 +1498,8 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
+		
+		//flow was broken, so stats could not be obtained
 		return null;
 	}
 	

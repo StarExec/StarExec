@@ -114,7 +114,7 @@
 		</table>
 	</fieldset>
 			
-	<fieldset>
+	<fieldset id="#pairTblField">
 	
 	<legend>job pairs</legend>	
 		<table id="pairTbl" class="shaded">

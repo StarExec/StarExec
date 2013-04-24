@@ -18,8 +18,10 @@ fieldset {
 	margin: 5px;
 }
 
-#incompleteHead, #benchHead, #completeHead, #configHead {
+#incompleteHead, #completeHead, #configHead {
 	width: 18%;
 }
 
-
+#pairTbl {
+	table-layout:auto;
+}

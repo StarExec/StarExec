@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.*;
+import java.net.HttpCookie;
 import java.util.*;
 import java.util.zip.*;
 
@@ -8,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -94,9 +96,14 @@ public class Download extends HttpServlet {
 				}
 				fileName=handleProc(proc,u.getId(),u.getArchiveType(),Integer.parseInt(request.getParameter("id")) , response);
 			}
-			
 			// Redirect based on success/failure
 			if(fileName != null) {
+				if (request.getParameter("type").equals("spaceXML")) {
+					Cookie newCookie=new Cookie("fileDownloadToken", request.getParameter("token").toString());
+					newCookie.setMaxAge(60);
+					response.addCookie(newCookie);
+				}
+				//response.addHeader("Content-Disposition", "fileName");
 				response.sendRedirect("/starexec/secure/files/" + fileName);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	

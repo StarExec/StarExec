@@ -155,9 +155,6 @@ function attachFormValidation(){
 		submitHandler: function(form) {
 			createDialog("Uploading solver, please wait. This will take some time for large files.");
 			form.submit();
-			
-			
-			
 		}
 	});
 	
