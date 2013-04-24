@@ -28,6 +28,13 @@
 					</tr>
 				</thead>			
 			</table>
+			<div class="selectWrap">
+				<p class="selectAllJobs">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>All
+				</p> |
+				<p class="unselectAllJobs">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
+			</div>
 		</fieldset>	
 			
 		<fieldset id="solverField">
@@ -40,6 +47,13 @@
 					</tr>
 				</thead>			
 			</table>
+			<div class="selectWrap">
+				<p class="selectAllSolvers">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>All
+				</p> |
+				<p class="unselectAllSolvers">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
+			</div>
 		</fieldset>						
 		
 		<fieldset id="benchField">
@@ -52,6 +66,13 @@
 					</tr>
 				</thead>		
 			</table>
+			<div class="selectWrap">
+				<p class="selectAllBenchmarks">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>All
+				</p> |
+				<p class="unselectAllBenchmarks">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
+			</div>
 		</fieldset>											
 		
 		<fieldset  id="userField">
@@ -65,6 +86,13 @@
 					</tr>
 				</thead>			
 			</table>
+			<div class="selectWrap">
+				<p class="selectAllUsers">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>All
+				</p> |
+				<p class="unselectAllUsers">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
+			</div>
 		</fieldset>		
 		
 		<fieldset id="spaceField">

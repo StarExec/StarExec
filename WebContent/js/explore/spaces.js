@@ -260,6 +260,7 @@ function initDraggable(table) {
 		start: onDragStart,									// Method called when the dragging begins
 		stop: onDragStop									// Method called when the dragging ends
 	});
+	
 
 	// Set the JQuery variables used during the drag/drop process
 	$.each(rows, function(i, row){
@@ -281,6 +282,7 @@ function initDraggable(table) {
 		hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
+	
 
 	log($(table).attr('id') + ' table initialized as draggable');
 }
@@ -1540,6 +1542,7 @@ function initDataTables(){
 		}
 	}
 	
+	
 	for (x=0;x<6;x++) {
 		$(tables[x]).delegate("tr","mousedown", function(){
 			unselectAll("#"+$(this).parent().parent().attr("id"));
@@ -1550,6 +1553,45 @@ function initDataTables(){
 	$('#users tbody').delegate('tr', 'hover', function(){
 		$(this).toggleClass('hovered');
 	});
+	
+	//Move to the footer of the Table
+	$('#jobField div.selectWrap').detach().prependTo('#jobField div.bottom');
+	$('#solverField div.selectWrap').detach().prependTo('#solverField div.bottom');
+	$('#benchField div.selectWrap').detach().prependTo('#benchField div.bottom');
+	$('#userField div.selectWrap').detach().prependTo('#userField div.bottom');
+
+	
+	//Hook up select all/ none buttons
+	$('.selectAllJobs').click(function () {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+	});
+	$('.unselectAllJobs').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+	});
+	
+	$('.selectAllSolvers').click(function () {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+	});
+	$('.unselectAllSolvers').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+	});
+	
+	$('.selectAllBenchmarks').click(function () {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+	});
+	$('.unselectAllBenchmarks').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+	});
+	
+	$('.selectAllUsers').click(function () {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+	});
+	$('.unselectAllUsers').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+	});
+	
+
+
 
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset:not(:#actions)').expandable(true);
