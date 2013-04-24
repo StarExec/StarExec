@@ -103,7 +103,7 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
-				response.addHeader("Content-Disposition", "attachment; fileName=\"test.zip\"");
+				//response.addHeader("Content-Disposition", "attachment; fileName=\"test.zip\"");
 				response.sendRedirect("/starexec/secure/files/" + fileName);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
