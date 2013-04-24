@@ -103,7 +103,7 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
-				//response.addHeader("Content-Disposition", "fileName");
+				response.addHeader("Content-Disposition", "attachment; fileName=\"test.zip\"");
 				response.sendRedirect("/starexec/secure/files/" + fileName);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
@@ -215,10 +215,9 @@ public class Download extends HttpServlet {
 			File file = null;
 			
 			file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
-			
-			String fileNamewoFormat = space.getName()+"_XML_("+ UUID.randomUUID().toString()+")";
+			String baseFileName=space.getName()+"_XML";
+			String fileNamewoFormat = baseFileName+"_("+ UUID.randomUUID().toString()+")";
 			String fileName = fileNamewoFormat + format;
-			
 			//container has the xml schema and the newly created xml file.  uniqueDir is the compressed file downloaded by user
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			File container = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileNamewoFormat);
@@ -232,7 +231,7 @@ public class Download extends HttpServlet {
 			FileUtils.moveFileToDirectory(schemaCopy, container, false);
 			uniqueDir.createNewFile();
 			
-			ArchiveUtil.createArchive(container, uniqueDir, format);
+			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName);
 			
 			return fileName;
 		}
