@@ -14,7 +14,7 @@ function initUI(){
 	// Setup which fields are expanded and which are not
 	$('fieldset:first').expandable(false);
 	$('fieldset:not(:first)').expandable(true);
-	
+	$("#dialog-confirm-delete").css("display", "none");
 	// Setup JQuery button icons
 	$('#delete').button({
 		icons: {
@@ -92,7 +92,7 @@ function attachButtonActions(){
 	// Prompts user to confirm deletion and, if they confirm,
 	// deletes the solver via AJAX, then redirects to explore/spaces.jsp
 	$("#delete").click(function(){
-		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this solver?');
+		$('#dialog-confirm-delete-txt').text('Are you sure you want to delete this solver?');
 		
 		$('#dialog-confirm-delete').dialog({
 			modal: true,
