@@ -80,6 +80,8 @@
 				<include name="**/*.bash" />
 			</fileset>
 		</copy>
+
+		<copy todir="${batch_dir}" file="starexec_res/batch/batchSpaceSchema.xsd"/>
 		
 		<!-- Change permissions of the new sge script files so sge can use them -->
 		<chmod dir="${sge_script_dir}" perm="770" includes="**/*.bash"/>		

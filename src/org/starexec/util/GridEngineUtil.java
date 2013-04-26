@@ -186,9 +186,12 @@ public class GridEngineUtil {
 		// Call SGE to get info on the queues
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 		
-		BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
+	    String[] envp = new String[1];
+	    envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
+	    BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
 		String results = Util.bufferToString(reader);
 		//String results = testString;
+		log.info("Updating the DB with associations between SGE queues to compute nodes.");
 		log.debug("qstat -f results = " + results);
 		
 		try {
@@ -209,8 +212,8 @@ public class GridEngineUtil {
 		while(matcher.find()) {
 			// Parse out the queue and node names from the regex parser and add it to the return list			
 			capture = matcher.group().split("@");
-			log.debug("queue = " + capture[0]);
-			log.debug("node = " + capture[1]);
+			log.info("queue = " + capture[0]);
+			log.info("node = " + capture[1]);
 			Queues.associate(capture[0], capture[1]);
 		}
 				
@@ -426,11 +429,9 @@ public class GridEngineUtil {
 				File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName());
 				log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
 				// Run the processor on the std out file
-				String[] command = new String[2];
-				command[0] = processor.getFilePath();
-				command[1] = stdOut.getAbsolutePath();
+				String command = processor.getFilePath() + stdOut.getAbsolutePath();
 				
-				log.info("Command to execute = " + command[0] +" " + command[1]);
+				log.info("Command to execute = " + command);
 				reader = Util.executeCommand(command);			  
 				log.info("executed command on stdOut file with processor" + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId + ". Reader is null = " + (reader==null) + ". Reader is ready = " + (reader.ready()));
 				// Load results into a properties file

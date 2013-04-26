@@ -194,6 +194,11 @@ public class Util {
 		return form;
 	}
 	
+    /** Convenience method for executeCommand() */
+    public static BufferedReader executeCommand(String command) {
+	return executeCommand(command,null);
+    }
+
 	/**
 	 * Runs a command on the system command line (bash for unix, command line for windows)
 	 * and returns the results from the command as a buffered reader which can be processed.
@@ -201,12 +206,12 @@ public class Util {
 	 * @param command The command to execute
 	 * @return A buffered reader holding the output from the command.
 	 */
-	public static BufferedReader executeCommand(String command) {
+    public static BufferedReader executeCommand(String command, String[] envp) {
 		Runtime r = Runtime.getRuntime();
 		BufferedReader reader = null;		
 		log.debug("Command from execute command = " + command);
 		try {					
-			Process p = r.exec(command);
+		    Process p = r.exec(command,envp);
 			//ProcessBuilder pb = new ProcessBuilder(command);
 			//Process p = pb.start();
 			log.debug("Process is null = " + (p==null));
@@ -237,44 +242,6 @@ public class Util {
 		return null;
 	}
 	
-	
-	/**
-	 * Runs a command on the system command line (bash for unix, command line for windows)
-	 * and returns the results from the command as a buffered reader which can be processed.
-	 * MAKE SURE TO CLOSE THE READER WHEN DONE. Null is returned if the command failed.
-	 * @param command The command to execute, but as String array rather than String
-	 * @return A buffered reader holding the output from the command.
-	 * @author Benton McCune
-	 */
-	public static BufferedReader executeCommand(String[] command) {
-		Runtime r = Runtime.getRuntime();		
-		BufferedReader reader = null;		
-		String debugString = "";
-		for (int i = 0; i < command.length; i++){
-			debugString += (" " + command[i]);
-		}
-		log.info("Command from execute command [array] = " + debugString);
-		try {		
-			
-			Process p = r.exec(command);
-			log.debug("Process is null = " + (p==null));
-			InputStream in = p.getInputStream();
-			BufferedInputStream buf = new BufferedInputStream(in);
-			InputStreamReader inread = new InputStreamReader(buf);
-			reader = new BufferedReader(inread);			
-			String results = Util.bufferToString(reader);
-			log.info("within executeCommand, command results = " + results);
-			if (p.waitFor() != 0) {
-				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
-			}		
-			
-			return reader;
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);		
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Takes in a string buffer and produces a single string out of its contents. This method

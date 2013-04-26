@@ -41,8 +41,8 @@ svn co $SVN_URL deployed -q
 
 cd $STAR_DEPLOY/
 echo "Entering $STAR_DEPLOY"
-echo "Copying $STAR_HOME/production.properties to local.properties"
-cp $STAR_HOME/production.properties local.properties
+echo "Copying production.properties to local.properties"
+cp production.properties local.properties
 
 echo Starting ANT build process...
 ant -buildfile build.xml -q
