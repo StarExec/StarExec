@@ -35,7 +35,7 @@ echo Clearing directory: $STAR_DEPLOY
 rm -rf $STAR_DEPLOY
 
 # Pull the trunk into the temp folder
-echo Pulling starexec trunk, please use your DIVMS credentials
+echo Pulling starexec codebase from svn repo.  Please use your DIVMS credentials.
 cd $STAR_HOME
 svn co $SVN_URL deployed -q
 
@@ -48,17 +48,15 @@ echo Starting ANT build process...
 ant -buildfile build.xml -q
 echo Starexec compilation and configuration SUCCESSFUL
 
+# stop tomcat
+echo "Stopping tomcat"
+sudo /sbin/service tomcat7 stop
+
 echo Moving existing war file: $STAR_WAR
 rm -f $STAR_WAR 
-#mkdir $NEW_DIR
-#mv $STAR_WAR $NEW_DIR/starBackup.war
 
-echo Waiting for tomcat to move previous starexec version
-while [ -e "$STAR_WAR" ]
-do
-	sleep 1s
-	echo -n '.'
-done
+echo "Cleaning up temp directories"
+sudo -u tomcat /project/tomcat/scripts/clean_temp_files.sh
 
 echo Copying new WAR to $WEB_HOME
 cp $STAR_DEPLOY/$WAR $WEB_HOME/$WAR
@@ -67,11 +65,9 @@ echo Changing permissions on $STAR_WAR
 chmod 775 $STAR_WAR
 
 # Restarting tomcat will explode the starexec.war into a webapp
-echo Restarting Tomcat, please use your StarDev credentials...
-sudo /sbin/service tomcat7 restart
+echo Starting Tomcat
+sudo /sbin/service tomcat7 start
 
-#echo Cleaning up $STAR_DEPLOY
-#rm -rf $STAR_DEPLOY
 echo See $STAR_DEPLOY for deployed code.
 
 echo Starexec production deployment SUCCESSFUL.
