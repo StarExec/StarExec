@@ -18,17 +18,14 @@
 	</complexType>
     
     <complexType name="Space">
-    	<sequence>
-    		<element name="Benchmark" type="tns:Benchmark" minOccurs="0"
-    			maxOccurs="unbounded">
+    	<choice minOccurs="0" maxOccurs="unbounded">
+    		<element name="Benchmark" type="tns:Benchmark">
     		</element>
-    		<element name="Solver" type="tns:Solver" minOccurs="0"
-    			maxOccurs="unbounded">
+    		<element name="Solver" type="tns:Solver">
     		</element>
-    		<element name="Space" type="tns:Space" minOccurs="0"
-    			maxOccurs="unbounded">
+    		<element name="Space" type="tns:Space">
     		</element>
-    	</sequence>
+    	</choice>
     	 <attribute name="id" type="int" use="optional"></attribute>
     	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
     </complexType>
