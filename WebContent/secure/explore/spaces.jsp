@@ -23,7 +23,7 @@
 						<th>status</th>
 						<th>complete</th>
 						<th>total</th>
-						<th>error</th>
+						<th>failed</th>
 						<th>time</th>
 					</tr>
 				</thead>			
