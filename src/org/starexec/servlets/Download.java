@@ -98,8 +98,12 @@ public class Download extends HttpServlet {
 			}
 			// Redirect based on success/failure
 			if(fileName != null) {
-				if (request.getParameter("type").equals("spaceXML")) {
-					Cookie newCookie=new Cookie("fileDownloadToken", request.getParameter("token").toString());
+				Object check=request.getParameter("token");
+				//System.out.println(check);
+				//token is used to tell the client when the file has arrived
+				if (check!=null) {
+					String token=check.toString();
+					Cookie newCookie=new Cookie("fileDownloadToken", token);
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}

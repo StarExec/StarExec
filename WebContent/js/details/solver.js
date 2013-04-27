@@ -6,6 +6,13 @@ $(document).ready(function(){
 	$('img').click(function(event){
 		popUp($(this).attr('enlarge'));
 	});
+	$('#downLink').unbind("click");
+	$('#downLink').click(function() {
+		createDialog("Processing your download request, please wait. This will take some time for large solvers.");
+		token=Math.floor(Math.random()*100000000);
+		$('#downLink').attr('href', "/starexec/secure/download?token=" +token+ "&type=solver&id="+$("#solverId").attr("value"));
+		destroyOnReturn(token);
+	});
 	
 //	solverId = getParameterByName('id');
 //	initComments(solverId);
@@ -14,7 +21,7 @@ $(document).ready(function(){
 
 /*
  * Get comments and display them
- * Set-up add comment functinality 
+ * Set-up add comment functionality 
  */
 function initComments(solverId){
 	getComments(solverId);
@@ -104,7 +111,7 @@ function popUp(uri) {
 			resizable: false,
 			draggable: false,
 			height: 'auto',
-			width: 'auto',
+			width: 'auto'
 		});
 	});  
 }

@@ -34,7 +34,8 @@
 	}
 %>
 
-<star:template title="${job.name}" js="lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/job">			
+<star:template title="${job.name}" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, details/shared, details/job">			
+	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<fieldset>
 		<legend>details</legend>
 		<table id="detailTbl" class="shaded">
@@ -140,8 +141,8 @@
 	<fieldset>
 	<legend>actions</legend>
 		<ul id="actionList">
-			<li><a id="jobOutputDownload" href="/starexec/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
-			<li><a id="jobdownload" href="/starexec/secure/download?type=job&id=${jobId}">job information</a></li>
+			<li><a id="jobOutputDownload" href="/starexec/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
+			<li><a id="jobDownload" href="/starexec/secure/download?type=job&id=${jobId}">job information</a></li>
 		</ul>
 	</fieldset>		
 </star:template>

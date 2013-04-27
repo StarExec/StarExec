@@ -66,6 +66,9 @@ $(document).ready(function(){
 	$("#editComm").fadeOut('fast');
 	$("#downloadPostProcessors").fadeOut('fast');
 	$("#downloadBenchProcessors").fadeOut('fast');
+	
+	
+	
 	// Handles the removal of user(s) from a space
 	$("#removeUser").click(function(){
 		var selectedUsers = getSelectedRows(memberTable);
@@ -334,6 +337,7 @@ function updateActionId(id) {
 			}		
 		});
 	});
+	
 	$("#downloadPostProcessors").click(function(){
 		downloadProcs(id, "post");
 	});
@@ -343,7 +347,10 @@ function updateActionId(id) {
 }
 
 function downloadProcs(id, procClass) {
-	window.location.href="/starexec/secure/download?type=proc&procClass="+procClass+"&id="+id;
+	createDialog("Processing your download requeste, please wait. This will take some time for large processors.");
+	token=Math.floor(Math.random()*1000000000);
+	window.location.href="/starexec/secure/download?type=proc&procClass="+procClass+"&id="+id+"&token="+token;
+	destroyOnReturn(token);
 }
 
 /**

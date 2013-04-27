@@ -36,7 +36,8 @@
 	}
 %>
 
-<star:template title="${bench.name}" js="details/shared, details/benchmark, lib/jquery.dataTables.min" css="details/shared, common/comments, common/table">				
+<star:template title="${bench.name}" js="lib/jquery.cookie, common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/comments, common/table">				
+	<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
 		<table class="shaded">

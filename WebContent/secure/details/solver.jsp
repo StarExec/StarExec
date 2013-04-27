@@ -28,10 +28,11 @@
 	}
 %>
 
-<star:template title="${solver.name}" js="details/shared, details/solver, lib/jquery.dataTables.min" css="common/table, common/comments, details/shared">				
+<star:template title="${solver.name}" js="common/delaySpinner, details/shared, details/solver, lib/jquery.dataTables.min, lib/jquery.cookie" css="common/delaySpinner, common/table, common/comments, details/shared">				
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
+	<span style="display:none;" id="solverId" value="${solver.id}"> </span>
 		<fieldset>
 		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table id="infoTable">

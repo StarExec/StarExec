@@ -12,6 +12,7 @@ function initUI(){
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
     }});
+	
 }
 
 
@@ -46,6 +47,10 @@ function attachFormValidation(){
 				required: "please select a file",
 				regex: ".zip, .tar and .tar.gz only"
 			}
+		},
+		submitHandler: function(form) {
+			createDialog("Uploading XML, please wait. This will take some time for large files.");
+			form.submit();
 		}
 	});
 }

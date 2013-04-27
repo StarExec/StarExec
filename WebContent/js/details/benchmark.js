@@ -24,6 +24,14 @@ $(document).ready(function(){
 	initCommentsUI();
 	initComments(bid);
 	
+	$('#downLink').unbind("click");
+	$('#downLink').click(function() {
+		createDialog("Processing your download request, please wait. This will take some time for large benchmarks.");
+		token=Math.floor(Math.random()*100000000);
+		$('#downLink').attr('href', "/starexec/secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
+		destroyOnReturn(token);
+	});
+	
 });
 
 function initCommentsUI(){

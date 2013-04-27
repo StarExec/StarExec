@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="view communities" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/communities" css="common/table, explore/common">			
+<star:template title="view communities" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common">			
 	<div id="explorer">
 		<h3>official</h3>
 		<ul id="exploreList">

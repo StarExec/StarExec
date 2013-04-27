@@ -1922,7 +1922,8 @@ function updateButtonIds(id) {
 	$('#downloadXML').attr('href', "/starexec/secure/download?token=test&type=spaceXML&id="+id);
 	
 	
-	//TODO: Figure out why this event seems to fire twice per click
+	
+	$("#downloadXML").unbind("click");
 	$('#downloadXML').click(function() {
 		createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 		token=Math.floor(Math.random()*100000000);

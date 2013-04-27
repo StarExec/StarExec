@@ -6,6 +6,13 @@ $(document).ready(function(){
 });
 
 
+function createDownloadRequest(item,type) {
+	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
+	token=Math.floor(Math.random()*100000000);
+	$(item).attr('href', "/starexec/secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value"));
+	destroyOnReturn(token);
+}
+
 /**
  * Initializes the user-interface
  */
@@ -16,11 +23,21 @@ function initUI(){
 		}
     });
 	
-	$("#jobdownload").button({
+	$("#jobDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	
+	$('#jobDownload').unbind("click");
+	$('#jobDownload').click(function() {
+		createDownloadRequest("#jobDownload","job");		
+	});
+	
+	$('#jobOutputDownload').unbind("click");
+	$('#jobOutputDownload').click(function() {
+		createDownloadRequest("#jobOutputDownload","j_outputs");
+	});
 	
 	// Job details and job pair tables are open by default
 	$('fieldset:first, fieldset:eq(1)').expandable(false);
