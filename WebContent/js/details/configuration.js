@@ -55,7 +55,7 @@ function initButtons(){
 						},
 						"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});		
 				},

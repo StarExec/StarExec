@@ -108,7 +108,7 @@ $(document).ready(function(){
 						},
 						"json"
 					).error(function(){
-						alert('Session expired');
+						//alert('Session expired');
 						window.location.reload(true);
 					});
 				},
@@ -142,7 +142,7 @@ $(document).ready(function(){
 				},
 				"json"
 			).error(function(){
-				alert('Session expired');
+				//alert('Session expired');
 				window.location.reload(true);
 			});
     });
@@ -208,7 +208,7 @@ function getCommunityDetails(id) {
 		},  
 		"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }
@@ -374,7 +374,7 @@ function leaveCommunity(id){
 			},
 			"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 	

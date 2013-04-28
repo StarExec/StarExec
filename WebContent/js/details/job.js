@@ -139,7 +139,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true); 
 	});
 }
@@ -166,7 +166,7 @@ function solverPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true); 
 	});
 }

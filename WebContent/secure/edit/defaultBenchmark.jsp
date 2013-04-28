@@ -4,30 +4,22 @@
 
 <%
 try {
-	// Grab relevant user id & processor info
-	request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
-	request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
+	// Grab relevant user id and community id
 	int comId = Integer.parseInt((String)request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
-	
-	// Only allowing editing of a processor if the user
-	// is a leader of the space the processor belongs to
+	request.setAttribute("comId",comId);
+	// Only allowing editing of the default benchmark if the user
+	// is a leader of the community being edited
 	List<User> leaders=Spaces.getLeaders(comId);
 	boolean validUser=false;
-	List<Benchmark> benchmarks=null;
 	for (User x : leaders) {
 		if (x.getId()==userId) {
-			benchmarks=Benchmarks.getBySpace(comId);
+			validUser=true;
 			break;
 		}
 	}
-	
-
-	// The user has permissions and the processor is valid
-	if(benchmarks != null) {
-		request.setAttribute("proc", benchmarks);
-		
-	} else {
+	// The user does not have permission
+	if(!validUser) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "only community leaders can select default benchmarks");
 	}
 } catch (Exception e) {
@@ -35,33 +27,23 @@ try {
 }
 %>
 
-<star:template title="edit ${proc.name}" css="edit/defaultBenchmark, edit/shared, common/table" js="lib/jquery.validate.min, edit/defaultBenchmark">
-	<input type="hidden" id="cid" value="${proc.communityId}"/>
-	<form id="editProcForm">
+<star:template title="select default benchmark" css="common/delaySpinner, edit/defaultBenchmark, edit/shared, common/table" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.dataTables.min, lib/jquery.validate.min, edit/defaultBenchmark">
+	<span style="display:none;" id="cid" value="${comId}"></span>
 	<fieldset>
-		<legend>processor details</legend>
-		<table id="detailsTbl" class="shaded">
-			<thead>
-				<tr>
-					<th class="label">attribute</th>
-					<th>current value</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td class="label">name</td>
-					<td><input id="name" type="text" name="name" maxlength="${processorNameLen}" value="${proc.name}"/></td>
-				</tr>
-				<tr>
-					<td class="label">description</td>
-					<td><textarea id="description" name="description" length="${processorDescLen}" >${proc.description}</textarea></td>
-				</tr>
-				
-			</tbody>	
-		</table>
-		<button type="button" id="delete">delete</button>
+	<form id="selectDefaultBench">
+		<fieldset>
+			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
+			<table id="benchmarks">
+				<thead>
+					<tr>
+						<th style="width:75%;">name</th>
+						<th>type</th>											
+					</tr>
+				</thead>		
+			</table>	
+		</fieldset>
 		<button type="button" id="cancel">cancel</button>
 		<button type="button" id="update">update</button>
+		</form>
 	</fieldset>
-	</form>
 </star:template>

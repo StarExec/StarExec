@@ -639,7 +639,7 @@ public class RESTServices {
 				success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
 			} else if (attribute.equals("DependenciesEnabled")) {
 				success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
-			} else if (attribute.equals("default_benchmark")) {
+			} else if (attribute.equals("defaultBenchmark")) {
 				success=Communities.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
 			}
 			

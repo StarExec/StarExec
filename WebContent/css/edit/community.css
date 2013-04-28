@@ -129,9 +129,11 @@ tr th {
 
 #savedesc, #canceldesc {
 	vertical-align: bottom;
-}}
+}
 
 #selectBenchmark {
 	float:right;
+	font-size: 14px;
+	margin-top: 10px;
 }
 

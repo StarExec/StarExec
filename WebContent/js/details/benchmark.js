@@ -75,7 +75,7 @@ function initComments(bid){
 			    	if(returnCode == 0) {
 			    		$("#comment_text").val("");
 			    		$.getJSON('/starexec/services/comments/benchmark/' + bid, displayComments).error(function(){
-			    			alert('Session expired');
+			    			//alert('Session expired');
 			    			window.location.reload(true);
 			    		});
 			    	} else {
@@ -139,7 +139,7 @@ function displayComments(data) {
 						},
 						"json"
 					).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});
 			  },
@@ -154,7 +154,7 @@ function displayComments(data) {
 function getComments(id) {
 	//get comment information for the given benchmark
 	$.getJSON('/starexec/services/comments/benchmark/' + id, displayComments).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }

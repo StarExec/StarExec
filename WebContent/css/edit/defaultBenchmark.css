@@ -8,9 +8,6 @@ fieldset table,
 fieldset ul {
 	width: 100%;
 }
-tr .label {
-	width: 20%;
-}
 
 tr td,
 tr th {
@@ -18,23 +15,3 @@ tr th {
 	vertical-align: middle;
 }
 
-#detailsTbl tr td:first-child {
-	width: 20%;
-}
-
-#detailsTbl tr td textarea{
-	height: 125px;
-}
-
-#name{
-	width:80%
-}
-
-#description {
-	width: 80%;
-	height: 100px;
-}
-
-.error {
-	vertical-align: middle;
-}

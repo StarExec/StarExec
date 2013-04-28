@@ -198,7 +198,7 @@ public class Communities {
 				procedure.setInt(3, 1);
 				procedure.setInt(4, 1);
 				procedure.setInt(5, 0);
-				procedure.setInt(6,-1);
+				procedure.setObject(6, null);
 				procedure.executeUpdate();
 			}
 		} catch (Exception e){			

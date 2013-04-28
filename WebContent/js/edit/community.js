@@ -1,7 +1,7 @@
 var defaultPPId = 0;
 
 $(document).ready(function(){
-	$("#defaultBenchRow").hide(); //feature not yet complete
+	
 	refreshSpaceWebsites();
 	initUI();
 	attachFormValidation();
@@ -29,7 +29,7 @@ function attachWebsiteMonitor(){
 					},
 					"json"
 			).error(function(){
-				alert('Session expired');
+				//alert('Session expired');
 				window.location.reload(true);
 			});
 		}
@@ -245,7 +245,7 @@ function attachFormValidation(){
  */
 function refreshSpaceWebsites(){
 	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }
@@ -343,7 +343,7 @@ function saveChanges(obj, save, attr, old) {
 			     },  
 			     "json"  
 		).error(function(){
-			alert('Session expired');
+			//alert('Session expired');
 			window.location.reload(true);
 		});
 	} else {
@@ -440,7 +440,7 @@ function deleteProcessor(pid, parent, table){
 						},
 						"json"
 				).error(function(){
-					alert('Session expired');
+					//alert('Session expired');
 					window.location.reload(true);
 				});
 			},
@@ -483,7 +483,7 @@ function updateProcessor(obj, save, attr, old) {
 			     },  
 			     "json"  
 		).error(function(){
-			alert('Session expired');
+			//alert('Session expired');
 			window.location.reload(true);
 		});
 	} else {

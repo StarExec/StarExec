@@ -121,7 +121,7 @@ function attachArchiveTypeMonitor(){
 			     },  
 			     "json"  
 		).error(function(){
-			alert('Session expired');
+			//alert('Session expired');
 			window.location.reload(true);
 		});
 	});
@@ -148,7 +148,7 @@ function attachWebsiteMonitor(){
 					},
 					"json"
 			).error(function(){
-				alert('Session expired');
+				//alert('Session expired');
 				window.location.reload(true);
 			});
 		}
@@ -266,7 +266,7 @@ function initButtonIcons(){
  */
 function refreshUserWebsites(){
 	$.getJSON('/starexec/services/websites/user/-1', processWebsiteData).error(function(){
-		alert('Session expired');
+		//alert('Session expired');
 		window.location.reload(true);
 	});
 }
@@ -353,7 +353,7 @@ function saveChanges(obj, save, attr, old) {
 			     },  
 			     "json"  
 		).error(function(){
-			alert('Session expired');
+			//alert('Session expired');
 			window.location.reload(true);
 		});
 	} else {

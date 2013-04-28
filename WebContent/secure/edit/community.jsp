@@ -10,7 +10,7 @@
 		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
 		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
 		int id = Integer.parseInt((String)request.getParameter("cid"));
-		//request.setAttribute("defaultBenchLink", "/starexec/secure/edit/defaultBenchmark.jsp?id="+((Integer)id).toString());
+		request.setAttribute("defaultBenchLink", "/starexec/secure/edit/defaultBenchmark.jsp?id="+((Integer)id).toString());
 		Space com = Communities.getDetails(id);
 		Permission perm = SessionUtil.getPermission(request, id);
 		
@@ -30,13 +30,18 @@
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
-		Benchmark bench=Benchmarks.get(Integer.parseInt(listOfDefaultSettings.get(6)));
+		try {
+			Benchmark bench=Benchmarks.get(Integer.parseInt(listOfDefaultSettings.get(6)));
+			if (bench!=null) {
+				request.setAttribute("defaultBenchmark", bench.getName());
+			} else {
+				request.setAttribute("defaultBenchmark", "none specified");
+			}
+		} catch (Exception e) {
+			request.setAttribute("defaultBenchmark", "none specified");
+		}
 		
-		//if (bench!=null) {
-		//	request.setAttribute("defaultBenchmark", bench.getName());
-		//} else {
-		//	request.setAttribute("defaultBenchmark", "none specified");
-		//}
+		
 		
 
 	}
@@ -161,9 +166,9 @@
 					</select>
 				</td>
 			</tr>
-			<tr id="defaultBenchRow" style="visibility:hidden;">
-				<td>default benchamrk</td>
-				<td> <a href="#"><span id="selectBenchmark" class="caption">select benchmark</span></a></td>
+			<tr id="defaultBenchRow">
+				<td>default benchmark</td>
+				<td>${defaultBenchmark} <a href="${defaultBenchLink}"><span id="selectBenchmark">select benchmark</span></a></td>
 			</tr>
 		</tbody>
 	</table>
