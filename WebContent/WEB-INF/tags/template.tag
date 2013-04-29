@@ -19,7 +19,7 @@
 				<jsp:doBody/>
 			</div>		
 		<star:footer />
-		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})">starexec revision ${buildVersion}</div>
+		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})"><a href="/starexec/public/versionInfo.jsp">starexec revision ${buildVersion}</a></div>
 		</div>
 	</body>
 </html>
