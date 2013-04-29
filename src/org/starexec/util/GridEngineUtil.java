@@ -186,8 +186,9 @@ public class GridEngineUtil {
 		// Call SGE to get info on the queues
 		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 		
-	    String[] envp = new String[1];
+	    String[] envp = new String[2];
 	    envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
+	    envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
 	    BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
 		String results = Util.bufferToString(reader);
 		//String results = testString;
