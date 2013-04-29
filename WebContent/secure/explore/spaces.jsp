@@ -21,7 +21,7 @@
 					<tr>
 						<th>name</th>
 						<th>status</th>
-						<th>complete</th>
+						<th>solved</th>
 						<th>total</th>
 						<th>failed</th>
 						<th>time</th>
