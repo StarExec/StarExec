@@ -92,10 +92,10 @@
 				<tr>
 					<th>solver</th>
 					<th id="configHead">configuration</th>
-					<th id="completeHead">complete</th>
+					<th id="completeHead">solved</th>
 					<th id="incompleteHead">incomplete</th>
 					<th>wrong</th>
-					<th>error</th>	
+					<th>failed</th>	
 					<th>time</th>
 				</tr>		
 			</thead>	

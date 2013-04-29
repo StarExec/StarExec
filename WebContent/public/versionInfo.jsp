@@ -2,8 +2,6 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-
-
 <%
 	try{
 		BufferedReader file=new BufferedReader(new FileReader(application.getRealPath("/")+"public/versionInfo.txt"));
@@ -18,8 +16,6 @@
 		String finalText=text.toString();
 		request.setAttribute("versionInfo",finalText);
 	} catch (Exception e) {
-		System.out.println(e.getMessage());
-		
 		request.setAttribute("versionInfo","Version information could not be found");
 	}
 	
@@ -27,6 +23,6 @@
 
 %>
 <star:template title="Version Information" css="explore/quickRef">	
-	<p id="infoLoc"> ${versionInfo}</p>
+	<pre id="infoLoc"> ${versionInfo}</pre>
 	
 </star:template>
