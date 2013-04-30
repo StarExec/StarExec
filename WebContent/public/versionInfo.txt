@@ -1,3 +1,5 @@
-This is some text
-		With multiple lines
-For viewing on the web page
+-- The job details pages now have summaries of results by solver.
+
+-- Dedicated queues like smteval.q are now getting recognized
+   correctly.
+

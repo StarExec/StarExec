@@ -86,7 +86,7 @@ public abstract class JobManager {
 			jobTemplate = jobTemplate.replace("$$REPORT_HOST$$", "" + R.REPORT_HOST);
 			// Impose resource limits
 			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
-			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);							
+			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);	 
 			//Post processor
 			Processor processor = job.getPostProcessor();
 			if(processor != null) {
@@ -278,7 +278,7 @@ public abstract class JobManager {
 	 * Creates a new job script file based on the given job and job pair.
 	 * @param template The template to base the new script off of
 	 * @param job The job to tailor the script for
-	 * @param pair The jbo pair to tailor the script for
+	 * @param pair The job pair to tailor the script for
 	 * @return The absolute path to the newly written script
 	 */
 	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
@@ -291,9 +291,6 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
 		//Dependencies
-		/*jobScript = jobScript.replace("$$BENCH_DEPENDS$$", writeDependencyArray(pair.getBench(), true));	
-		jobScript = jobScript.replace("$$LOCAL_DEPENDS$$", writeDependencyArray(pair.getBench(), false));	
-		*/
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
@@ -303,7 +300,7 @@ public abstract class JobManager {
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
 		}
 		// Resource limits
-		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));		
+		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
 
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
@@ -320,7 +317,6 @@ public abstract class JobManager {
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
 		out.close();
-		log.debug("about to write dependency file");
 		return scriptPath;
 	}	
 
