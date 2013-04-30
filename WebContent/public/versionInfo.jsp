@@ -4,25 +4,25 @@
 
 <%
 	try{
+		//Gets current path of the application and tries to open version file
 		BufferedReader file=new BufferedReader(new FileReader(application.getRealPath("/")+"public/versionInfo.txt"));
 		StringBuilder text=new StringBuilder();
 		String nextLine=file.readLine();
 		while (nextLine!=null) {
-			System.out.println(nextLine);
 			text.append(nextLine);
-			text.append("<br>");
+			text.append("\n");
 			nextLine=file.readLine();
 		}
 		String finalText=text.toString();
 		request.setAttribute("versionInfo",finalText);
 	} catch (Exception e) {
+		//some problem opening the file, so there's no data to display
 		request.setAttribute("versionInfo","Version information could not be found");
 	}
 	
 
 
 %>
-<star:template title="Version Information" css="explore/quickRef">	
+<star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc"> ${versionInfo}</pre>
-	
 </star:template>
