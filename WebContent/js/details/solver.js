@@ -19,6 +19,7 @@ $(document).ready(function(){
 });
 
 
+
 /*
  * Get comments and display them
  * Set-up add comment functionality 
@@ -78,13 +79,16 @@ function initUI(){
         "bPaginate": true,        
         "bSort": true        
     });
-	
+
 	commentTable = $('#comments').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">',
         "aaSorting": [[ 1, "asc" ]]
     }); 
+	
 	$( "#dialog-confirm-delete" ).hide();
+	$( "#dialog-warning").hide();
 	// Setup button icons
+	
 	$('#uploadConfig, #uploadConfigMargin').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
@@ -96,6 +100,23 @@ function initUI(){
 			primary: "ui-icon-gear"
 		}
     });
+	
+	//Warn if solver is uploaded without configuration
+	var flag = window.location.search.split('flag=')[1]; //Check to see if flag was set
+	if (flag == 'true') {
+		$('#dialog-warning-txt').text('WARNING: No Configurations.');
+		
+		$('#dialog-warning').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-warning').dialog('close');
+				},
+			}
+		});
+	}
 }
 
 function popUp(uri) {

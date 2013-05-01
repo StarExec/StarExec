@@ -1,5 +1,8 @@
+-- The solver details page warns user if solver is uploaded without configurations.
+
 -- The job details pages now have summaries of results by solver.
 
 -- Dedicated queues like smteval.q are now getting recognized
    correctly.
+   
 

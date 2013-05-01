@@ -3,10 +3,11 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
+
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int solverId = Integer.parseInt(request.getParameter("id"));
-		
+
 		Solver s = null;
 		if(Permissions.canUserSeeSolver(solverId, userId)) {
 			s = Solvers.get(solverId);
@@ -78,7 +79,7 @@
 	</fieldset>
 	<fieldset>
 		<legend>configurations</legend>
-		<table id="tblSolverConfig" class="shaded">	
+		<table id="tblSolverConfig" class="ConfigShaded">	
 			<thead>
 				<tr>
 					<th>name</th>
@@ -86,16 +87,16 @@
 				</tr>
 			</thead>
 			<tbody>
-				<c:forEach var="c" items="${configs}">
-				<tr>
-					<td id="configItem">
-						<a href="/starexec/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="/starexec/images/external.png"/></a>
-					</td>
-					<td>
-						${c.description}
-					</td>
-				</tr>
-				</c:forEach>			
+					<c:forEach var="c" items="${configs}">
+					<tr>
+						<td id="configItem">
+							<a href="/starexec/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="/starexec/images/external.png"/></a>
+						</td>
+						<td>
+							${c.description}
+						</td>
+					</tr>
+					</c:forEach>		
 			</tbody>						
 		</table>				
 	</fieldset>
@@ -147,6 +148,9 @@
 -->
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>	
+	<div id="dialog-warning" title="warning">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 	</div>		
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->

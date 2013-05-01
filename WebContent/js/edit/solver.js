@@ -35,6 +35,7 @@ function initUI(){
 		togglePlusMinus(this);
 	});	
 	$('#new_website').hide();
+	$( "#dialog-confirm-delete" ).hide();
 }
 
 /**
