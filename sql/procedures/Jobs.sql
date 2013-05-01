@@ -583,7 +583,7 @@ CREATE PROCEDURE GetPendingJobs()
 	BEGIN
 		SELECT *
 		FROM jobs
-		WHERE id in (select distinct job_id from job_pairs where status_code=1 or status_code=8);
+		WHERE id in (select distinct job_id from job_pairs where status_code=1);
 	END //
 	
 -- Retrieves all jobs with pending or rejected job pairs
@@ -612,7 +612,7 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _cap INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
-		WHERE job_id=_id AND (status_code = 1 OR status_code=8)
+		WHERE job_id=_id AND (status_code = 1)
 		ORDER BY id ASC
 		LIMIT _cap;
 	END //	
