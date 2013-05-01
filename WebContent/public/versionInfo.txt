@@ -1,3 +1,5 @@
+-- Uploaded Benchmarks now extracts description for space and sets it.
+
 -- Implemented back buttons for facilitated navigation.
 
 -- The solver details page warns user if solver is uploaded without configurations.

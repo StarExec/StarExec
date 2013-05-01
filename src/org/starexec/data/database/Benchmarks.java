@@ -1,7 +1,12 @@
 package org.starexec.data.database;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -1439,13 +1444,16 @@ public class Benchmarks {
 	/**
 	 * Creates a space named after the directory and finds any benchmarks within the directory.
 	 * Then the process recursively adds any subspaces found (other directories) until all directories
-	 * under the original one are traversed.
+	 * under the original one are traversed. Also extracts the description file(if there is one) and
+	 * sets it as the description for the space.
 	 * @param directory The directory to extract data from
 	 * @param typeId The bench type id to set for all the found benchmarks
 	 * @param userId The user is of the owner of all the benchmarks found
 	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
 	 * @param perm The default permissions to set for this space
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given directory.
+	 * 
+	 * @author Wyatt Kaiser
 	 */
 	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) {
 		// Create a space for the current directory and set it's name		
@@ -1453,15 +1461,41 @@ public class Benchmarks {
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);
-		// For each file within the directory...
+		String strUnzipped = "";
+		String name = "";
+		// Search for description file within the directory...
+		for (File f : directory.listFiles()) {
+			if(f.getName().equals(R.BENCHMARK_DESC_PATH)){
+				strUnzipped = "";
+				try {
+					FileInputStream fis = new FileInputStream(f.getAbsolutePath());
+					BufferedInputStream bis = new BufferedInputStream(fis);
+					DataInputStream dis = new DataInputStream(bis);
+					String text;
+					//dis.available() returns 0 if the file does not have more lines
+					while (dis.available() != 0) {
+						text= dis.readLine().toString();
+						strUnzipped = strUnzipped + text;
+					}
+					fis.close();
+					bis.close();
+					dis.close();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		space.setDescription(strUnzipped);
+		
 		for(File f : directory.listFiles()) {
-			// If it's a subdirectory			
+			// If it's a sub-directory			
 			if(f.isDirectory()) {
 				// Recursively extract spaces/benchmarks from that directory
 				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm, statusId));
 				Uploads.incrementTotalSpaces(statusId);//for upload status page
-			} else {
-				// Or else we're just a file, so assume it's a benchmark and create an object for it
+			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 				Processor t = new Processor();
 				t.setId(typeId);
 
@@ -1471,6 +1505,7 @@ public class Benchmarks {
 				b.setType(t);
 				b.setUserId(userId);
 				b.setDownloadable(downloadable);
+												
 				Uploads.incrementTotalBenchmarks(statusId);//for upload status page
 				// Make sure that the benchmark has a unique name in the space.
 				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
@@ -1495,14 +1530,15 @@ public class Benchmarks {
 	public static List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
 		// Initialize the list we will return at the end...
 		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
+		String strUnzipped = "";
+		String name = "";
+		
 		// For each file in the directory
 		for(File f : directory.listFiles()) {
 			if(f.isDirectory()) {
 				// If it's a directory, recursively extract all benchmarks from it and add them to our list
 				benchmarks.addAll(Benchmarks.extractBenchmarks(f, typeId, userId, downloadable));
-			} else {
-				// Or else it's just a benchmark, create an object for it and add it to the list
+			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 				Processor t = new Processor();
 				t.setId(typeId);
 

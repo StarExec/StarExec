@@ -92,18 +92,27 @@ public class UploadSolver extends HttpServlet {
 				}
 				
 				// Parse the request as a solver
-				int result = handleSolver(userId, form);				
+				int[] result = handleSolver(userId, form);	
+				int return_value = result[0];
+				int configs = result[1];
 			
 				// Redirect based on success/failure
-				if(result != -1 && result != -2 && result != -3) {
-					response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + result);	
+				if(return_value != -1 && return_value != -2 && return_value != -3) {
+					if (configs == -4) { //If there are no configs
+						response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + return_value + "&flag=true");
+					} else {
+						response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + return_value);
+					}
 				} else {
-					if (result == -3) {
+					//Archive Description File failed validation
+					if (return_value == -3) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The archive description file is malformed. Make sure it does not exceed 1024 characters.");
 						return;
-					} else if (result == -2) {
+					//URL was invalid
+					} else if (return_value == -2) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File could not be accessed at URL"); 
 						return;
+					//Other Error
 					} else {
 						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
 						return;
@@ -128,8 +137,11 @@ public class UploadSolver extends HttpServlet {
 	 * @throws Exception 
 	 */
 	@SuppressWarnings("deprecation")
-	public int handleSolver(int userId, HashMap<String, Object> form) throws Exception {
+	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
+			int[] returnArray = new int[2];
+			returnArray[0] = 0;
+			returnArray[1] = 0;
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
 			FileItem item=null;
 			String name=null;
@@ -141,7 +153,8 @@ public class UploadSolver extends HttpServlet {
 					url=new URL((String)form.get(UploadSolver.FILE_URL));
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
-					return -2;
+					returnArray[0] = -2;
+					return returnArray;
 				}
 					
 				try {
@@ -190,10 +203,6 @@ public class UploadSolver extends HttpServlet {
 			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
-			//Find configurations from the top-level "bin" directory
-			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
-				newSolver.addConfiguration(c);
-			}
 
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
@@ -223,23 +232,40 @@ public class UploadSolver extends HttpServlet {
 			    	e.printStackTrace();
 			    }
 			    if (!Validator.isValidPrimDescription(strUnzipped)) {
-			    	return -3;
+			    	returnArray[0] = -3;
+			    	return returnArray;
 			    } else {
 			    newSolver.setDescription(strUnzipped);
 			    }
 			}
+			
+			int configs_empty = 0;
+			//Find configurations from the top-level "bin" directory
+			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
+				newSolver.addConfiguration(c);
+			}
+			if (findConfigs(uniqueDir.getAbsolutePath()).isEmpty()) {
+				returnArray[1] = -4; //It is empty
+			}
 
 			//Try adding the solver to the database
-			return Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
+			int solver_Success = Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
+			returnArray[0] = solver_Success;
+			return returnArray;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		
 		
 		
-		return -1;
+		return List(-1,0);
 	}	
 	
+	private int[] List(int i, int j) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	/**
 	 * Finds solver run configurations from a specified bin directory. Run configurations
 	 * must start with a certain string specified in the list of constants. If no configurations
