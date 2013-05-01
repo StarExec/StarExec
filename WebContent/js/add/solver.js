@@ -21,6 +21,13 @@ function initUI(){
 			secondary: "ui-icon-arrowthick-1-n"
     }});
 	
+	$('#btnPrev').button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-w"
+	}}).click(function(){
+		history.back(-1);
+	});
+	
 	
 }
 

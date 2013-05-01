@@ -150,6 +150,13 @@ function initUI(){
 		}
 	});
 	
+	$('#btnPrev').button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-w"
+	}}).click(function(){
+		history.back(-1);
+	});
+	
 }
 
 /**

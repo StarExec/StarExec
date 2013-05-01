@@ -141,9 +141,12 @@
 							value="true" checked="checked" /><label>yes</label> <input
 							id="notLinked" type="radio" name="linked" value="false" /><label>no</label></td>
 					</tr>
+					<tr>
+						<td colspan="1"><button id="btnPrev">back</button></td>						
+						<td colspan="1"><button id="btnUpload" type="submit">upload</button></td>
+					</tr>
 				</tbody>
-			</table>
-			<button id="btnUpload" type="submit">upload</button>
+			</table>			
 		</fieldset>
 	</form>
 

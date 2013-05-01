@@ -126,6 +126,7 @@
 				</tbody>
 			</table>
 			<button type="button" id="update">update</button>
+			<button type="button" id="btnPrev">Back</button>
 		</fieldset>
 	</form>
 </star:template>

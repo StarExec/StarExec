@@ -232,7 +232,8 @@
 		<div id="actionBar">
 			<button type="submit" class="round" id="btnDone">submit</button>			
 			<button type="button" class="round" id="btnNext">next</button>			
-			<button type="button" class="round" id="btnPrev">back</button>				
+			<button type="button" class="round" id="btnPrev">Prev</button>	
+			<button type="button" class="round" id="btnBack">Back</button>			
 		</div>			
 	</form>		
 </star:template>

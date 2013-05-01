@@ -80,7 +80,8 @@
 						</td>
 					</tr>
 					<tr>
-						<td colspan="2"><button id="btnCreate">create</button></td>
+						<td colspan="1"><button id="btnPrev">back</button></td>						
+						<td colspan="1"><button id="btnCreate">create</button></td>
 					</tr>
 				</tbody>
 			</table>		

@@ -79,8 +79,8 @@
 							<input name="dlable" type="radio" value="false" /><label>no</label>
 						</td>
 					<tr>
-						
-						<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
+						<td colspan="1"><button id="btnPrev">back</button></td>						
+						<td colspan="1"><button id="btnUpload" type="submit">upload</button></td>
 					</tr>
 				</tbody>
 			</table>																	

@@ -122,6 +122,14 @@ function initUI() {
 	$('#fieldSelectBenchSpace div.selectWrap').detach().prependTo('#fieldSelectBenchSpace div.bottom');
 	$('#fieldSolverSelection div.selectWrap').detach().prependTo('#fieldSolverSelection div.bottom');
 	
+	$('#btnBack').button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-w"
+	}}).click(function(){
+		
+		history.back(-1);
+	});
+	
 	$('#btnNext').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-e"
@@ -322,12 +330,14 @@ function updateProgress() {
 		case 0:	// Job setup stage
 			$('#fieldStep1').fadeIn('fast');
 			$('#btnNext').fadeIn('fast');
+			$('#btnBack').fadeIn('fast');
 			$('#btnPrev').fadeOut('fast');
 			$('#btnDone').fadeOut('fast');
 			break;
 		case 1:	// Run space choice stage
 			$('#fieldSolverMethod').fadeIn('fast');
 			$('#btnNext').fadeOut('fast');
+			$('#btnBack').fadeOut('fast');
 			$('#btnPrev').fadeIn('fast');
 			break;
 		case 2:	// If quick run space method not chosen, how to select benchmarks
