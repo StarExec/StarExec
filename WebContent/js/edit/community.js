@@ -29,8 +29,7 @@ function attachWebsiteMonitor(){
 					},
 					"json"
 			).error(function(){
-				//alert('Session expired');
-				window.location.reload(true);
+				showMessage('error',"Internal error updating community websites",5000);
 			});
 		}
 	});
@@ -41,13 +40,13 @@ function attachWebsiteMonitor(){
 		var url = $("#website_url").val();
 		
 		if(name.trim().length == 0) {
-			showMessage('error', 'please enter a website name', 6000);
+			showMessage('error', 'please enter a website name', 5000);
 			return;
 		} else if (url.indexOf("http://") != 0) {			
-			showMessage('error', 'url must start with http://', 6000);
+			showMessage('error', 'url must start with http://', 5000);
 			return;
 		} else if (url.trim().length <= 12) {
-			showMessage('error', 'the given url is not long enough', 6000);
+			showMessage('error', 'the given url is not long enough', 5000);
 			return;
 		}	
 		
@@ -71,17 +70,12 @@ function attachWebsiteMonitor(){
 	});
 }
 
-
 function initUI(){
 	// Make forms editable
 	editable("name");
 	editable("desc");
 	editable("CpuTimeout");
 	editable("ClockTimeout");
-	
-	//processorEditable($('#benchTypeTbl'));
-	//processorEditable($('#preProcessorTbl'));
-	//processorEditable($('#postProcessorTbl'));
 	
 	// Add toggles for the "add new" buttons and hide them by default
 	$('#toggleWebsite').click(function() {
@@ -245,8 +239,7 @@ function attachFormValidation(){
  */
 function refreshSpaceWebsites(){
 	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting websites",5000);
 	});
 }
 
@@ -302,13 +295,13 @@ function saveChanges(obj, save, attr, old) {
 			newVal = $(obj).siblings('textarea:first').val();
 			
 			if (newVal.length>$('#descRow').attr('length')) {
-				showMessage('error', $('#descRow').attr('length')+ " characters maximum");
+				showMessage('error', $('#descRow').attr('length')+ " characters maximum",5000);
 				return;
 			}
 		} else if (attr == 'name') {
 			newVal = $(obj).siblings('input:first').val();
 			if (newVal.length>$('#nameRow').attr('length')) {
-				showMessage('error', $('#nameRow').attr('length')+ " characters maximum");
+				showMessage('error', $('#nameRow').attr('length')+ " characters maximum",5000);
 				return;
 			}
 		} else if (attr == "PostProcess"){
@@ -343,148 +336,7 @@ function saveChanges(obj, save, attr, old) {
 			     },  
 			     "json"  
 		).error(function(){
-			//alert('Session expired');
-			window.location.reload(true);
-		});
-	} else {
-		// Hide the input box and replace it with the table cell
-		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
-		// Make the value editable again
-		editable(attr);
-	}
-}
-
-function processorEditable(table) {			
-	$(table).delegate('tr', 'click', function(){
-		if ($(this).is('.headerRow')) {
-			
-			return;
-		}
-		$(table).undelegate('tr');
-		$(table).find('tr:not(:first)').css('cursor', 'default');		
-		$(table).find('tr:not(:first)').addClass('noHover');
-		$(table).find('tr:first').append('<th>action</th>');
-		var old = $(this).html();
-		$(this).addClass('selected');
-		
-		var name = $(this).children(':first');
-		var desc = $(this).children(':nth-child(2)');
-		var file = $(this).children(':nth-child(3)');
-		
-		$(name).html('<input type="text" name="name" value="' +  $(name).text() + '" />');
-		$(desc).html('<textarea name="desc">' + $(desc).text() + '</textarea>');
-		$(file).html('<input type="file" name="file" />');
-		$(this).append('<input type="hidden" name="pid" value="' + $(this).attr('id').split('_')[1] + '" />');
-				
-		var saveBtn = $('<button type="submit">save</button><br/>');
-		var cancelBtn = $('<button type="button">cancel</button><br/>');
-		var deleteBtn = $('<button type="button">delete</button>');
-		var saveCol = $('<td></td>').append(saveBtn).append(cancelBtn).append(deleteBtn);			
-		$(this).append(saveCol);
-		
-		$(saveBtn).click(function(){updateProcessor(this, true, attribute);});
-		$(cancelBtn).click(function(){ restoreProcessorRow(table, old); });			
-		$(deleteBtn).click(function(){ 
-			deleteProcessor($("[name=pid]").val(), $(this).parent().parent(), table);
-		});
-		
-		$(saveBtn).button({
-			icons: {
-				secondary: "ui-ficon-check"
-	    }});
-		
-		$(cancelBtn).button({
-			icons: {
-				secondary: "ui-icon-close"
-	    }});
-		
-		$(deleteBtn).button({
-			icons: {
-				secondary: "ui-icon-minus"
-	    }});
-	});
-	$(table).find('tr:not(:first)').css('cursor', 'pointer');
-}
-
-function restoreProcessorRow(table, oldHtml) {	
-	$(table).find('tr:not(:first)').removeClass('noHover');
-	$(table).find('tr:first').find('th:last').remove();	
-	$(table).find('tr.selected').html(oldHtml);
-	$(table).find('tr.selected').removeClass('selected');	
-	processorEditable(table);
-}
-
-function deleteProcessor(pid, parent, table){	
-	$(table).find('tr:not(:first)').removeClass('noHover');
-	$('#dialog-confirm-delete-txt').text('are you sure you want to delete this processor?');
-	
-	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
-		modal: true,
-		buttons: {
-			'yes': function() {					
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
-				
-				$.post(
-						"/starexec/services/delete/processor" + pid,
-						function(returnCode) {
-							if(returnCode == '0') {
-								var table = $(parent).parents('table');
-								$(table).find('tr:first').find('th:last').remove();	
-								parent.remove();
-								processorEditable(table);
-							} else {
-								showMessage('error', "processor could not be removed. please try again", 5000);
-							}
-						},
-						"json"
-				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
-				});
-			},
-			"cancel": function() {
-				$(this).dialog("close");
-			}
-		}		
-	});	
-}
-
-function updateProcessor(obj, save, attr, old) {
-	$(table).find('tr:not(:first)').removeClass('noHover');
-	if (true == save) {
-		var newVal = $(obj).siblings('input:first').val();
-		if(newVal == null) {
-			newVal = $(obj).siblings('textarea:first').val();			
-		}		
-		$.post(  
-			    "/starexec/services/space/" + $('#comId').val() + "/processors/edit/" + attr,
-			    {val: newVal},
-			    function(returnCode){  			        
-			    	if(returnCode == '0') {
-			    		// Hide the input box and replace it with the table cell
-			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
-			    		// Make the value editable again
-			    		editable(attr);
-			    	} else if(returnCode == '2') {
-			    		showMessage('error', "insufficient permissions. only space leaders can update their space", 5000);
-			    		// Hide the input box and replace it with the table cell
-			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
-			    		// Make the value editable again
-			    		editable(attr);
-			    	} else {
-			    		showMessage('error', "invalid characters; please try again", 5000);
-			    		// Hide the input box and replace it with the table cell
-			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
-			    		// Make the value editable again
-			    		editable(attr);
-			    	}
-			     },  
-			     "json"  
-		).error(function(){
-			//alert('Session expired');
-			window.location.reload(true);
+			showMessage('error',"Internal error updating field",5000);
 		});
 	} else {
 		// Hide the input box and replace it with the table cell

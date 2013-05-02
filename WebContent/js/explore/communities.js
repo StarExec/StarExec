@@ -108,8 +108,7 @@ $(document).ready(function(){
 						},
 						"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error removing user",5000);
 					});
 				},
 				"cancel": function() {
@@ -142,8 +141,7 @@ $(document).ready(function(){
 				},
 				"json"
 			).error(function(){
-				//alert('Session expired');
-				window.location.reload(true);
+				showMessage('error',"Internal error making user a leader",5000);
 			});
     });
 	
@@ -208,8 +206,7 @@ function getCommunityDetails(id) {
 		},  
 		"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting community details",5000);
 	});
 }
 
@@ -374,8 +371,7 @@ function leaveCommunity(id){
 			},
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error leaving community",5000);
 	});
 	
 	// Redraw the two tables to prevent the case where

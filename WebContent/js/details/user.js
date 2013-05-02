@@ -84,7 +84,7 @@ function PopUp(uri) {
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	//var usrId = getParameterByName("id");
+	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
 	
@@ -110,8 +110,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true); 
+		showMessage('error',"Internal error populating table",5000);
 	});
 }
 

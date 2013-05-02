@@ -109,6 +109,11 @@ function initUI() {
 	defaultPPId = $('#postProcess').attr('default');
 	$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
 	
+	//TODO: Figure out what Prof. Stump wants for this
+	if ($("#postProcess").find("option").length==1) {
+		$("#postProcess").find("option").attr("selected","selected");
+	}
+	
 	// Set up datatables
 	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
         "sDom": 'rt<"bottom"f><"clear">',        

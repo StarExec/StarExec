@@ -121,8 +121,7 @@ function attachArchiveTypeMonitor(){
 			     },  
 			     "json"  
 		).error(function(){
-			//alert('Session expired');
-			window.location.reload(true);
+			showMessage('error',"Internal error updating preferred archive type",5000);
 		});
 	});
 }
@@ -148,8 +147,7 @@ function attachWebsiteMonitor(){
 					},
 					"json"
 			).error(function(){
-				//alert('Session expired');
-				window.location.reload(true);
+				showMessage('error',"Internal error updating user websites",5000);
 			});
 		}
 	});
@@ -266,8 +264,7 @@ function initButtonIcons(){
  */
 function refreshUserWebsites(){
 	$.getJSON('/starexec/services/websites/user/-1', processWebsiteData).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error displaying user websites",5000);
 	});
 }
 
@@ -353,8 +350,7 @@ function saveChanges(obj, save, attr, old) {
 			     },  
 			     "json"  
 		).error(function(){
-			//alert('Session expired');
-			window.location.reload(true);
+			showMessage('error',"Internal error updating user information",5000);
 		});
 	} else {
 		// Hide the input box and replace it with the table cell

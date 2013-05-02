@@ -43,8 +43,7 @@ function initComments(solverId){
 			    	if(returnCode == 0) {
 			    		$("#comment_text").val("");
 			    		$.getJSON('/starexec/services/comments/solver/' + solverId, displayComments).error(function(){
-			    			//alert('Session expired');
-			    			window.location.reload(true);
+			    			showMessage('error',"Internal error posting comment",5000);
 			    		});
 			    	} else {
 			    		showMessage('error', "adding your comment was unsuccessful; please try again", 5000);
@@ -190,8 +189,7 @@ function displayComments(data) {
 						},
 					    "json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error deleting comment",5000);
 					});
 				},
 				"cancel": function() {
@@ -206,8 +204,7 @@ function displayComments(data) {
 //get comment information for the given solver
 function getComments(id) {
 	$.getJSON('/starexec/services/comments/solver/' + id, displayComments).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting comments",5000);
 	});
 }
 /**

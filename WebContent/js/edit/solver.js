@@ -190,8 +190,7 @@ function togglePlusMinus(addSiteButton){
 function refreshSolverWebsites(){
 	//get website information for the given solver
 	$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting websites",5000);
 	});
 }
 
@@ -231,8 +230,7 @@ function attachWebsiteMonitor(){
 					},
 					"json"
 			).error(function(){
-				//alert('Session expired');
-				window.location.reload(true);
+				showMessage('error',"Internal error updating websites",5000);
 			});
 		}
 	});

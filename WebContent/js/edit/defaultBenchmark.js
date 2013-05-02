@@ -86,11 +86,11 @@ function attachFormValidation(){
 								destroyDialog();
 								break;
 							case 2:
-								showMessage('error', "only the leader of the community containing this processor can update it", 5000);
+								showMessage('error', "only the leader of the community can select a default benchmark", 5000);
 								destroyDialog();
 								break;
 							case 3:
-								showMessage('error', "invalid parameters; please ensure you fill out all of the processor file's fields", 5000);
+								showMessage('error', "invalid parameters; please ensure you have selected a benchmark", 5000);
 								destroyDialog();
 								break;
 						}
@@ -98,7 +98,7 @@ function attachFormValidation(){
 					"json"
 			);
 		} else {
-			showMessage("Select a benchmark to proceed","warn","5000");
+			showMessage('error',"Select a benchmark to proceed","5000");
 		}
 	});
 }

@@ -55,8 +55,7 @@ function initButtons(){
 						},
 						"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error deleting configuration",5000);
 					});		
 				},
 				"cancel": function() {

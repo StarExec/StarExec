@@ -139,8 +139,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true); 
+		showMessage('error',"Internal error populating data table",5000);
 	});
 }
 
@@ -166,7 +165,6 @@ function solverPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true); 
+		showMessage('error',"Internal error populating summary table",5000);
 	});
 }

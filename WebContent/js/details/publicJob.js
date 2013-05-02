@@ -112,7 +112,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true); 
+		showMessage('error',"Internal error populating table",5000); 
 	});
 }

@@ -103,8 +103,7 @@ function initCommentUI(){
 					if(returnCode == '0') {
 						$("#comment_text").val("");
 						$.getJSON('/starexec/services/comments/space/' + spaceId, displayComments).error(function(){
-							//alert('Session expired');
-							window.location.reload(true);
+							showMessage('error',"Internal error getting comments",5000);
 						});
 					} else {
 						showMessage('error', "adding your comment was unsuccessful; please try again", 5000);
@@ -475,8 +474,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying solvers",5000);
 					});	 									
 				},
 				'space': function(){
@@ -503,8 +501,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying solvers",5000);
 					});	 			
 				},
 				"cancel": function() {
@@ -553,8 +550,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying users",5000);
 					});							
 				},
 				'space': function(){
@@ -581,8 +577,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying users",5000);
 					});	 	
 				},
 				"cancel": function() {
@@ -622,8 +617,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying spaces",5000);
 					});
 				},
 				'hierarchy': function(){
@@ -646,8 +640,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying spaces",5000);
 					});
 				},
 				"cancel": function() {
@@ -688,8 +681,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying benchmarks",5000);
 					});	 									
 				},
 				"cancel": function() {
@@ -731,8 +723,7 @@ function onSpaceDrop(event, ui) {
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error copying jobs",5000);
 					});	 									
 				},
 				"cancel": function() {
@@ -894,8 +885,7 @@ function removeBenchmarks(selectedBenches){
 						},
 						"json"
 				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+					showMessage('error',"Internal error removing benchmarks",5000);
 				});		
 			},
 			"cancel": function() {
@@ -957,8 +947,7 @@ function removeUsers(selectedUsers){
 						},
 						"json"
 				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+					showMessage('error',"Internal error removing users",5000);
 				});	
 			},
 			"space": function() {
@@ -993,8 +982,7 @@ function removeUsers(selectedUsers){
 						},
 						"json"
 				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+					showMessage('error',"Internal error removing users",5000);
 				});	
 			},
 			"cancel": function() {
@@ -1046,8 +1034,7 @@ function removeSolvers(selectedSolvers){
 						},
 						"json"
 				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+					showMessage('error',"Internal error removing solvers",5000);
 				});
 			},
 			'space': function() {
@@ -1075,8 +1062,7 @@ function removeSolvers(selectedSolvers){
 						},
 						"json"
 				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+					showMessage('error',"Internal error removing solvers",5000);
 				});
 			},
 			"cancel": function() {
@@ -1125,8 +1111,7 @@ function removeJobs(selectedJobs){
 						},
 						"json"
 				).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+					showMessage('error',"Internal error removing jobs",5000);
 				});
 			},
 			"cancel": function() {
@@ -1267,8 +1252,7 @@ function removeComment(ids){
 							},
 							"json"
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						showMessage('error',"Internal error removing comment",5000);
 					});
 				},
 				"cancel": function() {
@@ -1341,8 +1325,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error populating table",5000);
 	});
 }
 
@@ -1679,8 +1662,7 @@ function getSpaceDetails(id) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting space details",5000);
 	});
 }
 
@@ -1702,8 +1684,9 @@ function handlePublicButton(id) {
 			},  
 			"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting determining whether space is public",5000);
+		$('#makePublic').fadeOut('fast');
+		$('#makePrivate').fadeOut('fast');
 	});
 }
 
@@ -1783,8 +1766,7 @@ function getSpaceComments(id) {
 	}
 	//get comment information for the given space
 	$.getJSON('/starexec/services/comments/space/' + id, displayComments).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting comments",5000);
 	});	
 }
 
@@ -2298,8 +2280,7 @@ function getTooltipConfig(type, message){
 								return true;
 							}
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						//showMessage('error',"Internal error getting user permissions",5000); bother the user for a tooltip problem?
 					});	
 
 				},
@@ -2320,8 +2301,7 @@ function getTooltipConfig(type, message){
 									return true;
 								}	
 						).error(function(){
-							//alert('Session expired');
-							window.location.reload(true);
+							//showMessage('error',"Internal error getting space details",5000); 
 						});		
 					}
 
@@ -2410,8 +2390,7 @@ function getTooltipConfig(type, message){
 								return true;
 							}
 					).error(function(){
-						//alert('Session expired');
-						window.location.reload(true);
+						//showMessage('error',"Internal error getting space details",5000);
 					});	
 				}
 			}
@@ -2523,8 +2502,7 @@ function getTooltipConfig(type, message){
 									return true;
 								}
 						).error(function(){
-							//alert('Session expired');
-							window.location.reload(true);
+							//showMessage('error',"Internal error getting space details",5000);
 						});	
 					}
 				}
@@ -2642,8 +2620,7 @@ function saveChanges(obj, save){
 						return true;
 					}
 		).error(function(){
-			//alert('Session expired');
-			window.location.reload(true);
+			//showMessage('error',"Internal error getting space details",5000);
 		});	
 	} else {  
 		log('user canceled edit permission action');

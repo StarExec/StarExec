@@ -72,7 +72,7 @@ function getDetails(id, type) {
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
 		url = "/starexec/services/cluster/nodes/details/" + id;
 	} else  {
-		//alert('Invalid node type');
+		showMessage('error',"Invalid node type",5000);
 		return;
 	}
 	
@@ -84,8 +84,7 @@ function getDetails(id, type) {
 		},  
 		"json"
 	).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting node details",5000);
 	});
 }
 

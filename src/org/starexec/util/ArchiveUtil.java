@@ -38,12 +38,14 @@ public class ArchiveUtil {
 	 * Gets the uncompressed size of a compressed folder. Returns a long on success and -1 on failure.
 	 * Used to determine whether a user has a sufficiently large disk quota to perform an upload
 	 * 
-	 *  @author Eric Burns
+	 *  @author Eric Burns*/
 	
-	public static long folderSize(String fileName) {
+	public static long getArchiveSize(String fileName) {
 		try {
 			if (fileName.endsWith(".zip")){
 				return getZipSize(fileName);
+			} else if (fileName.endsWith(".tar")) {
+				return getTarSize(fileName);
 			} else {
 				return -1;
 			}
@@ -56,8 +58,11 @@ public class ArchiveUtil {
 	
 	private static long getZipSize(String fileName) {
 		try {
+			//ZipEntry zipFile=new ZipEntry(fileName);
+			
 			long answer=0;
 			ZipFile temp=new ZipFile(fileName);
+			temp.getEntries().nextElement().getSize();
 			while (temp.getEntries().hasMoreElements()) {
 				answer=answer+temp.getEntries().nextElement().getSize();
 			}
@@ -66,7 +71,24 @@ public class ArchiveUtil {
 			log.error("Archive Util says " + e.getMessage(), e);
 			return -1;
 		}
-	}*/
+	}
+	
+	private static long getTarSize(String fileName) {
+		try {
+			//ZipEntry zipFile=new ZipEntry(fileName);
+			
+			long answer=0;
+			ZipFile temp=new ZipFile(fileName);
+			temp.getEntries().nextElement().getSize();
+			while (temp.getEntries().hasMoreElements()) {
+				answer=answer+temp.getEntries().nextElement().getSize();
+			}
+			return answer;
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+			return -1;
+		}
+	}
 	
 	
 	/**

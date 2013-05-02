@@ -75,8 +75,7 @@ function initComments(bid){
 			    	if(returnCode == 0) {
 			    		$("#comment_text").val("");
 			    		$.getJSON('/starexec/services/comments/benchmark/' + bid, displayComments).error(function(){
-			    			//alert('Session expired');
-			    			window.location.reload(true);
+			    			showMessage('error',"Internal error displaying comments",5000);
 			    		});
 			    	} else {
 			    		showMessage('error', "adding your comment was unsuccessful; please try again", 5000);
@@ -139,8 +138,7 @@ function displayComments(data) {
 						},
 						"json"
 					).error(function(){
-					//alert('Session expired');
-					window.location.reload(true);
+						showMessage('error',"Internal error deleting comment",5000);
 				});
 			  },
 			  "cancel": function() {
@@ -154,8 +152,7 @@ function displayComments(data) {
 function getComments(id) {
 	//get comment information for the given benchmark
 	$.getJSON('/starexec/services/comments/benchmark/' + id, displayComments).error(function(){
-		//alert('Session expired');
-		window.location.reload(true);
+		showMessage('error',"Internal error getting comments",5000);
 	});
 }
 /**

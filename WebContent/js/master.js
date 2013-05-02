@@ -146,7 +146,7 @@ function logout() {
 	     },  
 	     "json"  
 	).error(function(){
-		alert("There was an error logging you out. Please try refreshing this page or restarting your browser");
+		showMessage("There was an error logging you out. Please try refreshing this page or restarting your browser");
 	});
 }
 

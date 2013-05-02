@@ -447,8 +447,8 @@ CREATE TABLE space_default_settings (
     cpu_timeout INT DEFAULT 1,
 	clock_timeout INT DEFAULT 1,
 	dependencies_enabled BOOLEAN DEFAULT FALSE,
-	default_benchmark INT DEFAULT -1,
-	PRIMARY KEY (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled),
+	default_benchmark INT DEFAULT NULL,
+	PRIMARY KEY (space_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE CASCADE,
 	FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE CASCADE

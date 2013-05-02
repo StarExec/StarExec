@@ -8,5 +8,3 @@
 
 -- Dedicated queues like smteval.q are now getting recognized
    correctly.
-   
-
