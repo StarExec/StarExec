@@ -26,7 +26,7 @@
 %>
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
-In revision 12599:
+In revision 12601:
 
 Bug fixes:
 
@@ -53,6 +53,9 @@ Improvements:
 
 -- The unit "s" has been dropped from the job information CSV (requested
    by Harald).
+
+-- The runsolver tool has been updated, and it will now be given the --add-eof
+   flag when executed (requested by Geoff).
 
 -- Uploading benchmarks now extracts description for space (starexec_description.txt) and sets it.
 
