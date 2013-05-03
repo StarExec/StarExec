@@ -26,18 +26,39 @@
 %>
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
--- The job details pages now have summaries of results by solver.
+In revision 12599:
+
+Bug fixes:
 
 -- Dedicated queues like smteval.q are now getting recognized
    correctly.
+
+-- No more "Session expired" alerts and unusable pages.
+
+-- We will not insert redundant rows into the job_attributes table, which
+   was leading to exceptions from the SQL layer.  This should fix
+   a bug that was plaguing Geoff.
+
+-- only the user can see their solvers, jobs, and benchmarks on his
+   user details page, fixing a bug reported by Harald.
+
+Improvements:
+
+-- The job details pages now have summaries of results by solver.
    
 -- A progress dialog is now shown during uploads and downloads.
 
--- Uploaded Benchmarks now extracts description for space and sets it.
+-- The names of downloaded archives are still long and messy,
+   but the directory names in those archives are not (requested by Harald).
+
+-- The unit "s" has been dropped from the job information CSV (requested
+   by Harald).
+
+-- Uploading benchmarks now extracts description for space (starexec_description.txt) and sets it.
 
 -- Implemented back buttons for facilitated navigation.
 
--- The solver details page warns user if solver is uploaded without configurat
+-- The solver details page warns user if solver is uploaded without configuration.
 
 </pre>
 </star:template>
