@@ -574,6 +574,7 @@ public class GridEngineUtil {
 	 * @return True if the native libraries exist on this computer, false if they do not
 	 */
 	public static boolean isAvailable() {
+	    log.debug("Checking availability of Grid Engine");
 		try {
 			// Try to load the class, if it does not exist this will cause an exception instead of an error			
 			Class.forName("com.sun.grid.drmaa.SessionImpl");
@@ -590,7 +591,7 @@ public class GridEngineUtil {
 		    log.error("Grid Engine isAvailable Error - " + e.getMessage());
 		} catch(Exception e) {
 		    // Don't log, expected if the engine isn't available
-		    log.error("Grid Engine isAvailable Exeption - " + e.getMessage());
+		    log.error("Grid Engine isAvailable Exception - " + e.getMessage());
 		}
 
 		return false;
