@@ -27,7 +27,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 -- Adds a new attribute to a job pair 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobAttr;
-CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _jobId, IN _key VARCHAR(128), IN _val VARCHAR(128))
+CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _jobId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
 		INSERT IGNORE INTO job_attributes VALUES (GetJobId(_pairId),_jobId, _pairId, _key, _val);
 	END //
