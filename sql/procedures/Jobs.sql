@@ -29,7 +29,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 DROP PROCEDURE IF EXISTS AddJobAttr;
 CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _jobId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
-		INSERT IGNORE INTO job_attributes VALUES (GetJobId(_pairId),_jobId, _pairId, _key, _val);
+		INSERT IGNORE INTO job_attributes VALUES (_jobId, _pairId, _key, _val);
 	END //
 
 -- Returns the number of jobs in a given space
