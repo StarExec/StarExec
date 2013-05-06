@@ -66,7 +66,7 @@ product=$[keySize*valueSize]
 if (( $product ))
    then
 	log "processing attribute $a"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value')"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,$JOB_STAR_ID,'$key','$value')"
 else
         log "bad post processing - cannot process attribute $a"
 fi
