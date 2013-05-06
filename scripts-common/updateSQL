@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# Script to update stored procedures and functions for the MySql DB.
+#
+
+sqldir=/home/starexec/deployed/deployed-sql
+
+if [ `hostname` == "stardev.cs.uiowa.edu" ] ; then
+  echo "Detected that we are on StarDev";
+  db_user="root";
+  db_pword="star3x3c2011!";
+else
+  echo "Detected that we are on Production";
+  db_user="prod_star_app";
+  db_pword="g4qC867ByQ3736i7"; 
+fi
+
+cd $sqldir
+
+echo "Reloading procedures using $sqldir/StarProcedures.sql"
+mysql -u$db_user -p$db_pword < StarProcedures.sql
+
+echo "Reloading functions using $sqldir/StarFunctions.sql"
+mysql -u$db_user -p$db_pword < StarFunctions.sql
