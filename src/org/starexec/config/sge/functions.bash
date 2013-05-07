@@ -65,7 +65,7 @@ product=$[keySize*valueSize]
 #testing to see if key or value is empty
 if (( $product ))
    then
-	log "processing attribute $a (pair=$PAIR_ID, job=$JOB_STAR_ID)"
+	log "processing attribute $a (pair=$PAIR_ID, job=$JOB_STAR_ID, key='$key', value='$value')"
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,$JOB_STAR_ID,'$key','$value')"
 else
         log "bad post processing - cannot process attribute $a"
