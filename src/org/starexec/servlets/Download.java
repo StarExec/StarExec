@@ -338,16 +338,21 @@ public class Download extends HttpServlet {
         sb.delete(0, sb.length());
         sb.append("benchmark,solver,configuration,status,time(s),result");
         
-	// use the attribute names for the first completed job pair (if any) for more headings for the table
+	/* use the attribute names for the first completed job pair (if any) for more headings for the table
+	   We will put result first, then expected if it is there; other attributes follow */
 	Set<String> attrNames = job.attributeNames(); 
-	if (attrNames == null) 
-	    sb.append(",");
-	else {
+	if (attrNames != null) {
+	    if (attrNames.contains(R.EXPECTED_RESULT))
+		// we have the expected result attribute
+		sb.append(",expected");
 	    Iterator<String> ita = attrNames.iterator();
 	    while (ita.hasNext()) {
-		String attr = (String)ita.next();
-		sb.append(",");
-		sb.append(attr);
+		String attr = (String)ita.next();		
+		if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
+		    // skip printing result and expected result in the header of the table, since we already included them
+		    sb.append(",");
+		    sb.append(attr);
+		}
 	    }
 	}
 	sb.append("\r\n");
@@ -380,10 +385,16 @@ public class Download extends HttpServlet {
 		if (attrNames != null) {
 		    // print out attributes for this job pair
 		    Properties props = pair.getAttributes();
+		    String expected = props.getProperty(R.EXPECTED_RESULT);
+		    if (expected != null) {
+			sb.append(",");
+			sb.append(props.getProperty(expected));
+		    }
 		    for (Iterator<String> ita = attrNames.iterator(); ita.hasNext();) {
 			String attr = (String)ita.next();
-			if (!attr.equals(R.STAREXEC_RESULT)) {
-			    // we skip print the starexec-result attribute, because we printed it already
+			if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
+			    /* we skip printing the starexec-result, and starexec-expected-result attributes,
+			       because we printed them already */
 			    sb.append(",");
 			    sb.append(props.getProperty(attr,"-"));
 			}

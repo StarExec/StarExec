@@ -112,6 +112,8 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 * or null if there are no completed job pairs.
 	 */
 	public Set<String> attributeNames() {
+	    if (jobPairs == null)
+		return null;
 	    Iterator<JobPair> itr = jobPairs.iterator();
 	    while(itr.hasNext()) {
 		JobPair pair = itr.next();

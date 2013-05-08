@@ -1003,4 +1003,7 @@ INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, 
 
 INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 1, 'starexec-result', 'sat');
 INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 2, 'starexec-result', 'unsat');
-INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 2, 'starexec-result', 'unsat');
+INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 3, 'starexec-result', 'unsat');
+INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 1, 'starexec-expected-result', 'sat');
+INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 2, 'starexec-expected-result', 'sat');
+INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 3, 'starexec-expected-result', 'unsat');
