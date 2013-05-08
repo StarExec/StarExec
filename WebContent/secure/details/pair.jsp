@@ -66,7 +66,7 @@
 					<td>wallclock timeout</td>			
 					<td>${pair.wallclockTimeout} seconds</td>
 				</tr>
-				<c:if test="${pair.status.code == 7}">
+				<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>
 					<td><a href="/starexec/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/starexec/images/external.png"/></a></td>
@@ -86,10 +86,10 @@
 	<fieldset id="fieldStats">
 	<legend>run statistics</legend>	
 	<c:choose>
-		<c:when test="${pair.status.code == 6}">
+		<c:when test="${pair.status.code == 'STATUS_WAIT_RESULTS'}">
 			<p>waiting for results. try again in 2 minutes.</p>
 		</c:when>
-		<c:when test="${pair.status.code == 7}">
+		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
 			<table id="pairStats" class="shaded">
 				<thead>
 					<tr>
@@ -166,13 +166,13 @@
 	<fieldset id="fieldAttrs">
 	<legend>pair attributes</legend>	
 	<c:choose>
-		<c:when test="${pair.status.code == 6}">
+		<c:when test="${pair.status.code == 'STATUS_WAIT_RESULTS'}">
 			<p>waiting for results. try again in 2 minutes.</p>
 		</c:when>
-		<c:when test="${pair.status.code == 7 && empty pair.attributes}">
+		<c:when test="${pair.status.code == 'STATUS_COMPLETE' && empty pair.attributes}">
 			<p>none</p>
 		</c:when>
-		<c:when test="${pair.status.code == 7}">
+		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
 			<table id="pairAttrs" class="shaded">
 				<thead>
 					<tr>
@@ -196,7 +196,7 @@
 	</c:choose>		
 	</fieldset>
 	
-	<c:if test="${pair.status.code == 6 or pair.status.code == 7}">
+	<c:if test="${pair.status.code == 'STATUS_COMPLETE' or pair.status.code == 'STATUS_WAIT_RESULTS'}">
 		<fieldset id="fieldOutput">		
 			<legend><img alt="loading" src="/starexec/images/loader.gif"> output</legend>			
 			<textarea class=contentTextarea id="jpStdout" readonly="readonly"></textarea>	
@@ -205,13 +205,12 @@
 		</fieldset>
 	</c:if>
 	
-	<c:if test="${pair.status.code > 4}">
-		<fieldset id="fieldLog">
-			<legend><img alt="loading" src="/starexec/images/loader.gif"> job log</legend>			
-			<textarea class=contentTextarea id="jpLog" readonly="readonly"></textarea>
-			<a href="/starexec/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
-		</fieldset>
-	</c:if>
+	<fieldset id="fieldLog">
+		<legend><img alt="loading" src="/starexec/images/loader.gif"> job log</legend>			
+		<textarea class=contentTextarea id="jpLog" readonly="readonly"></textarea>
+		<a href="/starexec/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
+	</fieldset>
+
 	<a href="/starexec/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
 	<a href="/starexec/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
 </star:template>
