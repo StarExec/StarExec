@@ -339,7 +339,7 @@ public class Download extends HttpServlet {
         while(itr.hasNext()) {
         	JobPair pair = itr.next();
         	if (pair.getStatus().getCode() == 7) {
-        		sb.append(pair.getBench().getName());
+        		sb.append(pair.getBench().getPath());
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
         		sb.append(",");
@@ -350,6 +350,13 @@ public class Download extends HttpServlet {
         		sb.append((pair.getWallclockTime()));
         		sb.append(",");
         		sb.append(pair.getStarexecResult());
+			Properties props = pair.getAttributes();
+			for (Enumeration<?> attrs = props.propertyNames(); attrs.hasMoreElements();) {
+			    String attr = (String)attrs.nextElement();
+			    sb.append(attr);
+			    sb.append(",");
+			    sb.append(props.getProperty(attr));
+			}
         		sb.append("\r\n");
         		}
         	else {
