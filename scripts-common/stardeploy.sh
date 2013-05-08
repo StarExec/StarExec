@@ -41,8 +41,17 @@ svn co $SVN_URL deployed -q
 
 cd $STAR_DEPLOY/
 echo "Entering $STAR_DEPLOY"
-echo "Copying production.properties to local.properties"
-cp production.properties local.properties
+
+if [ `hostname` == "stardev.cs.uiowa.edu" ] ; then
+  echo "Detected that we are on StarDev";
+  echo "Copying production.properties to local.properties"
+  cp stardev.properties local.properties
+else
+  echo "Detected that we are on Production";
+  echo "Copying production.properties to local.properties"
+  cp production.properties local.properties
+fi
+
 
 echo Starting ANT build process...
 ant -buildfile build.xml -q

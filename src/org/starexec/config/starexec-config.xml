@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <starexec-configuration default="eric_dev">
-	<configuration name="production">
+        <!-- common settings across stardev and production -->
+	<configuration name="common_core">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
 			<property key="MYSQL_DATABASE" value="prod_starexec" />
@@ -9,7 +10,6 @@
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="100" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
-			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
 			
 			<!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
 			<property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/batchSpace/batchSpaceSchema.xsd" /> 
@@ -32,8 +32,6 @@
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="52428800" />	
-			<property key="PUBLIC_USER_ID" value="62" /> 
-	  		<property key="PUBLIC_SPACE_ID" value="1731" />
 	  									
 			<!-- SGE Configuration -->
 			<property key="SGE_ROOT" value="/cluster/sge-6.2u5" />
@@ -52,7 +50,7 @@
 
 		</class>
 	</configuration>
-	<configuration name="true_production" inherit="production">
+	<configuration name="production" inherit="common_core">
    		<class name="org.starexec.constants.R">   		
    			<property key="PUBLIC_USER_ID" value="2" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
@@ -60,7 +58,15 @@
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
    		</class>
     </configuration>
-	<configuration name="stardev_astump" inherit="production">
+	<configuration name="stardev" inherit="common_core">
+   		<class name="org.starexec.constants.R">   		
+			<property key="PUBLIC_USER_ID" value="62" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="1731" />
+			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
+	  		<property key="NUM_JOB_SCRIPTS" value="100" />
+   		</class>
+    </configuration>
+	<configuration name="stardev_astump" inherit="stardev">
 		<class name="org.starexec.constants.R">
 			<!-- MYSQL Configuration -->			
 			<property key="MYSQL_DATABASE" value="prod_starexec_astump" />

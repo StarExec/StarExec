@@ -1265,7 +1265,7 @@ public class Benchmarks {
 				dependencies.add(benchD);
 			}			
 
-			log.debug(String.format("%d benchmarks were returned as being needed by benchmark %d.", dependencies.size(), benchmarkId));
+			log.debug(String.format("%d dependencies were returned as being needed by benchmark %d.", dependencies.size(), benchmarkId));
 
 			return dependencies;
 		} catch (Exception e){			
