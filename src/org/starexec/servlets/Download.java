@@ -341,10 +341,13 @@ public class Download extends HttpServlet {
 	/* use the attribute names for the first completed job pair (if any) for more headings for the table
 	   We will put result first, then expected if it is there; other attributes follow */
 	Set<String> attrNames = job.attributeNames(); 
+	boolean have_expected = false;
 	if (attrNames != null) {
-	    if (attrNames.contains(R.EXPECTED_RESULT))
+	    if (attrNames.contains(R.EXPECTED_RESULT)) {
 		// we have the expected result attribute
+		have_expected = true;
 		sb.append(",expected");
+	    }
 	    Iterator<String> ita = attrNames.iterator();
 	    while (ita.hasNext()) {
 		String attr = (String)ita.next();		
@@ -385,10 +388,9 @@ public class Download extends HttpServlet {
 		if (attrNames != null) {
 		    // print out attributes for this job pair
 		    Properties props = pair.getAttributes();
-		    String expected = props.getProperty(R.EXPECTED_RESULT);
-		    if (expected != null) {
+		    if (have_expected) {
 			sb.append(",");
-			sb.append(props.getProperty(expected));
+			sb.append(props.getProperty(R.EXPECTED_RESULT,"-"));
 		    }
 		    for (Iterator<String> ita = attrNames.iterator(); ita.hasNext();) {
 			String attr = (String)ita.next();
