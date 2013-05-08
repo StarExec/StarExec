@@ -26,6 +26,19 @@
 %>
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
+In revision 12647:
+
+Bug fixes:
+
+-- the previous release was not configured correctly, so job results
+   were not getting sent back to the database after job pairs completed
+   running.  This is fixed now.
+
+Improvements:
+
+-- the CSV spreadsheets for job information now contain the attributes
+   computed by the postprocessors for the job pairs.  
+
 In revision 12601:
 
 Bug fixes:

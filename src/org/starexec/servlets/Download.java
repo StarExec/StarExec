@@ -363,7 +363,7 @@ public class Download extends HttpServlet {
         while(itr.hasNext()) {
         	JobPair pair = itr.next();
         	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) {
-        		sb.append(pair.getBench().getPath());
+        		sb.append(pair.getBench().getName());
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
         		sb.append(",");
