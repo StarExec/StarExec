@@ -26,6 +26,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
@@ -333,12 +334,27 @@ public class Download extends HttpServlet {
         List<JobPair> pairs = job.getJobPairs();
         Iterator<JobPair> itr = pairs.iterator();
        
+	/* generate the table header */
         sb.delete(0, sb.length());
-        sb.append("benchmark,solver,configuration,status,time(s),result\r\n");
+        sb.append("benchmark,solver,configuration,status,time(s),result");
         
+	// use the attribute names for the first completed job pair (if any) for more headings for the table
+	Set<String> attrNames = job.attributeNames(); 
+	if (attrNames == null) 
+	    sb.append(",");
+	else {
+	    Iterator<String> ita = attrNames.iterator();
+	    while (ita.hasNext()) {
+		String attr = (String)ita.next();
+		sb.append(",");
+		sb.append(attr);
+	    }
+	}
+	sb.append("\r\n");
+	    
         while(itr.hasNext()) {
         	JobPair pair = itr.next();
-        	if (pair.getStatus().getCode() == 7) {
+        	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) {
         		sb.append(pair.getBench().getPath());
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
@@ -350,15 +366,7 @@ public class Download extends HttpServlet {
         		sb.append((pair.getWallclockTime()));
         		sb.append(",");
         		sb.append(pair.getStarexecResult());
-			Properties props = pair.getAttributes();
-			for (Enumeration<?> attrs = props.propertyNames(); attrs.hasMoreElements();) {
-			    String attr = (String)attrs.nextElement();
-			    sb.append(attr);
-			    sb.append(",");
-			    sb.append(props.getProperty(attr));
-			}
-        		sb.append("\r\n");
-        		}
+		}
         	else {
         		sb.append(pair.getBench().getName());
         		sb.append(",");
@@ -368,8 +376,21 @@ public class Download extends HttpServlet {
         		sb.append(",");
         		sb.append(pair.getStatus().toString());
         		sb.append(",-");
-        		sb.append("\r\n");
         	}
+		if (attrNames != null) {
+		    // print out attributes for this job pair
+		    Properties props = pair.getAttributes();
+		    for (Iterator<String> ita = attrNames.iterator(); ita.hasNext();) {
+			String attr = (String)ita.next();
+			if (!attr.equals(R.STAREXEC_RESULT)) {
+			    // we skip print the starexec-result attribute, because we printed it already
+			    sb.append(",");
+			    sb.append(props.getProperty(attr,"-"));
+			}
+		    }
+		}
+		sb.append("\r\n");
+
         }
         FileUtils.write(new File(filename), sb.toString());
         return filename;

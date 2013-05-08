@@ -1431,23 +1431,23 @@ public class Jobs {
 				
 				//update stats info for entry that current job-pair belongs to
 				JobSolver curSolver=JobSolvers.get(key);
-				Integer statusCode=jp.getStatus().getCode();
+				StatusCode statusCode=jp.getStatus().getCode();
 				curSolver.incrementTotalJobPairs();
 				curSolver.incrementTime(jp.getWallclockTime());
-				if ( (statusCode>=8 && statusCode<=17 ) || statusCode==0) { //status codes specified in STATUS.java
-					curSolver.incrementErrorJobPairs();
-				} else if (statusCode<=6 || statusCode==18) {
-					curSolver.incrementIncompleteJobPairs();
-				} else if (statusCode==7) {
-					curSolver.incrementCompleteJobPairs();
-					if (jp.getAttributes()!=null) {
-						if (jp.getAttributes().contains("starexec-result") && jp.getAttributes().contains("starexec-expected")) {
-							if (!jp.getAttributes().get("starexec-result").equals(jp.getAttributes().get("starexec-expected"))) {
-								curSolver.incrementIncorrectJobPairs();
-							}
-						}
-					} 
-					
+				if ( statusCode.error()) {
+				    curSolver.incrementErrorJobPairs();
+				} else if (statusCode.incomplete()) {
+				    curSolver.incrementIncompleteJobPairs();
+				} else if (statusCode.complete()) {
+				    curSolver.incrementCompleteJobPairs();
+				    if (jp.getAttributes()!=null) {
+					Properties attrs = jp.getAttributes();
+					if (attrs.contains(R.STAREXEC_RESULT) && attrs.contains(R.EXPECTED_RESULT)) {
+					    if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+						curSolver.incrementIncorrectJobPairs();
+					    }
+					}
+				    }
 				}
 			}
 			List<JobSolver> returnValues=new LinkedList<JobSolver>();

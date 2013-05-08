@@ -110,7 +110,7 @@ public abstract class JobManager {
 			log.info("total # of pairs to process = " + pairs.size());
 			for(JobPair pair : pairs) {
 				log.debug("submitting pair # " + pair.getId());
-				if ((pair.getStatus().getCode() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) || (pair.getStatus().getCode() == StatusCode.ERROR_SGE_REJECT.getVal())){
+				if (pair.getStatus().getCode().compareTo(StatusCode.STATUS_PENDING_SUBMIT) == 0){
 					// Write the script that will run this individual pair				
 					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
 

@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Set;
+import java.util.Properties;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -103,6 +105,21 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 */
 	public void setJobPairs(List<JobPair> jobPairs) {
 		this.jobPairs = jobPairs;
+	}
+
+	/**
+	 * @return the attribute names for the first completed job pair in the job,
+	 * or null if there are no completed job pairs.
+	 */
+	public Set<String> attributeNames() {
+	    Iterator<JobPair> itr = jobPairs.iterator();
+	    while(itr.hasNext()) {
+		JobPair pair = itr.next();
+		Properties props = pair.getAttributes();
+		if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
+		    return props.stringPropertyNames(); 
+	    }
+	    return null;
 	}
 
 	/**
