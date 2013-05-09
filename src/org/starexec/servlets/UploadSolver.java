@@ -197,7 +197,7 @@ public class UploadSolver extends HttpServlet {
 			if (upMethod.equals("local")) {
 				archiveFile = new File(uniqueDir,  item.getName());
 				new File(archiveFile.getParent()).mkdir();
-				item.write(archiveFile);		
+				item.write(archiveFile);
 				FileName = item.getName().split("\\.")[0];
 			} else {
 				archiveFile=new File(uniqueDir, name);
@@ -217,7 +217,6 @@ public class UploadSolver extends HttpServlet {
 				return returnArray;
 			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-			archiveFile.delete();
 
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
@@ -242,7 +241,7 @@ public class UploadSolver extends HttpServlet {
 			        bis.close();
 			        dis.close();
 			    } catch (FileNotFoundException e) {
-			        e.printStackTrace();
+			        log.debug("Archive description method selected, but starexec_description was not found");
 			    } catch (IOException e) {
 			    	e.printStackTrace();
 			    }
@@ -262,7 +261,6 @@ public class UploadSolver extends HttpServlet {
 			if (findConfigs(uniqueDir.getAbsolutePath()).isEmpty()) {
 				returnArray[1] = -4; //It is empty
 			}
-
 			//Try adding the solver to the database
 			int solver_Success = Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
 			returnArray[0] = solver_Success;

@@ -17,6 +17,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -60,6 +62,7 @@ public class ArchiveUtil {
 			while (x.hasMoreElements()) {
 				answer=answer+x.nextElement().getSize();
 			}
+			temp.close();
 			return answer;
 		} catch (Exception e) {
 			log.error("Archive Util says " + e.getMessage(), e);
@@ -77,10 +80,11 @@ public class ArchiveUtil {
 			ais.getNextEntry().getSize();
 			long answer=0;
 			while ( (entry=ais.getNextEntry())!=null) {
-			
-				
 				answer=answer+entry.getSize();
 			}
+			ais.close();
+			bis.close();
+			is.close();
 			return answer;
 		} catch (Exception e) {
 			log.error("Archive Util says " + e.getMessage(), e);
@@ -103,6 +107,8 @@ public class ArchiveUtil {
 				
 				answer+=temp;
 			}
+			instream.close();
+			ginstream.close();
 			return answer;
 		} catch (Exception e) {
 			log.error("Archive Util says " + e.getMessage(), e);
@@ -249,8 +255,11 @@ public class ArchiveUtil {
 				out.close();
 			}			
 		}
-
+		
+		is.close();
+		bis.close();
 		ais.close();
+		
 		ArchiveUtil.removeArchive(fileName);
 	}	
 
@@ -297,7 +306,8 @@ public class ArchiveUtil {
 
 			}			
 		}
-
+		is.close();
+		bis.close();
 		ais.close();
 		ArchiveUtil.removeArchive(fileName);
 	}
@@ -330,6 +340,7 @@ public class ArchiveUtil {
 	private static void removeArchive(String fileName) {
 		if(R.REMOVE_ARCHIVES){
 			if(!new File(fileName).delete()) {
+				System.out.println(fileName);
 				log.warn("Failed to cleanup archive file: " + fileName);
 			}
 			else {
