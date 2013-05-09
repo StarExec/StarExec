@@ -1265,7 +1265,7 @@ public class Jobs {
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
-
+			
 			procedure = con.prepareCall("{CALL GetNextPageOfJobPairs(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
@@ -1276,9 +1276,9 @@ public class Jobs {
 
 			ResultSet results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
-
+			
 			while(results.next()){
-
+				
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));

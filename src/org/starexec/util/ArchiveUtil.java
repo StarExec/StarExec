@@ -340,7 +340,7 @@ public class ArchiveUtil {
 	private static void removeArchive(String fileName) {
 		if(R.REMOVE_ARCHIVES){
 			if(!new File(fileName).delete()) {
-				System.out.println(fileName);
+				
 				log.warn("Failed to cleanup archive file: " + fileName);
 			}
 			else {
