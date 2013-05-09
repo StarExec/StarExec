@@ -62,7 +62,6 @@ public class Processors {
 		File processorFile = null;
 		try {
 			con = Common.getConnection();
-			
 			CallableStatement procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
 			procedure.setInt(1, processorId);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);

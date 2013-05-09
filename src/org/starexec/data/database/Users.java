@@ -517,15 +517,32 @@ public class Users {
 	 */
 	public static long getDiskUsage(int userId) {
 		Connection con = null;
-		
+		long solverUsage=0;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetUserDiskUsage(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetUserSolverDiskUsage(?)}");
 			procedure.setInt(1, userId);
 
 			ResultSet results = procedure.executeQuery();
 			while(results.next()){
-				return results.getLong("disk_usage");
+				solverUsage=results.getLong("disk_usage");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		con = null;
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetUserBenchmarkDiskUsage(?)}");
+			procedure.setInt(1, userId);
+
+			ResultSet results = procedure.executeQuery();
+			while(results.next()){
+				return solverUsage+results.getLong("disk_usage");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

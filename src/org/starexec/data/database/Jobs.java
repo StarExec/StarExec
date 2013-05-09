@@ -1444,7 +1444,7 @@ public class Jobs {
 					Properties attrs = jp.getAttributes();
 					if (attrs.contains(R.STAREXEC_RESULT) && attrs.contains(R.EXPECTED_RESULT)) {
 					    if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
-						curSolver.incrementIncorrectJobPairs();
+					    	curSolver.incrementIncorrectJobPairs();
 					    }
 					}
 				    }

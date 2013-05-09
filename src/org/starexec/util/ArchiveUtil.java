@@ -1,7 +1,9 @@
 package org.starexec.util;
 
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.Enumeration;
 import java.util.List;
 
 import java.io.BufferedInputStream;
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.*;
@@ -34,37 +37,28 @@ public class ArchiveUtil {
 	private static final Logger log = Logger.getLogger(ArchiveUtil.class);
 
 	
-	/*
-	 * Gets the uncompressed size of a compressed folder. Returns a long on success and -1 on failure.
-	 * Used to determine whether a user has a sufficiently large disk quota to perform an upload
-	 * 
-	 *  @author Eric Burns*/
-	
 	public static long getArchiveSize(String fileName) {
-		try {
-			if (fileName.endsWith(".zip")){
-				return getZipSize(fileName);
-			} else if (fileName.endsWith(".tar")) {
-				return getTarSize(fileName);
-			} else {
-				return -1;
-			}
+		if (fileName.endsWith(".zip")){
 			
-		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
-			return -1;
+			return getZipSize(fileName);
+		} else if (fileName.endsWith(".tar")) {
+			return getTarSize(fileName);
+		} else if (fileName.endsWith(".tgz") || fileName.endsWith(".tar.gz")) {
+			return getTarGzSize(fileName);
+		} else {
+			log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
+			return-1;
 		}
+		
 	}
-	
+
 	private static long getZipSize(String fileName) {
 		try {
-			//ZipEntry zipFile=new ZipEntry(fileName);
-			
 			long answer=0;
 			ZipFile temp=new ZipFile(fileName);
-			temp.getEntries().nextElement().getSize();
-			while (temp.getEntries().hasMoreElements()) {
-				answer=answer+temp.getEntries().nextElement().getSize();
+			Enumeration<ZipArchiveEntry> x=temp.getEntries();
+			while (x.hasMoreElements()) {
+				answer=answer+x.nextElement().getSize();
 			}
 			return answer;
 		} catch (Exception e) {
@@ -72,16 +66,42 @@ public class ArchiveUtil {
 			return -1;
 		}
 	}
-	
+
 	private static long getTarSize(String fileName) {
 		try {
-			//ZipEntry zipFile=new ZipEntry(fileName);
+			InputStream is = new FileInputStream(fileName);
+			BufferedInputStream bis = new BufferedInputStream(is);
 			
+			ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("tar", bis);
+			ArchiveEntry entry = null;
+			ais.getNextEntry().getSize();
 			long answer=0;
-			ZipFile temp=new ZipFile(fileName);
-			temp.getEntries().nextElement().getSize();
-			while (temp.getEntries().hasMoreElements()) {
-				answer=answer+temp.getEntries().nextElement().getSize();
+			while ( (entry=ais.getNextEntry())!=null) {
+			
+				
+				answer=answer+entry.getSize();
+			}
+			return answer;
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+			return -1;
+		}
+	}
+
+	//Returns the size of the TAR file and not the size of the un-archived files within
+	private static long getTarGzSize(String fileName) {
+		try {
+			FileInputStream instream= new FileInputStream(fileName);
+			GZIPInputStream ginstream =new GZIPInputStream(instream);
+			long answer=0;
+			long temp=0;
+			while (true) {
+				temp=ginstream.skip(100000000);
+				if (temp==0) {
+					break;
+				}
+				
+				answer+=temp;
 			}
 			return answer;
 		} catch (Exception e) {

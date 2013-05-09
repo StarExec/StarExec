@@ -109,9 +109,9 @@ function initUI() {
 	defaultPPId = $('#postProcess').attr('default');
 	$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
 	
-	//TODO: Figure out what Prof. Stump wants for this
-	if ($("#postProcess").find("option").length==1) {
-		$("#postProcess").find("option").attr("selected","selected");
+	//If there is only one post processor and for some reason it is not the default, set it as such
+	if ($("#postProcess").find("option").length==2) {
+		$("#postProcess").find("option").last().attr("selected","selected");
 	}
 	
 	// Set up datatables

@@ -753,7 +753,7 @@ public class Benchmarks {
 	 * @author Benton McCune
 	 */
 	private static Integer getBenchIdByName(Integer spaceId, String benchName) {
-		// TODO Auto-generated method stub
+		
 		Connection con = null;			
 		log.debug("(Within Method) Looking for Benchmark " + benchName +" in Space " + spaceId);
 		try {

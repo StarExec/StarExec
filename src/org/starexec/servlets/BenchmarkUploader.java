@@ -25,11 +25,13 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.UploadStatus;
+import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -102,9 +104,10 @@ public class BenchmarkUploader extends HttpServlet {
 					log.debug("upload status id is " + statusId);
 					
 					// Go ahead and process the request
-					this.handleUploadRequest(form, userId, statusId);
+					this.handleUploadRequest(form, userId, statusId,request,response);
 					//go to upload status page
-					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId); 
+					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId);
+					
 				}
 			} else {
 				// Or else the request was invalid, send bad request error
@@ -116,7 +119,7 @@ public class BenchmarkUploader extends HttpServlet {
 		}
 	}
 
-	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
+	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		//First extract all data from request
 		final int userId = uId;
 		
@@ -151,9 +154,8 @@ public class BenchmarkUploader extends HttpServlet {
 		final FileItem fileToUpload=tempFileToUpload;
 		
 		log.debug("upload status id is " + statusId);
-
+		
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		//TODO: figure out a way to do this without calling new thread
 		threadPool = Executors.newCachedThreadPool();
 		threadPool.execute(new Runnable() {
 			@Override
@@ -175,7 +177,15 @@ public class BenchmarkUploader extends HttpServlet {
 						FileUtils.copyURLToFile(url,archiveFile);
 					}
 					// Create the zip file object-to-be
-															
+					long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
+					
+					User currentUser=Users.get(userId);
+					long allowedBytes=currentUser.getDiskQuota();
+					long usedBytes=Users.getDiskUsage(userId);
+					
+					if (fileSize>allowedBytes-usedBytes) {
+						throw new Exception("File too large to fit in user's disk quota");
+					}		
 
 					// Copy the benchmark zip to the server from the client
 																				
@@ -244,7 +254,7 @@ public class BenchmarkUploader extends HttpServlet {
 				}
 				catch (Exception e){
 					log.error("upload Benchmarks says " + e);
-					//todo send to upload status page
+					Uploads.setErrorMessage(statusId, e.getMessage());
 				}
 				finally{
 					Uploads.everythingComplete(statusId);

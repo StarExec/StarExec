@@ -1325,7 +1325,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		showMessage('error',"Internal error populating table",5000);
+		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
 	});
 }
 

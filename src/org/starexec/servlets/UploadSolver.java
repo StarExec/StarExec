@@ -29,8 +29,10 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -97,7 +99,7 @@ public class UploadSolver extends HttpServlet {
 				int configs = result[1];
 			
 				// Redirect based on success/failure
-				if(return_value != -1 && return_value != -2 && return_value != -3) {
+				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4) {
 					if (configs == -4) { //If there are no configs
 						response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + return_value + "&flag=true");
 					} else {
@@ -112,7 +114,10 @@ public class UploadSolver extends HttpServlet {
 					} else if (return_value == -2) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File could not be accessed at URL"); 
 						return;
-					//Other Error
+					//Not enough disk quota
+					} else if (return_value==-4) {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File is too large to fit in user's disk quota");
+						//Other Error
 					} else {
 						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
 						return;
@@ -200,7 +205,17 @@ public class UploadSolver extends HttpServlet {
 				FileUtils.copyURLToFile(url, archiveFile);
 				FileName=name.split("\\.")[0];
 			}
+			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
+			User currentUser=Users.get(userId);
+			long allowedBytes=currentUser.getDiskQuota();
+			long usedBytes=Users.getDiskUsage(userId);
+			
+			if (fileSize>allowedBytes-usedBytes) {
+				returnArray[0]=-4;
+				
+				return returnArray;
+			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
 
@@ -262,8 +277,10 @@ public class UploadSolver extends HttpServlet {
 	}	
 	
 	private int[] List(int i, int j) {
-		// TODO Auto-generated method stub
-		return null;
+		int[] answer=new int [2];
+		answer[0]=i;
+		answer[1]=j;
+		return answer;
 	}
 
 	/**

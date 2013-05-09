@@ -100,7 +100,7 @@ public class Download extends HttpServlet {
 			// Redirect based on success/failure
 			if(fileName != null) {
 				Object check=request.getParameter("token");
-				//System.out.println(check);
+				
 				//token is used to tell the client when the file has arrived
 				if (check!=null) {
 					String token=check.toString();
@@ -376,7 +376,7 @@ public class Download extends HttpServlet {
         		sb.append(pair.getStarexecResult());
 		}
         	else {
-        		sb.append(pair.getBench().getName());
+        		sb.append(pair.getBench().getPath());
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
         		sb.append(",");

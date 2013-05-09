@@ -29,6 +29,7 @@
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
+			
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");

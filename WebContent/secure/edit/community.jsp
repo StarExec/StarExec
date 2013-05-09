@@ -19,7 +19,7 @@
 		} else if (perm == null || !perm.isLeader()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 		} else {
-			List<String> listOfDefaultSettings = Communities.getDefaultSettings(com.getId());
+			List<String> listOfDefaultSettings = Communities.getDefaultSettings(id);
 
 		request.setAttribute("com", com);	
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
@@ -143,6 +143,7 @@
 				<td>post processor </td>
 				<td>					
 					<select id="editPostProcess" name="editPostProcess" default=${defaultPPId}>
+					<option value=-1>none</option>
 					<c:forEach var="proc" items="${post_proc}">
 							<option value="${proc.id}">${proc.name}</option>
 					</c:forEach>

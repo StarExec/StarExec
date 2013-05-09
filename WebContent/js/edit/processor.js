@@ -1,6 +1,8 @@
+var defaultPPId;
 $(document).ready(function(){
 	initUI();
 	attachFormValidation();
+	defaultPPId=$("#ppid").attr("value");
 });
 
 
@@ -68,9 +70,11 @@ function initUI(){
 		if(true == isFormValid){
 			var name = $("#name").val();
 			var description = $("#description").val();
+			var cid=$("#cid").attr("value");
+			
 			$.post(
 					"/starexec/services/delete/processor/" + getParameterByName("id"),
-					{ name: name, description: description},
+					{ name: name, description: description, cid: cid, defaultPP: defaultPPId},
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:

@@ -33,6 +33,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -734,7 +735,30 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		
-		return Processors.delete(pid) ? gson.toJson(0) : gson.toJson(1);
+		String answer= Processors.delete(pid) ? gson.toJson(0) : gson.toJson(1);
+		
+		try {
+			if (Util.paramExists("cid",request) && Util.paramExists("defaultPP",request)) {
+				int cid=Integer.parseInt(request.getParameter("cid"));
+				int defaultPP=Integer.parseInt(request.getParameter("defaultPP"));
+				//The processor that was deleted was the default, so we'll set a new default 
+				if (defaultPP==pid) {
+					List<Processor> procs=Processors.getByCommunity(cid, ProcessorType.POST);
+					if (procs.size()>0) {
+						boolean success=Communities.setDefaultSettings(cid, 1, procs.get(0).getId());
+						if (success) {
+							log.debug("Default post processor was deleted, and a new default was selected");
+						} else {
+							log.warn("Default post processor was deleted, but a new default could not be selected");
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			// we couldn't set a new default PP
+			log.warn("Default post processor was deleted, but a new default could not be selected due to an error",e);
+		}
+		return answer;
 	}
 	
 	/**

@@ -452,8 +452,8 @@ CREATE TABLE space_default_settings (
 	default_benchmark INT DEFAULT NULL,
 	PRIMARY KEY (space_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE CASCADE,
-	FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE CASCADE
+	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL
 );
 
 -- For Status Updates on a Benchmark upload

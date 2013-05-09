@@ -78,8 +78,8 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users
-				WHERE 	id 	IN (SELECT 	user_id
+				FROM	users WHERE (id != _publicUserId)
+				AND 	id 	IN (SELECT 	user_id
 								FROM	user_assoc
 								WHERE 	space_id = _spaceId)
 				ORDER BY 
@@ -306,16 +306,29 @@ CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 		WHERE id = _userId;
 	END //
 	
--- Returns the number of bytes a given user is consuming on disk
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetUserDiskUsage;
-CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
+-- Returns the number of bytes a given user's benchmarks is consuming on disk
+-- Author: Eric Burns	
+	
+DROP PROCEDURE IF EXISTS GetUserBenchmarkDiskUsage;
+CREATE PROCEDURE GetUserBenchmarkDiskUsage(IN _userID INT)
 	BEGIN
-		SELECT sum(benchmarks.disk_size + solvers.disk_size) AS disk_usage
-		FROM   benchmarks,solvers
-		WHERE  benchmarks.user_id = _userId
-		AND    solvers.user_id = _userId;
-	END //
+		SELECT sum(benchmarks.disk_size) AS disk_usage
+		FROM   benchmarks
+		WHERE  benchmarks.user_id = _userId;
+	END //		
+
+-- Returns the number of bytes a given user's benchmarks is consuming on disk
+-- Author: Eric Burns	
+	
+DROP PROCEDURE IF EXISTS GetUserSolverDiskUsage;
+CREATE PROCEDURE GetUserSolverDiskUsage(IN _userID INT)
+	BEGIN
+		SELECT sum(solvers.disk_size) AS disk_usage
+		FROM   solvers
+		WHERE  solvers.user_id = _userId;
+	END //	
+	
+
 	
 -- Returns one record if a given user is a member of a particular space
 -- otherwise it returns an empty set

@@ -15,6 +15,15 @@ try {
 	// Only allowing editing of a processor if the user
 	// is a leader of the space the processor belongs to
 	List<User> leaders=Spaces.getLeaders(proc.getCommunityId());
+	
+	try {
+		List<String> settings=Communities.getDefaultSettings(proc.getCommunityId());
+		
+		request.setAttribute("defaultPPId",settings.get(4));
+	} catch (Exception e) {
+		
+		//We couldn't find the default post processor ID, which is not a big deal
+	}
 	boolean validUser=false;
 	
 	for (User x : leaders) {
@@ -42,6 +51,7 @@ try {
 
 <star:template title="edit ${proc.name}" css="edit/processor, edit/shared" js="lib/jquery.validate.min, edit/processor">
 	<input type="hidden" id="cid" value="${proc.communityId}"/>
+	<input type="hidden" id="ppid" value="${defaultPPId}"/>
 	<form id="editProcForm">
 	<fieldset>
 		<legend>processor details</legend>

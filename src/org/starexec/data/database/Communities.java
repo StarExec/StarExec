@@ -220,13 +220,17 @@ public class Communities {
 	 */
 	public static boolean setDefaultSettings(int id, int num, int setting) {
 		Connection con = null;			
-		
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
-			procedure.setInt(3, setting);
+			if ((num==1 || num==5) && setting==-1) {
+				procedure.setObject(3,null);
+			} else {
+				procedure.setInt(3, setting);
+			}
+			
 			
 			procedure.executeUpdate();
 
