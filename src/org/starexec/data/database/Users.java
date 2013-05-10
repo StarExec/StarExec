@@ -752,4 +752,34 @@ public class Users {
 
 		return 0;
 	}
+	
+	/**
+	 * Returns true if a user is already registered with a given e-mail
+	 * @param email - the email of the user to search for
+	 * @return true if user exists; false if no user with that e-mail
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+
+	public static boolean getUserByEmail(String email) {
+		Connection con = null;
+		
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
+			procedure.setString(1,email);
+			ResultSet results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			log.error (e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
 }

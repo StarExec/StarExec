@@ -46,7 +46,7 @@ public class Registration extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		// Begin registration for a new user
+		// Begin registration for a new user		
 		int result = register(request, response);
 				
 		switch (result) {
@@ -80,6 +80,12 @@ public class Registration extends HttpServlet {
 		if(!validateRequest(request)) {
 			log.info(String.format("Registration was unsuccessfully started for new user because parameter validation failed."));
 			return MALFORMED;
+		}
+		
+		boolean uniqueEmail = Users.getUserByEmail(request.getParameter(Registration.USER_EMAIL));
+		if (uniqueEmail) {
+			log.error("Duplicate entry " + request.getParameter(Registration.USER_EMAIL));
+			return FAIL;
 		}
 		
 		// Create the user to add to the database
