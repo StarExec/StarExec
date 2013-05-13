@@ -45,8 +45,7 @@
 			<property key="NODE_DETAILS_COMMAND" value="qconf -se " />			
 			<property key="MAX_PAIR_RUNTIME" value="86400" />
 			<property key="MAX_PAIR_CPUTIME" value="86400" />
-			<property key="MAX_PAIR_FILE_WRITE" value="2097152" />
-			<property key="MAX_PAIR_VMEM" value="4194304" />
+			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
 
 		</class>
 	</configuration>
@@ -56,6 +55,7 @@
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
 	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
+			<property key="MAX_PAIR_VMEM" value="62" /> <!-- in GB -->
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
    		</class>
@@ -66,6 +66,7 @@
 	  		<property key="PUBLIC_SPACE_ID" value="1731" />
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
 	  		<property key="NUM_JOB_SCRIPTS" value="100" />
+			<property key="MAX_PAIR_VMEM" value="5" /> <!-- in GB -->
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
    		</class>
