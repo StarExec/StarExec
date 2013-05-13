@@ -21,7 +21,7 @@
 				<td><input type="password" name="j_password" /></td>
 			</tr>												
 			<tr>
-				<td><a href="/starexec/public/password_reset.jsp">forgot password?</a></td>
+				<td><a href="/${starexecRoot}/public/password_reset.jsp">forgot password?</a></td>
 				<td><button type="submit">login</button></td>
 			</tr>
 		</table>

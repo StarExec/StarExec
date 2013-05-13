@@ -42,17 +42,17 @@
   		<img id="popImage" src=""/>
 	</div>				
 	<fieldset>
-		<legend>details<c:if test="${owner}"> (<a href="/starexec/secure/edit/account.jsp">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${owner}"> (<a href="/${starexecRoot}/secure/edit/account.jsp">edit</a>)</c:if></legend>
 		<table id="infoTable">
 		<tr>
 			<td id="picSection">
-				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${t_user.id}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${t_user.id}&type=uorg"><br>
+				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${t_user.id}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${t_user.id}&type=uorg"><br>
 			</td>
 			<td id="userDetail" class="detail">
 			<table id="personal" class="shaded">
 				<tr>
 					<td>e-mail address</td>			
-					<td><a href="mailto:${t_user.email}">${t_user.email}<img class="extLink" src="/starexec/images/external.png"/></a></td>
+					<td><a href="mailto:${t_user.email}">${t_user.email}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 				</tr>				
 				<tr>
 					<td>institution</td>			
@@ -72,7 +72,7 @@
 					<td>		
 						<ul>
 							<c:forEach var="site" items="${sites}">
-								<li>${site}<img class="extLink" src="/starexec/images/external.png"/></li>
+								<li>${site}<img class="extLink" src="/${starexecRoot}/images/external.png"/></li>
 							</c:forEach>	
 						</ul>
 					</td>

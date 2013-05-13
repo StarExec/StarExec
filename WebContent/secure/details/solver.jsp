@@ -35,14 +35,14 @@
 	</div>
 	<span style="display:none;" id="solverId" value="${solver.id}"> </span>
 		<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}">edit</a>)</c:if></legend>
 		<table id="infoTable">
 			<tr>
 			<td id="picSection">
-				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/starexec/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
+				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
 					<c:choose>
 					<c:when test="${usr.id == user.id}">
-						<a id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
+						<a id="uploadPicture" href="/${starexecRoot}/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
 					</c:when>
 					</c:choose>
 			</td>
@@ -90,7 +90,7 @@
 					<c:forEach var="c" items="${configs}">
 					<tr>
 						<td id="configItem">
-							<a href="/starexec/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="/starexec/images/external.png"/></a>
+							<a href="/${starexecRoot}/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a>
 						</td>
 						<td>
 							${c.description}
@@ -111,7 +111,7 @@
 			</thead>
 			<tbody>
 				<c:forEach var="site" items="${sites}">
-					<tr><td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/starexec/images/external.png"/></a></td></tr>
+					<tr><td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td></tr>
 				</c:forEach>			
 			</tbody>				
 		</table>	
@@ -155,10 +155,10 @@
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	<c:if test="${solver.downloadable}">
-		<a href="/starexec/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
+		<a href="/${starexecRoot}/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
 	</c:if>
 	<c:if test="${usr.id == user.id}">
-		<a href="/starexec/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>
-		<a href="/starexec/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
+		<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>
+		<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
 	</c:if>
 </star:template>

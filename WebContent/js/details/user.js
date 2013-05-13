@@ -34,7 +34,7 @@ $(document).ready(function(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
-        "sAjaxSource"	: "/starexec/services/users/",
+        "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
@@ -45,7 +45,7 @@ $(document).ready(function(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
-        "sAjaxSource"	: "/starexec/services/users/",
+        "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });
@@ -57,7 +57,7 @@ $(document).ready(function(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
-        "sAjaxSource"	: "/starexec/services/users/",
+        "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });

@@ -19,7 +19,7 @@ function attachWebsiteMonitor(){
 		var answer = confirm("are you sure you want to delete this website?");
 		if (true == answer) {
 			$.post(
-					"/starexec/services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + id,
+					starexecRoot+"services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + id,
 					function(returnData){
 						if (returnData == 0) {
 							parent.remove();
@@ -52,7 +52,7 @@ function attachWebsiteMonitor(){
 		
 		var data = {name: name, url: url};
 		$.post(
-				"/starexec/services/website/add/space/" + $('#comId').val(),
+				starexecRoot+"services/website/add/space/" + $('#comId').val(),
 				data,
 				function(returnCode) {
 			    	if(returnCode == '0') {
@@ -238,7 +238,7 @@ function attachFormValidation(){
  * then re-populating the DOM with the new data
  */
 function refreshSpaceWebsites(){
-	$.getJSON('/starexec/services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
+	$.getJSON(starexecRoot+'services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
 		showMessage('error',"Internal error getting websites",5000);
 	});
 }
@@ -250,7 +250,7 @@ function processWebsiteData(jsonData) {
 	// Injects the clickable delete button that's always present
 	$('#websiteTable tr').remove();
 	$.each(jsonData, function(i, site) {
-		$('#websiteTable').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
+		$('#websiteTable').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src=starexecRoot+"images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
 }
 
@@ -318,7 +318,7 @@ function saveChanges(obj, save, attr, old) {
 		newVal = (newVal == "") ? "-1" : newVal;
 		
 		$.post(  
-				"/starexec/services/edit/space/" + attr + "/" + getParameterByName("cid"),
+				starexecRoot+"services/edit/space/" + attr + "/" + getParameterByName("cid"),
 				{val: newVal},
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {

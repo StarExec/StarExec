@@ -105,7 +105,8 @@ function showMessage(type, message, duration) {
 	var messageSpan = $("<div></div>").html(message);
 	
 	// Create a new DOM element to insert to display the message, and inject its classes and message
-	var msg = $("<div><img src='/starexec/images/icons/exclaim.png' /></div>").attr('class', type + " message");
+        var tmp="<div><img src='"+starexecRoot+"images/icons/exclaim.png' /></div>";
+	var msg = $(tmp).attr('class', type + " message");
 	$(msg).append(messageSpan);
 	$(msg).append(closeMessage);
 	
@@ -138,7 +139,7 @@ function showMessage(type, message, duration) {
  */
 function logout() {
 	$.post(  
-	    "/starexec/services/session/logout",  
+	    starexecRoot+"services/session/logout",  
 	    function(returnData){  
 	        if(returnData == 0) {
 	        	window.location.reload(true);

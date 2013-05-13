@@ -28,9 +28,9 @@
 	<table id="infoTable">
 		<tr>
 			<td id="picSection">
-				<img id="showPicture" src="/starexec/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/starexec/secure/get/pictures?Id=${userId}&type=uorg">
+				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">
 		    	<ul>
-					<li><a class="btnUp" id="uploadPicture" href="/starexec/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
+					<li><a class="btnUp" id="uploadPicture" href="/${starexecRoot}/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
 				</ul>
 			</td>
 		<td id="userDetail">
@@ -125,7 +125,7 @@
 						<td>new password</td>
 						<td>
 							<input type="password" id="password" name="pwd"/>
-							<div class="password-meter" id="pwd-meter" style="visibility:visibile">
+							<div class="password-meter" id="pwd-meter" style="visibility:visible">
 								<div class="password-meter-message"> </div>
 								<div class="password-meter-bg">
 									<div class="password-meter-bar"></div>

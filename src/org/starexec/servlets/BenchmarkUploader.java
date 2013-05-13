@@ -106,8 +106,7 @@ public class BenchmarkUploader extends HttpServlet {
 					// Go ahead and process the request
 					this.handleUploadRequest(form, userId, statusId,request,response);
 					//go to upload status page
-					response.sendRedirect("/starexec/secure/details/uploadStatus.jsp?id=" + statusId);
-					
+					response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
 				}
 			} else {
 				// Or else the request was invalid, send bad request error

@@ -66,8 +66,8 @@ public class Verify extends HttpServlet {
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
 		if(comRequest == null){
 			// If so, redirect them to the leader_response.jsp and tell them their response will be ignored
-			response.sendRedirect("/starexec/public/messages/leader_response.jsp?result=dupLeaderResponse");
-			return;
+		    response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp?result=dupLeaderResponse"));
+		    return;
 		}
 		
 		boolean wasApproved = false;
@@ -82,7 +82,6 @@ public class Verify extends HttpServlet {
 		
 		// Get name of community user is trying to join
 		String communityName = Spaces.getName(comRequest.getCommunityId());
-		String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 		
 		if(verdict.equals("approve")){			
 			// Add them to the community & remove the request from the database
@@ -91,7 +90,7 @@ public class Verify extends HttpServlet {
 			if(wasApproved) {
 				
 				// Notify user they've been approved				
-				Mail.sendRequestResults(user, communityName, wasApproved, false, serverName);
+				Mail.sendRequestResults(user, communityName, wasApproved, false);
 				
 				// Create a personal subspace for the user in the space they were admitted to
 				if(true == createPersonalSubspace(comRequest.getCommunityId(), user)){
@@ -99,7 +98,7 @@ public class Verify extends HttpServlet {
 				}
 				
 				log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
-				response.sendRedirect("/starexec/public/messages/leader_response.jsp");
+				response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 			} 
 		} else if(verdict.equals("decline")) {
 			// Remove their entry from INVITES
@@ -107,13 +106,13 @@ public class Verify extends HttpServlet {
 
 			// Notify user they've been declined
 			if(isRegistered) {
-				Mail.sendRequestResults(user, communityName, false, false, serverName);	
+				Mail.sendRequestResults(user, communityName, false, false);	
 			} else {
-				Mail.sendRequestResults(user, communityName, false, true, serverName);
+				Mail.sendRequestResults(user, communityName, false, true);
 			}					
 			
 			log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(), communityName));
-			response.sendRedirect("/starexec/public/messages/leader_response.jsp");
+			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
     }
     
@@ -141,7 +140,7 @@ public class Verify extends HttpServlet {
     	} else {
     		newUser = Users.getUnregistered(userId);
     		log.info(String.format("User [%s] has been activated.", newUser.getFullName()));
-    		response.sendRedirect("/starexec/public/messages/email_activated.jsp");
+    		response.sendRedirect(Util.docRoot("public/messages/email_activated.jsp"));
     	}   
     	
     	CommunityRequest comReq = Requests.getCommunityRequest(userId);
@@ -151,8 +150,7 @@ public class Verify extends HttpServlet {
     	}
     	
     	// Send the invite to the leaders of the community
-    	String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
-    	Mail.sendCommunityRequest(newUser, comReq, serverName);    	   
+    	Mail.sendCommunityRequest(newUser, comReq);    	   
     }
     
     /**

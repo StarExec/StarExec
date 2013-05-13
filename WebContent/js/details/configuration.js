@@ -38,12 +38,12 @@ function initButtons(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(  
-						"/starexec/services/delete/configuration/" + getParameterByName("id"),
+						starexecRoot+"services/delete/configuration/" + getParameterByName("id"),
 						function(returnCode) {
 							switch (returnCode) {
 								case 0:
 									// Deletion was successful; return user to parent solver's 'details' page
-									window.location = "/starexec/secure/details/solver.jsp?id=" + $('#solverId').val();
+									window.location = starexecRoot+"secure/details/solver.jsp?id=" + $('#solverId').val();
 									break;
 								case 2:
 									showMessage('error', "you do not have sufficient privileges to remove configurations from this solver", 5000);

@@ -101,9 +101,9 @@ public class UploadSolver extends HttpServlet {
 				// Redirect based on success/failure
 				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4) {
 					if (configs == -4) { //If there are no configs
-						response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + return_value + "&flag=true");
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&flag=true"));
 					} else {
-						response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + return_value);
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
 					}
 				} else {
 					//Archive Description File failed validation

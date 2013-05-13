@@ -90,11 +90,11 @@ function attachButtonActions(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							"/starexec/services/delete/benchmark/" + getParameterByName("id"),
+							starexecRoot+"services/delete/benchmark/" + getParameterByName("id"),
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
-										window.location = '/starexec/secure/explore/spaces.jsp';
+										window.location = starexecRoot+'secure/explore/spaces.jsp';
 										break;
 									case 1:
 										showMessage('error', "benchmark was not deleted; please try again", 5000);
@@ -130,12 +130,12 @@ function attachButtonActions(){
 			var type = $("#benchType").val();
 			var data = {name: name, description: description, downloadable: isDownloadable, type: type};
 			$.post(
-					"/starexec/services/edit/benchmark/" + getParameterByName("id"),
+					starexecRoot+"services/edit/benchmark/" + getParameterByName("id"),
 					data,
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/details/benchmark.jsp?id=' + getParameterByName("id");
+								window.location = starexecRoot+'secure/details/benchmark.jsp?id=' + getParameterByName("id");
 								break;
 							case 1:
 								showMessage('error', "benchmark details were not updated; please try again", 5000);

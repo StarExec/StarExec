@@ -30,7 +30,7 @@ $(document).ready(function(){
 			
 			$('#fieldOutput legend img').show();
 			var pid = getParameterByName('id');			
-			$.get('/starexec/services/jobs/pairs/' + pid + '/stdout?limit=100', function(data) {
+			$.get(starexecRoot+'services/jobs/pairs/' + pid + '/stdout?limit=100', function(data) {
 				$('#jpStdout').text(data);
 				$('#fieldOutput legend img').hide();
 			}).error(function(){
@@ -47,7 +47,7 @@ $(document).ready(function(){
 			$('#fieldLog legend img').show();
 			
 			var pid = getParameterByName('id');
-			$.get('/starexec/services/jobs/pairs/' + pid + '/log', function(data) {
+			$.get(starexecRoot+'services/jobs/pairs/' + pid + '/log', function(data) {
 				$('#jpLog').text(data);
 				$('#fieldLog legend img').hide();
 			}).error(function(){

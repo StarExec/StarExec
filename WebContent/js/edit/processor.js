@@ -30,7 +30,7 @@ function initUI(){
 	
 	
 	$("#cancel").click(function() {
-		window.location=href="/starexec/secure/edit/community.jsp?cid="+$("#cid").attr("value");
+		window.location=href=starexecRoot+"secure/edit/community.jsp?cid="+$("#cid").attr("value");
 	});
 	
 	// Updates the database to reflect the newly inputed processor details
@@ -42,12 +42,12 @@ function initUI(){
 			var name = $("#name").val();
 			var description = $("#description").val();
 			$.post(
-					"/starexec/services/edit/processor/" + getParameterByName("id"),
+					starexecRoot+"services/edit/processor/" + getParameterByName("id"),
 					{ name: name, desc: description},
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/edit/community.jsp?cid=' + $("#cid").attr("value");
+								window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
 								break;
 							case 1:
 								showMessage('error', "there was an error entering the updated information into the database", 5000);
@@ -73,12 +73,12 @@ function initUI(){
 			var cid=$("#cid").attr("value");
 			
 			$.post(
-					"/starexec/services/delete/processor/" + getParameterByName("id"),
+					starexecRoot+"services/delete/processor/" + getParameterByName("id"),
 					{ name: name, description: description, cid: cid, defaultPP: defaultPPId},
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/edit/community.jsp?cid=' + $("#cid").attr("value");
+								window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
 								break;
 							case 1:
 								showMessage('error', "there was an error entering the updated information into the database", 5000);

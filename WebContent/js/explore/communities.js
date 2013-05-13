@@ -5,7 +5,7 @@ var commName; // Current community's name
 // When the document is ready to be executed on
 $(document).ready(function(){
 	// Set the path to the css theme fr the jstree plugin
-	 $.jstree._themes = "/starexec/css/jstree/";
+	 $.jstree._themes = starexecRoot+"css/jstree/";
 	 
 	 var id = -1;
 	 
@@ -13,7 +13,7 @@ $(document).ready(function(){
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
-				"url" : "/starexec/services/communities/all"	// Where we will be getting json data from 				
+				"url" : starexecRoot+"services/communities/all"	// Where we will be getting json data from 				
 			} 
 		}, 
 		"themes" : { 
@@ -29,7 +29,7 @@ $(document).ready(function(){
 				"space" : {
 					"valid_children" : [ "space" ],
 					"icon" : {
-						"image" : "/starexec/images/jstree/users.png"
+						"image" : starexecRoot+"images/jstree/users.png"
 					}
 				}
 			}
@@ -83,7 +83,7 @@ $(document).ready(function(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(  
-						"/starexec/services/remove/user/" + id,
+						starexecRoot+"services/remove/user/" + id,
 						{selectedUsers : selectedUsers},
 						function(returnCode) {
 							switch (returnCode) {
@@ -122,7 +122,7 @@ $(document).ready(function(){
 		var selectedUsers = getSelectedRows(memberTable);
 		
 		$.post(  
-				"/starexec/services/makeLeader/" + id ,
+				starexecRoot+"services/makeLeader/" + id ,
 				{selectedUsers : selectedUsers},
 				function(returnCode) {
 					switch (returnCode) {
@@ -200,7 +200,7 @@ function getCommunityDetails(id) {
 	$('#loader').show();
 	
 	$.get(  
-		"/starexec/services/communities/details/" + id,  
+		starexecRoot+"services/communities/details/" + id,  
 		function(data){  			
 			populateDetails(data);			
 		},  
@@ -234,8 +234,8 @@ function populateDetails(jsonData) {
 		
 		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';			
+		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>' + hiddenUserId;
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';			
 		if (!user.isPublic) {
 			memberTable.fnAddData([userLink, user.institution, emailLink]);
 			} else {
@@ -249,8 +249,8 @@ function populateDetails(jsonData) {
 	leaderTable.fnClearTable();	
 	$.each(jsonData.leaders, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>';
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="/starexec/images/external.png"/></a>';				
+		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';				
 		leaderTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 
@@ -265,7 +265,7 @@ function populateDetails(jsonData) {
 	$('#websiteField legend').children('span:first-child').text(jsonData.websites.length);
 	$('#websites').html('');	
 	$.each(jsonData.websites, function(i, site) {		
-		var link = '<a href="' + site.url + '" target="blank">' + site.name+ '<img class="extLink" src="/starexec/images/external.png"/></a>';					
+		var link = '<a href="' + site.url + '" target="blank">' + site.name+ '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';					
 		$('#websites').append('<li>' + link + '</li>');
 	});
 	
@@ -314,8 +314,8 @@ function checkPermissions(perms) {
  * @param id The id of the current community
  */
 function updateActionId(id) {
-	$('#joinComm').attr('href', "/starexec/secure/add/to_community.jsp?cid=" + id);
-	$('#editComm').attr('href', "/starexec/secure/edit/community.jsp?cid=" + id);
+	$('#joinComm').attr('href', starexecRoot+"secure/add/to_community.jsp?cid=" + id);
+	$('#editComm').attr('href', starexecRoot+"secure/edit/community.jsp?cid=" + id);
 	$("#leaveComm").click(function(){
 		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
 			
@@ -346,7 +346,7 @@ function updateActionId(id) {
 function downloadProcs(id, procClass) {
 	createDialog("Processing your download requeste, please wait. This will take some time for large processors.");
 	token=Math.floor(Math.random()*1000000000);
-	window.location.href="/starexec/secure/download?type=proc&procClass="+procClass+"&id="+id+"&token="+token;
+	window.location.href=starexecRoot+"secure/download?type=proc&procClass="+procClass+"&id="+id+"&token="+token;
 	destroyOnReturn(token);
 }
 
@@ -356,7 +356,7 @@ function downloadProcs(id, procClass) {
  */
 function leaveCommunity(id){
 	$.post(
-			"/starexec/services/leave/space/" + id,
+			starexecRoot+"services/leave/space/" + id,
 			function(returnCode) {
 				switch (returnCode) {
 					case 0:

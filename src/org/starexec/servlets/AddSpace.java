@@ -1,5 +1,6 @@
 package org.starexec.servlets;
 
+
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -13,6 +14,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
 
@@ -95,7 +97,7 @@ public class AddSpace extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
 		} else {
 			// On success, redirect to the space explorer so they can see changes
-			response.sendRedirect("/starexec/secure/explore/spaces.jsp");	
+		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 		}		
 	}
 

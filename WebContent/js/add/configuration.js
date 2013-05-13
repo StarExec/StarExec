@@ -25,7 +25,7 @@ function initUI() {
 	
 	// If user clicks 'cancel', redirect to solver's details page
 	$('.cancelBtn').click(function(){
-		window.location = "/starexec/secure/details/solver.jsp?id=" + getParameterByName("sid");
+		window.location = starexecRoot+"secure/details/solver.jsp?id=" + getParameterByName("sid");
 	});
 	
 	$('#upload').expandable(false);

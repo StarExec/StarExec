@@ -97,12 +97,12 @@ function initCommentUI(){
 		}	
 		var data = {comment: comment};
 		$.post(
-				"/starexec/services/comments/add/space/" + spaceId,
+				starexecRoot+"services/comments/add/space/" + spaceId,
 				data,
 				function(returnCode) {
 					if(returnCode == '0') {
 						$("#comment_text").val("");
-						$.getJSON('/starexec/services/comments/space/' + spaceId, displayComments).error(function(){
+						$.getJSON(starexecRoot+'services/comments/space/' + spaceId, displayComments).error(function(){
 							showMessage('error',"Internal error getting comments",5000);
 						});
 					} else {
@@ -176,7 +176,7 @@ function initButtonUI() {
 			buttons: {
 				'space': function(){
 					$.post(
-							"/starexec/services/space/makePublic/" + spaceId + "/" + false,
+							starexecRoot+"services/space/makePublic/" + spaceId + "/" + false,
 							{},
 							function(returnCode) {
 								window.location.reload(true);
@@ -186,7 +186,7 @@ function initButtonUI() {
 				},
 				'hierarchy': function(){
 					$.post(
-							"/starexec/services/space/makePublic/" + spaceId + "/" + true,
+							starexecRoot+"services/space/makePublic/" + spaceId + "/" + true,
 							{},
 							function(returnCode) {
 								window.location.reload(true);
@@ -212,7 +212,7 @@ function initButtonUI() {
 			buttons: {
 				'space': function(){
 					$.post(
-							"/starexec/services/space/makePrivate/" + spaceId + "/" + false,
+							starexecRoot+"services/space/makePrivate/" + spaceId + "/" + false,
 							{},
 							function(returnCode) {
 								window.location.reload(true);
@@ -222,7 +222,7 @@ function initButtonUI() {
 				},
 				'hierarchy': function(){
 					$.post(
-							"/starexec/services/space/makePrivate/" + spaceId + "/" + true,
+							starexecRoot+"services/space/makePrivate/" + spaceId + "/" + true,
 							{},
 							function(returnCode) {
 								window.location.reload(true);
@@ -458,7 +458,7 @@ function onSpaceDrop(event, ui) {
 
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/solver',
+							starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -485,7 +485,7 @@ function onSpaceDrop(event, ui) {
 
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/solver',
+							starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -527,7 +527,7 @@ function onSpaceDrop(event, ui) {
 
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/user',
+							starexecRoot+'services/spaces/' + destSpace + '/add/user',
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -561,7 +561,7 @@ function onSpaceDrop(event, ui) {
 
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/user',
+							starexecRoot+'services/spaces/' + destSpace + '/add/user',
 							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -604,7 +604,7 @@ function onSpaceDrop(event, ui) {
 
 					// Making the request		
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/copySpace',
+							starexecRoot+'services/spaces/' + destSpace + '/copySpace',
 							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: false},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -628,7 +628,7 @@ function onSpaceDrop(event, ui) {
 
 					// Making the request		
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/copySpace',
+							starexecRoot+'services/spaces/' + destSpace + '/copySpace',
 							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: true},
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -665,7 +665,7 @@ function onSpaceDrop(event, ui) {
 
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
+							starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
 							{selectedIds : ids, fromSpace : spaceId},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -707,7 +707,7 @@ function onSpaceDrop(event, ui) {
 
 					// Make the request to the server				
 					$.post(  	    		
-							'/starexec/services/spaces/' + destSpace + '/add/job',
+							starexecRoot+'services/spaces/' + destSpace + '/add/job',
 							{selectedIds : ids, fromSpace : spaceId},	
 							function(returnCode) {
 								log('AJAX response recieved with code ' + returnCode);
@@ -789,13 +789,13 @@ function getDragClone(event) {
  */
 function initSpaceExplorer(){
 	// Set the path to the css theme for the jstree plugin
-	$.jstree._themes = "/starexec/css/jstree/";
+	$.jstree._themes = starexecRoot+"css/jstree/";
 	var id;
 	// Initialize the jstree plugin for the explorer list
 	$("#exploreList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
-				"url" : "/starexec/services/space/subspaces",	// Where we will be getting json data from 
+				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
 				"data" : function (n) {
 					return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
 				} 
@@ -814,7 +814,7 @@ function initSpaceExplorer(){
 				"space" : {
 					"valid_children" : [ "space" ],
 					"icon" : {
-						"image" : "/starexec/images/jstree/db.png"
+						"image" : starexecRoot+"images/jstree/db.png"
 					}
 				}
 			}
@@ -866,7 +866,7 @@ function removeBenchmarks(selectedBenches){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/remove/benchmark/" + spaceId,
+						starexecRoot+"services/remove/benchmark/" + spaceId,
 						{selectedBenches : selectedBenches},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -915,7 +915,7 @@ function removeUsers(selectedUsers){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/remove/user/" + spaceId,
+						starexecRoot+"services/remove/user/" + spaceId,
 						{selectedUsers : selectedUsers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -956,7 +956,7 @@ function removeUsers(selectedUsers){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/remove/user/" + spaceId,
+						starexecRoot+"services/remove/user/" + spaceId,
 						{selectedUsers : selectedUsers, hierarchy : false},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1012,7 +1012,7 @@ function removeSolvers(selectedSolvers){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/remove/solver/" + spaceId,
+						starexecRoot+"services/remove/solver/" + spaceId,
 						{selectedSolvers : selectedSolvers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1043,7 +1043,7 @@ function removeSolvers(selectedSolvers){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/remove/solver/" + spaceId,
+						starexecRoot+"services/remove/solver/" + spaceId,
 						{selectedSolvers : selectedSolvers, hierarchy : false},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1091,7 +1091,7 @@ function removeJobs(selectedJobs){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/remove/job/" + spaceId,
+						starexecRoot+"services/remove/job/" + spaceId,
 						{selectedJobs : selectedJobs},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1132,7 +1132,7 @@ function removeSubspaces(selectedSubspaces){
 
 
 	$.post(  
-			"/starexec/services/remove/subspace/" + spaceId,
+			starexecRoot+"services/remove/subspace/" + spaceId,
 			{selectedSubspaces : selectedSubspaces},					
 			function(returnCode) {
 				log('AJAX response received with code ' + returnCode);
@@ -1183,7 +1183,7 @@ function quickRemove(selectedSubspaces){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						"/starexec/services/quickRemove/subspace/" + spaceId,
+						starexecRoot+"services/quickRemove/subspace/" + spaceId,
 						{selectedSubspaces : selectedSubspaces},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1240,7 +1240,7 @@ function removeComment(ids){
 				'yes': function() {
 					$('#dialog-confirm-delete').dialog('close');
 					$.post(
-							"/starexec/services/comments/delete/space/" + spaceId + "/" + uid + "/" + cid, 
+							starexecRoot+"services/comments/delete/space/" + spaceId + "/" + uid + "/" + cid, 
 							function(returnData){
 								if (returnData == 0) {
 									updateTable(commentTable);
@@ -1424,8 +1424,8 @@ function displayComments(data) {
 		var ids= comment.id + '-' + comment.userId; //we need user id and comment id to delete that comment
 		var hiddenIds= '<input type="hidden" value="'+ids+'">';
 		var fullName = comment.firstName + ' ' + comment.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + 
-		'<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenIds;
+		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + 
+		'<img class="extLink" src=starexecRoot+"images/external.png"/></a>' + hiddenIds;
 		var cmt = comment.description;
 		var brcmt = cmt.replace(/\n/g, "<br />"); //replace all newlines to <br>
 		commentTable.fnAddData([userLink,  comment.uploadDate, brcmt]);
@@ -1449,7 +1449,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler
 	});
@@ -1458,7 +1458,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler
 	});
@@ -1467,7 +1467,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
 		"fnServerData"	: fnPaginationHandler
 	});
@@ -1476,7 +1476,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"bProcessing"	: true,
 		"oLanguage": {
 			"sProcessing": getProcessingMessage()
@@ -1490,7 +1490,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
 		"fnServerData"	: fnPaginationHandler
 	});
@@ -1499,7 +1499,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
 		"bProcessing"	: false,
 		"oLanguage": {
@@ -1623,7 +1623,7 @@ function extendDataTableFunctions(){
  */
 function getProcessingMessage(){
 	//this is not popular with PI's
-	//return '<center><img alt="loading" src="/starexec/images/loader.gif" class="processing">processing...</img></center>';
+	//return '<center><img alt="loading" src=starexecRoot+"images/loader.gif" class="processing">processing...</img></center>';
 	return;
 }
 
@@ -1655,7 +1655,7 @@ function changeFilter(primTable){
 function getSpaceDetails(id) {
 	$('#loader').show();
 	$.post(  
-			"/starexec/services/space/" + id,  
+			starexecRoot+"services/space/" + id,  
 			function(data){ 
 				log('AJAX response received for details of space ' + id);
 				populateSpaceDetails(data, id);			
@@ -1669,7 +1669,7 @@ function getSpaceDetails(id) {
 function handlePublicButton(id) {
 	$('#loader').show();
 	$.post(  
-			"/starexec/services/space/isSpacePublic/" + id,  
+			starexecRoot+"services/space/isSpacePublic/" + id,  
 			function(returnCode){
 				switch(returnCode){
 				case 0:
@@ -1731,7 +1731,7 @@ function populateSpaceDetails(jsonData, id) {
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
 
-	$('#chartPicture').attr('src', "/starexec/secure/get/pictures?type=corg&Id=" + spaceId);
+	$('#chartPicture').attr('src', starexecRoot+"secure/get/pictures?type=corg&Id=" + spaceId);
 
 	/*
 	 * Issue a redraw to all DataTable objects to force them to requery for
@@ -1765,7 +1765,7 @@ function getSpaceComments(id) {
 		return;
 	}
 	//get comment information for the given space
-	$.getJSON('/starexec/services/comments/space/' + id, displayComments).error(function(){
+	$.getJSON(starexecRoot+'services/comments/space/' + id, displayComments).error(function(){
 		showMessage('error',"Internal error getting comments",5000);
 	});	
 }
@@ -1896,12 +1896,12 @@ function checkPermissions(perms, id) {
  * @param id The id of the current space
  */
 function updateButtonIds(id) {
-	$('#editSpace').attr('href', "/starexec/secure/edit/space.jsp?id=" + id);
-	$('#addSpace').attr('href', "/starexec/secure/add/space.jsp?sid=" + id);
-	$('#uploadBench').attr('href', "/starexec/secure/add/benchmarks.jsp?sid=" + id);
-	$('#uploadSolver').attr('href', "/starexec/secure/add/solver.jsp?sid=" + id);
-	$('#addJob').attr('href', "/starexec/secure/add/job.jsp?sid=" + id);
-	$('#downloadXML').attr('href', "/starexec/secure/download?token=test&type=spaceXML&id="+id);
+	$('#editSpace').attr('href', starexecRoot+"secure/edit/space.jsp?id=" + id);
+	$('#addSpace').attr('href', starexecRoot+"secure/add/space.jsp?sid=" + id);
+	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
+	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
+	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
+	$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
 	
 	
 	
@@ -1909,13 +1909,13 @@ function updateButtonIds(id) {
 	$('#downloadXML').click(function() {
 		createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 		token=Math.floor(Math.random()*100000000);
-		$('#downloadXML').attr('href', "/starexec/secure/download?token=" +token+ "&type=spaceXML&id="+id);
+		$('#downloadXML').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id);
 		destroyOnReturn(token);
 	});
 	
 	
-	$('#uploadXML').attr('href', "/starexec/secure/add/batchSpace.jsp?sid=" + id);
-	$('#generateResultChart').attr('href', "/starexec/secure/generateResultChart?sid=" + id);
+	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
+	$('#generateResultChart').attr('href', starexecRoot+"secure/generateResultChart?sid=" + id);
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy-txt').text('do you want to download the single space or the hierarchy?');
@@ -1925,11 +1925,11 @@ function updateButtonIds(id) {
 			height: 165,
 			buttons: {
 				'space': function(){
-					window.location.href="/starexec/secure/download?type=space&hierarchy=false&id="+id;
+					window.location.href=starexecRoot+"secure/download?type=space&hierarchy=false&id="+id;
 					$(this).dialog("close");
 				},
 				'hierarchy': function(){
-					window.location.href="/starexec/secure/download?type=space&hierarchy=true&id="+id;
+					window.location.href=starexecRoot+"secure/download?type=space&hierarchy=true&id="+id;
 					$(this).dialog("close");
 				},
 				"cancel": function() {
@@ -2267,7 +2267,7 @@ function getTooltipConfig(type, message){
 					var tooltip = this;
 					var userId = $(this.elements.target).children('td:first').children('input').val();
 					$.post(
-							'/starexec/services/space/' + spaceId + '/perm/' + userId,
+							starexecRoot+'services/space/' + spaceId + '/perm/' + userId,
 							function(theResponse){
 								log('AJAX response for permission tooltip received');
 								if(1 == theResponse){
@@ -2291,7 +2291,7 @@ function getTooltipConfig(type, message){
 						tooltip.updateTitle('<center><a>permissions</a></center>');
 						var userId = $(this.elements.target).children('td:first').children('input').val();
 						$.post(
-								'/starexec/services/space/' + spaceId + '/perm/' + userId,
+								starexecRoot+'services/space/' + spaceId + '/perm/' + userId,
 								function(theResponse){
 									log('AJAX response for permission tooltip received');
 									tooltip.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
@@ -2382,7 +2382,7 @@ function getTooltipConfig(type, message){
 
 					// Get the user's permissions in the given space
 					$.post(
-							'/starexec/services/space/' + hoveredSpaceId,
+							starexecRoot+'services/space/' + hoveredSpaceId,
 							function(theResponse){
 								log('AJAX response for permission tooltip received');
 								tooltip.updateContent(" ");
@@ -2491,7 +2491,7 @@ function getTooltipConfig(type, message){
 					var tooltip = this;
 					var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
 					if(userId != undefined && $(this.elements.target).children('td:first').children('input').val() == userId){
-						var url = '/starexec/services/space/' + spaceId + '/perm/' + userId;
+						var url = starexecRoot+'services/space/' + spaceId + '/perm/' + userId;
 						$.post(
 								url,
 								function(theResponse){
@@ -2588,7 +2588,7 @@ function saveChanges(obj, save){
 
 		// Update database to reflect new permissions
 		$.post(
-				'/starexec/services/space/' + spaceId + '/edit/perm/' + userId,
+				starexecRoot+'services/space/' + spaceId + '/edit/perm/' + userId,
 				{ addUser		: perms.addUser,
 					removeUser	: perms.removeUser,
 					addSolver		: perms.addSolver,

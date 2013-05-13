@@ -11,7 +11,7 @@ try {
 	*  back to the community explorer
 	*/
 	if(Users.isMemberOfSpace(SessionUtil.getUserId(request), comId)){
-		response.sendRedirect("/starexec/secure/explore/communities.jsp?result=alreadyMember");
+		response.sendRedirect(Util.docRoot("secure/explore/communities.jsp?result=alreadyMember"));
 	}
 	
 	if(com == null) {

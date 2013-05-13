@@ -38,7 +38,7 @@ public class CommunityRequester extends HttpServlet {
 		// Validate parameters of request & construct Invite object
 		CommunityRequest comRequest = constructComRequest(user, request);
 		if(comRequest == null){
-			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestNotSent&cid=-1");
+		    response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=-1"));
 			return;
 		}
 		if (user.getId()==R.PUBLIC_USER_ID){
@@ -47,12 +47,11 @@ public class CommunityRequester extends HttpServlet {
 		boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
 		if(added){
 			// Send the invite to the leaders of the community 
-			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
-			Mail.sendCommunityRequest(user, comRequest, serverName);
-			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestSent&cid=" + comRequest.getCommunityId());
+			Mail.sendCommunityRequest(user, comRequest);
+			response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestSent&cid=" + comRequest.getCommunityId()));
 		} else {
 			// There was a problem
-			response.sendRedirect("/starexec/secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId());
+		    response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId()));
 		}
 	}
 	

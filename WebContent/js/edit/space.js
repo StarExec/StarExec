@@ -100,12 +100,12 @@ function attachButtonActions(){
 			
 			// Pass data to server via AJAX
 			$.post(
-					"/starexec/services/edit/space/" + getParameterByName("id"),
+					starexecRoot+"services/edit/space/" + getParameterByName("id"),
 					data,
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/explore/spaces.jsp';
+								window.location = starexecRoot+'secure/explore/spaces.jsp';
 								break;
 							case 1:
 								showMessage('error', "space details were not updated; please try again", 5000);

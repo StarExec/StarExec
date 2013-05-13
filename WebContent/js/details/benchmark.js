@@ -11,7 +11,7 @@ $(document).ready(function(){
 			$(this).data('requested', true);
 			
 			$('#fieldContents legend img').show();
-			$.get('/starexec/services/benchmarks/' + bid + '/contents?limit=100', function(data) {
+			$.get(starexecRoot+'services/benchmarks/' + bid + '/contents?limit=100', function(data) {
 				$('#benchContent').text(data);
 				$('#fieldContents legend img').hide();
 			}).error(function(){				
@@ -28,7 +28,7 @@ $(document).ready(function(){
 	$('#downLink').click(function() {
 		createDialog("Processing your download request, please wait. This will take some time for large benchmarks.");
 		token=Math.floor(Math.random()*100000000);
-		$('#downLink').attr('href', "/starexec/secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
+		$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
 		destroyOnReturn(token);
 	});
 	
@@ -69,12 +69,12 @@ function initComments(bid){
 		}	
 		var data = {comment: comment};
 		$.post(
-				"/starexec/services/comments/add/benchmark/" + bid,
+				starexecRoot+"services/comments/add/benchmark/" + bid,
 				data,
 				function(returnCode) {
 			    	if(returnCode == 0) {
 			    		$("#comment_text").val("");
-			    		$.getJSON('/starexec/services/comments/benchmark/' + bid, displayComments).error(function(){
+			    		$.getJSON(starexecRoot+'services/comments/benchmark/' + bid, displayComments).error(function(){
 			    			showMessage('error',"Internal error displaying comments",5000);
 			    		});
 			    	} else {
@@ -103,7 +103,7 @@ function displayComments(data) {
 		var hiddenUserId;
 		hiddenUserId = '<input type="hidden" value="'+comment.userId+'">';
 		var fullName = comment.firstName + ' ' + comment.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
+		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>' + hiddenUserId;
 		var hiddenCommentId = '<input type="hidden" value="' + comment.id + '" >';
 		var delbutton = '<a class="commentDelBtn" cid="' + comment.id + '" uid="' + comment.userId +'">delete</a>';
 		var cmt = comment.description;
@@ -124,7 +124,7 @@ function displayComments(data) {
 				'yes': function() {
 					$('#dialog-confirm-delete').dialog('close');
 					$.post(
-						"/starexec/services/comments/delete/benchmark/" + bid + "/" + uid + "/" + cid,
+						starexecRoot+"services/comments/delete/benchmark/" + bid + "/" + uid + "/" + cid,
 						function(returnData){
 							if (returnData == 0) {
 								commentTable.fnDeleteRow(commentTable.fnGetPosition(row));
@@ -151,7 +151,7 @@ function displayComments(data) {
 }
 function getComments(id) {
 	//get comment information for the given benchmark
-	$.getJSON('/starexec/services/comments/benchmark/' + id, displayComments).error(function(){
+	$.getJSON(starexecRoot+'services/comments/benchmark/' + id, displayComments).error(function(){
 		showMessage('error',"Internal error getting comments",5000);
 	});
 }

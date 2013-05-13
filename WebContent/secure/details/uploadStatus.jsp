@@ -127,6 +127,6 @@
 		</fieldset>
 	</c:if>
 
-	<a id="returnLink" href="/starexec/secure/explore/spaces.jsp">back</a>
+	<a id="returnLink" href="/${starexecRoot}/secure/explore/spaces.jsp">back</a>
 
 </star:template>

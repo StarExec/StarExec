@@ -65,7 +65,7 @@ public class UploadConfiguration extends HttpServlet {
 				if(result == -1) {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new configuration.");	
 				} else {
-					response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + Integer.parseInt((String)configAttrMap.get(SOLVER_ID)));	
+				    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)configAttrMap.get(SOLVER_ID))));	
 				}									
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);

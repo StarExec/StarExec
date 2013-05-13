@@ -52,11 +52,11 @@ public class Registration extends HttpServlet {
 		switch (result) {
 		  case SUCCESS: 
 			// Notify user of successful registration
-			response.sendRedirect("/starexec/public/registration.jsp?result=regSuccess");
+		      response.sendRedirect(Util.docRoot("public/registration.jsp?result=regSuccess"));
 		    break;
 		  case FAIL: 
 			// Notify user the email address they inputed is already in use
-			response.sendRedirect("/starexec/public/registration.jsp?result=regFail");
+		      response.sendRedirect(Util.docRoot("public/registration.jsp?result=regFail"));
 		    break;
 		  case MALFORMED:
 			// Handle malformed urls
@@ -109,8 +109,7 @@ public class Registration extends HttpServlet {
 		if(added) {
 			log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
 			
-			String serverName = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
-			Mail.sendActivationCode(user, code, serverName);
+			Mail.sendActivationCode(user, code);
 			return SUCCESS;
 		} else {
 			log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));

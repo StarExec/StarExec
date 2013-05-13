@@ -9,7 +9,7 @@ $(document).ready(function(){
 function createDownloadRequest(item,type) {
 	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
 	token=Math.floor(Math.random()*100000000);
-	$(item).attr('href', "/starexec/secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value"));
+	$(item).attr('href', starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value"));
 	destroyOnReturn(token);
 }
 
@@ -46,7 +46,7 @@ function initUI(){
 	// Set up row click to send to pair details page
 	$("#pairTbl tbody").delegate("tr", "click", function(){
 		var pairId = $(this).find('input').val();
-		window.location.assign("/starexec/secure/details/pair.jsp?id=" + pairId);
+		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
 	
 }
@@ -71,7 +71,7 @@ function initDataTables(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
-        "sAjaxSource"	: "/starexec/services/jobs/",
+        "sAjaxSource"	: starexecRoot+"services/jobs/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });

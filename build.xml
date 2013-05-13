@@ -117,6 +117,7 @@
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-directory}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
+                <entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
   	        </propertyfile>
 		
 	

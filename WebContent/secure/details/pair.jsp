@@ -69,7 +69,7 @@
 				<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>
-					<td><a href="/starexec/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/starexec/images/external.png"/></a></td>
+					<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 				</tr>				
 				<tr>
 					<td>runtime (wallclock)</td>			
@@ -198,19 +198,19 @@
 	
 	<c:if test="${pair.status.code == 'STATUS_COMPLETE' or pair.status.code == 'STATUS_WAIT_RESULTS'}">
 		<fieldset id="fieldOutput">		
-			<legend><img alt="loading" src="/starexec/images/loader.gif"> output</legend>			
+			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
 			<textarea class=contentTextarea id="jpStdout" readonly="readonly"></textarea>	
-			<a href="/starexec/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
+			<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">output may be truncated. 'popout' for the full output.</p>
 		</fieldset>
 	</c:if>
 	
 	<fieldset id="fieldLog">
-		<legend><img alt="loading" src="/starexec/images/loader.gif"> job log</legend>			
+		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			
 		<textarea class=contentTextarea id="jpLog" readonly="readonly"></textarea>
 		<a href="/starexec/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
 	</fieldset>
 
-	<a href="/starexec/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
-	<a href="/starexec/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
+	<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
+	<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
 </star:template>

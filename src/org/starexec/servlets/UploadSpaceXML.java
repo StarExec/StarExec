@@ -61,7 +61,7 @@ public class UploadSpaceXML extends HttpServlet {
 			
 				// Redirect based on success/failure
 				if(result.getSpaceCreationSuccess()) {
-					response.sendRedirect("/starexec/secure/explore/spaces.jsp");	
+				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Space XML - " + result.getErrorMessage());	
 				}									

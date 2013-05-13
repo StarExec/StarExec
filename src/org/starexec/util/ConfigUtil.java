@@ -75,27 +75,8 @@ public class ConfigUtil {
 				// If we didn't find a node that matched the specified name, then that's an error!
 				throw new Exception(String.format("The default configuration \"%s\" was not found.", defaultConfigName));
 			}
-			
-			// Get the name of any configurations to inherit from
-			String inheritFrom = null;
-			Node inheritNodeAttr = defaultConfigNode.getAttributes().getNamedItem(ATTR_INHERIT);
-			
-			// If there is an inheritance specified, load properties from the inherited node
-			if(inheritNodeAttr != null) {
-				inheritFrom = inheritNodeAttr.getNodeValue();
-				Node inheritConfigNode = findConfigNode(starexecConfigDoc.getDocumentElement(), inheritFrom);
-				
-				if(inheritConfigNode != null) {
-					// If we found a valid node to inherit from, load from that node first
-					loadPropertiesFromNode(inheritConfigNode);
-				} else {
-					// If we didn't find the inheritance node, warn it
-					log.warn("Could not find specified inheritance configuration: " + inheritFrom);
-				}
-			}			
-			
-			// Lastly, load all properties from the default node
-			loadPropertiesFromNode(defaultConfigNode);
+
+			loadPropertiesFromNode(starexecConfigDoc, defaultConfigNode);
 			ConfigUtil.configName = defaultConfigName;
 		} catch (Exception e) {
 			log.fatal(e.getMessage(), e);
@@ -138,13 +119,36 @@ public class ConfigUtil {
 	 * @param node The configuration node which contains class specifications to load into
 	 */
 	@SuppressWarnings("rawtypes")
-	private static void loadPropertiesFromNode(Node node) throws Exception {
-		log.debug(String.format("Loading configuration %s for properties specification", node.getAttributes().getNamedItem(ATTR_NAME)));
+	    private static void loadPropertiesFromNode(Document starexecConfigDoc, Node node) throws Exception {
+
+		/* first process any parent configurations we are inheriting from */
+
+		// Get the name of any configurations to inherit from
+		String inheritFrom = null;
+		Node inheritNodeAttr = node.getAttributes().getNamedItem(ATTR_INHERIT);
+			
+		// If there is an inheritance specified, load properties from the inherited node
+		if(inheritNodeAttr != null) {
+		    inheritFrom = inheritNodeAttr.getNodeValue();
+		    Node inheritConfigNode = findConfigNode(starexecConfigDoc.getDocumentElement(), inheritFrom);
+		    
+		    if(inheritConfigNode != null) {
+			// If we found a valid node to inherit from, load from that node first
+			loadPropertiesFromNode(starexecConfigDoc, inheritConfigNode);
+		    } else {
+			// If we didn't find the inheritance node, warn it
+			log.warn("Could not find specified inheritance configuration: " + inheritFrom);
+		    }
+		}			
+			
+		// Now load the properties from the current node itself
 		
-		// Get all class nodes from the document
+		log.debug(String.format("Loading configuration %s", node.getAttributes().getNamedItem(ATTR_NAME)));
+
+		// Get all subnodes from the given node
 		NodeList classNodes = node.getChildNodes();		
 		
-		// For each class node in the configuration file...
+		// For each class node in the configuration...
 		for(int i = 0; i < classNodes.getLength(); i++) {
 			// Get that class node and its child nodes
 			Node currentClassNode = classNodes.item(i);				
@@ -198,6 +202,9 @@ public class ConfigUtil {
 					}
 				}
 											
+				log.debug("Setting "+key+" = "+value);
+
+
 				try {
 					// Get the field from the current class that matches the XML specified key
 					Field field = currentClass.getField(key);

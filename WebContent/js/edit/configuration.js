@@ -30,12 +30,12 @@ function initUI(){
 			var description = $("#description").val();
 			var contents = $("#contents").val();
 			$.post(
-					"/starexec/services/edit/configuration/" + getParameterByName("id"),
+					starexecRoot+"services/edit/configuration/" + getParameterByName("id"),
 					{ name: name, description: description, contents: contents },
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/details/configuration.jsp?id=' + getParameterByName("id");
+								window.location = starexecRoot+'secure/details/configuration.jsp?id=' + getParameterByName("id");
 								break;
 							case 1:
 								showMessage('error', "a configuration already exists for this solver with the name \""+name+"\"", 5000);

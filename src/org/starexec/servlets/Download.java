@@ -109,7 +109,7 @@ public class Download extends HttpServlet {
 					response.addCookie(newCookie);
 				}
 				//response.addHeader("Content-Disposition", "attachment; filename=test.zip");
-				response.sendRedirect("/starexec/secure/files/" + fileName);
+				response.sendRedirect(Util.docRoot("secure/files/" + fileName));
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
 			}									

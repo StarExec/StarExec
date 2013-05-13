@@ -74,7 +74,7 @@
 				<tr title="the execution queue this job was submitted to">
 					<td>queue</td>	
 					<c:if test="${not empty job.queue}">
-					<td><a href="/starexec/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="/starexec/images/external.png"/></a></td>
+					<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 					</c:if>
 					<c:if test="${empty job.queue}">
 					<td>unknown</td>
@@ -102,8 +102,8 @@
 			<tbody>
 				<c:forEach var="cs" items="${stats}">
 					<tr id="statRow">
-						<td><a href="${'/starexec/secure/details/solver.jsp?id='}${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/starexec/images/external.png"/></a></td>
-						<td><a href="${'/starexec/secure/details/configuration.jsp?id='}${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/starexec/images/external.png"/></a></td>
+						<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+						<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 						<td>${cs.completeJobPairs} </td>
 						<td>${cs.incompleteJobPairs} </td>
 						<td>${cs.incorrectJobPairs}</td>
@@ -141,8 +141,8 @@
 	<fieldset>
 	<legend>actions</legend>
 		<ul id="actionList">
-			<li><a id="jobOutputDownload" href="/starexec/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
-			<li><a id="jobDownload" href="/starexec/secure/download?type=job&id=${jobId}">job information</a></li>
+			<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
+			<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
 		</ul>
 	</fieldset>		
 </star:template>

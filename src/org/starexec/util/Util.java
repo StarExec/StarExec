@@ -409,5 +409,34 @@ public class Util {
 		return sb.toString();
 	}
 	
+    private static String docRoot = null;
+    private static String docRootUrl = null;
+    private static void initDocRoot() {
+	if (docRoot == null)
+	    docRoot = "/" + R.STAREXEC_APPNAME + "/";
+    }
+    private static void initDocRootUrl() {
+	initDocRoot();
+	if (docRootUrl == null)
+	    docRootUrl = "https://" + R.STAREXEC_SERVERNAME + docRoot;
+    }
+    /**
+     * Prepend the document root to the given path, to form a site root-relative path.
+     *
+     * @author Aaron Stump
+     */
+    public static String docRoot(String s) {
+	initDocRoot();
+	return docRoot + s;
+    }
+    /**
+     * Prepend the "https://", the server name, and the document root, to form an absolute path (URL).
+     *
+     * @author Aaron Stump
+     */
+    public static String url(String s) {
+	initDocRootUrl();
+	return docRootUrl + s;
+    }
 
 }

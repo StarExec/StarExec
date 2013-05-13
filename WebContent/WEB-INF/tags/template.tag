@@ -15,11 +15,11 @@
 			<star:header />
 			<div id="content" class="round">
 				<h1 style="width:100%; word-wrap:break-word;">${title}</h1>
-				<img alt="loading" src="/starexec/images/loader.gif" id="loader">			
+				<img alt="loading" src="/${starexecRoot}/images/loader.gif" id="loader">			
 				<jsp:doBody/>
 			</div>		
 		<star:footer />
-		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})"><a href="/starexec/public/versionInfo.jsp">starexec revision ${buildVersion}</a></div>
+		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})"><a href="/${starexecRoot}/public/versionInfo.jsp">starexec revision ${buildVersion}</a></div>
 		</div>
 	</body>
 </html>

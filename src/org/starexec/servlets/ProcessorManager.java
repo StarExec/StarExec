@@ -124,7 +124,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Redirect based on the results of the addition
 			if(result != null) {
-				response.sendRedirect("/starexec/secure/edit/community.jsp?cid=" + result.getCommunityId());	
+			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));	
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
 			}									

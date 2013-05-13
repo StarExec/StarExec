@@ -108,7 +108,7 @@ function initUI() {
         $("#publicCommunity option:selected").each(function () {
               str += $(this).text() + comId + " ";
               $('#benchmarkContents').val(benchContents);
-              $.getJSON('/starexec/services/communities/solvers/' + comId,{}, function(result){
+              $.getJSON(starexecRoot+'services/communities/solvers/' + comId,{}, function(result){
             	  var box = "<select id='publicSolver' name='publicSolver'>";
             	  
             	  for (var i = 0; i < result.length; i++){
@@ -119,7 +119,7 @@ function initUI() {
             	  $('#publicSolver').replaceWith(box);
               });
               
-              $.get('/starexec/services/benchmarks/' + benchId + '/contents?limit=-1',{}, function(result){
+              $.get(starexecRoot+'services/benchmarks/' + benchId + '/contents?limit=-1',{}, function(result){
             	  $('#benchmarkContents').val(result);
               });          
               

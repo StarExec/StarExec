@@ -84,8 +84,7 @@ public class SingleJobPair extends HttpServlet {
 			} else {
 				log.debug("success!!");
 				Integer jobPairId = Jobs.getDetailed(jobId).getJobPairs().get(0).getId();
-				response.sendRedirect("/starexec/secure/details/pair.jsp?id=" + jobPairId);
-				//response.sendRedirect("/starexec/secure/details/job.jsp?id=" + jobId);	
+				response.sendRedirect(Util.docRoot("secure/details/pair.jsp?id=" + jobPairId));
 			}									
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

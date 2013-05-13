@@ -50,7 +50,7 @@ public class GenerateResultChart extends HttpServlet{
 			} 
 			
 			Spaces.generateResultChart(space_id);
-			response.sendRedirect("/starexec/secure/explore/spaces.jsp");
+			response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}

@@ -66,12 +66,11 @@ public class Mail {
      * they can approve/decline a new user's request to join 
      * 
      * @param user the user trying to join the community
-	 * @param comReq The community request containing the information to construct the e-mail
-	 * @param serverURL the base URL of the server (e.g. http://starexec.cs.uiowa.edu/)
+     * @param comReq The community request containing the information to construct the e-mail
      * @throws IOException if acceptance_email cannot be found
      * @author Todd Elvers
      */
-    public static void sendCommunityRequest(User user, CommunityRequest comReq, String serverURL) throws IOException{    	
+    public static void sendCommunityRequest(User user, CommunityRequest comReq) throws IOException{    	
     	String communityName = Spaces.getName(comReq.getCommunityId());
     	
     	// Figure out the email addresses of the leaders of the space
@@ -89,8 +88,8 @@ public class Mail {
 		email = email.replace("$$EMAIL$$", user.getEmail());
 		email = email.replace("$$INSTITUTION$$", user.getInstitution());
 		email = email.replace("$$MESSAGE$$", comReq.getMessage());
-		email = email.replace("$$APPROVE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "approve"));
-		email = email.replace("$$DECLINE$$", String.format("%s/starexec/public/verification/email?%s=%s&%s=%s", serverURL, Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "decline"));
+		email = email.replace("$$APPROVE$$", Util.docRoot(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "approve")));
+		email = email.replace("$$DECLINE$$", Util.docRoot(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "decline")));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Request to join " + communityName, leaderEmails);
@@ -105,15 +104,14 @@ public class Mail {
 	 * @param user the user to send the email to
 	 * @param request the servlet containing the incoming POST
 	 * @param code the activation code to send
-	 * @param serverURL the base URL of the server (e.g. http://starexec.cs.uiowa.edu/)
 	 * @throws IOException if verification_email cannot be found
 	 * @author Todd Elvers
 	 */
-	public static void sendActivationCode(User user, String code, String serverURL) throws IOException {		
+	public static void sendActivationCode(User user, String code) throws IOException {		
 		// Configure pre-built message
 		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/activation_email.txt"));
 		email = email.replace("$$USER$$", user.getFullName());
-		email = email.replace("$$LINK$$", String.format("%s/starexec/public/verification/email?%s=%s", serverURL, Mail.EMAIL_CODE, code ));
+		email = email.replace("$$LINK$$", Util.url(String.format("public/verification/email?%s=%s", Mail.EMAIL_CODE, code )));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Verify your account", new String[] { user.getEmail() });
@@ -130,17 +128,16 @@ public class Mail {
      * @param wasApproved the result of their request to join a community
      * @param wasDeleted whether or not the user was removed from the system as a result of a decline
      * @param communityName the name of the community the user requested to join
-	 * @param serverURL the base URL of the server (http://starexec.cs.uiowa.edu/) 
      * @throws IOException if approved_email or declined_email cannot be found
      * @author Todd Elvers
      */
-    public static void sendRequestResults(User user, String communityName, boolean wasApproved, boolean wasDeleted, String serverURL) throws IOException{    	
+    public static void sendRequestResults(User user, String communityName, boolean wasApproved, boolean wasDeleted) throws IOException{    	
     	if(wasApproved){
     		// Configure pre-built message
     		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/approved_email.txt"));
     		email = email.replace("$$USER$$", user.getFullName());
     		email = email.replace("$$COMMUNITY$$", communityName);
-    		email = email.replace("$$LINK$$", String.format("%s/starexec/secure/index.jsp", serverURL));
+    		email = email.replace("$$LINK$$", Util.url("secure/index.jsp"));
     		
     		// Send email
     		Mail.mail(email, "STAREXEC - Approved to join " + communityName, new String[] { user.getEmail() });
@@ -152,10 +149,10 @@ public class Mail {
     		
     		if(wasDeleted) {
     			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/declined_deleted_email.txt"));
-    			email = email.replace("$$LINK$$", String.format("%s/starexec/registration.jsp", serverURL));    			
+    			email = email.replace("$$LINK$$", Util.url("registration.jsp"));    			
     		} else {
     			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "declined_email.txt"));    			
-    			email = email.replace("$$LINK$$", String.format("%s/starexec/pages/make_invite.jsp", serverURL));
+    			email = email.replace("$$LINK$$", Util.url("pages/make_invite.jsp"));
     		}
     		
     		email = email.replace("$$USER$$", user.getFullName());
@@ -175,16 +172,15 @@ public class Mail {
      * 
      * @param newUser the user requesting to reset their password
      * @param code the UUID code used to create a safe hyperlink to email to the user
-     * @param request the servlet containing information used to create the hyperlink 
      * @throws IOException if password_reset_email cannot be found
      * @author Todd Elvers
      */
-    public static void sendPasswordReset(User newUser, String code, String serverURL) throws IOException {
+    public static void sendPasswordReset(User newUser, String code) throws IOException {
     	
 		// Configure pre-built message
 		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/password_reset_email.txt"));
 		email = email.replace("$$USER$$", newUser.getFullName());
-		email = email.replace("$$LINK$$", String.format("%s/starexec/public/reset_password?%s=%s", serverURL, PasswordReset.PASS_RESET, code));
+		email = email.replace("$$LINK$$", Util.url(String.format("public/reset_password?%s=%s", PasswordReset.PASS_RESET, code)));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Password reset", new String[] { newUser.getEmail() });

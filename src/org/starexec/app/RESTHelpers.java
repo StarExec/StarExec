@@ -366,6 +366,17 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
+    /**
+     * Add tag for the image representing a link that will popout.
+     *
+     * @param sb the StringBuilder to add the tag with.
+     * 
+     * @author Aaron Stump 
+     */
+    protected static void addImg(StringBuilder sb) {
+	sb.append("<img class=\"extLink\" src=\""+Util.docRoot("images/external.png\"/></a>"));
+    }
+
 	/**
 	 * Returns the HTML representing a job pair's status
 	 *
@@ -460,11 +471,11 @@ public class RESTHelpers {
 		    		
 		    		// Create the job "details" link and append the hidden input element
 		    		sb = new StringBuilder();
-		    		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
 		    		sb.append(job.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(job.getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenJobId);
 					String jobLink = sb.toString();
 					
@@ -541,11 +552,11 @@ public class RESTHelpers {
 		    		
 		    		// Create the user "details" link and append the hidden input element
 		    		sb = new StringBuilder();
-		    		sb.append("<a href=\"/starexec/secure/details/user.jsp?id=");
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
 		    		sb.append(user.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(user.getFullName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenUserId);
 					String userLink = sb.toString();
 					
@@ -554,7 +565,7 @@ public class RESTHelpers {
 					sb.append(user.getEmail());
 					sb.append("\">");
 					sb.append(user.getEmail());
-					sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+					RESTHelpers.addImg(sb);
 					String emailLink = sb.toString();
 					
 					// Create an object, and inject the above HTML, to represent an entry in the DataTable
@@ -615,11 +626,11 @@ public class RESTHelpers {
 		    		
 		    		// Create the solver "details" link and append the hidden input element
 		    		sb = new StringBuilder();
-		    		sb.append("<a href=\"/starexec/secure/details/solver.jsp?id=");
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
 		    		sb.append(solver.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(solver.getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenSolverId);
 					String solverLink = sb.toString();
 					
@@ -683,11 +694,11 @@ public class RESTHelpers {
 		    		sb.append("<a title=\"");
 		    		// Set the tooltip to be the benchmark's description
 		    		sb.append(bench.getDescription());
-		    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
 		    		sb.append(bench.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(bench.getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenBenchId);
 					String benchLink = sb.toString();
 					
@@ -767,7 +778,7 @@ public class RESTHelpers {
 		    		sb.append(space.getId());
 		    		sb.append(")\">");
 		    		sb.append(space.getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenSpaceId);
 					String spaceLink = sb.toString();
 					
@@ -831,11 +842,11 @@ public class RESTHelpers {
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
 		    		sb.append(jp.getBench().getDescription());
-		    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
 		    		sb.append(jp.getBench().getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(jp.getBench().getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenJobPairId);
 					String benchLink = sb.toString();
 					
@@ -843,22 +854,22 @@ public class RESTHelpers {
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
 		    		sb.append(jp.getSolver().getDescription());
-		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
 		    		sb.append(jp.getSolver().getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(jp.getSolver().getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 					String solverLink = sb.toString();
 					
 					// Create the configuration link
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
 		    		sb.append(jp.getSolver().getConfigurations().get(0).getDescription());
-		    		sb.append("\" href=\"/starexec/secure/details/configuration.jsp?id=");
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
 		    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 					String configLink = sb.toString();
 					
 					// Create the status field
@@ -928,21 +939,21 @@ public class RESTHelpers {
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
 		    		sb.append(js.getSolver().getName());
-		    		sb.append("\" href=\"/starexec/secure/details/solver.jsp?id=");
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
 		    		sb.append(js.getSolver().getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(js.getSolver().getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 					String solverLink = sb.toString();
 					
 					sb= new StringBuilder();
 					sb.append("<a title=\"");
 		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
-		    		sb.append("\" href=\"/starexec/secure/details/configuration.jsp?id=");
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
 		    		sb.append(js.getSolver().getConfigurations().get(0).getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 					String configLink = sb.toString();
 					
 					// Create an object, and inject the above HTML, to represent an entry in the DataTable
@@ -1160,11 +1171,11 @@ public class RESTHelpers {
 		    		
 		    		// Create the job "details" link and append the hidden input element
 		    		sb = new StringBuilder();
-		    		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
 		    		sb.append(job.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(job.getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+				RESTHelpers.addImg(sb);
 		    		sb.append(hiddenJobId);
 					String jobLink = sb.toString();
 					
@@ -1226,11 +1237,11 @@ public class RESTHelpers {
 		    		
 		    		// Create the solver "details" link and append the hidden input element
 		    		sb = new StringBuilder();
-		    		sb.append("<a href=\"/starexec/secure/details/solver.jsp?id=");
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
 		    		sb.append(solver.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(solver.getName());
-		    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+		    		RESTHelpers.addImg(sb);
 		    		sb.append(hiddenSolverId);
 					String solverLink = sb.toString();
 					
@@ -1294,11 +1305,11 @@ public class RESTHelpers {
 	    		sb.append("<a title=\"");
 	    		// Set the tooltip to be the benchmark's description
 	    		sb.append(bench.getDescription());
-	    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
 	    		sb.append(bench.getId());
 	    		sb.append("\" target=\"_blank\">");
 	    		sb.append(bench.getName());
-	    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+	    		RESTHelpers.addImg(sb);
 	    		sb.append(hiddenBenchId);
 				String benchLink = sb.toString();*/
 
@@ -1308,11 +1319,11 @@ public class RESTHelpers {
 	    		sb.append("<a title=\"");
 	    		//Set the tool tip to be the benchmark's description
 	    		sb.append(benchmark.getDescription());
-	    		sb.append("\" href=\"/starexec/secure/details/benchmark.jsp?id=");
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
 	    		sb.append(benchmark.getId());
 	    		sb.append("\" target=\"_blank\">");
 	    		sb.append(benchmark.getName());
-	    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+	    		RESTHelpers.addImg(sb);
 	    		sb.append(hiddenBenchmarkId);
 				String benchmarkLink = sb.toString();
 				
@@ -1411,11 +1422,11 @@ public class RESTHelpers {
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
     		sb.append(benchmark.getDescription());
-    		sb.append("<a href=\"/starexec/secure/details/benchmark.jsp?id=");
+    		sb.append("<a href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
     		sb.append(benchmark.getId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(benchmark.getName());
-    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+    		RESTHelpers.addImg(sb);
     		sb.append(hiddenBenchmarkId);
 			String benchmarkLink = sb.toString();
 			
@@ -1506,11 +1517,11 @@ public class RESTHelpers {
     		
     		// Create the job "details" link and append the hidden input element
     		sb = new StringBuilder();
-    		sb.append("<a href=\"/starexec/secure/details/job.jsp?id=");
+    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
     		sb.append(job.getId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(job.getName());
-    		sb.append("<img class=\"extLink\" src=\"/starexec/images/external.png\"/></a>");
+    		RESTHelpers.addImg(sb);
     		sb.append(hiddenJobId);
 			String jobLink = sb.toString();
 			

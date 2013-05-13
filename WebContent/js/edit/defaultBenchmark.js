@@ -14,7 +14,7 @@ function initUI(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
-		"sAjaxSource"	: "/starexec/services/space/",
+		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
 		"fnServerData"	: fnPaginationHandler
 	});
@@ -42,7 +42,7 @@ function initUI(){
 	
 	
 	$("#cancel").click(function() {
-		window.location=href="/starexec/secure/edit/community.jsp?cid="+$("#cid").attr("value");
+		window.location=href=starexecRoot+"secure/edit/community.jsp?cid="+$("#cid").attr("value");
 	});
 	
 }
@@ -74,12 +74,12 @@ function attachFormValidation(){
 		if(selectedBench>=0){
 			createDialog("Updating default benchmark, please wait");
 			$.post(
-					"/starexec/services/edit/space/" + "defaultBenchmark" + "/" + $("#cid").attr("value"),
+					starexecRoot+"services/edit/space/" + "defaultBenchmark" + "/" + $("#cid").attr("value"),
 					{val : selectedBench},
 					function(returnCode) {
 						switch (returnCode) {
 							case 0:
-								window.location = '/starexec/secure/edit/community.jsp?cid=' + $("#cid").attr("value");
+								window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
 								break;
 							case 1:
 								showMessage('error', "there was an error entering the updated information into the database", 5000);

@@ -84,25 +84,26 @@ public class BatchUtil {
 		return file;
 	}
 	
-	/**
-	 *  Will generate xml for the root space.
-	 *  @author Benton McCune
-	 *  @param space The space for which we want an xml representation.
-	 *  @param userId the id of the user making the request
-	 *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
-	 */	
-	public Element generateSpacesXML(Space space, int userId){		
-		log.debug("Generating Space XML for space " + space.getId());
+    /**
+     *  Will generate xml for the root space.
+     *  @author Benton McCune
+     *  @param space The space for which we want an xml representation.
+     *  @param userId the id of the user making the request
+     *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
+     */	
+    public Element generateSpacesXML(Space space, int userId){		
+	log.debug("Generating Space XML for space " + space.getId());
 		
-		Element spacesElement = doc.createElementNS("https://www.starexec.org/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
-		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		spacesElement.setAttribute("xsi:schemaLocation", "https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
+	Element spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
+	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+	spacesElement.setAttribute("xsi:schemaLocation", 
+				   Util.docRoot("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
 		
-		Element rootSpaceElement = generateSpaceXML(space, userId);
-		spacesElement.appendChild(rootSpaceElement);
+	Element rootSpaceElement = generateSpaceXML(space, userId);
+	spacesElement.appendChild(rootSpaceElement);
 		
-		return spacesElement;
-	}
+	return spacesElement;
+    }
 	
 	/**
 	 *  Generates the XML for an individual space.  Called recursively to produce entire hierarchy.

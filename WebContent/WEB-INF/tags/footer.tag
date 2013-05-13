@@ -7,30 +7,30 @@
 	<c:if test="${not empty user}">
 		<ul>
 			<li><a target="_blank"
-				href="/starexec/secure/details/user.jsp?id=${user.id}">${fn:toLowerCase(user.fullName)}</a></li>
+				href="/${starexecRoot}/secure/details/user.jsp?id=${user.id}">${fn:toLowerCase(user.fullName)}</a></li>
 			<li>|</li>
 			<li><a onclick="javascript:logout();">logout</a></li>
 			<li>|</li>
 			<li><a id="writeJob"
-				href="/starexec/secure/add/singleJobPair.jsp">quick job</a></li>
+				href="/${starexecRoot}/secure/add/singleJobPair.jsp">quick job</a></li>
 			<li>|</li>
-			<li><a id="about" href="/starexec/public/about.jsp">about</a></li>
+			<li><a id="about" href="/${starexecRoot}/public/about.jsp">about</a></li>
 			<li>|</li>
-			<li><a id="help" href="/starexec/public/help.jsp">help</a></li>
+			<li><a id="help" href="/${starexecRoot}/public/help.jsp">help</a></li>
 		</ul>
 	</c:if>
 	<c:if test="${empty user}">
 		<ul>
-			<li><a id="loginLink" href="/starexec/secure/index.jsp">login</a></li>
+			<li><a id="loginLink" href="/${starexecRoot}/secure/index.jsp">login</a></li>
 			<%--<li>|</li>--%>
-			<%--  <li><a href="/starexec/public/registration.jsp">register</a></li>--%>
+			<%--  <li><a href="/${starexecRoot}/public/registration.jsp">register</a></li>--%>
 			<li>|</li>
 			<li><a
-				href="/starexec/secure/j_security_check?j_username=public&j_password=public">guest</a></li>
+				href="/${starexecRoot}/secure/j_security_check?j_username=public&j_password=public">guest</a></li>
 			<li>|</li>
-			<li><a id="about" href="/starexec/public/about.jsp">about</a></li>
+			<li><a id="about" href="/${starexecRoot}/public/about.jsp">about</a></li>
 			<li>|</li>
-		<li><a id="help" href="/starexec/public/help.jsp">help</a></li>
+		<li><a id="help" href="/${starexecRoot}/public/help.jsp">help</a></li>
 		</ul>
 	</c:if>
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy;

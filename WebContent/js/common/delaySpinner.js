@@ -10,7 +10,7 @@ var delayInterval=null;
 
 //Requests img resource needed for the dialog
 $(document).ready(function() {
-	$("body").append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\"/starexec/images/ajaxloader.gif\"/>");
+	$("body").append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\""+starexecRoot+"images/ajaxloader.gif\"/>");
 });
 
 

@@ -68,6 +68,6 @@ try {
 		</table>
 	</fieldset>
 	</form>
-	<a type="button" id="cancelConfig" href="/starexec/secure/details/configuration.jsp?id=${config.id}">cancel</a>
+	<a type="button" id="cancelConfig" href="/${starexecRoot}/secure/details/configuration.jsp?id=${config.id}">cancel</a>
 	<a type="button" id="updateConfig" href="#">update</a>
 </star:template>

@@ -88,6 +88,7 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
+		event.getServletContext().setAttribute("starexecRoot", R.STAREXEC_APPNAME);		
 		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
 	}	
 	

@@ -111,7 +111,7 @@ function attachArchiveTypeMonitor(){
 	$("#selectArchive").change(function() {
 		var value = $("#selectArchive").val();
 		$.post(  
-				"/starexec/services/edit/user/archivetype/" + value,
+				starexecRoot+"services/edit/user/archivetype/" + value,
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {
 			    		showMessage('success', "preferred archive type successfully updated", 5000);
@@ -137,7 +137,7 @@ function attachWebsiteMonitor(){
 		var answer = confirm("are you sure you want to delete this website?");
 		if (true == answer) {
 			$.post(
-					"/starexec/services/websites/delete/" + "user" + "/" + -1 + "/" + id,
+					starexecRoot+"services/websites/delete/" + "user" + "/" + -1 + "/" + id,
 					function(returnData){
 						if (returnData == 0) {
 							parent.remove();
@@ -170,7 +170,7 @@ function attachWebsiteMonitor(){
 		
 		var data = {name: name, url: url};
 		$.post(
-				"/starexec/services/website/add/user/-1",
+				starexecRoot+"services/website/add/user/-1",
 				data,
 				function(returnCode) {
 			    	if(returnCode == '0') {
@@ -203,7 +203,7 @@ function attachPasswordMonitor(){
 			
 			var data = {current: currentPass, newpass: newPass, confirm: confirmPass};
 			$.post(
-					"/starexec/services/edit/user/password/",
+					starexecRoot+"services/edit/user/password/",
 					data,
 					function(returnCode) {
 						switch (returnCode) {
@@ -263,7 +263,7 @@ function initButtonIcons(){
  * Queries the server for the user's websites and displays them on the page
  */
 function refreshUserWebsites(){
-	$.getJSON('/starexec/services/websites/user/-1', processWebsiteData).error(function(){
+	$.getJSON(starexecRoot+'services/websites/user/-1', processWebsiteData).error(function(){
 		showMessage('error',"Internal error displaying user websites",5000);
 	});
 }
@@ -289,7 +289,7 @@ function processWebsiteData(jsonData) {
 	
 	// Build the HTML to display the website and a delete button, then inject that into the client's DOM
 	$.each(jsonData, function(i, site) {
-		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
+		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src=starexecRoot+"images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
 }
 
@@ -333,7 +333,7 @@ function saveChanges(obj, save, attr, old) {
 		newVal = (newVal == "") ? "-1" : newVal;
 		
 		$.post(  
-				"/starexec/services/edit/user/" + attr + "/" + newVal,
+				starexecRoot+"services/edit/user/" + attr + "/" + newVal,
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {
 			    		// Hide the input box and replace it with the table cell

@@ -3,13 +3,13 @@ var attrTable;
 // When the document is ready to be executed on
 $(document).ready(function(){
 	// Set the path to the css theme fr the jstree plugin
-	 $.jstree._themes = "/starexec/css/jstree/";
+	 $.jstree._themes = starexecRoot+"css/jstree/";
 
 	 // Initialize the jstree plugin for the explorer list
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
-				"url" : "/starexec/services/cluster/queues",	// Where we will be getting json data from 
+				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from 
 				"data" : function (n) {  							
 					return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
 				} 
@@ -28,19 +28,19 @@ $(document).ready(function(){
 				"queue" : {
 					"valid_children" : [ "enabled_node", "disabled_node" ],
 					"icon" : {
-						"image" : "/starexec/images/jstree/cogs.png"
+						"image" : starexecRoot+"images/jstree/cogs.png"
 					}
 				},
 				"enabled_node" : {
 					"valid_children" : [],
 					"icon" : {
-						"image" : "/starexec/images/jstree/on.png"
+						"image" : starexecRoot+"images/jstree/on.png"
 					}
 				},
 				"disabled_node" : {
 					"valid_children" : [],
 					"icon" : {
-						"image" : "/starexec/images/jstree/off.png"
+						"image" : starexecRoot+"images/jstree/off.png"
 					}
 				}
 			}
@@ -68,9 +68,9 @@ function getDetails(id, type) {
 	var url = '';
 	
 	if(type == 'queue') {
-		url = "/starexec/services/cluster/queues/details/" + id;		
+		url = starexecRoot+"services/cluster/queues/details/" + id;		
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
-		url = "/starexec/services/cluster/nodes/details/" + id;
+		url = starexecRoot+"services/cluster/nodes/details/" + id;
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
@@ -102,11 +102,11 @@ function populateAttributes(jsonData) {
 		$('#progressBar').progressBar(Math.floor((jsonData.slotsAvailable / jsonData.slotsTotal) * 100), 
 			{ max: 100, 
 			textFormat: 'percentage', 
-			boxImage: '/starexec/images/progress_bar/progressbar.gif',
+			boxImage: starexecRoot+'images/progress_bar/progressbar.gif',
 			barImage: {
-				0:  '/starexec/images/progress_bar/progressbg_red.gif',
-				40: '/starexec/images/progress_bar/progressbg_orange.gif',
-				80: '/starexec/images/progress_bar/progressbg_green.gif'
+				0:  starexecRoot+'images/progress_bar/progressbg_red.gif',
+				40: starexecRoot+'images/progress_bar/progressbg_orange.gif',
+				80: starexecRoot+'images/progress_bar/progressbg_green.gif'
 			}});
 		$('#activeStatus').hide();
 	} else {

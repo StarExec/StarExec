@@ -59,7 +59,7 @@ public class SaveConfiguration extends HttpServlet {
 			if(result == -1) {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to save new configuration.");	
 			} else {
-				response.sendRedirect("/starexec/secure/details/solver.jsp?id=" + Integer.parseInt((String)request.getParameter(SOLVER_ID)));	
+			    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)request.getParameter(SOLVER_ID))));	
 			}									
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

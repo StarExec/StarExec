@@ -40,11 +40,11 @@ public class PasswordReset extends HttpServlet {
 				request.getSession().setAttribute("pwd", tempPass);
 				if(Users.setPassword(userId, tempPass)){
 					log.debug(String.format("Temporary password successfully set for user id [%d]", userId));
-					response.sendRedirect("/starexec/public/temp_pass.jsp");
+					response.sendRedirect(Util.docRoot("public/temp_pass.jsp"));
 				}
 			} else {
 				// Hyperlinks can only be visited once; notify user this hyperlink has expired
-				response.sendRedirect("/starexec/public/password_reset.jsp?result=expired");
+			    response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=expired"));
 			}
 		} else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
@@ -61,12 +61,11 @@ public class PasswordReset extends HttpServlet {
 			if(user == null
 					|| !user.getFirstName().equalsIgnoreCase(request.getParameter(Registration.USER_FIRSTNAME))
 					|| !user.getLastName().equalsIgnoreCase(request.getParameter(Registration.USER_LASTNAME))){
-				response.sendRedirect("/starexec/public/password_reset.jsp?result=noUserFound");
+			    response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=noUserFound"));
 				return;
 			}
 			
 			String code = UUID.randomUUID().toString();
-			String serverURL = String.format("%s://%s:%d", request.getScheme(), request.getServerName(), request.getServerPort());
 			
 			// Add the reset request to the database
 			if(false == Requests.addPassResetRequest(user.getId(), code)){
@@ -75,9 +74,9 @@ public class PasswordReset extends HttpServlet {
 			}
 			
 			// Email the password reset hyperlink to the user 
-			Mail.sendPasswordReset(user, code, serverURL);
+			Mail.sendPasswordReset(user, code);
 			
-			response.sendRedirect("/starexec/public/password_reset.jsp?result=success");
+			response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=success"));
 		} else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
 		}

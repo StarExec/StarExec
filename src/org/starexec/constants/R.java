@@ -101,6 +101,8 @@ public class R {
     public static int TEMP_JOBPAIR_LIMIT = 999999;						    // A temporary limit to the number of job pairs
 	
     // Misc application properties
+    public static String STAREXEC_SERVERNAME = null;
+    public static String STAREXEC_APPNAME = null;
     public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
     public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
     public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names

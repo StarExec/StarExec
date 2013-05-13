@@ -39,7 +39,7 @@
 <star:template title="${bench.name}" js="lib/jquery.cookie, common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/comments, common/table">				
 	<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/starexec/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
+		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
 		<table class="shaded">
 			<thead>
 				<tr>
@@ -150,9 +150,9 @@
 	
 	<c:if test="${bench.downloadable}">
 		<fieldset id="fieldContents">
-			<legend><img alt="loading" src="/starexec/images/loader.gif"> contents</legend>
+			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> contents</legend>
 			<textarea class="contentTextarea" id="benchContent" readonly="readonly" ></textarea>	
-			<a href="/starexec/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
+			<a href="/${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
 		</fieldset>			
 	</c:if>
@@ -184,6 +184,6 @@
 -->
 
 	<c:if test="${bench.downloadable}">
-		<a id="downLink" href="/starexec/secure/download?type=bench&id=${bench.id}">download benchmark</a>
+		<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 	</c:if>
 </star:template>

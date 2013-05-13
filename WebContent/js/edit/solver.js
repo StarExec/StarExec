@@ -105,11 +105,11 @@ function attachButtonActions(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							"/starexec/services/delete/solver/" + getParameterByName("id"),
+							starexecRoot+"services/delete/solver/" + getParameterByName("id"),
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
-										window.location = '/starexec/secure/explore/spaces.jsp';
+										window.location = starexecRoot+'secure/explore/spaces.jsp';
 										break;
 									case 1:
 										showMessage('error', "solver was not deleted; please try again", 5000);
@@ -148,12 +148,12 @@ function attachButtonActions(){
 				
 				//Pass data to server via AJAX
 				$.post(
-						"/starexec/services/edit/solver/" + getParameterByName("id"),
+						starexecRoot+"services/edit/solver/" + getParameterByName("id"),
 						data,
 						function(returnCode) {
 							switch (returnCode) {
 								case 0:
-									window.location = '/starexec/secure/details/solver.jsp?id=' + getParameterByName("id");
+									window.location = starexecRoot+'secure/details/solver.jsp?id=' + getParameterByName("id");
 									break;
 								case 1:
 									showMessage('error', "solver details were not updated; please try again", 5000);
@@ -189,7 +189,7 @@ function togglePlusMinus(addSiteButton){
  */
 function refreshSolverWebsites(){
 	//get website information for the given solver
-	$.getJSON('/starexec/services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
+	$.getJSON(starexecRoot+'services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
 		showMessage('error',"Internal error getting websites",5000);
 	});
 }
@@ -205,7 +205,7 @@ function processWebsiteData(jsonData) {
 	
 	// Injects the clickable delete button that's always present
 	$.each(jsonData, function(i, site) {
-		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="/starexec/images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
+		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src=starexecRoot+"images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
 }
 
@@ -220,7 +220,7 @@ function attachWebsiteMonitor(){
 		var answer = confirm("are you sure you want to delete this website?");
 		if (true == answer) {
 			$.post(
-					"/starexec/services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
+					starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
 					function(returnData){
 						if (returnData == 0) {
 							parent.remove();
@@ -253,7 +253,7 @@ function attachWebsiteMonitor(){
 		
 		var data = {name: name, url: url};
 		$.post(
-				"/starexec/services/website/add/solver/" + getParameterByName("id"),
+				starexecRoot+"services/website/add/solver/" + getParameterByName("id"),
 				data,
 				function(returnCode) {
 			    	if(returnCode == '0') {

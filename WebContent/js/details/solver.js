@@ -10,7 +10,7 @@ $(document).ready(function(){
 	$('#downLink').click(function() {
 		createDialog("Processing your download request, please wait. This will take some time for large solvers.");
 		token=Math.floor(Math.random()*100000000);
-		$('#downLink').attr('href', "/starexec/secure/download?token=" +token+ "&type=solver&id="+$("#solverId").attr("value"));
+		$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=solver&id="+$("#solverId").attr("value"));
 		destroyOnReturn(token);
 	});
 	
@@ -37,12 +37,12 @@ function initComments(solverId){
 		}	
 		var data = {comment: comment};
 		$.post(
-				"/starexec/services/comments/add/solver/" + solverId,
+				starexecRoot+"services/comments/add/solver/" + solverId,
 				data,
 				function(returnCode) {
 			    	if(returnCode == 0) {
 			    		$("#comment_text").val("");
-			    		$.getJSON('/starexec/services/comments/solver/' + solverId, displayComments).error(function(){
+			    		$.getJSON(starexecRoot+'services/comments/solver/' + solverId, displayComments).error(function(){
 			    			showMessage('error',"Internal error posting comment",5000);
 			    		});
 			    	} else {
@@ -153,7 +153,7 @@ function displayComments(data) {
 		var hiddenUserId;
 		hiddenUserId = '<input type="hidden" value="'+comment.userId+'">';
 		var fullName = comment.firstName + ' ' + comment.lastName;
-		var userLink = '<a href="/starexec/secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + '<img class="extLink" src="/starexec/images/external.png"/></a>' + hiddenUserId;
+		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + comment.userId + '" target="blank">' + fullName + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>' + hiddenUserId;
 		var hiddenCommentId = '<input type="hidden" value="' + comment.id + '" >';
 		var delbutton = '<a class="commentDelBtn" cid="' + comment.id + '" uid="' + comment.userId +'">delete</a>';
 		var cmt = comment.description;
@@ -175,7 +175,7 @@ function displayComments(data) {
 				'yes': function() {
 					$('#dialog-confirm-delete').dialog('close');
 					$.post(
-							"/starexec/services/comments/delete/solver/" + solverId + "/" + uid + "/" + cid,
+							starexecRoot+"services/comments/delete/solver/" + solverId + "/" + uid + "/" + cid,
 						function(returnData){
 							if (returnData == 0) {
 								commentTable.fnDeleteRow(commentTable.fnGetPosition(row));
@@ -203,7 +203,7 @@ function displayComments(data) {
 
 //get comment information for the given solver
 function getComments(id) {
-	$.getJSON('/starexec/services/comments/solver/' + id, displayComments).error(function(){
+	$.getJSON(starexecRoot+'services/comments/solver/' + id, displayComments).error(function(){
 		showMessage('error',"Internal error getting comments",5000);
 	});
 }

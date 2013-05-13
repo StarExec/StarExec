@@ -37,7 +37,7 @@
 
 <star:template title="upload benchmarks to ${space.name}" css="common/delaySpinner, add/benchmark" js="common/delaySpinner, lib/jquery.validate.min, add/benchmarks, lib/jquery.qtip.min">
 	<form id="uploadForm" enctype="multipart/form-data" method="POST"
-		action="/starexec/secure/upload/benchmarks">
+		action="/${starexecRoot}/secure/upload/benchmarks">
 		<input type="hidden" name="space" value="${space.id}" />
 		<fieldset>
 			<legend>upload benchmarks</legend>

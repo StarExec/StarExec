@@ -75,7 +75,7 @@ public class UploadPicture extends HttpServlet {
 		try {
 			FileItem item = (FileItem)form.get(UploadPicture.PICTURE_FILE);
 			String fileName = "";
-			String redir = "/starexec/secure/edit/account.jsp";
+			String redir = Util.docRoot("secure/edit/account.jsp");
 			
 			String type = (String)form.get(UploadPicture.TYPE);
 			String id = (String)form.get(UploadPicture.ID);
@@ -86,7 +86,7 @@ public class UploadPicture extends HttpServlet {
 				sb.append("/users/Pic");
 				sb.append(id);
 				fileName = sb.toString();
-				redir = "/starexec/secure/edit/account.jsp";
+				redir = Util.docRoot("secure/edit/account.jsp");
 			} else if (type.equals("solver")) {
 				sb.delete(0, sb.length());
 				sb.append("/solvers/Pic");
@@ -94,7 +94,7 @@ public class UploadPicture extends HttpServlet {
 				fileName = sb.toString();
 				
 				sb.delete(0, sb.length());
-				sb.append("/starexec/secure/details/solver.jsp?id=");
+				sb.append(Util.docRoot("secure/details/solver.jsp?id="));
 				sb.append(id);			
 				redir = sb.toString();
 			} else if (type.equals("benchmark")) {
@@ -104,7 +104,7 @@ public class UploadPicture extends HttpServlet {
 				fileName = sb.toString();
 				
 				sb.delete(0, sb.length());
-				sb.append("/starexec/secure/details/benchmark.jsp?id=");
+				sb.append(Util.docRoot("secure/details/benchmark.jsp?id="));
 				sb.append(id);			
 				redir = sb.toString();
 			}

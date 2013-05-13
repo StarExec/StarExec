@@ -27,7 +27,7 @@ function initUI(){
 	// Set up row click to send to public pair details page
 	$("#publicPairTbl tbody").delegate("tr", "click", function(){
 		var pairId = $(this).find('input').val();
-		window.location.assign("/starexec/public/jobs/pair.jsp?id=" + pairId);
+		window.location.assign(starexecRoot+"public/jobs/pair.jsp?id=" + pairId);
 	});
 }
 
@@ -54,7 +54,7 @@ function initDataTables(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
-        "sAjaxSource"	: "/starexec/services/jobs/",
+        "sAjaxSource"	: starexecRoot+"services/jobs/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });

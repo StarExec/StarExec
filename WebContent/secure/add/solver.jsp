@@ -21,7 +21,7 @@
 	}
 %>
 <star:template title="upload solver to ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner ,lib/jquery.validate.min, add/solver">
-	<form method="POST" enctype="multipart/form-data" action="/starexec/secure/upload/solvers" id="upForm" flag= "false">
+	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/solvers" id="upForm" flag= "false">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>solver information</legend>		

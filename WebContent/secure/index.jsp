@@ -8,7 +8,7 @@
 		System.out.println("role = " + user.getRole());
 		System.out.println("boolean = " + user.getRole().equals("unauthorized"));
 		if (!user.getRole().equals("unauthorized")){
-			String redirectURL = "/starexec/secure/explore/spaces.jsp;";
+			String redirectURL = Util.docRoot("secure/explore/spaces.jsp");
     		response.sendRedirect(redirectURL);
 		}
 %>

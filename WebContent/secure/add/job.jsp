@@ -40,7 +40,7 @@
 
 <jsp:useBean id="now" class="java.util.Date" />
 <star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
-	<form id="addForm" method="post" action="/starexec/secure/add/job">	
+	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>
 		<fieldset id="fieldStep1">
 			<legend>configure job</legend>
