@@ -460,7 +460,7 @@ public class Download extends HttpServlet {
      * @author Ruoyu Zhang
      */
 	private String handleSpace(Space space, int uid, String format, HttpServletResponse response) throws IOException {
-		// If we can see this benchmark AND the benchmark is downloadable...
+		// If we can see this space AND the space is downloadable...
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
 			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
