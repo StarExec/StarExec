@@ -24,6 +24,9 @@
 	<property name="build-directory" value="build" />
 	<property name="class-directory" value="${build-directory}/classes" />		
 	<property name="config-directory" value="${class-directory}/org/starexec/config" />
+	<property name="sge-script-dir" value="${data_dir}/sge_scripts" />
+	<property name="pics-dir" value="${data_dir}/pictures" />
+	<property name="batch-dir" value="${data_dir}/batchSpace" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
@@ -75,19 +78,28 @@
 		</copy>		
 		
 		<!-- Copy the sge scripts to their proper location -->		
-		<copy todir="${sge_script_dir}">
+		<copy todir="${sge-script-dir}">
 			<fileset dir="${source-directory}/org/starexec/config/sge">
 				<include name="**/*.bash" />
 			</fileset>
 		</copy>
 
-		<copy todir="${batch_dir}" file="starexec_res/batch/batchSpaceSchema.xsd"/>
-		
 		<!-- Change permissions of the new sge script files so sge can use them -->
-		<chmod dir="${sge_script_dir}" perm="770" includes="**/*.bash"/>		
+		<chmod dir="${sge-script-dir}" perm="770" includes="**/*.bash"/>		
 		<chown owner=":star-web">
-			<fileset dir="${sge_script_dir}" includes="**/*.bash"/>
-	    </chown>
+			<fileset dir="${sge-script-dir}" includes="**/*.bash"/>
+                </chown>
+
+		<copy todir="${batch-dir}" file="starexec_res/batch/batchSpaceSchema.xsd"/>
+
+                <!-- Copy default pictures (how to do this more nicely with a loop in ant?) -->
+                <mkdir dir="${pics-dir}/users"/>
+                <copy todir="${pics-dir}/users" file="starexec_res/default-pics/users/Pic0.jpg"/>
+                <mkdir dir="${pics-dir}/solvers"/>
+                <copy todir="${pics-dir}/solvers" file="starexec_res/default-pics/solvers/Pic0.jpg"/>
+                <mkdir dir="${pics-dir}/benchmarks"/>
+                <copy todir="${pics-dir}/benchmarks" file="starexec_res/default-pics/benchmarks/Pic0.jpg"/>
+
 		
 
 		<!-- Create/update the build property file -->
@@ -127,5 +139,7 @@
 			<fileset dir="WebContent"/>
 			<lib dir="${web-inf}/lib"/>			
 		</war>
-	</target>		
+	</target>	
+
+
 </project>

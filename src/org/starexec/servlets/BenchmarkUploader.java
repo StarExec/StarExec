@@ -39,9 +39,6 @@ import org.starexec.util.Util;
 import org.apache.commons.io.FileUtils;
 
 
-/**
- * @deprecated This class is out of date and needs to be re-implemented - why??
- */
 @SuppressWarnings("serial")
 public class BenchmarkUploader extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	

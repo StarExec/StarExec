@@ -150,14 +150,15 @@ public class Starexec implements ServletContextListener {
 			}
 		};	
 		
-		//Schedule the recurring tasks above to be ru every so often
-		
-		//taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
-		//taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
-		//taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
-		//taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
-		//taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);
-		
+		//Schedule the recurring tasks above to be run every so often
+
+		if (R.RUN_PERIODIC_SGE_TASKS) {
+		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
+		    taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
+		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
+		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
+		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);
+		}
 	
 	}
 }
