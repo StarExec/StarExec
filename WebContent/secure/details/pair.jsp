@@ -196,14 +196,12 @@
 	</c:choose>		
 	</fieldset>
 	
-	<c:if test="${pair.status.code == 'STATUS_COMPLETE' or pair.status.code == 'STATUS_WAIT_RESULTS'}">
-		<fieldset id="fieldOutput">		
+	<fieldset id="fieldOutput">		
 			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
 			<textarea class=contentTextarea id="jpStdout" readonly="readonly"></textarea>	
 			<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">output may be truncated. 'popout' for the full output.</p>
-		</fieldset>
-	</c:if>
+	</fieldset>
 	
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			

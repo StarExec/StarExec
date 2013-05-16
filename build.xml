@@ -12,7 +12,7 @@
      See example.local.properties in this directory for an example. -->
 
 
-<!-- Starexec production build script. Author: Tyler Jensen -->
+<!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump -->
 <project name="starexec" default="war" basedir=".">
 
         <loadproperties srcFile="local.properties"/>

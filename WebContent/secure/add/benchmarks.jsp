@@ -130,7 +130,7 @@
 						<td class="label"><p>dependency root space</p></td>
 						<td><select id="depRoot" name="depRoot">
 								<c:forEach var="uSp" items="${userSpaces}">
-									<option value="${uSp.id}" title="${uSp.description}">${uSp.name}</option>
+									<option value="${uSp.id}" title="${uSp.description}">${uSp.name} (${uSp.id})</option>
 								</c:forEach>
 						</select></td>
 					</tr>

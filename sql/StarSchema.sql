@@ -66,8 +66,7 @@ CREATE TABLE permissions (
 INSERT INTO permissions VALUES (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 -- All of the spaces in starexec. A space is simply a set where
--- solvers, benchmarks, users and jobs exist (I like to think of it
--- as a folder)
+-- solvers, benchmarks, users and jobs exist (think of it as a folder)
 CREATE TABLE spaces (
 	id INT NOT NULL AUTO_INCREMENT, 
 	name VARCHAR(128) NOT NULL,
