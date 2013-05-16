@@ -565,12 +565,13 @@ public class RESTServices {
 				}
 			}
 		} else if (attribute.equals("email")) {
-			if (true == Validator.isValidEmail(newValue)) { 
-				success = Users.updateEmail(userId, newValue);
-				if (true == success) {
-					SessionUtil.getUser(request).setEmail(newValue);
-				}
-			}
+			//just commenting this out for now, since we don't want users changing their email addresses
+			//if (true == Validator.isValidEmail(newValue)) { 
+			//	success = Users.updateEmail(userId, newValue);
+			//	if (true == success) {
+			//		SessionUtil.getUser(request).setEmail(newValue);
+			//	}
+			//}
 		} else if (attribute.equals("institution")) {
 			if (true == Validator.isValidInstitution(newValue)) {
 				success = Users.updateInstitution(userId, newValue);
