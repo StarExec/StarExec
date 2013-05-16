@@ -17,7 +17,6 @@ import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
-
 /**
  * Servlet which handles incoming requests adding new spaces
  * @author Tyler Jensen

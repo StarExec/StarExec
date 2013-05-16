@@ -1,9 +1,9 @@
 package org.starexec.servlets;
 
 import java.io.*;
-import java.net.HttpCookie;
+
 import java.util.*;
-import java.util.zip.*;
+
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -84,9 +84,9 @@ public class Download extends HttpServlet {
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				if(request.getParameter("hierarchy").equals("false")){
-					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response);
+					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,false);
 				} else {
-					fileName = handleSpaceHierarchy(space, u.getId(), u.getArchiveType(), response);
+					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,true);
 				}
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
@@ -133,10 +133,15 @@ public class Download extends HttpServlet {
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
-			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
+			String baseFileName=s.getName();
+			
+			
+			
+			String fileName = baseFileName + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			
 			uniqueDir.createNewFile();
-			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format);
+			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format,baseFileName);
 			
 			//We return the fileName so the browser can redirect straight to it
 			return fileName;
@@ -450,35 +455,39 @@ public class Download extends HttpServlet {
     }
     
     /**
-     * Handles download of a single space, return the name of compressed file containing the space.
+     * Handles download of a single space or a hierarchy, return the name of compressed file containing the space.
      * @param space The space needed to be downloaded
      * @param uid The id of the user making the request
      * @param format The file format of the generated compressed file
+     * @param hierarchy True if downloading a hierarchy, false for a single space
      * @param response The servlet response sent back
      * @return Name of the generated file
      * @throws IOException
      * @author Ruoyu Zhang
      */
-	private String handleSpace(Space space, int uid, String format, HttpServletResponse response) throws IOException {
+	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy) throws IOException {
 		// If we can see this space AND the space is downloadable...
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
+			String baseFileName=space.getName();
 			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
-			
-			String tempDirName = UUID.randomUUID().toString();
-			File tempDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), tempDirName);
-			tempDir.mkdirs();
-			
-			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
-			for(Benchmark b: benchList){
-				if(b.isDownloadable()){
-					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());
+			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
+			if (!hierarchy) {
+				tempDir.mkdirs();
+				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
+				for(Benchmark b: benchList){
+					if(b.isDownloadable()){
+						copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());
+					}
 				}
+			} else {
+				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath());
 			}
-			
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format);
-			
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName);
+			if(tempDir.exists()){
+				tempDir.delete();
+			}
 			return fileName;
 		}
 		else {
@@ -487,37 +496,6 @@ public class Download extends HttpServlet {
 		return null;
 	}
 	
-	/**
-	 * Handles download of the hierarchy of a space, return the name of compressed file containing the space.
-	 * @param space The space needed to be downloaded
-	 * @param uid The id of the user who make the request
-	 * @param format The file format of the generated compressed file
-	 * @param response The servlet response sent back
-	 * @return Name of the generated file
-	 * @throws IOException
-	 * @author Ruoyu Zhang
-	 */
-	private String handleSpaceHierarchy(Space space, int uid, String format, HttpServletResponse response) throws IOException {
-		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
-			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
-			uniqueDir.createNewFile();
-			
-			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName()); 	
-			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath());
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format);
-			
-			if(tempDir.exists()){
-				tempDir.delete();
-			}
-			
-			return fileName;
-		}
-		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
-		}
-		return null;
-	}
 	
 	/**
 	 * Store a space and all its subspaces into the specified directory with their hierarchy

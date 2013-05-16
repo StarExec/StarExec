@@ -1916,6 +1916,7 @@ function updateButtonIds(id) {
 	
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
 	$('#generateResultChart').attr('href', starexecRoot+"secure/generateResultChart?sid=" + id);
+	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy-txt').text('do you want to download the single space or the hierarchy?');
@@ -1925,12 +1926,19 @@ function updateButtonIds(id) {
 			height: 165,
 			buttons: {
 				'space': function(){
-					window.location.href=starexecRoot+"secure/download?type=space&hierarchy=false&id="+id;
 					$(this).dialog("close");
+					createDialog("Processing your download request, please wait. This will take some time for large spaces.")
+					token=Math.floor(Math.random()*100000000);
+					window.location.href=starexecRoot+"secure/download?token="+token+"&type=space&hierarchy=false&id="+id;
+					destroyOnReturn(token);
+					
 				},
 				'hierarchy': function(){
-					window.location.href=starexecRoot+"secure/download?type=space&hierarchy=true&id="+id;
 					$(this).dialog("close");
+					createDialog("Processing your download request, please wait. This will take some time for large spaces.")
+					token=Math.floor(Math.random()*100000000);
+					window.location.href=starexecRoot+"secure/download?token="+token+"&type=space&hierarchy=true&id="+id;
+					destroyOnReturn(token);
 				},
 				"cancel": function() {
 					log('user canceled copy action');
