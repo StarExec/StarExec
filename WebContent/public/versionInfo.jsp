@@ -6,6 +6,15 @@
 	<pre id="infoLoc">
 -- Users' disk quotas for benchmark and solver uploads are now enforced.
 	
+In revision 12725:
+
+Improvements:
+
+-- default post-processors for jobs chosen correctly on job creation page.
+
+-- workaround for problem selecting dependency space out of a large number
+   of spaces on the job creation page.
+
 In revision 12647:
 
 Bug fixes:
