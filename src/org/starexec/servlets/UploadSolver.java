@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -72,10 +73,11 @@ public class UploadSolver extends HttpServlet {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
 				// Make sure the request is valid
-				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+				
 				String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 
 				if (DescMethod.equals("file")) {
+					FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 					if (!Validator.isValidPrimDescription(item_desc.getString())) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The local description file is malformed. Make sure it does not exceed 1024 characters.");
 						return;
@@ -85,8 +87,14 @@ public class UploadSolver extends HttpServlet {
 				if(!this.isValidRequest(form)) {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload solver request was malformed");
 					return;
-				} 
-								
+				}
+				
+				int spaceId=Integer.parseInt((String)form.get("space"));
+				if (!Permissions.canUserUploadArchive(spaceId, SessionUtil.getUserId(request))) {
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not a member of this space");
+					return;
+				}
+				
 				// Make sure that the solver has a unique name in the space.
 				if(Spaces.notUniquePrimitiveName((String)form.get(UploadSolver.SOLVER_NAME), Integer.parseInt((String)form.get(SPACE_ID)), 1)) {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The solver should have a unique name in the space.");
@@ -336,13 +344,14 @@ public class UploadSolver extends HttpServlet {
 	private boolean isValidRequest(HashMap<String, Object> form) {
 		try {
 			if (!form.containsKey(UploadSolver.UPLOAD_FILE) ||
-					!form.containsKey(SOLVER_DESC_FILE) ||
+					!form.containsKey(DESC_METHOD) ||
+					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD)=="file") ||
 					!form.containsKey(SPACE_ID) ||
 					!form.containsKey(UploadSolver.SOLVER_NAME) || 
 					!form.containsKey(SOLVER_DESC) ||
 					!form.containsKey(SOLVER_DOWNLOADABLE) || 
-					!form.containsKey(UPLOAD_METHOD) ||
-					!form.containsKey (DESC_METHOD)) {
+					!form.containsKey(UPLOAD_METHOD)) {
+				System.out.println("here");
 				return false;
 			}
 			
@@ -354,6 +363,7 @@ public class UploadSolver extends HttpServlet {
 			
 			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) ||
 					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
+				
 				return false;
 			}
 			
