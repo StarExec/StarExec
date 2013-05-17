@@ -188,7 +188,7 @@ public class Download extends HttpServlet {
 	 */
     private static String handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
 		// If we can see this benchmark AND the benchmark is downloadable...
-		if (Permissions.canUserSeeBench(b.getId(), userId) && b.isDownloadable()) {
+		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = b.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;

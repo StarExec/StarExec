@@ -29,6 +29,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for benchmarks.
@@ -1496,23 +1497,29 @@ public class Benchmarks {
 				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm, statusId));
 				Uploads.incrementTotalSpaces(statusId);//for upload status page
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
-				Processor t = new Processor();
-				t.setId(typeId);
+				
+				if (Validator.isValidPrimName(f.getName())) {
+					Processor t = new Processor();
+					t.setId(typeId);
 
-				Benchmark b = new Benchmark();
-				b.setPath(f.getAbsolutePath());
-				b.setName(f.getName());
-				b.setType(t);
-				b.setUserId(userId);
-				b.setDownloadable(downloadable);
-												
-				Uploads.incrementTotalBenchmarks(statusId);//for upload status page
-				// Make sure that the benchmark has a unique name in the space.
-				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
+					Benchmark b = new Benchmark();
+					b.setPath(f.getAbsolutePath());
+					b.setName(f.getName());
+					b.setType(t);
+					b.setUserId(userId);
+					b.setDownloadable(downloadable);
+													
+					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
+					// Make sure that the benchmark has a unique name in the space.
+					if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
+						return null;
+					}
+
+					space.addBenchmark(b);
+				} else {
 					return null;
 				}
-
-				space.addBenchmark(b);
+				
 			}
 		}
 
@@ -1539,16 +1546,23 @@ public class Benchmarks {
 				// If it's a directory, recursively extract all benchmarks from it and add them to our list
 				benchmarks.addAll(Benchmarks.extractBenchmarks(f, typeId, userId, downloadable));
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
-				Processor t = new Processor();
-				t.setId(typeId);
+				
+				//make sure the name is valid
+				if (Validator.isValidPrimName(f.getName())) {
+					Processor t = new Processor();
+					t.setId(typeId);
 
-				Benchmark b = new Benchmark();
-				b.setPath(f.getAbsolutePath());
-				b.setName(f.getName());
-				b.setType(t);
-				b.setUserId(userId);
-				b.setDownloadable(downloadable);
-				benchmarks.add(b);
+					Benchmark b = new Benchmark();
+					b.setPath(f.getAbsolutePath());
+					b.setName(f.getName());
+					b.setType(t);
+					b.setUserId(userId);
+					b.setDownloadable(downloadable);
+					benchmarks.add(b);
+				} else {
+					//TODO: Determine behavior if a name is invalid
+					return null;
+				}
 			}
 		}
 

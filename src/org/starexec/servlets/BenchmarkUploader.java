@@ -227,7 +227,6 @@ public class BenchmarkUploader extends HttpServlet {
 						}
 					} else if(uploadMethod.equals("dump")) {
 						List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-
 						for (Benchmark bench : results) {
 							// Make sure that the benchmark has a unique name in the space.
 							//TODO: verify that this is being done correctly. particularly whether benchmarks in THIS upload have unique names

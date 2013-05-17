@@ -26,6 +26,11 @@
 			request.setAttribute("com", s);
 			request.setAttribute("depends", deps);
 			request.setAttribute("attributes",attrs);
+			boolean down=b.isDownloadable();
+			if (b.getUserId()==userId) {
+				down=true;
+			}
+			request.setAttribute("downloadable",down);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");			
 		}
@@ -147,15 +152,14 @@
 	</fieldset> -->		
 	
 
-	
-	<c:if test="${bench.downloadable}">
+	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> contents</legend>
 			<textarea class="contentTextarea" id="benchContent" readonly="readonly" ></textarea>	
 			<a href="/${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
 		</fieldset>			
-	</c:if>
+	</c:if> 
 	
 <!-- 	Comments feature not yet polished, commenting-out for now
 	<fieldset id="commentField">
@@ -183,7 +187,7 @@
 	</div>				
 -->
 
-	<c:if test="${bench.downloadable}">
+	<c:if test="${downloadable}}">
 		<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 	</c:if>
 </star:template>
