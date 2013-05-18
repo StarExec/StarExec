@@ -253,19 +253,6 @@ public class Permissions {
 
 		return false;		
 	}
-	
-	/**
-	 * Returns whether a user is authorized to upload to a given space. A user is authorized if they 
-	 * can see the space and the space is not the root
-	 * @param spaceId The relevant space ID.
-	 * @param userId The relevant user
-	 * @return True if user is allowed to upload, false otherwise
-	 * @author Eric Burns
-	 */
-	
-	public static boolean canUserUploadArchive(int spaceId, int userId) {
-		return canUserSeeSpace(spaceId,userId) && (spaceId!=1);
-	}
 
 	/**
 	 * Checks to see if the user belongs to the given upload status

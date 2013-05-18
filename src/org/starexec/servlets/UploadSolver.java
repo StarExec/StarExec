@@ -90,8 +90,8 @@ public class UploadSolver extends HttpServlet {
 				}
 				
 				int spaceId=Integer.parseInt((String)form.get("space"));
-				if (!Permissions.canUserUploadArchive(spaceId, SessionUtil.getUserId(request))) {
-					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not a member of this space");
+				if (!SessionUtil.getPermission(request, spaceId).canAddSolver()) {
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to add solvers to this space");
 					return;
 				}
 				
@@ -176,11 +176,6 @@ public class UploadSolver extends HttpServlet {
 					name=url.toString().replace('/', '-');
 				}	
 			}
-			
-
-			//FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
-			
-		
 
 			//Set up a new solver with the submitted information
 			Solver newSolver = new Solver();
@@ -343,15 +338,15 @@ public class UploadSolver extends HttpServlet {
 	 */
 	private boolean isValidRequest(HashMap<String, Object> form) {
 		try {
-			if (!form.containsKey(UploadSolver.UPLOAD_FILE) ||
+			if (!form.containsKey(UPLOAD_METHOD) ||
+					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
 					!form.containsKey(DESC_METHOD) ||
-					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD)=="file") ||
+					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file")) ||
 					!form.containsKey(SPACE_ID) ||
 					!form.containsKey(UploadSolver.SOLVER_NAME) || 
 					!form.containsKey(SOLVER_DESC) ||
-					!form.containsKey(SOLVER_DOWNLOADABLE) || 
-					!form.containsKey(UPLOAD_METHOD)) {
-				System.out.println("here");
+					!form.containsKey(SOLVER_DOWNLOADABLE)) {
+				
 				return false;
 			}
 			

@@ -86,6 +86,7 @@ public class BenchmarkUploader extends HttpServlet {
 			if(this.isRequestValid(form)) {		
 				// If the user has benchmark adding permissions
 				Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+				
 				String uploadMethod = (String)form.get(UPLOAD_METHOD);
 				if(uploadMethod.equals("dump") && !perm.canAddBenchmark()) {
 					// They don't have permissions, send forbidden error
