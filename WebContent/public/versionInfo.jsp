@@ -5,6 +5,10 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 -- Users' disk quotas for benchmark and solver uploads are now enforced.
+
+-- Handle user's trying to register with duplicate e-mail
+
+-- Uploaded description from solvers adjusted so it searches root directory
 	
 In revision 12725:
 

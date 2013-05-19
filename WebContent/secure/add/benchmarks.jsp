@@ -142,7 +142,7 @@
 							id="notLinked" type="radio" name="linked" value="false" /><label>no</label></td>
 					</tr>
 					<tr>
-						<td colspan="1"><button id="btnPrev">back</button></td>						
+						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
 						<td colspan="1"><button id="btnUpload" type="submit">upload</button></td>
 					</tr>
 				</tbody>
