@@ -231,7 +231,7 @@ public class UploadSolver extends HttpServlet {
 				String Destination = archiveFile.getParentFile().getCanonicalPath() + File.separator;
 				String strUnzipped = "";		
 			    try {
-			        FileInputStream fis = new FileInputStream(Destination + FileName +"/" + R.SOLVER_DESC_PATH);
+			        FileInputStream fis = new FileInputStream(Destination +"/" + R.SOLVER_DESC_PATH);
 			        BufferedInputStream bis = new BufferedInputStream(fis);
 			        DataInputStream dis = new DataInputStream(bis);
 			        String text;
