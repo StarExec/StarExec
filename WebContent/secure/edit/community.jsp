@@ -98,7 +98,7 @@
 				<tbody>
 				<c:forEach var="proc" items="${bench_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="${'/${starexecRoot}/secure/edit/processor.jsp?type=bench&id='}${proc.id}">${proc.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -236,7 +236,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${post_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="${'/${starexecRoot}/secure/edit/processor.jsp?type=bench&id='}${proc.id}">${proc.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
