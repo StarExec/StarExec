@@ -187,7 +187,7 @@
 	</div>				
 -->
 
-	<c:if test="${downloadable}}">
+	<c:if test="${downloadable}">
 		<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 	</c:if>
 </star:template>
