@@ -215,9 +215,8 @@ public class UploadSolver extends HttpServlet {
 			long usedBytes=Users.getDiskUsage(userId);
 			
 			if (fileSize>allowedBytes-usedBytes) {
-				returnArray[0]=-4;
-				
-				return returnArray;
+				//returnArray[0]=-4;
+				//return returnArray;
 			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 

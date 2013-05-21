@@ -181,7 +181,7 @@ public class BenchmarkUploader extends HttpServlet {
 					long usedBytes=Users.getDiskUsage(userId);
 					
 					if (fileSize>allowedBytes-usedBytes) {
-						throw new Exception("File too large to fit in user's disk quota");
+						//throw new Exception("File too large to fit in user's disk quota");
 					}		
 
 					// Copy the benchmark zip to the server from the client
