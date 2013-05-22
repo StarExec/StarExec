@@ -4,15 +4,35 @@
 
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
--- Users' disk quotas for benchmark and solver uploads are now enforced.
+
+In revision 12755:
+
+-- The names of solvers can contain spaces (' ').  
+
+-- small bug with the edit processors page (from edit community) is fixed.
+
+-- scheduling jobs is fair now for each queue, and work is dispatched
+   to queues independently (before, a job could incorrectly be blocked
+   waiting for another queue to clear).
+
+-- initial version of StarexecCommand is posted (more documentation coming
+   soon from Eric).
 
 -- Handle user's trying to register with duplicate e-mail
 
--- Uploaded description from solvers adjusted so it searches root directory
+-- back/cancel buttons have been added to some pages
+
+-- The root directory of an archive is searched for starexec_description.txt
+   when a solver is uploaded and the user requests that the description is
+   pulled from the archive.
 	
-In revision 12725:
+In revision 12730:
 
 Improvements:
+
+-- owners can always download their own benchmarks, regardless of downloadable status.
+
+-- benchmark names are now validated on upload.
 
 -- default post-processors for jobs chosen correctly on job creation page.
 

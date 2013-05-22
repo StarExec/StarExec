@@ -37,7 +37,7 @@ public class Jobs {
 	/**
 	 * Adds a new job to the database. NOTE: This only records the job in the 
 	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
-	 * This method also fills in the IDs of job pairs of the give job object.
+	 * This method also fills in the IDs of job pairs of the given job object.
 	 * @param job The job data to add to the database
 	 * @param spaceId The id of the space to add the job to
 	 * @return True if the operation was successful, false otherwise.
@@ -74,9 +74,8 @@ public class Jobs {
 	 * Adds a job record to the database. This is a helper method for the Jobs.add method
 	 * @param con The connection the update will take place on
 	 * @param job The job to add
-	 * @return True if the operation was successful
 	 */
-	private static boolean addJob(Connection con, Job job) throws Exception {				
+	private static void addJob(Connection con, Job job) throws Exception {				
 		CallableStatement procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setInt(1, job.getUserId());
 		procedure.setString(2, job.getName());
@@ -101,9 +100,8 @@ public class Jobs {
 
 		// Update the job's ID so it can be used outside this method
 		job.setId(procedure.getInt(7));		
-
-		return true;
 	}
+
 
 	/**
 	 * Adds a new attribute to a job pair
@@ -1695,12 +1693,18 @@ public class Jobs {
 
 		return false;
 	}
-	//gets jobs with pending (or rejected) job pairs
-	public static List<Job> getPendingJobs() {
+    /**
+     * Gets jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     * @author Ben McCune and Aaron Stump
+     */
+	public static List<Job> getPendingJobs(int queueId) {
 		Connection con = null;					
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetPendingJobs()}");					
+			CallableStatement procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
+			procedure.setInt(1, queueId);					
 			ResultSet results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
 
@@ -1727,11 +1731,12 @@ public class Jobs {
 		return null;
 	}
 
-	public static Integer getSizeOfQueue() {
+	public static Integer getSizeOfQueue(int queueId) {
 		Connection con = null;					
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetNumEnqueuedJobs()}");					
+			CallableStatement procedure = con.prepareCall("{CALL GetNumEnqueuedJobs(?)}");					
+			procedure.setInt(1, queueId);					
 			ResultSet results = procedure.executeQuery();
 
 			Integer qSize = -1;

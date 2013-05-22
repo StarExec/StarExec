@@ -136,54 +136,40 @@ public class ArchiveUtil {
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
 				// First rename it if it's a .tgz
 
-				/*
-					String oldName = fileName;
-					fileName = fileName.substring(0, fileName.lastIndexOf('.')) + ".tar.gz";
-					Util.executeCommand("mv " + oldName + " " + fileName);
-				 */
-				//extract from command line (initially only for .tgz.
+			    String[] lsCmd = new String[3];
+			    lsCmd[0] = "ls";
+			    lsCmd[1] = "-l";
+
 				log.debug("destination is " + destination);
 
-				BufferedReader reader = Util.executeCommand("ls -l " + fileName);
+				lsCmd[2] = fileName;
+				BufferedReader reader = Util.executeCommand(lsCmd);
 				String results = Util.bufferToString(reader);
 				log.debug("ls -l of tgz results = " + results);
 
-				reader = Util.executeCommand("ls -l " + destination);
+				lsCmd[2] = destination;
+				reader = Util.executeCommand(lsCmd);
 				results = Util.bufferToString(reader);
 				log.debug("ls -l destination results = " + results);
 
 				//not verbose in case it's an issue with the buffer size
-				String commandString = "tar -xf " + fileName + " -C " + destination;
-				log.info("about to execute command: " + commandString);
-				/*String[] commandArray = new String[3];
-					commandArray[0] = "tar";
-					commandArray[1] = "-xvf";
-					commandArray[2] = fileName;
-					Runtime r = Runtime.getRuntime();	
-					try {
-						r.exec(commandArray);
-						}
-					catch (IOException e) {
-							log.error("extract error: " + e);
-					}*/
-				reader = Util.executeCommand(commandString);
+				String[] tarCmd = new String[5];
+				tarCmd[0] = "tar";
+				tarCmd[1] = "-xf";
+				tarCmd[2] = fileName;
+				tarCmd[3] = "-C";
+				tarCmd[4] = destination;
+				log.debug("about to execute command tar command");
+				reader = Util.executeCommand(tarCmd);
 				results = Util.bufferToString(reader);
-				log.info("command was executed, results = " + results);
-				log.info("now removing the archived file " + fileName);
+				log.debug("command was executed, results = " + results);
+				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
-				reader = Util.executeCommand("ls -l " + destination);
+				lsCmd[2] = destination;
+				reader = Util.executeCommand(lsCmd);
 				results = Util.bufferToString(reader);
-				log.info("command was executed - ls -l destination results = " + results);
+				log.debug("command was executed - ls -l destination results = " + results);
 
-				/* no longer use apache on .tgz since it fails on some
-				else{
-				// First un-GZIP it
-				ArchiveUtil.extractGZ(fileName, destination);
-
-				// Then unpack the tar that was the result of the un-gzip
-				ArchiveUtil.extractTAR(fileName.substring(0, fileName.lastIndexOf('.')), destination);	
-				}
-				 */
 			} else {
 				// No valid file type found :(
 				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));

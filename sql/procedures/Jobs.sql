@@ -576,22 +576,23 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 		WHERE id = _id;
 	END //
 	
--- Retrieves all jobs with pending or rejected job pairs
--- Author: Benton McCune
+-- Retrieves all jobs with pending job pairs for the given queue
+-- Author: Benton McCune and Aaron Stump
 DROP PROCEDURE IF EXISTS GetPendingJobs;
-CREATE PROCEDURE GetPendingJobs()
+CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
 		SELECT *
 		FROM jobs
-		WHERE id in (select distinct job_id from job_pairs where status_code=1);
+		WHERE id in (select distinct job_id from job_pairs where status_code=1 and queue_id = _queueId);
 	END //
 	
--- Retrieves all jobs with pending or rejected job pairs
--- Author: Benton McCune
+-- Retrieves the number of jobs with pending job pairs for the given queue
+-- Author: Benton McCune and Aaron Stump
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
-CREATE PROCEDURE GetNumEnqueuedJobs()
+CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	BEGIN
-		SELECT COUNT(*) as count from job_pairs where status_code=2;
+		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
+                WHERE job_pairs.status_code=2 AND jobs.queue_id = _queueId;
 	END //	
 	
 -- Retrieves basic info about job pairs for the given job id

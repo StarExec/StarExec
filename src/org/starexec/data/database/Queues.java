@@ -172,15 +172,23 @@ public class Queues {
 	
 	/**
 	 * Gets all queues in the starexec cluster (with no detailed information)
-	 * @return A list of queues that are defined the cluster
-	 * @author Tyler Jensen
+	 * @param userId return the queues accessible by the given user, or all queues if the userId is 0
+	 * @return A list of queues 
+	 * @author Tyler Jensen and Aaron Stump
 	 */
-	public static List<Queue> getAll() {
+	protected static List<Queue> getQueues(int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetAllQueues}");
+			CallableStatement procedure;
+			if (userId == 0) 
+			    procedure = con.prepareCall("{CALL GetAllQueues}");
+			else {
+			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
+			    procedure.setInt(1, userId);
+			}
+
 			ResultSet results = procedure.executeQuery();
 			List<Queue> queues = new LinkedList<Queue>();
 			
@@ -201,38 +209,23 @@ public class Queues {
 		
 		return null;
 	}
+
+	/**
+	 * Gets all queues in the starexec cluster
+	 * @return A list of queues 
+	 * @author Aaron Stump
+	 */
+	public static List<Queue> getAll() {
+	    return getQueues(0);
+	}
 	
 	/**
-	 * Gets all queues in the starexec cluster (with no detailed information)
+	 * Gets all queues in the starexec cluster accessible by the user with the given id
 	 * @return A list of queues that are defined the cluster
-	 * @author Ben McCune
+	 * @author Aaron Stump
 	 */
 	public static List<Queue> getUserQueues(int userId) {
-		Connection con = null;			
-		
-		try {
-			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetUserQueues(?)}");
-			procedure.setInt(1, userId);
-			ResultSet results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while(results.next()){
-				Queue q = new Queue();
-				q.setName(results.getString("name"));
-				q.setId(results.getInt("id"));	
-				q.setStatus(results.getString("status"));
-				queues.add(q);
-			}			
-						
-			return queues;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-		
-		return null;
+	    return getQueues(userId);
 	}
 	
 	/**

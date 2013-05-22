@@ -11,6 +11,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.jobs.JobManager;
@@ -28,6 +29,7 @@ import org.starexec.util.Validator;
 public class Starexec implements ServletContextListener {
     private Logger log;
     private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
+    private Session session; // GridEngine session
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
@@ -46,6 +48,8 @@ public class Starexec implements ServletContextListener {
 			log.debug("Releasing grid engine util threadpool...");
 			GridEngineUtil.shutdown();
 			
+			GridEngineUtil.destroySession(session);
+
 			// Wait for the task scheduler to finish
 			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
 			log.info("StarExec successfully shutdown");
@@ -80,6 +84,9 @@ public class Starexec implements ServletContextListener {
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();		
 		
+		session = GridEngineUtil.createSession();
+		log.info("Created GridEngine session");
+
 		// Schedule necessary periodic tasks to run
 		this.scheduleRecurringTasks();		
 		
@@ -111,11 +118,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			public void run() {
 			    log.info("processJobStats (periodic)");
-				if(GridEngineUtil.isAvailable()) {
-					GridEngineUtil.processResults();
-					//log.info("Skipping ALL Results Processing...");
-					//Common.getDataPoolData();
-				}
+			    GridEngineUtil.processResults();
 			}
 		};	
 		
@@ -124,11 +127,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			public void run() {
 			    log.info("submitJobsTask (periodic)");
-				if(GridEngineUtil.isAvailable()) {
-					JobManager.checkPendingJobs();
-					//log.info("Skipping ALL Results Processing...");
-					//Common.getDataPoolData();
-				}
+			    JobManager.checkPendingJobs(session);
 			}
 		};
 

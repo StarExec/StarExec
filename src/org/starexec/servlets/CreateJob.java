@@ -140,16 +140,13 @@ public class CreateJob extends HttpServlet {
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
-		if (submitSuccess){
-			JobManager.submitJob(j);
-		}
-		if(true == submitSuccess) {
-			// If the submission was successful, send back to space explorer
+		if(submitSuccess) 
+		    // If the submission was successful, send back to space explorer
 		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
-		} else {
-			// Or else send an error
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Your job failed to submit for an unknown reason. Please try again.");
-		}
+		else 
+		    // Or else send an error
+		    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+				       "Your job failed to submit for an unknown reason. Please try again.");
 	}
 
 	/**

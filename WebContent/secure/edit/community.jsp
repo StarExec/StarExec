@@ -191,7 +191,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${pre_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="${'/${starexecRoot}/secure/edit/processor.jsp?type=pre&id='}${proc.id}">${proc.name}</a></td>
+							<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name}</a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>

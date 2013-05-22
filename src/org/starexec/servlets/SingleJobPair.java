@@ -154,8 +154,9 @@ public class SingleJobPair extends HttpServlet {
 				List<Integer> configIds = Solvers.getDefaultConfigForSolver(solverId);
 				
 				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID);
-				int jobId = JobManager.submitJobReturnId(j, R.PUBLIC_SPACE_ID);
-				return jobId;
+				if (!Jobs.add(j, R.PUBLIC_SPACE_ID))
+				    return -1;
+				return j.getId();
 			}
 			else
 			{	

@@ -3,14 +3,16 @@ package org.starexec.jobs;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
-import org.ggf.drmaa.SessionFactory;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
@@ -24,6 +26,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
@@ -36,558 +39,535 @@ import org.starexec.util.Util;
  * @author Tyler Jensen
  */
 public abstract class JobManager {
-	private static final Logger log = Logger.getLogger(JobManager.class);
+    private static final Logger log = Logger.getLogger(JobManager.class);
 
+    private static String mainTemplate = null; // initialized below
 
-	public static boolean checkPendingJobs(){
-		Integer queueSize = Jobs.getSizeOfQueue();
-		if (queueSize > 0){
-			log.info("Current Size of SGE QUEUE = " + queueSize);
-		}
-		if (queueSize < R.NUM_JOB_SCRIPTS){	
-			List<Job> jobs = Jobs.getPendingJobs();
-			for (Job job : jobs){
-				submitJob(job);
-			}
-		}
-		return false;
+    public static boolean checkPendingJobs(Session session){
+	List<Queue> queues = Queues.getAll();
+	for (Queue q : queues) {
+	    int qId = q.getId();
+	    String qname = q.getName();
+
+	    int queueSize = Jobs.getSizeOfQueue(qId);
+		
+	    if (queueSize < R.NUM_JOB_SCRIPTS) {	
+		List<Job> joblist = Jobs.getPendingJobs(qId);
+		if (joblist.size() > 0) 
+		    submitJobs(session, joblist, q, queueSize);
+	    }
+	    else
+		log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
+	}
+	return false;
+    }
+
+    /**
+     * initialize mainTemplate, a string hold the jobscript customized for the
+     * current configuration (but not the current job or job pair), if it is
+     * not yet initialized.
+     * @author Aaron Stump
+     */
+    protected static void initMainTemplateIf() {
+	if (mainTemplate == null) {
+	    // Read in the job script template and format it for this global configuration
+	    File f = new File(R.CONFIG_PATH, "sge/jobscript");
+	    try {
+		mainTemplate = FileUtils.readFileToString(f);
+	    } 
+	    catch (IOException e) {
+		log.error("Error reading the jobscript at "+f,e);
+	    }
+	    mainTemplate = mainTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
+	    mainTemplate = mainTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
+	    mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", "" + R.REPORT_HOST);
+	    // Impose resource limits
+	    mainTemplate = mainTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
+	    mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);	 
+	}
+    }
+
+    static class SchedulingState {
+	Job job;
+	String jobTemplate;
+	Iterator<JobPair> pairIter;
+	
+	SchedulingState(Job _job, String _jobTemplate, Iterator<JobPair> _pairIter) {
+	    job = _job;
+	    jobTemplate = _jobTemplate;
+	    pairIter = _pairIter;
+	}
+    }
+
+    /**
+     * Submits a job to the grid engine
+     * @param j The job object containing information about what to run for the job
+     * @param spaceId The id of the space this job will be placed in
+     */
+    public static void submitJobs(Session session, List<Job> joblist, Queue q, int queueSize) {		
+	log.debug("submitJobs() begins");
+	initMainTemplateIf();
+
+	LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
+
+	// add all the jobs in jobList to a SchedulingState in the schedule.
+	for (Job job : joblist) {
+	    // jobTemplate is a version of mainTemplate customized for this job
+	    String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
+	    jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
+	    jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+
+	    //Post processor
+	    Processor processor = job.getPostProcessor();
+	    jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", 
+					      (processor == null ? "null" : "" + processor.getFilePath()));
+
+	    Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
+
+	    SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+
+	    schedule.add(s);
 	}
 
-	/**
-	 * Submits a job to the grid engine
-	 * @param j The job object containing information about what to run for the job
-	 * @param spaceId The id of the space this job will be placed in
+	log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
+
+	/*
+	 * we are going to loop through the schedule adding a few job
+	 * pairs at a time to SGE.  If the count of jobs enqueued
+	 * (starting from how many jobs we though we had enqueued when
+	 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
+	 * then we will not continue with our next pass through the
+	 * schedule.  
+	 *
 	 */
-	public static boolean submitJob(Job job) {		
-		try {
-			/*
-			// Attempt to add the job to the database			
-			boolean jobAdded = Jobs.add(job, spaceId);
 
-			// If for some reason that failed, don't run on the grid engine
-			if(false == jobAdded) {
-				log.error(String.format("Job failed to be added to the database and was prevented from running on the grid [user=%d] [space=%d]", job.getUserId(), spaceId));
-				return false;
-			}
-			 */
-			log.info("submitting pairs for job " + job.getId());
-			job = Jobs.getDetailedWithoutJobPairs(job.getId());
-			log.info("queue = " + job.getQueue().getName());
-			log.info("user id = " + job.getUserId());
-			// Read in the job script template and format it for all the pairs in this job
-			String jobTemplate = FileUtils.readFileToString(new File(R.CONFIG_PATH, "sge/jobscript"));
+	int count = queueSize;
+	while (!schedule.isEmpty()) {
+		
+	    if (count >= R.NUM_JOB_SCRIPTS)
+		break; // out of while (!schedule.isEmpty())
 
-			// General job setup
-			jobTemplate = jobTemplate.replace("$$QUEUE$$", job.getQueue().getName());			
-			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
-			jobTemplate = jobTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
-			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-			jobTemplate = jobTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
-			jobTemplate = jobTemplate.replace("$$REPORT_HOST$$", "" + R.REPORT_HOST);
-			// Impose resource limits
-			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
-			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);	 
-			//Post processor
-			Processor processor = job.getPostProcessor();
-			if(processor != null) {
-				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "" + processor.getFilePath());		
-			}
-			else{
-				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");	
-			}
+	    Iterator<SchedulingState> it = schedule.iterator();
+
+	    while (it.hasNext()) {
+		SchedulingState s = it.next();
+
+		if (!s.pairIter.hasNext()) {
+		    // we will remove this SchedulingState from the schedule, since it is out of job pairs
+		    it.remove();
+		    continue;
+		}
 			
-			// Optimization, do outside of loop
-			boolean isSGEAvailable = GridEngineUtil.isAvailable();
+		log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME +" pairs "
+			 +"for job " + s.job.getId() 
+			 + ", queue = "+q.getName() 
+			 + ", user = "+s.job.getUserId());
 
-			if(false == isSGEAvailable) {
-				log.warn("Grid engine unavailable -skipping SGE execution.");
-				//return false;
+		int i = 0;
+		while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
+		    i++;
+			
+		    JobPair pair = s.pairIter.next();
+			
+		    log.debug("About to submit pair " + pair.getId());
+
+		    try {
+			// Write the script that will run this individual pair				
+			String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
+			    
+			// Submit to the grid engine
+			int sgeId = JobManager.submitScript(session, scriptPath, pair);
+			    
+			// If the submission was successful
+			if(sgeId >= 0) {											
+			    log.info("Submission of pair "+pair.getId() + " successful.");
+			    Jobs.updateGridEngineId(pair.getId(), sgeId);
+			    Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 			}
-			int count = R.NUM_JOB_SCRIPTS;
-			//TODO - method to get only the needed pairs
-			log.debug("About to get Pending pairs...");
-			List<JobPair> pairs = Jobs.getPendingPairsDetailed(job.getId());
-			log.info("total # of pairs to process = " + pairs.size());
-			for(JobPair pair : pairs) {
-				log.debug("submitting pair # " + pair.getId());
-				if (pair.getStatus().getCode().compareTo(StatusCode.STATUS_PENDING_SUBMIT) == 0){
-					// Write the script that will run this individual pair				
-					String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
+			else
+			    log.warn("Error submitting pair "+pair.getId() + " to SGE.");
+			count++;
+		    } catch(Exception e) {
+			log.error("submitJobs() received exception " + e.getMessage(), e);
+		    }
+		}	
+	    } // end iterating once through the schedule
+	} // end looping until schedule is empty or we have submitted enough job pairs
 
-					if(true == isSGEAvailable) {				
-						// Submit to the grid engine
-						int sgeId = JobManager.submitScript(scriptPath, pair);
-
-						// If the submission was successful
-						if(sgeId >= 0) {											
-							Jobs.updateGridEngineId(pair.getId(), sgeId);
-							Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
-						}
-					}
-					count--;
-				}
-				if (count < 1){
-					break;
-				}
-			}
-			log.info(String.format("Successfully submitted and recorded job #%d with %d pairs by user %d", job.getId(), R.NUM_JOB_SCRIPTS-count, job.getUserId()));
-			return true;
-		} catch(Exception e) {
-			log.error("Submit job says " + e.getMessage(), e);
-		}
-
-		return false;
-	}	
-
-	/**
-	 * Submits a job to the grid engine and records it in the database - used with quick job
-	 * @param j The job object containing information about what to run for the job
-	 * @param spaceId The id of the space this job will be placed in
-	 * @author Benton McCune
-	 */
-	public static int submitJobReturnId(Job job, int spaceId) {		
-		try {
-			// Attempt to add the job to the database			
-			boolean jobAdded = Jobs.add(job, spaceId);
-
-			// If for some reason that failed, don't run on the grid engine
-			if(false == jobAdded) {
-				log.error(String.format("Job failed to be added to the database and was prevented from running on the grid [user=%d] [space=%d]", job.getUserId(), spaceId));
-				return -1;
-			}
-
-			// Read in the job script template and format it for all the pairs in this job
-			String jobTemplate = FileUtils.readFileToString(new File(R.CONFIG_PATH, "sge/jobscript"));
-
-			// General job setup
-			jobTemplate = jobTemplate.replace("$$QUEUE$$", job.getQueue().getName());			
-			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
-			jobTemplate = jobTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
-			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-			jobTemplate = jobTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
-			jobTemplate = jobTemplate.replace("$$REPORT_HOST$$", "" + R.REPORT_HOST);
-
-			// Impose resource limits
-			jobTemplate = jobTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
-			jobTemplate = jobTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);							
-
-			// Optimization, do outside of loop
-			boolean isSGEAvailable = GridEngineUtil.isAvailable();
-
-			if(false == isSGEAvailable) {
-				log.warn("Grid engine unavailable, building job scripts and skipping SGE execution.");
-			}
-
-			for(JobPair pair : job) {
-				// Write the script that will run this individual pair
-				String scriptPath = JobManager.writeJobScript(jobTemplate, job, pair);
-
-				if(true == isSGEAvailable) {				
-					// Submit to the grid engine
-					int sgeId = JobManager.submitScript(scriptPath, pair);
-
-					// If the submission was successful
-					if(sgeId >= 0) {											
-						Jobs.updateGridEngineId(pair.getId(), sgeId);
-						Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
-					}
-				}
-			}
-
-			log.info(String.format("Successfully submitted and recorded job #%d with %d pairs by user %d", job.getId(), job.getJobPairs().size(), job.getUserId()));
-			return job.getId();
-		} catch(Exception e) {
-			log.error(e.getMessage(), e);
-		}
-
-		return -1;
-	}
-
-	/**
-	 * Takes in a job script and submits it to the grid engine
-	 * @param scriptPath The absolute path to the script
-	 * @param pair The pair the script is being submitted for
-	 * @return The grid engine id of the submitted job. -1 if the submit failed
-	 */
-	private synchronized static int submitScript(String scriptPath, JobPair pair) throws Exception {
-		Session session = null;
-		JobTemplate sgeTemplate = null;
-
-		try {
-			// Get a new grid engine session
-			session = SessionFactory.getFactory().getSession();
-			sgeTemplate = null;		
-
-			// Initialize session
-			session.init("");
-			log.debug("submitScript - Session Initialized for Job Pair " + pair.getId());
-			// Set up the grid engine template
-			sgeTemplate = session.createJobTemplate();
-			log.debug("submitScript - Create Job Template for  " + pair.getId());
-			// DRMAA needs to be told to expect a shell script and not a binary
-			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
-			log.debug("submitScript - Set Native Specification for  " + pair.getId());
-			// Tell the job where it will deal with files
-			sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
-			log.debug("submitScript - Set Working Directory for  " + pair.getId());
-			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)
-			sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR);
-			log.debug("submitScript - Set Output Path for  " + pair.getId());
-			// Tell the job where the script to be executed is
-			sgeTemplate.setRemoteCommand(scriptPath);	        
-			log.debug("submitScript - Set Remote Command for  " + pair.getId());
-			// Actually submit the job to the grid engine
-			String id = session.runJob(sgeTemplate);
-			log.info(String.format("SGE Job #%s (\"%s\") has been submitted to the grid engine.", id, scriptPath));	               	       	        
-
-			return Integer.parseInt(id);
-		} catch (org.ggf.drmaa.DrmaaException drme) {
-			log.warn("script Path = " + scriptPath);
-			//log.warn("sgeTemplate = " +sgeTemplate.toString());
-			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
-			log.error("submitScript says " + drme.getMessage(), drme);
-			//get status of queues for hints about why it was rejected
-			/*BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND);
-			String results = Util.bufferToString(reader);
-			log.info("q stats says " + results);
-			try {
-				reader.close();
-			}
-			catch (Exception e) {
-				log.warn("submitscript failed to close buffered reader - " + e.getMessage(), e);
-			}
-			 */	
-		} catch (Exception e) {
-			Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
-			log.error(e.getMessage(), e);
-		} finally {
-			// Cleanup. Session's MUST be exited or SGE will be mean to you
-			if(sgeTemplate != null) {
-				session.deleteJobTemplate(sgeTemplate);
-			}
-
-			if(session != null) {
-				session.exit();
-			}
-		}
-
-		return -1;
-	}
-
-	/**
-	 * Creates a new job script file based on the given job and job pair.
-	 * @param template The template to base the new script off of
-	 * @param job The job to tailor the script for
-	 * @param pair The job pair to tailor the script for
-	 * @return The absolute path to the newly written script
-	 */
-	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
-		String jobScript = template;		
-
-		// General pair configuration
-		jobScript = jobScript.replace("$$SOLVER_PATH$$", pair.getSolver().getPath());
-		jobScript = jobScript.replace("$$SOLVER_NAME$$", pair.getSolver().getName());
-		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
-		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
-		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
-		//Dependencies
-		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
-		{
-			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
-			writeDependencyFile(pair.getId(), pair.getBench().getId());
-		}
-		else{
-			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
-		}
-		// Resource limits
-		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
-		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
-
-		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
-		File f = new File(scriptPath);
-
-		f.delete();				
-		f.createNewFile();
-
-		if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
-			log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
-			return "";
-		}
-		//log.debug("jobScript = " + jobScript);
-		FileWriter out = new FileWriter(f);
-		out.write(jobScript);
-		out.close();
-		return scriptPath;
-	}	
-
-	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
-		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
-		StringBuilder sb = new StringBuilder();
-		String separator = ",,,";
-		for (BenchmarkDependency bd:dependencies)
-		{
-			sb.append(bd.getSecondaryBench().getPath());
-			sb.append(separator);		
-			sb.append(bd.getDependencyPath());
-			sb.append("\n");
-		}
-
-		String dependFilePath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.DEPENDFILE_FORMAT, pairId));
-		File f = new File(dependFilePath);
-		f.createNewFile();
-
-		if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
-			log.error("Can't change owner permissions on job dependencies file. This will prevent the grid engine from being able to open the file. File path: " + dependFilePath);
-			return false;
-		}
-		log.debug("dependencies file = " + sb.toString());
-		FileWriter out = new FileWriter(f);
-		out.write(sb.toString());
-		out.close();
-		log.debug("done writing dependency file");
-		return true;
-	}
-	/**
-	 * Creates an array for the bash script.  This array will consist of all the paths for the copies of the secondary 
-	 * benchmarks on the execution host or the paths of the secondary benchmarks on the starexec system depending on the local Boolean paramter. 
-	 * Will return "" if there are no dependencies.
-	 * @author Benton McCune
-	 * @param bench the bench that possibly has dependencies
-	 * @param local TRUE for execution host paths, FALSE for paths to benchmarks on starexec
-	 * @return arrayString a String that will be an array within a bash script
-	 */
-	public static String writeDependencyArray(Benchmark bench, Boolean local)
-	{
-		String arrayString ="\"";
-		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
-		log.info("Number of dependencies = " + dependencies.size());
-		for (BenchmarkDependency bd:dependencies)
-		{
-			//spaces in the paths not allowed
-			String path = (local) ? bd.getSecondaryBench().getPath().replaceAll("\\s",""):bd.getDependencyPath().replaceAll("\\s","");
-			arrayString = arrayString + "" + path + " ";
-		}
-		arrayString = arrayString.trim() + "\"";
-		log.info(arrayString);
-		log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
-		return arrayString;
-	}
+    } // end submitJobs()
 
 
-	/**
-	 * Sets up the basic information for a job, including the user who created it,
-	 * its name and description, the pre- and post-processors, and the queue.
-	 * 
-	 * This does NOT add any job pairs to the job.
-	 * 
-	 * @param userId the id of the user who created the job
-	 * @param name the name of the job
-	 * @param description the description of the job
-	 * @param preProcessorId the id of the pre-processor for the job
-	 * @param postProcessorId the id of the post-processor for the job
-	 * @param queueId the id of the queue for the job
-	 * @return the new job object with the specified properties
-	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId) {
-		log.debug("Setting up job " + name);
-		Job j = new Job();
+    /**
+     * Takes in a job script and submits it to the grid engine
+     * @param the current SGE Session (which we will not release)
+     * @param scriptPath The absolute path to the script
+     * @param pair The pair the script is being submitted for
+     * @return The grid engine id of the submitted job. -1 if the submit failed
+     */
+    private synchronized static int submitScript(Session session, String scriptPath, JobPair pair) throws Exception {
+	JobTemplate sgeTemplate = null;
 
-		// Set the job's name, submitter user id and description
-		j.setUserId(userId);
-		j.setName(name);		
+	try {
+	    sgeTemplate = null;		
 
-		if(description != null) {
-			j.setDescription(description);
-		}
+	    // Set up the grid engine template
+	    sgeTemplate = session.createJobTemplate();
+	    //log.debug("submitScript - Create Job Template for  " + pair.getId());
 
-		// Get queue and processor information from the database and put it in the job
-		j.setQueue(Queues.get(queueId));
+	    // DRMAA needs to be told to expect a shell script and not a binary
+	    sgeTemplate.setNativeSpecification("-shell y -b n -w n");
+	    //log.debug("submitScript - Set Native Specification for  " + pair.getId());
 
-		if(preProcessorId > 0) {
-			j.setPreProcessor(Processors.get(preProcessorId));
-		}		
-		if(postProcessorId > 0) {
-			j.setPostProcessor(Processors.get(postProcessorId));		
-		}
+	    // Tell the job where it will deal with files
+	    sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
+	    //log.debug("submitScript - Set Working Directory for  " + pair.getId());
 
-		return j;
-	}
+	    // Tell where the starexec log for the job should be placed (semicolon is required by SGE)
+	    sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR);
+	    //log.debug("submitScript - Set Output Path for  " + pair.getId());
 
-	/**
-	 * Adds to a job object the job pairs given by the selection we made (this will build it from the "choose"
-	 * selection on job creation)
-	 * 
-	 * @param j the job to add job pairs to
-	 * @param cpuTimeout The maximum amount of cpu time this job's pairs can run (individually)
-	 * @param clockTimeout The maximum amount of time (wallclock) this job's pairs can run (individually)
-	 * @param benchmarkIds A list of benchmarks to use in this job
-	 * @param solverIds A list of solvers to use in this job
-	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
-	 * @param spaceId the id of the space we are adding from
-	 */
-	public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId) {
-		// Retrieve all the benchmarks included in this job
-		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
+	    // Tell the job where the script to be executed is
+	    sgeTemplate.setRemoteCommand(scriptPath);	        
+	    //log.debug("submitScript - Set Remote Command for  " + pair.getId());
 
-		// Retrieve all the solvers included in this job
-		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+	    // Actually submit the job to the grid engine
+	    String id = session.runJob(sgeTemplate);
+	    log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath)); 
 
-		// Pair up the solvers and benchmarks
-		int pairCount = 0;//temporarily, we're limiting number of job pairs.
-		for(Benchmark bench : benchmarks){
-			for(Solver solver : solvers) {
-				JobPair pair = new JobPair();
-				pair.setBench(bench);
-				pair.setSolver(solver);				
-				pair.setCpuTimeout(cpuTimeout);
-				pair.setWallclockTimeout(clockTimeout);
-				pair.setSpace(Spaces.get(spaceId));
-				j.addJobPair(pair);
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
-					return;
-				}	
-			}
-		}
-
+	    return Integer.parseInt(id);
+	} catch (org.ggf.drmaa.DrmaaException drme) {
+	    log.warn("script Path = " + scriptPath);
+	    //log.warn("sgeTemplate = " +sgeTemplate.toString());
+	    Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
+	    log.error("submitScript says " + drme.getMessage(), drme);
+	} catch (Exception e) {
+	    Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
+	    log.error(e.getMessage(), e);
+	} finally {
+	    // Cleanup. Session's MUST be exited or SGE will be mean to you
+	    if(sgeTemplate != null) {
+		session.deleteJobTemplate(sgeTemplate);
+	    }
 
 	}
 
-	/**
-	 * Gets all the solvers/configs and benchmarks from a space, pairs them up, and then adds the
-	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
-	 * structure in job creation.
-	 * 
-	 * @param j the Job to add Job Pairs to
-	 * @param userId the id of the user adding the job pairs
-	 * @param cpuTimeout the CPU Timeout for the job
-	 * @param clockTimeout the Clock Timeout for the job 
-	 * @param spaceId the id of the space to build the job pairs from
-	 */
-	public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId) {
-		Space space = Spaces.get(spaceId);
+	return -1;
+    }
 
-		// Get the benchmarks and solvers from this space
-		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
-		List<Solver> solvers = Solvers.getBySpace(spaceId);
-		List<Configuration> configs;
-		JobPair pair;
+    /**
+     * Creates a new job script file based on the given job and job pair.
+     * @param template The template to base the new script off of
+     * @param job The job to tailor the script for
+     * @param pair The job pair to tailor the script for
+     * @return The absolute path to the newly written script
+     */
+    private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
+	String jobScript = template;		
 
-		int pairCount = 0;
-		for (Benchmark b : benchmarks) {
-			for (Solver s : solvers) {
-				// Get the configurations for the current solver
-				configs = Solvers.getConfigsForSolver(s.getId());
-				for (Configuration c : configs) {
+	// General pair configuration
+	jobScript = jobScript.replace("$$SOLVER_PATH$$", pair.getSolver().getPath());
+	jobScript = jobScript.replace("$$SOLVER_NAME$$", pair.getSolver().getName());
+	jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
+	jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
+	jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
+	//Dependencies
+	if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
+	    {
+		jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
+		writeDependencyFile(pair.getId(), pair.getBench().getId());
+	    }
+	else{
+	    jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
+	}
+	// Resource limits
+	jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
+	jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
 
-					Solver clone = JobManager.cloneSolver(s);
-					// Now we're going to work with this solver with this configuration
-					clone.addConfiguration(c);
+	String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
+	File f = new File(scriptPath);
 
-					pair = new JobPair();
-					pair.setBench(b);
-					pair.setSolver(clone);
-					pair.setCpuTimeout(cpuTimeout);
-					pair.setWallclockTimeout(clockTimeout);
-					pair.setSpace(space);
-					j.addJobPair(pair);
+	f.delete();				
+	f.createNewFile();
 
-					pairCount++;
-					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
-						return;
-					}
-				}
-			}
-		}
+	if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
+	    log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
+	    return "";
+	}
+	//log.debug("jobScript = " + jobScript);
+	FileWriter out = new FileWriter(f);
+	out.write(jobScript);
+	out.close();
+	return scriptPath;
+    }	
+
+    public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
+	List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
+	StringBuilder sb = new StringBuilder();
+	String separator = ",,,";
+	for (BenchmarkDependency bd:dependencies)
+	    {
+		sb.append(bd.getSecondaryBench().getPath());
+		sb.append(separator);		
+		sb.append(bd.getDependencyPath());
+		sb.append("\n");
+	    }
+
+	String dependFilePath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.DEPENDFILE_FORMAT, pairId));
+	File f = new File(dependFilePath);
+	f.createNewFile();
+
+	if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
+	    log.error("Can't change owner permissions on job dependencies file. This will prevent the grid engine from being able to open the file. File path: " + dependFilePath);
+	    return false;
+	}
+	log.debug("dependencies file = " + sb.toString());
+	FileWriter out = new FileWriter(f);
+	out.write(sb.toString());
+	out.close();
+	log.debug("done writing dependency file");
+	return true;
+    }
+    /**
+     * Creates an array for the bash script.  This array will consist of all the paths for the copies of the secondary 
+     * benchmarks on the execution host or the paths of the secondary benchmarks on the starexec system depending on the local Boolean paramter. 
+     * Will return "" if there are no dependencies.
+     * @author Benton McCune
+     * @param bench the bench that possibly has dependencies
+     * @param local TRUE for execution host paths, FALSE for paths to benchmarks on starexec
+     * @return arrayString a String that will be an array within a bash script
+     */
+    public static String writeDependencyArray(Benchmark bench, Boolean local)
+    {
+	String arrayString ="\"";
+	List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
+	log.info("Number of dependencies = " + dependencies.size());
+	for (BenchmarkDependency bd:dependencies)
+	    {
+		//spaces in the paths not allowed
+		String path = (local) ? bd.getSecondaryBench().getPath().replaceAll("\\s",""):bd.getDependencyPath().replaceAll("\\s","");
+		arrayString = arrayString + "" + path + " ";
+	    }
+	arrayString = arrayString.trim() + "\"";
+	log.info(arrayString);
+	log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
+	return arrayString;
+    }
+
+
+    /**
+     * Sets up the basic information for a job, including the user who created it,
+     * its name and description, the pre- and post-processors, and the queue.
+     * 
+     * This does NOT add any job pairs to the job.
+     * 
+     * @param userId the id of the user who created the job
+     * @param name the name of the job
+     * @param description the description of the job
+     * @param preProcessorId the id of the pre-processor for the job
+     * @param postProcessorId the id of the post-processor for the job
+     * @param queueId the id of the queue for the job
+     * @return the new job object with the specified properties
+     */
+    public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId) {
+	log.debug("Setting up job " + name);
+	Job j = new Job();
+
+	// Set the job's name, submitter user id and description
+	j.setUserId(userId);
+	j.setName(name);		
+
+	if(description != null) {
+	    j.setDescription(description);
 	}
 
-	/**
-	 * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
-	 * and create job pairs from the result. Will then add the job pairs to the given job.
-	 * 
-	 * @param j the job to add the pairs to
-	 * @param spaceId the id of the space we start in
-	 * @param userId the id of the user creating the job
-	 * @param solverIds a list of solvers to use
-	 * @param configIds a list of configurations to use
-	 * @param cpuTimeout the CPU timeout for the job
-	 * @param clockTimeout the clock timeout for the job
-	 */
-	public static void addBenchmarksFromHierarchy(Job j, int spaceId, int userId, List<Integer> solverIds, List<Integer> configIds, int cpuTimeout, int clockTimeout) {
-		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
-		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+	// Get queue and processor information from the database and put it in the job
+	j.setQueue(Queues.get(queueId));
 
-		// Pair up the solvers and benchmarks
-		int pairCount = 0;//temporarily, we're limiting number of job pairs.
-		for(Benchmark bench : benchmarks){
-			for(Solver solver : solvers) {
-				JobPair pair = new JobPair();
-				pair.setBench(bench);
-				pair.setSolver(solver);				
-				pair.setCpuTimeout(cpuTimeout);
-				pair.setWallclockTimeout(clockTimeout);
-				pair.setSpace(Spaces.get(spaceId));
-				j.addJobPair(pair);
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
-					return;
-				}	
-			}
-		}
+	if(preProcessorId > 0) {
+	    j.setPreProcessor(Processors.get(preProcessorId));
+	}		
+	if(postProcessorId > 0) {
+	    j.setPostProcessor(Processors.get(postProcessorId));		
+	}
 
-		// Now, recursively add from the subspaces 
-		List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(spaceId, userId, true));
+	return j;
+    }
 
-		int space;
+    /**
+     * Adds to a job object the job pairs given by the selection we made (this will build it from the "choose"
+     * selection on job creation)
+     * 
+     * @param j the job to add job pairs to
+     * @param cpuTimeout The maximum amount of cpu time this job's pairs can run (individually)
+     * @param clockTimeout The maximum amount of time (wallclock) this job's pairs can run (individually)
+     * @param benchmarkIds A list of benchmarks to use in this job
+     * @param solverIds A list of solvers to use in this job
+     * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
+     * @param spaceId the id of the space we are adding from
+     */
+    public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId) {
+	// Retrieve all the benchmarks included in this job
+	List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
-		for (Space s : spaces) {
-			space = s.getId();
-			benchmarks = Benchmarks.getBySpace(space);
-			for(Benchmark bench : benchmarks){
-				for(Solver solver : solvers) {
-					JobPair pair = new JobPair();
-					pair.setBench(bench);
-					pair.setSolver(solver);				
-					pair.setCpuTimeout(cpuTimeout);
-					pair.setWallclockTimeout(clockTimeout);
-					pair.setSpace(Spaces.get(space));
-					j.addJobPair(pair);
-					pairCount++;
-					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
-						return;
-					}	
-				}
-			}
-		}
+	// Retrieve all the solvers included in this job
+	List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+
+	// Pair up the solvers and benchmarks
+	int pairCount = 0;//temporarily, we're limiting number of job pairs.
+	for(Benchmark bench : benchmarks){
+	    for(Solver solver : solvers) {
+		JobPair pair = new JobPair();
+		pair.setBench(bench);
+		pair.setSolver(solver);				
+		pair.setCpuTimeout(cpuTimeout);
+		pair.setWallclockTimeout(clockTimeout);
+		pair.setSpace(Spaces.get(spaceId));
+		j.addJobPair(pair);
+		pairCount++;
+		log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+		if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+		    return;
+		}	
+	    }
 	}
 
 
-	/**
-	 * Creates a copy of a given solver; the copy will have the same id, description,
-	 * name, and filepath as the original
-	 * 
-	 * @param s the solver to copy
-	 * @return a copy of the given solver
-	 */
-	public static Solver cloneSolver(Solver s) {
-		Solver clone = new Solver();
+    }
 
-		clone.setId(s.getId());
-		clone.setDescription(s.getDescription());
-		clone.setName(s.getName());
-		clone.setPath(s.getPath());
+    /**
+     * Gets all the solvers/configs and benchmarks from a space, pairs them up, and then adds the
+     * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
+     * structure in job creation.
+     * 
+     * @param j the Job to add Job Pairs to
+     * @param userId the id of the user adding the job pairs
+     * @param cpuTimeout the CPU Timeout for the job
+     * @param clockTimeout the Clock Timeout for the job 
+     * @param spaceId the id of the space to build the job pairs from
+     */
+    public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId) {
+	Space space = Spaces.get(spaceId);
 
-		return clone;
+	// Get the benchmarks and solvers from this space
+	List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+	List<Solver> solvers = Solvers.getBySpace(spaceId);
+	List<Configuration> configs;
+	JobPair pair;
+
+	int pairCount = 0;
+	for (Benchmark b : benchmarks) {
+	    for (Solver s : solvers) {
+		// Get the configurations for the current solver
+		configs = Solvers.getConfigsForSolver(s.getId());
+		for (Configuration c : configs) {
+
+		    Solver clone = JobManager.cloneSolver(s);
+		    // Now we're going to work with this solver with this configuration
+		    clone.addConfiguration(c);
+
+		    pair = new JobPair();
+		    pair.setBench(b);
+		    pair.setSolver(clone);
+		    pair.setCpuTimeout(cpuTimeout);
+		    pair.setWallclockTimeout(clockTimeout);
+		    pair.setSpace(space);
+		    j.addJobPair(pair);
+
+		    pairCount++;
+		    log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+		    if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+			return;
+		    }
+		}
+	    }
+	}
+    }
+
+    /**
+     * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
+     * and create job pairs from the result. Will then add the job pairs to the given job.
+     * 
+     * @param j the job to add the pairs to
+     * @param spaceId the id of the space we start in
+     * @param userId the id of the user creating the job
+     * @param solverIds a list of solvers to use
+     * @param configIds a list of configurations to use
+     * @param cpuTimeout the CPU timeout for the job
+     * @param clockTimeout the clock timeout for the job
+     */
+    public static void addBenchmarksFromHierarchy(Job j, int spaceId, int userId, List<Integer> solverIds, List<Integer> configIds, int cpuTimeout, int clockTimeout) {
+	List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+	List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+
+	// Pair up the solvers and benchmarks
+	int pairCount = 0;//temporarily, we're limiting number of job pairs.
+	for(Benchmark bench : benchmarks){
+	    for(Solver solver : solvers) {
+		JobPair pair = new JobPair();
+		pair.setBench(bench);
+		pair.setSolver(solver);				
+		pair.setCpuTimeout(cpuTimeout);
+		pair.setWallclockTimeout(clockTimeout);
+		pair.setSpace(Spaces.get(spaceId));
+		j.addJobPair(pair);
+		pairCount++;
+		log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+		if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+		    return;
+		}	
+	    }
 	}
 
-	@Deprecated
+	// Now, recursively add from the subspaces 
+	List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(spaceId, userId, true));
+
+	int space;
+
+	for (Space s : spaces) {
+	    space = s.getId();
+	    benchmarks = Benchmarks.getBySpace(space);
+	    for(Benchmark bench : benchmarks){
+		for(Solver solver : solvers) {
+		    JobPair pair = new JobPair();
+		    pair.setBench(bench);
+		    pair.setSolver(solver);				
+		    pair.setCpuTimeout(cpuTimeout);
+		    pair.setWallclockTimeout(clockTimeout);
+		    pair.setSpace(Spaces.get(space));
+		    j.addJobPair(pair);
+		    pairCount++;
+		    log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+		    if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+			return;
+		    }	
+		}
+	    }
+	}
+    }
+
+
+    /**
+     * Creates a copy of a given solver; the copy will have the same id, description,
+     * name, and filepath as the original
+     * 
+     * @param s the solver to copy
+     * @return a copy of the given solver
+     */
+    public static Solver cloneSolver(Solver s) {
+	Solver clone = new Solver();
+
+	clone.setId(s.getId());
+	clone.setDescription(s.getDescription());
+	clone.setName(s.getName());
+	clone.setPath(s.getPath());
+
+	return clone;
+    }
+
+    @Deprecated
 	public static void killJob(int sgeJobId) {
-		// TODO in the future, implement this functionality
-		//session.control("" + sgeJobId, Session.TERMINATE);
-	}
+	// TODO in the future, implement this functionality
+	//session.control("" + sgeJobId, Session.TERMINATE);
+    }
 
 }

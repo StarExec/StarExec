@@ -196,6 +196,20 @@ public class Util {
 	
     /** Convenience method for executeCommand() */
     public static BufferedReader executeCommand(String command) {
+	String[] cmd = new String[1];
+	cmd[0] = command;
+	return executeCommand(cmd);
+    }
+
+    /** Convenience method for executeCommand() */
+    public static BufferedReader executeCommand(String command, String[] env) {
+	String[] cmd = new String[1];
+	cmd[0] = command;
+	return executeCommand(cmd,env);
+    }
+
+    /** Convenience method for executeCommand() */
+    public static BufferedReader executeCommand(String[] command) {
 	return executeCommand(command,null);
     }
 
@@ -203,18 +217,18 @@ public class Util {
 	 * Runs a command on the system command line (bash for unix, command line for windows)
 	 * and returns the results from the command as a buffered reader which can be processed.
 	 * MAKE SURE TO CLOSE THE READER WHEN DONE. Null is returned if the command failed.
-	 * @param command The command to execute
+	 * @param command An array holding the command and then its arguments
 	 * @return A buffered reader holding the output from the command.
 	 */
-    public static BufferedReader executeCommand(String command, String[] envp) {
+    public static BufferedReader executeCommand(String[] command, String[] envp) {
 		Runtime r = Runtime.getRuntime();
 		BufferedReader reader = null;		
-		log.debug("Command from execute command = " + command);
+		//log.debug("Command from execute command = " + command);
 		try {					
 		    Process p = r.exec(command,envp);
 			//ProcessBuilder pb = new ProcessBuilder(command);
 			//Process p = pb.start();
-			log.debug("Process is null = " + (p==null));
+		    //log.debug("Process is null = " + (p==null));
 			InputStream in = p.getInputStream();
 			BufferedInputStream buf = new BufferedInputStream(in);
 			InputStreamReader inread = new InputStreamReader(buf);
@@ -232,7 +246,7 @@ public class Util {
 			errReader.close();
 			//This will hang indefinitely if the stream is too large.  TODO: fix increase size?
 			if (p.waitFor() != 0) {
-				log.warn("Command failed with value " + p.exitValue() + ": " + command);				
+				log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
 			}
 			return reader;
 		} catch (Exception e) {
