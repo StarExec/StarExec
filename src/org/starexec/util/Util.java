@@ -194,14 +194,12 @@ public class Util {
 		return form;
 	}
 	
-    /** Convenience method for executeCommand() */
     public static BufferedReader executeCommand(String command) {
 	String[] cmd = new String[1];
 	cmd[0] = command;
 	return executeCommand(cmd);
     }
 
-    /** Convenience method for executeCommand() */
     public static BufferedReader executeCommand(String command, String[] env) {
 	String[] cmd = new String[1];
 	cmd[0] = command;
@@ -218,6 +216,7 @@ public class Util {
 	 * and returns the results from the command as a buffered reader which can be processed.
 	 * MAKE SURE TO CLOSE THE READER WHEN DONE. Null is returned if the command failed.
 	 * @param command An array holding the command and then its arguments
+	 * @param envp The environment
 	 * @return A buffered reader holding the output from the command.
 	 */
     public static BufferedReader executeCommand(String[] command, String[] envp) {
@@ -225,7 +224,12 @@ public class Util {
 		BufferedReader reader = null;		
 		//log.debug("Command from execute command = " + command);
 		try {					
-		    Process p = r.exec(command,envp);
+		    Process p;
+		    if (command.length == 1)
+			p = r.exec(command[0], envp);
+		    else
+			p = r.exec(command, envp);
+
 			//ProcessBuilder pb = new ProcessBuilder(command);
 			//Process p = pb.start();
 		    //log.debug("Process is null = " + (p==null));
