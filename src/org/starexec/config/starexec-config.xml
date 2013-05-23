@@ -56,7 +56,7 @@
    			<property key="PUBLIC_USER_ID" value="2" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
 	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />
-	  		<property key="NUM_JOB_SCRIPTS" value="800" />
+	  		<property key="NUM_JOB_SCRIPTS" value="500" />
 			<property key="MAX_PAIR_VMEM" value="62" /> <!-- in GB -->
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
@@ -67,7 +67,7 @@
 			<property key="PUBLIC_USER_ID" value="62" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="1731" />
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
-	  		<property key="NUM_JOB_SCRIPTS" value="100" />
+	  		<property key="NUM_JOB_SCRIPTS" value="20" />
 			<property key="MAX_PAIR_VMEM" value="5" /> <!-- in GB -->
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
