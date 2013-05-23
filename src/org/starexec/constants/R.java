@@ -76,6 +76,7 @@ public class R {
     public static String BENCHMARK_PATH = null;								// The top-level directory in which to save the benchmark file(s)
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
+    public static String STAREXEC_DATA_DIR = null;   // the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
     public static String NODE_WORKING_DIR = null;							// The directory on the local nodes where they can use for scratch space (read/write)
     public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node
     public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	

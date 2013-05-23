@@ -38,9 +38,6 @@ LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
-# Path to shared directory for each node in cluster.
-SHARED_DIR='/home/starexec'
-
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
 

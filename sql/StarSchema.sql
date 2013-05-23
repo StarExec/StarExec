@@ -124,7 +124,7 @@ CREATE TABLE benchmarks (
 	disk_size BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE NO ACTION
+	FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
 );
 
 -- All attributes for each benchmark

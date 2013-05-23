@@ -16,6 +16,7 @@
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
 			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
 			<property key="PROCESSOR_DIR" value="/home/starexec/processor_scripts" />											
+			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
 			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />					
 			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
@@ -86,6 +87,7 @@
                 <property key="BENCHMARK_PATH" value="/home/astump/starexec_astump_data/Benchmarks" />
                 <property key="SOLVER_PATH" value="/home/astump/starexec_astump_data/Solvers" />
                 <property key="PROCESSOR_DIR" value="/home/astump/starexec_astump_data/processor_scripts" />           
+		<property key="STAREXEC_DATA_DIR" value="/home/astump/starexec_astump_data" />
                 <property key="JOB_INBOX_DIR" value="/home/astump/starexec_astump_data/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/jobout" />     
                 <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/jobout/logs" />

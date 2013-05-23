@@ -1717,8 +1717,9 @@ public class Jobs {
 				j.setCreateTime(results.getTimestamp("created"));	
 
 				j.getQueue().setId(results.getInt("queue_id"));
-				j.getPreProcessor().setId(results.getInt("pre_processor"));
-				j.getPostProcessor().setId(results.getInt("post_processor"));	
+				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+
 				jobs.add(j);				
 			}							
 			return jobs;

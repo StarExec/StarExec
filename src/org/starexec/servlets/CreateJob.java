@@ -140,6 +140,7 @@ public class CreateJob extends HttpServlet {
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
+		JobManager.checkPendingJobs(); // to start this job running if it is not
 		if(submitSuccess) 
 		    // If the submission was successful, send back to space explorer
 		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));

@@ -5,6 +5,18 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+In revision 12770:
+
+-- Should be able to delete benchmark validators now.
+
+-- Fixed bug introduced in 12755, where the postprocessor was
+   not getting invoked correctly on job output.
+
+-- updated docs for StarexecCommand.
+
+-- jobs will begin execution right when entered (this behavior
+   changed in the previous release, when fair scheduling was added).
+
 In revision 12755:
 
 -- The names of solvers can contain spaces (' ').  

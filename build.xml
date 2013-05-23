@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This build file must be configured for local use, using a file
-     called local.properties, in this directory.  The properties which
-     should be set in that file are:
-
-     1. configuration, the name of the configuration from starexec-config.xml to use.
-     2. db_name, the name of the local SQL database.
-     3. tomcat-dir, the path to tomcat, for jar files
-     4. sge_script_dir, the path to the directory for sge scripts
+     called local.properties, in this directory.  
 
      See example.local.properties in this directory for an example. -->
 
@@ -24,7 +18,6 @@
 	<property name="build-directory" value="build" />
 	<property name="class-directory" value="${build-directory}/classes" />		
 	<property name="config-directory" value="${class-directory}/org/starexec/config" />
-	<property name="sge-script-dir" value="${data_dir}/sge_scripts" />
 	<property name="pics-dir" value="${data_dir}/pictures" />
 	<property name="batch-dir" value="${data_dir}/batchSpace" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		

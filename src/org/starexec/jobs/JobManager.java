@@ -43,7 +43,16 @@ public abstract class JobManager {
 
     private static String mainTemplate = null; // initialized below
 
-    public static boolean checkPendingJobs(Session session){
+    private static Session session = null; // used in submitScript() below.
+
+    /** Initialize the GridEngine session. This must be done before calling checkPendingJobs(). 
+     * @author Aaron Stump
+     */
+    public static void setSession(Session _session) {
+	session = _session;
+    }
+
+    public synchronized static boolean checkPendingJobs(){
 	List<Queue> queues = Queues.getAll();
 	for (Queue q : queues) {
 	    int qId = q.getId();
@@ -54,7 +63,7 @@ public abstract class JobManager {
 	    if (queueSize < R.NUM_JOB_SCRIPTS) {	
 		List<Job> joblist = Jobs.getPendingJobs(qId);
 		if (joblist.size() > 0) 
-		    submitJobs(session, joblist, q, queueSize);
+		    submitJobs(joblist, q, queueSize);
 	    }
 	    else
 		log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
@@ -78,12 +87,14 @@ public abstract class JobManager {
 	    catch (IOException e) {
 		log.error("Error reading the jobscript at "+f,e);
 	    }
-	    mainTemplate = mainTemplate.replace("$$DB_NAME$$", "" + R.MYSQL_DATABASE);
-	    mainTemplate = mainTemplate.replace("$$OUT_DIR$$", "" + R.NODE_OUTPUT_DIR);
-	    mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", "" + R.REPORT_HOST);
+	    mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
+	    mainTemplate = mainTemplate.replace("$$OUT_DIR$$", R.NODE_OUTPUT_DIR);
+	    mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
+	    mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
+	    mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
 	    // Impose resource limits
-	    mainTemplate = mainTemplate.replace("$$MAX_MEM$$", "" + R.MAX_PAIR_VMEM);			
-	    mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", "" + R.MAX_PAIR_FILE_WRITE);	 
+	    mainTemplate = mainTemplate.replace("$$MAX_MEM$$", String.valueOf(R.MAX_PAIR_VMEM));			
+	    mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	 
 	}
     }
 
@@ -104,7 +115,7 @@ public abstract class JobManager {
      * @param j The job object containing information about what to run for the job
      * @param spaceId The id of the space this job will be placed in
      */
-    public static void submitJobs(Session session, List<Job> joblist, Queue q, int queueSize) {		
+    public static void submitJobs(List<Job> joblist, Queue q, int queueSize) {		
 	log.debug("submitJobs() begins");
 	initMainTemplateIf();
 
@@ -119,8 +130,15 @@ public abstract class JobManager {
 
 	    //Post processor
 	    Processor processor = job.getPostProcessor();
-	    jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", 
-					      (processor == null ? "null" : "" + processor.getFilePath()));
+	    if (processor == null) {
+		log.warn("Postprocessor is null.");
+		jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
+	    }
+	    else {
+		String path = processor.getFilePath();
+		log.info("Postprocessor path is "+path+".");
+		jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
+	    }
 
 	    Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
 
@@ -176,7 +194,7 @@ public abstract class JobManager {
 			String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
 			    
 			// Submit to the grid engine
-			int sgeId = JobManager.submitScript(session, scriptPath, pair);
+			int sgeId = JobManager.submitScript(scriptPath, pair);
 			    
 			// If the submission was successful
 			if(sgeId >= 0) {											
@@ -204,7 +222,7 @@ public abstract class JobManager {
      * @param pair The pair the script is being submitted for
      * @return The grid engine id of the submitted job. -1 if the submit failed
      */
-    private synchronized static int submitScript(Session session, String scriptPath, JobPair pair) throws Exception {
+    private synchronized static int submitScript(String scriptPath, JobPair pair) throws Exception {
 	JobTemplate sgeTemplate = null;
 
 	try {

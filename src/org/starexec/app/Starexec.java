@@ -86,6 +86,7 @@ public class Starexec implements ServletContextListener {
 		
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    session = GridEngineUtil.createSession();
+		    JobManager.setSession(session);
 		    log.info("Created GridEngine session");
 		}
 
@@ -129,7 +130,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			public void run() {
 			    log.info("submitJobsTask (periodic)");
-			    JobManager.checkPendingJobs(session);
+			    JobManager.checkPendingJobs(); // uses the session created above (set with setSession())
 			}
 		};
 
