@@ -84,8 +84,10 @@ public class Starexec implements ServletContextListener {
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();		
 		
-		session = GridEngineUtil.createSession();
-		log.info("Created GridEngine session");
+		if (R.RUN_PERIODIC_SGE_TASKS) {
+		    session = GridEngineUtil.createSession();
+		    log.info("Created GridEngine session");
+		}
 
 		// Schedule necessary periodic tasks to run
 		this.scheduleRecurringTasks();		
