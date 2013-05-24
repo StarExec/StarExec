@@ -350,10 +350,8 @@ public class ArchiveUtil {
 		try {
 			if (format.equals(".zip")) {
 				ArchiveUtil.createZip(path, destination, baseName, reupload);
-			} else if (format.equals(".tar")) {
-				ArchiveUtil.createTar(path, destination, baseName, reupload);
-			} else if (format.equals(".tar.gz") || format.equals(".tgz")) {
-				ArchiveUtil.createTarGz(path, destination, baseName);
+			} else if (format.equals(".tar") || format.equals(".tar.gz")) {
+				ArchiveUtil.createTar(path, destination, baseName, reupload, format);
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -423,8 +421,8 @@ public class ArchiveUtil {
 	 * @param destination
 	 * 
 	 */
-	public static void createZip(File path, File destination, boolean reupload) throws Exception {
-		createZip(path,destination,"", reupload);
+	public static void createZip(File path, File destination) throws Exception {
+		createZip(path,destination,"", false);
 	}
 	
 	
@@ -477,26 +475,10 @@ public class ArchiveUtil {
 			entryName=base+baseName;
 		}
 		
-		if (reupload && progress==0) {
-			entryName = "";
-			File[] children = path.listFiles();
-			if (children!=null) {
-				log.debug("Number of files = " + children.length);
-			} else {
-				log.debug("Number of files = " + 1);
-			}
-			
-			if (children != null) {
-				for (File child: children) {
-					addChildToZip(zOut, child, entryName, reupload);
-				}
-			}
-			children = null;
-		} else {
+		if(!(reupload && progress == 0)) {
 			ZipArchiveEntry zipEntry = new ZipArchiveEntry(path, entryName);
-	
 			zOut.putArchiveEntry(zipEntry);
-			log.debug("adding File to zip = " + entryName);
+			
 			if (path.isFile()) {
 				FileInputStream fis = new FileInputStream(path);
 				IOUtils.copy(fis, zOut);
@@ -504,22 +486,24 @@ public class ArchiveUtil {
 				zOut.closeArchiveEntry();
 			} else {
 				zOut.closeArchiveEntry();
-				
-				File[] children = path.listFiles();
-				if (children!=null) {
-					log.debug("Number of files = " + children.length);
-				} else {
-					log.debug("Number of files = " + 1);
-				}
-				
-				if (children != null) {
-					for (File child : children) {
-						addChildToZip(zOut, child, entryName, reupload);
-					}
-				}
-				children = null;
 			}
+		} else {
+			entryName = "";
 		}
+	
+		File[] children = path.listFiles();
+
+		if (children!=null) {
+			log.debug("Number of files = " + children.length);
+		} else {
+			log.debug("Number of files = " + 1);
+		}
+		if (children != null) {
+			for (File child : children) {
+				addChildToZip(zOut, child, entryName, reupload);
+			}
+		}	
+		children = null;
 	}
 
 	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName, boolean reupload) throws IOException{
@@ -530,22 +514,28 @@ public class ArchiveUtil {
 	}
 
 	/**
-	 * Creates a .tar file of the specified directory "path" and saves it to "destination"
+	 * Creates a .tar or .tar.gz file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tarred
 	 * @param destination where to save the .tar file created
 	 * @param baseName the name given to the file specified in path
 	 * 
 	 * @author Skylar Stark
 	 */
-	public static void createTar(File path, File destination, String baseName, boolean reupload) throws Exception {
+	public static void createTar(File path, File destination, String baseName, boolean reupload, String format) throws Exception {
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
+		GzipCompressorOutputStream gzOut = null;
 		TarArchiveOutputStream tOut = null;
 
 		try {
 			fOut = new FileOutputStream(destination);
 			bOut = new BufferedOutputStream(fOut);
-			tOut = new TarArchiveOutputStream(bOut);
+			if (format.equals(".tar.gz")) {
+				gzOut = new GzipCompressorOutputStream(bOut);
+				tOut = new TarArchiveOutputStream(gzOut);
+			} else {
+				tOut = new TarArchiveOutputStream(bOut);
+			}
 
 			addFileToTar(tOut, path, "", baseName, reupload, 0);
 		} finally {
@@ -557,8 +547,12 @@ public class ArchiveUtil {
 		}
 	}
 	
-	public static void createTar(File path, File destination, boolean reupload) throws Exception {
-		createTar(path,destination,"", reupload);
+	public static void createTar(File path, File destination) throws Exception {
+		createTar(path,destination,"", false, ".tar");
+	}
+	
+	public static void createTarGz(File path, File destination) throws Exception {
+		createTar(path, destination, "", false, ".tar.gz");
 	}
 	
 	/**
@@ -612,28 +606,12 @@ public class ArchiveUtil {
 			entryName=base+baseName;
 		}
 		
-		if(reupload && progress == 0) {
-			entryName = "";
-			File[] children = path.listFiles();
-			if (children!=null) {
-				log.debug("Number of files = " + children.length);
-			} else {
-				log.debug("Number of files = " + 1);
-			}
-			
-			if (children != null) {
-				for (File child : children) {
-					addChildToTar(tOut, child, entryName, reupload);
-				}
-			}
-			children = null;
-		} else {
-		
+		if(!(reupload && progress == 0)) {
 			TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
-	
+			
 			tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 			tOut.putArchiveEntry(tarEntry);
-	
+			
 			if (path.isFile()) {
 				FileInputStream fis = new FileInputStream(path);
 				IOUtils.copy(fis, tOut);
@@ -641,16 +619,24 @@ public class ArchiveUtil {
 				tOut.closeArchiveEntry();
 			} else {
 				tOut.closeArchiveEntry();
-	
-				File[] children = path.listFiles();
-	
-				if (children != null) {
-					for (File child : children) {
-						addChildToTar(tOut, child, entryName, reupload);
-					}
-				}
 			}
+		} else {
+			entryName = "";
 		}
+	
+		File[] children = path.listFiles();
+
+		if (children!=null) {
+			log.debug("Number of files = " + children.length);
+		} else {
+			log.debug("Number of files = " + 1);
+		}
+		if (children != null) {
+			for (File child : children) {
+				addChildToTar(tOut, child, entryName, reupload);
+			}
+		}	
+		children = null;
 	}
 	
 	private static void addChildToTar(TarArchiveOutputStream tOut, File child, String entryName, boolean reupload) throws IOException{
@@ -658,40 +644,6 @@ public class ArchiveUtil {
 		addFileToTar(tOut, tempChild, entryName + File.separator, "", reupload, 1);
 		tempChild = null;
 
-	}
-	/**
-	 * Creates a .tfar.gz file of the specified directory "path" and saves it to "destination"
-	 * @param path the path to be tar.gz'ed
-	 * @param destination where to save the .tar.gz file created
-	 * @param baseName the name given to the file specified in path
-	 * @author Skylar Stark
-	 */
-	public static void createTarGz(File path, File destination, String baseName) throws Exception {
-		FileOutputStream fOut = null;
-		BufferedOutputStream bOut = null;
-		GzipCompressorOutputStream gzOut = null;
-		TarArchiveOutputStream tOut = null;
-
-		try {
-			fOut = new FileOutputStream(destination);
-			bOut = new BufferedOutputStream(fOut);
-			gzOut = new GzipCompressorOutputStream(bOut);
-			tOut = new TarArchiveOutputStream(gzOut);
-
-			addFileToTarGz(tOut, path, "", baseName);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			tOut.finish();
-
-			tOut.close();
-			gzOut.close();
-			bOut.close();
-			fOut.close();
-		}
-	}
-	public static void createTarGz(File path, File destination) throws Exception {
-		createTarGz(path,destination,"");
 	}
 	
 	/**
@@ -711,7 +663,7 @@ public class ArchiveUtil {
 			gzOut = new GzipCompressorOutputStream(bOut);
 			tOut = new TarArchiveOutputStream(gzOut);
 			for (File x : files) {
-				addFileToTarGz(tOut, x, "", baseName);
+				addFileToTarGz(tOut, x, "", baseName, false, 0);
 			}
 			
 		} catch (Exception e) {
@@ -739,34 +691,67 @@ public class ArchiveUtil {
 	 * @param baseName the name given to the file. If empty, the name of path is used
 	 * @author Skylar Stark
 	 */
-	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base, String baseName) throws IOException {
+	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base, String baseName, boolean reupload, int progress) throws IOException {
 		String entryName;
+		if (reupload && base.equals("\\")) {
+			base = "";
+		}
 		if (baseName.equals("")) {
 			entryName = base + path.getName();
 		} else {
 			entryName=base+baseName;
 		}
 		
-		TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
-
-		tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-		tOut.putArchiveEntry(tarEntry);
-
-		if (path.isFile()) {
-			FileInputStream fis = new FileInputStream(path);
-			IOUtils.copy(fis, tOut);
-			fis.close();
-			tOut.closeArchiveEntry();
-		} else {
-			tOut.closeArchiveEntry();
-
+		log.debug("ENTRYNAME = " + entryName);
+		if (reupload && progress==0) {
+			entryName = "";
+			log.debug("entryName as been reset");
 			File[] children = path.listFiles();
-
 			if (children != null) {
-				for (File child : children) {
-					addFileToTarGz(tOut, new File(child.getAbsolutePath()), entryName + "/","");
+				log.debug("Number of files = " + children.length);
+			} else {
+				log.debug("Number of files = " + 1);
+			}
+			
+			if (children != null) {
+				for (File child: children) {
+					addChildToTarGz(tOut, child, entryName, reupload);
 				}
 			}
+		} else {
+		
+			TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
+	
+			tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+			tOut.putArchiveEntry(tarEntry);
+	
+			if (path.isFile()) {
+				FileInputStream fis = new FileInputStream(path);
+				IOUtils.copy(fis, tOut);
+				fis.close();
+				tOut.closeArchiveEntry();
+			} else {
+				tOut.closeArchiveEntry();
+	
+				File[] children = path.listFiles();
+				if (children != null) {
+					log.debug("Number of files = " + children.length);
+				} else {
+					log.debug("Number of files = " + 1);
+				}
+				if (children != null) {
+					for (File child : children) {
+						addChildToTarGz(tOut, child, entryName, reupload);
+					}
+				}
+				children = null;
+			}
 		}
+	}
+	
+	private static void addChildToTarGz(TarArchiveOutputStream tOut, File child, String entryName, boolean reupload) throws IOException {
+		File tempChild = new File(child.getAbsolutePath());
+		addFileToTarGz(tOut, tempChild, entryName + File.separator, "", reupload, 1);
+		tempChild = null;
 	}
 }
