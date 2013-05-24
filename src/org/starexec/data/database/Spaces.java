@@ -904,44 +904,13 @@ public class Spaces {
 		return false;
 	}
 	
-	/**
-	 * Internal recursive method that adds a space and it's benchmarks to the database
-	 * @param con The connection to perform the operations on
-	 * @param space The space to add to the database
-	 * @param parentId The id of the parent space that the given space will belong to
-	 * @param userId The user id of the owner of the new space and its benchmarks
-	 * @author Tyler Jensen
-	 */
-	protected static void traverse(Connection con, Space space, int parentId, int userId) throws Exception {
-		// Add the new space to the database and get it's ID		
-		con = null;
-		try{
-			con = Common.getConnection();	
-			Common.beginTransaction(con);	
-			int spaceId = Spaces.add(con, space, parentId, userId);
-			Common.endTransaction(con);	
-			Common.safeClose(con);
-		for(Space s : space.getSubspaces()) {
-			// Recursively go through and add all of it's subspaces with itself as the parent
-			Spaces.traverse(con, s, spaceId, userId);
-		}			
-		
-		// Finally, add the benchmarks in the space to the database
-		//not really using connection parameter right now due to problems
-		Benchmarks.add(con, space.getBenchmarks(), spaceId);
-		}
-		catch (Exception e){			
-			log.error("traverse says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-		
-	}
 	
 	//no connection
 	protected static Boolean traverse(Space space, int parentId, int userId, int statusId) throws Exception {
 		// Add the new space to the database and get it's ID		
 		log.info("traversing space without deps for user " + userId);
+		if (space == null)
+		    log.error("traverse(): space is null.");
 		Connection con = null;
 		
 		Boolean returnValue = true;
@@ -1101,12 +1070,14 @@ public class Spaces {
 		procAddSpace.executeUpdate();
 		int newSpaceId = procAddSpace.getInt(6);
 		
+	    log.debug("Calling AssociateSpace");
 		// Add the new space as a child space of the parent space
 		CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
 		procSubspace.setInt(1, parentId);
 		procSubspace.setInt(2, newSpaceId);
 		procSubspace.executeUpdate();		
 		
+	    log.debug("Calling AddUserToSpace");
 		// Add the adding user to the space with the maximal permissions
 		CallableStatement procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
 		procAddUser.setInt(1, userId);

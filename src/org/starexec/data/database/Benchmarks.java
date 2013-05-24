@@ -1456,7 +1456,7 @@ public class Benchmarks {
 	 * 
 	 * @author Wyatt Kaiser
 	 */
-	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) {
+	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) throws Exception {
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
@@ -1494,8 +1494,9 @@ public class Benchmarks {
 			// If it's a sub-directory			
 			if(f.isDirectory()) {
 				// Recursively extract spaces/benchmarks from that directory
-				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm, statusId));
-				Uploads.incrementTotalSpaces(statusId);//for upload status page
+			    space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, 
+											   userId, downloadable, perm, statusId));
+			    Uploads.incrementTotalSpaces(statusId);//for upload status page
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 				
 				if (Validator.isValidPrimName(f.getName())) {
@@ -1512,12 +1513,12 @@ public class Benchmarks {
 					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
 					// Make sure that the benchmark has a unique name in the space.
 					if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
-						return null;
+					    throw new Exception("\""+b.getName() + "\" is not a unique name in the space.");
 					}
 
 					space.addBenchmark(b);
 				} else {
-					return null;
+				    throw new Exception("\""+f.getName() + "\" is not accepted as a legal benchmark name.");
 				}
 				
 			}
