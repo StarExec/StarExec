@@ -5,6 +5,14 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+In revision 12782:
+
+-- We are now validating the names of benchmark before adding the
+   benchmarks to the DB.  I fixed an issue where our name validator
+   was too strict and where unvalidated names were not being 
+   reported properly to the user.  This fixes an issue Geoff was
+   having uploading TPTP axioms.
+
 In revision 12770:
 
 -- Should be able to delete benchmark validators now.
