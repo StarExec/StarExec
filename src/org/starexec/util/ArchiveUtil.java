@@ -364,6 +364,34 @@ public class ArchiveUtil {
 		createArchive(path,destination,format,"");
 	}
 	
+/**
+ * Creates an archive in the format for re-upload (i.e. doesn't store the contents in a single folder
+ * within the archive.)
+ * @param path the path to the folder to be archived
+ * @param destination the path to the output folder
+ * @param format the preferred archive type
+ * @param baseName specifies the name that will be given to the file path.
+ * @author Wyatt Kaiser
+ */
+	public static void createArchiveReUpload(File path, File destination, String format, String baseName) {
+		log.info("creating archive, path = " + path + ", dest = " + destination +", format = " + format);
+		try {
+			if (format.equals(".zip")) {
+				ArchiveUtil.createZipReUpload(path, destination, baseName);
+			} else if (format.equals(".tar")) {
+				ArchiveUtil.createTarReUpload(path, destination, baseName);
+			} else if (format.equals(".tar.gz") || format.equals(".tgz")) {
+				ArchiveUtil.createTarGz(path, destination, baseName);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+	
+	public static void createArchiveReUpload(File path, File destination, String format) {
+		createArchiveReUpload(path,destination,format,"");
+	}
+	
 	
 	/**
 	 * Creates an archive in the same way as above, but with a list of files
@@ -456,7 +484,117 @@ public class ArchiveUtil {
 		createZip(paths,destination,"");
 	}
 	
+/**
+ * Creates a Zip in Re-Upload able form
+ * @param path the path to be zipped
+ * @param destination where to save the .zip file created
+ * @param baseName-- the name to be given to the file specified in path
+ * @author Wyatt Kaiser
+ */
+	
+	public static void createZipReUpload(File path, File destination, String baseName) throws Exception {
+		log.debug("creating zip2, path = " + path + ", dest = " + destination);
 
+		FileOutputStream fOut = null;
+		BufferedOutputStream bOut = null;
+		ZipArchiveOutputStream zOut = null;
+
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			zOut = new ZipArchiveOutputStream(bOut);
+
+			addFileToZipReUpload( 0, zOut, path, "",baseName);
+		} finally {
+			zOut.finish();
+
+			zOut.close();
+			bOut.close();
+			fOut.close();
+		}
+	}
+	
+/**
+ * 
+ * @param progress indicate if we are on first iteration or not
+ * @param zOut the zip file we are creating
+ * @param path the path of the file we are adding
+ * @param base the base prefix for the name of the zip file entry
+ * @author Wyatt Kaiser
+ */
+	private static void addFileToZipReUpload(int progress, ZipArchiveOutputStream zOut, File path, String base, String baseName) throws IOException {
+		String entryName = null;
+		log.debug("base=" + base);
+		if (base.equals("\\")) {
+			base = "";
+		}
+		if (baseName.equals("")) {
+			entryName = base + path.getName();
+		} else {
+			entryName=base+baseName;
+		}
+		
+		log.debug("path=" + path);
+		log.debug("entryName=" + entryName);
+		
+		if (progress == 0) {
+			entryName = "";
+			File[] children = path.listFiles();
+			if (children!=null) {
+				log.debug("Number of files = " + children.length);
+			} else {
+				log.debug("Number of files = " + 1);
+			}
+			
+			if (children != null) {
+				for (File child : children) {
+					addChildToZipReUpload(zOut, child, entryName);
+				}
+			}
+			children = null;
+		} else {
+
+
+			ZipArchiveEntry zipEntry = new ZipArchiveEntry(path, entryName);
+	
+			zOut.putArchiveEntry(zipEntry);
+	
+			log.debug("adding File to zip = " + entryName);
+			if (path.isFile()) {
+				FileInputStream fis = new FileInputStream(path);
+				IOUtils.copy(fis, zOut);
+				fis.close();
+				zOut.closeArchiveEntry();
+			} else {
+				
+				zOut.closeArchiveEntry();
+				
+				File[] children = path.listFiles();
+				if (children!=null) {
+					log.debug("Number of files = " + children.length);
+				} else {
+					log.debug("Number of files = " + 1);
+				}
+				
+				if (children != null) {
+					for (File child : children) {
+						addChildToZipReUpload(zOut, child, entryName);
+					}
+				}
+				children = null;
+			}
+		}
+	}
+
+	private static void addChildToZipReUpload(ZipArchiveOutputStream zOut, File child, String entryName) throws IOException{
+		File tempChild = new File(child.getAbsolutePath());
+		addFileToZipReUpload(1, zOut, tempChild, entryName + File.separator, "");
+		tempChild = null;
+
+	}
+	
+	
+	
 	/**
 	 * Adds a file to the .zip archive. If the file is a folder, recursively adds the contents of the
 	 * folder to the archive
@@ -573,6 +711,38 @@ public class ArchiveUtil {
 	}
 
 	/**
+	 * Creates a .tar file in re-upload form
+	 * @param path the path to be tarred
+	 * @param destination where to save the .tar file created
+	 * @param baseName the name given to the file specified in path
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	public static void createTarReUpload(File path, File destination, String baseName) throws Exception {
+		FileOutputStream fOut = null;
+		BufferedOutputStream bOut = null;
+		TarArchiveOutputStream tOut = null;
+
+		try {
+			fOut = new FileOutputStream(destination);
+			bOut = new BufferedOutputStream(fOut);
+			tOut = new TarArchiveOutputStream(bOut);
+
+			addFileToTarReUpload(0, tOut, path, "", baseName);
+		} finally {
+			tOut.finish();
+
+			tOut.close();
+			bOut.close();
+			fOut.close();
+		}
+	}
+	
+	public static void createTarReUpload(File path, File destination) throws Exception {
+		createTar(path,destination,"");
+	}
+
+	/**
 	 * Adds a file to a .tar archive. If the file is a folder, recursively adds the contents of the
 	 * folder to the archive
 	 * @param tOut the tar file we are adding to
@@ -582,7 +752,7 @@ public class ArchiveUtil {
 	 * @author Skylar Stark
 	 */
 	private static void addFileToTar(TarArchiveOutputStream tOut, File path, String base, String baseName) throws IOException {
-		String entryName;
+		String entryName = null;
 		if (baseName.equals("")) {
 			entryName = base + path.getName();
 		} else {
@@ -611,7 +781,78 @@ public class ArchiveUtil {
 			}
 		}
 	}
+	
 
+	/**
+	 * Adds a file to a .tar archive. If the file is a folder, recursively adds the contents of the
+	 * folder to the archive
+	 * @param progress indicates if on first iteration or not
+	 * @param tOut the tar file we are adding to
+	 * @param path the path of the file we are adding
+	 * @param base the base prefix for the name of the tar file entry
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	private static void addFileToTarReUpload(int progress, TarArchiveOutputStream tOut, File path, String base, String baseName) throws IOException {
+		String entryName;
+		if (base.equals("\\")) {
+			base = "";
+		}
+		if (baseName.equals("")) {
+			entryName = base + path.getName();
+		} else {
+			entryName=base+baseName;
+		}
+		
+		log.debug("ENTRYNAME = " + entryName);
+		log.debug("PATH = " + path);
+		
+		if (progress == 0) {
+			entryName = "";
+			File[] children = path.listFiles();
+			if (children!=null) {
+				log.debug("Number of files = " + children.length);
+			} else {
+				log.debug("Number of files = " + 1);
+			}
+			
+			if (children != null) {
+				for (File child : children) {
+					addChildToTarReUpload (tOut, child, entryName);
+				}
+			}
+			children = null;
+		} else {
+			TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
+
+			tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+			tOut.putArchiveEntry(tarEntry);
+
+			if (path.isFile()) {
+				FileInputStream fis = new FileInputStream(path);
+				IOUtils.copy(fis, tOut);
+				fis.close();
+				tOut.closeArchiveEntry();
+			} else {
+				tOut.closeArchiveEntry();
+
+				File[] children = path.listFiles();
+
+				if (children != null) {
+					for (File child : children) {
+						addFileToTar(tOut, new File(child.getAbsolutePath()), entryName + "/","");
+					}
+				}
+			}
+		}
+	}
+	
+	private static void addChildToTarReUpload(TarArchiveOutputStream tOut, File child, String entryName) throws IOException{
+		File tempChild = new File(child.getAbsolutePath());
+		addFileToTarReUpload(1, tOut, tempChild, entryName + File.separator, "");
+		tempChild = null;
+
+	}
 	/**
 	 * Creates a .tfar.gz file of the specified directory "path" and saves it to "destination"
 	 * @param path the path to be tar.gz'ed

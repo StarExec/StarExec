@@ -61,21 +61,23 @@ public class Download extends HttpServlet {
 			}
 			
 			if (request.getParameter("type").equals("solver")) {
+				log.debug("SOLVER1");
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response);
+			} else if (request.getParameter("type").equals("reupload")) {
+				log.debug("SOLVER2");
+				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
+				fileName = handleSolver2(s, u.getId(), u.getArchiveType(), response);
 			} else if (request.getParameter("type").equals("bench")) {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleBenchmark(b, u.getId(), u.getArchiveType(), response);
 			} else if (request.getParameter("type").equals("jp_output")) {
 				JobPair jp = Jobs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
 				fileName = handlePairOutput(jp, u.getId(), u.getArchiveType(), response);				
-			}
-			else if (request.getParameter("type").equals("spaceXML")) {
+			} else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);
-				
-			}
-			else if (request.getParameter("type").equals("job")) {
+				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);	
+			} else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));			
 				fileName = handleJob(jobId, u.getId(), u.getArchiveType(), response);
 			} else if (request.getParameter("type").equals("j_outputs")) {
@@ -129,7 +131,8 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark
 	 */
     private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response) throws IOException {
-		// If we can see this solver AND the solver is downloadable...
+		log.info("handleSolver");
+    	// If we can see this solver AND the solver is downloadable...
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
@@ -142,6 +145,37 @@ public class Download extends HttpServlet {
 			
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format,baseFileName);
+			
+			//We return the fileName so the browser can redirect straight to it
+			return fileName;
+		}
+		else {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
+		}
+    	
+    	return null;
+    }
+    
+    /**
+     * Processes a solver to be downloaded. The solver is archived in a format that is
+	 * specified by the user, and placed in an archive so that it can be re-uploaded directly.
+	 * @param s the solver to be downloaded
+	 * @param userId the id of the user making the download request
+	 * @param format the user's preferred archive type
+	 * @return the filename of the created archive
+	 * 
+     * @author Wyatt Kaiser
+     */
+    private static String handleSolver2(Solver s, int userId, String format, HttpServletResponse response) throws IOException {
+		log.info("handleSolver2");
+    	// If we can see this solver AND the solver is downloadable...
+		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
+			// Path is /starexec/WebContent/secure/files/{random name}.{format}
+			// Create the file so we can use it, and the directory it will be placed in
+			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
+			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			uniqueDir.createNewFile();
+			ArchiveUtil.createArchiveReUpload(new File(s.getPath()), uniqueDir, format);
 			
 			//We return the fileName so the browser can redirect straight to it
 			return fileName;
@@ -564,6 +598,7 @@ public class Download extends HttpServlet {
     		
     		// The requested type should be a solver, benchmark, spaceXML, or job pair output
     		if (!(request.getParameter("type").equals("solver") ||
+    				request.getParameter("type").equals("reupload") ||
     				request.getParameter("type").equals("bench") ||
     				request.getParameter("type").equals("spaceXML") ||
     				request.getParameter("type").equals("jp_output") ||

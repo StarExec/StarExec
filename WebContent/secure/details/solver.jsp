@@ -75,7 +75,7 @@
 				</table>
 			</td>
 			</tr>
-		</table>
+		</table>		
 	</fieldset>
 	<fieldset>
 		<legend>configurations</legend>
@@ -98,7 +98,7 @@
 					</tr>
 					</c:forEach>		
 			</tbody>						
-		</table>				
+		</table>						
 	</fieldset>
 	<c:if test="${not empty sites}">		
 	<fieldset id="fieldSites">
@@ -146,16 +146,21 @@
 		</div>
 	</fieldset>	
 -->
+
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>	
 	<div id="dialog-warning" title="warning">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 	</div>		
+	<div id="dialog-confirm-copy" title="confirm copy">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
+	</div>
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
-	<c:if test="${solver.downloadable}">
-		<a href="/${starexecRoot}/secure/download?type=solver&id=${solver.id}" id="downLink">download</a>
+	
+	<c:if test="${solver.downloadable}">			
+		<button type="button" id="downLink3">Download3</button>
 	</c:if>
 	<c:if test="${usr.id == user.id}">
 		<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>
