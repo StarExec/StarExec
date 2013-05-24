@@ -160,7 +160,7 @@
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	
 	<c:if test="${solver.downloadable}">			
-		<button type="button" id="downLink3">Download3</button>
+		<button type="button" id="downLink3">Download</button>
 	</c:if>
 	<c:if test="${usr.id == user.id}">
 		<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>

@@ -61,13 +61,11 @@ public class Download extends HttpServlet {
 			}
 			
 			if (request.getParameter("type").equals("solver")) {
-				log.debug("SOLVER1");
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response);
+				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, false);
 			} else if (request.getParameter("type").equals("reupload")) {
-				log.debug("SOLVER2");
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSolver2(s, u.getId(), u.getArchiveType(), response);
+				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, true);
 			} else if (request.getParameter("type").equals("bench")) {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleBenchmark(b, u.getId(), u.getArchiveType(), response);
@@ -128,46 +126,10 @@ public class Download extends HttpServlet {
 	 * @param userId the id of the user making the download request
 	 * @param format the user's preferred archive type
 	 * @return the filename of the created archive
-	 * @author Skylar Stark
+	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-    private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response) throws IOException {
+    private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
-    	// If we can see this solver AND the solver is downloadable...
-		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
-			// Path is /starexec/WebContent/secure/files/{random name}.{format}
-			// Create the file so we can use it, and the directory it will be placed in
-			String baseFileName=s.getName();
-			
-			
-			
-			String fileName = baseFileName + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			
-			uniqueDir.createNewFile();
-			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format,baseFileName);
-			
-			//We return the fileName so the browser can redirect straight to it
-			return fileName;
-		}
-		else {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
-		}
-    	
-    	return null;
-    }
-    
-    /**
-     * Processes a solver to be downloaded. The solver is archived in a format that is
-	 * specified by the user, and placed in an archive so that it can be re-uploaded directly.
-	 * @param s the solver to be downloaded
-	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
-	 * @return the filename of the created archive
-	 * 
-     * @author Wyatt Kaiser
-     */
-    private static String handleSolver2(Solver s, int userId, String format, HttpServletResponse response) throws IOException {
-		log.info("handleSolver2");
     	// If we can see this solver AND the solver is downloadable...
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
@@ -175,7 +137,7 @@ public class Download extends HttpServlet {
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
-			ArchiveUtil.createArchiveReUpload(new File(s.getPath()), uniqueDir, format);
+			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, reupload);
 			
 			//We return the fileName so the browser can redirect straight to it
 			return fileName;
@@ -186,6 +148,7 @@ public class Download extends HttpServlet {
     	
     	return null;
     }
+
     
     /*
      * Handles requests for downloading post processors for a given community
@@ -228,7 +191,7 @@ public class Download extends HttpServlet {
 			String fileName = b.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
-			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format);
+			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format, false);
 			
 			return fileName;
 		}
@@ -275,7 +238,7 @@ public class Download extends HttpServlet {
 			FileUtils.moveFileToDirectory(schemaCopy, container, false);
 			uniqueDir.createNewFile();
 			
-			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName);
+			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false);
 			
 			return fileName;
 		}
@@ -310,7 +273,7 @@ public class Download extends HttpServlet {
 			//String outputPath = String.format("%s/%d/%d/%d", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getId());
 			String outputPath = String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, userId, j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName());  
 		    log.info("The download output path is " + outputPath);
-			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format);
+			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
 			
 			return fileName;
 		}
@@ -341,7 +304,7 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			
 			String jobFile = CreateJobCSV(job);
-			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format);
+			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
 			
 			return fileName;
 		}
@@ -477,7 +440,7 @@ public class Download extends HttpServlet {
 	    	sb.append(File.separator);
 	    	sb.append(j.getId());
 			String outputPath = sb.toString();
-			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format);
+			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
 			
 			return fileName;
 		}
@@ -518,7 +481,7 @@ public class Download extends HttpServlet {
 			} else {
 				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath());
 			}
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName);
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
 			if(tempDir.exists()){
 				tempDir.delete();
 			}
