@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -633,7 +634,7 @@ public class Spaces {
 	 * @param con the database connection to use
 	 * @return the list of subspaces of the given space
 	 * @throws Exception
-	 * @author Todd Elvers & Skylar Stark & Benton McCune
+	 * @author Todd Elvers & Skylar Stark & Benton McCune & Wyatt Kaiser
 	 */
 	protected static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive, Connection con) throws Exception{
 		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?, ?)}");
@@ -662,7 +663,7 @@ public class Spaces {
 			log.debug("Found an additional " + additionalSubspaces.size() + " subspaces via recursion");
 			subSpaces.addAll(additionalSubspaces);
 		}
-		
+		log.debug("Returning from adding subspaces");
 		return subSpaces;
 	}
 	
@@ -673,14 +674,18 @@ public class Spaces {
 	 * @param userId the id of the user to check membership of
 	 * @param spaces the list of spaces to check membership of
 	 * @return the original list without the spaces the user is not a member of
+	 * 
+	 * @author Wyatt Kaiser
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
-		for (Space s : spaces) {
-			if (!Users.isMemberOfSpace(userId, s.getId())) {
-				spaces.remove(s);
+		Iterator<Space> iter = spaces.iterator();
+		while (iter.hasNext()) {
+			if (!Users.isMemberOfSpace(userId, iter.next().getId())) {
+				iter.remove();
+				log.debug("removed space");
 			}
 		}
-		
 		return spaces;
 	}
 	

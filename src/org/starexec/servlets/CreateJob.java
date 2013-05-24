@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -14,17 +15,36 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+/**
+ * Creates a class to keep track of the Benchmark-Solver-Configuration Pairs
+ * @author kais_wyatt
+ */
 
+class BSC {
+    List<Benchmark> b;
+    List<Solver> s;
+    HashMap<Solver, List<Configuration>> sc;
+
+    BSC (List<Benchmark> b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
+        this.b = b;
+        this.s = s;
+        this.sc = sc;
+    }
+}
 
 /**
  * Servlet which handles incoming requests to create new jobs
@@ -48,6 +68,7 @@ public class CreateJob extends HttpServlet {
 	private static final String cpuTimeout = "cpuTimeout";
 	private static final String clockTimeout = "wallclockTimeout";
 	private static final String spaceId = "sid";
+	private static final String traversal = "traversal";
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -92,15 +113,50 @@ public class CreateJob extends HttpServlet {
 
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
+		String traversal2 = request.getParameter(traversal);
 		//Depending on our run selection, handle each case differently
 		if (selection.equals("runAllBenchInSpace")) {
 			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space);
 		} else if (selection.equals("keepHierarchy")) {
-			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
+			log.debug("User selected keepHierarchy");
+			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true)); //Remove spaces the user is not a member of
 			spaces.add(0, Spaces.get(space));
-			for (Space s : spaces) {
-				JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId());
-			}
+			if (traversal2.equals("depth")) {
+				for (Space s : spaces) {
+					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId());
+				}
+			} else {
+				log.debug("User Selected Round-Robin Search");
+				int max = 0;
+				HashMap<Space,BSC> SpaceToBSC = new HashMap<Space,BSC>();
+				for (Space s : spaces) {
+					int space_id = s.getId();
+					List<Benchmark> benchmarks = Benchmarks.getBySpace(space_id);
+					int temp = benchmarks.size();
+					if (temp > max) {
+						max = temp;
+					}
+					List<Solver> solvers = Solvers.getBySpace(space_id);
+					List<Configuration> configurations = null;
+					
+					HashMap<Solver,List<Configuration>> SC = new HashMap<Solver, List<Configuration>>();
+					for (Solver so : solvers) {
+						configurations = Solvers.getConfigsForSolver(so.getId());
+						SC.put(so, configurations);
+					}
+					SpaceToBSC.put(s, new BSC(benchmarks, solvers, SC));
+					}
+				log.debug("Max size is: " + max);
+				for(int i=0; i < max; i++) {
+					for (Space s : spaces) {
+						BSC bsc = SpaceToBSC.get(s);
+							if (bsc.b.size() > i) {
+								log.debug("Calling addJobPairsRobin function: i= " + i);
+								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc);
+							}
+						}
+					}
+				}
 		} else { //hierarchy OR choice
 			List<Integer> solverIds = Util.toIntegerList(request.getParameterValues(solvers));
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));

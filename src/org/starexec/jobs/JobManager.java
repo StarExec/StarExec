@@ -1,8 +1,8 @@
 package org.starexec.jobs;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.HashMap;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -31,8 +31,10 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.servlets.CreateJob;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
+
 
 /**
  * Handles all SGE interactions for job submission and maintenance
@@ -401,11 +403,14 @@ public abstract class JobManager {
 	// Get queue and processor information from the database and put it in the job
 	j.setQueue(Queues.get(queueId));
 
-	if(preProcessorId > 0) {
-	    j.setPreProcessor(Processors.get(preProcessorId));
-	}		
-	if(postProcessorId > 0) {
-	    j.setPostProcessor(Processors.get(postProcessorId));		
+		if(preProcessorId > 0) {
+			j.setPreProcessor(Processors.get(preProcessorId));
+		}		
+		if(postProcessorId > 0) {
+			j.setPostProcessor(Processors.get(postProcessorId));		
+		}
+		log.debug("Successfully set up job " + name);
+		return j;	
 	}
 
 	return j;
@@ -448,7 +453,68 @@ public abstract class JobManager {
 		}	
 	    }
 	}
+	
+	/**
+	 * Gets all the solver/Configs for a certain benchmark from a certain space, pairs them up and then 
+	 * adds the resulting job pairs to a given job object. This is accessed from running space/keep hierarcy
+	 * structure in job creation with Breadth-First Traversal selected.
+	 * 
+	 * @param j the Job to add Job Pairs to
+	 * @param userId the id of the user adding the job pairs
+	 * @param cpuTimeout the CPU timeout for the job
+	 * @param clockTimeout the Clock Timeout for the job
+	 * @param spaceId the id of the space to build the job pairs from
+	 * @param b the particular benchmark to get job pairs for
+	 * @param s the list of the solvers in the particular space to get job pairs for
+	 * @param c the list of the configurations of the solver in the particular space to get job pairs for
+	 */
+	
+	public static void addJobPairsBreadth(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
+		log.debug("Attempting to add job pairs in breadth-first search");
+		Space space = Spaces.get(spaceId);
+		JobPair pair;
+		
+		int pairCount = 0;
+		//Skip over the benchmarks already done and only retrieve the next benchmark to create a job pair with
+		log.debug("b = " + b);
+			for (Solver solver: s) {
+				List<Configuration> Configs = sc.get(solver);
+				for (Configuration config : Configs) {
+					Solver clone = JobManager.cloneSolver(solver);
+					// Now we're going to work with this solver with this configuration
+					clone.addConfiguration(config);
 
+					pair = new JobPair();
+					pair.setBench(b);
+					pair.setSolver(clone);
+					pair.setCpuTimeout(cpuTimeout);
+					pair.setWallclockTimeout(clockTimeout);
+					pair.setSpace(space);
+					j.addJobPair(pair);
+
+					pairCount++;
+					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+					if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+						return;
+					}
+				}
+			}
+	}
+	
+	/**
+	 * Gets all the solvers/configs and benchmarks from a space, pairs them up, and then adds the
+	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
+	 * structure in job creation.
+	 * 
+	 * @param j the Job to add Job Pairs to
+	 * @param userId the id of the user adding the job pairs
+	 * @param cpuTimeout the CPU Timeout for the job
+	 * @param clockTimeout the Clock Timeout for the job 
+	 * @param spaceId the id of the space to build the job pairs from
+	 */
+	public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId) {
+		log.debug("Attempting to create Job-pairs in depth-first traversal");
+		Space space = Spaces.get(spaceId);
 
     }
 

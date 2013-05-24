@@ -19,6 +19,8 @@ $(document).ready(function(){
 	
 	initUI();
 	attachFormValidation();
+	
+	$('#radioDepth').attr('checked','checked');
 
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {

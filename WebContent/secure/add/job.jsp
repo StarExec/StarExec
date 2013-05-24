@@ -95,7 +95,14 @@
 								</c:forEach>
 							</select>
 						</td>
-					</tr>										
+					</tr>
+					<tr class="noHover" title="How would you like to traverse the job pairs?">
+						<td class="label"><p>Job-Pair Traversal</p></td>
+						<td>
+							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/> 	
+							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>	
+						</td>
+					</tr>								
 				</tbody>					
 			</table>
 		</fieldset>
@@ -234,7 +241,7 @@
 			<button type="submit" class="round" id="btnDone">submit</button>			
 			<button type="button" class="round" id="btnNext">next</button>			
 			<button type="button" class="round" id="btnPrev">Prev</button>	
-			<button type="button" class="round" id="btnBack">Back</button>			
+			<button type="button" class="round" id="btnBack">Cancel</button>			
 		</div>			
 	</form>		
 </star:template>
