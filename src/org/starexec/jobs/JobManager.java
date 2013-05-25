@@ -413,9 +413,6 @@ public abstract class JobManager {
 		return j;	
 	}
 
-	return j;
-    }
-
     /**
      * Adds to a job object the job pairs given by the selection we made (this will build it from the "choose"
      * selection on job creation)
@@ -429,29 +426,30 @@ public abstract class JobManager {
      * @param spaceId the id of the space we are adding from
      */
     public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId) {
-	// Retrieve all the benchmarks included in this job
-	List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
-
-	// Retrieve all the solvers included in this job
-	List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
-
-	// Pair up the solvers and benchmarks
-	int pairCount = 0;//temporarily, we're limiting number of job pairs.
-	for(Benchmark bench : benchmarks){
-	    for(Solver solver : solvers) {
-		JobPair pair = new JobPair();
-		pair.setBench(bench);
-		pair.setSolver(solver);				
-		pair.setCpuTimeout(cpuTimeout);
-		pair.setWallclockTimeout(clockTimeout);
-		pair.setSpace(Spaces.get(spaceId));
-		j.addJobPair(pair);
-		pairCount++;
-		log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-		if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
-		    return;
-		}	
-	    }
+		// Retrieve all the benchmarks included in this job
+		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
+	
+		// Retrieve all the solvers included in this job
+		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+	
+		// Pair up the solvers and benchmarks
+		int pairCount = 0;//temporarily, we're limiting number of job pairs.
+		for(Benchmark bench : benchmarks){
+		    for(Solver solver : solvers) {
+				JobPair pair = new JobPair();
+				pair.setBench(bench);
+				pair.setSolver(solver);				
+				pair.setCpuTimeout(cpuTimeout);
+				pair.setWallclockTimeout(clockTimeout);
+				pair.setSpace(Spaces.get(spaceId));
+				j.addJobPair(pair);
+				pairCount++;
+				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+				    return;	
+				}
+		    }
+		}
 	}
 	
 	/**
@@ -469,7 +467,7 @@ public abstract class JobManager {
 	 * @param c the list of the configurations of the solver in the particular space to get job pairs for
 	 */
 	
-	public static void addJobPairsBreadth(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
+	public static void addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
 		log.debug("Attempting to add job pairs in breadth-first search");
 		Space space = Spaces.get(spaceId);
 		JobPair pair;
@@ -500,23 +498,6 @@ public abstract class JobManager {
 				}
 			}
 	}
-	
-	/**
-	 * Gets all the solvers/configs and benchmarks from a space, pairs them up, and then adds the
-	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
-	 * structure in job creation.
-	 * 
-	 * @param j the Job to add Job Pairs to
-	 * @param userId the id of the user adding the job pairs
-	 * @param cpuTimeout the CPU Timeout for the job
-	 * @param clockTimeout the Clock Timeout for the job 
-	 * @param spaceId the id of the space to build the job pairs from
-	 */
-	public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId) {
-		log.debug("Attempting to create Job-pairs in depth-first traversal");
-		Space space = Spaces.get(spaceId);
-
-    }
 
     /**
      * Gets all the solvers/configs and benchmarks from a space, pairs them up, and then adds the
@@ -530,41 +511,41 @@ public abstract class JobManager {
      * @param spaceId the id of the space to build the job pairs from
      */
     public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId) {
-	Space space = Spaces.get(spaceId);
-
-	// Get the benchmarks and solvers from this space
-	List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
-	List<Solver> solvers = Solvers.getBySpace(spaceId);
-	List<Configuration> configs;
-	JobPair pair;
-
-	int pairCount = 0;
-	for (Benchmark b : benchmarks) {
-	    for (Solver s : solvers) {
-		// Get the configurations for the current solver
-		configs = Solvers.getConfigsForSolver(s.getId());
-		for (Configuration c : configs) {
-
-		    Solver clone = JobManager.cloneSolver(s);
-		    // Now we're going to work with this solver with this configuration
-		    clone.addConfiguration(c);
-
-		    pair = new JobPair();
-		    pair.setBench(b);
-		    pair.setSolver(clone);
-		    pair.setCpuTimeout(cpuTimeout);
-		    pair.setWallclockTimeout(clockTimeout);
-		    pair.setSpace(space);
-		    j.addJobPair(pair);
-
-		    pairCount++;
-		    log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-		    if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
-			return;
+		Space space = Spaces.get(spaceId);
+	
+		// Get the benchmarks and solvers from this space
+		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+		List<Solver> solvers = Solvers.getBySpace(spaceId);
+		List<Configuration> configs;
+		JobPair pair;
+	
+		int pairCount = 0;
+		for (Benchmark b : benchmarks) {
+		    for (Solver s : solvers) {
+				// Get the configurations for the current solver
+				configs = Solvers.getConfigsForSolver(s.getId());
+				for (Configuration c : configs) {
+		
+				    Solver clone = JobManager.cloneSolver(s);
+				    // Now we're going to work with this solver with this configuration
+				    clone.addConfiguration(c);
+		
+				    pair = new JobPair();
+				    pair.setBench(b);
+				    pair.setSolver(clone);
+				    pair.setCpuTimeout(cpuTimeout);
+				    pair.setWallclockTimeout(clockTimeout);
+				    pair.setSpace(space);
+				    j.addJobPair(pair);
+		
+				    pairCount++;
+				    log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+				    if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+					return;
+				    }
+				}
 		    }
 		}
-	    }
-	}
     }
 
     /**

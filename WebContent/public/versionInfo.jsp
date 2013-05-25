@@ -5,6 +5,8 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+-- Implemented round-robin option for creating Job Pairs.
+
 In revision 12782:
 
 -- We are now validating the names of benchmark before adding the
