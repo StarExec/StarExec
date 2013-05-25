@@ -136,7 +136,7 @@ function attachButtonActions() {
 					$(this).dialog("close");
 					createDialog("Processing your download request, please wait. This will take some time for large solvers.");
 					token=Math.floor(Math.random()*100000000);
-					window.location.href = "/starexec/secure/download?token=" + token + "&type=solver&id=68";
+					window.location.href = "/starexec/secure/download?token=" + token + "&type=solver&id="+$("#solverId").attr("value");
 					//$('#downLink3').attr('href', "/starexec/secure/download?token=" + token + "&type=solver&id=" + $("#solverId").attr("value"));
 					destroyOnReturn(token);
 				},
@@ -145,7 +145,7 @@ function attachButtonActions() {
 					$(this).dialog("close");
 					createDialog("Processing your download request, please wait. This will take some time for large solvers.");
 					token=Math.floor(Math.random()*100000000);
-					window.location.href = "/starexec/secure/download?token=" + token + "&type=reupload&id=68";
+					window.location.href = "/starexec/secure/download?token=" + token + "&type=reupload&id="+$("#solverId").attr("value");
 					//$('#downLink3').attr('href', "/starexec/secure/download?token=" + token + "&type=reupload&id=" + $("#solverId").attr("value"));
 					destroyOnReturn(token);
 				},

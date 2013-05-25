@@ -62,6 +62,7 @@ public class Download extends HttpServlet {
 			
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
+				
 				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, false);
 			} else if (request.getParameter("type").equals("reupload")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
@@ -141,7 +142,8 @@ public class Download extends HttpServlet {
     private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
     	// If we can see this solver AND the solver is downloadable...
-		if (Permissions.canUserSeeSolver(s.getId(), userId) && s.isDownloadable()) {
+		
+		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;

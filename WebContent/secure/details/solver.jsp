@@ -22,6 +22,12 @@
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}
+		
+		boolean downloadable=s.isDownloadable();
+		if (s.getUserId()==userId) {
+			downloadable=true;
+		}
+		request.setAttribute("downloadable",downloadable);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given solver id was in an invalid format");
 	} catch (Exception e) {
@@ -159,7 +165,7 @@
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	
-	<c:if test="${solver.downloadable}">			
+	<c:if test="${downloadable}">			
 		<button type="button" id="downLink3">Download</button>
 	</c:if>
 	<c:if test="${usr.id == user.id}">
