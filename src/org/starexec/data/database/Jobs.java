@@ -305,6 +305,14 @@ public class Jobs {
 
 		return false;
 	}
+	
+	public static Job getDetailed(int jobId) {
+		return getDetailed(jobId,null);
+	}
+	
+	public static Job getNewDetailed(int jobId, int since) {
+		return getDetailed(jobId,since);
+	}
 
 	/**
 	 * Retrieves a job from the database as well as its job pairs and its queue/processor info
@@ -313,7 +321,7 @@ public class Jobs {
 	 * @return A job object containing information about the requested job
 	 * @author Tyler Jensen
 	 */
-	public static Job getDetailed(int jobId) {
+	public static Job getDetailed(int jobId, Integer since) {
 		log.info("getting detailed info for job " + jobId);
 		Connection con = null;			
 
@@ -345,7 +353,12 @@ public class Jobs {
 			Common.closeResultSet(results);
 			Common.safeClose(con);
 			if (j != null){
-				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+				if (since==null) {
+					j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+				} else  {
+					j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
+				}
+				
 			}
 			return j;
 
@@ -731,15 +744,43 @@ public class Jobs {
 		Common.closeResultSet(results);
 		return returnList;				
 	}
-
+	
 	/**
 	 * Gets all job pairs for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
 	 * @param jobId The id of the job to get pairs for
+	 * @param since The completion ID to get all the pairs after. If null, gets all pairs
 	 * @return A list of job pair objects that belong to the given job.
-	 * @author Tyler Jense, Benton Mccune, Eric Burns
+	 * @author Eric Burns
 	 */
+	
 	public static List<JobPair> getPairsDetailed(int jobId) {
+		return getPairsDetailed(jobId,null);
+	}
+	
+	/**
+	 * Gets all job pairs for the given job that have been completed after a given point and also
+	 * populates its resource TOs.
+	 * @param jobId The id of the job to get pairs for
+	 * @param since The completed ID after which to get all jobs
+	 * @return A list of job pair objects representing all job pairs completed after "since" for a given job
+	 * @author Eric Burns
+	 */
+	
+	public static List<JobPair> getNewCompletedPairsDetailed(int jobId, int since) {
+		return getPairsDetailed(jobId,since);
+	}
+	
+	/**
+	 * Gets either all job pairs for the given job and also populates its used resource TOs or
+	 * only the job pairs that have been completed after the argument "since"
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param jobId The id of the job to get pairs for
+	 * @param since The completion ID to get all the pairs after. If null, gets all pairs
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author Tyler Jensen, Benton Mccune, Eric Burns
+	 */
+	public static List<JobPair> getPairsDetailed(int jobId,Integer since) {
 		Connection con = null;			
 		
 		try {			
@@ -749,10 +790,20 @@ public class Jobs {
 			{
 				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
 			}
+			ResultSet results;
 			
-			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
-			procedure.setInt(1, jobId);
-			ResultSet results = procedure.executeQuery();
+			//If the flag getCompleted is false, get all job pairs
+			if (since==null) {
+				CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
+				procedure.setInt(1, jobId);
+				results = procedure.executeQuery();
+			} else {
+				//otherwise, just get the completed ones that were completed later than lastSeen
+				CallableStatement procedure = con.prepareCall("{CALL GetNewCompletedJobPairsByJob(?, ?)}");
+				procedure.setInt(1, jobId);
+				procedure.setInt(2,since);
+				results = procedure.executeQuery();
+			}
 			Common.safeClose(con);
 			List<JobPair> returnList = new ArrayList<JobPair>();
 			
@@ -773,10 +824,16 @@ public class Jobs {
 				s.setStatus(results.getString("status.status"));
 				s.setDescription(results.getString("status.description"));
 				jp.setStatus(s);
+				
+				//set the completion ID if it exists-- it only exists if we are getting new job pairs
+				if (results.getInt("completion.completion_id")!=0) {
+					jp.setCompletionId(results.getInt("completion.completion_id"));
+				}
 				returnList.add(jp);
 				curNode=results.getInt("node_id");
 				curBench=results.getInt("bench_id");
 				curConfig=results.getInt("config_id");
+				
 				nodeIdSet.add(curNode);
 				benchIdSet.add(curBench);
 				configIdSet.add(curConfig);

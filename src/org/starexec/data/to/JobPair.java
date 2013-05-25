@@ -14,6 +14,7 @@ public class JobPair extends Identifiable {
 	private int gridEngineId = -1;
 	private int cpuTimeout = -1;
 	private int wallclockTimeout = -1;
+	private int completionId=-1;
 	private WorkerNode node = null;
 	private Solver solver = null;
 	private Benchmark bench = null;	
@@ -61,6 +62,14 @@ public class JobPair extends Identifiable {
 	 */
 	public void setJobId(int jobId) {
 		this.jobId = jobId;
+	}
+	
+	public int getCompletionId() {
+		return completionId;
+	}
+	
+	public void setCompletionId(int completionId) {
+		this.completionId=completionId;
 	}
 	
 	/**

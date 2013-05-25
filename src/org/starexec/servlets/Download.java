@@ -76,11 +76,21 @@ public class Download extends HttpServlet {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);	
 			} else if (request.getParameter("type").equals("job")) {
-				Integer jobId = Integer.parseInt(request.getParameter("id"));			
-				fileName = handleJob(jobId, u.getId(), u.getArchiveType(), response);
+				Integer jobId = Integer.parseInt(request.getParameter("id"));
+				String lastSeen=request.getParameter("since");
+				Integer since=null;
+				if (lastSeen!=null) {
+					since=Integer.parseInt(lastSeen);
+				}
+				fileName = handleJob(jobId, u.getId(), u.getArchiveType(), response, since);
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
-				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response);
+				String lastSeen=request.getParameter("since");
+				Integer since=null;
+				if (lastSeen!=null) {
+					since=Integer.parseInt(lastSeen);
+				}
+				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				if(request.getParameter("hierarchy").equals("false")){
@@ -295,10 +305,28 @@ public class Download extends HttpServlet {
      * @throws IOException
      * @author Ruoyu Zhang
      */
-    private static String handleJob(Integer jobId, int userId, String format, HttpServletResponse response) throws IOException {    	
+    private static String handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
     	if (Permissions.canUserSeeJob(jobId, userId)) {
-    		Job job = Jobs.getDetailed(jobId);
+    		Job job;
+    		if (since==null) {
+    			job = Jobs.getDetailed(jobId);
+    		} else {
+    			job=Jobs.getDetailed(jobId,since);
+    			
+    			//we want to find the largest completion ID seen and send that back to the client
+    			//so that they know what to ask for next time (mostly for StarexecCommand
+    			long maxCompletion=since;
+    			for (JobPair x : job.getJobPairs()) {
+    				if (x.getCompletionId()>maxCompletion) {
+    					maxCompletion=x.getCompletionId();
+    				}
+    			}
+    			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+    			
+    			
+    		}
+    		
 			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
@@ -421,7 +449,7 @@ public class Download extends HttpServlet {
      * @throws IOException
      * @author Ruoyu Zhang
      */
-    private static String handleJobOutputs(Job j, int userId, String format, HttpServletResponse response) throws IOException {    	
+    private static String handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
 
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {

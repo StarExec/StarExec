@@ -290,6 +290,14 @@ CREATE TABLE job_pairs (
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL
 );
 
+-- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
+CREATE TABLE job_pair_completion (
+	pair_id INT NOT NULL,
+	completion_id INT NOT NULL AUTO_INCREMENT,
+	PRIMARY KEY (completion_id),
+	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
+);
+
 -- All attributes for each job pair
 CREATE TABLE job_attributes (
 	pair_id INT NOT NULL,

@@ -606,6 +606,18 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		ORDER BY job_pairs.end_time DESC;
 	END //
 	
+-- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetNewCompletedJobPairsByJob;
+CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+					   INNER JOIN job_pair_completion AS complete ON job_pairs.pair_id=complete.pair_id
+		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId
+		ORDER BY job_pairs.end_time DESC;
+	END //
+	
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
@@ -726,8 +738,12 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE job_pairs
 		SET status_code=_statusCode
-		WHERE id=_jobPairId;
+		WHERE id=_jobPairId ;
+		IF _statusCode>6 THEN
+			INSERT IGNORE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
+		END IF;
 	END //
+	
 	
 -- Updates a job pair's status given its sge id
 -- Author: Tyler Jensen
@@ -737,6 +753,10 @@ CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
 		UPDATE job_pairs
 		SET status_code=_statusCode
 		WHERE sge_id=_sgeId;
+		IF _statusCode>6 THEN
+			INSERT IGNORE INTO job_pair_completion (pair_id) VALUES (_jobPairId);
+		END IF;
+			
 	END //		
 	
 -- Updates a job pair's statistics directly from the execution node
