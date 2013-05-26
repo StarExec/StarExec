@@ -258,8 +258,8 @@ public class RESTHelpers {
 		    		||	Util.isNullOrEmpty(iDisplayLength)
 		    		||	Util.isNullOrEmpty(sEcho)
 		    		||	Integer.parseInt(iDisplayStart) < 0
-		    		||	Integer.parseInt(iDisplayLength) < 10
-		    		||	Integer.parseInt(iDisplayLength) > 100
+		    		//||	Integer.parseInt(iDisplayLength) < 10
+		    		//||	Integer.parseInt(iDisplayLength) > 100
 		    		||	Integer.parseInt(sEcho) < 0) {
 		    	return null;
 		    }
