@@ -303,7 +303,6 @@ public class RESTHelpers {
 	    	}
 	    	
 	    	
-	    	
 	    	// Validates that the sort direction is specified and valid
 	    	if (Util.isNullOrEmpty(sDir)) {
 	    		// Only permit the jobs table to have a null sorting direction;
