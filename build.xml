@@ -82,6 +82,7 @@
 		<delete file="${meta-inf}/context.xml" />
                 <copy file="context.template" tofile="${meta-inf}/context.xml"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_configuration" replace="${configuration}"/>
+                <replaceregexp file="${meta-inf}/context.xml" match="/the_configuration" replace="/${configuration}"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
