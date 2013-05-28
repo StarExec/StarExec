@@ -62,7 +62,6 @@ public class Download extends HttpServlet {
 			
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				
 				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, false);
 			} else if (request.getParameter("type").equals("reupload")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
@@ -141,6 +140,8 @@ public class Download extends HttpServlet {
 	 */
     private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
+		Queue<String> descriptions = new LinkedList<String>();
+		descriptions.add(s.getDescription());
     	// If we can see this solver AND the solver is downloadable...
 		
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
@@ -149,7 +150,7 @@ public class Download extends HttpServlet {
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
-			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, reupload);
+			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, "", reupload, descriptions);
 			
 			//We return the fileName so the browser can redirect straight to it
 			return fileName;
@@ -224,8 +225,15 @@ public class Download extends HttpServlet {
 	 * @author Benton McCune
 	 * @throws Exception 
 	 */
+
     private static String handleSpaceXML(Space space, int userId, String format, HttpServletResponse response) throws Exception {
 		log.debug("Space XML download called");
+		Queue<String> descriptions=new LinkedList<String>();
+		descriptions.add(space.getDescription());
+		List<Space> children = space.getSubspaces();
+		for (Space child : children) {
+			descriptions.add(child.getDescription());
+		}
     	
     	// If we can see this Space
 		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
@@ -250,7 +258,7 @@ public class Download extends HttpServlet {
 			FileUtils.moveFileToDirectory(schemaCopy, container, false);
 			uniqueDir.createNewFile();
 			
-			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false);
+			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false, descriptions);
 			
 			return fileName;
 		}
@@ -481,6 +489,23 @@ public class Download extends HttpServlet {
     	return null;
     }
     
+    
+    private static void getAllSubSpaceDescriptions(Space space, Queue<String> descriptions) {
+		log.debug("spaceBeginning = " + space.getName() + ", descriptions = " + descriptions);
+    	descriptions.add(space.getDescription());
+    	log.debug("descriptionsBeginning = " + descriptions);
+    	List<Space> subSpaces = space.getSubspaces();
+    	List<User> users = space.getUsers();
+    	log.debug("USERS = " + users);
+    	log.debug("subSpaces = " + subSpaces);
+    	for (Space s : subSpaces) {
+    		log.debug(s.getName());
+			getAllSubSpaceDescriptions(s, descriptions);
+    	}
+    	log.debug("spaceEnding = " + space.getName());
+    	log.debug("descriptionsEnding = " + descriptions);
+    }
+    
     /**
      * Handles download of a single space or a hierarchy, return the name of compressed file containing the space.
      * @param space The space needed to be downloaded
@@ -492,15 +517,20 @@ public class Download extends HttpServlet {
      * @throws IOException
      * @author Ruoyu Zhang
      */
+	@SuppressWarnings("null")
 	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy) throws IOException {
 		// If we can see this space AND the space is downloadable...
+
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
+			Queue<String> descriptions = new LinkedList<String>();
+
 			String baseFileName=space.getName();
 			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
 			if (!hierarchy) {
+				descriptions.add(space.getDescription());
 				tempDir.mkdirs();
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 				for(Benchmark b: benchList){
@@ -510,8 +540,13 @@ public class Download extends HttpServlet {
 				}
 			} else {
 				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath());
+				List<Space> subspaces = Spaces.getSubSpaces(space.getId(), uid, true);
+				descriptions.add(space.getDescription());
+				for (Space space2 : subspaces) {
+					descriptions.add(space2.getDescription());
+				}
 			}
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false, descriptions);
 			if(tempDir.exists()){
 				tempDir.delete();
 			}
