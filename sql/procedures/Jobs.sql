@@ -613,7 +613,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-					   INNER JOIN job_pair_completion AS complete ON job_pairs.pair_id=complete.pair_id
+					   INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId
 		ORDER BY job_pairs.end_time DESC;
 	END //

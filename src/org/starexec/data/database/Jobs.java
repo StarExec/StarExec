@@ -826,7 +826,7 @@ public class Jobs {
 				jp.setStatus(s);
 				
 				//set the completion ID if it exists-- it only exists if we are getting new job pairs
-				if (results.getInt("complete.completion_id")!=0) {
+				if (since!=null) {
 					jp.setCompletionId(results.getInt("complete.completion_id"));
 				}
 				returnList.add(jp);
