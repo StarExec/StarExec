@@ -469,18 +469,31 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			
-			// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{pair id}
-	    	StringBuilder sb = new StringBuilder();
-	    	sb.delete(0, sb.length());
-	    	sb.append(R.JOB_OUTPUT_DIR);
-	    	sb.append(File.separator);
-	    	sb.append(j.getUserId());
-	    	sb.append(File.separator);
-	    	sb.append(j.getId());
-			String outputPath = sb.toString();
-			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
+			//if we only want the new job pairs
+			if (since!=null) {
+				List<JobPair> pairs=Jobs.getNewCompletedPairsDetailed(j.getId(), since);
+				List<File> files=new ArrayList<File>();
+				
+				for (JobPair jp : pairs) {
+					files.add(new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName())));
+				}
+				
+				ArchiveUtil.createArchive(files, uniqueDir, format);
+			} else {
+				// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{solver name}/{benchmark name}
+		    	StringBuilder sb = new StringBuilder();
+		    	sb.delete(0, sb.length());
+		    	sb.append(R.JOB_OUTPUT_DIR);
+		    	sb.append(File.separator);
+		    	sb.append(j.getUserId());
+		    	sb.append(File.separator);
+		    	sb.append(j.getId());
+				String outputPath = sb.toString();
+				ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
+				
+				return fileName;
+			}
 			
-			return fileName;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
