@@ -16,7 +16,9 @@
 #$ -u sandbox
 
 # Resource limits
-#$ -l s_vmem=$$MAX_MEM$$G -l s_fsize=$$MAX_WRITE$$G -l s_rt=$$MAX_RUNTIME$$ -l s_cpu=$$MAX_CPUTIME$$
+#$ -l s_fsize=$$MAX_WRITE$$G 
+
+# we used to set these limits, too, but now we are letting runsolver handle them: -l s_vmem=$$MAX_MEM$$G -l s_rt=$$MAX_RUNTIME$$ -l s_cpu=$$MAX_CPUTIME$$
 
 # Default shell is bash
 #$ -S /bin/bash
