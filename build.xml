@@ -15,12 +15,14 @@
 	<property name="project-name" value="${ant.project.name}" />	
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-directory" value="src" />
+	<property name="scripts-directory" value="scripts-common" />
 	<property name="build-directory" value="build" />
 	<property name="class-directory" value="${build-directory}/classes" />		
 	<property name="config-directory" value="${class-directory}/org/starexec/config" />
 	<property name="pics-dir" value="${data_dir}/pictures" />
 	<property name="batch-dir" value="${data_dir}/batchSpace" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
+	<property name="meta-inf" value="WebContent/META-INF" />		
 	
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
@@ -70,6 +72,20 @@
 			</fileset>
 		</copy>		
 		
+                <!-- Copy the soft-deploy template and fill it in -->
+		<delete file="soft-deploy.sh" />
+                <copy file="${scripts-directory}/soft-deploy.template" tofile="soft-deploy.sh"/>
+                <replaceregexp file="soft-deploy.sh" match="the_configuration" replace="${configuration}"/>
+		<chmod file="soft-deploy.sh" perm="774"/>
+
+                <!-- Copy the context template and fill it in -->
+		<delete file="${meta-inf}/context.xml" />
+                <copy file="context.template" tofile="${meta-inf}/context.xml"/>
+                <replaceregexp file="${meta-inf}/context.xml" match="the_configuration" replace="${configuration}"/>
+                <replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
+                <replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
+                <replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
+
 		<!-- Copy the sge scripts to their proper location -->		
 		<copy todir="${sge-script-dir}">
 			<fileset dir="${source-directory}/org/starexec/config/sge">
@@ -78,10 +94,11 @@
 		</copy>
 
 		<!-- Change permissions of the new sge script files so sge can use them -->
-		<chmod dir="${sge-script-dir}" perm="770" includes="**/*.bash"/>		
-		<chown owner=":star-web">
-			<fileset dir="${sge-script-dir}" includes="**/*.bash"/>
-                </chown>
+		<chmod file="${sge-script-dir}/epilog.bash" perm="774"/>		
+		<chmod file="${sge-script-dir}/prolog.bash" perm="774"/>		
+		<chown file="${sge-script-dir}/prolog.bash" owner=":star-web" />
+		<chown file="${sge-script-dir}/prolog.bash" owner=":star-web" />
+
 
 		<copy todir="${batch-dir}" file="starexec_res/batch/batchSpaceSchema.xsd"/>
 

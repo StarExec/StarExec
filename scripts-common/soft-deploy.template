@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# Run from the directory where you build starexec with ant (build.xml).
+
+# filled in by running ant with build.xml:
+APPNAME=the_configuration
+WEB_HOME=/project/tomcat-webapps/webapps
+WAR=$APPNAME.war
+APPDIR=$WEB_HOME/$APPNAME
+STAR_WAR=$WEB_HOME/$WAR
+
+echo Moving existing war file: $STAR_WAR
+rm -f $STAR_WAR 
+
+while [ -d $APPDIR ] ; do
+  echo "waiting for tomcat to remove the app directory"
+  sleep 4
+done
+
+if [ "$1" == "--remove" ] ; then
+  echo Removed the_configuration without restarting Tomcat.
+  exit 0
+fi
+
+echo Copying new WAR to $WEB_HOME
+cp starexec.war $WEB_HOME/$WAR
+
+#echo Changing permissions on $STAR_WAR
+chmod 775 $STAR_WAR
+
+while [ -d $APPDIR ] ; do
+  echo "waiting for tomcat to recreate the app directory"
+  sleep 4
+done
+
+echo Deployed the_configuration without restarting Tomcat.
+echo "Update the database (schema and procedures) as needed." 

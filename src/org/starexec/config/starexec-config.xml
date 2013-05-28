@@ -74,7 +74,7 @@
                         <property key="STAREXEC_APPNAME" value="starexec"/>
    		</class>
     </configuration>
-	<configuration name="stardev_astump" inherit="stardev">
+	<configuration name="starexec_astump" inherit="stardev">
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="prod_starexec_astump" />

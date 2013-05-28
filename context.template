@@ -1,0 +1,21 @@
+<!-- The build script is going to place a modified version of this in WebContent/META-INF -->
+
+	<Context docBase="the_configuration"
+                 path="/the_configuration" reloadable="true" source="org.eclipse.jst.jee.server:the_configuration">
+	  <!-- Disable persistent sessions -->
+	  <Manager className="org.apache.catalina.session.StandardManager" pathname=""/>
+	  <!-- logins for the starexec web app will use the MySql starexec database -->
+	  <Realm className="org.apache.catalina.realm.LockOutRealm" resourceName="UserDatabase">
+	    <Realm className="org.apache.catalina.realm.JDBCRealm"
+		   driverName="com.mysql.jdbc.Driver"
+		   connectionURL="jdbc:mysql://localhost/the_db_name"
+		   connectionName="the_connection_name"
+		   connectionPassword="the_connection_password"
+		   userTable="users"
+		   userNameCol="email"
+		   userCredCol="password"
+		   userRoleTable="user_roles"
+		   roleNameCol="role"
+		   digest="SHA-512" />
+	  </Realm>
+	</Context>
