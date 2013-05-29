@@ -5,4 +5,6 @@ UPDATE status_codes SET description = 'the job was terminated because it exceede
 
 UPDATE status_codes SET status = "memout" , description = "the job was terminated because it exceeded its virtual memory limit" WHERE code = 17;
 
+UPDATE status_codes SET code = 19 WHERE status="processing results";
+
 INSERT INTO status_codes VALUES (18, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');

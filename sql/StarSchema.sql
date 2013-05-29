@@ -217,6 +217,7 @@ INSERT INTO status_codes VALUES (15, 'timeout (cpu)', 'the job was terminated be
 INSERT INTO status_codes VALUES (16, 'file write exceeded', 'the job was terminated because it exceeded its file write limit');
 INSERT INTO status_codes VALUES (17, 'memout', 'the job was terminated because it exceeded its virtual memory limit');
 INSERT INTO status_codes VALUES (18, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
+INSERT INTO status_codes VALUES (19, 'processing results', 'the job results are currently being processed');
 
 -- All of the jobs within the system, this is the overarching entity
 -- that contains individual job pairs (solver/config -> benchmark)
