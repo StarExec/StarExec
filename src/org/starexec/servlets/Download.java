@@ -482,9 +482,13 @@ public class Download extends HttpServlet {
 				
 				
 				List<File> files=new ArrayList<File>();
-				
+				File file;
 				for (JobPair jp : pairs) {
-					files.add(new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName())));
+					file=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
+					if (file.exists()) {
+						files.add(file);
+					}
+					
 				}
 				
 				ArchiveUtil.createArchive(files, uniqueDir, format);
