@@ -112,14 +112,19 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 * or null if there are no completed job pairs.
 	 */
 	public Set<String> attributeNames() {
-	    if (jobPairs == null)
-		return null;
+	    if (jobPairs == null || jobPairs.size()==0) {
+	    	return null;
+	    }
+		
 	    Iterator<JobPair> itr = jobPairs.iterator();
 	    while(itr.hasNext()) {
-		JobPair pair = itr.next();
-		Properties props = pair.getAttributes();
-		if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
-		    return props.stringPropertyNames(); 
+	    	JobPair pair = itr.next();
+	    	Properties props = pair.getAttributes();
+	    	if (props==null) {
+	    		continue;
+	    	}
+	    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
+	    		return props.stringPropertyNames(); 
 	    }
 	    return null;
 	}
