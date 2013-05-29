@@ -471,7 +471,9 @@ public class Download extends HttpServlet {
 			
 			//if we only want the new job pairs
 			if (since!=null) {
+				log.debug("Getting incremental job output results");
 				List<JobPair> pairs=Jobs.getNewCompletedPairsDetailed(j.getId(), since);
+				log.debug("Found "+ pairs.size()  + "new pairs");
 				int maxCompletion=since;
     			for (JobPair x : pairs) {
     				if (x.getCompletionId()>maxCompletion) {
