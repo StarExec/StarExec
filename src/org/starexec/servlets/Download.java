@@ -326,7 +326,7 @@ public class Download extends HttpServlet {
     			
     			//we want to find the largest completion ID seen and send that back to the client
     			//so that they know what to ask for next time (mostly for StarexecCommand
-    			long maxCompletion=since;
+    			int maxCompletion=since;
     			for (JobPair x : job.getJobPairs()) {
     				if (x.getCompletionId()>maxCompletion) {
     					maxCompletion=x.getCompletionId();
@@ -472,6 +472,15 @@ public class Download extends HttpServlet {
 			//if we only want the new job pairs
 			if (since!=null) {
 				List<JobPair> pairs=Jobs.getNewCompletedPairsDetailed(j.getId(), since);
+				int maxCompletion=since;
+    			for (JobPair x : pairs) {
+    				if (x.getCompletionId()>maxCompletion) {
+    					maxCompletion=x.getCompletionId();
+    				}
+    			}
+    			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+				
+				
 				List<File> files=new ArrayList<File>();
 				
 				for (JobPair jp : pairs) {
