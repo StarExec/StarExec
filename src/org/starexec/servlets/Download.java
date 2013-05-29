@@ -486,6 +486,7 @@ public class Download extends HttpServlet {
 				for (JobPair jp : pairs) {
 					file=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
 					if (file.exists()) {
+						log.debug("Adding job pair output file for "jp.getBench().getName()+" to incremental results");
 						files.add(file);
 					}
 					
