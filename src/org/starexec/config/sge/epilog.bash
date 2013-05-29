@@ -39,6 +39,8 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/jobout"
 
+WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
+
 # /////////////////////////////////////////////
 # Functions
 # /////////////////////////////////////////////
@@ -87,7 +89,7 @@ function copyOutput {
 	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
 	#ls -l "$STAREXEC_OUT_DIR"
 	log "job output copy complete - now sending stats"
-	updateStats $STAREXEC_OUT_DIR/watcher.out
+	updateStats $WATCHFILE
 	log "getting postprocessor"
 	cp $POST_PROCESSOR_PATH $STAREXEC_OUT_DIR/postProcessor
 	log "executing post processor"
@@ -115,14 +117,25 @@ function createDir {
 # /////////////////////////////////////////////
 
 # A trap was caught if the string terminated is contained in the log
-JOB_ERROR=`grep 'job error:' $SGE_STDOUT_PATH`
 
-# If there was no error...
-if [ "$JOB_ERROR" = "" ]; then
-	log "execution on $HOSTNAME complete"
-	sendStatus $STATUS_FINISHING
+# cleared below if no error
+JOB_ERROR="1";
+
+if ( grep 'job error:' $SGE_STDOUT_PATH ) then
+  true 
+elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
+  log "epilog detects wall clock time exceeded"
+  sendStatus $EXCEED_RUNTIME
+elif ( grep 'CPU time exceeded' $WATCHFILE ) then
+  log "epilog detects cpu time exceeded"
+  sendStatus $EXCEED_CPU
+elif ( grep 'VSize exceeded' $WATCHFILE ) then
+  log "epilog detects max virtual memory exceeded"
+  sendStatus $EXCEED_MEM
 else
-	log "execution on $HOSTNAME interrupted"
+  JOB_ERROR="";
+  log "execution on $HOSTNAME complete"
+  sendStatus $STATUS_FINISHING
 fi
 
 copyOutput

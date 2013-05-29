@@ -213,9 +213,10 @@ INSERT INTO status_codes VALUES (11, 'run script error', 'the job could not be e
 INSERT INTO status_codes VALUES (12, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
 INSERT INTO status_codes VALUES (13, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
 INSERT INTO status_codes VALUES (14, 'timeout (wallclock)', 'the job was terminated because it exceeded its run time limit');
-INSERT INTO status_codes VALUES (15, 'timeout (cpu)', 'the job was terminated because it exceeded its virtual memory or cpu time limit');
+INSERT INTO status_codes VALUES (15, 'timeout (cpu)', 'the job was terminated because it exceeded its cpu time limit');
 INSERT INTO status_codes VALUES (16, 'file write exceeded', 'the job was terminated because it exceeded its file write limit');
-INSERT INTO status_codes VALUES (17, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
+INSERT INTO status_codes VALUES (17, 'memout', 'the job was terminated because it exceeded its virtual memory limit');
+INSERT INTO status_codes VALUES (18, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
 
 -- All of the jobs within the system, this is the overarching entity
 -- that contains individual job pairs (solver/config -> benchmark)

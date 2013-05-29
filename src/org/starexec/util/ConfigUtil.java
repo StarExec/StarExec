@@ -217,6 +217,8 @@ public class ConfigUtil {
 						field.set(null, value);
 					} else if(field.getType().equals(int.class)){
 						field.setInt(null, Integer.parseInt(value));
+					} else if(field.getType().equals(long.class)){
+						field.setLong(null, Long.parseLong(value));
 					} else if(field.getType().equals(boolean.class)){
 						field.set(null,Boolean.parseBoolean(value));
 					}	            

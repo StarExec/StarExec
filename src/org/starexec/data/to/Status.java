@@ -25,10 +25,11 @@ public class Status {
 		ERROR_BENCHMARK(12),
 		ERROR_ENVIRONMENT(13),
 		EXCEED_RUNTIME(14),
-		EXCEED_CPU_MEM(15),
+		EXCEED_CPU(15),
 		EXCEED_FILE_WRITE(16),
-		ERROR_GENERAL(17),
-		STATUS_PROCESSING_RESULTS(18);
+		EXCEED_MEM(17),
+		ERROR_GENERAL(18),
+		STATUS_PROCESSING_RESULTS(19);
 		private int val;
 		
 		private StatusCode(int val) {
@@ -39,10 +40,10 @@ public class Status {
 			return this.val;			
 		}				
 		public boolean error() {
-		    return (val >= 8 && val <= 17) || val == 0;
+		    return (val >= 8 && val <= 18) || val == 0;
 		}
 		public boolean incomplete() {
-		    return (val<=6 || val==18);
+		    return (val<=6 || val==19);
 		}
 		public boolean complete() {
 		    return val==7;
@@ -78,12 +79,14 @@ public class Status {
 		    case 14:
 			return EXCEED_RUNTIME;
 		    case 15:
-			return EXCEED_CPU_MEM;
+			return EXCEED_CPU;
 		    case 16:
 			return EXCEED_FILE_WRITE;
 		    case 17:
-			return ERROR_GENERAL;
+			return EXCEED_MEM;
 		    case 18:
+			return ERROR_GENERAL;
+		    case 19:
 			return STATUS_PROCESSING_RESULTS;
 		    }
 		    return STATUS_UNKNOWN;
