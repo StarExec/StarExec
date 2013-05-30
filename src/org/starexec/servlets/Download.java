@@ -548,7 +548,7 @@ public class Download extends HttpServlet {
 					
 				}
 				
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,false);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output"+String.valueOf(j.getId()),false);
 				
 				//ArchiveUtil.createArchive(files, uniqueDir, format);
 				
