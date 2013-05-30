@@ -396,7 +396,7 @@ public class ArchiveUtil {
 	 * @param baseName-- the name to be given to the file specified in path
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	public static void createZip(File path, File destination, String baseName, boolean reupload) throws Exception {
+	public static void createZip(File path, File destination, String baseName, boolean topLevel) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
 
 		FileOutputStream fOut = null;
@@ -408,7 +408,7 @@ public class ArchiveUtil {
 			bOut = new BufferedOutputStream(fOut);
 			zOut = new ZipArchiveOutputStream(bOut);
 
-			addFileToZip(zOut, path, "",baseName, reupload, 0);
+			addFileToZip(zOut, path, "",baseName, topLevel, 0);
 		} finally {
 			zOut.finish();
 
@@ -467,10 +467,9 @@ public class ArchiveUtil {
 	 * 
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base, String baseName, boolean reupload, int progress) throws IOException {
+	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base, String baseName, boolean topLevel, int progress) throws IOException {
 		String entryName = null;
-		String curDesc = "no description";
-		if (reupload && (base.equals("\\"))) {
+		if (topLevel && (base.equals("\\"))) {
 			base = "";
 		}
 		log.debug("Base = " + base);
@@ -481,8 +480,8 @@ public class ArchiveUtil {
 			entryName=base+baseName;
 		}
 		
-		//If not download for re-upload and first iteration
-		if(!(reupload && progress == 0)) {
+		//If user wants TopLevel folder
+		if(!(topLevel && progress == 0)) {
 			ZipArchiveEntry zipEntry = new ZipArchiveEntry(path, entryName);
 			zOut.putArchiveEntry(zipEntry);
 			
@@ -494,59 +493,25 @@ public class ArchiveUtil {
 			} else {
 				zOut.closeArchiveEntry();
 			}
-		} else {	//If it is download for re-upload and it is the first iteration
+		} else {	//If user does not want top-level folder
 			entryName = "";
 		}
-	
 		File[] children = path.listFiles();
 
 		if (children!=null) {
 			log.debug("Number of files = " + children.length);
-			/*
-			for (File child: children) {
-				log.debug("NAME = " + child.getName());
-				if (child.getName().equals(R.SOLVER_DESC_PATH)) {
-					log.debug("Description has been located");
-				}
+			for (File child : children) {
+				addChildToZip(zOut, child, entryName, topLevel);
 			}
-			*/
-			/*
-			//If there does not exist a description file already, and there DOES exist a description on the web-site
-			
-			if (descriptions.size() != 0) {
-				curDesc = descriptions.remove();
-				log.debug("DESCRIPTION = " + curDesc);
-			}
-			
-			
-			if (descriptionSeen == false && !(curDesc.equals("no description")) ) {
-				File description = new File(path.getAbsolutePath() + File.separator + R.SOLVER_DESC_PATH);
-				log.debug("Description not seen");
-				
-				//Write to the description file
-				FileWriter fw = new FileWriter(description.getAbsoluteFile());
-				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(curDesc);
-				bw.close();
-
-				addFileToZip(zOut, description, entryName + File.separator , "", reupload, 1, descriptions, true);
-				descriptionSeen = true;
-			}
-			*/
 		} else {
 			log.debug("Number of files = " + 1);
-		}
-		if (children != null) {
-			for (File child : children) {
-				addChildToZip(zOut, child, entryName, reupload);
-			}
 		}
 		children = null;
 	}
 
-	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName, boolean reupload) throws IOException{
+	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName, boolean topLevel) throws IOException{
 		File tempChild = new File(child.getAbsolutePath());
-		addFileToZip(zOut, tempChild, entryName + File.separator, "", reupload, 1);
+		addFileToZip(zOut, tempChild, entryName + File.separator, "", topLevel, 1);
 		tempChild = null;
 
 	}
@@ -559,7 +524,7 @@ public class ArchiveUtil {
 	 * 
 	 * @author Skylar Stark
 	 */
-	public static void createTar(File path, File destination, String baseName, boolean reupload, String format) throws Exception {
+	public static void createTar(File path, File destination, String baseName, boolean topLevel, String format) throws Exception {
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		GzipCompressorOutputStream gzOut = null;
@@ -575,7 +540,7 @@ public class ArchiveUtil {
 				tOut = new TarArchiveOutputStream(bOut);
 			}
 
-			addFileToTar(tOut, path, "", baseName, reupload, 0);
+			addFileToTar(tOut, path, "", baseName, topLevel, 0);
 		} finally {
 			tOut.finish();
 
@@ -633,9 +598,9 @@ public class ArchiveUtil {
 	 * 
 	 * @author Skylar Stark
 	 */
-	private static void addFileToTar(TarArchiveOutputStream tOut, File path, String base, String baseName, boolean reupload, int progress) throws IOException {
+	private static void addFileToTar(TarArchiveOutputStream tOut, File path, String base, String baseName, boolean topLevel, int progress) throws IOException {
 		String entryName = null;
-		if (reupload && base.equals("\\")) {
+		if (topLevel && base.equals("\\")) {
 			base = "";
 		}
 		if (baseName.equals("")) {
@@ -644,7 +609,7 @@ public class ArchiveUtil {
 			entryName=base+baseName;
 		}
 		
-		if(!(reupload && progress == 0)) {
+		if(!(topLevel && progress == 0)) {
 			TarArchiveEntry tarEntry = new TarArchiveEntry(path, entryName);
 			
 			tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
@@ -671,15 +636,15 @@ public class ArchiveUtil {
 		}
 		if (children != null) {
 			for (File child : children) {
-				addChildToTar(tOut, child, entryName, reupload);
+				addChildToTar(tOut, child, entryName, topLevel);
 			}
 		}	
 		children = null;
 	}
 	
-	private static void addChildToTar(TarArchiveOutputStream tOut, File child, String entryName, boolean reupload) throws IOException{
+	private static void addChildToTar(TarArchiveOutputStream tOut, File child, String entryName, boolean topLevel) throws IOException{
 		File tempChild = new File(child.getAbsolutePath());
-		addFileToTar(tOut, tempChild, entryName + File.separator, "", reupload, 1);
+		addFileToTar(tOut, tempChild, entryName + File.separator, "", topLevel, 1);
 		tempChild = null;
 
 	}
@@ -727,11 +692,12 @@ public class ArchiveUtil {
 	 * @param path the path of the file we are adding
 	 * @param base the base prefix for the name of the tar.gz file entry
 	 * @param baseName the name given to the file. If empty, the name of path is used
+	 * @param topLevel true if you want to omit the topLevel folder (useful for reupload)
 	 * @author Skylar Stark
 	 */
-	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base, String baseName, boolean reupload, int progress) throws IOException {
+	private static void addFileToTarGz(TarArchiveOutputStream tOut, File path, String base, String baseName, boolean topLevel, int progress) throws IOException {
 		String entryName;
-		if (reupload && base.equals("\\")) {
+		if (topLevel && base.equals("\\")) {
 			base = "";
 		}
 		if (baseName.equals("")) {
@@ -741,7 +707,7 @@ public class ArchiveUtil {
 		}
 		
 		log.debug("ENTRYNAME = " + entryName);
-		if (reupload && progress==0) {
+		if (topLevel && progress==0) {
 			entryName = "";
 			log.debug("entryName as been reset");
 			File[] children = path.listFiles();
@@ -753,7 +719,7 @@ public class ArchiveUtil {
 			
 			if (children != null) {
 				for (File child: children) {
-					addChildToTarGz(tOut, child, entryName, reupload);
+					addChildToTarGz(tOut, child, entryName, topLevel);
 				}
 			}
 		} else {
@@ -779,7 +745,7 @@ public class ArchiveUtil {
 				}
 				if (children != null) {
 					for (File child : children) {
-						addChildToTarGz(tOut, child, entryName, reupload);
+						addChildToTarGz(tOut, child, entryName, topLevel);
 					}
 				}
 				children = null;
@@ -787,9 +753,9 @@ public class ArchiveUtil {
 		}
 	}
 	
-	private static void addChildToTarGz(TarArchiveOutputStream tOut, File child, String entryName, boolean reupload) throws IOException {
+	private static void addChildToTarGz(TarArchiveOutputStream tOut, File child, String entryName, boolean topLevel) throws IOException {
 		File tempChild = new File(child.getAbsolutePath());
-		addFileToTarGz(tOut, tempChild, entryName + File.separator, "", reupload, 1);
+		addFileToTarGz(tOut, tempChild, entryName + File.separator, "", topLevel, 1);
 		tempChild = null;
 	}
 }
