@@ -527,14 +527,22 @@ public class Download extends HttpServlet {
 				
 				
 				File file;
-				File newFile;
+				
+				File dir;
 				for (JobPair jp : pairs) {
 					file=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
 					
 					log.debug("Searching for pair output at" + file.getAbsolutePath());
 					if (file.exists()) {
 						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
-						FileUtils.copyFileToDirectory(file,tempDir);
+						
+						dir=new File(tempDir,jp.getSolver().getName());
+						dir.mkdir();
+						dir=new File(dir,jp.getConfiguration().getName());
+						dir.mkdir();
+						
+						
+						FileUtils.copyFileToDirectory(file,dir);
 						
 					}
 					
