@@ -116,7 +116,9 @@ function createDir {
 # MAIN
 # /////////////////////////////////////////////
 
-# A trap was caught if the string terminated is contained in the log
+# check for which cores we are on
+log "epilog checking for information on cores, from runsolver's watch file:"
+grep 'cores:' $WATCHFILE
 
 # cleared below if no error
 JOB_ERROR="1";
