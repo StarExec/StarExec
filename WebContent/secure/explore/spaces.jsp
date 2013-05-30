@@ -13,7 +13,7 @@
 		<h3 id="spaceName"></h3>
 		<a id="trashcan"></a>
 		<p id="spaceDesc" class="accent"></p>
-			
+		<p id="spaceID" class="accent"></p>
 		<fieldset id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
 			<table id="jobs">

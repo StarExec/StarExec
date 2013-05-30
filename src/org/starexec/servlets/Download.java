@@ -535,6 +535,8 @@ public class Download extends HttpServlet {
 				}
 				
 				ArchiveUtil.createArchive(files, uniqueDir, format);
+				
+				return fileName;
 			} else {
 				// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{solver name}/{benchmark name}
 		    	StringBuilder sb = new StringBuilder();
