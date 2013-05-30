@@ -140,17 +140,33 @@ public class Download extends HttpServlet {
 	 */
     private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
-		Queue<String> descriptions = new LinkedList<String>();
-		descriptions.add(s.getDescription());
+		String description = s.getDescription();
+		String baseName = s.getName();
     	// If we can see this solver AND the solver is downloadable...
 		
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
+			log.debug("fileName = " + fileName);
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			log.debug("uniqueDir = " + uniqueDir);
 			uniqueDir.createNewFile();
-			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, "", reupload, descriptions);
+			
+			String path = s.getPath();
+			int index = path.lastIndexOf("\\");
+			String tempdest = path.substring(index);
+			log.debug("tempdest = " + tempdest);
+			
+			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
+			log.debug("tempDir = " + tempDir);
+			tempDir.mkdirs();
+			
+
+			
+			copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
+			
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseName, reupload);
 			
 			//We return the fileName so the browser can redirect straight to it
 			return fileName;
@@ -161,6 +177,61 @@ public class Download extends HttpServlet {
     	
     	return null;
     }
+    
+	private static void copySolverFile(String path, String dest, String description) throws IOException{
+		log.debug("descriptions = " + description);
+		log.debug("dest = " + dest);
+				
+		File tempSrcFile = new File(path);
+		File tempDestFile = new File(dest);
+		tempDestFile.mkdirs();
+
+
+		
+		File[] children = tempSrcFile.listFiles();
+		for (File child : children) {
+			FileUtils.copyDirectoryToDirectory(child, tempDestFile);
+		}
+		
+		log.debug(tempSrcFile);
+		log.debug(tempDestFile);
+
+		
+		
+		File tempDescFile = new File(dest + File.separator + R.DESC_PATH);
+		
+		//FileUtils.copyDirectoryToDirectory(tempSrcFile, tempDestFile);
+		//FileUtils.copyFile(tempSrcFile, tempDestFile);
+
+		
+		int index = dest.lastIndexOf("\\");
+		String tempdest = dest.substring(0, index);
+		log.debug("tempdest = " + tempdest);
+		
+		//Write to description file
+		if (!(description.equals("no description"))) {
+			log.debug("BEFORE");
+			File description2 = new File(tempdest + File.separator + R.DESC_PATH);
+			log.debug("description2 = " + description2);
+			log.debug("tempDestFile =" + tempDestFile);
+			log.debug("AFTER");
+			
+			FileWriter fw = new FileWriter(description2.getAbsoluteFile());
+			log.debug("AFTER and AFTER");
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(description);
+			bw.close();
+
+			
+			//FileUtils.copyFileToDirectory(description2, tempDestFile);
+			FileUtils.copyFile(description2, tempDescFile);
+			log.debug("AFTER and AFTER and AFTER");
+			description = null;
+		}
+		
+		tempDestFile = null;
+		
+	}
 
     
     /*
@@ -258,7 +329,7 @@ public class Download extends HttpServlet {
 			FileUtils.moveFileToDirectory(schemaCopy, container, false);
 			uniqueDir.createNewFile();
 			
-			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false, descriptions);
+			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false);
 			
 			return fileName;
 		}
@@ -520,22 +591,6 @@ public class Download extends HttpServlet {
     }
     
     
-    private static void getAllSubSpaceDescriptions(Space space, Queue<String> descriptions) {
-		log.debug("spaceBeginning = " + space.getName() + ", descriptions = " + descriptions);
-    	descriptions.add(space.getDescription());
-    	log.debug("descriptionsBeginning = " + descriptions);
-    	List<Space> subSpaces = space.getSubspaces();
-    	List<User> users = space.getUsers();
-    	log.debug("USERS = " + users);
-    	log.debug("subSpaces = " + subSpaces);
-    	for (Space s : subSpaces) {
-    		log.debug(s.getName());
-			getAllSubSpaceDescriptions(s, descriptions);
-    	}
-    	log.debug("spaceEnding = " + space.getName());
-    	log.debug("descriptionsEnding = " + descriptions);
-    }
-    
     /**
      * Handles download of a single space or a hierarchy, return the name of compressed file containing the space.
      * @param space The space needed to be downloaded
@@ -565,18 +620,14 @@ public class Download extends HttpServlet {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 				for(Benchmark b: benchList){
 					if(b.isDownloadable()){
-						copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());
+						copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName(), descriptions);
 					}
 				}
 			} else {
-				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath());
-				List<Space> subspaces = Spaces.getSubSpaces(space.getId(), uid, true);
 				descriptions.add(space.getDescription());
-				for (Space space2 : subspaces) {
-					descriptions.add(space2.getDescription());
-				}
+				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), descriptions);
 			}
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false, descriptions);
+			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
 			if(tempDir.exists()){
 				tempDir.delete();
 			}
@@ -597,7 +648,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest) throws IOException {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, Queue<String> descriptions) throws IOException {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
@@ -607,9 +658,10 @@ public class Download extends HttpServlet {
 			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 			for(Benchmark b: benchList){
 				if(b.isDownloadable()){
-					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName());				
+					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName(), descriptions);		
 				}
 			}
+			
 			
 			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid, false);
 			if(subspaceList ==  null || subspaceList.size() == 0){
@@ -617,8 +669,9 @@ public class Download extends HttpServlet {
 			}
 			
 			for(Space s: subspaceList){
+				descriptions.add(s.getDescription());
 				String subDir = dest + File.separator + s.getName();
-				storeSpaceHierarchy(s, uid, subDir);
+				storeSpaceHierarchy(s, uid, subDir, descriptions);
 			}
 			
 			return;
@@ -626,15 +679,44 @@ public class Download extends HttpServlet {
 		return;
 	}
 	
-	private void copyFile(String src, String dest) throws IOException{
+	private void copyFile(String src, String dest, Queue<String> descriptions) throws IOException{
+		String curDesc = "no description";
+		log.debug("descriptions = " + descriptions);
+		log.debug("src = " + src);
+		log.debug("dest = " + dest);
 		//log.debug("copying file - source = " +src + ", dest = " + dest);
+		if (descriptions.size() != 0) {
+			curDesc = descriptions.remove();
+			log.debug("DESCRIPTION = " + curDesc);
+		}
+		
+				
 		File tempSrcFile = new File(src);
 		File tempDestFile = new File(dest);
+
+		int index = dest.lastIndexOf("\\");
+		String tempdest = dest.substring(0, index);
+		log.debug("tempdest = " + tempdest);
+		
+		//Write to description file
+		if (!(curDesc.equals("no description"))) {
+			File description = new File(tempdest + File.separator + R.SOLVER_DESC_PATH);
+
+			FileWriter fw = new FileWriter(description.getAbsoluteFile());
+			log.debug("description.getAbsoluteFile = " + description.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(curDesc);
+			bw.close();
+			
+			FileUtils.copyFile(description, tempDestFile);
+			description = null;
+		}
 		
 		FileUtils.copyFile(tempSrcFile, tempDestFile);
 		
 		tempSrcFile = null;
 		tempDestFile = null;
+		
 	}
     
     /**

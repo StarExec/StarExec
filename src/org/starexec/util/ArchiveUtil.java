@@ -348,11 +348,11 @@ public class ArchiveUtil {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	
-	public static void createArchive(File path, File destination, String format, String baseName, boolean reupload, Queue<String> descriptions) {
+	public static void createArchive(File path, File destination, String format, String baseName, boolean reupload) {
 		log.info("creating archive, path = " + path + ", dest = " + destination +", format = " + format);
 		try {
 			if (format.equals(".zip")) {
-				ArchiveUtil.createZip(path, destination, baseName, reupload, descriptions);
+				ArchiveUtil.createZip(path, destination, baseName, reupload);
 			} else if (format.equals(".tar") || format.equals(".tar.gz")) {
 				ArchiveUtil.createTar(path, destination, baseName, reupload, format);
 			}
@@ -362,7 +362,7 @@ public class ArchiveUtil {
 	}
 	
 	public static void createArchive(File path, File destination, String format, boolean reupload) {
-		createArchive(path,destination,format,"", reupload, null);
+		createArchive(path,destination,format,"", reupload);
 	}
 	
 	
@@ -396,7 +396,7 @@ public class ArchiveUtil {
 	 * @param baseName-- the name to be given to the file specified in path
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	public static void createZip(File path, File destination, String baseName, boolean reupload, Queue<String> descriptions) throws Exception {
+	public static void createZip(File path, File destination, String baseName, boolean reupload) throws Exception {
 		log.debug("creating zip, path = " + path + ", dest = " + destination);
 
 		FileOutputStream fOut = null;
@@ -408,7 +408,7 @@ public class ArchiveUtil {
 			bOut = new BufferedOutputStream(fOut);
 			zOut = new ZipArchiveOutputStream(bOut);
 
-			addFileToZip(zOut, path, "",baseName, reupload, 0, descriptions, false);
+			addFileToZip(zOut, path, "",baseName, reupload, 0);
 		} finally {
 			zOut.finish();
 
@@ -425,7 +425,7 @@ public class ArchiveUtil {
 	 * 
 	 */
 	public static void createZip(File path, File destination) throws Exception {
-		createZip(path,destination,"", false, null);
+		createZip(path,destination,"", false);
 	}
 	
 	
@@ -443,7 +443,7 @@ public class ArchiveUtil {
 			bOut=new BufferedOutputStream(fOut);
 			zOut = new ZipArchiveOutputStream(bOut);
 			for (File x : paths ) {
-				addFileToZip(zOut,x,"",baseName, false, 0, null, false);
+				addFileToZip(zOut,x,"",baseName, false, 0);
 			}
 		} finally {
 			zOut.finish();
@@ -467,7 +467,7 @@ public class ArchiveUtil {
 	 * 
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base, String baseName, boolean reupload, int progress, Queue<String> descriptions, boolean descriptionSeen) throws IOException {
+	private static void addFileToZip(ZipArchiveOutputStream zOut, File path, String base, String baseName, boolean reupload, int progress) throws IOException {
 		String entryName = null;
 		String curDesc = "no description";
 		if (reupload && (base.equals("\\"))) {
@@ -493,7 +493,6 @@ public class ArchiveUtil {
 				zOut.closeArchiveEntry();
 			} else {
 				zOut.closeArchiveEntry();
-				descriptionSeen = false;
 			}
 		} else {	//If it is download for re-upload and it is the first iteration
 			entryName = "";
@@ -503,21 +502,22 @@ public class ArchiveUtil {
 
 		if (children!=null) {
 			log.debug("Number of files = " + children.length);
-			
+			/*
 			for (File child: children) {
 				log.debug("NAME = " + child.getName());
 				if (child.getName().equals(R.SOLVER_DESC_PATH)) {
 					log.debug("Description has been located");
-					descriptionSeen = true;
 				}
 			}
-			
+			*/
+			/*
 			//If there does not exist a description file already, and there DOES exist a description on the web-site
 			
 			if (descriptions.size() != 0) {
 				curDesc = descriptions.remove();
 				log.debug("DESCRIPTION = " + curDesc);
 			}
+			
 			
 			if (descriptionSeen == false && !(curDesc.equals("no description")) ) {
 				File description = new File(path.getAbsolutePath() + File.separator + R.SOLVER_DESC_PATH);
@@ -532,20 +532,21 @@ public class ArchiveUtil {
 				addFileToZip(zOut, description, entryName + File.separator , "", reupload, 1, descriptions, true);
 				descriptionSeen = true;
 			}
+			*/
 		} else {
 			log.debug("Number of files = " + 1);
 		}
 		if (children != null) {
 			for (File child : children) {
-				addChildToZip(zOut, child, entryName, reupload, descriptions, descriptionSeen);
+				addChildToZip(zOut, child, entryName, reupload);
 			}
 		}
 		children = null;
 	}
 
-	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName, boolean reupload, Queue<String> descriptions, boolean descriptionSeen) throws IOException{
+	private static void addChildToZip(ZipArchiveOutputStream zOut, File child, String entryName, boolean reupload) throws IOException{
 		File tempChild = new File(child.getAbsolutePath());
-		addFileToZip(zOut, tempChild, entryName + File.separator, "", reupload, 1, descriptions, descriptionSeen);
+		addFileToZip(zOut, tempChild, entryName + File.separator, "", reupload, 1);
 		tempChild = null;
 
 	}
