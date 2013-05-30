@@ -455,7 +455,7 @@ public class Download extends HttpServlet {
         		sb.append(pair.getStarexecResult());
 		}
         	else {
-        		sb.append(pair.getBench().getPath());
+        		sb.append(pair.getBench().getName());
         		sb.append(",");
         		sb.append(pair.getSolver().getName());
         		sb.append(",");
@@ -506,10 +506,13 @@ public class Download extends HttpServlet {
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			
 			uniqueDir.createNewFile();
 			
 			//if we only want the new job pairs
 			if (since!=null) {
+				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
+				tempDir.mkdir();
 				log.debug("Getting incremental job output results");
 				List<JobPair> pairs=Jobs.getNewCompletedPairsDetailed(j.getId(), since);
 				log.debug("Found "+ pairs.size()  + " new pairs");
@@ -522,19 +525,24 @@ public class Download extends HttpServlet {
     			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				
 				
-				List<File> files=new ArrayList<File>();
+				
 				File file;
+				File newFile;
 				for (JobPair jp : pairs) {
 					file=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
+					
 					log.debug("Searching for pair output at" + file.getAbsolutePath());
 					if (file.exists()) {
 						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
+						
 						files.add(file);
 					}
 					
 				}
 				
-				ArchiveUtil.createArchive(files, uniqueDir, format);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,true);
+				
+				//ArchiveUtil.createArchive(files, uniqueDir, format);
 				
 				return fileName;
 			} else {
