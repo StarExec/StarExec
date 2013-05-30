@@ -534,7 +534,7 @@ public class Download extends HttpServlet {
 					log.debug("Searching for pair output at" + file.getAbsolutePath());
 					if (file.exists()) {
 						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
-						FileUtils.copyFile(file,tempDir);
+						FileUtils.copyFileToDirectory(file,tempDir);
 						
 					}
 					
