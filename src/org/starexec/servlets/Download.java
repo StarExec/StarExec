@@ -148,21 +148,15 @@ public class Download extends HttpServlet {
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			log.debug("fileName = " + fileName);
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			log.debug("uniqueDir = " + uniqueDir);
 			uniqueDir.createNewFile();
 			
 			String path = s.getPath();
 			int index = path.lastIndexOf("\\");
 			String tempdest = path.substring(index);
-			log.debug("tempdest = " + tempdest);
 			
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
-			log.debug("tempDir = " + tempDir);
 			tempDir.mkdirs();
-			
-
 			
 			copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
 			
@@ -178,54 +172,28 @@ public class Download extends HttpServlet {
     	return null;
     }
     
-	private static void copySolverFile(String path, String dest, String description) throws IOException{
-		log.debug("descriptions = " + description);
-		log.debug("dest = " + dest);
-				
+	private static void copySolverFile(String path, String dest, String description) throws IOException{				
 		File tempSrcFile = new File(path);
 		File tempDestFile = new File(dest);
 		tempDestFile.mkdirs();
-
-
-		
-		File[] children = tempSrcFile.listFiles();
-		for (File child : children) {
-			FileUtils.copyDirectoryToDirectory(child, tempDestFile);
-		}
-		
-		log.debug(tempSrcFile);
-		log.debug(tempDestFile);
-
-		
 		
 		File tempDescFile = new File(dest + File.separator + R.DESC_PATH);
 		
-		//FileUtils.copyDirectoryToDirectory(tempSrcFile, tempDestFile);
-		//FileUtils.copyFile(tempSrcFile, tempDestFile);
-
+		FileUtils.copyDirectory(tempSrcFile, tempDestFile);
 		
 		int index = dest.lastIndexOf("\\");
 		String tempdest = dest.substring(0, index);
-		log.debug("tempdest = " + tempdest);
 		
 		//Write to description file
 		if (!(description.equals("no description"))) {
-			log.debug("BEFORE");
 			File description2 = new File(tempdest + File.separator + R.DESC_PATH);
-			log.debug("description2 = " + description2);
-			log.debug("tempDestFile =" + tempDestFile);
-			log.debug("AFTER");
 			
 			FileWriter fw = new FileWriter(description2.getAbsoluteFile());
-			log.debug("AFTER and AFTER");
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(description);
 			bw.close();
-
 			
-			//FileUtils.copyFileToDirectory(description2, tempDestFile);
 			FileUtils.copyFile(description2, tempDescFile);
-			log.debug("AFTER and AFTER and AFTER");
 			description = null;
 		}
 		
@@ -681,13 +649,9 @@ public class Download extends HttpServlet {
 	
 	private void copyFile(String src, String dest, Queue<String> descriptions) throws IOException{
 		String curDesc = "no description";
-		log.debug("descriptions = " + descriptions);
-		log.debug("src = " + src);
-		log.debug("dest = " + dest);
 		//log.debug("copying file - source = " +src + ", dest = " + dest);
 		if (descriptions.size() != 0) {
 			curDesc = descriptions.remove();
-			log.debug("DESCRIPTION = " + curDesc);
 		}
 		
 				
@@ -696,14 +660,12 @@ public class Download extends HttpServlet {
 
 		int index = dest.lastIndexOf("\\");
 		String tempdest = dest.substring(0, index);
-		log.debug("tempdest = " + tempdest);
 		
 		//Write to description file
 		if (!(curDesc.equals("no description"))) {
 			File description = new File(tempdest + File.separator + R.SOLVER_DESC_PATH);
 
 			FileWriter fw = new FileWriter(description.getAbsoluteFile());
-			log.debug("description.getAbsoluteFile = " + description.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(curDesc);
 			bw.close();

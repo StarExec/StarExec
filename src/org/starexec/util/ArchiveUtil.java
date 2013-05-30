@@ -348,21 +348,21 @@ public class ArchiveUtil {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	
-	public static void createArchive(File path, File destination, String format, String baseName, boolean reupload) {
+	public static void createArchive(File path, File destination, String format, String baseName, boolean topLevel) {
 		log.info("creating archive, path = " + path + ", dest = " + destination +", format = " + format);
 		try {
 			if (format.equals(".zip")) {
-				ArchiveUtil.createZip(path, destination, baseName, reupload);
+				ArchiveUtil.createZip(path, destination, baseName, topLevel);
 			} else if (format.equals(".tar") || format.equals(".tar.gz")) {
-				ArchiveUtil.createTar(path, destination, baseName, reupload, format);
+				ArchiveUtil.createTar(path, destination, baseName, topLevel, format);
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	}
 	
-	public static void createArchive(File path, File destination, String format, boolean reupload) {
-		createArchive(path,destination,format,"", reupload);
+	public static void createArchive(File path, File destination, String format, boolean topLevel) {
+		createArchive(path,destination,format,"", topLevel);
 	}
 	
 	
