@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -153,7 +155,12 @@ public class SingleJobPair extends HttpServlet {
 				solverIds.add(solverId);
 				List<Integer> configIds = Solvers.getDefaultConfigForSolver(solverId);
 				
-				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID);
+				HashMap<Integer, String> SP = new HashMap<Integer, String>();
+				SP.put(R.PUBLIC_SPACE_ID, Spaces.get(R.PUBLIC_SPACE_ID).getName());
+				Spaces.spacePathCreate(R.PUBLIC_USER_ID, Spaces.getSubSpaces(R.PUBLIC_SPACE_ID, R.PUBLIC_USER_ID, true), SP, R.PUBLIC_SPACE_ID);
+				log.debug("HASHMAP = " + SP);
+				
+				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID, SP);
 				if (!Jobs.add(j, R.PUBLIC_SPACE_ID))
 				    return -1;
 				return j.getId();
