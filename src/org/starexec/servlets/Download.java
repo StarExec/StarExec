@@ -382,7 +382,9 @@ public class Download extends HttpServlet {
 			
 			String jobFile = CreateJobCSV(job);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
-			
+			if (job.getLiteJobPairStats().get("pendingPairs")==0) {
+				response.addCookie(new Cookie("Job-Complete","true"));
+			}
 			return fileName;
 		}
 		else {
@@ -522,10 +524,7 @@ public class Download extends HttpServlet {
     					maxCompletion=x.getCompletionId();
     				}
     			}
-    			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
-				
-				
-				
+    			
 				File file;
 				
 				File dir;
@@ -551,7 +550,10 @@ public class Download extends HttpServlet {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output"+String.valueOf(j.getId()),false);
 				
 				//ArchiveUtil.createArchive(files, uniqueDir, format);
-				
+				if (j.getLiteJobPairStats().get("pendingPairs")==0) {
+					response.addCookie(new Cookie("Job-Complete","true"));
+				}
+				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				return fileName;
 			} else {
 				// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{solver name}/{benchmark name}
