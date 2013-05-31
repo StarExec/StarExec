@@ -282,6 +282,7 @@ CREATE TABLE job_pairs (
 	vol_contex_swtch DOUBLE,
 	invol_contex_swtch DOUBLE,
 	space_id INT,
+	path VARCHAR(2048),
 	PRIMARY KEY(id),
 	UNIQUE KEY(sge_id),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,

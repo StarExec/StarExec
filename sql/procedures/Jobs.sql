@@ -694,10 +694,10 @@ CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _spaceId INT, OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _spaceId INT, IN _path VARCHAR(2048), OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, space_id)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _spaceId);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, space_id, path)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _spaceId, _path);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 

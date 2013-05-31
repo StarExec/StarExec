@@ -212,7 +212,7 @@ public class Jobs {
 	 * @return True if the operation was successful
 	 */
 	private static boolean addJobPair(Connection con, JobPair pair) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setInt(1, pair.getJobId());
 		procedure.setInt(2, pair.getBench().getId());
 		procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
@@ -220,13 +220,14 @@ public class Jobs {
 		procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
 		procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
 		procedure.setInt(7, pair.getSpace().getId());
-
+		procedure.setString(8, pair.getPath());
+		
 		// The procedure will return the pair's new ID in this parameter
-		procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
+		procedure.registerOutParameter(9, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
 
 		// Update the pair's ID so it can be used outside this method
-		pair.setId(procedure.getInt(8));
+		pair.setId(procedure.getInt(9));
 
 		return true;
 	}
@@ -807,6 +808,10 @@ public class Jobs {
 			Common.safeClose(con);
 			List<JobPair> returnList = new ArrayList<JobPair>();
 			
+			
+			//because there is a lot of redundancy in node, bench, and config IDs
+			// we don't want to query the database once per job pair to get them. Instead,
+			//we store all the IDs we see and only query once  per node, bench, and config.
 			Set<Integer> nodeIdSet = new HashSet<Integer>();
 			Set<Integer> benchIdSet = new HashSet<Integer>();
 			Set<Integer> configIdSet = new HashSet<Integer>();
@@ -1105,6 +1110,7 @@ public class Jobs {
 		jp.setBlockOutput(result.getDouble("block_output"));
 		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
+		jp.setPath(result.getString("path"));
 		log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
