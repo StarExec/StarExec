@@ -60,13 +60,7 @@
                 <!-- Compile and zip up StarexecCommand -->
                 <mkdir dir="${build-dir}/cmd/starexeccommand/src" />
 
-                <jar basedir="command" destfile="${build-cmd-dir}/StarexecCommand.jar"/>
-                <copy file="command/README.txt" tofile="${build-cmd-dir}/README.txt"/>
-                <copy todir="${build-cmd-dir}/src">
-			<fileset dir="command"> <include name="*.java" /> </fileset>
-                </copy>
-                <zip basedir="${build-dir}/cmd" destfile="WebContent/public/starexeccommand.zip"/>
-		
+	
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
 		<copy todir="${class-dir}/org/starexec/config">
