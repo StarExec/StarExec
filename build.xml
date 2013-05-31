@@ -29,6 +29,7 @@
 	<path id="classpath">
         <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+		<fileset dir="local-lib" includes="**/*.jar"/>
     </path>
 	
 	<!-- Action for compiling the project and building the WAR file.
