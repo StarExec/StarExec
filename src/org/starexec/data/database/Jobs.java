@@ -1110,13 +1110,7 @@ public class Jobs {
 		jp.setBlockOutput(result.getDouble("block_output"));
 		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
-		try {
-			jp.setPath(result.getString("path"));
-		} catch (Exception e) {
-			//temp fix so stardev doesn't die
-			log.debug(e);
-		}
-		
+		jp.setPath(result.getString("path"));
 		log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
