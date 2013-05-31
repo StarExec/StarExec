@@ -372,7 +372,9 @@ public class Download extends HttpServlet {
     				}
     			}
     			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
-    			
+    			if (Jobs.getPendingPairsDetailed(job.getId()).size()==0) {
+    				response.addCookie(new Cookie("Job-Complete","true"));
+    			}
     			
     		}
     		
@@ -382,9 +384,7 @@ public class Download extends HttpServlet {
 			
 			String jobFile = CreateJobCSV(job);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
-			if (job.getLiteJobPairStats().get("pendingPairs")==0) {
-				response.addCookie(new Cookie("Job-Complete","true"));
-			}
+			
 			return fileName;
 		}
 		else {
@@ -550,9 +550,9 @@ public class Download extends HttpServlet {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output"+String.valueOf(j.getId()),false);
 				
 				//ArchiveUtil.createArchive(files, uniqueDir, format);
-				if (j.getLiteJobPairStats().get("pendingPairs")==0) {
-					response.addCookie(new Cookie("Job-Complete","true"));
-				}
+				if (Jobs.getPendingPairsDetailed(j.getId()).size()==0) {
+    				response.addCookie(new Cookie("Job-Complete","true"));
+    			}
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				return fileName;
 			} else {
