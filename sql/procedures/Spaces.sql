@@ -209,6 +209,25 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT, IN _publicUse
 		END IF;
 	END //
 	
+-- Returns the parent space of a given space ID
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetParentSpaceById;
+CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
+	BEGIN
+		IF _spaceID <=0 THEN	-- Invalid ID => return root space
+			SELECT *
+			FROM spaces
+			WHERE id =
+				(SELECT MIN(id)
+				FROM spaces);
+		ELSE					
+			SELECT MAX(ancestor)
+			FROM closure
+			WHERE descendant = _spaceId
+			AND ancestor < _spaceId;
+		END IF;
+	END //
+	
 -- Returns all subsspaces of a given name belonging to the space with the given id.
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS GetSubSpaceByName;

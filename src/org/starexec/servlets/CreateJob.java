@@ -110,20 +110,26 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)));
 
+		HashMap<Integer, String> SP = new HashMap<Integer, String>();
+		SP.put(space, Spaces.get(space).getName());
+		Spaces.spacePathCreate(userId, Spaces.getSubSpaces(space, userId, true), SP, space);
+		log.debug("HASHMAP = " + SP);
 
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversal2 = request.getParameter(traversal);
 		//Depending on our run selection, handle each case differently
 		if (selection.equals("runAllBenchInSpace")) {
-			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space);
+			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space, SP);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
+
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true)); //Remove spaces the user is not a member of
+								
 			spaces.add(0, Spaces.get(space));
 			if (traversal2.equals("depth")) {
 				for (Space s : spaces) {
-					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId());
+					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId(), SP);
 				}
 			} else {
 				log.debug("User Selected Round-Robin Search");
@@ -152,7 +158,7 @@ public class CreateJob extends HttpServlet {
 						BSC bsc = SpaceToBSC.get(s);
 							if (bsc.b.size() > i) {
 								log.debug("Calling addJobPairsRobin function: i= " + i);
-								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc);
+								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
 							}
 						}
 					}
@@ -168,8 +174,42 @@ public class CreateJob extends HttpServlet {
 			}
 
 			if (benchMethod.equals("runAllBenchInHierarchy")) {
+				if (traversal.equals("depth")) {
+					log.debug("User selected depth-first traversal");
+					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit, SP);
+				} else {
+					log.debug("User selected round-robin traversal");
+					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
+					spaces.add(0,Spaces.get(space));
+					HashMap<Space, BSC> SpaceToBSC = new HashMap<Space, BSC>();
+					int max = 0;
+					List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+					HashMap<Solver, List<Configuration>> SC = new HashMap<Solver, List<Configuration>>();
+
+					for (Space s: spaces) {
+						int space_id = s.getId();
+						List<Benchmark> benchmarks = Benchmarks.getBySpace(space_id);
+						int temp = benchmarks.size();
+						if (temp>max) {
+							max = temp;
+						}
+						SpaceToBSC.put(s, new BSC(benchmarks, solvers, SC));
+					}
+					log.debug("Max size is: " + max);
+					
+					for (int i=0; i < max; i++) {
+						for (Space s : spaces) {
+							BSC bsc = SpaceToBSC.get(s);
+								if (bsc.b.size() > i) {
+									log.debug("Calling addJobPairsRobinSelected function: i = " + i);
+									JobManager.addJobPairsRobinSelected(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), solvers, SP);
+								}
+						}
+					}
+					
+					
+				}
 				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
-				JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit);
 				if (j.getJobPairs().size() == 0) {
 					// No pairs in the job means no benchmarks in the hierarchy; error out
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
@@ -183,7 +223,7 @@ public class CreateJob extends HttpServlet {
 					return;
 				}
 
-				JobManager.buildJob(j, userId, cpuLimit, runLimit, benchmarkIds, solverIds, configIds, space);
+				JobManager.buildJob(j, userId, cpuLimit, runLimit, benchmarkIds, solverIds, configIds, space, SP);
 			}
 		}
 

@@ -63,6 +63,8 @@ public class AddSpace extends HttpServlet {
 		s.setName((String)request.getParameter(name));
 		s.setDescription((String)request.getParameter(description));
 		s.setLocked(Boolean.parseBoolean((String)request.getParameter(locked)));
+		int spaceId1 = Integer.parseInt(request.getParameter(parentSpace));
+		s.setParentSpace(spaceId1);
 		
 		// Make the default permissions for the space to be added
 		Permission p = new Permission();

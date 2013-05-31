@@ -425,7 +425,7 @@ public abstract class JobManager {
      * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
      * @param spaceId the id of the space we are adding from
      */
-    public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId) {
+    public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId, HashMap<Integer, String> SP) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 	
@@ -442,6 +442,7 @@ public abstract class JobManager {
 				pair.setCpuTimeout(cpuTimeout);
 				pair.setWallclockTimeout(clockTimeout);
 				pair.setSpace(Spaces.get(spaceId));
+				pair.setPath(SP.get(spaceId));
 				j.addJobPair(pair);
 				pairCount++;
 				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
@@ -467,7 +468,7 @@ public abstract class JobManager {
 	 * @param c the list of the configurations of the solver in the particular space to get job pairs for
 	 */
 	
-	public static void addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
+	public static void addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc, HashMap<Integer, String> SP) {
 		log.debug("Attempting to add job pairs in breadth-first search");
 		Space space = Spaces.get(spaceId);
 		JobPair pair;
@@ -488,6 +489,8 @@ public abstract class JobManager {
 					pair.setCpuTimeout(cpuTimeout);
 					pair.setWallclockTimeout(clockTimeout);
 					pair.setSpace(space);
+					pair.setPath(SP.get(spaceId));
+					log.debug("Pair PATH = " + pair.getPath());
 					j.addJobPair(pair);
 
 					pairCount++;
@@ -510,7 +513,7 @@ public abstract class JobManager {
      * @param clockTimeout the Clock Timeout for the job 
      * @param spaceId the id of the space to build the job pairs from
      */
-    public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId) {
+    public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, int spaceId, HashMap<Integer, String> SP) {
 		Space space = Spaces.get(spaceId);
 	
 		// Get the benchmarks and solvers from this space
@@ -521,6 +524,7 @@ public abstract class JobManager {
 	
 		int pairCount = 0;
 		for (Benchmark b : benchmarks) {
+			log.debug("BENCH PATH = " + b.getPath());
 		    for (Solver s : solvers) {
 				// Get the configurations for the current solver
 				configs = Solvers.getConfigsForSolver(s.getId());
@@ -536,6 +540,8 @@ public abstract class JobManager {
 				    pair.setCpuTimeout(cpuTimeout);
 				    pair.setWallclockTimeout(clockTimeout);
 				    pair.setSpace(space);
+				    pair.setPath(SP.get(spaceId));
+				    log.debug("pair path = " + pair.getPath());
 				    j.addJobPair(pair);
 		
 				    pairCount++;
@@ -560,7 +566,7 @@ public abstract class JobManager {
      * @param cpuTimeout the CPU timeout for the job
      * @param clockTimeout the clock timeout for the job
      */
-    public static void addBenchmarksFromHierarchy(Job j, int spaceId, int userId, List<Integer> solverIds, List<Integer> configIds, int cpuTimeout, int clockTimeout) {
+    public static void addBenchmarksFromHierarchy(Job j, int spaceId, int userId, List<Integer> solverIds, List<Integer> configIds, int cpuTimeout, int clockTimeout, HashMap<Integer, String> SP) {
 	List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
 	List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 
@@ -574,6 +580,7 @@ public abstract class JobManager {
 		pair.setCpuTimeout(cpuTimeout);
 		pair.setWallclockTimeout(clockTimeout);
 		pair.setSpace(Spaces.get(spaceId));
+		pair.setPath(SP.get(spaceId));
 		j.addJobPair(pair);
 		pairCount++;
 		log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
@@ -635,4 +642,25 @@ public abstract class JobManager {
 	//session.control("" + sgeJobId, Session.TERMINATE);
     }
 
+	public static void addJobPairsRobinSelected(Job j, int userId, int cpuLimit, int runLimit, int space_id, Benchmark benchmark, List<Solver> solvers, HashMap<Integer, String> SP) {
+		log.debug("Attempting to add job-pairs in round-robin traversal on selected solvers");
+		
+		int pairCount = 0;
+
+	    for(Solver solver : solvers) {
+			JobPair pair = new JobPair();
+			pair.setBench(benchmark);
+			pair.setSolver(solver);				
+			pair.setCpuTimeout(cpuLimit);
+			pair.setWallclockTimeout(runLimit);
+			pair.setSpace(Spaces.get(space_id));
+			pair.setPath(SP.get(space_id));
+			j.addJobPair(pair);
+			pairCount++;
+			log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
+			if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+			    return;
+			}
+	    }
+	}
 }

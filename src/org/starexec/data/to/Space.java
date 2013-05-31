@@ -26,7 +26,15 @@ public class Space extends Identifiable implements Iterable<Space> {
 	@Expose	private List<Job> jobs;
 	@Expose	private List<User> users;
 	@Expose	private List<Space> subspaces;
+	@Expose private Integer parentSpace;
 	
+	public void setParentSpace(Integer space) {
+		this.parentSpace = space;
+	}
+	
+	public Integer getParentSpace() {
+		return this.parentSpace;
+	}
 	
 	public Space() {
 		this.solvers = new LinkedList<Solver>();
@@ -206,6 +214,7 @@ public class Space extends Identifiable implements Iterable<Space> {
 	public void setSubspaces(List<Space> subspaces) {
 		this.subspaces = subspaces;
 	}
+	
 	
 	public boolean isPublic() {
 		return isPublic;

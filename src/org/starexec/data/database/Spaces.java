@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -624,6 +625,21 @@ public class Spaces {
 		return null;
 	}
 	
+	public static Integer getParentSpace(int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Spaces.getParentSpace(spaceId, con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Helper method for getSubSpaces() - gets either the first level of subspaces of a space or, recursively, all
 	 * subspaces of a given space
@@ -667,6 +683,16 @@ public class Spaces {
 		return subSpaces;
 	}
 	
+	
+	protected static Integer getParentSpace(int spaceId, Connection con) throws Exception{
+		CallableStatement procedure = con.prepareCall("{CALL GetParentSpaceById(?)}");
+		procedure.setInt(1, spaceId);
+		ResultSet results = procedure.executeQuery();
+		while(results.next()) {
+			return results.getInt("MAX(ancestor)");
+		}
+		return 1;
+	}
 	/**
 	 * Given a list of spaces a user id, removes from the list of spaces any space
 	 * where the given user is not a member of.
@@ -687,6 +713,21 @@ public class Spaces {
 			}
 		}
 		return spaces;
+	}
+	
+	public static void spacePathCreate(int userId, List<Space> spaces, HashMap<Integer, String> SP, int space) {
+		Iterator<Space> iter = spaces.iterator();
+				
+		while (iter.hasNext()) {
+			Space s = iter.next();
+			if (!Users.isMemberOfSpace(userId, s.getId())) {
+				iter.remove();
+				log.debug("removed space");
+			}
+			log.debug("iter.next = " + s + ", " + s.getName());
+			int parent = getParentSpace(s.getId());
+			SP.put(s.getId(), SP.get(parent) + File.separator + s.getName());
+		}
 	}
 	
 	/**
