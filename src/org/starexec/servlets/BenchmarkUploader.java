@@ -306,7 +306,8 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param perm The default permissions to set for this space
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given directory.
 	 */
-	private Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm) {
+	private Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm) 
+	    throws Exception {
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
@@ -331,9 +332,8 @@ public class BenchmarkUploader extends HttpServlet {
 				b.setDownloadable(downloadable);
 
 				// Make sure that the benchmark has a unique name in the space.
-				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
-					return null;
-				}
+				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) 
+				    throw new Exception("A benchmark already exists in "+space.getName()+" with name "+b.getName()+".");
 
 				space.addBenchmark(b);
 			}

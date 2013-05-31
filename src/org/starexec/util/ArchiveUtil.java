@@ -155,7 +155,9 @@ public class ArchiveUtil {
 				results = Util.bufferToString(reader);
 				log.debug("ls -l destination results = " + results);
 
-				//not verbose in case it's an issue with the buffer size
+				/* by default, tar applies (supposedly) the user's umask when setting
+				   permissions for extracted files.  So we do not need to do anythin
+				   further with that. */
 				String[] tarCmd = new String[5];
 				tarCmd[0] = "tar";
 				tarCmd[1] = "-xf";

@@ -54,6 +54,17 @@
 		<javac srcdir="src" destdir="${class-directory}" classpathref="classpath" nowarn="on">
 			<compilerarg value="-Xlint:unchecked"/>
 		</javac>
+              
+                <!-- Compile and zip up StarexecCommand -->
+                <mkdir dir="${build-directory}/command" />
+                <mkdir dir="${build-directory}/command/src" />
+                <jar basedir="command" destfile="${build-directory}/command/StarexecCommand.jar"/>
+                <copy file="command/README.txt" tofile="${build-directory}/command/README.txt"/>
+                <copy todir="${build-directory}/command/src">
+			<fileset dir="command"> <include name="*.java" /> </fileset>
+                </copy>
+
+                <zip basedir="${build-directory}/command" destfile="WebContent/public/starexeccommand.zip"/>
 		
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-directory}/org/starexec/config" />
@@ -63,15 +74,7 @@
 			</fileset>
 		</copy>		
 		
-		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
-                     deployment.  They do not need to go in the WAR file. -->
-		<mkdir dir="deployed-sql" />
-		<copy todir="deployed-sql">
-			<fileset dir="sql">
-				<include name="**/*" />
-			</fileset>
-		</copy>		
-		
+	
                 <!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
                 <copy file="${scripts-directory}/soft-deploy.template" tofile="soft-deploy.sh"/>
@@ -128,6 +131,16 @@
 		               byline="false"
 		/>
 		
+		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
+                     deployment.  They do not need to go in the WAR file. -->
+		<delete dir="deployed-sql" />
+		<mkdir dir="deployed-sql" />
+		<copy todir="deployed-sql">
+			<fileset dir="sql">
+				<include name="**/*" />
+			</fileset>
+		</copy>		
+
 		<!-- Update the sql scripts to use the correct database -->
 		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
 			<fileset dir="deployed-sql" includes="**/*.sql"/>
