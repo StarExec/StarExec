@@ -4,6 +4,9 @@
 
 # filled in by running ant with build.xml:
 APPNAME=the_configuration
+SGE_SCRIPT_DIR=the_sge_script_dir
+STAREXEC_DATA_DIR=the_data_dir
+
 WEB_HOME=/project/tomcat-webapps/webapps
 WAR=$APPNAME.war
 APPDIR=$WEB_HOME/$APPNAME
@@ -11,6 +14,36 @@ STAR_WAR=$WEB_HOME/$WAR
 
 echo Moving existing war file: $STAR_WAR
 rm -f $STAR_WAR 
+
+# create the first argument to mkdirIf if it does not exist,
+# and set ownership and permissions.
+mkdirIf() {
+if [ ! -d $1 ] ; then
+  mkdir -p $1
+  chmod 775 $1
+  chgrp star-web $1
+fi
+}
+
+echo "Copying the GridEngine epilog and prolog to $SGE_SCRIPT_DIR"
+mkdirIf $SGE_SCRIPT_DIR
+cp src/org/starexec/config/sge/*.bash $SGE_SCRIPT_DIR
+chmod -f 775 $SGE_SCRIPT_DIR/{epilog,prolog}.bash
+chgrp -f star-web $SGE_SCRIPT_DIR/{epilog,prolog}.bash
+
+echo "Copying batchSpaceSchema.xsd to $STAREXEC_DATA_DIR/batchSpace"
+mkdirIf $STAREXEC_DATA_DIR/batchSpace
+cp starexec_res/batch/batchSpaceSchema.xsd $STAREXEC_DATA_DIR/batchSpace
+chmod -f 775 STAREXEC_DATA_DIR/batchSpace/batchSpaceSchema.xsd
+chgrp -f star-web $STAREXEC_DATA_DIR/batchSpace/batchSpaceSchema.xsd
+
+echo "Copying default pictures $STAREXEC_DATA_DIR/pictures"
+for d in users solvers benchmarks ; do
+ mkdirIf $STAREXEC_DATA_DIR/pictures/$d
+ cp starexec_res/default-pics/$d/Pic0.jpg $STAREXEC_DATA_DIR/pictures/$d
+ chmod -f 775 $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg
+ chgrp -f star-web $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg 
+done
 
 while [ -d $APPDIR ] ; do
   echo "waiting for tomcat to remove the app directory"

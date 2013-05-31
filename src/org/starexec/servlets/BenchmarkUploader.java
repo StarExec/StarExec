@@ -43,8 +43,6 @@ import org.apache.commons.io.FileUtils;
 public class BenchmarkUploader extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	
 
-	//In order to head to update page and not wait for upload to finish
-	private static ExecutorService threadPool = null;
 	// The unique date stamped file name format
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
 
@@ -153,7 +151,7 @@ public class BenchmarkUploader extends HttpServlet {
 		log.debug("upload status id is " + statusId);
 		
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		threadPool = Executors.newCachedThreadPool();
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){

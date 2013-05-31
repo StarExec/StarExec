@@ -20,8 +20,6 @@
 	<property name="build-cmd-dir" value="${build-dir}/cmd/starexeccommand" />
 	<property name="class-dir" value="${build-dir}/classes" />		
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
-	<property name="pics-dir" value="${data_dir}/pictures" />
-	<property name="batch-dir" value="${data_dir}/batchSpace" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
 	
@@ -74,6 +72,8 @@
 		<delete file="soft-deploy.sh" />
                 <copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
                 <replaceregexp file="soft-deploy.sh" match="the_configuration" replace="${configuration}"/>
+                <replaceregexp file="soft-deploy.sh" match="the_sge_script_dir" replace="${sge-script-dir}"/>
+                <replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
 		<chmod file="soft-deploy.sh" perm="774"/>
 
                 <!-- Copy the context template and fill it in -->
@@ -85,31 +85,6 @@
                 <replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
 
-		<!-- Copy the sge scripts to their proper location -->		
-		<copy todir="${sge-script-dir}">
-			<fileset dir="${source-dir}/org/starexec/config/sge">
-				<include name="**/*.bash" />
-			</fileset>
-		</copy>
-
-		<!-- Change permissions of the new sge script files so sge can use them -->
-		<chmod file="${sge-script-dir}/prolog.bash" perm="775"/>		
-		<chmod file="${sge-script-dir}/epilog.bash" perm="775"/>		
-		<chgrp file="${sge-script-dir}/prolog.bash" group="star-web" />
-		<chgrp file="${sge-script-dir}/epilog.bash" group="star-web" />
-
-
-		<copy todir="${batch-dir}" file="starexec_res/batch/batchSpaceSchema.xsd"/>
-
-                <!-- Copy default pictures (how to do this more nicely with a loop in ant?) -->
-                <mkdir dir="${pics-dir}/users"/>
-                <copy todir="${pics-dir}/users" file="starexec_res/default-pics/users/Pic0.jpg"/>
-                <mkdir dir="${pics-dir}/solvers"/>
-                <copy todir="${pics-dir}/solvers" file="starexec_res/default-pics/solvers/Pic0.jpg"/>
-                <mkdir dir="${pics-dir}/benchmarks"/>
-                <copy todir="${pics-dir}/benchmarks" file="starexec_res/default-pics/benchmarks/Pic0.jpg"/>
-
-		
 
 		<!-- Create/update the build property file -->
 	    <propertyfile file="${config-dir}/build.properties"
