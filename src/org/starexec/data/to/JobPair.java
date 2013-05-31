@@ -42,7 +42,8 @@ public class JobPair extends Identifiable {
 	private double involuntaryContextSwitches;
 	private Configuration configuration = null;
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
-	
+	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
+							  //the job is initiated to the space the benchmark is in
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.solver = new Solver();
@@ -485,5 +486,15 @@ public class JobPair extends Identifiable {
 	 */
 	public void setSpace(Space space) {
 		this.space = space;
+	}
+	/**
+	 * @param path The path of this job_pair
+	 */
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public String getPath() {
+		return path;
 	}
 }
