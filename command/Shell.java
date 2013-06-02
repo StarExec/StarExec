@@ -198,15 +198,15 @@ public class Shell {
 			int serverStatus=0;
 			
 			if (c.equals(R.COMMAND_SETARCHIVETYPE)) {
-				serverStatus=con.setUserSetting("archivetype",commandParams.get("val"));
+				serverStatus=con.setUserSetting("archivetype",commandParams);
 			} else if(c.equals(R.COMMAND_SETFIRSTNAME)) {
-				serverStatus=con.setUserSetting("firstname",commandParams.get("val"));
+				serverStatus=con.setUserSetting("firstname",commandParams);
 			} else if (c.equals(R.COMMAND_SETLASTNAME)) {
-				serverStatus=con.setUserSetting("lastname",commandParams.get("val"));
+				serverStatus=con.setUserSetting("lastname",commandParams);
 			//} else if (c.equals(R.COMMAND_SETEMAIL)) {
 			//	serverStatus=con.setUserSetting("email",parameters.get("val"));
 			}  else if (c.equals(R.COMMAND_SETINSTITUTION)) {
-				serverStatus=con.setUserSetting("institution",commandParams.get("val"));
+				serverStatus=con.setUserSetting("institution",commandParams);
 			} else if (c.equals(R.COMMAND_SETSPACEPUBLIC)) {
 				serverStatus=con.setSpaceVisibility(commandParams, true);
 			} else if (c.equals(R.COMMAND_SETSPACEPRIVATE)) {
@@ -351,7 +351,23 @@ public class Shell {
 			} else if(c.equals(R.COMMAND_LISTSUBSPACES)) {
 				urlParams.put("type","spaces");
 			} else if (c.equals(R.COMMAND_LISTPRIMITIVES)) {
-				return R.ERROR_COMMAND_NOT_IMPLENETED;
+				String[] types=new String[] {"solvers","jobs","users","spaces"};
+				for (String x : types) {
+					urlParams.put("type",x);
+					System.out.println(x.toUpperCase()+"\n");
+					answer=con.getPrimsInSpace(urlParams,commandParams);
+					if (answer.keySet().size()==1) {
+						for (int test : answer.keySet()) {
+							if (test<0) {
+								return test;
+							}
+						}
+					}
+					printPrimitives(answer);
+					System.out.print("\n");
+				}
+				
+				return 0;
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -367,17 +383,21 @@ public class Shell {
 			}
 			
 			//print the IDs and names of the primitives returned
-			for (int id : answer.keySet()) {
-				System.out.print("id=");
-				System.out.print(id);
-				System.out.print(" : ");
-				System.out.print("name=");
-				System.out.println(answer.get(id));
-			}
+			printPrimitives(answer);
 			
 			return 0;
 		} catch (Exception e) {
 			return R.ERROR_BAD_ARGS;
+		}
+	}
+	
+	private void printPrimitives(HashMap<Integer,String> prims) {
+		for (int id : prims.keySet()) {
+			System.out.print("id=");
+			System.out.print(id);
+			System.out.print(" : ");
+			System.out.print("name=");
+			System.out.println(prims.get(id));
 		}
 	}
 	
@@ -424,6 +444,8 @@ public class Shell {
 			
 			return 0;
 		} else if(c.equals(R.COMMAND_LOGIN)) {
+			
+			//don't allow a login if we have a session already-- they should logout first
 			if (con!=null) {
 				return R.ERROR_CONNECTION_EXISTS;
 			}
@@ -512,6 +534,20 @@ public class Shell {
 		}
 	}
 	
+	/**
+	 * Prints a warning if the user gave and unnecessary parameters that were ignored
+	 */
+	private static void printWarningMessages() {
+		List<String> up=Validator.getUnnecessaryParams();
+		if (up.size()>0) {
+			System.out.print("WARNING: The following unnecessary parameters were ignored: ");
+			for (String x : up) {
+				System.out.print(x+" ");
+			}
+			System.out.print("\n");
+		}
+	}
+	
 	public void runShell() {
 		int status;
 		try {
@@ -532,7 +568,9 @@ public class Shell {
 						return;
 					}
 					printErrorMessage(status);
-				} 
+					
+				}
+				printWarningMessages();
 				
 			}
 		} catch (Exception e) {
@@ -565,7 +603,11 @@ public class Shell {
 					}
 					if (verbose) {
 						printErrorMessage(status);
+						
 					}
+				}
+				if (verbose) {
+					printWarningMessages();
 				}
 				line=br.readLine();
 			}

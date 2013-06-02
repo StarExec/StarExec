@@ -60,7 +60,8 @@ public class R {
 	public static int ERROR_BAD_TIME=-21;
 	public static int ERROR_NOT_LOGGED_IN=-22;
 	public static int ERROR_CONNECTION_EXISTS=-23;
-	
+	public static int ERROR_BAD_URL=-24;
+	public static int ERROR_BAD_INSTITUTION;
 	//error messages
 	public static HashMap<Integer,String> errorMessages=new HashMap<Integer,String>();
 	static {
@@ -88,6 +89,8 @@ public class R {
 		errorMessages.put(R.ERROR_BAD_TIME, "The time should be a positive double, measured in seconds");
 		errorMessages.put(R.ERROR_NOT_LOGGED_IN, "You must log in before issuing commands to the server");
 		errorMessages.put(R.ERROR_CONNECTION_EXISTS, "You must log out of the existing session before you can start a new one");
+		errorMessages.put(R.ERROR_BAD_URL, "The given URL does not point to a valid Starexec instance. Ensure that you are using the correct protocol (http vs https) and that the address ends with a /");
+		errorMessages.put(R.ERROR_BAD_INSTITUTION, "The institution given has invalid characters or is too long");
 	}
 	
 	

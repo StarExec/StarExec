@@ -217,7 +217,7 @@ required, and either "f" or "url" is also required. The parameters "n," "d," "df
 optional. Only one of "d" and "df" can be set.
 EX: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
 
-Pushbenchmarks -Uploads a benchmark archive to an existing space. "id," "type," and either "f" or "url" 
+Pushbenchmarks -Uploads a benchmark archive to an existing space. "id," "bt," and either "f" or "url" 
 are required. "d," "df," "dep," "downloadable," "hier," and "link," are optional. All of the permission 
 parameters are also optional.
 EX: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '

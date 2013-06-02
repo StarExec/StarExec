@@ -66,6 +66,13 @@ public class Connection {
 	private HashMap<Integer,Integer> job_out_indices;
 	
 	@SuppressWarnings("deprecation")
+	
+	/**
+	 * Gets an HttpClient that ignores SSL certificates. The SSL certificate
+	 * for StarExec is currently not valid
+	 * @return An HttpClient that ignores SSL certificates.
+	 */
+	
 	private HttpClient getClient() {
 		try{
 			HttpClient base=new DefaultHttpClient();
@@ -138,12 +145,24 @@ public class Connection {
 		job_out_indices=new HashMap<Integer,Integer>();
 	}
 	
+	
+	/**
+	 * Gets the max completion ID for info downloads on the given job.
+	 * @param jobId The ID of a job on StarExec
+	 * @return The maximum completion ID seen for the job, or 0 if not seen
+	 */
 	public int getJobInfoCompletion(int jobId) {
 		if (!job_info_indices.containsKey(jobId)) {
 			job_info_indices.put(jobId, 0);
 		} 
 		return job_info_indices.get(jobId);
 	}
+	
+	/**
+	 * Gets the max completion ID yet seen for output downloads on a given job
+	 * @param jobId The ID of a job on StarExec
+	 * @return The maximum completion ID seen yet, or 0 if not seen.
+	 */
 	
 	public int getJobOutCompletion(int jobId) {
 		if (!job_out_indices.containsKey(jobId)) {
@@ -152,31 +171,52 @@ public class Connection {
 		return job_out_indices.get(jobId);
 	}
 	
+	/**
+	 * Sets the highest seen completion ID for info on a given job
+	 * @param jobId An ID of a job on StarExec
+	 * @param completion The completion ID
+	 */
 	public void setJobInfoCompletion(int jobId,int completion) {
 		job_info_indices.put(jobId,completion);
 	}
 	
+	/**
+	 * Sets the highest seen completion ID for output on a given job
+	 * @param jobId An ID of a job on StarExec
+	 * @param completion The completion ID
+	 */
 	public void setJobOutCompletion(int jobId,int completion) {
 		job_out_indices.put(jobId,completion);
 	}
 	
+	/**
+	 * Gets username being used for this connection
+	 * @return The username
+	 */
 	public String getUsername() {
 		return username;
 	}
 	
+	/**
+	 * Gets the password being used for this connection
+	 * @return The password
+	 */
 	public String getPassword() {
 		return password;
 	}
 	
+	/**
+	 * Gets the home URL of the StarExec instance currently connected to
+	 * @return The base URL
+	 */
 	public String getBaseURL() {
 		return baseURL;
 	}
 	
 	/**
-	 * Given a username and password, login to the secure StarExec server
-	 * @param username-- Username used to login to Starexec
-	 * @param password-- Password used to login to Starexec
-	 * @return true on success, false otherwise
+	 * Log into StarExec with the username and password of this connection
+	 * @return An integer indicating status, with 0 being normal and a negative integer
+	 * indicating an error
 	 * @author Eric Burns
 	 */
 	public int login() {
@@ -186,6 +226,10 @@ public class Connection {
 			sessionID=extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
 			response.getEntity().getContent().close();
 			if (!this.isValid()) {
+				//if the user specified their own URL, it is probably the problem.
+				if (!baseURL.equals(R.URL_STAREXEC_BASE)) {
+					return R.ERROR_BAD_URL;
+				}
 				return R.ERROR_SERVER;
 			}
 			
@@ -220,9 +264,12 @@ public class Connection {
 			}
 			return 0;
 			
+		} catch (IllegalStateException e) {
+			
+			return R.ERROR_BAD_URL;
+			
 		} catch (Exception e) {
-			
-			
+			e.printStackTrace();
 		}
 		
 		return R.ERROR_SERVER;
@@ -330,6 +377,8 @@ public class Connection {
 			params.add(new BasicNameValuePair("cpuTimeout",cpu));
 			params.add(new BasicNameValuePair("queue",commandParams.get(R.PARAM_QUEUEID)));
 			params.add(new BasicNameValuePair("postProcess",commandParams.get(R.PARAM_PROCID)));
+			
+			//TODO: Possibly allow other methods of running jobs
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
@@ -356,7 +405,7 @@ public class Connection {
 	
 	public int createSubspace(HashMap<String,String> commandParams) {
 		try {
-			int valid=Validator.isValidSubspaceCreation(commandParams);
+			int valid=Validator.isValidCreateSubspaceRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -439,7 +488,7 @@ public class Connection {
 	 * Function for downloading archives from StarExec with the given parameters and 
 	 * file output location.
 	 * @param urlParams A list of name/value pairs that will be encoded into the URL
-	 * @param location A list of name/value pairs that the user entered into the command line
+	 * @param commandParams A list of name/value pairs that the user entered into the command line
 	 * @return 0 on success, a negative integer on error
 	 * @author Eric Burns
 	 */
@@ -462,18 +511,23 @@ public class Connection {
 			int lastSeen=-1;
 			String done=null;
 			setSessionIDIfExists(response.getAllHeaders());
+			
+			//if we're sending 'since,' it means this is a request for new job data
 			if (urlParams.containsKey(R.FORMPARAM_SINCE)) {
 				
+				//check to see if the job is complete
 				done=extractCookie(response.getAllHeaders(),"Job-Complete");
-				
-				
 				lastSeen=Integer.parseInt(extractCookie(response.getAllHeaders(),"Max-Completion"));
+				
+				//indicates there was no new informatoin
 				if (lastSeen<=Integer.parseInt(urlParams.get(R.FORMPARAM_SINCE))) {
 					System.out.println("No new results");
 					response.getEntity().getContent().close();
 					if (done!=null) {
 						return R.SUCCESS_JOBDONE;
 					}
+					
+					//don't save a empty files
 					return R.SUCCESS_NOFILE;
 				}
 			}
@@ -488,6 +542,8 @@ public class Connection {
 				}
 			}
 			response.getEntity().getContent().close();
+			
+			//we weren't redirected
 			if (nextURL==null) {
 				return R.ERROR_ARCHIVE_NOT_FOUND;
 			}
@@ -516,11 +572,13 @@ public class Connection {
 			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
-			if (urlParams.containsKey("since") && lastSeen>=0) {
-				if (urlParams.get("type").equals("job")) {
+			//only after we've successfully saved the file should we update the maxixmum completion index,
+			//which keeps us from downloading the same stuff twice
+			if (urlParams.containsKey(R.FORMPARAM_SINCE) && lastSeen>=0) {
+				if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
 					this.setJobInfoCompletion(Integer.parseInt(urlParams.get("id")), lastSeen);
 					
-				} else if (urlParams.get("type").equals("j_outputs")) {
+				} else if (urlParams.get(R.FORMPARAM_TYPE).equals("j_outputs")) {
 					this.setJobOutCompletion(Integer.parseInt(urlParams.get("id")), lastSeen);
 				}
 				
@@ -547,6 +605,15 @@ public class Connection {
 		
 	}
 	
+	/**
+	 * Lists the IDs and names of some kind of primitives in a given space
+	 * @param urlParams Parameters to be encoded into the URL to send to the server
+	 * @param commandParams Parameters given by the user at the command line
+	 * @return An integer error code with 0 indicating success and a negative number indicating an
+	 * error
+	 * @author Eric Burns
+	 */
+	
 	//TODO: Interpret a JSON '1' or '2' as a particular error, not just "R.ERROR_SERVER"
 	public HashMap<Integer,String> getPrimsInSpace(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
 		HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
@@ -557,10 +624,15 @@ public class Connection {
 				errorMap.put(valid, null);
 				return errorMap;
 			}
+			
+			//in the absence of limit, we want all the primitives
 			int maximum=Integer.MAX_VALUE;
 			if (commandParams.containsKey(R.PARAM_LIMIT)) {
 				maximum=Integer.valueOf(commandParams.get(R.PARAM_LIMIT));
 			}
+			
+			//need to specify the number of columns according to what GetNextPageOfPrimitives in RESTHelpers
+			//expects
 			String columns="0";
 			String type=urlParams.get("type");
 			if (type.equals("solvers")) {
@@ -598,6 +670,7 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
+			//we should be getting a json string back
 			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
 			StringBuilder builder = new StringBuilder();
 			for (String line = null; (line = reader.readLine()) != null;) {
@@ -606,11 +679,16 @@ public class Connection {
 			
 			JsonParser parser=new JsonParser();
 			response.getEntity().getContent().close();
+			
+			//we should get back a jsonObject which has a jsonArray of primitives labeled 'aaData'
 			JsonArray json=parser.parse(builder.toString()).getAsJsonObject().get("aaData").getAsJsonArray();
 			JsonArray curPrim;
 			String name;
 			Integer id;
 			JsonPrimitive element;
+			
+			//the array is itself composed of arrays, with each array containing multiple elements
+			//describing a single primitive
 			for (JsonElement x : json) {
 				curPrim=x.getAsJsonArray();
 				for (JsonElement y : curPrim) {
@@ -618,6 +696,8 @@ public class Connection {
 					
 					id=extractIdFromJson(element.getAsString());
 					name=extractNameFromJson(element.getAsString(),urlParams.get("type"));
+					
+					//if the element has an ID and a name, save them
 					if (id!=null && name!=null) {
 						prims.put(id, name);
 					}
@@ -632,11 +712,15 @@ public class Connection {
 			errorMap.put(R.ERROR_SERVER, null);
 			return errorMap;
 		}
-		
-		
 	}
 	
-	
+	/**
+	 * Sets a space or space hierarchy as either public or private
+	 * @param commandParams Parameters given by the user at the command line
+	 * @param setPublic Set public if true and private if false
+	 * @return 0 if successful and a negative error code otherwise
+	 * @author Eric Burns
+	 */
 	public int setSpaceVisibility(HashMap<String,String> commandParams, boolean setPublic) {
 		try {
 			
@@ -649,6 +733,8 @@ public class Connection {
 				hierarchy=true;
 			}
 			String pubOrPriv;
+			
+			//these strings are specified in StarExec
 			if (setPublic) {
 				pubOrPriv="makePublic";
 			} else {
@@ -661,6 +747,7 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
 			
+			//we should get back an HTTP OK if we're allowed to change the visibility
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return R.ERROR_BAD_PARENT_SPACE;
 			}
@@ -675,13 +762,16 @@ public class Connection {
 	 * @param setting The field to assign a new value to
 	 * @param newVal-- The new value to use for setting
 	 * @return A code indicating the success of the operation
+	 * @author Eric Burns
 	 */
-	public int setUserSetting(String setting, String newVal) {
+	public int setUserSetting(String setting, HashMap<String,String> commandParams) {
 		
-		int valid=Validator.isValidSetUserSettingRequest(setting, newVal);
+		int valid=Validator.isValidSetUserSettingRequest(setting,commandParams);
 		if (valid<0) {
 			return valid;
 		}
+		String newVal=commandParams.get(R.PARAM_VAL);
+		//StarExec doesn't want to see '.' in incoming requests
 		if (setting.equals("archivetype")) {
 			if (newVal.startsWith(".")) {
 				newVal=newVal.substring(1);
@@ -717,7 +807,7 @@ public class Connection {
 	 */
 	
 	public int uploadBenchmarks(HashMap<String, String> commandParams) {
-		int valid=Validator.isValidBenchmarkUploadRequest(commandParams);
+		int valid=Validator.isValidUploadBenchmarkRequest(commandParams);
 		
 		if (valid<0) {
 			return valid;
@@ -730,6 +820,8 @@ public class Connection {
 		Boolean dependency=false;
 		String depRoot="";
 		Boolean depLinked=false;
+		
+		//if the dependency parameter exists, we're using the dependencies it specifies
 		if (commandParams.containsKey(R.PARAM_DEPENDENCY)) {
 			dependency=true;
 			depRoot=commandParams.get(R.PARAM_DEPENDENCY);
@@ -741,6 +833,8 @@ public class Connection {
 		String type=commandParams.get(R.PARAM_BENCHTYPE);
 		String space= commandParams.get(R.PARAM_ID);
 
+		
+		//don't presever hierarchy by default, but do so if the hierarchy parameter is present
 		String benchPlacement="dump";
 		if (commandParams.containsKey(R.PARAM_HIERARCHY)) {
 			benchPlacement="convert";
@@ -823,7 +917,7 @@ public class Connection {
 	public int uploadConfiguration(HashMap<String, String> commandParams) {
 		try {
 			
-			int valid=Validator.isValidConfigUploadRequest(commandParams);
+			int valid=Validator.isValidUploadConfigRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -879,7 +973,7 @@ public class Connection {
 	
 	private int uploadProcessor(HashMap<String, String> commandParams, String type) {
 		
-		int valid=Validator.isValidProcessorUploadRequest(commandParams);
+		int valid=Validator.isValidUploadProcessorRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}
@@ -965,7 +1059,7 @@ public class Connection {
 	
 	public int uploadSpaceXML(HashMap<String, String> commandParams) {
 		try {
-			int valid=Validator.isValidSpaceUploadRequest(commandParams);
+			int valid=Validator.isValidUploadSpaceXMLRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -1085,14 +1179,10 @@ public class Connection {
 			
 			response.getEntity().getContent().close();
 			return 0;
-		} catch (Exception e) {
-			
+		} catch (Exception e) {	
 			return R.ERROR_SERVER;
-		}
-		
+		}	
 	}
-	
-	
 	
 	/**
 	 * @return whether the Connection object represents a valid connection to the server
@@ -1126,10 +1216,7 @@ public class Connection {
 		msg.addHeader("Cookie",cookieString.toString());
 		msg.addHeader("Connection", "keep-alive");
 		msg.addHeader("Accept-Language","en-US,en;q=0.5");
-		
-		
-		
-		
+
 		return msg;
 	}
 	
@@ -1164,9 +1251,10 @@ public class Connection {
 	
 	
 	/**
-	 * Given the headers of an HttpResponse, this method determines whether a JSESSIONID was
-	 * set and returns its value if it was present.
+	 * Given the headers of an HttpResponse and the name of a cookie,
+	 * check to see if that cookie was set and return its value if so
 	 * @param headers-- An array of HTTP headers 
+	 * @param cookieName the name of a cookie
 	 * @return The value of the given cookie, or null if it was not present
 	 * @author Eric Burns
 	 */
@@ -1192,6 +1280,7 @@ public class Connection {
 						}
 					}
 					
+					//no semicolon means the cookie is at the end, so use the entire tail of the string
 					if (end==-1) {
 						end=value.length();
 					}
@@ -1278,9 +1367,15 @@ public class Connection {
 		return pair;
 	}
 	
-	
+	/**
+	 * Given a Json string formatted as StarExec does it's first line in a table
+	 * extract the name of a primitive
+	 * @param jsonString The Json string to test for an name
+	 * @return The name if it exists or null if it does not
+	 */
 	private String extractNameFromJson(String jsonString, String type) {
 		
+		//spaces are formatted differently from any other primitive
 		if (type.equals("spaces")) {
 			int startIndex=jsonString.indexOf("onclick=\"openSpace");
 			if (startIndex<0) {
@@ -1301,23 +1396,35 @@ public class Connection {
 			return jsonString.substring(startIndex,endIndex);
 			
 		}
-		
+		//Names are flanked on the left by a link that ends with target="_blank"\>
 		int startIndex=jsonString.indexOf("_blank\">");
+		
 		if (startIndex<0) {
 			return null;
 		}
+		
+		//move across "_blank"\>
 		startIndex+=8;
 		int endIndex=startIndex+1;
+		
+		//names are flanked on the right by the start of another tag
 		while (endIndex<jsonString.length() && jsonString.charAt(endIndex)!='<') {
 			endIndex+=1;
 		}
 		return (jsonString.substring(startIndex,endIndex));
 	}
 	
+	
+	/**
+	 * Given a Json string formatted as StarExec does it's first line in a table
+	 * extract the ID of a primitive
+	 * @param jsonString The Json string to test for an ID
+	 * @return The ID if it exists or null if it does not
+	 */
 	private Integer extractIdFromJson(String jsonString) {
+		
+		//IDs are stored as the 'value' of a hidden input
 		int startIndex=jsonString.indexOf("type=\"hidden\"");
-		
-		
 		while (startIndex>=0 && jsonString.charAt(startIndex)!='<') {
 			startIndex-=1;
 		}

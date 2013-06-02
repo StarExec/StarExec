@@ -11,10 +11,11 @@ package org.starexec.command;
  * TODO: Validate set commands and other upload commands
  */
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
-
-
 
 public class Validator {
 	
@@ -37,7 +38,32 @@ public class Validator {
 	 */
 	
 	private static String missingParam=null;
+	private static List<String> unnecessaryParams=new ArrayList<String>();
 	
+	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
+	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
+	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
+	private static String[] allowedLoginParams=new String[]{R.PARAM_USERNAME,R.PARAM_PASSWORD,R.PARAM_BASEURL};
+	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
+	//sprivate static String[] allowedLogoutParams=new String[]{};
+	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
+	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
+	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
+	//TODO: needs all the permissions
+	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
+		R.PARAM_ENABLE_ALL_PERMISSIONS};
+	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
+		R.PARAM_CPUTIMEOUT};
+	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
+		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
+	//TODO: needs all the permissions
+	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
+		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
+		R.PARAM_ENABLE_ALL_PERMISSIONS};
+	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
+	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
+	private static String[] allowedUploadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
+	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT}; 
 	
 	/**
 	 * Gets the missing paramter that was last seen. If none has been seen yet, returns null.
@@ -48,6 +74,12 @@ public class Validator {
 	}
 	
 	
+	/**
+	 * Validates a request to delete a primitive
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
+	
 	public static int isValidDeleteRequest(HashMap<String,String> commandParams) {
 		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
@@ -55,12 +87,13 @@ public class Validator {
 		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
 			return R.ERROR_INVALID_ID;
 		}
+		findUnnecessaryParams(allowedDeleteParams,commandParams);
 		return 0;
 	}
 	
 	/**
 	 * Determines whether the given string represents a valid id. Valid ids are integers greater than or equal to 0
-	 * @param str
+	 * @param str The string to check
 	 * @return True if valid, false otherwise.
 	 * @author Eric Burns
 	 */
@@ -77,6 +110,11 @@ public class Validator {
 		}
 	}
 	
+	/**
+	 * Determines whether the given string represents a valid real number greater than or equal to 0
+	 * @param str The string to check
+	 * @return True if the string is valid and false otherwise
+	 */
 	public static boolean isValidPosNumber(String str) {
 		try {
 			double check=Double.parseDouble(str);
@@ -148,11 +186,11 @@ public class Validator {
 		
 		if (testFile.exists()) {
 			if (!commandParams.containsKey(R.PARAM_OVERWRITE)) {
-				System.out.println(testFile.getAbsolutePath());
+				
 				return R.ERROR_FILE_EXISTS;
 			}
 		}
-		
+		findUnnecessaryParams(allowedDownloadParams,commandParams);
 		return 0;
 	}
 	/**
@@ -219,7 +257,7 @@ public class Validator {
 		
 		//if a description is specified, it must conform to StarExec rules
 		if (commandParams.containsKey(R.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(R.PARAM_NAME))) {
+			if (!isValidPrimDescription(commandParams.get(R.PARAM_DESC))) {
 				return R.ERROR_BAD_DESCRIPTION;
 			}
 		}
@@ -248,8 +286,23 @@ public class Validator {
 		return 0;
 	}
 	
-	public static int isValidBenchmarkUploadRequest(HashMap<String,String> commandParams) {
-		return isValidUploadRequest(commandParams);
+	/**
+	 * Validates a request to upload an archive of benchmarks
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
+	
+	public static int isValidUploadBenchmarkRequest(HashMap<String,String> commandParams) {
+		int valid=isValidUploadRequest(commandParams);
+		if (valid<0) {
+			return valid;
+		}
+		
+		if (!paramsExist(new String[]{R.PARAM_BENCHTYPE},commandParams)) {
+			return R.ERROR_MISSING_PARAM;
+		}
+		findUnnecessaryParams(allowedUploadBenchmarksParams,commandParams);
+		return 0;
 	}
 	
 	/**
@@ -259,34 +312,81 @@ public class Validator {
 	 * @author Eric Burns
 	 */
 	public static int isValidSolverUploadRequest(HashMap<String,String> commandParams) {
-		
-		return isValidUploadRequest(commandParams);
-		
-	}
-	
-	public static int isValidSpaceUploadRequest(HashMap<String,String> commandParams) {
-		return isValidUploadRequest(commandParams);
-		
-	}
-	
-	public static int isValidConfigUploadRequest(HashMap<String,String> commandParams) {
-		return isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequest(commandParams);
+		if (valid<0) {
+			return valid;
+		}
+		findUnnecessaryParams(allowedUploadSolverParams,commandParams);
+		return 0;
 		
 	}
 	
-	public static int isValidProcessorUploadRequest(HashMap<String,String> commandParams) {
-		return isValidUploadRequestNoURL(commandParams);
+	/**
+	 * Validates a request to upload an archive containing a space XML file
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
+	
+	public static int isValidUploadSpaceXMLRequest(HashMap<String,String> commandParams) {
+		int valid= isValidUploadRequestNoURL(commandParams);
+		if (valid<0) {
+			return valid;
+		}
+		findUnnecessaryParams(allowedUploadSpaceXMLParams,commandParams);
+		return 0;
+		
 	}
 	
+	/**
+	 * Validates a request to upload a configuration
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
 	
+	public static int isValidUploadConfigRequest(HashMap<String,String> commandParams) {
+		int valid= isValidUploadRequestNoURL(commandParams);
+		if (valid<0) {
+			return valid;
+		}
+		findUnnecessaryParams(allowedUploadConfigParams,commandParams);
+		return 0;
+		
+	}
+	
+	/**
+	 * Validates a request to upload either a benchmark or post processor
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
+	
+	public static int isValidUploadProcessorRequest(HashMap<String,String> commandParams) {
+		int valid= isValidUploadRequestNoURL(commandParams);
+		if (valid<0) {
+			return valid;
+		}
+		findUnnecessaryParams(allowedUploadProcessorParams,commandParams);
+		return 0;
+	}
+	
+	/**
+	 * Validates a request to list the primitives in a space
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
 	public static int isValidGetPrimRequest(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
-		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
 		}
 		
-		
+		findUnnecessaryParams(allowedLSParams,commandParams);
 		return 0;
 	}
+	
+	/**
+	 * Validates a request to sleep for some amount of time
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
 	
 	public static int isValidSleepCommand(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[] {R.PARAM_TIME},commandParams)) {
@@ -295,7 +395,7 @@ public class Validator {
 		if (!isValidPosNumber(commandParams.get(R.PARAM_TIME))) {
 			return R.ERROR_BAD_TIME;
 		}
-		
+		findUnnecessaryParams(allowedSleepParams,commandParams);
 		return 0;
 	}
 	
@@ -342,7 +442,7 @@ public class Validator {
 				return R.ERROR_BAD_DESCRIPTION;
 			}
 		}
-		
+		findUnnecessaryParams(allowedCreateJobParams,commandParams);
 		return 0;
 	}
 	
@@ -354,13 +454,11 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code if not
 	 * @author Eric Burns
 	 */
-	public static int isValidSubspaceCreation(HashMap<String,String> commandParams) {
+	public static int isValidCreateSubspaceRequest(HashMap<String,String> commandParams) {
 		
 		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
 		}
-		
-		
 		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
 			return R.ERROR_INVALID_ID;
 		}
@@ -375,7 +473,7 @@ public class Validator {
 				return R.ERROR_BAD_DESCRIPTION;
 			}
 		}
-		
+		findUnnecessaryParams(allowedCreateSubspaceParams,commandParams);
 		return 0;
 	}
 	
@@ -393,7 +491,7 @@ public class Validator {
 		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
 			return R.ERROR_INVALID_ID;
 		}
-		
+		findUnnecessaryParams(allowedSetSpaceVisibilityParams,commandParams);
 		return 0;
 	}
 	
@@ -407,10 +505,15 @@ public class Validator {
 				return R.ERROR_MISSING_PARAM;
 			}
 		}
-		
+		findUnnecessaryParams(allowedLoginParams,commandParams);
 		return 0;
 	}
 	
+	/**
+	 * Validates a request to poll the results of a job
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
 	public static int isValidPollJobRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[] {R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_TIME}, commandParams)) {
 			return R.ERROR_MISSING_PARAM;
@@ -434,11 +537,15 @@ public class Validator {
 			}
 		}
 		
-		
+		findUnnecessaryParams(allowedPollJobParams,commandParams);
 		return 0;
 	}
 	
-	
+	/**
+	 * Validates a request to run a file of commands
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
 	public static int isValidRunFileRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[] {R.PARAM_FILE},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
@@ -447,12 +554,21 @@ public class Validator {
 		if (!file.exists()) {
 			return R.ERROR_FILE_NOT_FOUND;
 		}
-		
+		findUnnecessaryParams(allowedRunFileParams,commandParams);
 		return 0;
 	}
 	
-	public static int isValidSetUserSettingRequest(String setting, String newVal) {
-		
+	/**
+	 * Validates a request to change a user setting
+	 * @param setting The setting that is going to be changed
+	 * @param commandParams The parameters given by the user
+	 * @return 0 if the request is valid and a negative error code otherwise
+	 */
+	public static int isValidSetUserSettingRequest(String setting, HashMap<String,String> commandParams) {
+		if (!paramsExist(new String[]{R.PARAM_VAL},commandParams)) {
+			return R.ERROR_MISSING_PARAM;
+		}
+		String newVal=commandParams.get(R.PARAM_VAL);
 		if (setting.equals("archivetype")) {
 			if (newVal.startsWith(".")) {
 				newVal=newVal.substring(1);
@@ -462,12 +578,22 @@ public class Validator {
 				
 				return R.ERROR_BAD_ARCHIVETYPE;
 			}
+		}else if (newVal.equals("firstname")|| newVal.equals("lastname")) {
+			if(!isValidPrimName(newVal)){
+				return R.ERROR_BAD_NAME;
+			}
+		} else if (newVal.equals("institution")) {
+			if (!isValidInstitution(newVal)) {
+				return R.ERROR_BAD_INSTITUTION;
+			}
 		}
 		
 		if (newVal==null) {
 			missingParam=R.PARAM_VAL;
 			return R.ERROR_MISSING_PARAM;
 		}
+		
+		findUnnecessaryParams(allowedSetUserSettingParams,commandParams);
 		return 0;
 	}
 	
@@ -488,6 +614,13 @@ public class Validator {
 		return false;
 	}
 	
+	/**
+	 * Returns true if the user has specified all the required parameters and false otherwise. If false,
+	 * set one missing parameter in the missingParam field.
+	 * @param params The required parameters
+	 * @param commandParams The parameters given by the user
+	 * @return True if all the required parameters are present, and false otherwise
+	 */
 	private static boolean paramsExist(String[] params, HashMap<String,String> commandParams) {
 		for (String param : params) {
 			if (!commandParams.containsKey(param)) {
@@ -495,7 +628,32 @@ public class Validator {
 				return false;
 			}
 		}
+		missingParam=null;
 		return true;
+	}
+	
+	
+	/**
+	 * Finds all the parameters the user specified that were unnecessary and sets them in the unnecessaryParameters
+	 * list, replacing any that were there previously
+	 * @param allowedParams The parameters that are expected
+	 * @param commandParams The parameters the user gave
+	 */
+	private static void findUnnecessaryParams(String [] allowedParams, HashMap<String,String> commandParams) {
+		List<String> a=Arrays.asList(allowedParams);
+		unnecessaryParams=new ArrayList<String>();
+		for (String x : commandParams.keySet()) {
+			
+			if (!a.contains(x)) {
+				
+				unnecessaryParams.add(x);
+			}
+		}
+	}
+
+
+	public static List<String> getUnnecessaryParams() {
+		return unnecessaryParams;
 	}
 	
 	
