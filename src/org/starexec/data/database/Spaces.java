@@ -625,6 +625,14 @@ public class Spaces {
 		return null;
 	}
 	
+	/**
+	 * Gets the parent space belong to the given spaceId
+	 * @param spaceId the id of the space to get the parent of
+	 * @return the id of the parent space
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	
 	public static Integer getParentSpace(int spaceId) {
 		Connection con = null;			
 		
@@ -683,6 +691,13 @@ public class Spaces {
 		return subSpaces;
 	}
 	
+/**
+ * Given a space id, returns the id of the parent space
+ * @param spaceId the id of the space to get parent of
+ * @param con the database connection to use
+ * @return the Id of the parent space
+ * @author Wyatt Kaiser
+ */
 	
 	protected static Integer getParentSpace(int spaceId, Connection con) throws Exception{
 		CallableStatement procedure = con.prepareCall("{CALL GetParentSpaceById(?)}");
@@ -693,6 +708,7 @@ public class Spaces {
 		}
 		return 1;
 	}
+	
 	/**
 	 * Given a list of spaces a user id, removes from the list of spaces any space
 	 * where the given user is not a member of.
@@ -714,6 +730,16 @@ public class Spaces {
 		}
 		return spaces;
 	}
+	
+/**
+ * Given a list of spaces, creates a HashMap to map spaceId to path
+ * @param userId the id of the user creating the job
+ * @param spaces the list of spaces to add job pairs from
+ * @param SP the hashmap the contains the mappings of id's to paths
+ * @param space the 
+ * 
+ * @author Wyatt Kaiser
+ */
 	
 	public static void spacePathCreate(int userId, List<Space> spaces, HashMap<Integer, String> SP, int space) {
 		Iterator<Space> iter = spaces.iterator();
