@@ -102,7 +102,7 @@ public class Common {
 		//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
 		Connection con=dataPool.getConnection();
 		log.debug("New connnection generated= "+con.toString());
-		return dataPool.getConnection();
+		return con;
 	}							
 	
 	/**
