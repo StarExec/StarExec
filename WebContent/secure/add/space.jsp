@@ -2,6 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%	
 	try {		
+		
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);

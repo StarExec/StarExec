@@ -1707,7 +1707,7 @@ function populateSpaceDetails(jsonData, id) {
 		$('#spaceDesc').fadeOut('fast', function(){
 			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
 		});		
-		$('spaceID').fadeOut('fast');
+		$('#spaceID').fadeOut('fast');
 		// Hide all the info table fieldsets
 		$('#detailPanel fieldset').fadeOut('fast');		
 		$('#loader').hide();
