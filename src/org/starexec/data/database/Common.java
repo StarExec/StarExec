@@ -97,7 +97,7 @@ public class Common {
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */
-	protected static Connection getConnection() throws SQLException {	
+	protected synchronized static Connection getConnection() throws SQLException {	
 		connectionsOpened++;
 		//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
 		return dataPool.getConnection();
@@ -177,7 +177,7 @@ public class Common {
 	 * and doesn't raise any errors
 	 * @param c The connection to safely close
 	 */
-	protected static void safeClose(Connection c) {
+	protected static synchronized void safeClose(Connection c) {
 		try {
 			if(c != null) {
 				c.close();
