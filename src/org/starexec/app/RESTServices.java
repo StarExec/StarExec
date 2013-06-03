@@ -330,9 +330,7 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
 		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
-			
 			return gson.toJson(2);
-			
 		}
 		
 		// Query for the next page of primitives and return them to the user

@@ -100,6 +100,8 @@ public class Common {
 	protected synchronized static Connection getConnection() throws SQLException {	
 		connectionsOpened++;
 		//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
+		Connection con=dataPool.getConnection();
+		log.debug("New connnection generated= "+con.toString());
 		return dataPool.getConnection();
 	}							
 	
