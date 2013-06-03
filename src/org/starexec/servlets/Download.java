@@ -372,9 +372,9 @@ public class Download extends HttpServlet {
     				}
     			}
     			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
-    			if (Jobs.getPendingPairsDetailed(job.getId()).size()==0) {
-    				response.addCookie(new Cookie("Job-Complete","true"));
-    			}
+    			//if (Jobs.getPendingPairsDetailed(job.getId()).size()==0) {
+    			//	response.addCookie(new Cookie("Job-Complete","true"));
+    			//}
     			
     		}
     		
@@ -571,9 +571,9 @@ public class Download extends HttpServlet {
 			}
 			
 			
-			if (Jobs.getPendingPairsDetailed(j.getId()).size()==0) {
-    			response.addCookie(new Cookie("Job-Complete","true"));
-    		}
+			//if (Jobs.getPendingPairsDetailed(j.getId()).size()==0) {
+    		//	response.addCookie(new Cookie("Job-Complete","true"));
+    		//}
 			return fileName;
 			}
 		
