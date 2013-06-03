@@ -467,9 +467,10 @@ public class Download extends HttpServlet {
 		if (attrNames != null) {
 		    // print out attributes for this job pair
 		    Properties props = pair.getAttributes();
-		    if (have_expected) {
-			sb.append(",");
-			sb.append(props.getProperty(R.EXPECTED_RESULT,"-"));
+		    
+		    if (have_expected && props!=null) {
+		    	sb.append(",");
+		    	sb.append(props.getProperty(R.EXPECTED_RESULT,"-"));
 		    }
 		    for (Iterator<String> ita = attrNames.iterator(); ita.hasNext();) {
 			String attr = (String)ita.next();
@@ -553,7 +554,10 @@ public class Download extends HttpServlet {
 							dir=new File(dir,spaces[index]);
 							dir.mkdir();
 						}
-						
+						dir=new File(dir,jp.getSolver().getName());
+						dir.mkdir();
+						dir=new File(dir,jp.getConfiguration().getName());
+						dir.mkdir();
 					}
 					FileUtils.copyFileToDirectory(file,dir);
 					

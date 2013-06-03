@@ -37,7 +37,7 @@ import org.starexec.util.Validator;
 public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
 	public static final int NO_TYPE = 1;
-
+	
 	/**
 	 * Associates the benchmarks with the given ids to the given space
 	 * @param benchIds The list of benchmark ids to associate with the space
