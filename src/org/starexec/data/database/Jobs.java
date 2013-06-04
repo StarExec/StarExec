@@ -325,12 +325,12 @@ public class Jobs {
 	public static Job getDetailed(int jobId, Integer since) {
 		log.info("getting detailed info for job " + jobId);
 		Connection con = null;			
-
+		ResultSet results=null;
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			Job j = new Job();
 			if(results.next()){
 				j.setId(results.getInt("id"));
@@ -351,8 +351,7 @@ public class Jobs {
 			else{
 				j=null;
 			}
-			Common.closeResultSet(results);
-			Common.safeClose(con);
+			
 			if (j != null){
 				if (since==null) {
 					j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
@@ -366,6 +365,7 @@ public class Jobs {
 		} catch (Exception e){			
 			log.error("job get detailed for job id = " + jobId + " says " + e.getMessage(), e);		
 		} finally {
+			Common.closeResultSet(results);
 			Common.safeClose(con);
 		}
 
@@ -382,12 +382,12 @@ public class Jobs {
 	 */
 	public static Job getDetailedWithoutJobPairs(int jobId) {
 		Connection con = null;			
-
+		ResultSet results=null;
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if(results.next()){
 				Job j = new Job();
@@ -403,10 +403,11 @@ public class Jobs {
 
 				return j;
 			}	
-			Common.closeResultSet(results);
+			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.closeResultSet(results);
 			Common.safeClose(con);
 		}
 
@@ -783,7 +784,7 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPairsDetailed(int jobId,Integer since) {
 		Connection con = null;			
-		
+		ResultSet results=null;
 		try {			
 			con = Common.getConnection();		
 			log.info("getting detailed pairs for job " + jobId );
@@ -791,7 +792,7 @@ public class Jobs {
 			{
 				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
 			}
-			ResultSet results;
+			
 			
 			//If the flag getCompleted is false, get all job pairs
 			if (since==null) {
@@ -805,17 +806,20 @@ public class Jobs {
 				procedure.setInt(2,since);
 				results = procedure.executeQuery();
 			}
-			Common.safeClose(con);
+			
 			List<JobPair> returnList = new ArrayList<JobPair>();
 			
 			
 			//because there is a lot of redundancy in node, bench, and config IDs
 			// we don't want to query the database once per job pair to get them. Instead,
 			//we store all the IDs we see and only query once  per node, bench, and config.
-			Set<Integer> nodeIdSet = new HashSet<Integer>();
-			Set<Integer> benchIdSet = new HashSet<Integer>();
-			Set<Integer> configIdSet = new HashSet<Integer>();
 			
+			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
+			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
+			Hashtable<Integer,Benchmark> neededBenchmarks=new Hashtable<Integer,Benchmark>();
+			Hashtable <Integer, WorkerNode> neededNodes = new Hashtable<Integer, WorkerNode>();
+			
+			//store the IDs in the same order as the job pairs are stored in 'returnList'
 			List<Integer> nodeIdList=new ArrayList<Integer>();
 			List<Integer> benchIdList=new ArrayList<Integer>();
 			List<Integer> configIdList=new ArrayList<Integer>();
@@ -839,42 +843,34 @@ public class Jobs {
 				curBench=results.getInt("bench_id");
 				curConfig=results.getInt("config_id");
 				
-				nodeIdSet.add(curNode);
-				benchIdSet.add(curBench);
-				configIdSet.add(curConfig);
+				neededNodes.put(curNode,null);
+				neededBenchmarks.put(curBench,null);
+				neededConfigs.put(curConfig,null);
 				nodeIdList.add(curNode);
 				benchIdList.add(curBench);
 				configIdList.add(curConfig);
 				log.debug("Finished with results for pair " + jp.getId());
 			}
 			
-			Object [] benchIdListSet=benchIdSet.toArray();
-			Object [] nodeIdListSet=nodeIdSet.toArray();
-			Object [] configIdListSet=configIdSet.toArray();
-			
-			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
-			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
-			Hashtable<Integer,Benchmark> neededBenchmarks=new Hashtable<Integer,Benchmark>();
-			Hashtable <Integer, WorkerNode> neededNodes = new Hashtable<Integer, WorkerNode>();
-			Common.closeResultSet(results);
 			log.info("result set closed for job " + jobId);
-			int curId=0;
-			for (int i=0; i<configIdListSet.length;i++) {
-				curId=(Integer)configIdListSet[i];
+			
+			Set<Integer> idSet=neededConfigs.keySet();
+			for (int curId : idSet) {
 				neededConfigs.put(curId, Solvers.getConfiguration(curId));
 				neededSolvers.put(curId, Solvers.getSolverByConfig(curId));
 			}
 			
-			for (int i=0; i<nodeIdListSet.length; i++) {
-				curId=(Integer)nodeIdListSet[i];
+			idSet=neededNodes.keySet();
+			for (int curId : idSet) {
 				neededNodes.put(curId, Cluster.getNodeDetails(curId));
 			}
 			
-			for (int i=0; i<benchIdListSet.length;i++) {
-				curId=(Integer)benchIdListSet[i];
+			idSet=neededBenchmarks.keySet();
+			for (int curId : idSet) {
 				neededBenchmarks.put(curId,Benchmarks.get(curId));
 			}
 			
+			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
 				JobPair jp = returnList.get(i);
 				jp.setNode(neededNodes.get(nodeIdList.get(i)));
@@ -886,6 +882,8 @@ public class Jobs {
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
 				log.debug("set configuration for " + jp.getId());
 				log.debug("about to get attributes for jp " + jp.getId());
+				
+				//TODO: See if we can do this without calling the database once per job pair
 				jp.setAttributes(Jobs.getAttributes(jp.getId()));
 				log.debug("just got attributes from jp + " + jp.getId());
 			}
@@ -894,6 +892,9 @@ public class Jobs {
 			
 		} catch (Exception e){			
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.closeResultSet(results);
+			Common.safeClose(con);
 		}
 
 		return null;		
@@ -909,9 +910,10 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPairsDetailedForStats(int jobId) {
 		Connection con = null;			
-
+		Connection con2=null;
 		try {			
-			con = Common.getConnection();		
+			con = Common.getConnection();
+			con2=Common.getConnection();
 			log.info("getting detailed pairs for job " + jobId );
 			if(con.isClosed())
 			{
@@ -921,7 +923,7 @@ public class Jobs {
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			ResultSet results = procedure.executeQuery();
-			Common.safeClose(con);
+			
 			
 			List<JobPair> returnList = new ArrayList<JobPair>();
 			Set<Integer> configIdSet = new HashSet<Integer>();
@@ -947,11 +949,9 @@ public class Jobs {
 			Common.closeResultSet(results);
 			log.info("result set closed for job " + jobId);
 			
-			con=Common.getConnection();
-			CallableStatement procedure2 =con.prepareCall("{CALL GetJobAttrs(?)}");
+			CallableStatement procedure2 =con2.prepareCall("{CALL GetJobAttrs(?)}");
 			procedure2.setInt(1, jobId);
 			ResultSet attrResults=procedure2.executeQuery();
-			Common.safeClose(con);
 			
 			
 			Hashtable<Integer, List<String>>attrs=new Hashtable<Integer, List<String>>();
@@ -1006,6 +1006,9 @@ public class Jobs {
 			
 		} catch (Exception e){			
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(con2);
 		}
 		return null;		
 	}
@@ -1155,6 +1158,7 @@ public class Jobs {
 				ids.add(results.getInt("sge_id"));
 			}	
 			Common.closeResultSet(results);
+			
 			return ids;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
