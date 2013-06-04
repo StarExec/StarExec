@@ -181,6 +181,9 @@ public class Common {
 	protected static synchronized void safeClose(Connection c) {
 		try {
 			if(c != null) {
+				if (c.isClosed()) {
+					throw new Exception("broken");
+				}
 				c.close();
 				
 				connectionsClosed++;
