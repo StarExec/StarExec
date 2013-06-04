@@ -843,9 +843,10 @@ public class Jobs {
 				curBench=results.getInt("bench_id");
 				curConfig=results.getInt("config_id");
 				
-				neededNodes.put(curNode,null);
-				neededBenchmarks.put(curBench,null);
-				neededConfigs.put(curConfig,null);
+				
+				neededNodes.put(curNode,new WorkerNode());
+				neededBenchmarks.put(curBench,new Benchmark());
+				neededConfigs.put(curConfig,new Configuration());
 				nodeIdList.add(curNode);
 				benchIdList.add(curBench);
 				configIdList.add(curConfig);

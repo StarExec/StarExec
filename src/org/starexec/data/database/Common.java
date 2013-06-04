@@ -180,24 +180,14 @@ public class Common {
 	 */
 	protected static synchronized void safeClose(Connection c) {
 		try {
-			if(c != null) {
-				if (c.isClosed()) {
-					throw new Exception("broken");
-				}
+			if(c != null && !c.isClosed()) {
 				c.close();
 				
 				connectionsClosed++;
-				
-				
-				
-				log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
+				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
 			}
 		} catch (Exception e){
 			// Do nothing
-			StackTraceElement [] trace=e.getStackTrace();
-			for (StackTraceElement elm: trace) {
-				log.error(elm.toString());
-			}
 			log.error("Safe Close says " + e);
 		}
 
