@@ -895,13 +895,10 @@ public class Spaces {
 	 * @author Tyler Jensen
 	 */
 	public static boolean addWithBenchmarks(Space parent, int userId, int statusId) throws Exception{
-		//Connection con = null;
-		//
+		
 		log.info("adding with benchmarks and no dependencies for user " + userId);
 		try {
 			// We'll be doing everything with a single connection so we can roll back if needed
-			//con = Common.getConnection();
-			//Common.beginTransaction(con);
 			
 			// For each subspace...
 			log.info("about to begin traversing (no deps)");
@@ -919,15 +916,13 @@ public class Spaces {
 			}
 
 			// We're done (notice that 'parent' is never added because it should already exist)
-			//Common.endTransaction(con);			
+					
 			return returnValue;
 		} catch (Exception e){			
 			//log.error(e.getMessage(), e);
 			throw e;
-			//Common.doRollback(con);
-		} finally {					
-			//Common.safeClose(con);
-		}
+			
+		} 
 		
 	}
 	
@@ -991,18 +986,18 @@ public class Spaces {
 			Common.beginTransaction(con);	
 			int spaceId = Spaces.add(con, space, parentId, userId);
 			Common.endTransaction(con);	
-			Common.safeClose(con);
-		for(Space s : space.getSubspaces()) {
-			// Recursively go through and add all of it's subspaces with itself as the parent
-			log.info("about to traverse space " + spaceId);
-			returnValue = returnValue && Spaces.traverse(s, spaceId, userId, statusId);
-		}			
+			
+			for(Space s : space.getSubspaces()) {
+				// Recursively go through and add all of it's subspaces with itself as the parent
+				log.info("about to traverse space " + spaceId);
+				returnValue = returnValue && Spaces.traverse(s, spaceId, userId, statusId);
+			}			
 		
-		// Finally, add the benchmarks in the space to the database
-		//not really using connection parameter right now due to problems
-		Benchmarks.add(space.getBenchmarks(), spaceId, statusId);
-		Uploads.incrementCompletedSpaces(statusId);		
-		return returnValue;
+			// Finally, add the benchmarks in the space to the database
+			//not really using connection parameter right now due to problems
+			Benchmarks.add(space.getBenchmarks(), spaceId, statusId);
+			Uploads.incrementCompletedSpaces(statusId);		
+			return returnValue;
 		}
 		catch (Exception e){			
 			log.error("traverse says " + e.getMessage(), e);
@@ -1035,7 +1030,7 @@ public class Spaces {
 			// Add the new space to the database and get it's ID		
 			int spaceId = Spaces.add(con, space, parentId, userId);
 			Common.endTransaction(con);	
-			Common.safeClose(con);
+			
 			log.info("traversing (with deps) space " + space.getName() );
 			for(Space sub : space.getSubspaces()) {
 				// Recursively go through and add all of it's subspaces with itself as the parent

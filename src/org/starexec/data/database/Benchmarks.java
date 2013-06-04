@@ -219,7 +219,7 @@ public class Benchmarks {
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
 				Common.endTransaction(con);
-				Common.safeClose(con);
+				
 				log.info("About to attach attributes to " + benchmarks.size());
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
