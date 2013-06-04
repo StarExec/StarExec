@@ -198,13 +198,13 @@ public class Permissions {
 			return true;
 		}
 		Connection con = null;			
-
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
 			procedure.setInt(1, jobId);					
 			procedure.setInt(2, userId);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if(results.first()) {
 				return results.getBoolean(1);
@@ -212,6 +212,7 @@ public class Permissions {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.closeResultSet(results);
 			Common.safeClose(con);
 		}
 

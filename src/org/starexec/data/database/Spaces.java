@@ -1374,12 +1374,24 @@ public class Spaces {
 
 		return 0;
 	}
+	
+	/**
+	 * Gets the id of all subspaces of the given space with a particular name
+	 * @param spaceId ID of the parent space
+	 * @param subSpaceName Name of the subspace that is being looked for
+	 * @return The id of the subspace with the given name, or -1 if none exist
+	 * @author Eric Burns
+	 */
+	
+	public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
+		return getSubSpaceIDbyName(spaceId,-1,subSpaceName);
+	}
 	/**
 	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
 	 * @param spaceId id of parent space
 	 * @param userId id of user making request
 	 * @param subSpaceName name of subspace that is being sought
-	 * @return subspaceId id of found subspace
+	 * @return subspaceId id of found subspace, or -1 if none exist
 	 * @author Benton McCune
 	 */
 	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {

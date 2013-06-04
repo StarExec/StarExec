@@ -240,16 +240,28 @@ CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VAR
 				(SELECT MIN(id)
 				FROM spaces);
 		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
-			SELECT *
-			FROM spaces
-			WHERE id IN
-				(SELECT child_id 
-				 FROM set_assoc 
-					JOIN closure ON set_assoc.child_id=closure.ancestor 
-					JOIN user_assoc ON (user_assoc.user_id=_userId AND user_assoc.space_id=closure.descendant) 
-					WHERE set_assoc.space_id=_spaceId)
-			AND name = _name
-			ORDER BY name;
+			IF _userId>0 THEN
+				SELECT *
+				FROM spaces
+				WHERE id IN
+					(SELECT child_id 
+				 	FROM set_assoc 
+						JOIN closure ON set_assoc.child_id=closure.ancestor 
+						JOIN user_assoc ON (user_assoc.user_id=_userId AND user_assoc.space_id=closure.descendant) 
+						WHERE set_assoc.space_id=_spaceId)
+				AND name = _name
+				ORDER BY name;
+			ELSE
+				SELECT *
+				FROM spaces
+				WHERE id IN
+					(SELECT child_id 
+				 	FROM set_assoc 
+						JOIN closure ON set_assoc.child_id=closure.ancestor  
+						WHERE set_assoc.space_id=_spaceId)
+				AND name = _name
+				ORDER BY name;
+			END IF;
 		END IF;
 	END //
 	

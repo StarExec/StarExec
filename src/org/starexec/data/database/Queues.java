@@ -112,19 +112,25 @@ public class Queues {
 		procedure.setInt(1, qid);			
 		ResultSet results = procedure.executeQuery();			
 		
-		if(results.next()){
-			Queue queue = new Queue();
-			queue.setName(results.getString("name"));
-			queue.setId(results.getInt("id"));
-			queue.setStatus(results.getString("status"));
-			queue.setSlotsTotal(results.getInt("slots_total"));
-			queue.setSlotsAvailable(results.getInt("slots_free"));
-			queue.setSlotsReserved(results.getInt("slots_reserved"));
-			queue.setSlotsUsed(results.getInt("slots_used"));
+		try {
+			if(results.next()){
+				Queue queue = new Queue();
+				queue.setName(results.getString("name"));
+				queue.setId(results.getInt("id"));
+				queue.setStatus(results.getString("status"));
+				queue.setSlotsTotal(results.getInt("slots_total"));
+				queue.setSlotsAvailable(results.getInt("slots_free"));
+				queue.setSlotsReserved(results.getInt("slots_reserved"));
+				queue.setSlotsUsed(results.getInt("slots_used"));
+				
+				return queue;				
+			}										
 			
-			return queue;				
-		}										
-		
+		} catch (Exception e) {
+			
+		} finally {
+			Common.closeResultSet(results);
+		}
 		return null;
 	}	
 	

@@ -58,19 +58,27 @@ public class Solvers {
 		procedure.setInt(1, solverId);					
 		ResultSet results = procedure.executeQuery();
 		
-		if(results.next()){
-			Solver s = new Solver();
-			s.setId(results.getInt("id"));
-			s.setUserId(results.getInt("user_id"));
-			s.setName(results.getString("name"));
-			s.setUploadDate(results.getTimestamp("uploaded"));
-			s.setPath(results.getString("path"));
-			s.setDescription(results.getString("description"));
-			s.setDownloadable(results.getBoolean("downloadable"));
-			s.setDiskSize(results.getLong("disk_size"));
+		
+		try {
+			if(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setUserId(results.getInt("user_id"));
+				s.setName(results.getString("name"));
+				s.setUploadDate(results.getTimestamp("uploaded"));
+				s.setPath(results.getString("path"));
+				s.setDescription(results.getString("description"));
+				s.setDownloadable(results.getBoolean("downloadable"));
+				s.setDiskSize(results.getLong("disk_size"));
+				Common.closeResultSet(results);
+				return s;
+			}
+		} catch (Exception e) {
+			
+		} finally {
 			Common.closeResultSet(results);
-			return s;
-		}								
+		}
+										
 		
 		return null;
 	}
@@ -600,18 +608,25 @@ public class Solvers {
 		}
 		
 		CallableStatement procedure = con.prepareCall("{CALL GetConfiguration(?)}");
+		
 		procedure.setInt(1, configId);					
 		ResultSet results = procedure.executeQuery();
-		
-		if(results.next()){
-			Configuration c = new Configuration();
-			c.setId(results.getInt("id"));			
-			c.setName(results.getString("name"));			
-			c.setSolverId(results.getInt("solver_id"));
-			c.setDescription(results.getString("description"));
+		try {
+			if(results.next()){
+				Configuration c = new Configuration();
+				c.setId(results.getInt("id"));			
+				c.setName(results.getString("name"));			
+				c.setSolverId(results.getInt("solver_id"));
+				c.setDescription(results.getString("description"));
+				Common.closeResultSet(results);
+				return c;
+			}	
+		} catch (Exception e) {
+			
+		} finally {
 			Common.closeResultSet(results);
-			return c;
-		}								
+		}
+									
 				
 		return null;
 	}
@@ -647,11 +662,9 @@ public class Solvers {
 	 * @author Tyler Jensen & Skylar Stark
 	 */
 	public static List<Solver> getWithConfig(List<Integer> solverIds, List<Integer> configIds) {
-		Connection con = null;		
-		try {
-			con = Common.getConnection();			
+				
+		try {	
 			List<Solver> solvers = new LinkedList<Solver>();
-			
 			for (int cid : configIds) {
 				Solver s = Solvers.getByConfigId(cid);
 				if (s != null & solverIds.contains(s.getId())) {
@@ -662,8 +675,6 @@ public class Solvers {
 			return solvers;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
 		}
 		
 		return null;
@@ -679,12 +690,12 @@ public class Solvers {
 	 */
 	private static Solver getByConfigId(int configId) {
 		Connection con = null;			
-		
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetSolverIdByConfigId(?)}");
 			procedure.setInt(1, configId);	
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if (results.next()) {
 				int sid = results.getInt("id");
@@ -701,6 +712,7 @@ public class Solvers {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.closeResultSet(results);
 			Common.safeClose(con);
 		}
 		
@@ -714,35 +726,8 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver getWithConfig(int solverId, int configId) {
-		Connection con = null;			
 		
-		try {
-			con = Common.getConnection();			
-			return Solvers.getWithConfig(con, solverId, configId);
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * @param con The connection to make the queries on
-	 * @param solverId The id of the solver to retrieve
-	 * @param configId The id of the configuration to include with the solver
-	 * @return The solver with the given configuration
-	 * @author Tyler Jensen
-	 */
-	protected static Solver getWithConfig(Connection con, int solverId, int configId) throws Exception {	
-		if(con.isClosed())
-		{
-			log.warn("GetWithConfig - solverId = " + solverId + " but connection is closed.");
-		}
-		//Solver s = Solvers.get(con, solverId);
 		Solver s = Solvers.get(solverId);
-		//Configuration c = Solvers.getConfiguration(con, configId);
 		Configuration c = Solvers.getConfiguration(configId);
 		if(s.getId() == c.getSolverId()) {
 			// Make sure this configuration actually belongs to the solver, and add it if it does
@@ -751,6 +736,8 @@ public class Solvers {
 		
 		return s;
 	}
+	
+	
 	
 	/**
 	 * Gets all configurations for the given solver

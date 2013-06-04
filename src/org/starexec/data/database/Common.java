@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+
 import org.apache.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
@@ -179,8 +180,9 @@ public class Common {
 	 */
 	protected static synchronized void safeClose(Connection c) {
 		try {
-			if(c != null) {
+			if(c != null && !c.isClosed()) {
 				c.close();
+				
 				connectionsClosed++;
 				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
 			}

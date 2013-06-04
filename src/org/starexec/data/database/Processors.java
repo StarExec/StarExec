@@ -100,18 +100,24 @@ public class Processors {
 		CallableStatement procedure = con.prepareCall("{CALL GetProcessorById(?)}");
 		procedure.setInt(1, processorId);
 		ResultSet results = procedure.executeQuery();			
-		
-		if(results.next()){							
-			Processor t = new Processor();
-			t.setId(results.getInt("id"));
-			t.setCommunityId(results.getInt("community"));
-			t.setDescription(results.getString("description"));
-			t.setName(results.getString("name"));
-			t.setFilePath(results.getString("path"));
-			t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
-			t.setDiskSize(results.getLong("disk_size"));
-			return t;					
-		}							
+		try {
+			if(results.next()){							
+				Processor t = new Processor();
+				t.setId(results.getInt("id"));
+				t.setCommunityId(results.getInt("community"));
+				t.setDescription(results.getString("description"));
+				t.setName(results.getString("name"));
+				t.setFilePath(results.getString("path"));
+				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+				t.setDiskSize(results.getLong("disk_size"));
+				return t;					
+			}
+		} catch (Exception e) {
+			
+		} finally {
+			Common.closeResultSet(results);
+		}
+									
 		
 		return null;
 	}

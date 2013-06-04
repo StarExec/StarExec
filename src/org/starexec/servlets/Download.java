@@ -20,6 +20,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Statistics;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -372,9 +373,14 @@ public class Download extends HttpServlet {
     				}
     			}
     			response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
-    			if (Jobs.getPendingPairsDetailed(job.getId()).size()==0) {
-    				response.addCookie(new Cookie("Job-Complete","true"));
+    			try {
+    				if (Statistics.getJobPairOverview(job.getId()).get("pendingPairs").equals("0")) {
+        				response.addCookie(new Cookie("Job-Complete","true"));
+        			}
+    			} catch (Exception e) {
+    				log.error(e);
     			}
+    			
     			
     		}
     		
@@ -570,10 +576,14 @@ public class Download extends HttpServlet {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
 			}
 			
-			
-			if (Jobs.getPendingPairsDetailed(j.getId()).size()==0) {
-    			response.addCookie(new Cookie("Job-Complete","true"));
-    		}
+			//if there are no pending pairs, the job is done
+			try {
+				if (Statistics.getJobPairOverview(j.getId()).get("pendingPairs").equals("0")) {
+    				response.addCookie(new Cookie("Job-Complete","true"));
+    			}
+			} catch (Exception e) {
+				log.error(e);
+			}
 			return fileName;
 			}
 		

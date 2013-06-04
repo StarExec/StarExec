@@ -86,8 +86,8 @@ public class AddSpace extends HttpServlet {
 		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
 		int userId = SessionUtil.getUserId(request);
 		
-		if (Spaces.getSubSpaceIDbyName(spaceId, userId, s.getName()) != -1) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The subspace should have a unique name in the space.");
+		if (Spaces.getSubSpaceIDbyName(spaceId, s.getName()) != -1) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
 			return;
 		}
 				
