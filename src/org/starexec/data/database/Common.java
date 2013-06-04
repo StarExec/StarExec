@@ -180,11 +180,11 @@ public class Common {
 	 */
 	protected static synchronized void safeClose(Connection c) {
 		try {
-			if(c != null && !c.isClosed()) {
+			if(c != null) {
 				c.close();
 				
 				connectionsClosed++;
-				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
+				log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
 			}
 		} catch (Exception e){
 			// Do nothing
