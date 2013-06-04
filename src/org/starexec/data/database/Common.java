@@ -192,6 +192,7 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
+			log.error(e.getStackTrace());
 			log.error(e);
 		}
 
