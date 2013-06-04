@@ -178,13 +178,13 @@ public class Common {
 	 * and doesn't raise any errors
 	 * @param c The connection to safely close
 	 */
-	protected static synchronized void safeClose(Connection c) {
+	protected static synchronized void safeClose(Connection c) throws Exception {
+		
+		if (c!=null && c.isClosed()) {
+			throw new Exception("broken");
+		}
 		try {
 			if(c != null) {
-				if (c.isClosed()) {
-					
-					throw new Exception("broken");
-				}
 				c.close();
 				
 				connectionsClosed++;
@@ -192,8 +192,7 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
-			log.error(e.getStackTrace());
-			log.error(e);
+			log.error("Safe Close says " + e);
 		}
 
 	}
