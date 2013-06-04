@@ -182,6 +182,7 @@ public class Common {
 		try {
 			if(c != null) {
 				if (c.isClosed()) {
+					
 					throw new Exception("broken");
 				}
 				c.close();
@@ -191,7 +192,7 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
-			log.error("Safe Close says " + e);
+			log.error(e);
 		}
 
 	}
