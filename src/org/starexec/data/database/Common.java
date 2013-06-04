@@ -178,11 +178,7 @@ public class Common {
 	 * and doesn't raise any errors
 	 * @param c The connection to safely close
 	 */
-	protected static synchronized void safeClose(Connection c) throws Exception {
-		
-		if (c!=null && c.isClosed()) {
-			throw new Exception("broken");
-		}
+	protected static synchronized void safeClose(Connection c) {
 		try {
 			if(c != null) {
 				c.close();
@@ -192,6 +188,10 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
+			StackTraceElement [] trace=e.getStackTrace();
+			for (StackTraceElement elm: trace) {
+				log.error(elm.toString());
+			}
 			log.error("Safe Close says " + e);
 		}
 
