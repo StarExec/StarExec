@@ -10,6 +10,7 @@
 	
 	<div id="detailPanel">
 		<h3 id="workerName"></h3> <span id="progressBar"></span> <span id="activeStatus"></span>		
+		<p class="accent" id="queueID"></p>
 		<fieldset id="detailField">
 			<legend>details</legend>
 			<table id="details" class="shaded">

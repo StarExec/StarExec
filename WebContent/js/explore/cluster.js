@@ -1,5 +1,5 @@
 var attrTable;
-
+var qid=0;
 // When the document is ready to be executed on
 $(document).ready(function(){
 	// Set the path to the css theme fr the jstree plugin
@@ -49,7 +49,7 @@ $(document).ready(function(){
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane		
-        id = data.rslt.obj.attr("id");
+       id = data.rslt.obj.attr("id");
         type = data.rslt.obj.attr("rel");   
         getDetails(id, type);
     }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
@@ -66,7 +66,7 @@ $(document).ready(function(){
  */
 function getDetails(id, type) {
 	var url = '';
-	
+	qid=id;
 	if(type == 'queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;		
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
@@ -95,7 +95,7 @@ function getDetails(id, type) {
 function populateAttributes(jsonData) {	
 	// Populate node details	
 	$('#workerName').text(jsonData.name.split('.')[0]);
-	 
+	$('#queueID').text("id = "+qid);
 	if(jsonData.slotsTotal != null) {
 		// Show the bar showing queue availability (we're dealing with a queue)
 		$('#progressBar').show();
