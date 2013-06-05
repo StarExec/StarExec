@@ -35,7 +35,7 @@ Parameters
 ----------
 
 The following parameters are used in various commands. Quotation marks here are used for emphasis-- they should not 
-be included when specifying parameters.
+be included when specifying parameters. Parameters are NOT case sensitive.
 
 "addr"--Specifies the base URL at which to log into Starexec. The URL should be absolute and should end with a '/'.
 
@@ -97,21 +97,23 @@ corresponds to a dependent bench space
 Commands
 --------
 
-The following notes describe each command recognized by StarExec. Different commands expect 
-different parameters, which are described below. Many commands include both required and optional 
-parameters.  Including parameters that a command does not expect will not cause an error--such 
-parameters are simply ignored.
+The following notes describe each command recognized by StarExec. Different commands
+expect different parameters, and many paramters are optional. Required parameters
+are listed for every command, as are optional parameters.
 
 General Commands
 ----------------
 
 These commands have a range of functions.
 
---Exit -Logs the user out of StarExec and exits StarexecCommand. Requires no parameters.
+--Exit -Logs the user out of StarExec and exits StarexecCommand.
+REQUIRED: None
+OPTIONAL: None
 
---login -This command takes the parameters "u" and "p" and attempts to log into StarExec with that 
-username and password. If "u" is equal to "guest," then a password is not needed and a guest login
-will be performed. For example...
+--login -Logs the user into StarExec.
+REQUIRED: "u", "p". If "u" equals "guest" then "p" is not required.
+OPTIONAL: "addr"
+EXAMPLES:
 
 'login u=fake@email.com p=password'
 
@@ -125,24 +127,25 @@ An example for connecting to an alternate instance of starexec would be
 In this case, 'addr' must be in this exact format-- it should point to the home page, not to any
 deeper page, and it should end with a '/'
 
---logout -Logs the user out of StarExec. Requires no parameters.
+--logout -Logs the user out of StarExec.
+REQUIRED: None
+OPTIONAL: None
 
---polljob -Downloads both job output and job info at regular intervals until the job is complete. Expects
-"id" "out" and "t." The files saved will have the path given by "out" plus either "-info" or "-output" and an integer
-
---runfile -Given "f" containing one line per command, execute all the commands in succession. With "verbose" also print
-out status to standard output. The user does not have to be logged in before running this command.
+--runfile -Given a file containing a sequence of commands, runs all the commands in succession.
+REQUIRED: "f"
+OPTIONAL: "verbose"
 
 --sleep -Given "t" sleep for the specified number of seconds
+REQUIRED: "t"
+OPTIONAL: None
 
 Download Commands
 -----------------
 
 Every download command retrieves an archive from the server and saves it in a specified location. 
 Downloaded archives will be in the format specified in the user's default settings on StarExec.
-The following commands are used to download files from the server. All of them expect two 
-parameters. "id", and "out", a If a file already exists at the path specified by "out," the parameter "ow" 
-should be included. "ow" requires no value. An example download command is...
+Most of them expect two parameters. "id", and "out", a If a file already exists at the path specified 
+by "out," the parameter "ow" should be included. "ow" requires no value. An example download command is...
 
 'getspacexml id=1 out=xmlfile.zip'
 
@@ -152,35 +155,62 @@ Another example, which will cause the output file to be overwritten, is...
 
 The following commands can be used for downloading
 
-getbench -Downloads the benchmark associated with the given benchmark id. 
+--getbench -Downloads the benchmark associated with the given benchmark id. 
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-getbenchproc -Downloads all benchmark processors associated with the given community id. (Note the 
-"id," NOT "pid," is the expected parameter).
+--getbenchproc -Downloads all benchmark processors associated with the given community id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-Getjobinfo -Get the CSV pertaining to the job associated with the given id.
+--getjobinfo -Get the CSV pertaining to the job associated with the given id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-Getjobout -Gets the output for all the job pairs associated with the job with the given id.
+--getjobout -Gets the output for all the job pairs associated with the job with the given id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-getjobpair -Downloads the output from the job pair associated with the given id.
+--getjobpair -Downloads the output from the job pair associated with the given id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-Getnewjobinfo -Get the CSV pertaining to the job associated with the given id containing only
+--getnewjobinfo -Get the CSV pertaining to the job associated with the given id containing only
 info related to job pairs that have been completed since the last time the command was used. 
-in the current session. When used with "since," info for every pair completed after "since" will be downloaded 
+in the current session. When used with "since," info for every pair completed after "since" will be downloaded.
+REQUIRED: "id" "out"
+OPTIONAL: "ow" "since"
 
-getnewjobout -Get the output for the job pairs associated with the given job that have been 
+--getnewjobout -Get the output for the job pairs associated with the given job that have been 
 completed since the last time the command was used in the current session. When used with "since,"
 retrieve all pairs completed after "since."
+REQUIRED: "id" "out"
+OPTIONAL: "ow" "since"
 
-getpostproc -Downloads all post processors associated with the given community id. (Note that "id," 
-NOT "pid," is the expected parameter).
+--getpostproc -Downloads all post processors associated with the given community id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-getsolver -Downloads the solver associated with the given community id.
+--getsolver -Downloads the solver associated with the given community id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-Getspace -Donwloads the space at the given ID.
+--getspace -Donwloads the space at the given ID.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-getspacehierarchy -Downloads the space hierarchy associated with the given space id.
+--getspacehierarchy -Downloads the space hierarchy associated with the given space id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
 
-getspacexml -Downloads an XML file representing
+--getspacexml -Downloads an XML file representing.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+
+--polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved 
+archives will have name given plus "-info" or "-output" and an integer.
+REQUIRED: "id", "out", "t" 
+OPTIONAL: "ow"
 
 Set Commands
 ------------
@@ -190,21 +220,33 @@ commands expect one parameter of the form "val={newval}", where "newval" will be
 the selected setting. The last two commands expect the parameter "id," where "id" is a space ID, and 
 also accept the optional parameter "hier".
 
-Setarchivetype -Given a val of zip, tar, tar.gz, or tgz, sets the default archive type for the user
-EX: 'setarchivetype val=zip'
+--setarchivetype -Given a val of zip, tar, tar.gz, or tgz, sets the default archive type for the user
+REQUIRED: "val"
+OPTIONAL: None
+EXAMPLE: 'setarchivetype val=zip'
 
-Setfirstname -Sets the user's first name
-EX: 'setfirstname val=newname'
+--setfirstname -Sets the user's first name
+REQUIRED: "val"
+OPTIONAL: None
+EXAMPLE: 'setfirstname val=newname'
 
-Setinstitution -Sets the user's institution.
-EX: 'setinstitution val=The University of Iowa'
+--setinstitution -Sets the user's institution.
+REQUIRED: "val"
+OPTIONAL: None
+EXAMPLE: 'setinstitution val=The University of Iowa'
 
-Setlastname -Sets the user's last name
+--setlastname -Sets the user's last name
+REQUIRED: "val"
+OPTIONAL: None
 
-Setspaceprivate -Sets the space with the given id as private--with "hier," sets entire hierarchy private
-EX: 'setspaceprivate id=1 hier=' 
+--setspaceprivate -Sets the space with the given id as private--with "hier," sets entire hierarchy private
+REQUIRED: "id"
+OPTIONAL: "hier"
+EXAMPLE: 'setspaceprivate id=1 hier=' 
 
-Setspacepublic -Sets the space with the given id as public--with "hier," sets entire hierarchy public.
+--setspacepublic -Sets the space with the given id as public--with "hier," sets entire hierarchy public.
+REQUIRED: "id" "hier"
+OPTIONAL: None
 
 Push Commands
 -------------
@@ -212,29 +254,37 @@ Push Commands
 These commands allow users to push benchmarks, solvers, and processors to the server. They are more 
 individually unique than previous commands, and many accept a large number of optional parameters. 
 
-Pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID and is 
-required, and either "f" or "url" is also required. The parameters "n," "d," "df," and "downloadable" are 
-optional. Only one of "d" and "df" can be set.
-EX: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
+--pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID.
+REQUIRED: ("f" OR "url") "id"
+OPTIONAL: "n" ("d" OR "df") "downloadable"
+EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
 
-Pushbenchmarks -Uploads a benchmark archive to an existing space. "id," "bt," and either "f" or "url" 
-are required. "d," "df," "dep," "downloadable," "hier," and "link," are optional. All of the permission 
-parameters are also optional.
-EX: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '
+--pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
+REQUIRED: ("f" OR "url") "id" "bt"
+OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
+EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '
 
-Pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
-refers to a community id and is required, as is "f." The parameters "n" and "d" are optional.
-EX: 'pushbenchproc id=142 f=procdirectory.tgz d=Processor Description n=newproc'
+--pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
+refers to a community id.
+REQUIRED: "f" "id"
+OPTIONAL: "n" "d"
+EXAMPLE: 'pushbenchproc id=142 f=procdirectory.tgz d=Processor Description n=newproc'
 
-Pushconfig -This command is used for uploading a configuration for an existing solver. The parameter 
-"id" refers to a solver ID and is required. "f" is also required. "n" and "d" are optional. 
-EX: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
+--pushconfig -This command is used for uploading a configuration for an existing solver. The parameter 
+"id" refers to a solver ID.
+REQUIRED: "f" "id"
+OPTIONAL: "n" "d"
+EXAMPLE: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
 
-Pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a 
-community id and is required, as is "f." The parameters "n" and "d" are optional.
+--pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a 
+community id.
+REQUIRED: "f" "id"
+OPTIONAL: "n" "d"
 
-Pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space 
-ID and is required. The parameter "f" is also required.
+--pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space 
+ID and is required. 
+REQUIRED: "f" "id"
+OPTIONAL: None
 
 Delete Commands
 ---------------
@@ -244,19 +294,30 @@ These commands are all used to delete primitives from Starexec. All of them acce
 
 'deleteconfig id=5'
 
-Deletebench -Deletes the benchmark with the given ID.
+--deletebench -Deletes the benchmark with the given ID.
+REQUIRED: "id"
+OPTIONAL: None
 
-Deletebenchproc -Deletes the benchmark processor with the given ID.
+--deletebenchproc -Deletes the benchmark processor with the given ID.
+REQUIRED: "id"
+OPTIONAL: None
 
-Deleteconfig -Deletes the configuration with the given ID.
+--deleteconfig -Deletes the configuration with the given ID.
+REQUIRED: "id"
+OPTIONAL: None
 
-Deletesolver -Deletes the solver with the given ID.
 
-Deletejob -Not yet implemented
+--deletesolver -Deletes the solver with the given ID.
+REQUIRED: "id"
+OPTIONAL: None
 
-Deletepostproc -Deletes the post processor with the given ID.
+--deletejob -Not yet implemented
 
-Deletespace -Not yet implemented
+--deletepostproc -Deletes the post processor with the given ID.
+REQUIRED: "id"
+OPTIONAL: None
+
+--Deletespace -Not yet implemented
 
 Create Commands
 ---------------
@@ -264,16 +325,17 @@ Create Commands
 These commands create some new information on StarExec. Like push commands, they also accept a 
 varied set of parameters.
 
-createjob--This command is used for creating a new job in a given space. "id," "pid," and "qid," are 
-required, and  describe the space ID of the space to run the job, the ID of the post processor to be used, 
-and the ID of the queue to be used, respectively. "n," "d," "w," and "cpu" are optional. Currently, only 
-jobs that run every benchmark and solver and keep the hierarchy structure can be created from 
-StarExecCommand--other options will be added in the future.
-EX: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100'
+--createjob -This command is used for creating a new job in a given space. "id" refers to the id of
+the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
+the hierarchy structure can be created from StarExecCommand--other options will be added in the future.
+REQUIRED: "id" "pid" "qid" 
+OPTIONAL: "n" "d" "w" "cpu"
+EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100'
 
-createsubspace--Creates a subspace of an existing space. "id" refers to the id of the existing space and 
-is required. "n," "d," "lock," and all of the permission parameters are optional.
-EX: 'createsubspace id=5'
+--createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
+REQUIRED: "id"
+OPTIONAL: "n" "d" "lock" "allPerm" (also all the other permissions parameters)
+EXAMPLE: 'createsubspace id=5'
 
 List Commands
 -------------
@@ -286,15 +348,25 @@ is optional, and indicates that at most "limit" primitives should be printed. An
 
 This will print at most 100 jobs present in space 4. The list commands are shown below.
 
-lsbenchmarks -Lists the IDs and names of all benchmarks in the space.
+--lsbenchmarks -Lists the IDs and names of all benchmarks in the space.
+REQUIRED: "id"
+OPTIONAL: None
 
-lsjobs -Lists the IDs and names of all jobs in the space.
+--lsjobs -Lists the IDs and names of all jobs in the space.
+REQUIRED: "id"
+OPTIONAL: None
 
-lssolvers -Lists the IDs and names of all solvers in the space.
+--lssolvers -Lists the IDs and names of all solvers in the space.
+REQUIRED: "id"
+OPTIONAL: None
 
-lssubspaces -Lists the IDs and names of all subspaces in the space the current user is authorized to see
+--lssubspaces -Lists the IDs and names of all subspaces in the space the current user is authorized to see
+REQUIRED: "id"
+OPTIONAL: None
 
-lsusers -Lists the IDs and names of all users in the space.
+--lsusers -Lists the IDs and names of all users in the space.
+REQUIRED: "id"
+OPTIONAL: None
 
 Shell Mode
 ----------
