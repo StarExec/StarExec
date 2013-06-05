@@ -91,7 +91,7 @@
 									<option value="" />
 								</c:if>				
 								<c:forEach var="q" items="${queues}">
-	                                <option value="${q.id}">${q.name} ({$q.id})</option>
+	                                <option value="${q.id}">${q.name} (${q.id})</option>
 								</c:forEach>
 							</select>
 						</td>
