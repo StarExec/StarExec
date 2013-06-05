@@ -88,8 +88,8 @@ public class Mail {
 		email = email.replace("$$EMAIL$$", user.getEmail());
 		email = email.replace("$$INSTITUTION$$", user.getInstitution());
 		email = email.replace("$$MESSAGE$$", comReq.getMessage());
-		email = email.replace("$$APPROVE$$", Util.docRoot(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "approve")));
-		email = email.replace("$$DECLINE$$", Util.docRoot(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "decline")));
+		email = email.replace("$$APPROVE$$", Util.url(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "approve")));
+		email = email.replace("$$DECLINE$$", Util.url(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "decline")));
 		
 		// Send email
 		Mail.mail(email, "STAREXEC - Request to join " + communityName, leaderEmails);
