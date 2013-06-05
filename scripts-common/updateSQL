@@ -11,8 +11,8 @@ if [ `hostname` == "stardev.cs.uiowa.edu" ] ; then
   db_pword="star3x3c2011!";
 else
   echo "Detected that we are on Production";
-  db_user="prod_star_app";
-  db_pword="g4qC867ByQ3736i7"; 
+  db_user="prod_star_root";
+  db_pword="nRnp52J0OQW42cOh"; 
 fi
 
 cd $sqldir
