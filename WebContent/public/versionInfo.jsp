@@ -7,6 +7,37 @@
 
 -- Implemented round-robin option for creating Job Pairs.
 
+In revision 12910:
+
+-- Job output (downloaded from the job details page) is structured now
+   to reflect the structure of the space, when running a whole space
+   hierarchy as a job.  Paths within the space are also included in
+   the CSV output now, for job information (again, from the job details
+   page).
+
+-- owners of benchmarks can always download them now.
+
+-- benchmark names are validated on upload.
+
+-- starexec_description.txt files are created when downloading spaces.
+
+-- Numerous fixes and improvements to StarexecCommand, the browser-free
+   client tool for accessing StarExec (download with the link at the
+   bottom of the StarExec frame).  The most important is the new polljob
+   and related commands, that let you pull job information and job output
+   as it becomes available on StarExec.
+
+-- Round-robin execution is now supported for jobs.  With this option,
+   you will see all your subspaces progress in parallel when a job
+   is running.
+
+-- We now correctly distinguish memouts, cpu timeouts, and wallclock
+   timeouts.
+
+-- Solvers can be downloaded for re-upload now: the downloaded archive 
+   does not have a top-level directory for the solver, so it matches
+   the format StarExec expects on upload.
+
 In revision 12782:
 
 -- We are now validating the names of benchmark before adding the

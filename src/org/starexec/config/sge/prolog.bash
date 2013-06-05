@@ -104,7 +104,9 @@ function cleanWorkspace {
 
 	# change ownership and permissions to make sure we can clean everything up
 	sudo chown -R `whoami` $WORKING_DIR 
-	chmod -R u+rxw $WORKING_DIR
+	chmod -R gu+rxw $WORKING_DIR
+
+        ls -l $WORKING_DIR
 
 	# Remove all existing files in the workspace
 	rm -rf "$WORKING_DIR"/*.*
@@ -123,12 +125,12 @@ function cleanWorkspace {
 }
 
 function copyDependencies {
-	log "copying solver ($SOLVER_NAME) to execution host..."
+	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
 	log "solver copy complete"
 
-	log "chmod gu+w on the solver directory on the execution host..."
-        chmod -r gu+w $LOCAL_SOLVER_DIR
+#	log "chmod gu+w on the solver directory on the execution host..."
+#        chmod -r gu+w $LOCAL_SOLVER_DIR
 
 	log "copying runSolver to execution host..."
 	cp "$RUNSOLVER_PATH" "$BIN_PATH"

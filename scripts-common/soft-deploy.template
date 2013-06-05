@@ -27,9 +27,12 @@ fi
 
 echo "Copying the GridEngine epilog and prolog to $SGE_SCRIPT_DIR"
 mkdirIf $SGE_SCRIPT_DIR
-cp src/org/starexec/config/sge/*.bash $SGE_SCRIPT_DIR
-chmod -f 775 $SGE_SCRIPT_DIR/{epilog,prolog}.bash
-chgrp -f star-web $SGE_SCRIPT_DIR/{epilog,prolog}.bash
+for f in src/org/starexec/config/sge/*.bash ; do
+#  b=${f%.bash} # strip .bash off the end
+  cp $f $SGE_SCRIPT_DIR
+  chmod -f 775 $SGE_SCRIPT_DIR/$f
+  chgrp -f star-web $SGE_SCRIPT_DIR/$f
+done
 
 echo "Copying batchSpaceSchema.xsd to $STAREXEC_DATA_DIR/batchSpace"
 mkdirIf $STAREXEC_DATA_DIR/batchSpace
