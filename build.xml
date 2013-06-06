@@ -71,7 +71,7 @@
                 <!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
                 <copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
-                <replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}"/>
+                <replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
                 <replaceregexp file="soft-deploy.sh" match="the_sge_script_dir" replace="${sge-script-dir}"/>
                 <replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
 		<chmod file="soft-deploy.sh" perm="774"/>
@@ -79,8 +79,7 @@
                 <!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
                 <copy file="context.template" tofile="${meta-inf}/context.xml"/>
-                <replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}"/>
-                <replaceregexp file="${meta-inf}/context.xml" match="/the_appname" replace="/${appname}"/>
+                <replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}" flags="g"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
                 <replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>

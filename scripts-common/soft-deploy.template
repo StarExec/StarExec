@@ -3,7 +3,7 @@
 # Run from the directory where you build starexec with ant (build.xml).
 
 # filled in by running ant with build.xml:
-APPNAME=the_configuration
+APPNAME=the_appname
 SGE_SCRIPT_DIR=the_sge_script_dir
 STAREXEC_DATA_DIR=the_data_dir
 
@@ -54,7 +54,7 @@ while [ -d $APPDIR ] ; do
 done
 
 if [ "$1" == "--remove" ] ; then
-  echo Removed the_configuration without restarting Tomcat.
+  echo Removed $APPNAME without restarting Tomcat.
   exit 0
 fi
 
@@ -69,5 +69,5 @@ while [ -d $APPDIR ] ; do
   sleep 4
 done
 
-echo Deployed the_configuration without restarting Tomcat.
+echo Deployed $APPNAME without restarting Tomcat.
 echo "Update the database (schema and procedures) as needed." 
