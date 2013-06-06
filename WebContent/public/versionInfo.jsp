@@ -5,9 +5,7 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
--- Implemented round-robin option for creating Job Pairs.
-
-In revision 12910:
+In revision 12929:
 
 -- Job output (downloaded from the job details page) is structured now
    to reflect the structure of the space, when running a whole space
@@ -37,6 +35,8 @@ In revision 12910:
 -- Solvers can be downloaded for re-upload now: the downloaded archive 
    does not have a top-level directory for the solver, so it matches
    the format StarExec expects on upload.
+
+-- quotas are being calculated and enforced.
 
 In revision 12782:
 
