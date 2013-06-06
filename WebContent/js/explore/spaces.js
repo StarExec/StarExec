@@ -393,6 +393,9 @@ function processErrorCode(errorCode, prim, destName) {
 	case 7: // There exists a solver with the same name
 		showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name in " + destName, 5000);
 		break;
+	case 8: //user tried to copy without having enough disk quota
+		showMessage('error',"you do not have sufficient disk quota to copy the selected "+prim);
+		break;
 	default:
 		showMessage('error', "the operation failed with an unknown return code", 5000);	
 	}
@@ -417,7 +420,7 @@ function onSpaceDrop(event, ui) {
 	var destName = $(event.target).text();
 
 	log(ids.length + ' rows dropped onto ' + destName);
-
+	
 	if(ids.length < 2) {
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
 		ids = [ui.draggable.data('id')];
@@ -429,7 +432,7 @@ function onSpaceDrop(event, ui) {
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
-			$('#dialog-confirm-copy-txt').text('are you sure you want to copy ' + ui.draggable.data('name') + ' to' + destName + '?');
+			$('#dialog-confirm-copy-txt').text('do you want to copy or mirror ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
@@ -438,7 +441,7 @@ function onSpaceDrop(event, ui) {
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
-			$('#dialog-confirm-copy-txt').text('are you sure you want to copy the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
+			$('#dialog-confirm-copy-txt').text('do you want to copy or mirror the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
 		}
 	}		
 
@@ -447,70 +450,33 @@ function onSpaceDrop(event, ui) {
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
-			width: 380,
-			height: 165,
+			width: 500,
+			height: 200,
+			
+			//depending on what the user 
 			buttons: {
-				'space hierarchy': function() {
-					log('user confirmed solver copy to'+ destName +' and all of its subspaces');
-
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-copy').dialog('close');
-
-					// Make the request to the server				
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/add/solver',
-							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' solvers successfully copied to' + destName + ' and its subspaces', 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
-									}
-								}else {
-										processErrorCode(returnCode,"solvers", destName);
-									}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying solvers",5000);
-					});	 									
+				'mirror in space hierarchy': function() {
+					$('#dialog-confirm-copy').dialog('close'); 
+					doSolverPost(ids,destSpace,spaceId,true,false,destName);
 				},
-				'space': function(){
-					log('user confirmed solver copy to'+ destName);
-
-					// If the user actually confirms, close the dialog right away
+				'copy to space hierarchy': function() {
+					$('#dialog-confirm-copy').dialog('close'); 
+					doSolverPost(ids,destSpace,spaceId,true,true,destName);
+				},
+				'mirror in space': function(){
 					$('#dialog-confirm-copy').dialog('close');
-
-					// Make the request to the server				
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/add/solver',
-							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' solvers successfully copied to' + destName, 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-									}
-								} else {
-										processErrorCode(returnCode,"solvers", destName);
-									}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying solvers",5000);
-					});	 			
+					doSolverPost(ids,destSpace,spaceId,false,false,destName);
+				},
+				'copy to space': function() {
+					$('#dialog-confirm-copy').dialog('close');	
+					doSolverPost(ids,destSpace,spaceId,false,true,destName);
 				},
 				"cancel": function() {
-					log('user canceled copy action');
 					$(this).dialog("close");
 				}
+				
 			}		
-		});			   		    	    	
-
+		});	
 	}
 	// If primitive being copied to another space is a user...
 	else if(ui.draggable.data('type')[0] == 'u'){
@@ -657,35 +623,17 @@ function onSpaceDrop(event, ui) {
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
 			buttons: {
-				'yes': function() {
-					log('user confirmed copy action');
-
+				'copy': function() {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-
-					// Make the request to the server				
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
-							{selectedIds : ids, fromSpace : spaceId},	
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' ' + 'benchmarks successfully copied to' + destName, 2000);
-									} else {					    		
-										showMessage('success', 'benchmark successfully copied to' + destName, 2000);	
-									}
-								}else {
-									processErrorCode(returnCode,"benchmarks",destName);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying benchmarks",5000);
-					});	 									
+					doBenchmarkPost(ids,destSpace,spaceId,true,destName);
+						 									
+				},
+				'mirror':function() {
+					$('#dialog-confirm-copy').dialog('close');
+					doBenchmarkPost(ids,destSpace,spaceId,false,destName);
 				},
 				"cancel": function() {
-					log('user canceled copy action');
 					$(this).dialog("close");
 				}
 			}		
@@ -734,6 +682,64 @@ function onSpaceDrop(event, ui) {
 		});			   		    	    	
 
 	}
+}
+
+function doBenchmarkPost(ids,destSpace,spaceId,copy,destName) {
+	// Make the request to the server				
+	$.post(  	    		
+			starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
+			{selectedIds : ids, fromSpace : spaceId, copy:copy},	
+			function(returnCode) {
+				log('AJAX response recieved with code ' + returnCode);
+				if (returnCode==0) {
+					if(ids.length > 1) {								
+						showMessage('success', ids.length + ' ' + 'benchmarks successfully copied to' + destName, 2000);
+					} else {					    		
+						showMessage('success', 'benchmark successfully copied to' + destName, 2000);	
+					}
+				}else {
+					processErrorCode(returnCode,"benchmarks",destName);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error copying benchmarks",5000);
+	});
+}
+
+function doSolverPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
+	// Make the request to the server	
+	$.post(  	    		
+			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
+			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: hierarchy, copy : copy},
+			function(returnCode) {
+				
+				if (returnCode==0) {
+					
+					if(ids.length > 1) {	
+						if (hierarchy) {
+							showMessage('success', ids.length + ' solvers successfully copied to' + destName + ' and its subspaces', 2000);
+						} else {
+							showMessage('success', ids.length + ' solvers successfully copied to' + destName, 2000);
+						}
+						
+					} else {	
+						
+						if (hierarchy) {
+							showMessage('success', ids.length + ' solvers successfully copied to' + destName + ' and its subspaces', 2000);
+						} else {
+							
+							showMessage('success', ids.length + ' solvers successfully copied to' + destName, 2000);
+						}
+					}
+				}else {
+						processErrorCode(returnCode,"solvers", destName);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error copying solvers",5000);
+	});	
 }
 
 /**

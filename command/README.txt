@@ -60,6 +60,8 @@ corresponding permission should be set to true. None requires a value.
 
 "f" -Specifies a path to a  local file.
 
+"from" -When copying a primitive, specifies the ID of the source space
+
 "hier" -On a benchmark upload, means that the archive structure should be converted to a space 
 structure. By default, all benchmarks are placed in the space being uploaded to.
 
@@ -85,6 +87,9 @@ corresponds to a dependent bench space
 "since" -When downloading job info, specifies the earliest completed pair after which to get info
 
 "t" -When using 'sleep,' specifies the amount of time in seconds. Decimal values are permitted.
+
+"to" -When copying a primitive, specifies the ID of the destination space, or the root of the 
+	  destination hierarchy,
 
 "url" -Specifies the URL of a remote file
 
@@ -336,6 +341,36 @@ EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100'
 REQUIRED: "id"
 OPTIONAL: "n" "d" "lock" "allPerm" (also all the other permissions parameters)
 EXAMPLE: 'createsubspace id=5'
+
+Copy Commands
+-------------
+
+These commands can be used to either copy or mirror primitives from one space to another. To 'copy'
+a primitive means to create a deep copy-- you will become the owner of a copied solver or benchmark,
+and it will count towards your disk usage. To 'mirror' a primitive means that you are using a primitive
+that still belongs to another user. If they choose to delete a solver or benchmark that you have mirrored,
+then you will lose access to it. You may also copy or mirror primitives that you own.
+
+--copybench -Copies a benchmark from one space to another. "id" is a benchmark id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
+EXAMPLE: 'copybench id=42 from=643 to=56"
+
+--mirrorbench -Mirrors an existing benchmark and associates it with a space. "id" is a benchmark id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
+
+--copysolver -Copies a solver from one space and places it into a new space or hierarchy. "id" is a solver id, and "from"
+and "to" are space ids
+REQUIRED: "id" "from" "to"
+OPTIONAL: "hier"
+
+--mirrorsolver -Mirrors an existing solver and associates it with a new space or hierarchy. "id" is a solver id, and "from"
+and "to" are space ids
+REQUIRED: "id" "from" "to"
+OPTIONAL: "hier"
 
 List Commands
 -------------

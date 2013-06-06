@@ -4,6 +4,11 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +19,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
+import org.starexec.servlets.UploadSolver;
 import org.starexec.util.Util;
 
 /**
@@ -21,6 +27,8 @@ import org.starexec.util.Util;
  */
 public class Solvers {
 	private static final Logger log = Logger.getLogger(Solvers.class);
+	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
+	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
 	
 	/**
 	 * @param solverId The id of the solver to retrieve
@@ -308,7 +316,47 @@ public class Solvers {
 		log.debug(String.format("Solver [id=%d] failed to be updated.", id));
 		return false;
 	}
+	/**
+	 * Makes a deep copy of an existing solver, gives it a new user, and places it
+	 * into a space
+	 * @param s The existing solver to copy
+	 * @param userId The userID that the new solver will be given
+	 * @param spaceId The space ID of the space to place the new solver in to
+	 * @return The ID of the new solver, or -1 on failure
+	 * @author Eric Burns
+	 */
 	
+	public static int copySolver(Solver s, int userId, int spaceId) {
+		log.debug("Copying solver "+s.getName()+" to new user id= "+String.valueOf(userId));
+		Solver newSolver=new Solver();
+		newSolver.setDescription(s.getDescription());
+		newSolver.setName(s.getName());
+		newSolver.setUserId(userId);
+		newSolver.setUploadDate(s.getUploadDate());
+		newSolver.setDiskSize(s.getDiskSize());
+		newSolver.setDownloadable(s.isDownloadable());
+		File solverDirectory=new File(s.getPath());
+		
+		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir, newSolver.getName());
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		uniqueDir.mkdirs();
+		newSolver.setPath(uniqueDir.getAbsolutePath());
+		try {
+			FileUtils.copyDirectory(solverDirectory, uniqueDir);
+			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
+				newSolver.addConfiguration(c);
+			}
+			return Solvers.add(newSolver, spaceId);
+			
+		} catch (Exception e) {
+			
+			log.error("copySolver says "+e.getMessage());
+			return -1;
+		}
+		
+		
+	}
 	
 	
 	/**
@@ -1181,5 +1229,50 @@ public class Solvers {
 		}
 
 		return null;
+	}
+	
+
+	/**
+	 * Finds solver run configurations from a specified bin directory. Run configurations
+	 * must start with a certain string specified in the list of constants. If no configurations
+	 * are found, an empty list is returned.
+	 * @param fromPath the base directory to find the bin directory in
+	 * @return a list containing run configurations found in the bin directory
+	 */
+	public static List<Configuration> findConfigs(String fromPath){		
+		File binDir = new File(fromPath, R.SOLVER_BIN_DIR);
+		if(!binDir.exists()) {
+			return Collections.emptyList();
+		}
+		
+		List<Configuration> returnList = new ArrayList<Configuration>();
+		
+		for(File f : binDir.listFiles()){			
+			if(f.isFile() && f.getName().startsWith(CONFIG_PREFIX)){
+				Configuration c = new Configuration();								
+				c.setName(f.getName().substring(CONFIG_PREFIX.length()));
+				returnList.add(c);
+				
+				// Make sure the configuration has the right line endings
+				Util.normalizeFile(f);
+			}				
+			//f.setExecutable(true, false);	//previous version only got top level		
+		}		
+		setHierarchyExecutable(binDir);//should make entire hierarchy executable
+		return returnList;
+	}
+	/**
+	 * Sets every file in a hierarchy to be executable
+	 * @param rootDir the directory that we wish to have executable files in
+	 * @return Boolean true if successful
+	 */
+	public static Boolean setHierarchyExecutable(File rootDir){
+		for (File f : rootDir.listFiles()){
+			f.setExecutable(true,false);
+			if (f.isDirectory()){
+				setHierarchyExecutable(f);
+			}
+		}
+		return true;
 	}
 }

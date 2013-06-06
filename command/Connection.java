@@ -112,15 +112,21 @@ public class Connection {
 		}
 	}
 	
-	public Connection(String baseURL,String user, String pass) {
+	/**
+	 * Constructor used for copying the setup of one connection into a new connection. Useful if a connection
+	 * gets into a bad state (possibly response streams left open due to errors)
+	 * @param con The old connection to copy
+	 */
+	
+	public Connection(Connection con) {
 		
-		this.baseURL=baseURL;
-		username=user;
-		password=pass;
+		this.baseURL=con.getBaseURL();
+		username=con.getUsername();
+		password=con.getPassword();
 		client=getClient();
 		
-		job_info_indices=new HashMap<Integer,Integer>();
-		job_out_indices=new HashMap<Integer,Integer>();
+		job_info_indices=con.getInfoIndices();
+		job_out_indices=con.getOutIndices();
 	}
 	
 	public Connection(HashMap<String,String> commandParams) {
@@ -130,7 +136,6 @@ public class Connection {
 		} else {
 			this.baseURL=R.URL_STAREXEC_BASE;
 		}
-		
 		if (!commandParams.get(R.PARAM_USERNAME).equals(R.PARAM_GUEST)) {
 			username=commandParams.get(R.PARAM_USERNAME);
 			
@@ -158,6 +163,10 @@ public class Connection {
 		return job_info_indices.get(jobId);
 	}
 	
+	public HashMap<Integer,Integer> getInfoIndices() {
+		return job_info_indices;
+	}
+	
 	/**
 	 * Gets the max completion ID yet seen for output downloads on a given job
 	 * @param jobId The ID of a job on StarExec
@@ -169,6 +178,10 @@ public class Connection {
 			job_out_indices.put(jobId, 0);
 		} 
 		return job_out_indices.get(jobId);
+	}
+	
+	public HashMap<Integer,Integer> getOutIndices() {
+		return job_out_indices;
 	}
 	
 	/**
@@ -394,6 +407,59 @@ public class Connection {
 		}
 	}
 	
+	public int copyPrimitives(HashMap<String,String> commandParams, boolean copy, String type) {
+		try {
+			int valid=Validator.isValidCopyRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			
+			String urlExtension;
+			if (type.equals("solver")) {
+				urlExtension=R.URL_COPYSOLVER;
+			} else {
+				urlExtension=R.URL_COPYBENCH;
+			}
+			
+			urlExtension=urlExtension.replace("{spaceId}", commandParams.get(R.PARAM_TO));
+			
+			HttpPost post=new HttpPost(baseURL+urlExtension);
+			
+			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
+			params.add(new BasicNameValuePair("copyToSubspaces", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
+			params.add(new BasicNameValuePair("fromSpace",commandParams.get(R.PARAM_FROM)));
+			params.add(new BasicNameValuePair("selectedIds[]",commandParams.get(R.PARAM_ID)));
+			params.add(new BasicNameValuePair("copy",String.valueOf(copy)));
+			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
+			
+			post=(HttpPost) setHeaders(post);
+			
+			HttpResponse response=client.execute(post);
+			
+			//we should be getting a json string back
+			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+			StringBuilder builder = new StringBuilder();
+			for (String line = null; (line = reader.readLine()) != null;) {
+			    builder.append(line).append("\n");
+			}
+			post.getEntity().getContent().close();
+			JsonParser parser=new JsonParser();
+			
+			JsonElement jsonE=parser.parse(builder.toString());
+			
+			JsonPrimitive p=jsonE.getAsJsonPrimitive();
+			if (p.getAsInt()==0) {
+				return 0;
+			} else {
+				return R.ERROR_SERVER;
+			}
+			
+			
+
+		} catch (Exception e) {
+			return R.ERROR_SERVER;
+		}
+	}
 	
 	
 	/**
@@ -599,6 +665,7 @@ public class Connection {
 				
 			}
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+			e.printStackTrace();
 			//Flow control was broken, so some error occurred.
 			return R.ERROR_SERVER;
 		}
@@ -676,12 +743,24 @@ public class Connection {
 			for (String line = null; (line = reader.readLine()) != null;) {
 			    builder.append(line).append("\n");
 			}
-			
-			JsonParser parser=new JsonParser();
 			response.getEntity().getContent().close();
+			JsonParser parser=new JsonParser();
+			
+			JsonElement jsonE=parser.parse(builder.toString());
+			if (jsonE.isJsonPrimitive()) {
+				
+				JsonPrimitive j=jsonE.getAsJsonPrimitive();
+				int x=j.getAsInt();
+				if (x==2) {
+					errorMap.put(R.ERROR_PERMISSION_DENIED, null);
+					return errorMap;
+				} 
+				errorMap.put(R.ERROR_SERVER, null);
+				return errorMap;
+			}
 			
 			//we should get back a jsonObject which has a jsonArray of primitives labeled 'aaData'
-			JsonArray json=parser.parse(builder.toString()).getAsJsonObject().get("aaData").getAsJsonArray();
+			JsonArray json=jsonE.getAsJsonObject().get("aaData").getAsJsonArray();
 			JsonArray curPrim;
 			String name;
 			Integer id;
@@ -1377,10 +1456,13 @@ public class Connection {
 		
 		//spaces are formatted differently from any other primitive
 		if (type.equals("spaces")) {
+			//space names are flanked on the left by the following
 			int startIndex=jsonString.indexOf("onclick=\"openSpace");
 			if (startIndex<0) {
 				return null;
 			}
+			
+			
 			while (startIndex<jsonString.length() && jsonString.charAt(startIndex)!='>') {
 				startIndex+=1;
 			}

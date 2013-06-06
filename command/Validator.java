@@ -5,11 +5,6 @@ package org.starexec.command;
  */
 
 
-
-/*
- * TODO: Ensure that uploaded names and descriptions are in the correct format
- * TODO: Validate set commands and other upload commands
- */
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,21 +40,22 @@ public class Validator {
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USERNAME,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
-	//sprivate static String[] allowedLogoutParams=new String[]{};
+	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
+	
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
-	//TODO: needs all the permissions
+	
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
-		R.PARAM_ENABLE_ALL_PERMISSIONS};
+		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT};
+		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
-	//TODO: needs all the permissions
+	
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
 		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
-		R.PARAM_ENABLE_ALL_PERMISSIONS};
+		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
 	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
 	private static String[] allowedUploadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
@@ -164,6 +160,21 @@ public class Validator {
     	return patternPrimDesc.matcher(desc).matches();
     }
 	
+    public static int isValidCopyRequest(HashMap<String,String> commandParams) {
+    	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO},commandParams)) {
+    		return R.ERROR_MISSING_PARAM;
+    	}
+    	
+    	if (!isValidPosInteger(commandParams.get(R.PARAM_ID)) 
+    			|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))
+    			|| !isValidPosInteger(commandParams.get(R.PARAM_TO))) {
+    		return R.ERROR_INVALID_ID;
+    	}
+    	
+    	return 0;
+    }
+    
+    
 	/**
 	 * @param urlParams-- A HashMap containing key/value pairs that will be encoded into the download URL
 	 * @param A HashMap containing key/value pairs the user entered into the command line
