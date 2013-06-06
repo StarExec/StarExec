@@ -63,7 +63,7 @@ function initUI(){
 			secondary: "ui-icon-arrowthick-1-s"
     }});
 	$('#fieldSites').expandable(true);
-	
+	$('#actions').expandable(true);
 	$('#commentField').expandable(true);
 	// Setup '+ add comment' animation
 	$('#toggleComment').click(function() {

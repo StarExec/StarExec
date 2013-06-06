@@ -104,7 +104,6 @@ fieldset {
 }
 
 #editLink, #returnLink {
-	float: right;
 	margin-right: 10px;
 }
 
@@ -130,4 +129,10 @@ fieldset {
 	color: #111;
 	display: block;
 	border: 1px solid #111;
+}
+
+#actions a {
+	margin-left: 8px;
+	margin-right: 8px;
+	
 }

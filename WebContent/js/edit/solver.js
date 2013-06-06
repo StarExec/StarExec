@@ -14,6 +14,7 @@ function initUI(){
 	// Setup which fields are expanded and which are not
 	$('fieldset:first').expandable(false);
 	$('fieldset:not(:first)').expandable(true);
+	
 	$("#dialog-confirm-delete").css("display", "none");
 	// Setup JQuery button icons
 	$('#delete').button({

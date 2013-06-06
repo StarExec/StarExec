@@ -980,6 +980,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
+	//TODO: Alter this function so that you can either copy OR mirror solvers.
 	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
@@ -1028,10 +1029,12 @@ public class RESTServices {
 		if(perm == null || !perm.canAddSolver()) {
 			return gson.toJson(3);	
 		}			
-
+		//TODO: If copying, here is where code should go to take all the current solvers, copy them, and get the new IDs
+		
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
 			int subspaceId;
+			
 			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			

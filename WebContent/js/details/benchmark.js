@@ -20,6 +20,7 @@ $(document).ready(function(){
 			});
 		}
 	});
+	$('#actions').expandable(true);
 	
 	initCommentsUI();
 	initComments(bid);
@@ -31,6 +32,7 @@ $(document).ready(function(){
 		$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
 		destroyOnReturn(token);
 	});
+	
 	
 });
 

@@ -8,8 +8,8 @@
 		int userId = user.getId();
 		if (userId!=R.PUBLIC_USER_ID){
 			request.setAttribute("userId", userId);
-			request.setAttribute("diskQuota", FileUtils.byteCountToDisplaySize(user.getDiskQuota()));
-			request.setAttribute("diskUsage", FileUtils.byteCountToDisplaySize(disk_usage));
+			request.setAttribute("diskQuota", Util.byteCountToDisplaySize(user.getDiskQuota()));
+			request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 		}
 		else{
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Only registered users can edit their accounts.");	

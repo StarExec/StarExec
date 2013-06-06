@@ -453,7 +453,7 @@ public class Solvers {
 	 * for the solver are also added. Every insert must pass for any of them to be added.
 	 * @param s the Solver to be added
 	 * @param spaceId the ID of the space we associate this solver with
-	 * @return True if the operation was a success, false otherwise
+	 * @return The solverID of the new solver, or -1 on failure
 	 * @author Skylar Stark
 	 */
 	public static int add(Solver s, int spaceId) {

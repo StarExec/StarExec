@@ -21,7 +21,7 @@
 		if(b != null) {
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
-			request.setAttribute("diskSize", FileUtils.byteCountToDisplaySize(b.getDiskSize()));
+			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			request.setAttribute("com", s);
 			request.setAttribute("depends", deps);
@@ -44,7 +44,7 @@
 <star:template title="${bench.name}" js="lib/jquery.cookie, common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/comments, common/table">				
 	<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	<fieldset>
-		<legend>details<c:if test="${usr.id == user.id}"> (<a href="/${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>)</c:if></legend>
+		<legend>details</legend>
 		<table class="shaded">
 			<thead>
 				<tr>
@@ -186,8 +186,17 @@
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>				
 -->
-
-	<c:if test="${downloadable}">
-		<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
-	</c:if>
+	<fieldset id="actions">
+		<legend>actions</legend>
+	
+		<c:if test="${usr.id == user.id}">
+			<a id="editLink" href="/${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>
+		</c:if>
+	 	
+		<c:if test="${downloadable}">
+			<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
+		</c:if>
+		
+	</fieldset>
+	
 </star:template>

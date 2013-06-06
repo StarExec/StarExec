@@ -854,7 +854,7 @@ function initSpaceExplorer(){
  * @author Todd Elvers
  */
 function removeBenchmarks(selectedBenches){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected benchmark(s) from ' + spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected benchmark(s) from ' + spaceName + '? This will NOT delete the selected benchmark(s)');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
@@ -998,7 +998,7 @@ function removeUsers(selectedUsers){
  * @author Todd Elvers & Skylar Stark
  */
 function removeSolvers(selectedSolvers){
-	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '? This will NOT delete the selected solver(s).');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({

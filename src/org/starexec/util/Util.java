@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -444,8 +445,8 @@ public class Util {
      * @author Aaron Stump
      */
     public static String docRoot(String s) {
-	initDocRoot();
-	return docRoot + s;
+    	initDocRoot();
+    	return docRoot + s;
     }
     /**
      * Prepend the "https://", the server name, and the document root, to form an absolute path (URL).
@@ -453,8 +454,21 @@ public class Util {
      * @author Aaron Stump
      */
     public static String url(String s) {
-	initDocRootUrl();
-	return docRootUrl + s;
+    	initDocRootUrl();
+    	return docRootUrl + s;
+    }
+    
+    public static String byteCountToDisplaySize(long bytes) {
+    	String[] suffix=new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
+    	int suffixIndex=0;
+    	double b=(double)bytes;
+    	while (b>1024) {
+    		suffixIndex+=1;
+    		b=b/1024;
+    	}
+    	DecimalFormat df=new DecimalFormat("#.##");
+    	
+    	return df.format(b) +" "+suffix[suffixIndex];
     }
 
 }
