@@ -63,7 +63,7 @@ CREATE PROCEDURE GetLeadersBySpaceId(IN _id INT)
 -- ordering results by a column, and sorting results in ASC or DESC order.  
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetNextPageOfSpaces;
-CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _userId INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _userId INT, IN _query TEXT, IN _publicUserId INT)
 	BEGIN
 		-- If _query is empty, get next page of Spaces without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
@@ -80,7 +80,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 								FROM	set_assoc
 								JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 								WHERE 	set_assoc.space_id = _spaceId
-								AND		user_assoc.user_id = _userId)								
+								AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId))								
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -100,7 +100,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 								FROM	set_assoc
 								JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 								WHERE 	set_assoc.space_id = _spaceId
-								AND		user_assoc.user_id = _userId)											
+								AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId))											
 				ORDER BY 
 					(CASE _colSortedOn
 						WHEN 0 THEN name
@@ -124,7 +124,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 								FROM	set_assoc
 								JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 								WHERE 	set_assoc.space_id = _spaceId
-								AND		user_assoc.user_id = _userId)
+								AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId))
 								
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(name			LIKE	CONCAT('%', _query, '%')
@@ -148,7 +148,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 								FROM	set_assoc
 								JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 								WHERE 	set_assoc.space_id = _spaceId
-								AND		user_assoc.user_id = _userId)											
+								AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId))											
 				AND 	(name			LIKE	CONCAT('%', _query, '%')
 				OR		description		LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY 
@@ -284,7 +284,7 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
-CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
+CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
 	BEGIN
 		SELECT 	COUNT(*) AS spaceCount
 		FROM 	spaces
@@ -292,7 +292,7 @@ CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 							FROM	set_assoc
 							JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 							WHERE 	set_assoc.space_id = _spaceId
-							AND		user_assoc.user_id = _userId);	
+							AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId));	
 	END //
 	
 	
