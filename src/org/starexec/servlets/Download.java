@@ -153,7 +153,7 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			
 			String path = s.getPath();
-			int index = path.lastIndexOf("\\");
+			int index = path.lastIndexOf(File.separator);
 			String tempdest = path.substring(index);
 			
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
@@ -182,7 +182,7 @@ public class Download extends HttpServlet {
 		
 		FileUtils.copyDirectory(tempSrcFile, tempDestFile);
 		
-		int index = dest.lastIndexOf("\\");
+		int index = dest.lastIndexOf(File.separator);
 		String tempdest = dest.substring(0, index);
 		
 		//Write to description file
@@ -685,7 +685,7 @@ public class Download extends HttpServlet {
 	
 	private void copyFile(String src, String dest, Queue<String> descriptions) throws IOException{
 		String curDesc = "no description";
-		//log.debug("copying file - source = " +src + ", dest = " + dest);
+		log.debug("copying file - source = " +src + ", dest = " + dest);
 		if (descriptions.size() != 0) {
 			curDesc = descriptions.remove();
 		}
@@ -694,7 +694,7 @@ public class Download extends HttpServlet {
 		File tempSrcFile = new File(src);
 		File tempDestFile = new File(dest);
 
-		int index = dest.lastIndexOf("\\");
+		int index = dest.lastIndexOf(File.separator);
 		String tempdest = dest.substring(0, index);
 		
 		//Write to description file
