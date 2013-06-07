@@ -140,9 +140,9 @@ public class SingleJobPair extends HttpServlet {
 			
 			// Pass new configuration, and the parent solver objects, to the database & return the result
 			log.debug("bench has id " + bench.getId());
-			int benchId = Benchmarks.add(bench, R.PUBLIC_SPACE_ID);			
+			Boolean benchAdded = Benchmarks.add(bench, R.PUBLIC_SPACE_ID);			
 			log.debug("bench now has id " + bench.getId());
-			if (benchId>=0){
+			if (benchAdded){
 				log.debug("userid " + R.PUBLIC_USER_ID);
 				log.debug("benchname = " + bench.getName());
 				log.debug("jobdescription = " + jobDescription);

@@ -49,8 +49,6 @@ public class Shell {
 			int infoCounter=1;
 			int outputCounter=1;
 			double interval=Double.valueOf(commandParams.get(R.PARAM_TIME))*1000;
-			commandParams.remove(R.PARAM_TIME);
-			
 			String nextName;
 			int status;
 			boolean infoDone=false;
@@ -62,11 +60,11 @@ public class Shell {
 				status=con.downloadArchive(infoURLParams, commandParams);
 				if (status!=R.SUCCESS_NOFILE) {
 					infoCounter+=1;
-				
-				} else if (status==R.SUCCESS_JOBDONE) {
+				}
+				if (status==R.SUCCESS_JOBDONE) {
 					infoDone=true;
-				
-				} else if (status<0) {
+				}
+				if (status<0) {
 					return status;
 				}
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
@@ -114,7 +112,7 @@ public class Shell {
 			
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 		
-			urlParams.put(R.FORMPARAM_ID,commandParams.get(R.PARAM_ID));
+			urlParams.put("id",commandParams.get("id"));
 			
 			if (c.equals(R.COMMAND_GETJOBOUT)) {
 				urlParams.put(R.FORMPARAM_TYPE,"j_outputs");
@@ -160,16 +158,16 @@ public class Shell {
 				if (commandParams.containsKey(R.FORMPARAM_SINCE)) {
 					urlParams.put(R.FORMPARAM_SINCE, commandParams.get(R.PARAM_SINCE));
 				} else {
-					urlParams.put(R.FORMPARAM_SINCE,String.valueOf(con.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
+					urlParams.put("since",String.valueOf(con.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
 				}
 				
 				
 			} else if (c.equals(R.COMMAND_GETNEWJOBOUT)) {
 				urlParams.put("type", "j_outputs");
-				if (commandParams.containsKey(R.PARAM_SINCE)) {
-					urlParams.put(R.FORMPARAM_SINCE, commandParams.get(R.PARAM_SINCE));
+				if (commandParams.containsKey("since")) {
+					urlParams.put("since", commandParams.get(R.PARAM_SINCE));
 				} else {
-					urlParams.put(R.FORMPARAM_SINCE,String.valueOf(con.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
+					urlParams.put("since",String.valueOf(con.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
 				}
 				
 			}
@@ -185,6 +183,7 @@ public class Shell {
 		} catch (Exception e) {
 			return R.ERROR_BAD_ARGS;
 		}
+		
 	}
 	/**
 	 * Handles all commands that start with "set," indicating a command
@@ -204,6 +203,8 @@ public class Shell {
 				serverStatus=con.setUserSetting("firstname",commandParams);
 			} else if (c.equals(R.COMMAND_SETLASTNAME)) {
 				serverStatus=con.setUserSetting("lastname",commandParams);
+			//} else if (c.equals(R.COMMAND_SETEMAIL)) {
+			//	serverStatus=con.setUserSetting("email",parameters.get("val"));
 			}  else if (c.equals(R.COMMAND_SETINSTITUTION)) {
 				serverStatus=con.setUserSetting("institution",commandParams);
 			} else if (c.equals(R.COMMAND_SETSPACEPUBLIC)) {
@@ -219,6 +220,7 @@ public class Shell {
 			//likely a null pointer because we are missing an important argument
 			return R.ERROR_BAD_ARGS;
 		}
+		
 	}
 	
 	/**
@@ -274,39 +276,6 @@ public class Shell {
 			} else if (c.equals(R.COMMAND_CREATESUBSPACE)) {
 				serverStatus=con.createSubspace(commandParams);
 			} 
-			else {
-				return R.ERROR_BAD_COMMAND;
-			}
-			
-			return serverStatus;
-		} catch (Exception e) {
-			return R.ERROR_BAD_ARGS;
-		}
-	}
-	
-	/**
-	 * Handles all commands that start with "delete," which remove
-	 * things from the server.
-	 * @param c The command given by the user
-	 * @param commandParams A set of parameter keys mapped to their values
-	 * @return An integer status code with negative numbers indicating errors
-	 * @author Eric Burns
-	 */
-	private int handleCopyCommand(String c, HashMap<String,String> commandParams) {
-		try {
-			int serverStatus=0;
-			
-			if (c.equals(R.COMMAND_COPYSOLVER)) {
-				serverStatus=con.copyPrimitives(commandParams, true,"solver");
-				
-			} else if (c.equals(R.COMMAND_MIRRORSOLVER)) {
-				serverStatus=con.copyPrimitives(commandParams, false,"solver");
-				
-			}  else if (c.equals(R.COMMAND_COPYBENCH)) {
-				serverStatus=con.copyPrimitives(commandParams, true,"benchmark");
-			} else if(c.equals(R.COMMAND_MIRRORBENCH))  {
-				serverStatus=con.copyPrimitives(commandParams, false,"benchmark");;
-			}
 			else {
 				return R.ERROR_BAD_COMMAND;
 			}
@@ -449,13 +418,15 @@ public class Shell {
 		}
 		
 		String [] splitCommand=command.split(" ");
+		
 		String c=splitCommand[0].toLowerCase().trim();
+		
 		HashMap<String,String> commandParams=setParams(command);
 		if (command.equalsIgnoreCase(R.COMMAND_EXIT)) {
 			if (con!=null) {
 				con.logout();
 			}
-			con=null;
+			
 			return R.SUCCESS_EXIT;
 		} else if (c.equals(R.COMMAND_HELP)) {
 			System.out.println(R.HELP_MESSAGE);
@@ -485,22 +456,13 @@ public class Shell {
 			
 			con=new Connection(commandParams);
 			valid=con.login();
-			
-			//if we couldn't log in, scrap this connection and return the error code
 			if (valid<0) {
 				con=null;
 				return valid;
 			}
-			
-			return R.SUCCESS_LOGIN;
-		} else if (c.equals(R.COMMAND_RUNFILE)) {
-			int valid=Validator.isValidRunFileRequest(commandParams);
-			if (valid<0) {
-				return valid;
-			}
-			this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
+			System.out.println("login successful");
 			return 0;
-		}
+		}	
 		int status;
 		if (con==null) {
 			return R.ERROR_NOT_LOGGED_IN;
@@ -509,9 +471,16 @@ public class Shell {
 		if (c.equals(R.COMMAND_LOGOUT)) {
 			con.logout();
 			con=null;
+			System.out.println("logout successful");
+			return 0;
 			
-			return R.SUCCESS_LOGOUT;
-			
+		} else if (c.equals(R.COMMAND_RUNFILE)) {
+			int valid=Validator.isValidRunFileRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
+			return 0;
 		} else if (c.equals(R.COMMAND_POLLJOB)) {
 			status=pollJob(commandParams);
 		}
@@ -527,19 +496,17 @@ public class Shell {
 			status=handleCreateCommand(c, commandParams);
 		} else if (c.startsWith("ls")) {
 			status=handleLSCommand(c, commandParams);
-		} else if (c.startsWith("copy") || c.startsWith("mirror")) {
-			status=handleCopyCommand(c,commandParams);
 		}
 		else {
+			
 			return R.ERROR_BAD_COMMAND;
 		}
-		//If our connection is no longer valid, attempt to get a new one and log back in without bothering
-		//the user
+		//If our connection is no longer valid, attempt to get a new one and log back in
 		if (con!=null && !con.isValid()) {
-			
-			con=new Connection(con);
+			con=new Connection(con.getBaseURL(),con.getUsername(),con.getPassword());
 			int valid=con.login();
 			if (valid<0) {
+				System.out.println("Connection to server was lost");
 				return R.ERROR_CONNECTION_LOST;
 			}
 		}
@@ -548,30 +515,23 @@ public class Shell {
 	}
 	
 	/**
-	 * Given an status code defined in R, prints the message that corresponds to that status code.
-	 * @param statusCode An integer status code.
+	 * Given an error code returned from a Connection, prints the error message defined
+	 * in R that corresponds to that error code.
+	 * @param errorCode An integer error code.
 	 * @author Eric Burns
 	 */
-	private static void printStatusMessage(int statusCode) {
+	private static void printErrorMessage(int errorCode) {
 		
-		if (statusCode<0) {
-			System.out.print("ERROR: ");
-			String message=R.errorMessages.get(statusCode);
-			if (message!=null) {
-				System.out.println(message);
-			} else {
-				System.out.println("Unknown error");
-			}
-			if(statusCode==R.ERROR_MISSING_PARAM) {
-				System.out.println("Missing param = \"" + Validator.getMissingParam()+  "\"");
-			}
-		} else if (statusCode>0) {
-			String message=R.successMessages.get(statusCode);
-			if (message!=null) {
-				System.out.println(message);
-			}
+		System.out.print("ERROR: ");
+		String message=R.errorMessages.get(errorCode);
+		if (message!=null) {
+			System.out.println(message);
+		} else {
+			System.out.println("Unknown error");
 		}
-		
+		if(errorCode==R.ERROR_MISSING_PARAM) {
+			System.out.println("Missing param = \"" + Validator.getMissingParam()+  "\"");
+		}
 	}
 	
 	/**
@@ -591,20 +551,27 @@ public class Shell {
 	public void runShell() {
 		int status;
 		try {
+			
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	       
 			while (true) {
 				
 				System.out.print("\nStarCom> ");
 				String nextLine = br.readLine();
 				status=parseCommand(nextLine);
-				printStatusMessage(status);
-				printWarningMessages();
-				//if the user typed 'exit,' quit the program
+				
 				if (status==R.SUCCESS_EXIT) {
+					System.out.println("\nGoodbye");
 					return;
-				} else if (status==R.ERROR_CONNECTION_LOST) {
-					con=null;
+				} else if (status<0) {
+					if (status==R.ERROR_CONNECTION_LOST) {
+						return;
+					}
+					printErrorMessage(status);
+					
 				}
+				printWarningMessages();
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -620,7 +587,7 @@ public class Shell {
 	 * @param verbose Indicates whether to print status
 	 * @author Eric Burns
 	 */
-	public int runFile(String filePath, boolean verbose) {
+	public void runFile(String filePath, boolean verbose) {
 		try {
 			BufferedReader br=new BufferedReader(new FileReader(filePath));
 			String line=br.readLine();
@@ -630,25 +597,23 @@ public class Shell {
 					System.out.println("Processing Command: "+line);
 				}
 				status=parseCommand(line);
+				if (status<0) {
+					if (status==R.ERROR_CONNECTION_LOST) {
+						return;
+					}
+					if (verbose) {
+						printErrorMessage(status);
+						
+					}
+				}
 				if (verbose) {
-					printStatusMessage(status);	
 					printWarningMessages();
-				}
-				
-				//either of the following two statuses indicate that we should stop
-				//processing the file
-				if (status==R.SUCCESS_EXIT) {
-					return status;
-				}
-				if (status==R.ERROR_CONNECTION_LOST) {
-					return status;
 				}
 				line=br.readLine();
 			}
-			return 0;
 		} catch (Exception e) {
-			
-			return R.ERROR_COMMAND_FILE_TERMINATING;
+			System.out.println("Internal error, teriminating session");
+			return;
 		}
 	}
 	
@@ -657,15 +622,12 @@ public class Shell {
 	/**
 	 * This function parses a command given by the user and extracts all of the parameters and flags
 	 * @param command The string given by the user at the command line
-	 * @return A HashMap containing key/value pairs representing parameters input by the user,
-	 * or null if there was a parsing error
+	 * @return A HashMap containing key/value pairs representing parameters input by the user
 	 * @author Eric Burns
 	 */
 	
 	private static HashMap<String,String> setParams(String command) {
 		List<String> args=Arrays.asList(command.split(" "));
-		
-		//the first element is the command, which we don't want
 		args=args.subList(1, args.size());
 		HashMap<String,String> answer=new HashMap<String,String>();
 		int index=0;
@@ -675,18 +637,18 @@ public class Shell {
 			x=args.get(index);
 			int equalsIndex=x.indexOf('=');
 			
-			//no equals sign means a parsing error, so return null
+			
 			if (equalsIndex==-1) {
-				return null;
+				answer.put(x.toLowerCase().trim(), null);
+				index+=1;
+				continue;
 			}
 			String key=x.substring(0,equalsIndex).toLowerCase();
 			
-			//we shouldn't have duplicate parameters-- indicates an error
+			//we shouldn't have duplicate entries-- indicates an error
 			if (answer.containsKey(key)) {
 				return null;
 			}
-			
-			//the value is everything up until the next token with an equals sign
 			value=new StringBuilder();
 			value.append(x.substring(equalsIndex+1));
 			index+=1;

@@ -153,7 +153,7 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			
 			String path = s.getPath();
-			int index = path.lastIndexOf(File.separator);
+			int index = path.lastIndexOf("\\");
 			String tempdest = path.substring(index);
 			
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
@@ -182,7 +182,7 @@ public class Download extends HttpServlet {
 		
 		FileUtils.copyDirectory(tempSrcFile, tempDestFile);
 		
-		int index = dest.lastIndexOf(File.separator);
+		int index = dest.lastIndexOf("\\");
 		String tempdest = dest.substring(0, index);
 		
 		//Write to description file
@@ -693,9 +693,8 @@ public class Download extends HttpServlet {
 				
 		File tempSrcFile = new File(src);
 		File tempDestFile = new File(dest);
-		
-		
-		int index = dest.lastIndexOf(File.separator);
+
+		int index = dest.lastIndexOf("\\");
 		String tempdest = dest.substring(0, index);
 		
 		//Write to description file

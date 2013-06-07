@@ -60,6 +60,7 @@ public class UploadSolver extends HttpServlet {
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
+    private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
     private static final String UPLOAD_METHOD="upMethod";
     private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
@@ -256,11 +257,10 @@ public class UploadSolver extends HttpServlet {
 			
 			int configs_empty = 0;
 			//Find configurations from the top-level "bin" directory
-			for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
+			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
 			}
-			
-			if (newSolver.getConfigurations().isEmpty()) {
+			if (findConfigs(uniqueDir.getAbsolutePath()).isEmpty()) {
 				returnArray[1] = -4; //It is empty
 			}
 			//Try adding the solver to the database
@@ -281,7 +281,52 @@ public class UploadSolver extends HttpServlet {
 		answer[0]=i;
 		answer[1]=j;
 		return answer;
-	}	
+	}
+
+	/**
+	 * Finds solver run configurations from a specified bin directory. Run configurations
+	 * must start with a certain string specified in the list of constants. If no configurations
+	 * are found, an empty list is returned.
+	 * @param fromPath the base directory to find the bin directory in
+	 * @return a list containing run configurations found in the bin directory
+	 */
+	private List<Configuration> findConfigs(String fromPath){		
+		File binDir = new File(fromPath, R.SOLVER_BIN_DIR);
+		if(!binDir.exists()) {
+			return Collections.emptyList();
+		}
+		
+		List<Configuration> returnList = new ArrayList<Configuration>();
+		
+		for(File f : binDir.listFiles()){			
+			if(f.isFile() && f.getName().startsWith(UploadSolver.CONFIG_PREFIX)){
+				Configuration c = new Configuration();								
+				c.setName(f.getName().substring(UploadSolver.CONFIG_PREFIX.length()));
+				returnList.add(c);
+				
+				// Make sure the configuration has the right line endings
+				Util.normalizeFile(f);
+			}				
+			//f.setExecutable(true, false);	//previous version only got top level		
+		}		
+		setHierarchyExecutable(binDir);//should make entire hierarchy executable
+		return returnList;
+	}
+	/*
+	 * Sets every file in a hierarchy to be executable
+	 * @param rootDir the directory that we wish to have executable files in
+	 * @return Boolean true if successful
+	 */
+	private Boolean setHierarchyExecutable(File rootDir){
+		for (File f : rootDir.listFiles()){
+			f.setExecutable(true,false);
+			if (f.isDirectory()){
+				setHierarchyExecutable(f);
+			}
+		}
+		return true;
+	}
+	
 	
 	/**
 	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.

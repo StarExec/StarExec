@@ -980,15 +980,13 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
-	
+	//TODO: Alter this function so that you can either copy OR mirror solvers.
 	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copyToSubspaces", request)
-				|| !Util.paramExists("copy", request)
-				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
-				|| !Validator.isValidBool(request.getParameter("copy"))){
+				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
 			return gson.toJson(2);
 		}
 		
@@ -1001,8 +999,6 @@ public class RESTServices {
 		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		
-		//Get the flag that indicates whether the solver is being copied or mirrored
-		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
 		// Convert the solvers to copy to an int list
 		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
@@ -1033,36 +1029,8 @@ public class RESTServices {
 		if(perm == null || !perm.canAddSolver()) {
 			return gson.toJson(3);	
 		}			
+		//TODO: If copying, here is where code should go to take all the current solvers, copy them, and get the new IDs
 		
-		if (copy) {
-			List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-			//first, validate that the user has enough disk quota to copy all the selected solvers
-			//we don't copy any unless they have room for all of them
-			long userDiskUsage=Users.getDiskUsage(requestUserId);
-			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
-			userDiskQuota-=userDiskUsage;
-			for (Solver s : oldSolvers) {
-				userDiskQuota-=s.getDiskSize();
-			}
-			if (userDiskQuota<0) {
-				
-				return gson.toJson(8);
-			}
-			
-			List<Integer>newSolverIds=new ArrayList<Integer>();
-			int newID;
-			for (Solver s : oldSolvers) {
-				newID=Solvers.copySolver(s, requestUserId, spaceId);
-				
-				if (newID==-1) {
-					log.error("Unable to copy solver "+s.getName());
-					//TODO: What do we do if we fail to copy a single solver? Many might have been copied already
-				} else {
-					newSolverIds.add(newID);
-				}
-			}
-			selectedSolvers=newSolverIds;
-		}
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
 			int subspaceId;
@@ -1070,12 +1038,8 @@ public class RESTServices {
 			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
-			// Add the destination space to the list of spaces to associate the solvers with only
-			//if we aren't copying. If we're copying, we did this already
-			if (!copy) {
-				subspaceIds.add(spaceId);
-			}
-			
+			// Add the destination space to the list of spaces to associate the solvers with
+			subspaceIds.add(spaceId);
 			
 			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
 			for(Space subspace : subspaces){
@@ -1117,10 +1081,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
-		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
-				|| !Util.paramExists("copy", request)
-				|| !Validator.isValidBool(request.getParameter("copy"))){
+		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(2);
 		}
 		
@@ -1160,36 +1121,12 @@ public class RESTServices {
 				return gson.toJson(6);
 			}
 		}
-		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
-		if (copy) {
-			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs);
-			long userDiskUsage=Users.getDiskUsage(requestUserId);
-			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
-			userDiskQuota-=userDiskUsage;
-			for (Benchmark b :oldBenchs) {
-				userDiskQuota-=b.getDiskSize();
-			}
-			if (userDiskQuota<0) {
-				return gson.toJson(8);
-			}
-			int benchId=-1;
-			for (Benchmark b : oldBenchs) {
-				benchId=Benchmarks.copyBenchmark(b,requestUserId,spaceId);
-				if (benchId<0) {
-					log.error("Benchmark "+b.getName()+" could not be copied successfully");
-					return gson.toJson(1);
-				}
-				log.debug("Benchmark "+b.getName()+" copied successfully");
-			}
-			return gson.toJson(0);
-			
-		} else {
-			// Make the associations
-			boolean success = Benchmarks.associate(selectedBenchs, spaceId);
-			
-			// Return a value based on results from database operation
-			return success ? gson.toJson(0) : gson.toJson(1);
-		}
+		
+		// Make the associations
+		boolean success = Benchmarks.associate(selectedBenchs, spaceId);
+		
+		// Return a value based on results from database operation
+		return success ? gson.toJson(0) : gson.toJson(1);
 	}
 	
 	/**

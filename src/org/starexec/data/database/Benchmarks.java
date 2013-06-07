@@ -10,10 +10,7 @@ import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
@@ -41,7 +37,6 @@ import org.starexec.util.Validator;
 public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
 	public static final int NO_TYPE = 1;
-	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
 	
 	/**
 	 * Associates the benchmarks with the given ids to the given space
@@ -121,37 +116,37 @@ public class Benchmarks {
 	 * Adds a single benchmark to the database under the given spaceId
 	 * @param benchmark The benchmark to add to the database
 	 * @param spaceId The id of the space the benchmark will belong to
-	 * @return The new benchmark ID on success, -1 otherwise
+	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static int add(Benchmark benchmark, int spaceId) throws Exception{
+	public static boolean add(Benchmark benchmark, int spaceId) throws Exception{
 		if (Benchmarks.isBenchValid(benchmark.getAttributes())){
 			Connection con = null;			
+
 			try {
 				con = Common.getConnection();
 				Common.beginTransaction(con);
 
 				// Add benchmark to database
-				int benchId = Benchmarks.add(con, benchmark, spaceId);
+				boolean benchAdded = Benchmarks.add(con, benchmark, spaceId);
 
-				if(benchId>=0){
+				if(benchAdded){
 					//Common.endTransaction(con);
 					log.debug("bench successfully added");
-					return benchId;
+					return true;
 				} else {
 					//will throw exception in calling method
-					return -1;
+					return false;
 				}
 			} catch (Exception e){
 				Common.doRollback(con);
 				log.error(e.getMessage(), e);	
 				throw e;
-				
 			} finally {
 				Common.safeClose(con);
 			}
 		}
-		return -1;
+		return true;
 	}
 
 	/**
@@ -507,10 +502,10 @@ public class Benchmarks {
 	 * @param con The connection the operation will take place on
 	 * @param benchmark The benchmark to add to the database
 	 * @param spaceId The id of the space the benchmark will belong to
-	 * @return The new benchmark ID on success, -1 otherwise
+	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection conParam, Benchmark benchmark, int spaceId) throws Exception {				
+	protected static boolean add(Connection conParam, Benchmark benchmark, int spaceId) throws Exception {				
 		Connection con = null;
 		try{
 			con = Common.getConnection();
@@ -555,12 +550,12 @@ public class Benchmarks {
 			}				
 			Common.endTransaction(con);
 			log.info("(within internal add method) Added Benchmark " + benchmark.getName());	
-			return benchmark.getId();
+			return true;
 		}
 		catch (Exception e){			
 			log.error("add says " + e.getMessage(), e);
 			Common.doRollback(con);
-			return -1;
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -809,7 +804,7 @@ public class Benchmarks {
 		log.info("in add (list) method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {
 			if (Benchmarks.isBenchValid(b.getAttributes())){
-				if(Benchmarks.add(conParam, b, spaceId)<0) {
+				if(!Benchmarks.add(conParam, b, spaceId)) {
 					throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
 				}
 			}
@@ -820,7 +815,7 @@ public class Benchmarks {
 	protected static void addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {
-			if(Benchmarks.add(b, spaceId)<0) {
+			if(!Benchmarks.add(b, spaceId)) {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setErrorMessage(statusId, message);
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
@@ -848,60 +843,6 @@ public class Benchmarks {
 		}
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 		return benchmarks;	
-	}
-	
-	/**
-	 * Makes a deep copy of an existing benchmark, gives it a new user, and places it
-	 * into a space
-	 * @param s The existing benchmark to copy
-	 * @param userId The userID that the new benchmark will be given
-	 * @param spaceId The space ID of the space to place the new benchmark in to
-	 * @return The ID of the new benchmark, or -1 on failure
-	 * @author Eric Burns
-	 */
-	
-	public static int copyBenchmark(Benchmark b, int userId, int spaceId) {
-		log.debug("Copying benchmark "+b.getName()+" to new user id= "+String.valueOf(userId));
-		Benchmark newBenchmark=new Benchmark();
-		newBenchmark.setAttributes(b.getAttributes());
-		newBenchmark.setType(b.getType());
-		
-		newBenchmark.setDescription(b.getDescription());
-		newBenchmark.setName(b.getName());
-		newBenchmark.setUserId(userId);
-		newBenchmark.setUploadDate(b.getUploadDate());
-		newBenchmark.setDiskSize(b.getDiskSize());
-		newBenchmark.setDownloadable(b.isDownloadable());
-		
-		File benchmarkDirectory=new File(b.getPath());
-		
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
-		uniqueDir = new File(uniqueDir, newBenchmark.getName());
-		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-		uniqueDir.mkdirs();
-		newBenchmark.setPath(uniqueDir.getAbsolutePath());
-		try {
-			FileUtils.copyDirectory(benchmarkDirectory, uniqueDir);
-			
-			
-			int benchId= Benchmarks.add(newBenchmark, spaceId);
-			if (benchId<0) {
-				return benchId;
-			}
-			
-			List<BenchmarkDependency> deps=Benchmarks.getBenchDependencies(b.getId());
-			
-			for (BenchmarkDependency dep : deps) {
-				Benchmarks.addBenchDependency(benchId, dep.getSecondaryBench().getId(), dep.getDependencyPath());
-			}
-			return benchId;
-			
-		} catch (Exception e) {
-			log.error("copyBenchmark says "+e.getMessage());
-			return -1;
-		}
-		
-		
 	}
 
 	/**

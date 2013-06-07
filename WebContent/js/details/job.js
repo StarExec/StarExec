@@ -43,19 +43,11 @@ function initUI(){
 	$('fieldset:first, fieldset:eq(1)').expandable(false);
 	$('fieldset:not(:first, :eq(1))').expandable(true);
 	
-	$('#pairTbl tbody').delegate("a", "click", function(event) {
-		event.stopPropogation();
-	});
-
-	
-	//Set up row click to send to pair details page
+	// Set up row click to send to pair details page
 	$("#pairTbl tbody").delegate("tr", "click", function(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
-
-
-	
 	
 }
 
