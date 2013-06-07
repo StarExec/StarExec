@@ -2,6 +2,7 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,8 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -30,6 +33,7 @@ public class AddSpace extends HttpServlet {
 	private static final String name = "name";
 	private static final String description = "desc";
 	private static final String locked = "locked";	
+	private static final String users = "users";
 	private static final String addSolver = "addSolver";
 	private static final String addBench = "addBench";
 	private static final String addUser = "addUser";
@@ -92,6 +96,20 @@ public class AddSpace extends HttpServlet {
 		}
 				
 		int newSpaceId = Spaces.add(s, spaceId, userId);
+		
+		//Inherit Users
+		boolean inherit = Boolean.parseBoolean((String)request.getParameter(users));
+		log.debug("inherit = " + inherit);
+		if (inherit) {
+			log.debug("Adding inherited users");
+			List<User> users = Spaces.getUsers(spaceId);
+			log.debug("parent users = " + users);
+			for (User u : users) {
+				log.debug("users = " + u.getFirstName());
+				int tempId = u.getId();
+				Users.associate(tempId, newSpaceId);
+			}
+		}
 		
 		if(newSpaceId <= 0) {			
 			// If it failed, notify an error
