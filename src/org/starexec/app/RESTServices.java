@@ -1157,7 +1157,7 @@ public class RESTServices {
 			
 			// Make sure that the benchmark has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), spaceId, 2)) {
-				return gson.toJson(6);
+				return gson.toJson(7);
 			}
 		}
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
@@ -1250,7 +1250,7 @@ public class RESTServices {
 			
 			// Make sure that the job has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Jobs.getDetailed(id).getName(), spaceId, 3)) {
-				return gson.toJson(6);
+				return gson.toJson(7);
 			}
 		}		
 		
@@ -2084,7 +2084,7 @@ public class RESTServices {
 			
 			// Make sure that the subspace has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), spaceId, 4)) {
-				return gson.toJson(6);
+				return gson.toJson(7);
 			}
 		}
 		

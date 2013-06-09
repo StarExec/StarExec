@@ -384,11 +384,7 @@ function processErrorCode(errorCode, prim, destName) {
 		showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
 		break;
 	case 6: // User doesn't have addSolver permission in one or more of the subspaces of the 'from space'
-		if (prim=="solvers" || prim=="users") {
-			showMessage('error', "you do not have permissions to copy " +prim+ " to one of the subspaces of" + destName, 5000);
-		} else if (prim=="benchmarks" || prim==subspaces) {
-			showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name.", 5000);
-		}
+		showMessage('error', "you do not have permissions to copy " +prim+ " to one of the subspaces of" + destName, 5000);
 		break;
 	case 7: // There exists a solver with the same name
 		showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name in " + destName, 5000);
@@ -684,6 +680,16 @@ function onSpaceDrop(event, ui) {
 	}
 }
 
+/**
+ * Sends a copy benchmark request to the server
+ * @param ids The IDs of the benchmarks to copy
+ * @param destSpace The ID of the destination space
+ * @param spaceId The ID of the from space
+ * @param copy A boolean indicating whether to copy (true) or mirror (false).
+ * @param destName The name of the destination space
+ * @author Eric Burns
+ */
+
 function doBenchmarkPost(ids,destSpace,spaceId,copy,destName) {
 	// Make the request to the server				
 	$.post(  	    		
@@ -706,6 +712,16 @@ function doBenchmarkPost(ids,destSpace,spaceId,copy,destName) {
 		showMessage('error',"Internal error copying benchmarks",5000);
 	});
 }
+
+/**
+ * Sends a copy solver request to the server
+ * @param ids The IDs of the solvers to copy
+ * @param destSpace The ID of the destination space
+ * @param spaceId The ID of the from space
+ * @param copy A boolean indicating whether to copy (true) or mirror (false).
+ * @param destName The name of the destination space
+ * @author Eric Burns
+ */
 
 function doSolverPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
 	// Make the request to the server	
@@ -1270,6 +1286,10 @@ function removeComment(ids){
 
 }
 
+
+//redraw the job table every 10 seconds so we can see continuous results
+setInterval(jobTable.fnDraw,10000);
+
 /**
  * Handles querying for pages in a given DataTable object
  * 
@@ -1280,7 +1300,7 @@ function removeComment(ids){
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var tableName = $(this).attr('id');
-
+	
 	// Extract the id of the currently selected space from the DOM
 	var idOfSelectedSpace = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 
@@ -1314,15 +1334,15 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 					// Update the number displayed in this DataTable's fieldset
 					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-
+				
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
-
+				
 				// If the primitive type is 'job', then color code the results appropriately
 				if('j' == tableName[0]){
 					colorizeJobStatistics();
 				} 
-
+				alert("here");
 				// Make the table that was just populated draggable too
 				initDraggable('#' + tableName);
 
