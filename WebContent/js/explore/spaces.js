@@ -24,7 +24,6 @@ $(document).ready(function(){
 	//redraw the job table every 10 seconds so we can see continuous results
 	setInterval(function() {
 		jobTable.fnDraw(true);
-		alert("here");
 	},10000);
 
 
