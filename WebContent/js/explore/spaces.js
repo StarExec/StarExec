@@ -20,6 +20,10 @@ $(document).ready(function(){
 
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
+	
+	//redraw the job table every 10 seconds so we can see continuous results
+	setInterval(jobTable.fnDraw,10000);
+
 
 });
 
@@ -1285,11 +1289,6 @@ function removeComment(ids){
 	}
 
 }
-
-
-//redraw the job table every 10 seconds so we can see continuous results
-setInterval(jobTable.fnDraw,10000);
-
 /**
  * Handles querying for pages in a given DataTable object
  * 
@@ -1342,7 +1341,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				if('j' == tableName[0]){
 					colorizeJobStatistics();
 				} 
-				alert("here");
+				
 				// Make the table that was just populated draggable too
 				initDraggable('#' + tableName);
 
