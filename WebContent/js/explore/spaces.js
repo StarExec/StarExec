@@ -22,7 +22,10 @@ $(document).ready(function(){
 	initSpaceDetails();
 	
 	//redraw the job table every 10 seconds so we can see continuous results
-	setInterval(jobTable.fnDraw,10000);
+	setInterval(function() {
+		jobTable.fnDraw(true);
+		alert("here");
+	},10000);
 
 
 });
