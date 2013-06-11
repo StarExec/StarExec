@@ -620,7 +620,7 @@ public class Jobs {
 		Properties prop;
 		while(results.next()){
 			id=results.getInt("pair_id");
-			
+			log.debug("Found attribute for job pair = "+id);
 			if (props.containsKey(id)) {
 				prop=props.get(id);
 			} else {
@@ -909,11 +909,11 @@ public class Jobs {
 			}
 			log.debug("about to get attributes for job " +jobId );
 			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con2,jobId);
-			log.debug("just got "+ props.keySet().size() +"out of"+ returnList.size() + " attributes for job " +jobId);
+			log.debug("just got "+ props.keySet().size() +" out of "+ returnList.size() + " attributes for job " +jobId);
 			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
 				JobPair jp = returnList.get(i);
-				log.debug("setting detailed for" + jp.getId());
+				log.debug("setting details for " + jp.getId());
 				jp.setNode(neededNodes.get(nodeIdList.get(i)));
 				jp.setBench(neededBenchmarks.get(benchIdList.get(i)));
 				jp.setSolver(neededSolvers.get(configIdList.get(i)));
