@@ -148,6 +148,8 @@ public class Benchmarks {
 			} finally {
 				Common.safeClose(con);
 			}
+		} else {
+			log.debug("Add called on invalid benchmark, no additions will be made to the database");
 		}
 		return -1;
 	}
@@ -882,6 +884,7 @@ public class Benchmarks {
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
 			int benchId= Benchmarks.add(newBenchmark, spaceId);
 			if (benchId<0) {
+				log.error("Benchmark being copied could not be successfully added to the database");
 				return benchId;
 			}
 			
