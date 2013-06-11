@@ -873,6 +873,9 @@ public class Benchmarks {
 		newBenchmark.setDiskSize(b.getDiskSize());
 		newBenchmark.setDownloadable(b.isDownloadable());
 		
+		//this benchmark must be valid, since it is just a copy of 
+		//an old benchmark that already passed validation
+		newBenchmark.getAttributes().put("starexec-valid", "true");
 		File benchmarkFile=new File(b.getPath());
 		
 		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
