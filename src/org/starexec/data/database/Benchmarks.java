@@ -877,10 +877,9 @@ public class Benchmarks {
 		uniqueDir = new File(uniqueDir, newBenchmark.getName());
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		uniqueDir.mkdirs();
-		newBenchmark.setPath(uniqueDir.getAbsolutePath());
+		newBenchmark.setPath(uniqueDir.getAbsolutePath()+File.separator+benchmarkFile.getName());
 		try {
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
-			
 			int benchId= Benchmarks.add(newBenchmark, spaceId);
 			if (benchId<0) {
 				return benchId;
