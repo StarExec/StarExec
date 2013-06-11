@@ -873,9 +873,13 @@ public class Benchmarks {
 			newBenchmark.setUploadDate(b.getUploadDate());
 			newBenchmark.setDiskSize(b.getDiskSize());
 			newBenchmark.setDownloadable(b.isDownloadable());
-		
-		//this benchmark must be valid, since it is just a copy of 
-		//an old benchmark that already passed validation
+			
+			if (newBenchmark.getAttributes()==null) {
+				newBenchmark.setAttributes(new Properties());
+			}
+			
+			//this benchmark must be valid, since it is just a copy of 
+			//an old benchmark that already passed validation
 			newBenchmark.getAttributes().put("starexec-valid", "true");
 			File benchmarkFile=new File(b.getPath());
 		
@@ -1113,7 +1117,7 @@ public class Benchmarks {
 	 * @return A list of benchmark object representing the benchmarks with the given IDs
 	 * @author Tyler Jensen
 	 */
-	public static List<Benchmark> get(List<Integer> benchIds) {
+	public static List<Benchmark> get(List<Integer> benchIds, boolean includeAttrs) {
 		Connection con = null;			
 
 		try {
@@ -1122,7 +1126,12 @@ public class Benchmarks {
 
 			for(int id : benchIds) {				
 				benchList.add(Benchmarks.get(con, id));
+				if (includeAttrs) {
+					benchList.get(benchList.size()-1).setAttributes(Benchmarks.getAttributes(con,id));
+				}
 			}
+			
+			
 
 			return benchList;
 		} catch (Exception e){			
@@ -1132,6 +1141,10 @@ public class Benchmarks {
 		}
 
 		return null;
+	}
+	
+	public static List<Benchmark> get(List<Integer> benchIds) {
+		return get(benchIds,false);
 	}
 
 

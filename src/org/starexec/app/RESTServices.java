@@ -1161,7 +1161,7 @@ public class RESTServices {
 		}
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
 		if (copy) {
-			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs);
+			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs,true);
 			long userDiskUsage=Users.getDiskUsage(requestUserId);
 			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
 			userDiskQuota-=userDiskUsage;
