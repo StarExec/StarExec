@@ -407,6 +407,15 @@ public class Connection {
 		}
 	}
 	
+	
+	/**
+	 * Sends a copy or mirror request to the StarExec server and returns a status code
+	 * indicating the result of the request
+	 * @param commandParams The parameters given by the user at the command line.
+	 * @param copy True if a copy should be performed, and false if a mirror should be performed.
+	 * @param type The type of primitive being copied.
+	 * @return An integer error code where 0 indicates success and a negative number is an error.
+	 */
 	public int copyPrimitives(HashMap<String,String> commandParams, boolean copy, String type) {
 		try {
 			int valid=Validator.isValidCopyRequest(commandParams);
@@ -417,7 +426,12 @@ public class Connection {
 			String urlExtension;
 			if (type.equals("solver")) {
 				urlExtension=R.URL_COPYSOLVER;
-			} else {
+			} else if (type.equals("space")) {
+				urlExtension=R.URL_COPYSPACE;
+			} else if (type.equals("job")) {
+				urlExtension=R.URL_COPYJOB;
+			}
+			else {
 				urlExtension=R.URL_COPYBENCH;
 			}
 			
@@ -426,23 +440,27 @@ public class Connection {
 			HttpPost post=new HttpPost(baseURL+urlExtension);
 			
 			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
+			
+			//not all of the following are needed for every copy request, but including them does no harm
+			//and allows all the copy commands to be handled by this function
 			params.add(new BasicNameValuePair("copyToSubspaces", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
 			params.add(new BasicNameValuePair("fromSpace",commandParams.get(R.PARAM_FROM)));
 			params.add(new BasicNameValuePair("selectedIds[]",commandParams.get(R.PARAM_ID)));
 			params.add(new BasicNameValuePair("copy",String.valueOf(copy)));
+			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			post=(HttpPost) setHeaders(post);
 			
 			HttpResponse response=client.execute(post);
-			
+			setSessionIDIfExists(response.getAllHeaders());
 			//we should be getting a json string back
 			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
 			StringBuilder builder = new StringBuilder();
 			for (String line = null; (line = reader.readLine()) != null;) {
 			    builder.append(line).append("\n");
 			}
-			post.getEntity().getContent().close();
+			response.getEntity().getContent().close();
 			JsonParser parser=new JsonParser();
 			
 			JsonElement jsonE=parser.parse(builder.toString());
@@ -450,12 +468,17 @@ public class Connection {
 			JsonPrimitive p=jsonE.getAsJsonPrimitive();
 			if (p.getAsInt()==0) {
 				return 0;
-			} else {
+				
+			} else if (p.getAsInt()>=3 && p.getAsInt()<=6) {
+				return R.ERROR_PERMISSION_DENIED;
+			} else if (p.getAsInt()==7) {
+				return R.ERROR_NAME_NOT_UNIQUE;
+			} else if (p.getAsInt()==8) {
+				return R.ERROR_INSUFFICIENT_QUOTA;
+			} 
+			else {
 				return R.ERROR_SERVER;
 			}
-			
-			
-
 		} catch (Exception e) {
 			return R.ERROR_SERVER;
 		}
@@ -492,7 +515,7 @@ public class Connection {
 			}
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
-			params.add(new BasicNameValuePair("parent", commandParams.get("id")));
+			params.add(new BasicNameValuePair("parent", commandParams.get(R.PARAM_ID)));
 			params.add(new BasicNameValuePair("name",name));
 			params.add(new BasicNameValuePair("desc",desc));
 			params.add(new BasicNameValuePair("locked",locked.toString()));
@@ -522,6 +545,38 @@ public class Connection {
 	}
 	
 	/**
+	 * Removes the association between a primitive and a space on StarExec
+	 * @param commandParams Parameters given by the user
+	 * @param type The type of primitive being remove
+	 * @return 0 on success, and a negative error code on failure
+	 * @author Eric Burns
+	 */
+	public int removePrimitive(HashMap<String,String> commandParams,String type) {
+		try {
+			int valid=Validator.isValidRemoveRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_FROM));
+			
+			//first sets username and password data into HTTP POST request
+			List<NameValuePair> params=new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]", commandParams.get(R.PARAM_ID)));
+			
+			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
+			
+			HttpResponse response=client.execute(post);
+			
+			setSessionIDIfExists(response.getAllHeaders());
+			response.getEntity().getContent().close();
+			
+			return 0;
+		} catch (Exception e) {
+			return R.ERROR_SERVER;
+		}
+	}
+	
+	/**
 	 * Deletes a primitive on StarExec
 	 * @param commandParams A HashMap of key/value pairs given by the user at the command line
 	 * @param type -- The type of primitive to delete
@@ -529,13 +584,13 @@ public class Connection {
 	 * @author Eric Burns
 	 */
 	
-	public int deleteItem(HashMap<String,String> commandParams, String type) {
+	public int deletePrimitive(HashMap<String,String> commandParams, String type) {
 		try {
 			int valid=Validator.isValidDeleteRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
-			HttpPost post=new HttpPost(baseURL+R.URL_DELETEITEM+"/"+type+"/"+commandParams.get(R.PARAM_ID));
+			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_ID));
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());

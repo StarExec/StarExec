@@ -26,10 +26,8 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
@@ -214,6 +212,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
+	@SuppressWarnings("unused")
 	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		if (benchmarks.size()>0){
@@ -244,8 +243,7 @@ public class Benchmarks {
 
 					Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
 
-				}
-				else{
+				} else{
 					log.warn("Problem validating benchmark depedencies for space " + spaceId);
 				}
 
@@ -637,6 +635,7 @@ public class Benchmarks {
 	}
 
 	// just for testing locally
+	@SuppressWarnings("unused")
 	public static boolean testDepCode(Benchmark bench, int userId){
 		//Connection con = null;
 		log.debug("Testing Dep Code on " + bench.getName());
@@ -772,7 +771,6 @@ public class Benchmarks {
 			Integer benchId = -1;
 
 			if(results.next()){
-				Benchmark b = new Benchmark();
 				benchId = (results.getInt("bench.id"));
 				log.debug("Bench Id = " + benchId);
 			}		
@@ -1515,6 +1513,7 @@ public class Benchmarks {
 	 * 
 	 * @author Wyatt Kaiser
 	 */
+	@SuppressWarnings("deprecation")
 	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) throws Exception {
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);
@@ -1522,7 +1521,7 @@ public class Benchmarks {
 		space.setName(directory.getName());
 		space.setPermission(perm);
 		String strUnzipped = "";
-		String name = "";
+		
 		// Search for description file within the directory...
 		for (File f : directory.listFiles()) {
 			if(f.getName().equals(R.BENCHMARK_DESC_PATH)){
@@ -1597,8 +1596,6 @@ public class Benchmarks {
 	public static List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
 		// Initialize the list we will return at the end...
 		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-		String strUnzipped = "";
-		String name = "";
 		
 		// For each file in the directory
 		for(File f : directory.listFiles()) {

@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,9 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
-import org.starexec.servlets.UploadSolver;
 import org.starexec.util.Util;
 
 /**

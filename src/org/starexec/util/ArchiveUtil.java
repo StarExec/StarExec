@@ -1,34 +1,27 @@
 package org.starexec.util;
 
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Queue;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.tar.*;
-import org.apache.commons.compress.archivers.zip.*;
-import org.apache.commons.compress.compressors.CompressorInputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
-import org.apache.commons.compress.compressors.gzip.*;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -298,27 +291,6 @@ public class ArchiveUtil {
 		is.close();
 		bis.close();
 		ais.close();
-		ArchiveUtil.removeArchive(fileName);
-	}
-
-	/**
-	 * Extracts a GZIP file and removes the original if he extraction was successful.
-	 * @param fileName The full path to the file
-	 * @param destination Where to extract the contents to
-	 * 
-	 * @author Tyler Jensen
-	 */
-	private static void extractGZ(String fileName, String destination) throws Exception {
-		// Use the Apache commons compression library to magically extract a GZIP file...
-		log.debug("extractingGZ");
-		InputStream is = new FileInputStream(fileName);
-		BufferedInputStream bis = new BufferedInputStream(is);		
-		CompressorInputStream in = new CompressorStreamFactory().createCompressorInputStream("gz", bis);
-		FileOutputStream out = new FileOutputStream(new File(destination, Util.getFileNameOnly(fileName)));
-		IOUtils.copy(in, out);				
-
-		in.close();
-		out.close();
 		ArchiveUtil.removeArchive(fileName);
 	}
 

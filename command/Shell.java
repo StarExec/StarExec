@@ -306,6 +306,47 @@ public class Shell {
 				serverStatus=con.copyPrimitives(commandParams, true,"benchmark");
 			} else if(c.equals(R.COMMAND_MIRRORBENCH))  {
 				serverStatus=con.copyPrimitives(commandParams, false,"benchmark");;
+			} else if (c.equals(R.COMMAND_COPYSPACE)) {
+				
+				serverStatus=con.copyPrimitives(commandParams,true,"space");
+			} else if (c.equals(R.COMMAND_COPYJOB)) {
+				serverStatus=con.copyPrimitives(commandParams,true,"job");
+			} else if (c.equals(R.COMMAND_MIRRORUSER)) {
+				serverStatus=con.copyPrimitives(commandParams, false, "user");
+			}
+			else {
+				return R.ERROR_BAD_COMMAND;
+			}
+			
+			return serverStatus;
+		} catch (Exception e) {
+			return R.ERROR_BAD_ARGS;
+		}
+	}
+	
+	/**
+	 * Handles all commands that start with "remove," which remove
+	 * associations between primitives and spaces on the server
+	 * @param c The command given by the user
+	 * @param commandParams A set of parameter keys mapped to their values
+	 * @return An integer status code with negative numbers indicating errors
+	 * @author Eric Burns
+	 */
+	private int handleRemoveCommand(String c, HashMap<String,String> commandParams) {
+		try {
+			int serverStatus=0;
+			
+			//the types specified below must match the types given in RESTServices.java
+			if (c.equals(R.COMMAND_REMOVEBENCHMARK)) {
+				serverStatus=con.removePrimitive(commandParams, "benchmark");
+			} else if (c.equals(R.COMMAND_REMOVESOLVER) || c.equals(R.COMMAND_DELETEPOSTPROC)) {
+				serverStatus=con.removePrimitive(commandParams, "solver");
+			}  else if (c.equals(R.COMMAND_REMOVEUSER)) {
+				serverStatus=con.removePrimitive(commandParams,"user");
+			} else if(c.equals(R.COMMAND_REMOVEJOB))  {
+				serverStatus=con.removePrimitive(commandParams, "job");
+			} else if (c.equals(R.COMMAND_REMOVESUBSPACE)) {
+				serverStatus=con.removePrimitive(commandParams,"subspace");
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -330,17 +371,17 @@ public class Shell {
 			int serverStatus=0;
 			
 			if (c.equals(R.COMMAND_DELETEBENCH)) {
-				serverStatus=con.deleteItem(commandParams, "benchmark");
+				serverStatus=con.deletePrimitive(commandParams, "benchmark");
 			} else if (c.equals(R.COMMAND_DELETEBENCHPROC) || c.equals(R.COMMAND_DELETEPOSTPROC)) {
-				serverStatus=con.deleteItem(commandParams, "processor");
+				serverStatus=con.deletePrimitive(commandParams, "processor");
 			} else if (c.equals(R.COMMAND_DELETEJOB)) {
 				return R.ERROR_COMMAND_NOT_IMPLENETED;
 			}  else if (c.equals(R.COMMAND_DELETESOLVER)) {
-				serverStatus=con.deleteItem(commandParams,"solver");
+				serverStatus=con.deletePrimitive(commandParams,"solver");
 			} else if (c.equals(R.COMMAND_DELETESPACE)) {
 				return R.ERROR_COMMAND_NOT_IMPLENETED;
 			} else if(c.equals(R.COMMAND_DELETECONFIG))  {
-				serverStatus=con.deleteItem(commandParams, "configuration");
+				serverStatus=con.deletePrimitive(commandParams, "configuration");
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -529,6 +570,8 @@ public class Shell {
 			status=handleLSCommand(c, commandParams);
 		} else if (c.startsWith("copy") || c.startsWith("mirror")) {
 			status=handleCopyCommand(c,commandParams);
+		} else if (c.startsWith("remove")) {
+			status=handleRemoveCommand(c,commandParams);
 		}
 		else {
 			return R.ERROR_BAD_COMMAND;

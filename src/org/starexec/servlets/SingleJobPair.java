@@ -22,13 +22,10 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.jobs.JobManager;
-import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 /**
  * Supports the writing of a new benchmark by a public user not logged in.  Soon, will also execute jobs.

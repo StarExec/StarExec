@@ -7,11 +7,8 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import org.ggf.drmaa.Session;
-import org.ggf.drmaa.SessionFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +16,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.ggf.drmaa.Session;
+import org.ggf.drmaa.SessionFactory;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
@@ -29,7 +28,6 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.WorkerNode;
 
 /**
  * Contains methods for interacting with the sun grid engine. This class is NOT operating system independent
@@ -45,7 +43,8 @@ public class GridEngineUtil {
     private static Pattern queueAssocPattern;
     private static ExecutorService threadPool = null;
 	
-    private static String testString = "queuename                      qtype resv/used/tot. load_avg arch          states\r\n" + 
+    @SuppressWarnings("unused")
+	private static String testString = "queuename                      qtype resv/used/tot. load_avg arch          states\r\n" + 
 	"---------------------------------------------------------------------------------\r\n" + 
 	"all.q@n001.star.cs.uiowa.edu   BIP   0/0/8          0.05     lx24-amd64    \r\n" + 
 	"---------------------------------------------------------------------------------\r\n" + 

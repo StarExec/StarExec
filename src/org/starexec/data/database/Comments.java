@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Comment;
-import org.starexec.data.to.Website;
 
 /**
  * Handles all database interaction for comments

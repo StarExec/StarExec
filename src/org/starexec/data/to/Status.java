@@ -1,7 +1,5 @@
 package org.starexec.data.to;
 
-import java.rmi.UnexpectedException;
-
 import com.google.gson.annotations.Expose;
 
 /**

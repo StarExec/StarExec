@@ -1,15 +1,24 @@
 package org.starexec.servlets;
 
-import java.io.*;
-
-import java.util.*;
-
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -17,14 +26,14 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Processors;
 import org.starexec.data.database.Statistics;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
@@ -606,7 +615,7 @@ public class Download extends HttpServlet {
      * @throws IOException
      * @author Ruoyu Zhang
      */
-	@SuppressWarnings("null")
+	
 	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy) throws IOException {
 		// If we can see this space AND the space is downloadable...
 

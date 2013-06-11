@@ -3,7 +3,6 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.CommunityRequest;

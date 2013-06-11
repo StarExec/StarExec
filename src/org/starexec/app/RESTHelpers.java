@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
@@ -14,14 +13,12 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSolver;
 import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -31,7 +28,6 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -42,8 +38,8 @@ import com.google.gson.annotations.Expose;
  */
 public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);		
-	private static Gson gson = new Gson();
-
+	
+	
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
@@ -932,7 +928,7 @@ public class RESTHelpers {
 		    	dataTablePageEntries = new JsonArray();
 		    	for(JobSolver js : jobSolversToDisplay){
 		    		StringBuilder sb = new StringBuilder();
-					String hiddenJobPairId;
+					
 					
 					// Create the solver link
 		    		sb = new StringBuilder();

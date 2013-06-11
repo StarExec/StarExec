@@ -4,30 +4,24 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.net.URL;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -195,17 +189,17 @@ public class UploadSolver extends HttpServlet {
 			
 			//Process the archive file and extract
 			File archiveFile=null;
-			String FileName=null;
+			//String FileName=null;
 			if (upMethod.equals("local")) {
 				archiveFile = new File(uniqueDir,  item.getName());
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
-				FileName = item.getName().split("\\.")[0];
+				//FileName = item.getName().split("\\.")[0];
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				FileUtils.copyURLToFile(url, archiveFile);
-				FileName=name.split("\\.")[0];
+				//FileName=name.split("\\.")[0];
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
@@ -254,7 +248,7 @@ public class UploadSolver extends HttpServlet {
 			    }
 			}
 			
-			int configs_empty = 0;
+			
 			//Find configurations from the top-level "bin" directory
 			for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);

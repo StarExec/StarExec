@@ -25,15 +25,12 @@ public class Validator {
 	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	public static Pattern patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 	public static Pattern patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
-	/**
-	 * Determines whether the given parameters form a valid delete request
-	 * @param commandParams A HashMap of parameters given by the user at the command line
-	 * @return 0 if valid and a negative error code otherwise.
-	 * @author Eric Burns
-	 */
 	
 	private static String missingParam=null;
 	private static List<String> unnecessaryParams=new ArrayList<String>();
+	
+	
+	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
 	
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
@@ -69,6 +66,20 @@ public class Validator {
 		return missingParam;
 	}
 	
+	
+	public static int isValidRemoveRequest(HashMap<String,String> commandParams) {
+		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
+			return R.ERROR_MISSING_PARAM;
+		}
+		
+		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))
+				|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+			return R.ERROR_INVALID_ID;
+		}
+		
+		findUnnecessaryParams(allowedRemoveParams,commandParams);
+		return 0;
+	}
 	
 	/**
 	 * Validates a request to delete a primitive
@@ -171,6 +182,8 @@ public class Validator {
     		return R.ERROR_INVALID_ID;
     	}
     	
+    	//TODO: Add in the accepted params for the different types of copy requests
+    	findUnnecessaryParams(allowedCopyParams,commandParams);
     	return 0;
     }
     

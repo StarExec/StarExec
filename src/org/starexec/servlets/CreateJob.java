@@ -17,7 +17,6 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -298,7 +297,7 @@ public class CreateJob extends HttpServlet {
 					break;
 				}
 			}
-			if (queueFound=false){
+			if (queueFound==false){
 				return false;
 			}
 			

@@ -324,6 +324,33 @@ OPTIONAL: None
 
 --Deletespace -Not yet implemented
 
+Remove Commands
+---------------
+
+This set of commands can be used to remove the associations between primitives
+and spaces. Solvers and benchmarks that are removed from every space they 
+belong to will be deleted.
+
+-- removebench -Removes a benchmark from a given space. "id" is the benchmark ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removejob -Removes a job from a given space. "id" is the job ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removesolver -Removes a solver from a given space. "id" is the solver ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removesubspace -Removes a subspace from a given space. "id" is the subspace ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removeuser -Removes a user from a given space. "id" is the user ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
 Create Commands
 ---------------
 
@@ -371,6 +398,20 @@ OPTIONAL: "hier"
 and "to" are space ids
 REQUIRED: "id" "from" "to"
 OPTIONAL: "hier"
+
+--copyjob -Copies an existing job and associates it with a space. "id" is a job id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
+
+--copyspace -Copies an existing space or space hierarchy rooted at "id" from space "from" to space "to"
+REQUIRED: "id" "from", "to"
+OPTIONAL: "hier"
+
+--mirroruser -Mirrors an existing user and associates them with a space. "id" is a benchmark id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
 
 List Commands
 -------------

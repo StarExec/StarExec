@@ -459,19 +459,19 @@ function onSpaceDrop(event, ui) {
 			buttons: {
 				'mirror in space hierarchy': function() {
 					$('#dialog-confirm-copy').dialog('close'); 
-					doSolverPost(ids,destSpace,spaceId,true,false,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,true,false,destName);
 				},
 				'copy to space hierarchy': function() {
 					$('#dialog-confirm-copy').dialog('close'); 
-					doSolverPost(ids,destSpace,spaceId,true,true,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,true,true,destName);
 				},
 				'mirror in space': function(){
 					$('#dialog-confirm-copy').dialog('close');
-					doSolverPost(ids,destSpace,spaceId,false,false,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,false,false,destName);
 				},
 				'copy to space': function() {
 					$('#dialog-confirm-copy').dialog('close');	
-					doSolverPost(ids,destSpace,spaceId,false,true,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,false,true,destName);
 				},
 				"cancel": function() {
 					$(this).dialog("close");
@@ -488,65 +488,18 @@ function onSpaceDrop(event, ui) {
 			height: 165,
 			buttons: {
 				'space hierarchy': function() {
-					log('user confirmed copy of user(s) to'+ destName +' and all of its subspaces');
-
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-
-					// Make the request to the server				
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/add/user',
-							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: true},	
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									
-									//TODO: Remove one of the following blocks
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
-									}
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-									}
-								}else {
-										processErrorCode(returnCode, "users",destName);
-									}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying users",5000);
-					});							
+					// Make the request to the server	
+					doUserCopyPost(ids,destSpace,spaceId,true,destName);
+								
+											
 				},
 				'space': function(){
-					log('user confirmed copy of user(s) to'+ destName);
-
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-
-					// Make the request to the server				
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/add/user',
-							{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: false},	
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
-									} else {					    		
-										showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-									}
-								} else {
-									processErrorCode(returnCode,"users",destName);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying users",5000);
-					});	 	
+					doUserCopyPost(ids,destSpace,spaceId,false,destName);
+						
 				},
 				"cancel": function() {
 					log('user canceled copy action');
@@ -565,51 +518,19 @@ function onSpaceDrop(event, ui) {
 			height: 165,
 			buttons: {
 				'space': function(){
-					log('user confirmed space copy to'+ destName);
-
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 
 					// Making the request		
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: false},
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {							
-									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
-									$('#exploreList').jstree("refresh");
-								} else {
-									processErrorCode(returnCode, "subspaces", destName);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying spaces",5000);
-					});
+					doSpaceCopyPost(ids,destSpace,spaceId,false,destName);
+					
 				},
 				'hierarchy': function(){
-					log('user confirmed space copy to'+ destName);
-
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 
-					// Making the request		
-					$.post(  	    		
-							starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-							{selectedIds : ids, fromSpace : spaceId, copyHierarchy: true},
-							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
-								} else {
-									processErrorCode(returnCode,"subspaces", destName);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error copying spaces",5000);
-					});
+					// Making the request
+					doSpaceCopyPost(ids,destSpace,spaceId,true,destName);
 				},
 				"cancel": function() {
 					log('user canceled copy action');
@@ -628,12 +549,12 @@ function onSpaceDrop(event, ui) {
 				'copy': function() {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-					doBenchmarkPost(ids,destSpace,spaceId,true,destName);
+					doBenchmarkCopyPost(ids,destSpace,spaceId,true,destName);
 						 									
 				},
 				'mirror':function() {
 					$('#dialog-confirm-copy').dialog('close');
-					doBenchmarkPost(ids,destSpace,spaceId,false,destName);
+					doBenchmarkCopyPost(ids,destSpace,spaceId,false,destName);
 				},
 				"cancel": function() {
 					$(this).dialog("close");
@@ -686,6 +607,47 @@ function onSpaceDrop(event, ui) {
 	}
 }
 
+function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
+	$.post(  	    		
+			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
+			{selectedIds : ids, fromSpace : spaceId, copyHierarchy: copyHierarchy},
+			function(returnCode) {
+				log('AJAX response recieved with code ' + returnCode);
+				if (returnCode==0) {							
+					showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
+					$('#exploreList').jstree("refresh");
+				} else {
+					processErrorCode(returnCode, "subspaces", destName);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error copying spaces",5000);
+	});
+}
+
+function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName){
+	$.post(  	    		
+			starexecRoot+'services/spaces/' + destSpace + '/add/user',
+			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: copyToSubspaces},	
+			function(returnCode) {
+				log('AJAX response recieved with code ' + returnCode);
+				if (returnCode==0) {
+					if(ids.length > 1) {								
+						showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
+					} else {					    		
+						showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
+					}
+				}else {
+						processErrorCode(returnCode, "users",destName);
+					}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error copying users",5000);
+	});				
+}
+
 /**
  * Sends a copy benchmark request to the server
  * @param ids The IDs of the benchmarks to copy
@@ -696,7 +658,7 @@ function onSpaceDrop(event, ui) {
  * @author Eric Burns
  */
 
-function doBenchmarkPost(ids,destSpace,spaceId,copy,destName) {
+function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 	// Make the request to the server				
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
@@ -729,7 +691,7 @@ function doBenchmarkPost(ids,destSpace,spaceId,copy,destName) {
  * @author Eric Burns
  */
 
-function doSolverPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
+function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
 	// Make the request to the server	
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
@@ -1911,10 +1873,6 @@ function checkPermissions(perms, id) {
 
 	// Create tooltips for the expd class
 	createTooltip($("#userExpd"), null, 'expd', getSinglePermTable('user', perms.addUser, perms.removeUser));
-	//createTooltip($("#benchExpd"), null, 'expd', getSinglePermTable('bench', perms.addBenchmark, perms.removeBench));
-	//createTooltip($("#solverExpd"), null, 'expd', getSinglePermTable('solver', perms.addSolver, perms.removeSolver));
-	//createTooltip($("#spaceExpd"), null, 'expd', getSinglePermTable('space', perms.addSpace, perms.removeSpace));
-	//createTooltip($("#jobExpd"), null, 'expd', getSinglePermTable('job', perms.addJob, perms.removeJob));	
 	log('permissions checked and processed');
 }
 
@@ -1956,7 +1914,7 @@ function updateButtonIds(id) {
 			buttons: {
 				'space': function(){
 					$(this).dialog("close");
-					createDialog("Processing your download request, please wait. This will take some time for large spaces.")
+					createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 					token=Math.floor(Math.random()*100000000);
 					window.location.href=starexecRoot+"secure/download?token="+token+"&type=space&hierarchy=false&id="+id;
 					destroyOnReturn(token);
@@ -1964,7 +1922,7 @@ function updateButtonIds(id) {
 				},
 				'hierarchy': function(){
 					$(this).dialog("close");
-					createDialog("Processing your download request, please wait. This will take some time for large spaces.")
+					createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 					token=Math.floor(Math.random()*100000000);
 					window.location.href=starexecRoot+"secure/download?token="+token+"&type=space&hierarchy=true&id="+id;
 					destroyOnReturn(token);
@@ -2297,7 +2255,7 @@ function getTooltipConfig(type, message){
 			},
 			style: {
 				name: "userTooltip",		// Load custom color scheme
-				tip: 'rightMiddle',			// Add a tip to the right middle portion of the tooltip
+				tip: 'rightMiddle'			// Add a tip to the right middle portion of the tooltip
 			},			   
 			api:{
 				onRender: function(){	// Before rendering the tooltip, get the user's permissions for the given space
@@ -2404,7 +2362,7 @@ function getTooltipConfig(type, message){
 			},
 			style: {
 				name: "spaceTooltipLeader",
-				tip: 'bottomLeft',
+				tip: 'bottomLeft'
 			},
 			api:{
 				onRender: function(){
@@ -2521,7 +2479,7 @@ function getTooltipConfig(type, message){
 			},
 			style: {
 				name: "userTooltip",
-				tip: 'rightMiddle',
+				tip: 'rightMiddle'
 			},
 			api:{
 				onRender: function(){

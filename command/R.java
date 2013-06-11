@@ -24,7 +24,7 @@ public class R {
 	public static String URL_UPLOADSOLVER="secure/upload/solvers";
 	public static String URL_UPLOADPROCESSOR="secure/processors/manager";
 	public static String URL_UPLOADSPACE="secure/upload/space";
-	public static String URL_DELETEITEM="services/delete";
+	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space";
 	public static String URL_UPLOADCONFIG="secure/upload/configruations";
@@ -33,6 +33,10 @@ public class R {
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_COPYBENCH="services/spaces/{spaceId}/add/benchmark";
 	public static String URL_COPYSOLVER="services/spaces/{spaceId}/add/solver";
+	public static String URL_COPYSPACE="services/spaces/{spaceId}/copySpace";
+	public static String URL_COPYJOB="services/spaces/{spaceId}/add/job";
+	public static String URL_COPYUSER="services/spaces/{spaceId}/add/user";
+	public static String URL_REMOVEPRIMITIVE="services/remove";
 	//Success codes for command parsing
 	public static int SUCCESS_EXIT=1;
 	public static int SUCCESS_NOFILE=2;
@@ -76,6 +80,8 @@ public class R {
 	public static int ERROR_BAD_INSTITUTION=-25;
 	public static int ERROR_PERMISSION_DENIED=-26;
 	public static int ERROR_COMMAND_FILE_TERMINATING=-27;
+	public static int ERROR_INSUFFICIENT_QUOTA=-28;
+	public static int ERROR_NAME_NOT_UNIQUE=-29;
 	//error messages
 	public static HashMap<Integer,String> errorMessages=new HashMap<Integer,String>();
 	static {
@@ -106,6 +112,8 @@ public class R {
 		errorMessages.put(R.ERROR_BAD_INSTITUTION, "The institution given has invalid characters or is too long");
 		errorMessages.put(R.ERROR_PERMISSION_DENIED,"You do not have permission to view the contents of the given space, or the space does not exist");
 		errorMessages.put(ERROR_COMMAND_FILE_TERMINATING, "An error was encountered: the file of commands may not have been completed");
+		errorMessages.put(ERROR_NAME_NOT_UNIQUE, "All primitives in a given space must have unique names");
+		errorMessages.put(ERROR_INSUFFICIENT_QUOTA, "You do not have the required disk quota to copy the primitive");
 	}
 	
 	
@@ -187,7 +195,6 @@ public class R {
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
 	
-	
 	//deleting commands
 	public static String COMMAND_DELETESOLVER="deletesolver";
 	public static String COMMAND_DELETEBENCH="deletebench";
@@ -196,6 +203,13 @@ public class R {
 	public static String COMMAND_DELETEJOB="deletejob";
 	public static String COMMAND_DELETESPACE="deletespace";
 	public static String COMMAND_DELETECONFIG="deleteconfig";
+	
+	//remove commands
+	public static String COMMAND_REMOVEUSER="removeuser";
+	public static String COMMAND_REMOVEBENCHMARK="removebench";
+	public static String COMMAND_REMOVESOLVER="removesolver";
+	public static String COMMAND_REMOVEJOB="removejob";
+	public static String COMMAND_REMOVESUBSPACE="removesubspace";
 	
 	//creating commands
 	public static String COMMAND_CREATEJOB="createjob";
@@ -206,6 +220,9 @@ public class R {
 	public static String COMMAND_COPYSOLVER="copysolver";
 	public static String COMMAND_MIRRORBENCH="mirrorbench";
 	public static String COMMAND_MIRRORSOLVER="mirrorsolver";
+	public static String COMMAND_COPYSPACE="copyspace";
+	public static String COMMAND_COPYJOB="copyjob";
+	public static String COMMAND_MIRRORUSER="mirroruser";
 	
 	
 	//listing commands

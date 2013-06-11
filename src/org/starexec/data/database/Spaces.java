@@ -1,38 +1,27 @@
 package org.starexec.data.database;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DatasetUtilities;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -41,8 +30,6 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
 
 /*import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
@@ -719,7 +706,6 @@ public class Spaces {
 	 * 
 	 * @author Wyatt Kaiser
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
 		Iterator<Space> iter = spaces.iterator();
 		while (iter.hasNext()) {
@@ -1408,7 +1394,7 @@ public class Spaces {
 			Integer subSpaceId = -1;
 
 			if(results.next()){
-				Space ss = new Space();
+				
 				subSpaceId = (results.getInt("id"));
 				log.debug("SubSpace Id = " + subSpaceId);
 			}	

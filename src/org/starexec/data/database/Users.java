@@ -5,16 +5,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
-import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for users

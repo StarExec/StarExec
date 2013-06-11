@@ -1,8 +1,12 @@
+var summaryTable;
+var pairTable;
 $(document).ready(function(){
 	//$("#solveTblField").hide();
 	initUI();
 	initDataTables();
-	
+	setInterval(function() {
+		pairTable.fnDraw(true);
+	},10000);
 });
 
 
@@ -74,7 +78,7 @@ function initDataTables(){
 	});
 	
 	// Job pairs table
-	$('#pairTbl').dataTable( {
+	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -85,7 +89,7 @@ function initDataTables(){
     });
 	
 	//summary table
-	$('#solveTbl').dataTable( {
+	summaryTable=$('#solveTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,

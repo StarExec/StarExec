@@ -2,15 +2,14 @@ package org.starexec.jobs;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.HashMap;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
@@ -29,10 +28,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.servlets.CreateJob;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
 
 

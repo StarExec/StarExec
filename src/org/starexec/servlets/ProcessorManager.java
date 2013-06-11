@@ -12,12 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -29,12 +24,6 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 
 /**
@@ -54,11 +43,10 @@ public class ProcessorManager extends HttpServlet {
 	private static final String PROCESSOR_DESC = "desc";
 	private static final String PROCESSOR_FILE = "file";	
 	private static final String OWNING_COMMUNITY = "com";
-	private static final String PROCESSOR_ID = "pid";
+	
 	
 	private static final String ACTION = "action";
 	private static final String ADD_ACTION = "add";
-	private static final String UPDATE_ACTION = "update";
 	
 	private static final String PROCESSOR_TYPE = "type";
 	private static final String BENCH_TYPE = "bench";
