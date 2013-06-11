@@ -871,7 +871,7 @@ public class Benchmarks {
 		newBenchmark.setDiskSize(b.getDiskSize());
 		newBenchmark.setDownloadable(b.isDownloadable());
 		
-		File benchmarkDirectory=new File(b.getPath());
+		File benchmarkFile=new File(b.getPath());
 		
 		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
 		uniqueDir = new File(uniqueDir, newBenchmark.getName());
@@ -879,8 +879,7 @@ public class Benchmarks {
 		uniqueDir.mkdirs();
 		newBenchmark.setPath(uniqueDir.getAbsolutePath());
 		try {
-			FileUtils.copyDirectory(benchmarkDirectory, uniqueDir);
-			
+			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
 			
 			int benchId= Benchmarks.add(newBenchmark, spaceId);
 			if (benchId<0) {

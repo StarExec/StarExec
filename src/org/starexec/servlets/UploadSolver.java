@@ -208,6 +208,7 @@ public class UploadSolver extends HttpServlet {
 			long usedBytes=Users.getDiskUsage(userId);
 			
 			if (fileSize>allowedBytes-usedBytes) {
+				archiveFile.delete();
 				returnArray[0]=-4;
 				return returnArray;
 			}

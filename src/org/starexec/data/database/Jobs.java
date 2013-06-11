@@ -599,6 +599,37 @@ public class Jobs {
 
 		return null;
 	}
+	
+	/**
+	 * Gets all the the attributes for every job pair in a job, and returns a HashMap
+	 * mapping pair IDs to their attributes
+	 * @param con The connection to make the query on
+	 * @param The ID of the job to get attributes of
+	 * @return A HashMap mapping pair IDs to properties. Some values may be null
+	 * @author Eric Burns
+	 */
+	
+	protected static HashMap<Integer,Properties> getJobAttributes(Connection con, int jobId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
+		procedure.setInt(1, jobId);					
+		ResultSet results = procedure.executeQuery();
+		
+		HashMap<Integer,Properties> props=new HashMap<Integer,Properties>();
+		int id;
+		Properties prop;
+		while(results.next()){
+			id=results.getInt("pair_id");
+			if (props.containsKey(id)) {
+				prop=props.get(id);
+			} else {
+				prop=new Properties();
+			}
+			prop.put(results.getString("attr_key"), results.getString("attr_value"));	
+			props.put(id, prop);
+		}			
+		Common.closeResultSet(results);
+		return props;
+	}
 
 	/**
 	 * Retrieves all attributes (key/value) of the given job pair
@@ -782,11 +813,13 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
-	public static List<JobPair> getPairsDetailed(int jobId,Integer since) {
-		Connection con = null;			
+	private static List<JobPair> getPairsDetailed(int jobId,Integer since) {
+		Connection con = null;	
+		Connection con2=null;
 		ResultSet results=null;
 		try {			
-			con = Common.getConnection();		
+			con = Common.getConnection();	
+			con2=Common.getConnection();
 			log.info("getting detailed pairs for job " + jobId );
 			if(con.isClosed())
 			{
@@ -870,7 +903,9 @@ public class Jobs {
 			for (int curId : idSet) {
 				neededBenchmarks.put(curId,Benchmarks.get(curId));
 			}
-			
+			log.debug("about to get attributes for job " +jobId );
+			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con2,jobId);
+			log.debug("just got attributes for job " +jobId );
 			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
 				JobPair jp = returnList.get(i);
@@ -882,11 +917,10 @@ public class Jobs {
 				log.debug("set solver for " + jp.getId());
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
 				log.debug("set configuration for " + jp.getId());
-				log.debug("about to get attributes for jp " + jp.getId());
 				
-				//TODO: See if we can do this without calling the database once per job pair
-				jp.setAttributes(Jobs.getAttributes(jp.getId()));
-				log.debug("just got attributes from jp + " + jp.getId());
+				
+				jp.setAttributes(props.get(jp.getId()));
+				
 			}
 			log.info("returning detailed pairs for job " + jobId );
 			return returnList;	
@@ -896,6 +930,7 @@ public class Jobs {
 		} finally {
 			Common.closeResultSet(results);
 			Common.safeClose(con);
+			Common.safeClose(con2);
 		}
 
 		return null;		
@@ -916,10 +951,6 @@ public class Jobs {
 			con = Common.getConnection();
 			con2=Common.getConnection();
 			log.info("getting detailed pairs for job " + jobId );
-			if(con.isClosed())
-			{
-				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
-			}
 			
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
@@ -949,35 +980,14 @@ public class Jobs {
 			
 			Common.closeResultSet(results);
 			log.info("result set closed for job " + jobId);
+			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con2, jobId);
+						
 			
-			CallableStatement procedure2 =con2.prepareCall("{CALL GetJobAttrs(?)}");
-			procedure2.setInt(1, jobId);
-			ResultSet attrResults=procedure2.executeQuery();
-			
-			
-			Hashtable<Integer, List<String>>attrs=new Hashtable<Integer, List<String>>();
-			while (attrResults.next()) {
-				
-				int pairId=attrResults.getInt("pair_id");
-				if (!attrs.contains(pairId)) {
-					attrs.put(pairId, new LinkedList<String>());
-				}
-				List<String> curList=attrs.get(pairId);
-				curList.add(attrResults.getString("attr_key"));
-				curList.add(attrResults.getString("attr_value"));
-			}
-			
-			Common.closeResultSet(attrResults);
-			
-			
-			
-			Object [] configIdListSet=configIdSet.toArray();
 			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
 			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
 			
-			int curId=0;
-			for (int i=0; i<configIdListSet.length;i++) {
-				curId=(Integer)configIdListSet[i];
+			
+			for (int curId : configIdSet) {
 				neededConfigs.put(curId, Solvers.getConfiguration(curId));
 				neededSolvers.put(curId, Solvers.getSolverByConfig(curId));
 			}
@@ -988,19 +998,8 @@ public class Jobs {
 				jp.setSolver(neededSolvers.get(configIdList.get(i)));
 				log.debug("set solver for " + jp.getId());
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
-				log.debug("set configuration for " + jp.getId());
-				List<String> attrList=attrs.get(jp.getId());
-				if (attrList==null) {
-					continue;
-				}
-				int index=0;
-				Properties newProps=new Properties();
-				while (index<attrList.size()) {
-					newProps.setProperty(attrList.get(index), attrList.get(index+1));
-					index+=2;
-				}
-				jp.setAttributes(newProps);
-				
+				log.debug("set configuration for " + jp.getId());				
+				jp.setAttributes(props.get(jp.getId()));
 			}
 			log.info("returning detailed pairs for job " + jobId );
 			return returnList;	

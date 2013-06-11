@@ -173,6 +173,7 @@ public class BenchmarkUploader extends HttpServlet {
 					long usedBytes=Users.getDiskUsage(userId);
 					
 					if (fileSize>allowedBytes-usedBytes) {
+						archiveFile.delete();
 						throw new Exception("File too large to fit in user's disk quota");
 					}		
 
