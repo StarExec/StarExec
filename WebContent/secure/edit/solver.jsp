@@ -39,6 +39,7 @@
 
 <star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/shared, edit/solver">				
 	<form id="editSolverForm">
+	<input id="name" type="hidden" name="name" value="${solver.name}">
 		<fieldset>
 			<legend>solver details</legend>
 			<table class="shaded">
@@ -51,7 +52,7 @@
 				<tbody>
 					<tr>
 						<td class="label">solver name</td>
-						<td><input id="name" type="text" name="name" value="${solver.name}" readonly></td>
+						<td><p>${solver.name}</p></td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			

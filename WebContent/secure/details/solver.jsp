@@ -175,7 +175,7 @@
 		</c:if>
 		<c:if test="${usr.id == user.id}">
 			
-			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>
+			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 			<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
 		</c:if>
 	</fieldset>

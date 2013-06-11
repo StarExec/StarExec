@@ -610,6 +610,7 @@ public class Jobs {
 	 */
 	
 	protected static HashMap<Integer,Properties> getJobAttributes(Connection con, int jobId) throws Exception {
+		log.debug("Getting all attributes for job with ID = "+jobId);
 		CallableStatement procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
@@ -619,6 +620,7 @@ public class Jobs {
 		Properties prop;
 		while(results.next()){
 			id=results.getInt("pair_id");
+			
 			if (props.containsKey(id)) {
 				prop=props.get(id);
 			} else {
@@ -626,8 +628,10 @@ public class Jobs {
 			}
 			prop.put(results.getString("attr_key"), results.getString("attr_value"));	
 			props.put(id, prop);
+			log.debug("attributes for pair "+id+" have been updated");
 		}			
 		Common.closeResultSet(results);
+		
 		return props;
 	}
 
@@ -905,20 +909,15 @@ public class Jobs {
 			}
 			log.debug("about to get attributes for job " +jobId );
 			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con2,jobId);
-			log.debug("just got attributes for job " +jobId );
+			log.debug("just got "+ props.keySet().size() +"out of"+ returnList.size() + " attributes for job " +jobId);
 			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
 				JobPair jp = returnList.get(i);
+				log.debug("setting detailed for" + jp.getId());
 				jp.setNode(neededNodes.get(nodeIdList.get(i)));
-				log.debug("set node for " + jp.getId());
 				jp.setBench(neededBenchmarks.get(benchIdList.get(i)));
-				log.debug("set bench for " + jp.getId());
 				jp.setSolver(neededSolvers.get(configIdList.get(i)));
-				log.debug("set solver for " + jp.getId());
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
-				log.debug("set configuration for " + jp.getId());
-				
-				
 				jp.setAttributes(props.get(jp.getId()));
 				
 			}
