@@ -861,41 +861,44 @@ public class Benchmarks {
 	 */
 	
 	public static int copyBenchmark(Benchmark b, int userId, int spaceId) {
-		log.debug("Copying benchmark "+b.getName()+" to new user id= "+String.valueOf(userId));
-		Benchmark newBenchmark=new Benchmark();
-		newBenchmark.setAttributes(b.getAttributes());
-		newBenchmark.setType(b.getType());
+		try {
+			log.debug("Copying benchmark "+b.getName()+" to new user id= "+String.valueOf(userId));
+			Benchmark newBenchmark=new Benchmark();
+			newBenchmark.setAttributes(b.getAttributes());
+			newBenchmark.setType(b.getType());
 		
-		newBenchmark.setDescription(b.getDescription());
-		newBenchmark.setName(b.getName());
-		newBenchmark.setUserId(userId);
-		newBenchmark.setUploadDate(b.getUploadDate());
-		newBenchmark.setDiskSize(b.getDiskSize());
-		newBenchmark.setDownloadable(b.isDownloadable());
+			newBenchmark.setDescription(b.getDescription());
+			newBenchmark.setName(b.getName());
+			newBenchmark.setUserId(userId);
+			newBenchmark.setUploadDate(b.getUploadDate());
+			newBenchmark.setDiskSize(b.getDiskSize());
+			newBenchmark.setDownloadable(b.isDownloadable());
 		
 		//this benchmark must be valid, since it is just a copy of 
 		//an old benchmark that already passed validation
-		newBenchmark.getAttributes().put("starexec-valid", "true");
-		File benchmarkFile=new File(b.getPath());
+			newBenchmark.getAttributes().put("starexec-valid", "true");
+			File benchmarkFile=new File(b.getPath());
 		
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
-		uniqueDir = new File(uniqueDir, newBenchmark.getName());
-		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-		uniqueDir.mkdirs();
-		newBenchmark.setPath(uniqueDir.getAbsolutePath()+File.separator+benchmarkFile.getName());
-		try {
+			File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+			uniqueDir = new File(uniqueDir, newBenchmark.getName());
+			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+			uniqueDir.mkdirs();
+			newBenchmark.setPath(uniqueDir.getAbsolutePath()+File.separator+benchmarkFile.getName());
+		
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
 			int benchId= Benchmarks.add(newBenchmark, spaceId);
 			if (benchId<0) {
 				log.error("Benchmark being copied could not be successfully added to the database");
 				return benchId;
 			}
-			
+			log.debug("Benchmark added successfully to the database, now adding dependency associations");
 			List<BenchmarkDependency> deps=Benchmarks.getBenchDependencies(b.getId());
 			
 			for (BenchmarkDependency dep : deps) {
 				Benchmarks.addBenchDependency(benchId, dep.getSecondaryBench().getId(), dep.getDependencyPath());
 			}
+			
+			log.debug("Benchmark copied successfully, return new benchmark ID = "+benchId);
 			return benchId;
 			
 		} catch (Exception e) {
