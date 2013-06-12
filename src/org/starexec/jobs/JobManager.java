@@ -97,15 +97,15 @@ public abstract class JobManager {
     }
 
     static class SchedulingState {
-	Job job;
-	String jobTemplate;
-	Iterator<JobPair> pairIter;
-	
-	SchedulingState(Job _job, String _jobTemplate, Iterator<JobPair> _pairIter) {
-	    job = _job;
-	    jobTemplate = _jobTemplate;
-	    pairIter = _pairIter;
-	}
+		Job job;
+		String jobTemplate;
+		Iterator<JobPair> pairIter;
+		
+		SchedulingState(Job _job, String _jobTemplate, Iterator<JobPair> _pairIter) {
+		    job = _job;
+		    jobTemplate = _jobTemplate;
+		    pairIter = _pairIter;
+		}
     }
 
     /**
@@ -129,13 +129,13 @@ public abstract class JobManager {
 	    //Post processor
 	    Processor processor = job.getPostProcessor();
 	    if (processor == null) {
-		log.warn("Postprocessor is null.");
-		jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
+			log.warn("Postprocessor is null.");
+			jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
 	    }
 	    else {
-		String path = processor.getFilePath();
-		log.info("Postprocessor path is "+path+".");
-		jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
+			String path = processor.getFilePath();
+			log.info("Postprocessor path is "+path+".");
+			jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
 	    }
 
 	    Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
@@ -453,8 +453,8 @@ public abstract class JobManager {
 	
 	/**
 	 * Gets all the solver/Configs for a certain benchmark from a certain space, pairs them up and then 
-	 * adds the resulting job pairs to a given job object. This is accessed from running space/keep hierarcy
-	 * structure in job creation with Breadth-First Traversal selected.
+	 * adds the resulting job pairs to a given job object. This is accessed from running space/keep hierarchy
+	 * structure in job creation with Round-Robin Traversal selected.
 	 * 
 	 * @param j the Job to add Job Pairs to
 	 * @param userId the id of the user adding the job pairs

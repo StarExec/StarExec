@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gson.annotations.Expose;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 /**
  * Represents an SGE queue which has a collection of worker nodes that belong to it
@@ -20,10 +21,12 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Expose private int slotsTotal;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
+	@Expose private HashMap<Integer, String[]> jobPairs;
 	
 	public Queue() {
 		this.nodes = new LinkedList<WorkerNode>();
 		this.attributes = new HashMap<String, String>();
+		this.jobPairs = new HashMap<Integer, String[]>();
 	}
 	
 	/**
@@ -133,6 +136,17 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	 */
 	public void putAttribute(String key, String val) {
 		this.attributes.put(key, val);
+	}
+	
+	/**
+	 * @return The job pairs
+	 */
+	public HashMap<Integer, String[]> getJobPair() {
+		return jobPairs;
+	}
+	
+	public void putJobPair(int key, String[] values) {
+		this.jobPairs.put(key, values);
 	}
 
 	@Override

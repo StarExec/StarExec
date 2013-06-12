@@ -123,10 +123,15 @@ function populateAttributes(jsonData) {
 		}
 	}
 	
-	attrTable.fnClearTable();	
-	for(var key in jsonData.attributes){
-		attrTable.fnAddData([key, jsonData.attributes[key]]);            
-    }
+	attrTable.fnClearTable();
+	//attrTable.fnAddData (["Sweet Job 1", "Tyler Jensen", "benchmark1", "Solver1", "Config1", "SAT"]);
+	for (var key in jsonData.jobPairs) {
+		attrTable.fnAddData([jsonData.jobPairs[key]]);
+	}
+	
+	//for(var key in jsonData.attributes){
+	//	attrTable.fnAddData([key, jsonData.attributes[key]]);            
+    //}
 		
 	// Done loading, hide the loader
 	$('#loader').hide();

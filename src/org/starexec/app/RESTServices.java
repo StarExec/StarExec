@@ -215,7 +215,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
-	public String getQueueDetails(@PathParam("id") int id) {		
+	public String getQueueDetails(@PathParam("id") int id) {
 		return gson.toJson(Queues.getDetails(id));
 	}
 	
