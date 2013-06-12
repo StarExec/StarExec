@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gson.annotations.Expose;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 /**
  * Represents an SGE queue which has a collection of worker nodes that belong to it
