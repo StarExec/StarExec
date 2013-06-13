@@ -367,7 +367,7 @@ CREATE TABLE set_assoc (
 -- Which benchmarks belong to which spaces
 CREATE TABLE bench_assoc (
 	space_id INT NOT NULL, 
-	bench_id INT NOT NULL,	
+	bench_id INT NOT NULL,
 	PRIMARY KEY (space_id, bench_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE

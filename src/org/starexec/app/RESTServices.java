@@ -1000,7 +1000,7 @@ public class RESTServices {
 		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		
-		//Get the flag that indicates whether the solver is being copied or mirrored
+		//Get the flag that indicates whether the solver is being copied or linked
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
 		// Convert the solvers to copy to an int list
 		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
@@ -1547,8 +1547,24 @@ public class RESTServices {
 			gson.toJson(2);
 		}
 		
+		//TODO: We need to remove all these hardcoded error codes and define them  in R or something
+		
 		// Extract new solver details from request
 		String name = request.getParameter("name");
+		//if the name is actually being changed
+		if (!solver.getName().equals(name)) {
+			int id=Solvers.isNameEditable(solverId);
+			if (id<0) {
+				return gson.toJson(9);
+			}
+			
+			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 1)) {
+				return gson.toJson(7);
+			}
+		}
+		
+		
+		
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
@@ -1663,6 +1679,16 @@ public class RESTServices {
 		
 		// Extract new benchmark details from request
 		String name = request.getParameter("name");
+		// Extract new solver details from request
+		if (!bench.getName().equals(name)) {
+			int id=Benchmarks.isNameEditable(benchId);
+			if (id<0) {
+				return gson.toJson(9);
+			}
+			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 2)) {
+				return gson.toJson(7);
+			}
+		}
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		

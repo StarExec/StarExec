@@ -434,7 +434,7 @@ function onSpaceDrop(event, ui) {
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
-			$('#dialog-confirm-copy-txt').text('do you want to copy or mirror ' + ui.draggable.data('name') + ' to' + destName + '?');
+			$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
@@ -443,7 +443,7 @@ function onSpaceDrop(event, ui) {
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
 		} else {
-			$('#dialog-confirm-copy-txt').text('do you want to copy or mirror the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
+			$('#dialog-confirm-copy-txt').text('do you want to copy or link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
 		}
 	}		
 
@@ -457,7 +457,7 @@ function onSpaceDrop(event, ui) {
 			
 			//depending on what the user 
 			buttons: {
-				'mirror in space hierarchy': function() {
+				'link in space hierarchy': function() {
 					$('#dialog-confirm-copy').dialog('close'); 
 					doSolverCopyPost(ids,destSpace,spaceId,true,false,destName);
 				},
@@ -465,7 +465,7 @@ function onSpaceDrop(event, ui) {
 					$('#dialog-confirm-copy').dialog('close'); 
 					doSolverCopyPost(ids,destSpace,spaceId,true,true,destName);
 				},
-				'mirror in space': function(){
+				'link in space': function(){
 					$('#dialog-confirm-copy').dialog('close');
 					doSolverCopyPost(ids,destSpace,spaceId,false,false,destName);
 				},
@@ -552,7 +552,7 @@ function onSpaceDrop(event, ui) {
 					doBenchmarkCopyPost(ids,destSpace,spaceId,true,destName);
 						 									
 				},
-				'mirror':function() {
+				'link':function() {
 					$('#dialog-confirm-copy').dialog('close');
 					doBenchmarkCopyPost(ids,destSpace,spaceId,false,destName);
 				},
@@ -653,7 +653,7 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName){
  * @param ids The IDs of the benchmarks to copy
  * @param destSpace The ID of the destination space
  * @param spaceId The ID of the from space
- * @param copy A boolean indicating whether to copy (true) or mirror (false).
+ * @param copy A boolean indicating whether to copy (true) or link (false).
  * @param destName The name of the destination space
  * @author Eric Burns
  */
@@ -686,7 +686,7 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
  * @param ids The IDs of the solvers to copy
  * @param destSpace The ID of the destination space
  * @param spaceId The ID of the from space
- * @param copy A boolean indicating whether to copy (true) or mirror (false).
+ * @param copy A boolean indicating whether to copy (true) or link (false).
  * @param destName The name of the destination space
  * @author Eric Burns
  */

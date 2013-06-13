@@ -289,6 +289,8 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _p
 			
 	END // 
 	
+
+
 -- Updates the disk_size attribute of a given solver
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateSolverDiskSize;
@@ -298,7 +300,16 @@ CREATE PROCEDURE UpdateSolverDiskSize(IN _solverId INT, IN _newDiskSize BIGINT)
 		SET disk_size = _newDiskSize
 		WHERE id = _solverId;
 	END //
-	
+
+-- Finds the spaces associated with a given solver
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSolverAssoc;
+CREATE PROCEDURE GetSolverAssoc(IN _solverId INT)
+	BEGIN
+		SELECT space_id
+		FROM solver_assoc
+		WHERE _solverId = solver_id;
+	END //
 	
 -- Updates the details associated with a given configuration
 -- Author: Todd Elvers

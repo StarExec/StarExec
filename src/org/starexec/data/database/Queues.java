@@ -10,16 +10,9 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Handles all DB interaction for queues

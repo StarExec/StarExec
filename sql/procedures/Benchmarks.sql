@@ -71,6 +71,16 @@ CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 		INSERT IGNORE INTO bench_assoc VALUES (_spaceId, _benchId);
 	END //
 	
+-- Finds the spaces associated with a given solver
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchAssoc;
+CREATE PROCEDURE GetBenchAssoc(IN _benchId INT)
+	BEGIN
+		SELECT space_id
+		FROM bench_assoc
+		WHERE _benchId = bench_id;
+	END //	
+	
 -- Retrieves all attributes for a benchmark 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetBenchAttrs;

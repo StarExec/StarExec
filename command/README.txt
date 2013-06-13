@@ -316,13 +316,9 @@ OPTIONAL: None
 REQUIRED: "id"
 OPTIONAL: None
 
---deletejob -Not yet implemented
-
 --deletepostproc -Deletes the post processor with the given ID.
 REQUIRED: "id"
 OPTIONAL: None
-
---Deletespace -Not yet implemented
 
 Remove Commands
 ---------------
@@ -372,11 +368,11 @@ EXAMPLE: 'createsubspace id=5'
 Copy Commands
 -------------
 
-These commands can be used to either copy or mirror primitives from one space to another. To 'copy'
+These commands can be used to either copy or link primitives from one space to another. To 'copy'
 a primitive means to create a deep copy-- you will become the owner of a copied solver or benchmark,
-and it will count towards your disk usage. To 'mirror' a primitive means that you are using a primitive
-that still belongs to another user. If they choose to delete a solver or benchmark that you have mirrored,
-then you will lose access to it. You may also copy or mirror primitives that you own.
+and it will count towards your disk usage. To 'link' a primitive means that you are using a primitive
+that still belongs to another user. If they choose to delete a solver or benchmark that you have linked,
+then you will lose access to it. You may also copy or link primitives that you own.
 
 --copybench -Copies a benchmark from one space to another. "id" is a benchmark id, and "from" and "to" are
 space ids.
@@ -384,7 +380,7 @@ REQUIRED: "id" "from" "to"
 OPTIONAL: None
 EXAMPLE: 'copybench id=42 from=643 to=56"
 
---mirrorbench -Mirrors an existing benchmark and associates it with a space. "id" is a benchmark id, and "from" and "to" are
+--linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None
@@ -394,7 +390,7 @@ and "to" are space ids
 REQUIRED: "id" "from" "to"
 OPTIONAL: "hier"
 
---mirrorsolver -Mirrors an existing solver and associates it with a new space or hierarchy. "id" is a solver id, and "from"
+--linksolver -links an existing solver and associates it with a new space or hierarchy. "id" is a solver id, and "from"
 and "to" are space ids
 REQUIRED: "id" "from" "to"
 OPTIONAL: "hier"
@@ -408,7 +404,7 @@ OPTIONAL: None
 REQUIRED: "id" "from", "to"
 OPTIONAL: "hier"
 
---mirroruser -Mirrors an existing user and associates them with a space. "id" is a benchmark id, and "from" and "to" are
+--linkuser -links an existing user and associates them with a space. "id" is a benchmark id, and "from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None

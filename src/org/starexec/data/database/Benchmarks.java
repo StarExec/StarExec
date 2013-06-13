@@ -1518,6 +1518,44 @@ public class Benchmarks {
 
 		return false;
 	}
+	
+	/**
+	 * Determines whether the benchmark identified by the given benchmark ID has an
+	 * editable name
+	 * @param benchId The ID of the benchmark in question
+	 * @return -1 if the name is not editable, 0 if it is editable and the benchmark is
+	 * associated with no spaces, and a positive integer if the name is editable and the
+	 * benchmark is associated only with the space with the returned ID.
+	 */
+	public static int isNameEditable(int benchId) {
+		Connection con =null;
+		try {
+			con=Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetBenchAssoc(?)}");
+			procedure.setInt(1, benchId);
+			ResultSet results=procedure.executeQuery();
+			int id=-1;
+			if (results.next()) {
+				id=results.getInt("space_id");
+			} else {
+				log.debug("Benchmark associated with no spaces, so its name is editable");
+				return 0;
+			}
+			
+			if (results.next()) {
+				log.debug("Benchmark is found in multiple spaces, so its name is not editable");
+				return -1;
+			}
+			log.debug("Benchmark associated with one space id = "+id +" , so its name is editable");
+			return id;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return -1;
+	}
 
 	/**
 	 * Creates a space named after the directory and finds any benchmarks within the directory.
@@ -1674,14 +1712,14 @@ public class Benchmarks {
 	}
 
 	/**
-	 * Get next page of the solvers belong to a specific user
+	 * Get next page of the benchmarks belong to a specific user
 	 * @param startingRecord specifies the number of the entry where should the query start
 	 * @param recordsPerPage specifies how many records are going to be on one page
 	 * @param isSortedASC specifies whether the sorting is in ascending order
 	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
 	 * @param searchQuery the search query provided by the client
 	 * @param userId Id of the user we are looking for
-	 * @return a list of Solvers belong to the user
+	 * @return a list of benchmarks belong to the user
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Benchmark> getBenchmarkByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {

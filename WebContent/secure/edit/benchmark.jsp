@@ -12,6 +12,7 @@
 		if(Permissions.canUserSeeBench(benchId, userId)) {
 			b = Benchmarks.get(benchId);
 		}
+		
 
 		if(b != null) {
 			// Ensure the user visiting this page is the owner of the benchmark
@@ -26,6 +27,11 @@
 					request.setAttribute("isDownloadable", "");
 					request.setAttribute("isNotDownloadable", "checked");
 				}
+				boolean nameEditable=false;
+				if (Benchmarks.isNameEditable(benchId)>=0) {
+					nameEditable=true;
+				}
+				request.setAttribute("nameEditable",nameEditable);
 				request.setAttribute("types", Processors.getAll(ProcessorType.BENCH));
 			}
 		} else {
@@ -40,6 +46,9 @@
 
 <star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/shared">				
 	<form id="editBenchmarkForm">
+		<c:if test="${!nameEditable}">
+			<input id="name" type="hidden" name="name" value="${bench.name}">
+		</c:if>
 		<fieldset>
 			<legend>benchmark details</legend>
 			<table class="shaded">
@@ -52,7 +61,15 @@
 				<tbody>
 					<tr>
 						<td class="label">name</td>			
-						<td><input id="name" type="text" name="name" value="${bench.name}" maxlength="${benchNameLen}"/></td>
+						<td>
+							<c:if test="${nameEditable}">
+								<input id="name" type="text" name="name" value="${bench.name}" maxlength="${benchNameLen}"/>
+							</c:if>
+							<c:if test="${!nameEditable}">
+								<p>${bench.name}</p>
+							</c:if>
+						
+						</td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			
