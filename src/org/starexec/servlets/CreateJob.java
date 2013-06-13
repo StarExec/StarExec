@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -237,13 +238,15 @@ public class CreateJob extends HttpServlet {
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
 		JobManager.checkPendingJobs(); // to start this job running if it is not
-		if(submitSuccess) 
+		if(submitSuccess) {
 		    // If the submission was successful, send back to space explorer
+			response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
 		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
-		else 
+		}else  {
 		    // Or else send an error
 		    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
 				       "Your job failed to submit for an unknown reason. Please try again.");
+		}
 	}
 
 	/**

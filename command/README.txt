@@ -360,9 +360,10 @@ varied set of parameters.
 --createjob -This command is used for creating a new job in a given space. "id" refers to the id of
 the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
 the hierarchy structure can be created from StarExecCommand. By default, job-pairs are run in a depth-first manner,
-the optional parameter "trav" can be used to alter this behavior.
+the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
+for results, simply include the polljob parameters "t" and "out" and optionally "ow"
 REQUIRED: "id" "pid" "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav"
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
