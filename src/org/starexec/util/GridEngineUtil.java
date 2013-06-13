@@ -81,32 +81,30 @@ public class GridEngineUtil {
     }
 
     public static Session createSession() {
-	try {
-	    log.debug("createSession() loading class."); 	
-	    // Try to load the class, if it does not exist this will cause an exception instead of an error			
-	    Class.forName("com.sun.grid.drmaa.SessionImpl");
-	}
-	catch (Exception e) {
-	    log.error("Error loading com.sun.grid.drmaa.SessionImpl");
-	}
+    	try {
+    		log.debug("createSession() loading class."); 	
+    		// Try to load the class, if it does not exist this will cause an exception instead of an error			
+    		Class.forName("com.sun.grid.drmaa.SessionImpl");
+    	} catch (Exception e) {
+    		log.error("Error loading com.sun.grid.drmaa.SessionImpl");
+    	}
 
-	Session s = SessionFactory.getFactory().getSession();
-	try {
-	    s.init("");
-	}
-	catch (Exception e) {
-	    log.error("Error initializing the SGE session.");
-	}
-	return s;
+    	Session s = SessionFactory.getFactory().getSession();
+    	try {
+    		s.init("");
+    	} catch (Exception e) {
+    		log.error("Error initializing the SGE session.");
+    	}
+    	return s;
     }
 
     public static void destroySession(Session s) {
-	try {
-	    s.exit();
-	}
-	catch (Exception e) {
-	    log.error("Problem destroying session: "+e,e);
-	}
+    	try {
+    		s.exit();
+    	}
+    	catch (Exception e) {
+    		log.error("Problem destroying session: "+e,e);
+    	}
     }
 
     /**
