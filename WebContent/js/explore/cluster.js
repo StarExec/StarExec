@@ -70,7 +70,7 @@ function getDetails(id, type) {
 	if(type == 'queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;		
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
-		url = starexecRoot+"services/cluster/queues/details/" + id;			//This was originally "services/cluster/nodes/details/"
+		url = starexecRoot+"services/cluster/nodes/details/" + id;			//This was originally "services/cluster/nodes/details/"
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
