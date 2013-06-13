@@ -181,7 +181,7 @@ public class Queues {
 											
 						jobInfo[0] = Jobs.GetName(j.getJobId());
 						//jobInfo[1] = (user.getFullName());
-						jobInfo[1] = "Wyatt";
+						jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
 						jobInfo[2] = (j.getBench().getName());
 						jobInfo[3] = (j.getSolver().getName());
 						jobInfo[4] = (j.getConfiguration().getName());

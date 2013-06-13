@@ -24,6 +24,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Util;
 
@@ -1922,6 +1923,11 @@ public class Jobs {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param jobId the id of the job to get the name of
+	 * @return the name of the job
+	 */
 	public static String GetName(int jobId) {
 		Connection con = null;
 		try {
@@ -1941,4 +1947,5 @@ public class Jobs {
 		}
 		return null;
 	}
+	
 }

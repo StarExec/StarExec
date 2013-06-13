@@ -341,6 +341,15 @@ CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 		WHERE user_id  = _userId
 		AND   space_id = _spaceId;
 	END // 
+	
+DROP PROCEDURE IF EXISTS GetNameofUserByJob;
+CREATE PROCEDURE GetNameofUserByJob(IN _jobId INT)
+	BEGIN
+		SELECT *
+		FROM users
+			INNER JOIN jobs AS owner ON users.id = owner.user_id
+		WHERE owner.id = _jobId;
+	END //
 
 
 
