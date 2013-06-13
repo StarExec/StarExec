@@ -773,7 +773,6 @@ public class Shell {
 	
 	
 	public static void main(String[] args) {
-		System.out.println("TEST: This is the newest version of StarexecCommand!");
 		Shell shell=new Shell();
 		shell.runShell();
 	}

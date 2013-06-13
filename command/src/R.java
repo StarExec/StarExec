@@ -82,6 +82,7 @@ public class R {
 	public static int ERROR_COMMAND_FILE_TERMINATING=-27;
 	public static int ERROR_INSUFFICIENT_QUOTA=-28;
 	public static int ERROR_NAME_NOT_UNIQUE=-29;
+	public static int ERROR_BAD_TRAVERSAL_TYPE=-30;
 	//error messages
 	public static HashMap<Integer,String> errorMessages=new HashMap<Integer,String>();
 	static {
@@ -114,6 +115,7 @@ public class R {
 		errorMessages.put(ERROR_COMMAND_FILE_TERMINATING, "An error was encountered: the file of commands may not have been completed");
 		errorMessages.put(ERROR_NAME_NOT_UNIQUE, "All primitives in a given space must have unique names");
 		errorMessages.put(ERROR_INSUFFICIENT_QUOTA, "You do not have the required disk quota to copy the primitive");
+		errorMessages.put(ERROR_BAD_TRAVERSAL_TYPE, "The traversal must be either depth-first ("+R.ARG_DEPTHFIRST+") or round-robin ("+R.ARG_ROUNDROBIN+")");
 	}
 	
 	
@@ -267,8 +269,16 @@ public class R {
 	public static String PARAM_FROM="from";
 	public static String PARAM_TO="to";
 	
+	public static String PARAM_TRAVERSAL="trav";
+	public static String ARG_ROUNDROBIN="r";
+	public static String ARG_DEPTHFIRST="d";
+	
 	//parameters expected by the StarExec server
 	public static String FORMPARAM_TYPE="type";
 	public static String FORMPARAM_SINCE="since";
 	public static String FORMPARAM_ID="id";
+	public static String FORMPARAM_TRAVERSAL="traversal";
+	
+	public static String FORMARG_ROUNDROBIN="robin";
+	public static String FORMARG_DEPTHFIRST="depth";
 }

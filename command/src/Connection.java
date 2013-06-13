@@ -349,12 +349,12 @@ public class Connection {
 						cpu=keyValue.getValue();
 					} else if (keyValue.getName().equals("wallclockTimeout")) {
 						wallclock=keyValue.getValue();
-					} else {
+					} /*else {
 						String name=keyValue.getName();
 						if (name.equals("configs") || name.equals("bench") || name.equals("solver")) {	
 							params.add(keyValue);
 						}
-					}
+					}*/
 				}
 				
 				line=br.readLine();
@@ -364,6 +364,13 @@ public class Connection {
 			}
 			if (commandParams.containsKey(R.PARAM_CPUTIMEOUT)) {
 				cpu=commandParams.get(R.PARAM_CPUTIMEOUT);
+			}
+			
+			String traversalMethod="depth";
+			if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
+				if (commandParams.get(R.PARAM_TRAVERSAL).equals(R.ARG_ROUNDROBIN)) {
+					traversalMethod="robin";
+				}
 			}
 			
 			br.close();
@@ -390,7 +397,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("cpuTimeout",cpu));
 			params.add(new BasicNameValuePair("queue",commandParams.get(R.PARAM_QUEUEID)));
 			params.add(new BasicNameValuePair("postProcess",commandParams.get(R.PARAM_PROCID)));
-			
+			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			//TODO: Possibly allow other methods of running jobs
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			
@@ -399,7 +406,9 @@ public class Connection {
 			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			
+			if (response.getStatusLine().getStatusCode()!=302) {
+				return R.ERROR_SERVER;
+			}
 			return 0;
 		} catch (Exception e) {
 			

@@ -46,7 +46,7 @@ public class Validator {
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID};
+		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
 	
@@ -445,6 +445,13 @@ public class Validator {
 		//Job creation must include a space ID, a processor ID, and a queue ID
 		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_PROCID,R.PARAM_QUEUEID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
+		}
+		
+		if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
+			String traversalMethod=commandParams.get(R.PARAM_TRAVERSAL);
+			if (!traversalMethod.equals(R.ARG_ROUNDROBIN) && traversalMethod.equals(R.ARG_DEPTHFIRST)) {
+				return R.ERROR_BAD_TRAVERSAL_TYPE;
+			}
 		}
 		
 		//all IDs should be integers greater than 0

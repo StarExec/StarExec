@@ -46,7 +46,7 @@ by default. allPerm has no value.
 "removeSpace", "removeJob", "removeBench"} - These are ten separate parameters specify that the 
 corresponding permission should be set to true. None requires a value.
 
-"bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload
+"bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload.
 
 "cpu"--Specifies the cpu timeout that should be used for a new job, in seconds.
 
@@ -54,23 +54,23 @@ corresponding permission should be set to true. None requires a value.
 
 "dep"--Specifies a dependency for a benchmark upload.
 
-"df" -Specifies a path to a local file that will contain a description
+"df" -Specifies a path to a local file that will contain a description.
 
 "downloadable" -Specifies that a benchmark upload should be downloadable. 
 
 "f" -Specifies a path to a  local file.
 
-"from" -When copying a primitive, specifies the ID of the source space
+"from" -When copying a primitive, specifies the ID of the source space.
 
 "hier" -On a benchmark upload, means that the archive structure should be converted to a space 
 structure. By default, all benchmarks are placed in the space being uploaded to.
 
 "id" -Specifies the ID of a primitive, whether that be a space, job, benchmark, etc.
 
-"limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print
+"limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print.
 
 "link" -When uploading benchmarks with dependencies, indicates that the first directory in the path 
-corresponds to a dependent bench space
+corresponds to a dependent bench space.
 
 "lock" -Sets a newly created subspace as locked.
 
@@ -78,26 +78,30 @@ corresponds to a dependent bench space
 
 "out" -Specifies a filepath to which a file should be downloaded.
 
-"ow" -Indicates that the file at the path given by "out" should be overwritten with the new file
+"ow" -Indicates that the file at the path given by "out", if it exists, should be overwritten with the new file.
 
-"pid" -Specifies a processor id (used only in job creation)
+"pid" -Specifies a processor id (used only in job creation).
 
-"qid" -Specifies a queue id (used only in job creation)
+"qid" -Specifies a queue id (used only in job creation).
 
-"since" -When downloading job info, specifies the earliest completed pair after which to get info
+"since" -When downloading job info, specifies the earliest completed pair after which to get info.
 
 "t" -When using 'sleep,' specifies the amount of time in seconds. Decimal values are permitted.
 
 "to" -When copying a primitive, specifies the ID of the destination space, or the root of the 
-	  destination hierarchy,
+	  destination hierarchy.
 
-"url" -Specifies the URL of a remote file
+"trav" -When creating a job, specifies the type of traversal that shold be used. The value "d" is
+		used to specify depth-first traversal, whereas "r" is for a round-robin traversal.
+		
 
-"val" -Specifies a new value for a user setting
+"url" -Specifies the URL of a remote file.
 
-"verbose" -Tells StarExec that status should be printed to the standard output in batch mode
+"val" -Specifies a new value for a user setting.
 
-"w" -Specifies the wallclock timeout that should be used for a new job, in seconds
+"verbose" -Tells StarExec that status should be printed to the standard output in batch mode.
+
+"w" -Specifies the wallclock timeout that should be used for a new job, in seconds.
 
 Commands
 --------
@@ -355,10 +359,11 @@ varied set of parameters.
 
 --createjob -This command is used for creating a new job in a given space. "id" refers to the id of
 the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
-the hierarchy structure can be created from StarExecCommand--other options will be added in the future.
+the hierarchy structure can be created from StarExecCommand. By default, job-pairs are run in a depth-first manner,
+the optional parameter "trav" can be used to alter this behavior.
 REQUIRED: "id" "pid" "qid" 
-OPTIONAL: "n" "d" "w" "cpu"
-EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100'
+OPTIONAL: "n" "d" "w" "cpu" "trav"
+EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
 REQUIRED: "id"
