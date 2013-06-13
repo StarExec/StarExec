@@ -101,7 +101,7 @@
 		<mkdir dir="${class-dir}" />
 
 		<!-- Compile the source code to get the java classes -->
-		<javac srcdir="src" destdir="${class-dir}" classpathref="classpath" nowarn="on">
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="src" destdir="${class-dir}" classpathref="classpath" nowarn="on">
 			<compilerarg value="-Xlint:unchecked"/>
 		</javac>
               

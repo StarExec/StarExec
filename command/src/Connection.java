@@ -282,7 +282,7 @@ public class Connection {
 			return R.ERROR_BAD_URL;
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			
 		}
 		
 		return R.ERROR_SERVER;
@@ -310,7 +310,7 @@ public class Connection {
 	/**
 	 * Creates a POST request to StarExec to create a new job
 	 * @param commandParams A HashMap containing key/value pairs gathered from the user input at the command line
-	 * @return 0 on success, a negative integer otherwise
+	 * @return the new job ID on success, a negative integer otherwise
 	 * @author Eric Burns
 	 */
 	public int createJob(HashMap<String,String> commandParams) {
@@ -409,7 +409,8 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_SERVER;
 			}
-			return 0;
+			int id=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return id;
 		} catch (Exception e) {
 			
 			return R.ERROR_SERVER;
@@ -695,7 +696,8 @@ public class Connection {
 
 			//copy file from the HTTPResponse to an output stream
 			File out=new File(location);
-			
+			File parent=new File(out.getAbsolutePath().substring(0,out.getAbsolutePath().lastIndexOf(File.separator)));
+			parent.mkdirs();
 			FileOutputStream outs=new FileOutputStream(out);
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
@@ -719,7 +721,7 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 			if (response!=null) {
 				try {
 					response.getEntity().getContent().close();
@@ -729,7 +731,7 @@ public class Connection {
 				
 			}
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			e.printStackTrace();
+			
 			//Flow control was broken, so some error occurred.
 			return R.ERROR_SERVER;
 		}

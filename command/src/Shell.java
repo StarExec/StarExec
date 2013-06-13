@@ -280,7 +280,31 @@ public class Shell {
 			
 			
 			if (c.equals(R.COMMAND_CREATEJOB)) {
-				serverStatus=con.createJob(commandParams);
+				
+				if (commandParams.containsKey(R.PARAM_TIME) || commandParams.containsKey(R.PARAM_OUTPUT_FILE)) {
+					HashMap<String,String> pollParams=new HashMap<String,String>();
+					pollParams.put(R.PARAM_TIME, commandParams.remove(R.PARAM_TIME));
+					pollParams.put(R.PARAM_OUTPUT_FILE, commandParams.remove(R.PARAM_OUTPUT_FILE));
+					pollParams.put(R.PARAM_ID, "1");
+					if (commandParams.containsKey(R.PARAM_OVERWRITE)) {
+						pollParams.put(R.PARAM_OVERWRITE, commandParams.remove(R.PARAM_OVERWRITE));
+					}
+					int valid=Validator.isValidPollJobRequest(pollParams);
+					if (valid<0) {
+						return valid;
+					}
+					int id=con.createJob(commandParams);
+					System.out.println(id);
+					if (id<0) {
+						return id;
+					}
+					pollParams.put(R.PARAM_ID, String.valueOf(id));
+					System.out.println("Job created, polling has begun");
+					serverStatus=pollJob(pollParams);
+				} else {
+					serverStatus=con.createJob(commandParams);
+				}
+				
 			} else if (c.equals(R.COMMAND_CREATESUBSPACE)) {
 				serverStatus=con.createSubspace(commandParams);
 			} 
@@ -665,8 +689,7 @@ public class Shell {
 					con=null;
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {	
 			System.out.println("Internal error, terminating session");
 			return;
 		}
@@ -774,6 +797,10 @@ public class Shell {
 	
 	public static void main(String[] args) {
 		Shell shell=new Shell();
+		//if we get a single argument, it's a file we should try to run
+		if (args.length==1) {
+			shell.runFile(args[0], false);
+		}
 		shell.runShell();
 	}
 }
