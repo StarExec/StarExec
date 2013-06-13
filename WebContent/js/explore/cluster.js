@@ -126,6 +126,7 @@ function populateAttributes(jsonData) {
 			$('#activeStatus').text('[INACTIVE]');
 			$('#activeStatus').css('color', '#ae0000');
 		}
+		attrTable.fnClearTable();
 		for(var key in jsonData.attributes){
 			attrTable.fnAddData([key, jsonData.attributes[key]]);            
 	    }

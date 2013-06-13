@@ -220,7 +220,6 @@ public class GridEngineUtil {
 	BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
 	String results = Util.bufferToString(reader);
 	//String results = testString;
-	log.debug("results = " + results);
 	log.info("Updating the DB with associations between SGE queues to compute nodes.");
 		
 	try {
