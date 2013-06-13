@@ -109,6 +109,11 @@ function populateAttributes(jsonData) {
 				80: starexecRoot+'images/progress_bar/progressbg_green.gif'
 			}});
 		$('#activeStatus').hide();
+		
+		attrTable.fnClearTable();
+		for (var key in jsonData.jobPairs) {
+			attrTable.fnAddData([jsonData.jobPairs[key]]);
+		}
 	} else {
 		// We're not showing a queue, hide the bar showing queue availability and show active status
 		$('#progressBar').hide();
@@ -121,18 +126,11 @@ function populateAttributes(jsonData) {
 			$('#activeStatus').text('[INACTIVE]');
 			$('#activeStatus').css('color', '#ae0000');
 		}
+		for(var key in jsonData.attributes){
+			attrTable.fnAddData([key, jsonData.attributes[key]]);            
+	    }
 	}
 	
-	attrTable.fnClearTable();
-	//attrTable.fnAddData (["Sweet Job 1", "Tyler Jensen", "benchmark1", "Solver1", "Config1", "SAT"]);
-	for (var key in jsonData.jobPairs) {
-		attrTable.fnAddData([jsonData.jobPairs[key]]);
-	}
-	
-	//for(var key in jsonData.attributes){
-	//	attrTable.fnAddData([key, jsonData.attributes[key]]);            
-    //}
-		
 	// Done loading, hide the loader
 	$('#loader').hide();
 }
