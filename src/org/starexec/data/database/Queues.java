@@ -192,7 +192,6 @@ public class Queues {
 						jobInfo[2] = (j.getBench().getName());
 						jobInfo[3] = (j.getSolver().getName());
 						jobInfo[4] = (j.getConfiguration().getName());
-						log.debug("SPACE = " + j.getSpace());
 						//jobInfo[5] = (j.getSpace().getName());
 						String path = j.getPath();
 						int index = path.lastIndexOf("/");
@@ -203,6 +202,7 @@ public class Queues {
 						queue.putJobPair(j.getId(), jobInfo);
 					}
 				}
+			/*
 				// Start from 8 (first seven are ID, name, status and usage)
 				for(int i = 1; i < results.getMetaData().getColumnCount(); i++) {
 					log.debug("METADATA : " + results.getMetaData().getColumnName(i).substring(1));
@@ -210,6 +210,7 @@ public class Queues {
 					queue.putAttribute(results.getMetaData().getColumnName(i).substring(0), results.getString(i).substring(0));
 					log.debug("ATTRIBUTES = " + queue.getAttributes());
 				}	
+				*/
 		//}
 						
 			return queue;
