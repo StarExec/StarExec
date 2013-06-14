@@ -153,14 +153,14 @@ public class Connection {
 	
 	/**
 	 * Gets the max completion ID for info downloads on the given job.
-	 * @param jobId The ID of a job on StarExec
+	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen for the job, or 0 if not seen
 	 */
-	public int getJobInfoCompletion(int jobId) {
-		if (!job_info_indices.containsKey(jobId)) {
-			job_info_indices.put(jobId, 0);
+	public int getJobInfoCompletion(int jobID) {
+		if (!job_info_indices.containsKey(jobID)) {
+			job_info_indices.put(jobID, 0);
 		} 
-		return job_info_indices.get(jobId);
+		return job_info_indices.get(jobID);
 	}
 	
 	public HashMap<Integer,Integer> getInfoIndices() {
@@ -169,15 +169,15 @@ public class Connection {
 	
 	/**
 	 * Gets the max completion ID yet seen for output downloads on a given job
-	 * @param jobId The ID of a job on StarExec
+	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
 	
-	public int getJobOutCompletion(int jobId) {
-		if (!job_out_indices.containsKey(jobId)) {
-			job_out_indices.put(jobId, 0);
+	public int getJobOutCompletion(int jobID) {
+		if (!job_out_indices.containsKey(jobID)) {
+			job_out_indices.put(jobID, 0);
 		} 
-		return job_out_indices.get(jobId);
+		return job_out_indices.get(jobID);
 	}
 	
 	public HashMap<Integer,Integer> getOutIndices() {
@@ -186,20 +186,20 @@ public class Connection {
 	
 	/**
 	 * Sets the highest seen completion ID for info on a given job
-	 * @param jobId An ID of a job on StarExec
+	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
-	public void setJobInfoCompletion(int jobId,int completion) {
-		job_info_indices.put(jobId,completion);
+	public void setJobInfoCompletion(int jobID,int completion) {
+		job_info_indices.put(jobID,completion);
 	}
 	
 	/**
 	 * Sets the highest seen completion ID for output on a given job
-	 * @param jobId An ID of a job on StarExec
+	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
-	public void setJobOutCompletion(int jobId,int completion) {
-		job_out_indices.put(jobId,completion);
+	public void setJobOutCompletion(int jobID,int completion) {
+		job_out_indices.put(jobID,completion);
 	}
 	
 	/**
@@ -296,9 +296,9 @@ public class Connection {
 	
 	public boolean logout() {
 		try {
-			HttpGet get=new HttpGet(baseURL+R.URL_LOGOUT);
-			get=(HttpGet) setHeaders(get);
-			HttpResponse response=client.execute(get);
+			HttpPost post=new HttpPost(baseURL+R.URL_LOGOUT);
+			post=(HttpPost) setHeaders(post);
+			HttpResponse response=client.execute(post);
 			response.getEntity().getContent().close();
 			return true;
 		} catch (Exception e) {
@@ -445,7 +445,7 @@ public class Connection {
 				urlExtension=R.URL_COPYBENCH;
 			}
 			
-			urlExtension=urlExtension.replace("{spaceId}", commandParams.get(R.PARAM_TO));
+			urlExtension=urlExtension.replace("{spaceID}", commandParams.get(R.PARAM_TO));
 			
 			HttpPost post=new HttpPost(baseURL+urlExtension);
 			
@@ -455,7 +455,7 @@ public class Connection {
 			//and allows all the copy commands to be handled by this function
 			params.add(new BasicNameValuePair("copyToSubspaces", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
 			params.add(new BasicNameValuePair("fromSpace",commandParams.get(R.PARAM_FROM)));
-			params.add(new BasicNameValuePair("selectedIds[]",commandParams.get(R.PARAM_ID)));
+			params.add(new BasicNameValuePair("selectedIDs[]",commandParams.get(R.PARAM_ID)));
 			params.add(new BasicNameValuePair("copy",String.valueOf(copy)));
 			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
@@ -477,6 +477,7 @@ public class Connection {
 			
 			JsonPrimitive p=jsonE.getAsJsonPrimitive();
 			if (p.getAsInt()==0) {
+				
 				return 0;
 				
 			} else if (p.getAsInt()>=3 && p.getAsInt()<=6) {
@@ -498,7 +499,7 @@ public class Connection {
 	/**
 	 * Creates a subspace of an existing space on StarExec
 	 * @param commandParam A HashMap containing key/value pairs gathered from user input at the command line
-	 * @return 0 on success and a negative error code otherwise
+	 * @return the new space ID on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 	
@@ -547,8 +548,8 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_BAD_PARENT_SPACE;
 			}
-			
-			return 0;
+			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return newID;
 		} catch (Exception e) {
 			return R.ERROR_SERVER;
 		}
@@ -839,7 +840,7 @@ public class Connection {
 				for (JsonElement y : curPrim) {
 					element=y.getAsJsonPrimitive();
 					
-					id=extractIdFromJson(element.getAsString());
+					id=extractIDFromJson(element.getAsString());
 					name=extractNameFromJson(element.getAsString(),urlParams.get("type"));
 					
 					//if the element has an ID and a name, save them
@@ -1055,7 +1056,7 @@ public class Connection {
 	 * This function handles user requests for uploading a space XML archive.
 	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
 	 * ID and File keys
-	 * @return 0 on success, and a negative error code otherwise
+	 * @return the new configuration ID on success, and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 	
@@ -1083,7 +1084,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			
 			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("solverId",new StringBody(commandParams.get(R.PARAM_ID),utf8));
+			entity.addPart("solverID",new StringBody(commandParams.get(R.PARAM_ID),utf8));
 			entity.addPart("uploadConfigDesc",new StringBody(name,utf8));
 			entity.addPart("uploadConfigName",new StringBody(desc,utf8));
 			
@@ -1094,13 +1095,13 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			
+			response.getEntity().getContent().close();
 			//we're expecting a redirect to the configuration
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_BAD_ARGS;
 			}
-			
-			return 0;
+			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return newID;
 		} catch (Exception e) {
 			return R.ERROR_SERVER;
 		}
@@ -1112,7 +1113,7 @@ public class Connection {
 	 * and creates and HTTP POST request that pushes a processor to Starexec
 	 * 
 	 * @param commandParams The parameters from the command line. A file and an ID are required.
-	 * @return A status code indicating success or failure
+	 * @return The new processor ID on success, or a negative error code on failure
 	 * @author Eric Burns
 	 */
 	
@@ -1163,8 +1164,8 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return R.ERROR_BAD_ARGS;
 			}
-			
-			return 0;
+			int id=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return id;
 		} catch (Exception e) {
 			
 			return R.ERROR_SERVER;
@@ -1239,7 +1240,7 @@ public class Connection {
 	 * and creates and HTTP POST request that pushes a solver to Starexec
 	 * 
 	 * @param formParams The parameters from the command line. A file or url and and ID are required.
-	 * @return A status code indicating success or failure
+	 * @return The ID of the newly uploaded solver on success, or a negative error code on failure
 	 * @author Eric Burns
 	 */
 	
@@ -1323,7 +1324,8 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			response.getEntity().getContent().close();
-			return 0;
+			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return newID;
 		} catch (Exception e) {	
 			return R.ERROR_SERVER;
 		}	
@@ -1569,7 +1571,7 @@ public class Connection {
 	 * @param jsonString The Json string to test for an ID
 	 * @return The ID if it exists or null if it does not
 	 */
-	private Integer extractIdFromJson(String jsonString) {
+	private Integer extractIDFromJson(String jsonString) {
 		
 		//IDs are stored as the 'value' of a hidden input
 		int startIndex=jsonString.indexOf("type=\"hidden\"");

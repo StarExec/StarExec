@@ -148,6 +148,13 @@ OPTIONAL: "verbose"
 REQUIRED: "t"
 OPTIONAL: None
 
+--returnids -Instructs StarexecCommand to print the IDs of newly uploaded solvers and processors and newly
+			 created jobs and spaces in the form "id={newId}\n" The default behavior at the start of a session 
+			 is not to do this. This command does nothing if this behavior is already enabled.
+
+--ignoreids -Instructs StarExecCommand to stop printing the IDs of newly uploaded solvers and processors and
+			 newly created jobs and spaces. This command does nothing if this behavior is already disabled.
+
 Download Commands
 -----------------
 
@@ -264,34 +271,36 @@ These commands allow users to push benchmarks, solvers, and processors to the se
 individually unique than previous commands, and many accept a large number of optional parameters. 
 
 --pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID.
+			  The ID of the newly uploaded solver will be printed if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id"
 OPTIONAL: "n" ("d" OR "df") "downloadable"
 EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
 
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
+				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '
 
 --pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
-refers to a community id.
+				 refers to a community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=142 f=procdirectory.tgz d=Processor Description n=newproc'
 
 --pushconfig -This command is used for uploading a configuration for an existing solver. The parameter 
-"id" refers to a solver ID.
+			  "id" refers to a solver ID. The ID of the newly uploaded configuration will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
 
 --pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a 
-community id.
+				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 
 --pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space 
-ID and is required. 
+				ID and is required. The ID of the newly created spaces will NOT be printed, even if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: None
 
@@ -358,15 +367,17 @@ These commands create some new information on StarExec. Like push commands, they
 varied set of parameters.
 
 --createjob -This command is used for creating a new job in a given space. "id" refers to the id of
-the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
-the hierarchy structure can be created from StarExecCommand. By default, job-pairs are run in a depth-first manner,
-the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
-for results, simply include the polljob parameters "t" and "out" and optionally "ow"
+			 the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
+			 the hierarchy structure can be created from StarExecCommand. By default, job-pairs are run in a depth-first manner,
+			 the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
+			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
+			 The ID of the newly created job will be printed if "returnids" has been called.
 REQUIRED: "id" "pid" "qid" 
 OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
+				  The ID of the newly created subspace will be printed if "returnids" has been called.
 REQUIRED: "id"
 OPTIONAL: "n" "d" "lock" "allPerm" (also all the other permissions parameters)
 EXAMPLE: 'createsubspace id=5'

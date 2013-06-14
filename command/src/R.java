@@ -31,11 +31,11 @@ public class R {
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
-	public static String URL_COPYBENCH="services/spaces/{spaceId}/add/benchmark";
-	public static String URL_COPYSOLVER="services/spaces/{spaceId}/add/solver";
-	public static String URL_COPYSPACE="services/spaces/{spaceId}/copySpace";
-	public static String URL_COPYJOB="services/spaces/{spaceId}/add/job";
-	public static String URL_COPYUSER="services/spaces/{spaceId}/add/user";
+	public static String URL_COPYBENCH="services/spaces/{spaceID}/add/benchmark";
+	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
+	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
+	public static String URL_COPYJOB="services/spaces/{spaceID}/add/job";
+	public static String URL_COPYUSER="services/spaces/{spaceID}/add/user";
 	public static String URL_REMOVEPRIMITIVE="services/remove";
 	//Success codes for command parsing
 	public static int SUCCESS_EXIT=1;
@@ -165,8 +165,9 @@ public class R {
 	public static String COMMAND_LOGIN="login";
 	public static String COMMAND_LOGOUT="logout";
 	public static String COMMAND_RUNFILE="runfile";
-	public static String COMMAND_POLLJOB="polljob";
-	//Download commands
+	public static String COMMAND_RETURNIDS="returnids";
+	public static String COMMAND_IGNOREIDS="ignoreids";
+		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
 	public static String COMMAND_GETJOBINFO="getjobinfo";
 	public static String COMMAND_GETSOLVER="getsolver";
@@ -179,6 +180,8 @@ public class R {
 	public static String COMMAND_GETBENCHPROC="getbenchproc";
 	public static String COMMAND_GETNEWJOBINFO="getnewjobinfo";
 	public static String COMMAND_GETNEWJOBOUT="getnewjobout";
+	public static String COMMAND_POLLJOB="polljob";
+
 	
 	//Setting commands
 	public static String COMMAND_SETARCHIVETYPE="setarchivetype";

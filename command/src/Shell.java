@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class Shell {
 	
 	private Connection con;
-	
+	private boolean returnIDsOnUpload=false;
 	
 	public Shell() {
 		con=null;
@@ -241,11 +241,11 @@ public class Shell {
 	 */
 	private int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
-			int serverStatus=0;
+			int serverStatus;
 			
 			
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
-				
+				serverStatus=con.uploadBenchmarks(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHBENCHPROC)) {
 				serverStatus=con.uploadBenchProc(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHPOSTPROC)) {
@@ -258,7 +258,12 @@ public class Shell {
 			else {
 				return R.ERROR_BAD_COMMAND;
 			}
-			
+			if (serverStatus>0) {
+				if (returnIDsOnUpload) {
+					System.out.println("id="+serverStatus);
+				}
+				return 0;
+			}
 			return serverStatus;
 		} catch (Exception e) {
 			return R.ERROR_BAD_ARGS;
@@ -311,6 +316,14 @@ public class Shell {
 			else {
 				return R.ERROR_BAD_COMMAND;
 			}
+			
+			if (serverStatus>0) {
+				if (returnIDsOnUpload) {
+					System.out.println("id="+serverStatus);
+				}
+				return 0;
+			}
+			
 			
 			return serverStatus;
 		} catch (Exception e) {
@@ -518,6 +531,10 @@ public class Shell {
 	 * @author Eric Burns
 	 */
 	public int parseCommand(String command) {
+		//means end of input has been reached
+		if (command==null) {
+			command="exit";
+		}
 		command=command.trim();
 		
 		if (command.length()==0) {
@@ -575,6 +592,12 @@ public class Shell {
 				return valid;
 			}
 			this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
+			return 0;
+		} else if (c.equals(R.COMMAND_IGNOREIDS)) {
+			returnIDsOnUpload=false;
+			return 0;
+		} else if (c.equals(R.COMMAND_RETURNIDS)) {
+			returnIDsOnUpload=true;
 			return 0;
 		}
 		int status;
@@ -690,6 +713,7 @@ public class Shell {
 				}
 			}
 		} catch (Exception e) {	
+			e.printStackTrace();
 			System.out.println("Internal error, terminating session");
 			return;
 		}
@@ -796,6 +820,7 @@ public class Shell {
 	
 	
 	public static void main(String[] args) {
+		
 		Shell shell=new Shell();
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
