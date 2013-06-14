@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -115,6 +116,7 @@ public class AddSpace extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
 		} else {
 			// On success, redirect to the space explorer so they can see changes
+			response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
 		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 		}		
 	}

@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -112,6 +113,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Redirect based on the results of the addition
 			if(result != null) {
+				response.addCookie(new Cookie("New_ID",String.valueOf(result.getId())));
 			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));	
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
@@ -150,7 +152,9 @@ public class ProcessorManager extends HttpServlet {
 			newProc.setFilePath(newFile.getAbsolutePath());			
 			log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), newProc.getCommunityId()));					
 			
-			if(Processors.add(newProc)) {
+			int newProcId=Processors.add(newProc);
+			if(newProcId>0) {
+				newProc.setId(newProcId);
 				return newProc;					
 			}						
 		} catch (Exception e) {

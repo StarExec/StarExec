@@ -1180,6 +1180,8 @@ public class RESTServices {
 				}
 				log.debug("Benchmark "+b.getName()+" copied successfully");
 			}
+			
+			
 			return gson.toJson(0);
 			
 		} else {

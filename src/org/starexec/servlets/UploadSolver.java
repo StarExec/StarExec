@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -96,11 +97,14 @@ public class UploadSolver extends HttpServlet {
 				
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
+				//should be 2 element array where the first element is the new solver ID and the
+				//second element is a status code related to whether configurations existed.
 				int return_value = result[0];
 				int configs = result[1];
 			
 				// Redirect based on success/failure
 				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4) {
+					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
 					if (configs == -4) { //If there are no configs
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&flag=true"));
 					} else {

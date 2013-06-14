@@ -21,34 +21,36 @@ public class Processors {
 	/**
 	 * Inserts a processor into the database
 	 * @param processor The processor to add to the database
-	 * @return True if the operation was a success, false otherwise
+	 * @return The positive integer ID of the new processor if successful, -1 otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(Processor processor) {
+	public static int add(Processor processor) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
 			
 			CallableStatement procedure = null;			
-			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?, ?)}");			
+			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?, ?, ?)}");			
 			procedure.setString(1, processor.getName());
 			procedure.setString(2, processor.getDescription());
 			procedure.setString(3, processor.getFilePath());
 			procedure.setInt(4, processor.getCommunityId());
 			procedure.setInt(5, processor.getType().getVal());
 			procedure.setLong(6, FileUtils.sizeOf(new File(processor.getFilePath())));
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
 			
+			int procId = procedure.getInt(6);	
 			
-			return true;			
+			return procId;			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
 		
-		return false;
+		return -1;
 	}
 	
 	/**
