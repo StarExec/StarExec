@@ -918,7 +918,17 @@ public class Jobs {
 				jp.setBench(neededBenchmarks.get(benchIdList.get(i)));
 				jp.setSolver(neededSolvers.get(configIdList.get(i)));
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
-				jp.setAttributes(props.get(jp.getId()));
+				
+				//NOTE: for all new jobs, props should always contain the ID of every job pair
+				// that has attributes. The only reason we need to check whether it doesn't is for
+				// backwards compatibility-- jobs run before the job_id column was added to the 
+				//attributes table will not work with the getJobAttributes method.
+				if (props.containsKey(jp.getId())) {
+					jp.setAttributes(props.get(jp.getId()));
+				} else {
+					jp.setAttributes(Jobs.getAttributes(jp.getId()));
+				}
+				
 				
 			}
 			log.info("returning detailed pairs for job " + jobId );
@@ -997,8 +1007,18 @@ public class Jobs {
 				jp.setSolver(neededSolvers.get(configIdList.get(i)));
 				log.debug("set solver for " + jp.getId());
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
-				log.debug("set configuration for " + jp.getId());				
-				jp.setAttributes(props.get(jp.getId()));
+				log.debug("set configuration for " + jp.getId());	
+				
+				//NOTE: for all new jobs, props should always contain the ID of every job pair
+				// that has attributes. The only reason we need to check whether it doesn't is for
+				// backwards compatibility-- jobs run before the job_id column was added to the 
+				//attributes table will not work with the getJobAttributes method.
+				if (props.containsKey(jp.getId())) {
+					jp.setAttributes(props.get(jp.getId()));
+				} else {
+					jp.setAttributes(Jobs.getAttributes(jp.getId()));
+				}
+				
 			}
 			log.info("returning detailed pairs for job " + jobId );
 			return returnList;	

@@ -283,11 +283,12 @@ public class Shell {
 		try {
 			int serverStatus=0;
 			
-			
+			boolean isPollJob=false;
 			if (c.equals(R.COMMAND_CREATEJOB)) {
 				
 				if (commandParams.containsKey(R.PARAM_TIME) || commandParams.containsKey(R.PARAM_OUTPUT_FILE)) {
 					HashMap<String,String> pollParams=new HashMap<String,String>();
+					isPollJob=true;
 					pollParams.put(R.PARAM_TIME, commandParams.remove(R.PARAM_TIME));
 					pollParams.put(R.PARAM_OUTPUT_FILE, commandParams.remove(R.PARAM_OUTPUT_FILE));
 					pollParams.put(R.PARAM_ID, "1");
@@ -299,9 +300,12 @@ public class Shell {
 						return valid;
 					}
 					int id=con.createJob(commandParams);
-					System.out.println(id);
+					
 					if (id<0) {
 						return id;
+					}
+					if (returnIDsOnUpload) {
+						System.out.println("id="+id);
 					}
 					pollParams.put(R.PARAM_ID, String.valueOf(id));
 					System.out.println("Job created, polling has begun");
@@ -318,7 +322,7 @@ public class Shell {
 			}
 			
 			if (serverStatus>0) {
-				if (returnIDsOnUpload) {
+				if (returnIDsOnUpload && !isPollJob) {
 					System.out.println("id="+serverStatus);
 				}
 				return 0;
