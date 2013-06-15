@@ -23,7 +23,7 @@ CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadab
 DROP PROCEDURE IF EXISTS GetPublicSolvers;
 CREATE PROCEDURE GetPublicSolvers()
 	BEGIN
-		SELECT DISTINCT * from solvers where id in 
+		SELECT DISTINCT * from solvers where deleted=false AND id in 
 		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
 		(SELECT id from spaces where public_access=1));
 	END //
@@ -33,7 +33,7 @@ CREATE PROCEDURE GetPublicSolvers()
 DROP PROCEDURE IF EXISTS GetPublicSolversByCommunity;
 CREATE PROCEDURE GetPublicSolversByCommunity(IN _commId INT, IN _pubUserId INT)
 	BEGIN
-		SELECT DISTINCT * from solvers where id in 
+		SELECT DISTINCT * from solvers where deleted=false and id in 
 		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
 		(SELECT id from spaces where (IsPublic(id,_pubUserId) = 1) AND id in (select descendant from closure where ancestor = _commId)));
 	END //
@@ -70,13 +70,26 @@ CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 	
 	
 -- Deletes a solver given that solver's id
--- Author: Todd Elvers	
+-- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS DeleteSolverById;
 CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM solvers WHERE id = _solverId;
-		DELETE FROM solvers
+		UPDATE solvers
+		SET deleted=true
 		WHERE id = _solverId;
+		UPDATE solvers
+		SET path=""
+		WHERE id = _solverId;
+		UPDATE solvers
+		SET disk_size=0
+		WHERE id = _solverId;
+		-- if the solver is associated with no spaces, we can delete it from the database
+		IF ((SELECT COUNT(*) FROM solver_assoc WHERE solver_id=_solverId)=0) THEN
+			DELETE FROM solvers
+			WHERE id=_solverId;
+		END IF;
+		
 	END //	
 	
 	
@@ -195,7 +208,7 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE id IN
+		WHERE deleted=false AND id IN
 				(SELECT solver_id
 				FROM solver_assoc
 				WHERE space_id = _id)
@@ -221,7 +234,7 @@ CREATE PROCEDURE GetSolverById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE id = _id;
+		WHERE id = _id and deleted=false;
 	END //
 	
 	
@@ -245,7 +258,7 @@ CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE user_id = _userId;
+		WHERE user_id = _userId and deleted=false;
 	END //
 
 -- Returns the number of public spaces a solver is in
@@ -259,13 +272,17 @@ CREATE PROCEDURE IsSolverPublic(IN _solverId INT, IN _publicUserId INT)
 		AND (IsPublic(space_id,_publicUserId) = 1);
 	END //
 	
+DROP PROCEDURE IF EXISTS IsSolverDeleted;
+CREATE PROCEDURE IsSolverDeleted(IN _solverId INT)
+	BEGIN
+		SELECT count(*) AS solverDeleted
+		FROM solvers
+		WHERE deleted=true AND id=_solverId;
+	END //
 -- Removes the association between a solver and a given space;
--- places the path of the solver in _path if it has no other
--- associations in solver_assoc and isn't being used for any jobs,
--- otherwise places NULL in _path
--- Author: Todd Elvers
+-- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS RemoveSolverFromSpace;
-CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _path TEXT)
+CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 	BEGIN
 		IF _spaceId >= 0 THEN
 			DELETE FROM solver_assoc
@@ -275,18 +292,12 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT, OUT _p
 		
 		-- Ensure the solver isn't being used in any other space
 		IF NOT EXISTS(SELECT * FROM solver_assoc WHERE solver_id =_solverId) THEN
-			-- Ensure the solver isn't being used for any other jobs
-			IF NOT EXISTS(SELECT * FROM job_pairs JOIN configurations ON job_pairs.config_id=configurations.id WHERE solver_id=_solverId) THEN
-				SELECT path INTO _path FROM solvers WHERE id = _solverId;
+			-- if the solver has been deleted already, remove it from the database
+			IF NOT EXISTS(SELECT * FROM solvers WHERE _solverId=id AND deleted=false) THEN
 				DELETE FROM solvers
-				WHERE id = _solverId;
-			ELSE
-				SELECT NULL INTO _path;
+				WHERE id=_solverId;
 			END IF;
-		ELSE
-			SELECT NULL INTO _path;
 		END IF;
-			
 	END // 
 	
 
@@ -342,7 +353,7 @@ CREATE PROCEDURE GetSolverCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS solverCount
 		FROM solvers
-		WHERE user_id = _userId;
+		WHERE user_id = _userId AND deleted=false;
 	END //
 	
 	-- Gets the fewest necessary Solvers in order to service a client's
@@ -357,10 +368,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 		-- If _query is empty, get next page of Solvers without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
 			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						name, 
-						user_id,  
-						description
+				SELECT 	*
 				
 				FROM	solvers where user_id = _userId
 				
@@ -375,10 +383,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				-- Shrink the results to only those required for the next page of Solvers
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
-						name, 
-						user_id, 
-						description
+				SELECT 	*
 						
 				FROM	solvers where user_id = _userId
 
@@ -393,10 +398,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 		-- Otherwise, ensure the target Solvers contain _query
 		ELSE
 			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						name, 
-						user_id, 
-						description
+				SELECT 	*
 				
 				FROM	solvers where user_id = _userId
 				
@@ -412,10 +414,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				-- Shrink the results to only those required for the next page of Solvers
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
-						name, 
-						user_id, 
-						description
+				SELECT 	*
 						
 				FROM	solvers where user_id = _userId
 				

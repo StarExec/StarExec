@@ -32,7 +32,12 @@
 				}
 			}
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
+			if (Solvers.isSolverDeleted(solverId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been deleted. You likely want to remove it from your spaces.");
+			}
+			else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
+			}
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given solver id was in an invalid format");

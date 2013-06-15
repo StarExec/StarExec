@@ -71,7 +71,7 @@ CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 		INSERT IGNORE INTO bench_assoc VALUES (_spaceId, _benchId);
 	END //
 	
--- Finds the spaces associated with a given solver
+-- Finds the spaces associated with a given benchmark
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetBenchAssoc;
 CREATE PROCEDURE GetBenchAssoc(IN _benchId INT)
@@ -97,7 +97,7 @@ CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 	BEGIN
 		SELECT *
 		FROM benchmarks AS bench
-		WHERE bench.id IN
+		WHERE deleted=false and bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
@@ -116,13 +116,25 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 	END //
 
 -- Deletes a benchmark given that benchmark's id
--- Author: Todd Elvers	
+-- Author: Todd Elvers	+ Eric Burns
 DROP PROCEDURE IF EXISTS DeleteBenchmarkById;
 CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM benchmarks WHERE id = _benchmarkId;
-		DELETE FROM benchmarks
+		UPDATE benchmarks
+		SET deleted=true
 		WHERE id = _benchmarkId;
+		UPDATE benchmarks
+		SET path=""
+		WHERE id = _benchmarkId;
+		UPDATE benchmarks
+		SET disk_size=0
+		WHERE id = _benchmarkId;
+		-- if the benchmark is associated with no spaces, we can delete it from the database
+		IF ((SELECT COUNT(*) FROM bench_assoc WHERE bench_id=_benchmarkId)=0) THEN
+			DELETE FROM benchmarks
+			WHERE id=_benchmarkId;
+		END IF;
 	END //	
 	
 -- Retrieves the benchmark with the given id
@@ -134,7 +146,7 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 		FROM benchmarks AS bench
 			LEFT OUTER JOIN processors AS types
 			ON bench.bench_type=types.id
-		WHERE bench.id = _id;
+		WHERE bench.id = _id and deleted=false;
 	END //
 	
 -- Retrieves the upload status with the given id
@@ -144,7 +156,7 @@ CREATE PROCEDURE GetUploadStatusById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM benchmark_uploads 
-		WHERE id = _id;
+		WHERE id = _id and deleted=false;
 	END //	
 -- Returns the number of benchmarks in a given space
 -- Author: Todd Elvers
@@ -318,7 +330,7 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 		FROM benchmarks AS bench
 			LEFT OUTER JOIN processors AS types
 			ON bench.bench_type=types.id
-		WHERE bench.id IN
+		WHERE bench.deleted=false and bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
@@ -332,7 +344,7 @@ CREATE PROCEDURE GetHierBenchmarksById(IN _id INT, IN _userId INT, IN _publicUse
 	BEGIN
 		SELECT DISTINCT id, name
 		FROM benchmarks AS bench
-		WHERE bench.id IN
+		WHERE bench.deleted=false AND bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id IN 
@@ -358,29 +370,31 @@ CREATE PROCEDURE IsBenchPublic(IN _benchId INT, IN _publicUserId INT)
 		AND (IsPublic(space_id,_publicUserId) = 1);
 	END //
 	
+DROP PROCEDURE IF EXISTS IsBenchmarkDeleted;
+CREATE PROCEDURE IsBenchmarkDeleted(IN _benchId INT)
+	BEGIN
+		SELECT count(*) AS benchDeleted
+		FROM benchmarks
+		WHERE deleted=true AND id=_benchId;
+	END //
+	
 -- Removes the association between a benchmark and a given space;
--- places the path of the benchmark in _path if it has no other
--- associations in bench_assoc, otherwise places NULL in _path
--- Author: Todd Elvers
+-- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS RemoveBenchFromSpace;
-CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT, OUT _path TEXT)
+CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT)
 	BEGIN
 		IF _spaceId >= 0 THEN
 			DELETE FROM bench_assoc
 			WHERE space_id = _spaceId
 			AND bench_id = _benchId;
 		END IF;
-		
-		IF NOT EXISTS (SELECT * FROM bench_assoc WHERE bench_id = _benchId) THEN
-			IF NOT EXISTS (SELECT * FROM job_pairs WHERE bench_id = _benchId) THEN
-				SELECT path INTO _path FROM benchmarks WHERE id = _benchId;
+		-- Ensure the solver isn't being used in any other space
+		IF NOT EXISTS(SELECT * FROM bench_assoc WHERE bench_id =_benchId) THEN
+			-- if the solver has been deleted already, remove it from the database
+			IF NOT EXISTS(SELECT * FROM benchmarks WHERE _benchId=id AND deleted=false) THEN
 				DELETE FROM benchmarks
-				WHERE id = _benchId;
-			ELSE
-				SELECT NULL INTO _path;
+				WHERE id=_benchId;
 			END IF;
-		ELSE
-			SELECT NULL INTO _path;
 		END IF;
 	END //
 	
@@ -564,7 +578,7 @@ CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 DROP PROCEDURE IF EXISTS GetNextPageOfUserBenchmarks;
 CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
 	BEGIN
-		-- If _query is empty, get next page of Solvers without filtering for _query
+		-- If _query is empty, get next page of benchmarks without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	id, 
@@ -585,7 +599,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						ELSE benchTypeName
 					 END) ASC
 			 
-				-- Shrink the results to only those required for the next page of Solvers
+				-- Shrink the results to only those required for the next page of benchmarks
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id, 
@@ -605,7 +619,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 			
-		-- Otherwise, ensure the target Solvers contain _query
+		-- Otherwise, ensure the target benchmarks contain _query
 		ELSE
 			IF _sortASC = TRUE THEN
 				SELECT 	id, 
@@ -617,7 +631,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						
 				FROM	benchmarks where user_id = _userId
 				
-				-- Exclude Solvers whose name doesn't contain the query string
+				-- Exclude benchmarks whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%'))										
 										
 				-- Order results depending on what column is being sorted on
@@ -626,7 +640,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 					 	WHEN 0 THEN name
 						ELSE benchTypeName
 					 END) ASC	 
-				-- Shrink the results to only those required for the next page of Solvers
+				-- Shrink the results to only those required for the next page of benchmarks
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT 	id, 

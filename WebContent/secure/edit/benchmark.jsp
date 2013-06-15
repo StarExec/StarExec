@@ -35,7 +35,11 @@
 				request.setAttribute("types", Processors.getAll(ProcessorType.BENCH));
 			}
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
+			if (Benchmarks.isBenchmarkDeleted(benchId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been deleted. You likely want to remove it from your spaces");
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");	
+			}
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");

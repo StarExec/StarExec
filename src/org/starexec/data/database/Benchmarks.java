@@ -949,6 +949,31 @@ public class Benchmarks {
 		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
 		return false;
 	}	
+	
+	public static boolean isBenchmarkDeleted(int benchId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isBenchmarkDeleted(con,benchId);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	protected static boolean isBenchmarkDeleted(Connection con, int benchId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL IsBenchmarkDeleted(?)}");
+		procedure.setInt(1, benchId);					
+		ResultSet results = procedure.executeQuery();
+		boolean deleted=false;
+		if (results.next()) {
+			deleted=results.getBoolean("benchDeleted");
+		}
+		return deleted;
+	}
 
 	/**
 	 * Retrieves a benchmark without attributes
@@ -1411,7 +1436,23 @@ public class Benchmarks {
 	public static String getContents(int benchId, int limit) {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
 	}
-
+	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
+		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,true,"GetNextPageOfBenchmarks");
+	}
+	/**
+	 * Get next page of the benchmarks belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the query start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of benchmarks belong to the user
+	 * @author Wyatt Kaiser
+	 */
+	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,false,"GetNextPageOfUserBenchmarks");
+	}
 
 	/**
 	 * Gets the minimal number of Benchmarks necessary in order to service the client's
@@ -1422,22 +1463,22 @@ public class Benchmarks {
 	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
 	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
 	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param spaceId the id of the space to get the Benchmarks from
+	 * @param id the id of the space to get the Benchmarks from
 	 * @return a list of 10, 25, 50, or 100 Benchmarks containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
+	private static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int id, boolean getDeleted, String procedureName) {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;			
 
-			procedure = con.prepareCall("{CALL GetNextPageOfBenchmarks(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
+			procedure.setInt(5, id);
 			procedure.setString(6, searchQuery);
 
 			ResultSet results = procedure.executeQuery();
@@ -1710,64 +1751,6 @@ public class Benchmarks {
 
 		return 0;		
 	}
-
-	/**
-	 * Get next page of the benchmarks belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the query start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
-	 * @param userId Id of the user we are looking for
-	 * @return a list of benchmarks belong to the user
-	 * @author Wyatt Kaiser
-	 */
-	public static List<Benchmark> getBenchmarkByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		Connection con = null;			
-
-		try {
-			con = Common.getConnection();
-			CallableStatement procedure;	
-
-			procedure = con.prepareCall("{CALL GetNextPageOfUserBenchmarks(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-
-			ResultSet results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
-			while(results.next()){
-				// Build benchmark object
-				Benchmark b = new Benchmark();
-
-				b.setId(results.getInt("id"));
-				b.setUserId(results.getInt("user_id"));
-				b.setName(results.getString("name"));
-				b.setDescription(results.getString("description"));
-				
-				Processor t = new Processor();
-				t.setName(results.getString("benchTypeName"));
-				t.setDescription(results.getString("benchTypeDescription"));
-
-				// Add benchmark object to listOfBenchmarks
-				b.setType(t);
-				benchmarks.add(b);	
-			}
-			return benchmarks;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;
-	}
-
-
 
 }
 

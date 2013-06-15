@@ -285,11 +285,11 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
-	/*
+	/**
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
 	 * @author Eric Burns*/
@@ -302,7 +302,7 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(2);
 		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB_STATS, jobId, request);
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
 		return nextDataTablesPage==null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 		
@@ -322,7 +322,7 @@ public class RESTServices {
 	 * @throws Exception 
 	 */
 	@POST
-	@Path("/space/{id}/{primType}/pagination")
+	@Path("/space/{id}/{primType}/pagination/")
 	@Produces("application/json")	
 	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {			
 		int userId = SessionUtil.getUserId(request);
@@ -334,16 +334,17 @@ public class RESTServices {
 		
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.USER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER, spaceId, request);
+			//TODO: Change this to "for spaces", which will wrap the "includeDeleted" and "procedureName" parameters into one
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SOLVER, spaceId, request);
 		} else if(primType.startsWith("sp")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SPACE, spaceId, request);
 		} else if(primType.startsWith("b")){
 			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
 		} else if(primType.startsWith("r")){
 			nextDataTablesPage = RESTHelpers.getResultTable(spaceId, request);
 		}
@@ -2156,7 +2157,7 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.JOB, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
@@ -2170,14 +2171,14 @@ public class RESTServices {
 	 * @author Wyatt Kaiser
 	 */
 	@POST
-	@Path("/users/{id}/solvers/pagination")
+	@Path("/users/{id}/solvers/pagination/")
 	@Produces("application/json")	
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
 		
 		// Query for the next page of solver pairs and return them to the user
 		log.debug(usrId);
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.SOLVER, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
@@ -2197,7 +2198,7 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		
 		// Query for the next page of solver pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.BENCHMARK, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}

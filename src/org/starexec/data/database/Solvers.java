@@ -46,6 +46,36 @@ public class Solvers {
 		
 		return null;
 	}
+	/** 
+	 * Determines whether the solver with the given ID exists in the database with the column "deleted" set to true
+	 * @param solverId The ID of the solver in question
+	 * @return True if the solver exists in the database and has the deleted flag set to true
+	 */
+	
+	public static boolean isSolverDeleted(int solverId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isSolverDeleted(con,solverId);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	protected static boolean isSolverDeleted(Connection con, int solverId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL IsSolverDeleted(?)}");
+		procedure.setInt(1, solverId);					
+		ResultSet results = procedure.executeQuery();
+		boolean deleted=false;
+		if (results.next()) {
+			deleted=results.getBoolean("solverDeleted");
+		}
+		return deleted;
+	}
 	
 	/**
 	 * @param con The connection to make the query on
@@ -1088,7 +1118,28 @@ public class Solvers {
 		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
 		return false;
 	}
-
+	
+	
+	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+		String procedureName="GetNextPageOfSolvers";
+		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,true,procedureName);
+	}
+	
+	/**
+	 * Get next page of the solvers belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the query start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Solvers belong to the user
+	 * @author Wyatt Kaiser + Eric Burns
+	 */
+	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		String procedureName="GetNextPageOfUserSolvers";
+		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,false,procedureName);
+	}
 	
 	/**
 	 * Gets the minimal number of Solvers necessary in order to service the client's
@@ -1099,23 +1150,25 @@ public class Solvers {
 	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
 	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
 	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param spaceId the id of the space to get the Solvers from
+	 * @param id the id of the space or user to get the solvers for
+	 * @param getDeleted whether to return solvers tagged as "deleted"
+	 * @param procedureName The name of the SQL procedure to call. Should be either "GetNextPageOfUserSolvers" or "GetNextPageOfSolvers"
 	 * @return a list of 10, 25, 50, or 100 Solvers containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+	private static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, boolean getDeleted, String procedureName) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
+			procedure.setInt(5, id);
 			procedure.setString(6, searchQuery);
 				
 			ResultSet results = procedure.executeQuery();
@@ -1124,6 +1177,9 @@ public class Solvers {
 			// Only get the necessary information to display this solver
 			// in a row in a DataTable object, nothing more.
 			while(results.next()){
+				if (!getDeleted && results.getBoolean("deleted")) {
+					continue;
+				}
 				Solver s = new Solver();
 				s.setId(results.getInt("id"));
 				s.setName(results.getString("name"));				
@@ -1140,7 +1196,6 @@ public class Solvers {
 		
 		return null;
 	}
-	
 	
 	/**
 	 * Gets the number of Solvers in a given space
@@ -1217,54 +1272,6 @@ public class Solvers {
 		}
 
 		return 0;		
-	}
-
-	/**
-	 * Get next page of the solvers belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the query start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
-	 * @param userId Id of the user we are looking for
-	 * @return a list of Solvers belong to the user
-	 * @author Wyatt Kaiser
-	 */
-	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		Connection con = null;			
-
-		try {
-			con = Common.getConnection();
-			CallableStatement procedure;	
-
-			procedure = con.prepareCall("{CALL GetNextPageOfUserSolvers(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-
-			ResultSet results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
-
-			while(results.next()){
-
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setUserId(results.getInt("user_id"));
-				s.setName(results.getString("name"));				
-				s.setDescription(results.getString("description"));				
-				solvers.add(s);		
-			}
-			return solvers;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;
 	}
 	
 
