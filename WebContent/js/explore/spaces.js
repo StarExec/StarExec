@@ -399,8 +399,10 @@ function processErrorCode(errorCode, prim, destName) {
 		showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name in " + destName, 5000);
 		break;
 	case 8: //user tried to copy without having enough disk quota
-		showMessage('error',"you do not have sufficient disk quota to copy the selected "+prim);
+		showMessage('error',"you do not have sufficient disk quota to copy the selected "+prim,5000);
 		break;
+	case 11:
+		showMessage('error',"one or more of the selected "+prim+"(s) have already been deleted",500);
 	default:
 		showMessage('error', "the operation failed with an unknown return code", 5000);	
 	}

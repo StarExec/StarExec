@@ -1021,7 +1021,9 @@ public class RESTServices {
 			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
 				return gson.toJson(4);
 			}
-			
+			if (Solvers.isSolverDeleted(id)) {
+				return gson.toJson(11);
+			}
 			// Make sure that the solver has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), spaceId, 1)) {
 				return gson.toJson(7);
@@ -1154,7 +1156,9 @@ public class RESTServices {
 			if(!Permissions.canUserSeeBench(id, requestUserId)) {
 				return gson.toJson(4);
 			}
-			
+			if (Benchmarks.isBenchmarkDeleted(id)) {
+				return gson.toJson(11);
+			}
 			// Make sure that the benchmark has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), spaceId, 2)) {
 				return gson.toJson(7);
