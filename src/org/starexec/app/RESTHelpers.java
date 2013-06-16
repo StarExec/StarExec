@@ -443,8 +443,8 @@ public class RESTHelpers {
 	    
 		    case JOB:
 	    		List<Job> jobsToDisplay = new LinkedList<Job>();
-	    		int totalJobsInSpace = Jobs.getCountInSpace(id);
 	    		
+	    		int totalJobs;
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
 	    		if (forPage==1) {
 	    			jobsToDisplay = Jobs.getJobsForNextPage(
@@ -455,6 +455,7 @@ public class RESTHelpers {
 		    				request.getParameter(SEARCH_QUERY), 				// Search query
 		    				id													// Parent space id 
 					);
+	    			totalJobs = Jobs.getCountInSpace(id);
 	    		} else {
 	    			jobsToDisplay = Jobs.getJobsByUserForNextPage(
 							attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -464,6 +465,7 @@ public class RESTHelpers {
 							request.getParameter(SEARCH_QUERY), 				// Search query
 							id													// User id 
 					);
+	    			totalJobs = Jobs.getJobCountByUser(id);
 	    		}
 	    		
 	    		/**
@@ -472,13 +474,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobsInSpace);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobsInSpace);
+			    attrMap.put(TOTAL_RECORDS, totalJobs);
 
 			    
 			    
@@ -616,8 +618,8 @@ public class RESTHelpers {
 		    	
 		    case SOLVER:
 	    		List<Solver> solversToDisplay = new LinkedList<Solver>();
-	    		int totalSolversInSpace =  Solvers.getCountInSpace(id);
 	    		
+	    		int totalSolvers;
 	    		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
 	    		if (forPage==1) {
 	    			solversToDisplay = Solvers.getSolversForNextPage(
@@ -628,6 +630,7 @@ public class RESTHelpers {
 		    				request.getParameter(SEARCH_QUERY), 				// Search query
 		    				id													// Parent space id 
 					);
+	    			totalSolvers =  Solvers.getCountInSpace(id);
 	    		} else {
 	    			solversToDisplay=Solvers.getSolversByUserForNextPage(		    				attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -635,7 +638,8 @@ public class RESTHelpers {
 		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 		    				request.getParameter(SEARCH_QUERY), 				// Search query
 		    				id
-		    				);
+		    		);
+	    			totalSolvers =  Solvers.getSolverCountByUser(id);
 	    		}
 	    		
 	    		
@@ -646,13 +650,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolversInSpace);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolvers);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, solversToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalSolversInSpace);
+			    attrMap.put(TOTAL_RECORDS, totalSolvers);
 		    	
 			    
 			    
@@ -693,7 +697,7 @@ public class RESTHelpers {
 		    case BENCHMARK:
 		    	
 		    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-		    	int totalBenchmarksInSpace = Benchmarks.getCountInSpace(id);
+		    	int totalBenchmarks;
 		    	
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 		    	if (forPage==1) {
@@ -705,6 +709,7 @@ public class RESTHelpers {
 		    				request.getParameter(SEARCH_QUERY),			 		// Search query
 		    				id												// Parent space id 
 					);	
+		    		totalBenchmarks = Benchmarks.getCountInSpace(id);
 		    	} else {
 		    		benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -713,7 +718,8 @@ public class RESTHelpers {
 		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 		    				request.getParameter(SEARCH_QUERY),			 		// Search query
 		    				id												// Parent space id 
-					);	
+					);
+		    		totalBenchmarks = Benchmarks.getBenchmarkCountByUser(id);
 		    	}
 		    	
 		    	
@@ -724,13 +730,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarksInSpace);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, benchmarksToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalBenchmarksInSpace);
+			    attrMap.put(TOTAL_RECORDS, totalBenchmarks);
 			    
 			    
 		    	/**

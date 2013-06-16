@@ -566,7 +566,7 @@ CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS benchmarkCount
 		FROM benchmarks
-		WHERE user_id = _userId;
+		WHERE user_id = _userId AND deleted=false;
 	END //
 	
 	-- Gets the fewest necessary Benchmarks in order to service a client's
@@ -585,6 +585,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						name, 
 						user_id,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 
@@ -606,6 +607,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						name, 
 						user_id,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 						
@@ -626,6 +628,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						name, 
 						user_id,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 						
@@ -647,6 +650,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						name, 
 						user_id,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 						

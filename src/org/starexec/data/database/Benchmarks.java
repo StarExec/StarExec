@@ -954,10 +954,9 @@ public class Benchmarks {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			
 			return isBenchmarkDeleted(con,benchId);
 		} catch (Exception e) {
-			
+			log.error("Is benchmark deleted says " +e.getMessage(),e );
 		} finally {
 			Common.safeClose(con);
 		}
@@ -997,9 +996,12 @@ public class Benchmarks {
 		try {
 			con = Common.getConnection();		
 			Benchmark b = Benchmarks.get(con, benchId);
+			if (b==null) {
+				return null;
+			}
 
 			if(true == includeAttrs){
-				b.setAttributes(Benchmarks.getAttributes(con, b.getId()));
+				b.setAttributes(Benchmarks.getAttributes(con, benchId));
 			}
 
 			return b;
@@ -1485,6 +1487,10 @@ public class Benchmarks {
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
+				//don't include deleted benchmarks in the results if getDeleted is false
+				if (!getDeleted && results.getBoolean("deleted")) {
+					continue;
+				}
 				Benchmark b = new Benchmark();
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
