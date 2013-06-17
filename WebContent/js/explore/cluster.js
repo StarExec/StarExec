@@ -110,6 +110,7 @@ function populateAttributes(jsonData) {
 			}});
 		$('#activeStatus').hide();
 		
+		//Put all the jobPairs that are running on the queue
 		attrTable.fnClearTable();
 		for (var key in jsonData.jobPairs) {
 			attrTable.fnAddData([jsonData.jobPairs[key]]);
@@ -126,6 +127,7 @@ function populateAttributes(jsonData) {
 			$('#activeStatus').text('[INACTIVE]');
 			$('#activeStatus').css('color', '#ae0000');
 		}
+		
 		attrTable.fnClearTable();
 		for(var key in jsonData.attributes){
 			attrTable.fnAddData([key, jsonData.attributes[key]]);            

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
@@ -160,51 +161,40 @@ public class Queues {
 				queue.setSlotsAvailable(results.getInt("slots_free"));
 				queue.setSlotsReserved(results.getInt("slots_reserved"));
 				queue.setSlotsUsed(results.getInt("slots_used"));
-				
-				
-				//Queue q = Queues.get(results.getInt("id"));
-				//HashMap<Integer, String[]> jobPair = new HashMap<Integer, String[]>();
-				//jobPair = q.getJobPair();
-				//log.debug("jobPairFromFunction = " + jobPair + ", size = " + jobPair.size());
-				
-				
-				//List<Job> jobs = Jobs.getEnqueuedJobs(results.getInt("id"));
-				//log.debug("jobs = " + jobs);
-				//for (Job job : jobs) {
-				//	User user = Users.get(job.getUserId());
-					List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
-					log.debug("jobPairs = " + jobPairs);
-					log.debug("jobPair size = " + jobPairs.size());
-					for (JobPair j : jobPairs) {
-						String[] jobInfo;
-						jobInfo = new String[6];
-											
-						jobInfo[0] = Jobs.GetName(j.getJobId());
-						//jobInfo[1] = (user.getFullName());
-						jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+
+				//Get all the job pairs that are queued up on the queue
+				List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
+
+				for (JobPair j : jobPairs) {
+					String[] jobInfo;
+					jobInfo = new String[6];
+					
+					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+					jobInfo[0] = job.getName();
+					jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+					
+					//If the job pair was located in a space that is public
+					if (Jobs.isPublic(job.getId())) {
 						jobInfo[2] = (j.getBench().getName());
 						jobInfo[3] = (j.getSolver().getName());
 						jobInfo[4] = (j.getConfiguration().getName());
-						//jobInfo[5] = (j.getSpace().getName());
+						
 						String path = j.getPath();
 						int index = path.lastIndexOf("/");
 						if (index != -1) {
 							path = path.substring(index + 1);
 						}
 						jobInfo[5] = (path);
-						queue.putJobPair(j.getId(), jobInfo);
+						
+					} else {
+						jobInfo[2] = "private";
+						jobInfo[3] = "private";
+						jobInfo[4] = "private";
+						jobInfo[5] = "private";
 					}
+					queue.putJobPair(j.getId(), jobInfo);
 				}
-			/*
-				// Start from 8 (first seven are ID, name, status and usage)
-				for(int i = 1; i < results.getMetaData().getColumnCount(); i++) {
-					log.debug("METADATA : " + results.getMetaData().getColumnName(i).substring(1));
-					// Add the column name/value to the node's attributes (get substrings at 1 to remove the prepended _ to prevent keyword conflicts)
-					queue.putAttribute(results.getMetaData().getColumnName(i).substring(0), results.getString(i).substring(0));
-					log.debug("ATTRIBUTES = " + queue.getAttributes());
-				}	
-				*/
-		//}
+			}
 						
 			return queue;
 		} catch (Exception e){			

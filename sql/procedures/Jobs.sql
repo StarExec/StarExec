@@ -653,7 +653,6 @@ CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
 		ORDER BY job_pairs.id ASC
 		LIMIT _cap;
 	END //
-
 	
 -- Gets the job pair associated with the given sge id
 -- Author: Tyler Jensen

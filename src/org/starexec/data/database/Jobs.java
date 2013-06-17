@@ -20,6 +20,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSolver;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
@@ -1947,18 +1948,25 @@ public class Jobs {
 	 * @param jobId the id of the job to get the name of
 	 * @return the name of the job
 	 */
-	public static String GetName(int jobId) {
+	public static Job get(int jobId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetNameofJobById(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);
 			ResultSet results = procedure.executeQuery();
-			String jobName = null;
-			while (results.next()) {
-				jobName = results.getString("name");
+			if(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));
+				j.setQueue(Queues.get(results.getInt("queue_id")));
+				j.setCreateTime(results.getTimestamp("created"));
+				j.setPreProcessor(Processors.get(results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(results.getInt("post_processor")));
+				j.setDescription(results.getString("description"));
+				return j;
 			}
-			return jobName;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
