@@ -457,20 +457,25 @@ public class Shell {
 			HashMap<Integer,String> answer=new HashMap<Integer,String>();
 			urlParams.put("id", commandParams.get(R.PARAM_ID));
 			if (c.equals(R.COMMAND_LISTSOLVERS)) {
-				urlParams.put("type", "solvers");
+				urlParams.put(R.FORMPARAM_TYPE, "solvers");
 				
 			} else if (c.equals(R.COMMAND_LISTBENCHMARKS)) {
-				urlParams.put("type", "benchmarks");
+				urlParams.put(R.FORMPARAM_TYPE, "benchmarks");
 				
 			} else if (c.equals(R.COMMAND_LISTJOBS)) {
-				urlParams.put("type","jobs");
+				urlParams.put(R.FORMPARAM_TYPE,"jobs");
 				
 			} else if(c.equals(R.COMMAND_LISTUSERS)) {
-				urlParams.put("type", "users");
+				urlParams.put(R.FORMPARAM_TYPE, "users");
 			} else if(c.equals(R.COMMAND_LISTSUBSPACES)) {
-				urlParams.put("type","spaces");
+				urlParams.put(R.FORMPARAM_TYPE,"spaces");
 			} else if (c.equals(R.COMMAND_LISTPRIMITIVES)) {
-				String[] types=new String[] {"solvers","jobs","users","spaces"};
+				String[] types;
+				if (commandParams.containsKey(R.PARAM_USER)) {
+					types=new String[] {"solvers","benchmarks","jobs"};
+				} else {
+					types=new String[] {"solvers","benchmarks","jobs","users","spaces"};
+				}
 				for (String x : types) {
 					urlParams.put("type",x);
 					System.out.println(x.toUpperCase()+"\n");

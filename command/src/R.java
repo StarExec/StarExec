@@ -31,6 +31,8 @@ public class R {
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
+	public static String URL_GETUSERPRIM="users/{id}/{type}/pagination";
+	public static String URL_GETID="users/getid";
 	public static String URL_COPYBENCH="services/spaces/{spaceID}/add/benchmark";
 	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
 	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
@@ -83,6 +85,8 @@ public class R {
 	public static int ERROR_INSUFFICIENT_QUOTA=-28;
 	public static int ERROR_NAME_NOT_UNIQUE=-29;
 	public static int ERROR_BAD_TRAVERSAL_TYPE=-30;
+	public static int ERROR_ID_AND_USER=-31;
+	public static int ERROR_NO_USER_PRIMS=-32;
 	//error messages
 	public static HashMap<Integer,String> errorMessages=new HashMap<Integer,String>();
 	static {
@@ -116,6 +120,8 @@ public class R {
 		errorMessages.put(ERROR_NAME_NOT_UNIQUE, "All primitives in a given space must have unique names");
 		errorMessages.put(ERROR_INSUFFICIENT_QUOTA, "You do not have the required disk quota to copy the primitive");
 		errorMessages.put(ERROR_BAD_TRAVERSAL_TYPE, "The traversal must be either depth-first ("+R.ARG_DEPTHFIRST+") or round-robin ("+R.ARG_ROUNDROBIN+")");
+		errorMessages.put(ERROR_ID_AND_USER, "Only one of "+R.PARAM_ID+" and "+R.PARAM_USER+" is allowed");
+		errorMessages.put(ERROR_NO_USER_PRIMS,"User primitives can only be obtained for jobs, solvers, and benchmarks");
 	}
 	
 	
@@ -262,7 +268,7 @@ public class R {
 	public static String PARAM_CPUTIMEOUT="cpu";
 	public static String PARAM_SINCE="since";
 	public static String PARAM_LIMIT="limit";
-	public static String PARAM_USERNAME="u";
+	public static String PARAM_USER="u";
 	public static String PARAM_PASSWORD="p";
 	public static String PARAM_BASEURL="addr";
 	public static String PARAM_VERBOSE="verbose";

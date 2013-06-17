@@ -35,7 +35,7 @@ public class Validator {
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
-	private static String[] allowedLoginParams=new String[]{R.PARAM_USERNAME,R.PARAM_PASSWORD,R.PARAM_BASEURL};
+	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
 	
@@ -409,8 +409,22 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 	public static int isValidGetPrimRequest(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{R.PARAM_ID},commandParams) && !paramsExist(new String[]{R.PARAM_USER},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
+		}
+		if (commandParams.containsKey(R.PARAM_ID)) {
+			if (commandParams.containsKey(R.PARAM_USER)) {
+				return R.ERROR_ID_AND_USER;
+			}
+			if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+				return R.ERROR_INVALID_ID;
+			}
+			
+		} else {
+			String type=urlParams.get(R.FORMPARAM_TYPE);
+			if (!type.equals("jobs") && !type.equals("benchmarks") &&!type.equals("solvers")) {
+				return R.ERROR_NO_USER_PRIMS;
+			}
 		}
 		
 		findUnnecessaryParams(allowedLSParams,commandParams);
@@ -538,11 +552,11 @@ public class Validator {
 	}
 	
 	public static int isValidLoginRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_USERNAME},commandParams)) {
+		if (!paramsExist(new String[]{R.PARAM_USER},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
 		}
 		
-		if (!commandParams.get(R.PARAM_USERNAME).equals(R.PARAM_GUEST)) {
+		if (!commandParams.get(R.PARAM_USER).equals(R.PARAM_GUEST)) {
 			if (!paramsExist(new String[] {R.PARAM_PASSWORD},commandParams)) {
 				return R.ERROR_MISSING_PARAM;
 			}

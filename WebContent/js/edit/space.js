@@ -113,6 +113,9 @@ function attachButtonActions(){
 							case 2:
 								showMessage('error', "only a leader of this space can modify its details", 5000);
 								break;
+							case 7:
+								showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
+								break;
 							default:
 								showMessage('error', "invalid parameters", 5000);
 								break;

@@ -619,11 +619,16 @@ public class RESTServices {
 			}
 			
 			boolean success = false;
-			
+			Space s=Spaces.get(id);
 			// Go through all the cases, depending on what attribute we are changing.
 			if (attribute.equals("name")) {
 				String newName = (String)request.getParameter("val");
 				if (true == Validator.isValidPrimName(newName)) {
+					if (!s.getName().equals(newName)) {
+						if (Spaces.notUniquePrimitiveName(newName,id,4)) {
+							return gson.toJson(7);
+						}
+					}
 					success = Spaces.updateName(id, newName);
 				}
 			} else if (attribute.equals("description")) {
@@ -677,6 +682,12 @@ public class RESTServices {
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				|| !Validator.isValidBool(request.getParameter("locked"))){
 			return gson.toJson(3);
+		}
+		Space os=Spaces.get(id);
+		if (!os.getName().equals(request.getParameter("name"))) {
+			if (Spaces.notUniquePrimitiveName(request.getParameter("name"),id,4)) {
+				return gson.toJson(7);
+			}
 		}
 		
 		// Permissions check; if user is NOT a leader of the space, deny update request
@@ -2146,6 +2157,12 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
+	@POST
+	@Path("/users/getid")
+	@Produces("application/json")
+	public String getUserID(HttpServletRequest request) {
+		return gson.toJson(SessionUtil.getUserId(request));
+	}
 	/**
 	 * Get the paginated result of the jobs belong to a specified user
 	 * @param usrId Id of the user we are looking for
@@ -2159,7 +2176,9 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(2);
+		}
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request);
 		
@@ -2179,7 +2198,9 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(2);
+		}
 		// Query for the next page of solver pairs and return them to the user
 		log.debug(usrId);
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request);
@@ -2200,7 +2221,9 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(2);
+		}
 		// Query for the next page of solver pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request);
 		

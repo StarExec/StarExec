@@ -136,8 +136,8 @@ public class Connection {
 		} else {
 			this.baseURL=R.URL_STAREXEC_BASE;
 		}
-		if (!commandParams.get(R.PARAM_USERNAME).equals(R.PARAM_GUEST)) {
-			username=commandParams.get(R.PARAM_USERNAME);
+		if (!commandParams.get(R.PARAM_USER).equals(R.PARAM_GUEST)) {
+			username=commandParams.get(R.PARAM_USER);
 			
 			password=commandParams.get(R.PARAM_PASSWORD);
 		} else {
@@ -464,17 +464,9 @@ public class Connection {
 			
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			//we should be getting a json string back
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-			StringBuilder builder = new StringBuilder();
-			for (String line = null; (line = reader.readLine()) != null;) {
-			    builder.append(line).append("\n");
-			}
+			
+			JsonElement jsonE=getJsonString(response);
 			response.getEntity().getContent().close();
-			JsonParser parser=new JsonParser();
-			
-			JsonElement jsonE=parser.parse(builder.toString());
-			
 			JsonPrimitive p=jsonE.getAsJsonPrimitive();
 			if (p.getAsInt()==0) {
 				
@@ -739,6 +731,31 @@ public class Connection {
 		
 	}
 	
+	private JsonElement getJsonString(HttpResponse response) throws Exception {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+		StringBuilder builder = new StringBuilder();
+		for (String line = null; (line = reader.readLine()) != null;) {
+		    builder.append(line).append("\n");
+		}
+		JsonParser parser=new JsonParser();
+		
+		return parser.parse(builder.toString());
+		
+	}
+	
+	private int getUserID() {
+		try {
+			HttpPost post=new HttpPost(baseURL+R.URL_GETID);
+			post=(HttpPost) setHeaders(post);
+			HttpResponse response=client.execute(post);
+			JsonElement json=getJsonString(response);
+			return json.getAsInt();
+			
+		} catch (Exception e) {
+			return R.ERROR_SERVER;
+		}
+	}
+	
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
 	 * @param urlParams Parameters to be encoded into the URL to send to the server
@@ -758,7 +775,18 @@ public class Connection {
 				errorMap.put(valid, null);
 				return errorMap;
 			}
-			
+			String URL=null;
+			if (commandParams.containsKey(R.PARAM_USER)) {
+				int id=getUserID();
+				if (id<0) {
+					errorMap.put(id, null);
+					return errorMap;
+				}
+				urlParams.put(R.PARAM_ID, String.valueOf(id));
+				URL=baseURL+R.URL_GETUSERPRIM;
+			} else {
+				URL=baseURL+R.URL_GETPRIM;
+			}
 			//in the absence of limit, we want all the primitives
 			int maximum=Integer.MAX_VALUE;
 			if (commandParams.containsKey(R.PARAM_LIMIT)) {
@@ -781,7 +809,7 @@ public class Connection {
 				columns="2";
 			}
 			
-			String URL=baseURL+R.URL_GETPRIM;
+			
 			URL=URL.replace("{id}", urlParams.get(R.PARAM_ID));
 			URL=URL.replace("{type}", urlParams.get("type"));
 			HttpPost post=new HttpPost(URL);
@@ -804,16 +832,8 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
-			//we should be getting a json string back
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-			StringBuilder builder = new StringBuilder();
-			for (String line = null; (line = reader.readLine()) != null;) {
-			    builder.append(line).append("\n");
-			}
+			JsonElement jsonE=getJsonString(response);
 			response.getEntity().getContent().close();
-			JsonParser parser=new JsonParser();
-			
-			JsonElement jsonE=parser.parse(builder.toString());
 			if (jsonE.isJsonPrimitive()) {
 				
 				JsonPrimitive j=jsonE.getAsJsonPrimitive();

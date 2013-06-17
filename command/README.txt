@@ -48,11 +48,11 @@ corresponding permission should be set to true. None requires a value.
 
 "bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload.
 
-"cpu"--Specifies the cpu timeout that should be used for a new job, in seconds.
+"cpu" -Specifies the cpu timeout that should be used for a new job, in seconds.
 
-"d"--Specifies a description. When optional, the empty string is used as a default.
+"d" -Specifies a description. When optional, the empty string is used as a default.
 
-"dep"--Specifies a dependency for a benchmark upload.
+"dep" -Specifies a dependency for a benchmark upload.
 
 "df" -Specifies a path to a local file that will contain a description.
 
@@ -93,7 +93,9 @@ corresponds to a dependent bench space.
 
 "trav" -When creating a job, specifies the type of traversal that shold be used. The value "d" is
 		used to specify depth-first traversal, whereas "r" is for a round-robin traversal.
-		
+
+"u" -When logging in, specifies the username to log in with. When listing primitives, causes a user's own 
+	 primitives to be retrieved instead of the primitives of a space.
 
 "url" -Specifies the URL of a remote file.
 
@@ -435,27 +437,31 @@ is optional, and indicates that at most "limit" primitives should be printed. An
 
 'lsjobs id=4 limit=100'
 
-This will print at most 100 jobs present in space 4. The list commands are shown below.
+This will print at most 100 jobs present in space 4. An example  of getting your own primitives is
+
+'lssolvers u='
+
+The list commands are shown below.
 
 --lsbenchmarks -Lists the IDs and names of all benchmarks in the space.
-REQUIRED: "id"
-OPTIONAL: None
+REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
 
 --lsjobs -Lists the IDs and names of all jobs in the space.
-REQUIRED: "id"
-OPTIONAL: None
+REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
 
 --lssolvers -Lists the IDs and names of all solvers in the space.
-REQUIRED: "id"
-OPTIONAL: None
+REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
 
 --lssubspaces -Lists the IDs and names of all subspaces in the space the current user is authorized to see
 REQUIRED: "id"
-OPTIONAL: None
+OPTIONAL: "limit"
 
 --lsusers -Lists the IDs and names of all users in the space.
 REQUIRED: "id"
-OPTIONAL: None
+OPTIONAL: "limit"
 
 Shell Mode
 ----------
