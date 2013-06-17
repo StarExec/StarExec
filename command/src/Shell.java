@@ -71,8 +71,11 @@ public class Shell {
 				status=con.downloadArchive(infoURLParams, commandParams);
 				if (status!=R.SUCCESS_NOFILE) {
 					infoCounter+=1;
-				
-				} else if (status==R.SUCCESS_JOBDONE) {
+				} else {
+					System.out.println("No new results");
+				}
+				if (status==R.SUCCESS_JOBDONE) {
+					
 					infoDone=true;
 				
 				} else if (status<0) {
@@ -84,9 +87,12 @@ public class Shell {
 				status=con.downloadArchive(outputURLParams, commandParams);
 				if (status!=R.SUCCESS_NOFILE) {
 					outputCounter+=1;
+				} else {
+					System.out.println("No new results");
 				}
 				
 				if (status==R.SUCCESS_JOBDONE) {
+					
 					outputDone=true;
 				}
 				
@@ -96,6 +102,7 @@ public class Shell {
 				
 				//we're done with everything
 				if (infoDone && outputDone) {
+					System.out.println("Job done");
 					return 0;
 				}
 				

@@ -645,9 +645,10 @@ public class Connection {
 				
 				//indicates there was no new informatoin
 				if (lastSeen<=Integer.parseInt(urlParams.get(R.FORMPARAM_SINCE))) {
-					System.out.println("No new results");
+					
 					response.getEntity().getContent().close();
 					if (done!=null) {
+						
 						return R.SUCCESS_JOBDONE;
 					}
 					

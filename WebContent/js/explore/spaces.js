@@ -387,13 +387,13 @@ function processErrorCode(errorCode, prim, destName) {
 		showMessage('error', "you do not have permission to add " +prim+ " to" + destName, 5000);
 		break;
 	case 4: // User doesn't belong to from space
-		showMessage('error', "you do not belong to the space that is being copied from", 5000);
+		showMessage('error', "you do not belong to the space that is being copied or linked from", 5000);
 		break;
 	case 5: // From space is locked
-		showMessage('error', "the space leader has indicated the current space is locked. you cannot copy from locked spaces.", 5000);
+		showMessage('error', "the space leader has indicated the current space is locked. you cannot copy or link from locked spaces.", 5000);
 		break;
 	case 6: // User doesn't have addSolver permission in one or more of the subspaces of the 'from space'
-		showMessage('error', "you do not have permissions to copy " +prim+ " to one of the subspaces of" + destName, 5000);
+		showMessage('error', "you do not have permissions to copy or link " +prim+ " to one of the subspaces of" + destName, 5000);
 		break;
 	case 7: // There exists a solver with the same name
 		showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name in " + destName, 5000);
@@ -402,7 +402,8 @@ function processErrorCode(errorCode, prim, destName) {
 		showMessage('error',"you do not have sufficient disk quota to copy the selected "+prim,5000);
 		break;
 	case 11:
-		showMessage('error',"one or more of the selected "+prim+"(s) have already been deleted",500);
+		showMessage('error',"one or more of the selected "+prim+"(s) have already been deleted",5000);
+		break;
 	default:
 		showMessage('error', "the operation failed with an unknown return code", 5000);	
 	}
@@ -664,7 +665,11 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName){
  */
 
 function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
-	// Make the request to the server				
+	// Make the request to the server		
+	copyOrLink="linked";
+	if (copy) {
+		copyOrLink="copied";
+	}
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
 			{selectedIds : ids, fromSpace : spaceId, copy:copy},	
@@ -672,9 +677,9 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 				log('AJAX response recieved with code ' + returnCode);
 				if (returnCode==0) {
 					if(ids.length > 1) {								
-						showMessage('success', ids.length + ' ' + 'benchmarks successfully copied to' + destName, 2000);
+						showMessage('success', ids.length + ' ' + 'benchmarks successfully ' +copyOrLink+ ' to ' + destName, 2000);
 					} else {					    		
-						showMessage('success', 'benchmark successfully copied to' + destName, 2000);	
+						showMessage('success', 'benchmark successfully '+copyOrLink+' to ' + destName, 2000);	
 					}
 				}else {
 					processErrorCode(returnCode,"benchmarks",destName);
@@ -697,7 +702,11 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
  */
 
 function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
-	// Make the request to the server	
+	// Make the request to the server
+	copyOrLink="linked";
+	if (copy) {
+		copyOrLink="copied";
+	}
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: hierarchy, copy : copy},
@@ -707,18 +716,18 @@ function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
 					
 					if(ids.length > 1) {	
 						if (hierarchy) {
-							showMessage('success', ids.length + ' solvers successfully copied to' + destName + ' and its subspaces', 2000);
+							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+ ' to ' + destName + ' and its subspaces', 2000);
 						} else {
-							showMessage('success', ids.length + ' solvers successfully copied to' + destName, 2000);
+							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+ ' to ' + destName, 2000);
 						}
 						
 					} else {	
 						
 						if (hierarchy) {
-							showMessage('success', ids.length + ' solvers successfully copied to' + destName + ' and its subspaces', 2000);
+							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+  ' to ' + destName + ' and its subspaces', 2000);
 						} else {
 							
-							showMessage('success', ids.length + ' solvers successfully copied to' + destName, 2000);
+							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+ ' to ' + destName, 2000);
 						}
 					}
 				}else {

@@ -16,18 +16,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 
@@ -205,17 +201,14 @@ public class Spaces {
 	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
 		
-		
 		for(int benchId : benchIds){
 			procedure.setInt(1, benchId);
 			procedure.setInt(2, spaceId);
 			
 			procedure.executeUpdate();		
 		}
+		log.info(benchIds.size() + " benchmark(s) were successfully removed from space " + spaceId);
 		
-		if(spaceId >= 0){
-			log.info(benchIds.size() + " benchmark(s) were successfully removed from space " + spaceId);
-		}
 	
 		return true;
 	}
@@ -267,7 +260,6 @@ public class Spaces {
 	 */
 	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) throws SQLException, IOException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
-		List<File> solverDirsOnDisk = new LinkedList<File>();
 		
 		for(int solverId : solverIds){
 			procedure.setInt(1, solverId);
@@ -275,21 +267,7 @@ public class Spaces {
 			
 			procedure.executeUpdate();
 		}
-		
-		if(spaceId >= 0) {
-			log.info(solverIds.size() + " solver(s) were successfully removed from space " + spaceId);
-		}
-		
-		// Remove Solver directories from disk
-		for(File directory : solverDirsOnDisk){
-			FileUtils.deleteDirectory(directory);
-			log.info("Solver directory [" +  directory.getAbsolutePath() + "] was deleted because it was no longer referenced anywhere in StarExec.");
-			
-			// If parent directory is empty, delete it too
-			if(directory.getParentFile().delete()){
-				log.info("Directory [" + directory.getParentFile().getAbsolutePath() + "] was deleted because it was empty.");
-			}
-		}
+		log.info(solverIds.size() + " solver(s) were successfully removed from space " + spaceId);
 		
 		return true;
 	}
@@ -335,33 +313,19 @@ public class Spaces {
 	 * @return true iff all jobs in 'jobIds' are successfully removed from the space referenced by 'spaceId',
 	 * false otherwise
 	 * @throws SQLException if an error occurs while removing jobs from the database
-	 * @throws IOException if an error occurs while removing solvers/benchmarks from disk
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) throws SQLException, IOException {
+	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) throws SQLException {
 		CallableStatement procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
-		List<Integer> benchmarks = new LinkedList<Integer>();
-		List<Integer> solvers = new LinkedList<Integer>();
+	
 		
 		for(int jobId : jobIds){
-			// Gather the benchmarks and solvers from the jobs being removed
-			List<JobPair> jobPairs = Jobs.getPairsDetailed(jobId);
-			for(JobPair jp : jobPairs) {
-				if (jp != null) {
-					if (jp.getBench() != null) benchmarks.add(jp.getBench().getId());
-					if (jp.getSolver() != null) solvers.add(jp.getSolver().getId());
-				}
-			}
 			
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, spaceId);
 			
 			procedure.executeUpdate();			
 		}
-		
-		// Check the benchmarks & solvers related to this job and see if any are dangling resources
-		removeBenches(benchmarks, -1, con);
-		removeSolvers(solvers, -1, con);
 		
 		log.info(jobIds.size() + " job(s) were successfully removed from space " + spaceId);
 		return true;
@@ -459,9 +423,6 @@ public class Spaces {
 			// Instantiate a transaction so subspaces in 'subspaceIds' get removed in an all-or-none fashion
 			Common.beginTransaction(con);
 			
-			//CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
-			log.info("Beginning smart deletion...");
-			
 			// For each subspace in the list of subspaces to be deleted...
 			for(int subspaceId : subspaceIds){
 				log.debug("subspaceId = " + subspaceId);
@@ -473,12 +434,7 @@ public class Spaces {
 				
 				// Check if it has any subspaces itself, and if so delete them 
 				Spaces.removeSubspaces(subspaceId, parentSpaceId, userId, con);
-				
-				// Check the primitives of this subspace - if they aren't referenced anywhere 
-				// else on StarExec, delete them
-				
-				//temporarily commented out to narrow down bug
-				Spaces.smartDelete(subspaceId, con);
+
 				CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 				procedure.setInt(1, subspaceId);
 				procedure.executeUpdate();
@@ -488,7 +444,7 @@ public class Spaces {
 			// Commit changes to database
 			Common.endTransaction(con);
 			
-			log.info("Smart deletion complete.");
+			
 			
 			return true;
 		} catch (Exception e){			
@@ -498,7 +454,7 @@ public class Spaces {
 			Common.safeClose(con);
 		}
 		
-		log.error("Smart deletion failed.");
+		
 		log.error(subspaceIds.size() + " subspaces were unsuccessfully removed from space " + parentSpaceId);
 		return false;
 	}
@@ -526,9 +482,6 @@ public class Spaces {
 			
 			// Recursively delete its subspaces
 			Spaces.removeSubspaces(subspace.getId(), parentSpaceId, userId, con);
-			
-			// Checks the space's solvers, benchmarks, and jobs to see if any are safe to be deleted from disk
-			Spaces.smartDelete(subspace.getId(), con);
 			
 			CallableStatement procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 			procedure.setInt(1, subspace.getId());
@@ -1153,40 +1106,6 @@ public class Spaces {
 	
 
 	
-	/**
-	 * Checks if the primitives of a space that is about to be deleted
-	 * are safe to delete from disk, if so they are deleted
-	 * 
-	 * @param spaceId the id of the space to check for primitives that
-	 * can be safely deleted from disk
-	 * @param con the existing transaction to perform this query in
-	 * @throws SQLException if an error occurs while removing primitives from the database
-	 * @author Todd Elvers
-	 * @throws IOException 
-	 */
-	protected static void smartDelete(int spaceId, Connection con) throws SQLException, IOException{
-		List<Integer> benches = new LinkedList<Integer>();
-		List<Integer> solvers = new LinkedList<Integer>();
-		List<Integer> jobs = new LinkedList<Integer>();
-		
-		// Collect the space's benchmarks, solvers, and jobs
-		for(Benchmark b : Benchmarks.getBySpace(spaceId)){
-			benches.add(b.getId());
-		}
-		for(Solver s : Solvers.getBySpace(spaceId)){
-			solvers.add(s.getId());
-		}
-		for(Job j : Jobs.getBySpace(spaceId)){
-			jobs.add(j.getId());
-		}
-		
-		// Remove them from the space, triggering the database to check if 
-		// any of these primitives aren't referenced anywhere else and,
-		// if so, deleting them
-		removeJobs(jobs, spaceId, con);
-		removeBenches(benches, spaceId, con);
-		removeSolvers(solvers, spaceId, con);
-	}
 
 	/** Updates the details of a space in the database. The given Space object should contain 
 	 * the space id of the space we are updating, as well as all the other necessary information.
