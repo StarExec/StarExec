@@ -454,8 +454,8 @@ public class Benchmarks {
 
 			try {
 				// Run the processor on the benchmark file
-				log.info("executing - " + p.getFilePath() + " " + b.getPath());
-				reader = Util.executeCommand(p.getFilePath() + " " + b.getPath());
+				log.info("executing - " + p.getFilePath() + " \"" + b.getPath() + "\"");
+				reader = Util.executeCommand(p.getFilePath() + " \"" + b.getPath() + "\"");
 				log.debug("reader is null = " + (reader == null));
 				if (reader == null){
 					log.error("Reader is null!");

@@ -5,6 +5,11 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+In revision :
+
+-- fixed issue where public spaces were not visible when logged in
+   (as a real user, not guest).
+
 In revision 12929:
 
 -- Job output (downloaded from the job details page) is structured now

@@ -81,6 +81,8 @@
                 <property key="MYSQL_USERNAME" value="astump" />
                 <property key="MYSQL_PASSWORD" value="astump" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+		<property key="PUBLIC_USER_ID" value="3" /> 
+
                 <!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
                 <property key="SPACE_XML_SCHEMA_LOC" value="/home/astump/starexec_astump_data/batchSpace/batchSpaceSchema.xsd" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
