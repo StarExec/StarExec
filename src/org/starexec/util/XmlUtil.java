@@ -46,6 +46,7 @@ public class XmlUtil {
 //		return xmlFile;												// Give back the output file object
 //	}
 	
+	@SuppressWarnings("unused")
 	private static File firstDir(File parentDir) throws Exception{
 		File[] directories = parentDir.listFiles(XmlUtil.dirFilter);
 		if(directories.length == 1)
@@ -89,6 +90,7 @@ public class XmlUtil {
 	 * @param dir The file that corresponds to the root directory to convert
 	 * @param xml The xml builder to use which initially consists of the xml root
 	 */
+	@SuppressWarnings("unused")
 	private static void convertDirectory(File dir, XMLBuilder xml){		
 		xml = xml.e(XmlUtil.BXML_DIR_NAME).a(XmlUtil.BXML_NAME_ATTR, dir.getName());		// Create the element for the current directory
 		

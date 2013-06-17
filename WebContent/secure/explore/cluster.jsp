@@ -16,8 +16,12 @@
 			<table id="details" class="shaded">
 				<thead>
 					<tr>
-						<th>attribute</th>
-						<th>value</th>						
+						<th>job</th>
+						<th>user</th>	
+						<th>benchmark</th>
+						<th>solver</th>
+						<th>config</th>
+						<th>space</th>					
 					</tr>
 				</thead>			
 			</table>

@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -216,7 +215,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
-	public String getQueueDetails(@PathParam("id") int id) {		
+	public String getQueueDetails(@PathParam("id") int id) {
 		return gson.toJson(Queues.getDetails(id));
 	}
 	
@@ -286,11 +285,11 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
-	/*
+	/**
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
 	 * @author Eric Burns*/
@@ -303,7 +302,7 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(2);
 		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB_STATS, jobId, request);
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
 		return nextDataTablesPage==null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 		
@@ -323,7 +322,7 @@ public class RESTServices {
 	 * @throws Exception 
 	 */
 	@POST
-	@Path("/space/{id}/{primType}/pagination")
+	@Path("/space/{id}/{primType}/pagination/")
 	@Produces("application/json")	
 	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {			
 		int userId = SessionUtil.getUserId(request);
@@ -335,16 +334,17 @@ public class RESTServices {
 		
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.JOB, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.USER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SOLVER, spaceId, request);
+			//TODO: Change this to "for spaces", which will wrap the "includeDeleted" and "procedureName" parameters into one
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SOLVER, spaceId, request);
 		} else if(primType.startsWith("sp")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.SPACE, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SPACE, spaceId, request);
 		} else if(primType.startsWith("b")){
 			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPage(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
 		} else if(primType.startsWith("r")){
 			nextDataTablesPage = RESTHelpers.getResultTable(spaceId, request);
 		}
@@ -619,11 +619,16 @@ public class RESTServices {
 			}
 			
 			boolean success = false;
-			
+			Space s=Spaces.get(id);
 			// Go through all the cases, depending on what attribute we are changing.
 			if (attribute.equals("name")) {
 				String newName = (String)request.getParameter("val");
 				if (true == Validator.isValidPrimName(newName)) {
+					if (!s.getName().equals(newName)) {
+						if (Spaces.notUniquePrimitiveName(newName,id,4)) {
+							return gson.toJson(7);
+						}
+					}
 					success = Spaces.updateName(id, newName);
 				}
 			} else if (attribute.equals("description")) {
@@ -677,6 +682,12 @@ public class RESTServices {
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				|| !Validator.isValidBool(request.getParameter("locked"))){
 			return gson.toJson(3);
+		}
+		Space os=Spaces.get(id);
+		if (!os.getName().equals(request.getParameter("name"))) {
+			if (Spaces.notUniquePrimitiveName(request.getParameter("name"),id,4)) {
+				return gson.toJson(7);
+			}
 		}
 		
 		// Permissions check; if user is NOT a leader of the space, deny update request
@@ -980,13 +991,15 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
-	//TODO: Alter this function so that you can either copy OR mirror solvers.
+	
 	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copyToSubspaces", request)
-				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
+				|| !Util.paramExists("copy", request)
+				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
+				|| !Validator.isValidBool(request.getParameter("copy"))){
 			return gson.toJson(2);
 		}
 		
@@ -999,6 +1012,8 @@ public class RESTServices {
 		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		
+		//Get the flag that indicates whether the solver is being copied or linked
+		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
 		// Convert the solvers to copy to an int list
 		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
@@ -1017,7 +1032,9 @@ public class RESTServices {
 			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
 				return gson.toJson(4);
 			}
-			
+			if (Solvers.isSolverDeleted(id)) {
+				return gson.toJson(11);
+			}
 			// Make sure that the solver has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), spaceId, 1)) {
 				return gson.toJson(7);
@@ -1029,8 +1046,36 @@ public class RESTServices {
 		if(perm == null || !perm.canAddSolver()) {
 			return gson.toJson(3);	
 		}			
-		//TODO: If copying, here is where code should go to take all the current solvers, copy them, and get the new IDs
 		
+		if (copy) {
+			List<Solver> oldSolvers=Solvers.get(selectedSolvers);
+			//first, validate that the user has enough disk quota to copy all the selected solvers
+			//we don't copy any unless they have room for all of them
+			long userDiskUsage=Users.getDiskUsage(requestUserId);
+			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
+			userDiskQuota-=userDiskUsage;
+			for (Solver s : oldSolvers) {
+				userDiskQuota-=s.getDiskSize();
+			}
+			if (userDiskQuota<0) {
+				
+				return gson.toJson(8);
+			}
+			
+			List<Integer>newSolverIds=new ArrayList<Integer>();
+			int newID;
+			for (Solver s : oldSolvers) {
+				newID=Solvers.copySolver(s, requestUserId, spaceId);
+				
+				if (newID==-1) {
+					log.error("Unable to copy solver "+s.getName());
+					//TODO: What do we do if we fail to copy a single solver? Many might have been copied already
+				} else {
+					newSolverIds.add(newID);
+				}
+			}
+			selectedSolvers=newSolverIds;
+		}
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
 			int subspaceId;
@@ -1038,8 +1083,12 @@ public class RESTServices {
 			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
-			// Add the destination space to the list of spaces to associate the solvers with
-			subspaceIds.add(spaceId);
+			// Add the destination space to the list of spaces to associate the solvers with only
+			//if we aren't copying. If we're copying, we did this already
+			if (!copy) {
+				subspaceIds.add(spaceId);
+			}
+			
 			
 			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
 			for(Space subspace : subspaces){
@@ -1081,7 +1130,10 @@ public class RESTServices {
 	@Produces("application/json")
 	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
-		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+		if(null == request.getParameterValues("selectedIds[]") 
+				|| !Util.paramExists("fromSpace", request)
+				|| !Util.paramExists("copy", request)
+				|| !Validator.isValidBool(request.getParameter("copy"))){
 			return gson.toJson(2);
 		}
 		
@@ -1115,18 +1167,46 @@ public class RESTServices {
 			if(!Permissions.canUserSeeBench(id, requestUserId)) {
 				return gson.toJson(4);
 			}
-			
+			if (Benchmarks.isBenchmarkDeleted(id)) {
+				return gson.toJson(11);
+			}
 			// Make sure that the benchmark has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), spaceId, 2)) {
-				return gson.toJson(6);
+				return gson.toJson(7);
 			}
 		}
-		
-		// Make the associations
-		boolean success = Benchmarks.associate(selectedBenchs, spaceId);
-		
-		// Return a value based on results from database operation
-		return success ? gson.toJson(0) : gson.toJson(1);
+		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
+		if (copy) {
+			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs,true);
+			long userDiskUsage=Users.getDiskUsage(requestUserId);
+			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
+			userDiskQuota-=userDiskUsage;
+			for (Benchmark b :oldBenchs) {
+				userDiskQuota-=b.getDiskSize();
+			}
+			if (userDiskQuota<0) {
+				return gson.toJson(8);
+			}
+			int benchId=-1;
+			for (Benchmark b : oldBenchs) {
+				benchId=Benchmarks.copyBenchmark(b,requestUserId,spaceId);
+				if (benchId<0) {
+					log.error("Benchmark "+b.getName()+" could not be copied successfully");
+					return gson.toJson(1);
+				}
+				log.debug("Benchmark "+b.getName()+" copied successfully");
+			}
+			
+			
+			return gson.toJson(0);
+			
+		} else {
+			// Make the associations
+			boolean success = Benchmarks.associate(selectedBenchs, spaceId);
+			
+			// Return a value based on results from database operation
+			return success ? gson.toJson(0) : gson.toJson(1);
+		}
 	}
 	
 	/**
@@ -1187,7 +1267,7 @@ public class RESTServices {
 			
 			// Make sure that the job has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Jobs.getDetailed(id).getName(), spaceId, 3)) {
-				return gson.toJson(6);
+				return gson.toJson(7);
 			}
 		}		
 		
@@ -1485,8 +1565,24 @@ public class RESTServices {
 			gson.toJson(2);
 		}
 		
+		//TODO: We need to remove all these hardcoded error codes and define them  in R or something
+		
 		// Extract new solver details from request
 		String name = request.getParameter("name");
+		//if the name is actually being changed
+		if (!solver.getName().equals(name)) {
+			int id=Solvers.isNameEditable(solverId);
+			if (id<0) {
+				return gson.toJson(9);
+			}
+			
+			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 1)) {
+				return gson.toJson(7);
+			}
+		}
+		
+		
+		
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
@@ -1601,6 +1697,16 @@ public class RESTServices {
 		
 		// Extract new benchmark details from request
 		String name = request.getParameter("name");
+		// Extract new solver details from request
+		if (!bench.getName().equals(name)) {
+			int id=Benchmarks.isNameEditable(benchId);
+			if (id<0) {
+				return gson.toJson(9);
+			}
+			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 2)) {
+				return gson.toJson(7);
+			}
+		}
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
@@ -2021,7 +2127,7 @@ public class RESTServices {
 			
 			// Make sure that the subspace has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), spaceId, 4)) {
-				return gson.toJson(6);
+				return gson.toJson(7);
 			}
 		}
 		
@@ -2051,6 +2157,13 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
+	@GET
+	@Path("/users/getid")
+	@Produces("application/json")
+	public String getUserID(@Context HttpServletRequest request) {
+		return gson.toJson(1);
+		//return gson.toJson(SessionUtil.getUserId(request));
+	}
 	/**
 	 * Get the paginated result of the jobs belong to a specified user
 	 * @param usrId Id of the user we are looking for
@@ -2064,9 +2177,11 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(2);
+		}
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.JOB, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
@@ -2080,14 +2195,16 @@ public class RESTServices {
 	 * @author Wyatt Kaiser
 	 */
 	@POST
-	@Path("/users/{id}/solvers/pagination")
+	@Path("/users/{id}/solvers/pagination/")
 	@Produces("application/json")	
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(2);
+		}
 		// Query for the next page of solver pairs and return them to the user
 		log.debug(usrId);
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.SOLVER, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}
@@ -2105,9 +2222,11 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(2);
+		}
 		// Query for the next page of solver pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageofUser(RESTHelpers.Primitive.BENCHMARK, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
 	}

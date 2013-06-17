@@ -178,7 +178,7 @@ function HtmlEncode(s) {
  * Returns the regular expression used to validate primitive names
  */
 function getPrimNameRegex(){
-	return "^[\\w\\-\\.\\s]+$";
+	return "^[\\w\\-\\.\\+\\s]+$";
 }
 
 /**

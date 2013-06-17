@@ -416,13 +416,7 @@ public class Util {
 		sb.append(File.separator);		// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
 		// Append 'run_' prefix to the configuration's filename if it isn't already there
 		if(false == configName.startsWith(R.CONFIGURATION_PREFIX)){
-			//if (configName.startsWith("run_")){
-			//	sb.append("starexec_");
-			//}
-			//else
-			//{
-				sb.append(R.CONFIGURATION_PREFIX);
-			//}
+			sb.append(R.CONFIGURATION_PREFIX);
 		}
 		sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
 		return sb.toString();
@@ -430,14 +424,19 @@ public class Util {
 	
     private static String docRoot = null;
     private static String docRootUrl = null;
+    
+    
     private static void initDocRoot() {
-	if (docRoot == null)
-	    docRoot = "/" + R.STAREXEC_APPNAME + "/";
+    	if (docRoot == null) {
+    		docRoot = "/" + R.STAREXEC_APPNAME + "/";
+    	}
     }
+    
     private static void initDocRootUrl() {
-	initDocRoot();
-	if (docRootUrl == null)
-	    docRootUrl = "https://" + R.STAREXEC_SERVERNAME + docRoot;
+    	initDocRoot();
+    	if (docRootUrl == null) {
+    		docRootUrl = "https://" + R.STAREXEC_SERVERNAME + docRoot;
+    	}
     }
     /**
      * Prepend the document root to the given path, to form a site root-relative path.

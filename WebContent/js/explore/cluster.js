@@ -70,7 +70,7 @@ function getDetails(id, type) {
 	if(type == 'queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;		
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
-		url = starexecRoot+"services/cluster/nodes/details/" + id;
+		url = starexecRoot+"services/cluster/nodes/details/" + id;			//This was originally "services/cluster/nodes/details/"
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
@@ -109,6 +109,12 @@ function populateAttributes(jsonData) {
 				80: starexecRoot+'images/progress_bar/progressbg_green.gif'
 			}});
 		$('#activeStatus').hide();
+		
+		//Put all the jobPairs that are running on the queue
+		attrTable.fnClearTable();
+		for (var key in jsonData.jobPairs) {
+			attrTable.fnAddData([jsonData.jobPairs[key]]);
+		}
 	} else {
 		// We're not showing a queue, hide the bar showing queue availability and show active status
 		$('#progressBar').hide();
@@ -121,13 +127,13 @@ function populateAttributes(jsonData) {
 			$('#activeStatus').text('[INACTIVE]');
 			$('#activeStatus').css('color', '#ae0000');
 		}
+		
+		attrTable.fnClearTable();
+		for(var key in jsonData.attributes){
+			attrTable.fnAddData([key, jsonData.attributes[key]]);            
+	    }
 	}
 	
-	attrTable.fnClearTable();	
-	for(var key in jsonData.attributes){
-		attrTable.fnAddData([key, jsonData.attributes[key]]);            
-    }
-		
 	// Done loading, hide the loader
 	$('#loader').hide();
 }

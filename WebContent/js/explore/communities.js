@@ -249,8 +249,8 @@ function populateDetails(jsonData) {
 	leaderTable.fnClearTable();	
 	$.each(jsonData.leaders, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';				
+		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';				
 		leaderTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 

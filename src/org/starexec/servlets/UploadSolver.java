@@ -4,30 +4,25 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.net.URL;
+
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -60,7 +55,6 @@ public class UploadSolver extends HttpServlet {
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
-    private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
     private static final String UPLOAD_METHOD="upMethod";
     private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
@@ -103,11 +97,14 @@ public class UploadSolver extends HttpServlet {
 				
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
+				//should be 2 element array where the first element is the new solver ID and the
+				//second element is a status code related to whether configurations existed.
 				int return_value = result[0];
 				int configs = result[1];
 			
 				// Redirect based on success/failure
 				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4) {
+					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
 					if (configs == -4) { //If there are no configs
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&flag=true"));
 					} else {
@@ -196,17 +193,17 @@ public class UploadSolver extends HttpServlet {
 			
 			//Process the archive file and extract
 			File archiveFile=null;
-			String FileName=null;
+			//String FileName=null;
 			if (upMethod.equals("local")) {
 				archiveFile = new File(uniqueDir,  item.getName());
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
-				FileName = item.getName().split("\\.")[0];
+				//FileName = item.getName().split("\\.")[0];
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				FileUtils.copyURLToFile(url, archiveFile);
-				FileName=name.split("\\.")[0];
+				//FileName=name.split("\\.")[0];
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
@@ -215,6 +212,7 @@ public class UploadSolver extends HttpServlet {
 			long usedBytes=Users.getDiskUsage(userId);
 			
 			if (fileSize>allowedBytes-usedBytes) {
+				archiveFile.delete();
 				returnArray[0]=-4;
 				return returnArray;
 			}
@@ -255,12 +253,13 @@ public class UploadSolver extends HttpServlet {
 			    }
 			}
 			
-			int configs_empty = 0;
+			
 			//Find configurations from the top-level "bin" directory
-			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
+			for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
 			}
-			if (findConfigs(uniqueDir.getAbsolutePath()).isEmpty()) {
+			
+			if (newSolver.getConfigurations().isEmpty()) {
 				returnArray[1] = -4; //It is empty
 			}
 			//Try adding the solver to the database
@@ -281,52 +280,7 @@ public class UploadSolver extends HttpServlet {
 		answer[0]=i;
 		answer[1]=j;
 		return answer;
-	}
-
-	/**
-	 * Finds solver run configurations from a specified bin directory. Run configurations
-	 * must start with a certain string specified in the list of constants. If no configurations
-	 * are found, an empty list is returned.
-	 * @param fromPath the base directory to find the bin directory in
-	 * @return a list containing run configurations found in the bin directory
-	 */
-	private List<Configuration> findConfigs(String fromPath){		
-		File binDir = new File(fromPath, R.SOLVER_BIN_DIR);
-		if(!binDir.exists()) {
-			return Collections.emptyList();
-		}
-		
-		List<Configuration> returnList = new ArrayList<Configuration>();
-		
-		for(File f : binDir.listFiles()){			
-			if(f.isFile() && f.getName().startsWith(UploadSolver.CONFIG_PREFIX)){
-				Configuration c = new Configuration();								
-				c.setName(f.getName().substring(UploadSolver.CONFIG_PREFIX.length()));
-				returnList.add(c);
-				
-				// Make sure the configuration has the right line endings
-				Util.normalizeFile(f);
-			}				
-			//f.setExecutable(true, false);	//previous version only got top level		
-		}		
-		setHierarchyExecutable(binDir);//should make entire hierarchy executable
-		return returnList;
-	}
-	/*
-	 * Sets every file in a hierarchy to be executable
-	 * @param rootDir the directory that we wish to have executable files in
-	 * @return Boolean true if successful
-	 */
-	private Boolean setHierarchyExecutable(File rootDir){
-		for (File f : rootDir.listFiles()){
-			f.setExecutable(true,false);
-			if (f.isDirectory()){
-				setHierarchyExecutable(f);
-			}
-		}
-		return true;
-	}
-	
+	}	
 	
 	/**
 	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.

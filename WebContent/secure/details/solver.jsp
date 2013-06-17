@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.Util, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.Util, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -19,18 +19,24 @@
 			request.setAttribute("sites", Websites.getAll(solverId, Websites.WebsiteType.SOLVER));
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
+			boolean downloadable=s.isDownloadable();
+			if (s.getUserId()==userId) {
+				downloadable=true;
+			}
+			request.setAttribute("downloadable",downloadable);
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
+			if (Solvers.isSolverDeleted(solverId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been deleted. You likely want to remove it from your spaces.");
+			}
+			else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
+			}
+			
 		}
-		
-		boolean downloadable=s.isDownloadable();
-		if (s.getUserId()==userId) {
-			downloadable=true;
-		}
-		request.setAttribute("downloadable",downloadable);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given solver id was in an invalid format");
 	} catch (Exception e) {
+		
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
@@ -175,7 +181,7 @@
 		</c:if>
 		<c:if test="${usr.id == user.id}">
 			
-			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig<c:if test="${!solver.downloadable}">Margin</c:if>">add configuration</a>
+			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 			<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
 		</c:if>
 	</fieldset>

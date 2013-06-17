@@ -26,8 +26,12 @@ else
 		if [ "$1" == "-fb2" ]; then
 			SVN_URL=$SVN_URL/branches/fb2/starexec
 		else
-			echo "please specify a repository to use [-trunk, -fb1, -fb2]"
+		    if [ "$1" == "-wkshop" ]; then
+			SVN_URL=$SVN_URL/branches/wkshop/starexec
+		    else
+			echo "please specify a repository to use [-trunk, -fb1, -fb2, -wkshop]"
 			exit 0
+		    fi
 		fi
 	fi
 fi

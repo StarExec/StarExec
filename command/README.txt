@@ -46,29 +46,31 @@ by default. allPerm has no value.
 "removeSpace", "removeJob", "removeBench"} - These are ten separate parameters specify that the 
 corresponding permission should be set to true. None requires a value.
 
-"bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload
+"bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload.
 
-"cpu"--Specifies the cpu timeout that should be used for a new job, in seconds.
+"cpu" -Specifies the cpu timeout that should be used for a new job, in seconds.
 
-"d"--Specifies a description. When optional, the empty string is used as a default.
+"d" -Specifies a description. When optional, the empty string is used as a default.
 
-"dep"--Specifies a dependency for a benchmark upload.
+"dep" -Specifies a dependency for a benchmark upload.
 
-"df" -Specifies a path to a local file that will contain a description
+"df" -Specifies a path to a local file that will contain a description.
 
 "downloadable" -Specifies that a benchmark upload should be downloadable. 
 
 "f" -Specifies a path to a  local file.
+
+"from" -When copying a primitive, specifies the ID of the source space.
 
 "hier" -On a benchmark upload, means that the archive structure should be converted to a space 
 structure. By default, all benchmarks are placed in the space being uploaded to.
 
 "id" -Specifies the ID of a primitive, whether that be a space, job, benchmark, etc.
 
-"limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print
+"limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print.
 
 "link" -When uploading benchmarks with dependencies, indicates that the first directory in the path 
-corresponds to a dependent bench space
+corresponds to a dependent bench space.
 
 "lock" -Sets a newly created subspace as locked.
 
@@ -76,23 +78,32 @@ corresponds to a dependent bench space
 
 "out" -Specifies a filepath to which a file should be downloaded.
 
-"ow" -Indicates that the file at the path given by "out" should be overwritten with the new file
+"ow" -Indicates that the file at the path given by "out", if it exists, should be overwritten with the new file.
 
-"pid" -Specifies a processor id (used only in job creation)
+"pid" -Specifies a processor id (used only in job creation).
 
-"qid" -Specifies a queue id (used only in job creation)
+"qid" -Specifies a queue id (used only in job creation).
 
-"since" -When downloading job info, specifies the earliest completed pair after which to get info
+"since" -When downloading job info, specifies the earliest completed pair after which to get info.
 
 "t" -When using 'sleep,' specifies the amount of time in seconds. Decimal values are permitted.
 
-"url" -Specifies the URL of a remote file
+"to" -When copying a primitive, specifies the ID of the destination space, or the root of the 
+	  destination hierarchy.
 
-"val" -Specifies a new value for a user setting
+"trav" -When creating a job, specifies the type of traversal that shold be used. The value "d" is
+		used to specify depth-first traversal, whereas "r" is for a round-robin traversal.
 
-"verbose" -Tells StarExec that status should be printed to the standard output in batch mode
+"u" -When logging in, specifies the username to log in with. When listing primitives, causes a user's own 
+	 primitives to be retrieved instead of the primitives of a space.
 
-"w" -Specifies the wallclock timeout that should be used for a new job, in seconds
+"url" -Specifies the URL of a remote file.
+
+"val" -Specifies a new value for a user setting.
+
+"verbose" -Tells StarExec that status should be printed to the standard output in batch mode.
+
+"w" -Specifies the wallclock timeout that should be used for a new job, in seconds.
 
 Commands
 --------
@@ -138,6 +149,13 @@ OPTIONAL: "verbose"
 --sleep -Given "t" sleep for the specified number of seconds
 REQUIRED: "t"
 OPTIONAL: None
+
+--returnids -Instructs StarexecCommand to print the IDs of newly uploaded solvers and processors and newly
+			 created jobs and spaces in the form "id={newId}\n" The default behavior at the start of a session 
+			 is not to do this. This command does nothing if this behavior is already enabled.
+
+--ignoreids -Instructs StarExecCommand to stop printing the IDs of newly uploaded solvers and processors and
+			 newly created jobs and spaces. This command does nothing if this behavior is already disabled.
 
 Download Commands
 -----------------
@@ -255,34 +273,36 @@ These commands allow users to push benchmarks, solvers, and processors to the se
 individually unique than previous commands, and many accept a large number of optional parameters. 
 
 --pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID.
+			  The ID of the newly uploaded solver will be printed if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id"
 OPTIONAL: "n" ("d" OR "df") "downloadable"
 EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
 
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
+				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '
 
 --pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
-refers to a community id.
+				 refers to a community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=142 f=procdirectory.tgz d=Processor Description n=newproc'
 
 --pushconfig -This command is used for uploading a configuration for an existing solver. The parameter 
-"id" refers to a solver ID.
+			  "id" refers to a solver ID. The ID of the newly uploaded configuration will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
 
 --pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a 
-community id.
+				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 
 --pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space 
-ID and is required. 
+				ID and is required. The ID of the newly created spaces will NOT be printed, even if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: None
 
@@ -311,13 +331,36 @@ OPTIONAL: None
 REQUIRED: "id"
 OPTIONAL: None
 
---deletejob -Not yet implemented
-
 --deletepostproc -Deletes the post processor with the given ID.
 REQUIRED: "id"
 OPTIONAL: None
 
---Deletespace -Not yet implemented
+Remove Commands
+---------------
+
+This set of commands can be used to remove the associations between primitives
+and spaces. Solvers and benchmarks that are removed from every space they 
+belong to will be deleted.
+
+-- removebench -Removes a benchmark from a given space. "id" is the benchmark ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removejob -Removes a job from a given space. "id" is the job ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removesolver -Removes a solver from a given space. "id" is the solver ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removesubspace -Removes a subspace from a given space. "id" is the subspace ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
+
+-- removeuser -Removes a user from a given space. "id" is the user ID.
+REQUIRED: "id" "from"
+OPTIONAL: None
 
 Create Commands
 ---------------
@@ -326,16 +369,64 @@ These commands create some new information on StarExec. Like push commands, they
 varied set of parameters.
 
 --createjob -This command is used for creating a new job in a given space. "id" refers to the id of
-the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
-the hierarchy structure can be created from StarExecCommand--other options will be added in the future.
+			 the space that the job should be created in. Currently, only jobs that run every benchmark and solver and keep
+			 the hierarchy structure can be created from StarExecCommand. By default, job-pairs are run in a depth-first manner,
+			 the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
+			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
+			 The ID of the newly created job will be printed if "returnids" has been called.
 REQUIRED: "id" "pid" "qid" 
-OPTIONAL: "n" "d" "w" "cpu"
-EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100'
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow"
+EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
+				  The ID of the newly created subspace will be printed if "returnids" has been called.
 REQUIRED: "id"
 OPTIONAL: "n" "d" "lock" "allPerm" (also all the other permissions parameters)
 EXAMPLE: 'createsubspace id=5'
+
+Copy Commands
+-------------
+
+These commands can be used to either copy or link primitives from one space to another. To 'copy'
+a primitive means to create a deep copy-- you will become the owner of a copied solver or benchmark,
+and it will count towards your disk usage. To 'link' a primitive means that you are using a primitive
+that still belongs to another user. If they choose to delete a solver or benchmark that you have linked,
+then you will lose access to it. You may also copy or link primitives that you own.
+
+--copybench -Copies a benchmark from one space to another. "id" is a benchmark id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
+EXAMPLE: 'copybench id=42 from=643 to=56"
+
+--linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
+
+--copysolver -Copies a solver from one space and places it into a new space or hierarchy. "id" is a solver id, and "from"
+and "to" are space ids
+REQUIRED: "id" "from" "to"
+OPTIONAL: "hier"
+
+--linksolver -links an existing solver and associates it with a new space or hierarchy. "id" is a solver id, and "from"
+and "to" are space ids
+REQUIRED: "id" "from" "to"
+OPTIONAL: "hier"
+
+--copyjob -Copies an existing job and associates it with a space. "id" is a job id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
+
+--copyspace -Copies an existing space or space hierarchy rooted at "id" from space "from" to space "to"
+REQUIRED: "id" "from", "to"
+OPTIONAL: "hier"
+
+--linkuser -links an existing user and associates them with a space. "id" is a benchmark id, and "from" and "to" are
+space ids.
+REQUIRED: "id" "from" "to"
+OPTIONAL: None
 
 List Commands
 -------------
@@ -346,27 +437,31 @@ is optional, and indicates that at most "limit" primitives should be printed. An
 
 'lsjobs id=4 limit=100'
 
-This will print at most 100 jobs present in space 4. The list commands are shown below.
+This will print at most 100 jobs present in space 4. An example  of getting your own primitives is
+
+'lssolvers u='
+
+The list commands are shown below.
 
 --lsbenchmarks -Lists the IDs and names of all benchmarks in the space.
-REQUIRED: "id"
-OPTIONAL: None
+REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
 
 --lsjobs -Lists the IDs and names of all jobs in the space.
-REQUIRED: "id"
-OPTIONAL: None
+REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
 
 --lssolvers -Lists the IDs and names of all solvers in the space.
-REQUIRED: "id"
-OPTIONAL: None
+REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
 
 --lssubspaces -Lists the IDs and names of all subspaces in the space the current user is authorized to see
 REQUIRED: "id"
-OPTIONAL: None
+OPTIONAL: "limit"
 
 --lsusers -Lists the IDs and names of all users in the space.
 REQUIRED: "id"
-OPTIONAL: None
+OPTIONAL: "limit"
 
 Shell Mode
 ----------

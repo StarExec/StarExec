@@ -4,7 +4,11 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.HashMap;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +16,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.util.Util;
 
@@ -21,6 +24,8 @@ import org.starexec.util.Util;
  */
 public class Solvers {
 	private static final Logger log = Logger.getLogger(Solvers.class);
+	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
+	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
 	
 	/**
 	 * @param solverId The id of the solver to retrieve
@@ -40,6 +45,36 @@ public class Solvers {
 		}
 		
 		return null;
+	}
+	/** 
+	 * Determines whether the solver with the given ID exists in the database with the column "deleted" set to true
+	 * @param solverId The ID of the solver in question
+	 * @return True if the solver exists in the database and has the deleted flag set to true
+	 */
+	
+	public static boolean isSolverDeleted(int solverId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isSolverDeleted(con,solverId);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	protected static boolean isSolverDeleted(Connection con, int solverId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL IsSolverDeleted(?)}");
+		procedure.setInt(1, solverId);					
+		ResultSet results = procedure.executeQuery();
+		boolean deleted=false;
+		if (results.next()) {
+			deleted=results.getBoolean("solverDeleted");
+		}
+		return deleted;
 	}
 	
 	/**
@@ -144,6 +179,45 @@ public class Solvers {
 		
 		return null;
 	}
+	
+	/**
+	 * Determines whether the solver identified by the given solver ID has an
+	 * editable name
+	 * @param solverId The ID of the solver in question
+	 * @return -1 if the name is not editable, 0 if it is editable and the solver is
+	 * associated with no spaces, and a positive integer if the name is editable and the
+	 * solver is associated only with the space with the returned ID.
+	 */
+	public static int isNameEditable(int solverId) {
+		Connection con =null;
+		try {
+			con=Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSolverAssoc(?)}");
+			procedure.setInt(1, solverId);
+			ResultSet results=procedure.executeQuery();
+			int id=-1;
+			if (results.next()) {
+				id=results.getInt("space_id");
+			} else {
+				log.debug("Solver associated with no spaces, so its name is editable");
+				return 0;
+			}
+			
+			if (results.next()) {
+				log.debug("Solver is found in multiple spaces, so its name is not editable");
+				return -1;
+			}
+			log.debug("Solver associated with one space id = "+id +" , so its name is editable");
+			return id;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return -1;
+	}
+	
 	
 	/**
 	 * @param spaceId The id of the space to get solvers for
@@ -308,7 +382,47 @@ public class Solvers {
 		log.debug(String.format("Solver [id=%d] failed to be updated.", id));
 		return false;
 	}
+	/**
+	 * Makes a deep copy of an existing solver, gives it a new user, and places it
+	 * into a space
+	 * @param s The existing solver to copy
+	 * @param userId The userID that the new solver will be given
+	 * @param spaceId The space ID of the space to place the new solver in to
+	 * @return The ID of the new solver, or -1 on failure
+	 * @author Eric Burns
+	 */
 	
+	public static int copySolver(Solver s, int userId, int spaceId) {
+		log.debug("Copying solver "+s.getName()+" to new user id= "+String.valueOf(userId));
+		Solver newSolver=new Solver();
+		newSolver.setDescription(s.getDescription());
+		newSolver.setName(s.getName());
+		newSolver.setUserId(userId);
+		newSolver.setUploadDate(s.getUploadDate());
+		newSolver.setDiskSize(s.getDiskSize());
+		newSolver.setDownloadable(s.isDownloadable());
+		File solverDirectory=new File(s.getPath());
+		
+		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir, newSolver.getName());
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		uniqueDir.mkdirs();
+		newSolver.setPath(uniqueDir.getAbsolutePath());
+		try {
+			FileUtils.copyDirectory(solverDirectory, uniqueDir);
+			for(Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
+				newSolver.addConfiguration(c);
+			}
+			return Solvers.add(newSolver, spaceId);
+			
+		} catch (Exception e) {
+			
+			log.error("copySolver says "+e.getMessage());
+			return -1;
+		}
+		
+		
+	}
 	
 	
 	/**
@@ -1004,7 +1118,28 @@ public class Solvers {
 		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
 		return false;
 	}
-
+	
+	
+	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+		String procedureName="GetNextPageOfSolvers";
+		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,true,procedureName);
+	}
+	
+	/**
+	 * Get next page of the solvers belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the query start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Solvers belong to the user
+	 * @author Wyatt Kaiser + Eric Burns
+	 */
+	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		String procedureName="GetNextPageOfUserSolvers";
+		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,false,procedureName);
+	}
 	
 	/**
 	 * Gets the minimal number of Solvers necessary in order to service the client's
@@ -1015,23 +1150,25 @@ public class Solvers {
 	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
 	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
 	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param spaceId the id of the space to get the Solvers from
+	 * @param id the id of the space or user to get the solvers for
+	 * @param getDeleted whether to return solvers tagged as "deleted"
+	 * @param procedureName The name of the SQL procedure to call. Should be either "GetNextPageOfUserSolvers" or "GetNextPageOfSolvers"
 	 * @return a list of 10, 25, 50, or 100 Solvers containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+	private static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, boolean getDeleted, String procedureName) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
+			procedure.setInt(5, id);
 			procedure.setString(6, searchQuery);
 				
 			ResultSet results = procedure.executeQuery();
@@ -1040,6 +1177,9 @@ public class Solvers {
 			// Only get the necessary information to display this solver
 			// in a row in a DataTable object, nothing more.
 			while(results.next()){
+				if (!getDeleted && results.getBoolean("deleted")) {
+					continue;
+				}
 				Solver s = new Solver();
 				s.setId(results.getInt("id"));
 				s.setName(results.getString("name"));				
@@ -1056,7 +1196,6 @@ public class Solvers {
 		
 		return null;
 	}
-	
 	
 	/**
 	 * Gets the number of Solvers in a given space
@@ -1134,52 +1273,49 @@ public class Solvers {
 
 		return 0;		
 	}
+	
 
 	/**
-	 * Get next page of the solvers belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the query start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
-	 * @param userId Id of the user we are looking for
-	 * @return a list of Solvers belong to the user
-	 * @author Wyatt Kaiser
+	 * Finds solver run configurations from a specified bin directory. Run configurations
+	 * must start with a certain string specified in the list of constants. If no configurations
+	 * are found, an empty list is returned.
+	 * @param fromPath the base directory to find the bin directory in
+	 * @return a list containing run configurations found in the bin directory
 	 */
-	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		Connection con = null;			
-
-		try {
-			con = Common.getConnection();
-			CallableStatement procedure;	
-
-			procedure = con.prepareCall("{CALL GetNextPageOfUserSolvers(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-
-			ResultSet results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
-
-			while(results.next()){
-
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setUserId(results.getInt("user_id"));
-				s.setName(results.getString("name"));				
-				s.setDescription(results.getString("description"));				
-				solvers.add(s);		
-			}
-			return solvers;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
+	public static List<Configuration> findConfigs(String fromPath){		
+		File binDir = new File(fromPath, R.SOLVER_BIN_DIR);
+		if(!binDir.exists()) {
+			return Collections.emptyList();
 		}
-
-		return null;
+		
+		List<Configuration> returnList = new ArrayList<Configuration>();
+		
+		for(File f : binDir.listFiles()){			
+			if(f.isFile() && f.getName().startsWith(CONFIG_PREFIX)){
+				Configuration c = new Configuration();								
+				c.setName(f.getName().substring(CONFIG_PREFIX.length()));
+				returnList.add(c);
+				
+				// Make sure the configuration has the right line endings
+				Util.normalizeFile(f);
+			}				
+			//f.setExecutable(true, false);	//previous version only got top level		
+		}		
+		setHierarchyExecutable(binDir);//should make entire hierarchy executable
+		return returnList;
+	}
+	/**
+	 * Sets every file in a hierarchy to be executable
+	 * @param rootDir the directory that we wish to have executable files in
+	 * @return Boolean true if successful
+	 */
+	public static Boolean setHierarchyExecutable(File rootDir){
+		for (File f : rootDir.listFiles()){
+			f.setExecutable(true,false);
+			if (f.isDirectory()){
+				setHierarchyExecutable(f);
+			}
+		}
+		return true;
 	}
 }

@@ -16,7 +16,7 @@ import org.starexec.data.to.User;
  * Contains handy methods for accessing data within a user's session
  * @author Tyler Jensen
  */
-@SuppressWarnings("unused")
+
 public class SessionUtil {	
 	private static final Logger log = Logger.getLogger(SessionUtil.class);
 	public static final String USER = "user";	// The string we store the user's User object under

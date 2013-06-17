@@ -1,38 +1,27 @@
 package org.starexec.data.database;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DatasetUtilities;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -41,8 +30,6 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
 
 /*import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
@@ -204,8 +191,7 @@ public class Spaces {
 	
 	
 	/**
-	 * Removes a list of benchmarks from a given space in an all-or-none fashion (uses an existing transaction), or 
-	 * checks a list of benchmarks to see if any are safe to delete from StarExec entirely
+	 * Removes a list of benchmarks from a given space in an all-or-none fashion (uses an existing transaction)
 	 * 
 	 * @param benchIds the id's of the benchmarks to remove from a given space
 	 * @param spaceId the space to remove the benchmarks from, if it's negative then the system will probe the database
@@ -217,35 +203,20 @@ public class Spaces {
 	 * @author Todd Elvers
 	 */
 	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) throws SQLException {
-		CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?, ?)}");
-		List<File> filesToDelete = new LinkedList<File>();
+		CallableStatement procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
+		
 		
 		for(int benchId : benchIds){
 			procedure.setInt(1, benchId);
 			procedure.setInt(2, spaceId);
-			procedure.registerOutParameter(3, java.sql.Types.LONGNVARCHAR);
-			procedure.executeUpdate();
 			
-			// If a file path was returned, add it to the list of benchmark files to be deleted 
-			if(procedure.getString(3) != null){
-				filesToDelete.add(new File(procedure.getString(3)));
-			}
+			procedure.executeUpdate();		
 		}
 		
 		if(spaceId >= 0){
 			log.info(benchIds.size() + " benchmark(s) were successfully removed from space " + spaceId);
 		}
-		
-		// Remove the benchmark files from disk if they're not referenced anywhere else in StarExec
-		for(File file : filesToDelete){
-			if(file.delete()){
-				log.info("Benchmark file [" + file.getAbsolutePath() + "] was deleted because it was no longer referenced anywhere in StarExec.");
-			}
-			if(file.getParentFile().delete()){
-				log.info("Directory [" + file.getParentFile().getAbsolutePath() + "] was deleted because it was empty.");
-			}
-		}
-		
+	
 		return true;
 	}
 	
@@ -282,8 +253,7 @@ public class Spaces {
 	}
 	
 	/**
-	 * Removes a list of solvers from a given space in an all-or-none fashion (uses an existing transaction), or 
-	 * checks a list of solvers to see if any are safe to delete from StarExec entirely
+	 * Removes a list of solvers from a given space in an all-or-none fashion (uses an existing transaction)
 	 * 
 	 * @param solverIds the id's of the solvers to remove from a given space
 	 * @param spaceId the space to remove the solvers from, if it's negative then the system will probe the database
@@ -296,19 +266,14 @@ public class Spaces {
 	 * @author Todd Elvers
 	 */
 	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) throws SQLException, IOException {
-		CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
 		List<File> solverDirsOnDisk = new LinkedList<File>();
 		
 		for(int solverId : solverIds){
 			procedure.setInt(1, solverId);
 			procedure.setInt(2, spaceId);
-			procedure.registerOutParameter(3, java.sql.Types.LONGNVARCHAR);
-			procedure.executeUpdate();
 			
-			// If a file path was returned, add it to the list of solver directories to be deleted 
-			if(procedure.getString(3) != null){
-				solverDirsOnDisk.add(new File(procedure.getString(3)));
-			}
+			procedure.executeUpdate();
 		}
 		
 		if(spaceId >= 0) {
@@ -719,7 +684,6 @@ public class Spaces {
 	 * 
 	 * @author Wyatt Kaiser
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
 		Iterator<Space> iter = spaces.iterator();
 		while (iter.hasNext()) {
@@ -1307,7 +1271,7 @@ public class Spaces {
 			con = Common.getConnection();
 			CallableStatement procedure;			
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfSpaces(?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfSpaces(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
@@ -1315,6 +1279,7 @@ public class Spaces {
 			procedure.setInt(5, spaceId);
 			procedure.setInt(6, userId);
 			procedure.setString(7, searchQuery);
+			procedure.setInt(8, R.PUBLIC_USER_ID);
 			
 			ResultSet results = procedure.executeQuery();
 			List<Space> spaces = new LinkedList<Space>();
@@ -1353,9 +1318,10 @@ public class Spaces {
 
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
+			procedure.setInt(3, R.PUBLIC_USER_ID);
 			ResultSet results = procedure.executeQuery();
 
 			if (results.next()) {
@@ -1406,7 +1372,7 @@ public class Spaces {
 			Integer subSpaceId = -1;
 
 			if(results.next()){
-				Space ss = new Space();
+				
 				subSpaceId = (results.getInt("id"));
 				log.debug("SubSpace Id = " + subSpaceId);
 			}	

@@ -1,12 +1,9 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.starexec.util.Util;
 

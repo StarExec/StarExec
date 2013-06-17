@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.UploadStatus;
 /**
  * Handles database interaction for the uploading Benchmarks Status Page.

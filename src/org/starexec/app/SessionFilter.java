@@ -28,7 +28,7 @@ import org.starexec.util.SessionUtil;
  */
 public class SessionFilter implements Filter {
 	private static final Logger log = Logger.getLogger(SessionFilter.class);
-	private static final String USER_PARAM = "user";
+	
 	
 	@Override
 	public void destroy() {

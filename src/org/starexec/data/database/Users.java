@@ -5,16 +5,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
-import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for users
@@ -781,5 +777,35 @@ public class Users {
 			Common.safeClose(con);
 		}
 		return false;
+	}
+	/**
+	 * 
+	 * @param jobId the job id to get the user for
+	 * @return the user/owner of the job
+	 * @author Wyatt Kaiser
+	 */
+	public static User getUserByJob(int jobId) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetNameofUserByJob(?)}");
+			procedure.setInt(1, jobId);
+			ResultSet results = procedure.executeQuery();
+			while (results.next()) {
+				User u = new User();
+				u.setId(results.getInt("id"));
+				u.setInstitution(results.getString("institution"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setEmail(results.getString("email"));
+				return u;
+			}
+				
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
 	}
 }

@@ -24,22 +24,40 @@ public class R {
 	public static String URL_UPLOADSOLVER="secure/upload/solvers";
 	public static String URL_UPLOADPROCESSOR="secure/processors/manager";
 	public static String URL_UPLOADSPACE="secure/upload/space";
-	public static String URL_DELETEITEM="services/delete";
+	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space";
 	public static String URL_UPLOADCONFIG="secure/upload/configruations";
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
+	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
+	public static String URL_GETID="services/users/getid";
+	public static String URL_COPYBENCH="services/spaces/{spaceID}/add/benchmark";
+	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
+	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
+	public static String URL_COPYJOB="services/spaces/{spaceID}/add/job";
+	public static String URL_COPYUSER="services/spaces/{spaceID}/add/user";
+	public static String URL_REMOVEPRIMITIVE="services/remove";
 	//Success codes for command parsing
 	public static int SUCCESS_EXIT=1;
 	public static int SUCCESS_NOFILE=2;
 	public static int SUCCESS_JOBDONE=3;
+	public static int SUCCESS_LOGOUT=4;
+	public static int SUCCESS_LOGIN=5;
 	
+	public static HashMap<Integer,String> successMessages=new HashMap<Integer,String>();
+	
+	static {
+		successMessages.put(SUCCESS_EXIT, "Goodbye");
+		successMessages.put(SUCCESS_NOFILE, "No new job results");
+		successMessages.put(SUCCESS_JOBDONE, "Job complete, all results retrieved");
+		successMessages.put(SUCCESS_LOGOUT, "Logout successful");
+		successMessages.put(SUCCESS_LOGIN, "Login successful");
+	}
 	//Error codes for command parsing
 	public static int ERROR_BAD_COMMAND=-1;
 	public static int ERROR_BAD_ARGS=-2;
-	public static int ERROR_UNKNOWN=-3;
 	public static int ERROR_SERVER=-4;
 	public static int ERROR_BAD_ARCHIVETYPE=-5;
 	public static int ERROR_FILE_AND_URL=-6;
@@ -50,7 +68,7 @@ public class R {
 	public static int ERROR_FILE_EXISTS=-11;
 	public static int ERROR_BAD_PARENT_SPACE=-12;
 	public static int ERROR_BAD_CREDENTIALS=-13;
-	public static int ERROR_COMMAND_NOT_IMPLENETED=-14;
+	public static int ERROR_COMMAND_NOT_IMPLEMENTED=-14;
 	public static int ERROR_URL_NOT_ALLOWED=-15;
 	public static int ERROR_INVALID_ID=-16;
 	public static int ERROR_INVALID_TIMEOUT=-17;
@@ -61,29 +79,35 @@ public class R {
 	public static int ERROR_NOT_LOGGED_IN=-22;
 	public static int ERROR_CONNECTION_EXISTS=-23;
 	public static int ERROR_BAD_URL=-24;
-	public static int ERROR_BAD_INSTITUTION;
+	public static int ERROR_BAD_INSTITUTION=-25;
+	public static int ERROR_PERMISSION_DENIED=-26;
+	public static int ERROR_COMMAND_FILE_TERMINATING=-27;
+	public static int ERROR_INSUFFICIENT_QUOTA=-28;
+	public static int ERROR_NAME_NOT_UNIQUE=-29;
+	public static int ERROR_BAD_TRAVERSAL_TYPE=-30;
+	public static int ERROR_ID_AND_USER=-31;
+	public static int ERROR_NO_USER_PRIMS=-32;
 	//error messages
 	public static HashMap<Integer,String> errorMessages=new HashMap<Integer,String>();
 	static {
 		errorMessages=new HashMap<Integer,String>();
 		errorMessages.put(R.ERROR_BAD_COMMAND, "Unrecognized command");
 		errorMessages.put(R.ERROR_BAD_ARGS, "Parameters must be in the form {key}={value}");
-		errorMessages.put(R.ERROR_UNKNOWN,"Error parsing command");
 		errorMessages.put(R.ERROR_SERVER,"Error communicating with server");
 		errorMessages.put(R.ERROR_BAD_ARCHIVETYPE,"Bad archive type-- valid types include zip, tar, and tgz");
 		errorMessages.put(R.ERROR_FILE_AND_URL,"An upload should contain either a url or a local file, not both");
 		errorMessages.put(R.ERROR_INVALID_FILEPATH,"The given filepath is invalid");
 		errorMessages.put(R.ERROR_MISSING_PARAM,"Command is missing a required parameter-- please consult the StarexecCommand reference");
-		errorMessages.put(R.ERROR_FILE_NOT_FOUND, "The file to be uploaded could not be found");
+		errorMessages.put(R.ERROR_FILE_NOT_FOUND, "The specified file could not be found");
 		errorMessages.put(R.ERROR_ARCHIVE_NOT_FOUND, "You do not have permission to download the requested archive, or the archive does not exist-- please ensure the given ID is correct");
 		errorMessages.put(R.ERROR_FILE_EXISTS, "The specified filepath already exists-- use the flag \"ow\" to overwrite.");
 		errorMessages.put(R.ERROR_BAD_PARENT_SPACE,"You do not have permission to add subspaces to the given parent space, or the parent space does not exist");
 		errorMessages.put(R.ERROR_BAD_CREDENTIALS,"Invalid username and/or password");
-		errorMessages.put(R.ERROR_COMMAND_NOT_IMPLENETED,"Command not currently implemented");
+		errorMessages.put(R.ERROR_COMMAND_NOT_IMPLEMENTED,"Command not currently implemented");
 		errorMessages.put(R.ERROR_URL_NOT_ALLOWED,"URL uploads are not allowed here-- please upload a local archive");
 		errorMessages.put(R.ERROR_INVALID_ID, "Invalid ID-- IDs must be positive integers");
 		errorMessages.put(R.ERROR_INVALID_TIMEOUT, "Invalid timeout-- Timouts must be positive integers");
-		errorMessages.put(R.ERROR_CONNECTION_LOST, "The connection to the server was lost");
+		errorMessages.put(R.ERROR_CONNECTION_LOST, "The connection to the server was lost. You must log in again to continue");
 		errorMessages.put(R.ERROR_BAD_NAME, "The specified name is invalid");
 		errorMessages.put(R.ERROR_BAD_DESCRIPTION, "The specified description is invalid");
 		errorMessages.put(R.ERROR_BAD_TIME, "The time should be a positive double, measured in seconds");
@@ -91,6 +115,13 @@ public class R {
 		errorMessages.put(R.ERROR_CONNECTION_EXISTS, "You must log out of the existing session before you can start a new one");
 		errorMessages.put(R.ERROR_BAD_URL, "The given URL does not point to a valid Starexec instance. Ensure that you are using the correct protocol (http vs https) and that the address ends with a /");
 		errorMessages.put(R.ERROR_BAD_INSTITUTION, "The institution given has invalid characters or is too long");
+		errorMessages.put(R.ERROR_PERMISSION_DENIED,"You do not have permission to view the contents of the given space, or the space does not exist");
+		errorMessages.put(ERROR_COMMAND_FILE_TERMINATING, "An error was encountered: the file of commands may not have been completed");
+		errorMessages.put(ERROR_NAME_NOT_UNIQUE, "All primitives in a given space must have unique names");
+		errorMessages.put(ERROR_INSUFFICIENT_QUOTA, "You do not have the required disk quota to copy the primitive");
+		errorMessages.put(ERROR_BAD_TRAVERSAL_TYPE, "The traversal must be either depth-first ("+R.ARG_DEPTHFIRST+") or round-robin ("+R.ARG_ROUNDROBIN+")");
+		errorMessages.put(ERROR_ID_AND_USER, "Only one of "+R.PARAM_ID+" and "+R.PARAM_USER+" is allowed");
+		errorMessages.put(ERROR_NO_USER_PRIMS,"User primitives can only be obtained for jobs, solvers, and benchmarks");
 	}
 	
 	
@@ -140,8 +171,9 @@ public class R {
 	public static String COMMAND_LOGIN="login";
 	public static String COMMAND_LOGOUT="logout";
 	public static String COMMAND_RUNFILE="runfile";
-	public static String COMMAND_POLLJOB="polljob";
-	//Download commands
+	public static String COMMAND_RETURNIDS="returnids";
+	public static String COMMAND_IGNOREIDS="ignoreids";
+		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
 	public static String COMMAND_GETJOBINFO="getjobinfo";
 	public static String COMMAND_GETSOLVER="getsolver";
@@ -154,6 +186,8 @@ public class R {
 	public static String COMMAND_GETBENCHPROC="getbenchproc";
 	public static String COMMAND_GETNEWJOBINFO="getnewjobinfo";
 	public static String COMMAND_GETNEWJOBOUT="getnewjobout";
+	public static String COMMAND_POLLJOB="polljob";
+
 	
 	//Setting commands
 	public static String COMMAND_SETARCHIVETYPE="setarchivetype";
@@ -172,7 +206,6 @@ public class R {
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
 	
-	
 	//deleting commands
 	public static String COMMAND_DELETESOLVER="deletesolver";
 	public static String COMMAND_DELETEBENCH="deletebench";
@@ -182,9 +215,26 @@ public class R {
 	public static String COMMAND_DELETESPACE="deletespace";
 	public static String COMMAND_DELETECONFIG="deleteconfig";
 	
+	//remove commands
+	public static String COMMAND_REMOVEUSER="removeuser";
+	public static String COMMAND_REMOVEBENCHMARK="removebench";
+	public static String COMMAND_REMOVESOLVER="removesolver";
+	public static String COMMAND_REMOVEJOB="removejob";
+	public static String COMMAND_REMOVESUBSPACE="removesubspace";
+	
 	//creating commands
 	public static String COMMAND_CREATEJOB="createjob";
 	public static String COMMAND_CREATESUBSPACE="createsubspace";
+	
+	//copy and mirror commands
+	public static String COMMAND_COPYBENCH="copybench";
+	public static String COMMAND_COPYSOLVER="copysolver";
+	public static String COMMAND_LINKBENCH="linkbench";
+	public static String COMMAND_LINKSOLVER="linksolver";
+	public static String COMMAND_COPYSPACE="copyspace";
+	public static String COMMAND_COPYJOB="copyjob";
+	public static String COMMAND_LINKUSER="linkuser";
+	
 	
 	//listing commands
 	public static String COMMAND_LISTSOLVERS="lssolvers";
@@ -195,7 +245,7 @@ public class R {
 	public static String COMMAND_LISTSUBSPACES="lssubspaces";
 	
 	
-	//Param names
+	//Param names expected at the command line
 	public static String PARAM_NAME="n";
 	public static String PARAM_DESC="d";
 	public static String PARAM_DESCRIPTION_FILE="df";
@@ -218,14 +268,26 @@ public class R {
 	public static String PARAM_CPUTIMEOUT="cpu";
 	public static String PARAM_SINCE="since";
 	public static String PARAM_LIMIT="limit";
-	public static String PARAM_USERNAME="u";
+	public static String PARAM_USER="u";
 	public static String PARAM_PASSWORD="p";
 	public static String PARAM_BASEURL="addr";
 	public static String PARAM_VERBOSE="verbose";
 	public static String[] PARAMS_PERMS={"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	public static String PARAM_TIME="t";
 	public static String PARAM_GUEST="guest";
+	public static String PARAM_FROM="from";
+	public static String PARAM_TO="to";
 	
+	public static String PARAM_TRAVERSAL="trav";
+	public static String ARG_ROUNDROBIN="r";
+	public static String ARG_DEPTHFIRST="d";
+	
+	//parameters expected by the StarExec server
 	public static String FORMPARAM_TYPE="type";
 	public static String FORMPARAM_SINCE="since";
+	public static String FORMPARAM_ID="id";
+	public static String FORMPARAM_TRAVERSAL="traversal";
+	
+	public static String FORMARG_ROUNDROBIN="robin";
+	public static String FORMARG_DEPTHFIRST="depth";
 }

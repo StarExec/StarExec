@@ -122,6 +122,7 @@ CREATE TABLE benchmarks (
 	description TEXT,
 	downloadable BOOLEAN DEFAULT 1,
 	disk_size BIGINT NOT NULL,
+	deleted BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
@@ -145,6 +146,7 @@ CREATE TABLE solvers (
 	description TEXT,
 	downloadable BOOLEAN DEFAULT 0,
 	disk_size BIGINT NOT NULL,
+	deleted BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),	
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
@@ -367,7 +369,7 @@ CREATE TABLE set_assoc (
 -- Which benchmarks belong to which spaces
 CREATE TABLE bench_assoc (
 	space_id INT NOT NULL, 
-	bench_id INT NOT NULL,	
+	bench_id INT NOT NULL,
 	PRIMARY KEY (space_id, bench_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE

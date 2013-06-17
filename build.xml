@@ -22,13 +22,21 @@
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
-	
+	<property name="starcom-base" value="command" />
+	<property name="starcom-comp" value="${starcom-base}/compile"/>
+	<property name="starcom-build" value="${starcom-base}/build" />
+	<property name="starcomlib" value="${starcom-base}/lib"/>
+	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
+	<property name="starcomsrc" value="${starcom-base}/src"/>
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
         <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 		<fileset dir="local-lib" includes="**/*.jar"/>
     </path>
+	<path id="starcomclasspath">
+		<fileset dir="${starcomlib}" includes="**/*.jar"/>
+	</path>
 	
 	<!-- Action for compiling the project and building the WAR file.
 
@@ -37,7 +45,49 @@
              2. then we rewrite some of the configurations, using information
 	        from local.properties.
          -->
-	<target name="war" depends="">		
+		<!-- Removes old StarExecCommand version  -->
+	
+	<target name="cleanstarcom" depends="">
+		<delete dir="${starcom-build}" />
+		<mkdir dir="${starcom-build}" />
+		<delete dir="${starcom-comp}" />
+		<mkdir dir="${starcom-comp}" />
+		<delete dir="${starcomzip}" /> 
+	</target>
+	
+	<target name="compilestarcom" depends="cleanstarcom">
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="${starcomsrc}" destdir="${starcom-comp}" classpathref="starcomclasspath"/>
+	</target>
+	
+	<!-- Builds a runnable jar with all necessasry libraries built in -->
+	<target name="command" depends="compilestarcom">
+		<jar destfile="${starcom-build}/StarexecCommand.jar">
+			<manifest>
+		    	<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+		        <attribute name="Rsrc-Main-Class" value="org.starexec.command.Shell"/>
+		        <attribute name="Class-Path" value="command"/>
+		        <attribute name="Rsrc-Class-Path" value="./ commons-codec-1.6.jar commons-logging-1.1.1.jar fluent-hc-4.2.5.jar httpclient-4.2.5.jar httpclient-cache-4.2.5.jar httpcore-4.2.4.jar httpmime-4.2.5.jar commons-compress-1.4.1.jar gson-1.6.jar"/>
+		    </manifest>
+		    <zipfileset src="${starcomlib}/jar-in-jar-loader.zip"/>
+		    <fileset dir="${starcom-comp}"/>
+		    <zipfileset dir="${starcomlib}" includes="commons-codec-1.6.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="commons-logging-1.1.1.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="fluent-hc-4.2.5.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpclient-4.2.5.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpclient-cache-4.2.5.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpcore-4.2.4.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpmime-4.2.5.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="gson-1.6.jar"/>
+		</jar>
+	</target>
+		
+		<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
+	<target name="zipstarcom" depends="command">
+		<copy file="${starcom-base}/README.txt" tofile="${starcom-build}/README.txt" />
+		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
+	</target>
+	<target name="war" depends="zipstarcom">		
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
 	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
@@ -51,7 +101,7 @@
 		<mkdir dir="${class-dir}" />
 
 		<!-- Compile the source code to get the java classes -->
-		<javac srcdir="src" destdir="${class-dir}" classpathref="classpath" nowarn="on">
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="src" destdir="${class-dir}" classpathref="classpath" nowarn="on">
 			<compilerarg value="-Xlint:unchecked"/>
 		</javac>
               
@@ -132,7 +182,6 @@
 			<fileset dir="WebContent"/>
 			<lib dir="${web-inf}/lib"/>			
 		</war>
-	</target>	
-
-
+	</target>
+		
 </project>

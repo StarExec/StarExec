@@ -1,7 +1,7 @@
 package org.starexec.servlets;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,16 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.starexec.app.Starexec;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.User;
-import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 

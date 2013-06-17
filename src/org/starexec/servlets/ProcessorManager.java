@@ -8,16 +8,12 @@ import java.util.Date;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -29,12 +25,6 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 
 /**
@@ -54,11 +44,10 @@ public class ProcessorManager extends HttpServlet {
 	private static final String PROCESSOR_DESC = "desc";
 	private static final String PROCESSOR_FILE = "file";	
 	private static final String OWNING_COMMUNITY = "com";
-	private static final String PROCESSOR_ID = "pid";
+	
 	
 	private static final String ACTION = "action";
 	private static final String ADD_ACTION = "add";
-	private static final String UPDATE_ACTION = "update";
 	
 	private static final String PROCESSOR_TYPE = "type";
 	private static final String BENCH_TYPE = "bench";
@@ -124,6 +113,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Redirect based on the results of the addition
 			if(result != null) {
+				response.addCookie(new Cookie("New_ID",String.valueOf(result.getId())));
 			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));	
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
@@ -162,7 +152,9 @@ public class ProcessorManager extends HttpServlet {
 			newProc.setFilePath(newFile.getAbsolutePath());			
 			log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), newProc.getCommunityId()));					
 			
-			if(Processors.add(newProc)) {
+			int newProcId=Processors.add(newProc);
+			if(newProcId>0) {
+				newProc.setId(newProcId);
 				return newProc;					
 			}						
 		} catch (Exception e) {

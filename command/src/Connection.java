@@ -112,15 +112,21 @@ public class Connection {
 		}
 	}
 	
-	public Connection(String baseURL,String user, String pass) {
+	/**
+	 * Constructor used for copying the setup of one connection into a new connection. Useful if a connection
+	 * gets into a bad state (possibly response streams left open due to errors)
+	 * @param con The old connection to copy
+	 */
+	
+	public Connection(Connection con) {
 		
-		this.baseURL=baseURL;
-		username=user;
-		password=pass;
+		this.baseURL=con.getBaseURL();
+		username=con.getUsername();
+		password=con.getPassword();
 		client=getClient();
 		
-		job_info_indices=new HashMap<Integer,Integer>();
-		job_out_indices=new HashMap<Integer,Integer>();
+		job_info_indices=con.getInfoIndices();
+		job_out_indices=con.getOutIndices();
 	}
 	
 	public Connection(HashMap<String,String> commandParams) {
@@ -130,9 +136,8 @@ public class Connection {
 		} else {
 			this.baseURL=R.URL_STAREXEC_BASE;
 		}
-		
-		if (!commandParams.get(R.PARAM_USERNAME).equals(R.PARAM_GUEST)) {
-			username=commandParams.get(R.PARAM_USERNAME);
+		if (!commandParams.get(R.PARAM_USER).equals(R.PARAM_GUEST)) {
+			username=commandParams.get(R.PARAM_USER);
 			
 			password=commandParams.get(R.PARAM_PASSWORD);
 		} else {
@@ -148,45 +153,53 @@ public class Connection {
 	
 	/**
 	 * Gets the max completion ID for info downloads on the given job.
-	 * @param jobId The ID of a job on StarExec
+	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen for the job, or 0 if not seen
 	 */
-	public int getJobInfoCompletion(int jobId) {
-		if (!job_info_indices.containsKey(jobId)) {
-			job_info_indices.put(jobId, 0);
+	public int getJobInfoCompletion(int jobID) {
+		if (!job_info_indices.containsKey(jobID)) {
+			job_info_indices.put(jobID, 0);
 		} 
-		return job_info_indices.get(jobId);
+		return job_info_indices.get(jobID);
+	}
+	
+	public HashMap<Integer,Integer> getInfoIndices() {
+		return job_info_indices;
 	}
 	
 	/**
 	 * Gets the max completion ID yet seen for output downloads on a given job
-	 * @param jobId The ID of a job on StarExec
+	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
 	
-	public int getJobOutCompletion(int jobId) {
-		if (!job_out_indices.containsKey(jobId)) {
-			job_out_indices.put(jobId, 0);
+	public int getJobOutCompletion(int jobID) {
+		if (!job_out_indices.containsKey(jobID)) {
+			job_out_indices.put(jobID, 0);
 		} 
-		return job_out_indices.get(jobId);
+		return job_out_indices.get(jobID);
+	}
+	
+	public HashMap<Integer,Integer> getOutIndices() {
+		return job_out_indices;
 	}
 	
 	/**
 	 * Sets the highest seen completion ID for info on a given job
-	 * @param jobId An ID of a job on StarExec
+	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
-	public void setJobInfoCompletion(int jobId,int completion) {
-		job_info_indices.put(jobId,completion);
+	public void setJobInfoCompletion(int jobID,int completion) {
+		job_info_indices.put(jobID,completion);
 	}
 	
 	/**
 	 * Sets the highest seen completion ID for output on a given job
-	 * @param jobId An ID of a job on StarExec
+	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
-	public void setJobOutCompletion(int jobId,int completion) {
-		job_out_indices.put(jobId,completion);
+	public void setJobOutCompletion(int jobID,int completion) {
+		job_out_indices.put(jobID,completion);
 	}
 	
 	/**
@@ -269,7 +282,7 @@ public class Connection {
 			return R.ERROR_BAD_URL;
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			
 		}
 		
 		return R.ERROR_SERVER;
@@ -283,9 +296,9 @@ public class Connection {
 	
 	public boolean logout() {
 		try {
-			HttpGet get=new HttpGet(baseURL+R.URL_LOGOUT);
-			get=(HttpGet) setHeaders(get);
-			HttpResponse response=client.execute(get);
+			HttpPost post=new HttpPost(baseURL+R.URL_LOGOUT);
+			post=(HttpPost) setHeaders(post);
+			HttpResponse response=client.execute(post);
 			response.getEntity().getContent().close();
 			return true;
 		} catch (Exception e) {
@@ -297,7 +310,7 @@ public class Connection {
 	/**
 	 * Creates a POST request to StarExec to create a new job
 	 * @param commandParams A HashMap containing key/value pairs gathered from the user input at the command line
-	 * @return 0 on success, a negative integer otherwise
+	 * @return the new job ID on success, a negative integer otherwise
 	 * @author Eric Burns
 	 */
 	public int createJob(HashMap<String,String> commandParams) {
@@ -336,12 +349,12 @@ public class Connection {
 						cpu=keyValue.getValue();
 					} else if (keyValue.getName().equals("wallclockTimeout")) {
 						wallclock=keyValue.getValue();
-					} else {
+					} /*else {
 						String name=keyValue.getName();
 						if (name.equals("configs") || name.equals("bench") || name.equals("solver")) {	
 							params.add(keyValue);
 						}
-					}
+					}*/
 				}
 				
 				line=br.readLine();
@@ -351,6 +364,13 @@ public class Connection {
 			}
 			if (commandParams.containsKey(R.PARAM_CPUTIMEOUT)) {
 				cpu=commandParams.get(R.PARAM_CPUTIMEOUT);
+			}
+			
+			String traversalMethod="depth";
+			if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
+				if (commandParams.get(R.PARAM_TRAVERSAL).equals(R.ARG_ROUNDROBIN)) {
+					traversalMethod="robin";
+				}
 			}
 			
 			br.close();
@@ -377,7 +397,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("cpuTimeout",cpu));
 			params.add(new BasicNameValuePair("queue",commandParams.get(R.PARAM_QUEUEID)));
 			params.add(new BasicNameValuePair("postProcess",commandParams.get(R.PARAM_PROCID)));
-			
+			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			//TODO: Possibly allow other methods of running jobs
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			
@@ -386,8 +406,11 @@ public class Connection {
 			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			
-			return 0;
+			if (response.getStatusLine().getStatusCode()!=302) {
+				return R.ERROR_SERVER;
+			}
+			int id=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return id;
 		} catch (Exception e) {
 			
 			return R.ERROR_SERVER;
@@ -395,11 +418,80 @@ public class Connection {
 	}
 	
 	
+	/**
+	 * Sends a copy or link request to the StarExec server and returns a status code
+	 * indicating the result of the request
+	 * @param commandParams The parameters given by the user at the command line.
+	 * @param copy True if a copy should be performed, and false if a link should be performed.
+	 * @param type The type of primitive being copied.
+	 * @return An integer error code where 0 indicates success and a negative number is an error.
+	 */
+	public int copyPrimitives(HashMap<String,String> commandParams, boolean copy, String type) {
+		try {
+			int valid=Validator.isValidCopyRequest(commandParams, type);
+			if (valid<0) {
+				return valid;
+			}
+			
+			String urlExtension;
+			if (type.equals("solver")) {
+				urlExtension=R.URL_COPYSOLVER;
+			} else if (type.equals("space")) {
+				urlExtension=R.URL_COPYSPACE;
+			} else if (type.equals("job")) {
+				urlExtension=R.URL_COPYJOB;
+			}
+			else {
+				urlExtension=R.URL_COPYBENCH;
+			}
+			
+			urlExtension=urlExtension.replace("{spaceID}", commandParams.get(R.PARAM_TO));
+			
+			HttpPost post=new HttpPost(baseURL+urlExtension);
+			
+			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
+			
+			//not all of the following are needed for every copy request, but including them does no harm
+			//and allows all the copy commands to be handled by this function
+			params.add(new BasicNameValuePair("copyToSubspaces", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
+			params.add(new BasicNameValuePair("fromSpace",commandParams.get(R.PARAM_FROM)));
+			params.add(new BasicNameValuePair("selectedIDs[]",commandParams.get(R.PARAM_ID)));
+			params.add(new BasicNameValuePair("copy",String.valueOf(copy)));
+			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
+			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
+			
+			post=(HttpPost) setHeaders(post);
+			
+			HttpResponse response=client.execute(post);
+			setSessionIDIfExists(response.getAllHeaders());
+			
+			JsonElement jsonE=getJsonString(response);
+			response.getEntity().getContent().close();
+			JsonPrimitive p=jsonE.getAsJsonPrimitive();
+			if (p.getAsInt()==0) {
+				
+				return 0;
+				
+			} else if (p.getAsInt()>=3 && p.getAsInt()<=6) {
+				return R.ERROR_PERMISSION_DENIED;
+			} else if (p.getAsInt()==7) {
+				return R.ERROR_NAME_NOT_UNIQUE;
+			} else if (p.getAsInt()==8) {
+				return R.ERROR_INSUFFICIENT_QUOTA;
+			} 
+			else {
+				return R.ERROR_SERVER;
+			}
+		} catch (Exception e) {
+			return R.ERROR_SERVER;
+		}
+	}
+	
 	
 	/**
 	 * Creates a subspace of an existing space on StarExec
 	 * @param commandParam A HashMap containing key/value pairs gathered from user input at the command line
-	 * @return 0 on success and a negative error code otherwise
+	 * @return the new space ID on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 	
@@ -426,7 +518,7 @@ public class Connection {
 			}
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
-			params.add(new BasicNameValuePair("parent", commandParams.get("id")));
+			params.add(new BasicNameValuePair("parent", commandParams.get(R.PARAM_ID)));
 			params.add(new BasicNameValuePair("name",name));
 			params.add(new BasicNameValuePair("desc",desc));
 			params.add(new BasicNameValuePair("locked",locked.toString()));
@@ -448,6 +540,38 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_BAD_PARENT_SPACE;
 			}
+			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return newID;
+		} catch (Exception e) {
+			return R.ERROR_SERVER;
+		}
+	}
+	
+	/**
+	 * Removes the association between a primitive and a space on StarExec
+	 * @param commandParams Parameters given by the user
+	 * @param type The type of primitive being remove
+	 * @return 0 on success, and a negative error code on failure
+	 * @author Eric Burns
+	 */
+	public int removePrimitive(HashMap<String,String> commandParams,String type) {
+		try {
+			int valid=Validator.isValidRemoveRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_FROM));
+			
+			//first sets username and password data into HTTP POST request
+			List<NameValuePair> params=new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]", commandParams.get(R.PARAM_ID)));
+			
+			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
+			
+			HttpResponse response=client.execute(post);
+			
+			setSessionIDIfExists(response.getAllHeaders());
+			response.getEntity().getContent().close();
 			
 			return 0;
 		} catch (Exception e) {
@@ -463,13 +587,13 @@ public class Connection {
 	 * @author Eric Burns
 	 */
 	
-	public int deleteItem(HashMap<String,String> commandParams, String type) {
+	public int deletePrimitive(HashMap<String,String> commandParams, String type) {
 		try {
 			int valid=Validator.isValidDeleteRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
-			HttpPost post=new HttpPost(baseURL+R.URL_DELETEITEM+"/"+type+"/"+commandParams.get(R.PARAM_ID));
+			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_ID));
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
@@ -565,7 +689,8 @@ public class Connection {
 
 			//copy file from the HTTPResponse to an output stream
 			File out=new File(location);
-			
+			File parent=new File(out.getAbsolutePath().substring(0,out.getAbsolutePath().lastIndexOf(File.separator)));
+			parent.mkdirs();
 			FileOutputStream outs=new FileOutputStream(out);
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
@@ -589,7 +714,7 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 			if (response!=null) {
 				try {
 					response.getEntity().getContent().close();
@@ -599,10 +724,39 @@ public class Connection {
 				
 			}
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+			
 			//Flow control was broken, so some error occurred.
 			return R.ERROR_SERVER;
 		}
 		
+	}
+	
+	private JsonElement getJsonString(HttpResponse response) throws Exception {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+		StringBuilder builder = new StringBuilder();
+		for (String line = null; (line = reader.readLine()) != null;) {
+		    builder.append(line).append("\n");
+		}
+		JsonParser parser=new JsonParser();
+		
+		return parser.parse(builder.toString());
+		
+	}
+	
+	private int getUserID() {
+		try {
+			HttpGet get=new HttpGet(baseURL+R.URL_GETID);
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			JsonElement json=getJsonString(response);
+			response.getEntity().getContent().close();
+			return json.getAsInt();
+			
+		} catch (Exception e) {
+			
+			return R.ERROR_SERVER;
+		}
 	}
 	
 	/**
@@ -624,7 +778,18 @@ public class Connection {
 				errorMap.put(valid, null);
 				return errorMap;
 			}
-			
+			String URL=null;
+			if (commandParams.containsKey(R.PARAM_USER)) {
+				int id=getUserID();
+				if (id<0) {
+					errorMap.put(id, null);
+					return errorMap;
+				}
+				urlParams.put(R.PARAM_ID, String.valueOf(id));
+				URL=baseURL+R.URL_GETUSERPRIM;
+			} else {
+				URL=baseURL+R.URL_GETPRIM;
+			}
 			//in the absence of limit, we want all the primitives
 			int maximum=Integer.MAX_VALUE;
 			if (commandParams.containsKey(R.PARAM_LIMIT)) {
@@ -647,7 +812,7 @@ public class Connection {
 				columns="2";
 			}
 			
-			String URL=baseURL+R.URL_GETPRIM;
+			
 			URL=URL.replace("{id}", urlParams.get(R.PARAM_ID));
 			URL=URL.replace("{type}", urlParams.get("type"));
 			HttpPost post=new HttpPost(URL);
@@ -670,18 +835,22 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
-			//we should be getting a json string back
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-			StringBuilder builder = new StringBuilder();
-			for (String line = null; (line = reader.readLine()) != null;) {
-			    builder.append(line).append("\n");
+			JsonElement jsonE=getJsonString(response);
+			response.getEntity().getContent().close();
+			if (jsonE.isJsonPrimitive()) {
+				
+				JsonPrimitive j=jsonE.getAsJsonPrimitive();
+				int x=j.getAsInt();
+				if (x==2) {
+					errorMap.put(R.ERROR_PERMISSION_DENIED, null);
+					return errorMap;
+				} 
+				errorMap.put(R.ERROR_SERVER, null);
+				return errorMap;
 			}
 			
-			JsonParser parser=new JsonParser();
-			response.getEntity().getContent().close();
-			
 			//we should get back a jsonObject which has a jsonArray of primitives labeled 'aaData'
-			JsonArray json=parser.parse(builder.toString()).getAsJsonObject().get("aaData").getAsJsonArray();
+			JsonArray json=jsonE.getAsJsonObject().get("aaData").getAsJsonArray();
 			JsonArray curPrim;
 			String name;
 			Integer id;
@@ -694,7 +863,7 @@ public class Connection {
 				for (JsonElement y : curPrim) {
 					element=y.getAsJsonPrimitive();
 					
-					id=extractIdFromJson(element.getAsString());
+					id=extractIDFromJson(element.getAsString());
 					name=extractNameFromJson(element.getAsString(),urlParams.get("type"));
 					
 					//if the element has an ID and a name, save them
@@ -708,7 +877,7 @@ public class Connection {
 			
 			return prims;
 		} catch (Exception e) {
-			//e.printStackTrace();
+			
 			errorMap.put(R.ERROR_SERVER, null);
 			return errorMap;
 		}
@@ -910,7 +1079,7 @@ public class Connection {
 	 * This function handles user requests for uploading a space XML archive.
 	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
 	 * ID and File keys
-	 * @return 0 on success, and a negative error code otherwise
+	 * @return the new configuration ID on success, and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 	
@@ -938,7 +1107,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			
 			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("solverId",new StringBody(commandParams.get(R.PARAM_ID),utf8));
+			entity.addPart("solverID",new StringBody(commandParams.get(R.PARAM_ID),utf8));
 			entity.addPart("uploadConfigDesc",new StringBody(name,utf8));
 			entity.addPart("uploadConfigName",new StringBody(desc,utf8));
 			
@@ -949,13 +1118,13 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			
+			response.getEntity().getContent().close();
 			//we're expecting a redirect to the configuration
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_BAD_ARGS;
 			}
-			
-			return 0;
+			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return newID;
 		} catch (Exception e) {
 			return R.ERROR_SERVER;
 		}
@@ -967,7 +1136,7 @@ public class Connection {
 	 * and creates and HTTP POST request that pushes a processor to Starexec
 	 * 
 	 * @param commandParams The parameters from the command line. A file and an ID are required.
-	 * @return A status code indicating success or failure
+	 * @return The new processor ID on success, or a negative error code on failure
 	 * @author Eric Burns
 	 */
 	
@@ -1018,8 +1187,8 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return R.ERROR_BAD_ARGS;
 			}
-			
-			return 0;
+			int id=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return id;
 		} catch (Exception e) {
 			
 			return R.ERROR_SERVER;
@@ -1094,7 +1263,7 @@ public class Connection {
 	 * and creates and HTTP POST request that pushes a solver to Starexec
 	 * 
 	 * @param formParams The parameters from the command line. A file or url and and ID are required.
-	 * @return A status code indicating success or failure
+	 * @return The ID of the newly uploaded solver on success, or a negative error code on failure
 	 * @author Eric Burns
 	 */
 	
@@ -1178,7 +1347,8 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			response.getEntity().getContent().close();
-			return 0;
+			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			return newID;
 		} catch (Exception e) {	
 			return R.ERROR_SERVER;
 		}	
@@ -1377,10 +1547,13 @@ public class Connection {
 		
 		//spaces are formatted differently from any other primitive
 		if (type.equals("spaces")) {
+			//space names are flanked on the left by the following
 			int startIndex=jsonString.indexOf("onclick=\"openSpace");
 			if (startIndex<0) {
 				return null;
 			}
+			
+			
 			while (startIndex<jsonString.length() && jsonString.charAt(startIndex)!='>') {
 				startIndex+=1;
 			}
@@ -1421,7 +1594,7 @@ public class Connection {
 	 * @param jsonString The Json string to test for an ID
 	 * @return The ID if it exists or null if it does not
 	 */
-	private Integer extractIdFromJson(String jsonString) {
+	private Integer extractIDFromJson(String jsonString) {
 		
 		//IDs are stored as the 'value' of a hidden input
 		int startIndex=jsonString.indexOf("type=\"hidden\"");

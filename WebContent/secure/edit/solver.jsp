@@ -12,7 +12,11 @@
 		if(Permissions.canUserSeeSolver(solverId, userId)) {
 			s = Solvers.get(solverId);
 		}
-		
+		boolean nameEditable=false;
+		if (Solvers.isNameEditable(solverId)>=0) {
+			nameEditable=true;
+		}
+		request.setAttribute("nameEditable",nameEditable);
 		if(s != null) {
 			// Ensure the user visiting this page is the owner of the solver
 			if(userId != s.getUserId()){
@@ -28,7 +32,12 @@
 				}
 			}
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
+			if (Solvers.isSolverDeleted(solverId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been deleted. You likely want to remove it from your spaces.");
+			}
+			else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
+			}
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given solver id was in an invalid format");
@@ -39,6 +48,9 @@
 
 <star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/shared, edit/solver">				
 	<form id="editSolverForm">
+		<c:if test="${!nameEditable}">
+			<input id="name" type="hidden" name="name" value="${solver.name}">
+		</c:if>
 		<fieldset>
 			<legend>solver details</legend>
 			<table class="shaded">
@@ -51,7 +63,14 @@
 				<tbody>
 					<tr>
 						<td class="label">solver name</td>
-						<td><input id="name" type="text" name="name" value="${solver.name}" readonly></td>
+						<td>
+							<c:if test="${nameEditable}">
+								<input id="name" type="text" name="name" value="${solver.name}">
+							</c:if>
+							<c:if test="${!nameEditable}">
+								<p>${solver.name}</p>
+							</c:if>
+						</td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			

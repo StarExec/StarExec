@@ -2,23 +2,21 @@ package org.starexec.servlets;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import java.net.URL;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
@@ -27,16 +25,12 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.UploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
-
-import org.apache.commons.io.FileUtils;
 
 
 @SuppressWarnings("serial")
@@ -179,6 +173,7 @@ public class BenchmarkUploader extends HttpServlet {
 					long usedBytes=Users.getDiskUsage(userId);
 					
 					if (fileSize>allowedBytes-usedBytes) {
+						archiveFile.delete();
 						throw new Exception("File too large to fit in user's disk quota");
 					}		
 
@@ -257,88 +252,6 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 		});
 	}		
-
-	/**
-	 * Recursively walks through the given directory and subdirectory to find all benchmark files within them
-	 * @param directory The directory to extract benchmark files from
-	 * @param typeId The bench type id to set for all the found benchmarks
-	 * @param userId The user id of the owner of all the benchmarks found
-	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
-	 * @return A flat list of benchmarks containing all the benchmarks found under the given directory and it's subdirectories and so on
-	 */
-	private List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
-		// Initialize the list we will return at the end...
-		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
-		// For each file in the directory
-		for(File f : directory.listFiles()) {
-			if(f.isDirectory()) {
-				// If it's a directory, recursively extract all benchmarks from it and add them to our list
-				benchmarks.addAll(this.extractBenchmarks(f, typeId, userId, downloadable));
-			} else {
-				// Or else it's just a benchmark, create an object for it and add it to the list
-				Processor t = new Processor();
-				t.setId(typeId);
-
-				Benchmark b = new Benchmark();
-				b.setPath(f.getAbsolutePath());
-				b.setName(f.getName());
-				b.setType(t);
-				b.setUserId(userId);
-				b.setDownloadable(downloadable);
-				benchmarks.add(b);
-			}
-		}
-
-		return benchmarks;
-	}
-
-	/**
-	 * Creates a space named after the directory and finds any benchmarks within the directory.
-	 * Then the process recursively adds any subspaces found (other directories) until all directories
-	 * under the original one are traversed.
-	 * @param directory The directory to extract data from
-	 * @param typeId The bench type id to set for all the found benchmarks
-	 * @param userId The user is of the owner of all the benchmarks found
-	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
-	 * @param perm The default permissions to set for this space
-	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given directory.
-	 */
-	private Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm) 
-	    throws Exception {
-		// Create a space for the current directory and set it's name		
-		log.info("Extracting Spaces and Benchmarks for " + userId);
-		Space space = new Space();
-		space.setName(directory.getName());
-		space.setPermission(perm);
-		// For each file within the directory...
-		for(File f : directory.listFiles()) {
-			// If it's a subdirectory			
-			if(f.isDirectory()) {
-				// Recursively extract spaces/benchmarks from that directory
-				space.getSubspaces().add(this.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm));
-			} else {
-				// Or else we're just a file, so assume it's a benchmark and create an object for it
-				Processor t = new Processor();
-				t.setId(typeId);
-
-				Benchmark b = new Benchmark();
-				b.setPath(f.getAbsolutePath());
-				b.setName(f.getName());
-				b.setType(t);
-				b.setUserId(userId);
-				b.setDownloadable(downloadable);
-
-				// Make sure that the benchmark has a unique name in the space.
-				if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) 
-				    throw new Exception("A benchmark already exists in "+space.getName()+" with name "+b.getName()+".");
-
-				space.addBenchmark(b);
-			}
-		}
-
-		return space;
-	}
 
 	/**
 	 * Extracts the permissions object contained in the given form

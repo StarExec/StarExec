@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
@@ -14,14 +13,12 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSolver;
 import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -31,7 +28,6 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -42,8 +38,8 @@ import com.google.gson.annotations.Expose;
  */
 public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);		
-	private static Gson gson = new Gson();
-
+	
+	
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
@@ -408,7 +404,29 @@ public class RESTHelpers {
 	 * 		or null if the parameters of the request fail validation
 	 * @author Todd Elvers
 	 */
-	protected static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request){
+	
+	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
+		return getNextDataTablesPage(type,id,request,1);
+	}
+	
+	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request) {
+		return getNextDataTablesPage(type,id,request,2);
+	}
+	
+	/**
+	 * Gets the next page of entries for a DataTable object
+	 *
+	 * @param type the kind of primitives to query for
+	 * @param id either the id of the space to get the primitives from, or the id of the job
+	 * to get job pairs for
+	 * @param request the object containing all the DataTable parameters
+	 * @param forPage An integer code indicating what the results are for. 1: space explorer 2: user details
+	 * @return a JSON object representing the next page of primitives to return to the client,<br>
+	 * 		or null if the parameters of the request fail validation
+	 * @author Todd Elvers
+	 */
+	
+	private static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request, int forPage){
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
@@ -425,18 +443,30 @@ public class RESTHelpers {
 	    
 		    case JOB:
 	    		List<Job> jobsToDisplay = new LinkedList<Job>();
-	    		int totalJobsInSpace = Jobs.getCountInSpace(id);
 	    		
+	    		int totalJobs;
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-	    		jobsToDisplay = Jobs.getJobsForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id													// Parent space id 
-				);
-	    		
+	    		if (forPage==1) {
+	    			jobsToDisplay = Jobs.getJobsForNextPage(
+		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id													// Parent space id 
+					);
+	    			totalJobs = Jobs.getCountInSpace(id);
+	    		} else {
+	    			jobsToDisplay = Jobs.getJobsByUserForNextPage(
+							attrMap.get(STARTING_RECORD),						// Record to start at  
+							attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+							attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+							attrMap.get(SORT_COLUMN), 							// Column sorted on
+							request.getParameter(SEARCH_QUERY), 				// Search query
+							id													// User id 
+					);
+	    			totalJobs = Jobs.getJobCountByUser(id);
+	    		}
 	    		
 	    		/**
 		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
@@ -444,13 +474,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobsInSpace);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobsInSpace);
+			    attrMap.put(TOTAL_RECORDS, totalJobs);
 
 			    
 			    
@@ -484,9 +514,16 @@ public class RESTHelpers {
 					JsonArray entry = new JsonArray();
 		    		entry.add(new JsonPrimitive(jobLink));
 		    		entry.add(new JsonPrimitive(status));
-		    		entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
-		    		entry.add(new JsonPrimitive(getPercentStatHtml("static", job.getLiteJobPairStats().get("totalPairs"), false)));
-		    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
+		    		if (forPage==1) {
+		    			entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
+			    		entry.add(new JsonPrimitive(getPercentStatHtml("static", job.getLiteJobPairStats().get("totalPairs"), false)));
+			    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
+		    		} else{
+		    			entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
+			    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+			    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+		    		}
+		    		
 		    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
 		    		
 		    		dataTablePageEntries.add(entry);
@@ -581,17 +618,30 @@ public class RESTHelpers {
 		    	
 		    case SOLVER:
 	    		List<Solver> solversToDisplay = new LinkedList<Solver>();
-	    		int totalSolversInSpace =  Solvers.getCountInSpace(id);
 	    		
+	    		int totalSolvers;
 	    		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
-	    		solversToDisplay = Solvers.getSolversForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id												// Parent space id 
-				);
+	    		if (forPage==1) {
+	    			solversToDisplay = Solvers.getSolversForNextPage(
+		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id													// Parent space id 
+					);
+	    			totalSolvers =  Solvers.getCountInSpace(id);
+	    		} else {
+	    			solversToDisplay=Solvers.getSolversByUserForNextPage(		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id
+		    		);
+	    			totalSolvers =  Solvers.getSolverCountByUser(id);
+	    		}
+	    		
 	    		
 	    		
 	    		/**
@@ -600,13 +650,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolversInSpace);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolvers);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, solversToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalSolversInSpace);
+			    attrMap.put(TOTAL_RECORDS, totalSolvers);
 		    	
 			    
 			    
@@ -647,17 +697,31 @@ public class RESTHelpers {
 		    case BENCHMARK:
 		    	
 		    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-		    	int totalBenchmarksInSpace = Benchmarks.getCountInSpace(id);
+		    	int totalBenchmarks;
 		    	
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-		    	benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY),			 		// Search query
-	    				id												// Parent space id 
-				);	
+		    	if (forPage==1) {
+		    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
+		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY),			 		// Search query
+		    				id												// Parent space id 
+					);	
+		    		totalBenchmarks = Benchmarks.getCountInSpace(id);
+		    	} else {
+		    		benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(
+		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY),			 		// Search query
+		    				id												// Parent space id 
+					);
+		    		totalBenchmarks = Benchmarks.getBenchmarkCountByUser(id);
+		    	}
+		    	
 		    	
 		    	
 		    	/**
@@ -666,13 +730,13 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarksInSpace);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, benchmarksToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalBenchmarksInSpace);
+			    attrMap.put(TOTAL_RECORDS, totalBenchmarks);
 			    
 			    
 		    	/**
@@ -932,7 +996,7 @@ public class RESTHelpers {
 		    	dataTablePageEntries = new JsonArray();
 		    	for(JobSolver js : jobSolversToDisplay){
 		    		StringBuilder sb = new StringBuilder();
-					String hiddenJobPairId;
+					
 					
 					// Create the solver link
 		    		sb = new StringBuilder();
@@ -1100,363 +1164,6 @@ public class RESTHelpers {
 				return newSpaceId;
 			}
 		}
-	}
-	
-	
-	
-	/**
-	 * Gets the next page of entries for a DataTable object
-	 * 
-	 * @param type the kind of primitives to query for
-	 * @param id user id to get the primitives from
-	 * @param request the object containing all the DataTable parameters
-	 * @return a JSON object representing the next page of primitives to return to the client
-	 * 
-	 * @author Wyatt  Kaiser
-	 */
-	
-	protected static JsonObject getNextDataTablesPageofUser (Primitive type, int usrId, HttpServletRequest request){
-		//Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
-		if (null == attrMap) {
-			return null;
-		}
-		
-		JsonObject nextPage = new JsonObject();		// JSON object representing next page for client's DataTable object
-		JsonArray dataTablePageEntries = null;		// JSON array containing the DataTable primitive entries
-		
-		switch(type) {
-			
-			case JOB:
-			    List<Job> jobsToDisplay = new LinkedList<Job>();
-				int totalJobsCount = Jobs.getJobCountByUser(usrId);
-				// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-				jobsToDisplay = Jobs.getJobsByUserForNextPage(
-						attrMap.get(STARTING_RECORD),						// Record to start at  
-						attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-						attrMap.get(SORT_COLUMN), 							// Column sorted on
-						request.getParameter(SEARCH_QUERY), 				// Search query
-						usrId												// User id 
-				);
-				
-				/**
-		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-		    	 */
-		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobsCount);
-		    	} 
-		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
-		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobsCount);
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(Job job : jobsToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					String hiddenJobId;
-					
-					// Create the hidden input tag containing the job id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(job.getId());
-					sb.append("\" prim=\"job\"/>");
-					hiddenJobId = sb.toString();
-		    		
-		    		// Create the job "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
-		    		sb.append(job.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(job.getName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenJobId);
-					String jobLink = sb.toString();
-					
-					String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(jobLink));
-		    		entry.add(new JsonPrimitive(status));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
-		    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	break;
-			case SOLVER:
-			    List<Solver> solversToDisplay = new LinkedList<Solver>();
-				int totalSolversCount = Solvers.getSolverCountByUser(usrId);
-				
-				// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
-				solversToDisplay = Solvers.getSolversByUserForNextPage(
-						attrMap.get(STARTING_RECORD),						// Record to start at  
-						attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-						attrMap.get(SORT_COLUMN), 							// Column sorted on
-						request.getParameter(SEARCH_QUERY), 				// Search query
-						usrId												// User id 
-				);
-				
-				/**
-		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-		    	 */
-		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolversCount);
-		    	} 
-		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, solversToDisplay.size());
-		    	}
-			    attrMap.put(TOTAL_RECORDS, totalSolversCount);
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(Solver solver : solversToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					String hiddenSolverId;
-					
-					// Create the hidden input tag containing the solver id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(solver.getId());
-					sb.append("\" prim=\"solver\"/>");
-					hiddenSolverId = sb.toString();
-		    		
-		    		// Create the solver "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-		    		sb.append(solver.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(solver.getName());
-		    		RESTHelpers.addImg(sb);
-		    		sb.append(hiddenSolverId);
-					String solverLink = sb.toString();
-					
-					String description = solver.getDescription();
-								
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(solverLink));
-		    		entry.add(new JsonPrimitive(description));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-				break;
-		case BENCHMARK:
-		    List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-			int totalBenchmarksCount = Benchmarks.getBenchmarkCountByUser(usrId);
-			
-			// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-			benchmarksToDisplay = Benchmarks.getBenchmarkByUserForNextPage(
-					attrMap.get(STARTING_RECORD),						// Record to start at  
-					attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-					attrMap.get(SORT_COLUMN), 							// Column sorted on
-					request.getParameter(SEARCH_QUERY), 				// Search query
-					usrId												// User id 
-			);
-			
-			
-			/**
-	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-	    	 */
-	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-	    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarksCount);
-	    	} 
-	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-	    	else {
-	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, benchmarksToDisplay.size());
-	    	}
-		    attrMap.put(TOTAL_RECORDS, totalBenchmarksCount);
-		    
-	    	/**
-	    	 * Generate the HTML for the next DataTable page of entries
-	    	 */
-	    	dataTablePageEntries = new JsonArray();
-
-	    	for(Benchmark benchmark : benchmarksToDisplay){
-	    		StringBuilder sb = new StringBuilder();
-				String hiddenBenchmarkId;
-
-				// Create the hidden input tag containing the benchmark id
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(benchmark.getId());
-				sb.append("\" prim=\"benchmark\"/>");
-				hiddenBenchmarkId = sb.toString();
-	    		
-				/*
-	    		// Create the benchmark "details" link and append the hidden input element
-	    		sb = new StringBuilder();
-	    		sb.append("<a title=\"");
-	    		// Set the tooltip to be the benchmark's description
-	    		sb.append(bench.getDescription());
-	    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-	    		sb.append(bench.getId());
-	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(bench.getName());
-	    		RESTHelpers.addImg(sb);
-	    		sb.append(hiddenBenchId);
-				String benchLink = sb.toString();*/
-
-				
-	    		// Create the benchmark "details" link and append the hidden input element
-	    		sb = new StringBuilder();
-	    		sb.append("<a title=\"");
-	    		//Set the tool tip to be the benchmark's description
-	    		sb.append(benchmark.getDescription());
-	    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-	    		sb.append(benchmark.getId());
-	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(benchmark.getName());
-	    		RESTHelpers.addImg(sb);
-	    		sb.append(hiddenBenchmarkId);
-				String benchmarkLink = sb.toString();
-				
-				//create the benchmark type tag
-				sb = new StringBuilder();
-				sb.append("<span title=\"");
-				//set the tooltip to be the benchmark's type's description
-				sb.append(benchmark.getType().getDescription());
-				sb.append("\">");
-				sb.append(benchmark.getType().getName());
-				sb.append("</span>");
-				String typeSpan = sb.toString();
-										
-				// Create an object, and inject the above HTML, to represent an entry in the DataTable
-				JsonArray entry = new JsonArray();
-	    		entry.add(new JsonPrimitive(benchmarkLink));
-	    		entry.add(new JsonPrimitive(typeSpan));
-	    		
-	    		dataTablePageEntries.add(entry);
-	    	}
-	    	break;
-		}
-	    // Build the actual JSON response object and populated it with the created data
-	    nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
-	    nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
-	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
-	    nextPage.add("aaData", dataTablePageEntries);
-	    
-	    // Return the next DataTable page
-    	return nextPage;
-	}
-	
-
-	/**
-	 * Get the next page of benchmarks belongs to a specific user identified by usrId
-	 * @param usrId Id of the user we are looking for
-	 * @param request The http request
-	 * @return JsonObject containing the result of the query
-	 * @author Wyatt Kaiser
-	 */
-	protected static JsonObject getNextPageOfUserBenchmarks(int usrId, HttpServletRequest request){
-		// Parameter validation
-	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(RESTHelpers.Primitive.BENCHMARK, request);
-	    
-	    if(null == attrMap){
-	    	return null;
-	    }
-	    
-	    JsonObject nextPage = new JsonObject();		// JSON object representing next page for client's DataTable object
-	    JsonArray dataTablePageEntries = null;		// JSON array containing the DataTable primitive entries
-	    
-	    List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-		int totalBenchmarksCount = Benchmarks.getBenchmarkCountByUser(usrId);
-		
-		// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-		benchmarksToDisplay = Benchmarks.getBenchmarkByUserForNextPage(
-				attrMap.get(STARTING_RECORD),						// Record to start at  
-				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-				attrMap.get(SORT_COLUMN), 							// Column sorted on
-				request.getParameter(SEARCH_QUERY), 				// Search query
-				usrId												// User id 
-		);
-		
-		
-		/**
-    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-    	 */
-    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarksCount);
-    	} 
-    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-    	else {
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, benchmarksToDisplay.size());
-    	}
-	    attrMap.put(TOTAL_RECORDS, totalBenchmarksCount);
-	    
-    	/**
-    	 * Generate the HTML for the next DataTable page of entries
-    	 */
-    	dataTablePageEntries = new JsonArray();
-
-    	for(Benchmark benchmark : benchmarksToDisplay){
-    		StringBuilder sb = new StringBuilder();
-			String hiddenBenchmarkId;
-			
-			// Create the hidden input tag containing the benchmark id
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(benchmark.getId());
-			sb.append("\" prim=\"benchmark\"/>");
-			hiddenBenchmarkId = sb.toString();
-    		
-    		// Create the benchmark "details" link and append the hidden input element
-    		sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append(benchmark.getDescription());
-    		sb.append("<a href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-    		sb.append(benchmark.getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(benchmark.getName());
-    		RESTHelpers.addImg(sb);
-    		sb.append(hiddenBenchmarkId);
-			String benchmarkLink = sb.toString();
-			
-			//create the benchmark type tag
-			sb = new StringBuilder();
-			sb.append("<span title=\"");
-			//set the tooltip to be the benchmark's type's description
-			sb.append(benchmark.getType().getDescription());
-			sb.append("\">");
-			sb.append(benchmark.getType().getName());
-			sb.append("</span>");
-			String typeSpan = sb.toString();
-
-			//String typeName = benchmark.getType().getName();
-									
-			// Create an object, and inject the above HTML, to represent an entry in the DataTable
-			JsonArray entry = new JsonArray();
-    		entry.add(new JsonPrimitive(benchmarkLink));
-    		entry.add(new JsonPrimitive(typeSpan));
-    		
-    		dataTablePageEntries.add(entry);
-    	}
-	    
-	    // Build the actual JSON response object and populated it with the created data
-	    nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
-	    nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
-	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
-	    nextPage.add("aaData", dataTablePageEntries);
-	    
-	    // Return the next DataTable page
-    	return nextPage;
 	}
 	
 	/**

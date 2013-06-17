@@ -82,6 +82,14 @@ public class User extends Identifiable {
 	public String getLastName() {
 		return lastName;
 	}
+	
+	/**
+	 * @return whether this is the public user
+	 */
+	
+	public boolean isPublic() {
+		return isPublic;
+	}
 
 	/**
 	 * @param lastName the last name to set for the user

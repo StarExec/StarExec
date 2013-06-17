@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
 
@@ -133,6 +135,7 @@ public class Queues {
 		}
 		return null;
 	}	
+
 	
 	/**
 	 * Gets a queue with detailed information (Id and name along with all attributes)
@@ -158,13 +161,42 @@ public class Queues {
 				queue.setSlotsAvailable(results.getInt("slots_free"));
 				queue.setSlotsReserved(results.getInt("slots_reserved"));
 				queue.setSlotsUsed(results.getInt("slots_used"));
-				
-				// Start from 8 (first seven are ID, name, status and usage)
-				for(int i = 8; i < results.getMetaData().getColumnCount(); i++) {
-					// Add the column name/value to the node's attributes (get substrings at 1 to remove the prepended _ to prevent keyword conflicts)
-					queue.putAttribute(results.getMetaData().getColumnName(i).substring(1), results.getString(i).substring(1));
-				}				
-			}			
+
+				//Get all the job pairs that are queued up on the queue
+				List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
+
+				for (JobPair j : jobPairs) {
+					String[] jobInfo;
+					jobInfo = new String[6];
+					
+					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+					jobInfo[0] = job.getName();
+					jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+
+					//Need to replace true with a function that determines if a user can see
+					//the job (i.e. is a member of the space)
+					if (true) {
+						jobInfo[2] = (j.getBench().getName());
+						jobInfo[3] = (j.getSolver().getName());
+						jobInfo[4] = (j.getConfiguration().getName());
+						jobInfo[5] = Jobs.getSpace(job.getId()).getName();
+						
+						/*String path = j.getPath();
+						int index = path.lastIndexOf("/");
+						if (index != -1) {
+							path = path.substring(index + 1);
+						}
+						jobInfo[5] = (path);
+						*/
+					} else {
+						jobInfo[2] = "private";
+						jobInfo[3] = "private";
+						jobInfo[4] = "private";
+						jobInfo[5] = "private";
+					}
+					queue.putJobPair(j.getId(), jobInfo);
+				}
+			}
 						
 			return queue;
 		} catch (Exception e){			

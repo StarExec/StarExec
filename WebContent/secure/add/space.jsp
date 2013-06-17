@@ -81,6 +81,12 @@
 						</td>
 					</tr>
 					<tr>
+						<td class="label"> <p>Inherit-Users</p></td>
+						<td>
+							<input type="radio" name="users" value="true" /> yes
+							<input type="radio" name="users" value="false" checked="checked"/> no
+						</td>
+					<tr>
 						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
 						<td colspan="1"><button id="btnCreate">create</button></td>
 					</tr>

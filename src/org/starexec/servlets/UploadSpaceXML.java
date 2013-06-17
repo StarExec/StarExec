@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,14 +16,10 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Solver;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 /**
  * Allows for the uploading of space hierarchies represented in xml. Files can come in .zip,
@@ -103,6 +96,7 @@ public class UploadSpaceXML extends HttpServlet {
 			
 			BatchUtil batchUtil = new BatchUtil();
 			//Typically there will just be 1 file, but might as well allow more
+			@SuppressWarnings("unused")
 			Boolean result = false;
 			Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 			for (File file:uniqueDir.listFiles())

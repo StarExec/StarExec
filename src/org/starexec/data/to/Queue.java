@@ -20,10 +20,12 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Expose private int slotsTotal;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
+	@Expose private HashMap<Integer, String[]> jobPairs;
 	
 	public Queue() {
 		this.nodes = new LinkedList<WorkerNode>();
 		this.attributes = new HashMap<String, String>();
+		this.jobPairs = new HashMap<Integer, String[]>();
 	}
 	
 	/**
@@ -133,6 +135,17 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	 */
 	public void putAttribute(String key, String val) {
 		this.attributes.put(key, val);
+	}
+	
+	/**
+	 * @return The job pairs
+	 */
+	public HashMap<Integer, String[]> getJobPair() {
+		return jobPairs;
+	}
+	
+	public void putJobPair(int key, String[] values) {
+		this.jobPairs.put(key, values);
 	}
 
 	@Override

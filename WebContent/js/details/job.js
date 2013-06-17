@@ -1,8 +1,12 @@
+var summaryTable;
+var pairTable;
 $(document).ready(function(){
 	//$("#solveTblField").hide();
 	initUI();
 	initDataTables();
-	
+	setInterval(function() {
+		pairTable.fnDraw(true);
+	},10000);
 });
 
 
@@ -43,11 +47,19 @@ function initUI(){
 	$('fieldset:first, fieldset:eq(1)').expandable(false);
 	$('fieldset:not(:first, :eq(1))').expandable(true);
 	
-	// Set up row click to send to pair details page
+	$('#pairTbl tbody').delegate("a", "click", function(event) {
+		event.stopPropogation();
+	});
+
+	
+	//Set up row click to send to pair details page
 	$("#pairTbl tbody").delegate("tr", "click", function(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
+
+
+	
 	
 }
 
@@ -66,7 +78,7 @@ function initDataTables(){
 	});
 	
 	// Job pairs table
-	$('#pairTbl').dataTable( {
+	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -77,7 +89,7 @@ function initDataTables(){
     });
 	
 	//summary table
-	$('#solveTbl').dataTable( {
+	summaryTable=$('#solveTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,

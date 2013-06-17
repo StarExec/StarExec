@@ -1,12 +1,6 @@
 package org.starexec.data.to;
 
-import java.util.List;
-import java.util.LinkedList;
-
 import com.google.gson.annotations.Expose;
-/*Represents the accuracy of a solver/configuration pair for a single job
- * @author Eric Burns
- */
 
 public class JobSolver extends Identifiable {
 	@Expose private Solver solver=null;

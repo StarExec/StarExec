@@ -1,7 +1,6 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Spaces;
-import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 

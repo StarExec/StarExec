@@ -5,11 +5,6 @@ package org.starexec.command;
  */
 
 
-
-/*
- * TODO: Ensure that uploaded names and descriptions are in the correct format
- * TODO: Validate set commands and other upload commands
- */
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,40 +25,38 @@ public class Validator {
 	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	public static Pattern patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 	public static Pattern patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
-	/**
-	 * Determines whether the given parameters form a valid delete request
-	 * @param commandParams A HashMap of parameters given by the user at the command line
-	 * @return 0 if valid and a negative error code otherwise.
-	 * @author Eric Burns
-	 */
 	
 	private static String missingParam=null;
 	private static List<String> unnecessaryParams=new ArrayList<String>();
 	
+	
+	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
+	
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
-	private static String[] allowedLoginParams=new String[]{R.PARAM_USERNAME,R.PARAM_PASSWORD,R.PARAM_BASEURL};
+	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
-	//sprivate static String[] allowedLogoutParams=new String[]{};
+	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
+	
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
-	//TODO: needs all the permissions
+	
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
-		R.PARAM_ENABLE_ALL_PERMISSIONS};
+		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT};
+		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
-	//TODO: needs all the permissions
+	
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
 		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
-		R.PARAM_ENABLE_ALL_PERMISSIONS};
+		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
 	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
 	private static String[] allowedUploadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
-	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT}; 
+	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT,R.PARAM_USER}; 
 	
 	/**
 	 * Gets the missing paramter that was last seen. If none has been seen yet, returns null.
@@ -73,6 +66,20 @@ public class Validator {
 		return missingParam;
 	}
 	
+	
+	public static int isValidRemoveRequest(HashMap<String,String> commandParams) {
+		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
+			return R.ERROR_MISSING_PARAM;
+		}
+		
+		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))
+				|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+			return R.ERROR_INVALID_ID;
+		}
+		
+		findUnnecessaryParams(allowedRemoveParams,commandParams);
+		return 0;
+	}
 	
 	/**
 	 * Validates a request to delete a primitive
@@ -164,6 +171,34 @@ public class Validator {
     	return patternPrimDesc.matcher(desc).matches();
     }
 	
+    public static int isValidCopyRequest(HashMap<String,String> commandParams, String type) {
+    	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO},commandParams)) {
+    		return R.ERROR_MISSING_PARAM;
+    	}
+    	
+    	if (!isValidPosInteger(commandParams.get(R.PARAM_ID)) 
+    			|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))
+    			|| !isValidPosInteger(commandParams.get(R.PARAM_TO))) {
+    		return R.ERROR_INVALID_ID;
+    	}
+    	
+    	//the hierarchy parameter is also acceptable if the type is either solver or space
+    	if (type=="solver" || type== "space") {
+    		String[] a=new String[allowedCopyParams.length+1];
+    		for (int index=0;index<allowedCopyParams.length;index++) {
+    			a[index]=allowedCopyParams[index];
+    			
+    		}
+    		a[a.length-1]=R.PARAM_HIERARCHY;
+    		findUnnecessaryParams(a,commandParams);
+    	} else {
+    		findUnnecessaryParams(allowedCopyParams,commandParams);
+    	}
+    	findUnnecessaryParams(allowedCopyParams,commandParams);
+    	return 0;
+    }
+    
+    
 	/**
 	 * @param urlParams-- A HashMap containing key/value pairs that will be encoded into the download URL
 	 * @param A HashMap containing key/value pairs the user entered into the command line
@@ -374,8 +409,22 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 	public static int isValidGetPrimRequest(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{R.PARAM_ID},commandParams) && !paramsExist(new String[]{R.PARAM_USER},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
+		}
+		if (commandParams.containsKey(R.PARAM_ID)) {
+			if (commandParams.containsKey(R.PARAM_USER)) {
+				return R.ERROR_ID_AND_USER;
+			}
+			if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+				return R.ERROR_INVALID_ID;
+			}
+			
+		} else {
+			String type=urlParams.get(R.FORMPARAM_TYPE);
+			if (!type.equals("jobs") && !type.equals("benchmarks") &&!type.equals("solvers")) {
+				return R.ERROR_NO_USER_PRIMS;
+			}
 		}
 		
 		findUnnecessaryParams(allowedLSParams,commandParams);
@@ -410,6 +459,13 @@ public class Validator {
 		//Job creation must include a space ID, a processor ID, and a queue ID
 		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_PROCID,R.PARAM_QUEUEID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
+		}
+		
+		if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
+			String traversalMethod=commandParams.get(R.PARAM_TRAVERSAL);
+			if (!traversalMethod.equals(R.ARG_ROUNDROBIN) && traversalMethod.equals(R.ARG_DEPTHFIRST)) {
+				return R.ERROR_BAD_TRAVERSAL_TYPE;
+			}
 		}
 		
 		//all IDs should be integers greater than 0
@@ -496,11 +552,11 @@ public class Validator {
 	}
 	
 	public static int isValidLoginRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_USERNAME},commandParams)) {
+		if (!paramsExist(new String[]{R.PARAM_USER},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
 		}
 		
-		if (!commandParams.get(R.PARAM_USERNAME).equals(R.PARAM_GUEST)) {
+		if (!commandParams.get(R.PARAM_USER).equals(R.PARAM_GUEST)) {
 			if (!paramsExist(new String[] {R.PARAM_PASSWORD},commandParams)) {
 				return R.ERROR_MISSING_PARAM;
 			}

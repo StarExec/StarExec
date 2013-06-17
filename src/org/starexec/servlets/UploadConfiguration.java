@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,6 +66,8 @@ public class UploadConfiguration extends HttpServlet {
 				if(result == -1) {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new configuration.");	
 				} else {
+					//result should be the new ID of the configuration
+					response.addCookie(new Cookie("New_ID", String.valueOf(result)));
 				    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)configAttrMap.get(SOLVER_ID))));	
 				}									
 			} else {

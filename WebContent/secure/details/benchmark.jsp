@@ -1,6 +1,6 @@
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@page import="java.util.TreeMap" %>
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -32,7 +32,12 @@
 			}
 			request.setAttribute("downloadable",down);
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");			
+			if (Benchmarks.isBenchmarkDeleted(benchId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been deleted. You likely want to remove it from your spaces");
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");	
+			}
+					
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");		

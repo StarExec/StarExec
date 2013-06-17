@@ -5,8 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Properties;
+import java.util.Set;
+
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
 
