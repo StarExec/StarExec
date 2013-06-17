@@ -129,8 +129,9 @@ function copyDependencies {
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
 	log "solver copy complete"
 
-#	log "chmod gu+w on the solver directory on the execution host..."
-#        chmod -r gu+w $LOCAL_SOLVER_DIR
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL\
+_SOLVER_DIR)"
+        chmod -R gu+rwx $LOCAL_SOLVER_DIR
 
 	log "copying runSolver to execution host..."
 	cp "$RUNSOLVER_PATH" "$BIN_PATH"

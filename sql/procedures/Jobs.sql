@@ -29,7 +29,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 DROP PROCEDURE IF EXISTS AddJobAttr;
 CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _jobId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
-		INSERT IGNORE INTO job_attributes VALUES (_pairId, _key, _val, _jobId);
+		REPLACE INTO job_attributes VALUES (_pairId, _key, _val, _jobId);
 	END //
 
 -- Returns the number of jobs in a given space
@@ -774,7 +774,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 		SET status_code=_statusCode
 		WHERE id=_jobPairId ;
 		IF _statusCode>6 THEN
-			INSERT IGNORE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
+			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
 		END IF;
 	END //
 	

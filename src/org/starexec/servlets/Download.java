@@ -694,7 +694,7 @@ public class Download extends HttpServlet {
 	
 	private void copyFile(String src, String dest, Queue<String> descriptions) throws IOException{
 		String curDesc = "no description";
-		//log.debug("copying file - source = " +src + ", dest = " + dest);
+		log.debug("copying file - source = " +src + ", dest = " + dest);
 		if (descriptions.size() != 0) {
 			curDesc = descriptions.remove();
 		}
@@ -702,7 +702,7 @@ public class Download extends HttpServlet {
 				
 		File tempSrcFile = new File(src);
 		File tempDestFile = new File(dest);
-		
+	
 		
 		int index = dest.lastIndexOf(File.separator);
 		String tempdest = dest.substring(0, index);

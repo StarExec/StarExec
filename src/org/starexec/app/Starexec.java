@@ -16,6 +16,7 @@ import org.starexec.data.database.Common;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
+import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -106,9 +107,9 @@ public class Starexec implements ServletContextListener {
 	 */
 	private void scheduleRecurringTasks() {
 		// Create a task that updates the cluster usage info (this may take some time)
-		final Runnable updateClusterTask = new Runnable() {			
+		final Runnable updateClusterTask = new RobustRunnable("updateClusterTask") {			
 			@Override
-			public void run() {
+			protected void dorun() {
 			    log.info("updateClusterTask (periodic)");
 			    GridEngineUtil.loadWorkerNodes();
 			    GridEngineUtil.loadQueues();
@@ -116,40 +117,45 @@ public class Starexec implements ServletContextListener {
 		};	
 		
 		// Create a task that updates statistics of jobs that are finished
-		final Runnable processJobStatsTask = new Runnable() {			
+		final Runnable processJobStatsTask = new RobustRunnable("processJobStats") {			
 			@Override
-			public void run() {
+			protected void dorun() {
 			    log.info("processJobStats (periodic)");
 			    GridEngineUtil.processResults();
 			}
 		};	
 		
 		// Create a task that submits jobs that have pending/rejected job pairs
-		final Runnable submitJobsTask = new Runnable() {			
+		final Runnable submitJobsTask = new RobustRunnable("submitJobTasks") {			
 			@Override
-			public void run() {
+			protected void dorun() {
 			    log.info("submitJobsTask (periodic)");
-			    JobManager.checkPendingJobs(); // uses the session created above (set with setSession())
+			    try {
+				JobManager.checkPendingJobs();
+			    }
+			    catch(Exception e) {
+				log.warn("submitJobsTask caught exception: "+e,e);
+			    }
 			}
 		};
 
 		// Create a task that deletes download files older than 1 day
-		final Runnable clearDownloadsTask = new Runnable() {			
+		final Runnable clearDownloadsTask = new RobustRunnable("clearDownloadsTask") {			
 			@Override
-			public void run() {
+			protected void dorun() {
 			    log.info("clearDownloadsTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1);
 			}
 		};	
 		
-		// Create a task that deletes job logs older than 30 days
-		final Runnable clearJobLogTask = new Runnable() {			
+		/*  Create a task that deletes job logs older than 30 days */
+		final Runnable clearJobLogTask = new RobustRunnable("clearJobLogTask") {			
 			@Override
-			public void run() {
+			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
 				Util.clearOldFiles(R.JOB_LOG_DIR, 30);
 			}
-		};	
+			};
 		
 		//Schedule the recurring tasks above to be run every so often
 
