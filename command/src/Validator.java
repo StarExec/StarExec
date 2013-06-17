@@ -56,7 +56,7 @@ public class Validator {
 	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
 	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
 	private static String[] allowedUploadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
-	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT}; 
+	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT,R.PARAM_USER}; 
 	
 	/**
 	 * Gets the missing paramter that was last seen. If none has been seen yet, returns null.

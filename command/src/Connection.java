@@ -745,13 +745,16 @@ public class Connection {
 	
 	private int getUserID() {
 		try {
-			HttpPost post=new HttpPost(baseURL+R.URL_GETID);
-			post=(HttpPost) setHeaders(post);
-			HttpResponse response=client.execute(post);
+			HttpGet get=new HttpGet(baseURL+R.URL_GETID);
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=getJsonString(response);
+			response.getEntity().getContent().close();
 			return json.getAsInt();
 			
 		} catch (Exception e) {
+			e.printStackTrace();
 			return R.ERROR_SERVER;
 		}
 	}
@@ -874,7 +877,7 @@ public class Connection {
 			
 			return prims;
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			errorMap.put(R.ERROR_SERVER, null);
 			return errorMap;
 		}

@@ -2157,7 +2157,7 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
-	@POST
+	@GET
 	@Path("/users/getid")
 	@Produces("application/json")
 	public String getUserID(HttpServletRequest request) {
