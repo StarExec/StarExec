@@ -2160,8 +2160,9 @@ public class RESTServices {
 	@GET
 	@Path("/users/getid")
 	@Produces("application/json")
-	public String getUserID(HttpServletRequest request) {
-		return gson.toJson(SessionUtil.getUserId(request));
+	public String getUserID(@Context HttpServletRequest request) {
+		return gson.toJson(1);
+		//return gson.toJson(SessionUtil.getUserId(request));
 	}
 	/**
 	 * Get the paginated result of the jobs belong to a specified user

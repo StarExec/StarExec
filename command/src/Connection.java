@@ -754,7 +754,7 @@ public class Connection {
 			return json.getAsInt();
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			
 			return R.ERROR_SERVER;
 		}
 	}
@@ -877,7 +877,7 @@ public class Connection {
 			
 			return prims;
 		} catch (Exception e) {
-			e.printStackTrace();
+			
 			errorMap.put(R.ERROR_SERVER, null);
 			return errorMap;
 		}
