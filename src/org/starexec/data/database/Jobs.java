@@ -1974,5 +1974,30 @@ public class Jobs {
 		}
 		return null;
 	}
+
+	public static Space getSpace(int jobId) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceByJobId(?)}");
+			procedure.setInt(1, jobId);
+			ResultSet results = procedure.executeQuery();
+			if (results.next()) {
+				Space s = new Space();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));
+				s.setCreated(results.getTimestamp("created"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				s.setPublic(results.getBoolean("public_access"));
+				return s;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
 	
 }

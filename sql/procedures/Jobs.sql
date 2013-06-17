@@ -654,6 +654,17 @@ CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
 		LIMIT _cap;
 	END //
 	
+-- Gets the name of the space for a given job id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetSpaceByJobId;
+CREATE PROCEDURE GetSpaceByJobId(IN _jobId INT)
+	BEGIN
+		SELECT *
+		FROM spaces
+			INNER JOIN job_pairs AS jp ON  spaces.id = jp.space_id
+		WHERE jp.id = _jobId;
+	END //
+	
 -- Gets the job pair associated with the given sge id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairBySgeId;

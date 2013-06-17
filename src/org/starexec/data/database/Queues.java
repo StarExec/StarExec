@@ -172,20 +172,22 @@ public class Queues {
 					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
 					jobInfo[0] = job.getName();
 					jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
-					
-					//If the job pair was located in a space that is public
-					if (Jobs.isPublic(job.getId())) {
+
+					//Need to replace true with a function that determines if a user can see
+					//the job (i.e. is a member of the space)
+					if (true) {
 						jobInfo[2] = (j.getBench().getName());
 						jobInfo[3] = (j.getSolver().getName());
 						jobInfo[4] = (j.getConfiguration().getName());
+						jobInfo[5] = Jobs.getSpace(job.getId()).getName();
 						
-						String path = j.getPath();
+						/*String path = j.getPath();
 						int index = path.lastIndexOf("/");
 						if (index != -1) {
 							path = path.substring(index + 1);
 						}
 						jobInfo[5] = (path);
-						
+						*/
 					} else {
 						jobInfo[2] = "private";
 						jobInfo[3] = "private";
