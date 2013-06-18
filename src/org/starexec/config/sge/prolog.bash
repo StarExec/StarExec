@@ -163,8 +163,8 @@ echo "benchmark: ${BENCH_PATH##*/}"
 echo "execution host: $HOSTNAME"
 echo ""
 
-sendStatus $STATUS_PREPARING
 sendNode $HOSTNAME
+sendStatus $STATUS_PREPARING
 cleanWorkspace
 fillDependArrays
 copyDependencies
