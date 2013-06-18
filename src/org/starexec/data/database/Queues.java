@@ -14,6 +14,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.SessionUtil;
 
 /**
  * Handles all DB interaction for queues
@@ -143,7 +144,8 @@ public class Queues {
 	 * @return A queue object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
-	public static Queue getDetails(int id) {
+	public static Queue getDetails(int id, int userId) {
+		log.debug("USER ID = " + userId);
 		Connection con = null;			
 		
 		try {
@@ -175,11 +177,15 @@ public class Queues {
 
 					//Need to replace true with a function that determines if a user can see
 					//the job (i.e. is a member of the space)
-					if (true) {
+					//Users.isMemberOfSpace(userId, spaceId)
+					//Permissions.canUserSeeJob(jobId, userId)
+					if (Permissions.canUserSeeJob(job.getId(), userId)) {
 						jobInfo[2] = (j.getBench().getName());
 						jobInfo[3] = (j.getSolver().getName());
 						jobInfo[4] = (j.getConfiguration().getName());
-						jobInfo[5] = Jobs.getSpace(job.getId()).getName();
+						
+						//This function returns the space that the job is in, not the primitive
+						jobInfo[5] = Jobs.getSpace(j.getId()).getName();
 						
 						/*String path = j.getPath();
 						int index = path.lastIndexOf("/");

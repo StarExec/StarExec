@@ -1974,13 +1974,18 @@ public class Jobs {
 		}
 		return null;
 	}
-
-	public static Space getSpace(int jobId) {
+	
+	/**
+	 * 
+	 * @param jobPairId the Id of the jobPair
+	 * @return the space that the job pair belongs to
+	 */
+	public static Space getSpace(int jobPairId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL GetSpaceByJobId(?)}");
-			procedure.setInt(1, jobId);
+			procedure.setInt(1, jobPairId);
 			ResultSet results = procedure.executeQuery();
 			if (results.next()) {
 				Space s = new Space();

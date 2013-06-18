@@ -204,7 +204,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
-	public String getNodeDetails(@PathParam("id") int id) {		
+	public String getNodeDetails(@PathParam("id") int id) {	
 		return gson.toJson(Cluster.getNodeDetails(id));
 	}
 	
@@ -215,8 +215,9 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
-	public String getQueueDetails(@PathParam("id") int id) {
-		return gson.toJson(Queues.getDetails(id));
+	public String getQueueDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		return gson.toJson(Queues.getDetails(id, userId));
 	}
 	
 	/**
