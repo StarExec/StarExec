@@ -778,6 +778,16 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 		END IF;
 	END //
 	
+-- Updates a job pairs node Id
+-- Author: Wyatt	
+DROP PROCEDURE IF EXISTS UpdateNodeId;
+CREATE PROCEDURE UpdateNodeId (IN _jobPairId INT, IN _nodeId INT)
+	BEGIN
+		UPDATE job_pairs
+		SET node_id = _nodeId
+		WHERE id = _jobPairId;
+	END //
+	
 	
 -- Updates a job pair's status given its sge id
 -- Author: Tyler Jensen
