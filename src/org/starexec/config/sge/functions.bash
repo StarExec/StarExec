@@ -74,6 +74,12 @@ function sendStatus {
 	return $?
 }
 
+function sendStatus {
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, $1)"
+	log "sent Node Id $1 to $REPORT_HOST"
+	return $?
+}
+
 function limitExceeded {
 	log "job error: $1 limit exceeded, job terminated"
 	sendStatus $2	
