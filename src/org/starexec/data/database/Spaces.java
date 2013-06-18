@@ -1460,7 +1460,6 @@ public class Spaces {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		Connection con = null;			
 		
 		if (Permissions.get(usrId, spaceId) == null){
 			return false;
@@ -1474,6 +1473,7 @@ public class Spaces {
 			Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
 		}
 		if(!hierarchy){
+		    Connection con = null;			
 			try {
 				con = Common.getConnection();
 				if(!pbc){
@@ -1498,8 +1498,6 @@ public class Spaces {
 					setPublicSpace(space.getId(), usrId, pbc, false);
 				} catch (Exception e){			
 					log.error(e.getMessage(), e);		
-				} finally {
-					Common.safeClose(con);
 				}
 			}
 			return true;

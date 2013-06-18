@@ -45,23 +45,6 @@ WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
 # Functions
 # /////////////////////////////////////////////
 
-function cleanWorkspace {
-	log "cleaning execution host workspace..."
-	sudo chown -R tomcat $WORKING_DIR
-	# Remove all existing files in the workspace
-	rm -f "$WORKING_DIR"/*.*
-	rm -rf "$LOCAL_SOLVER_DIR"/*
-	rm -rf "$LOCAL_BENCH_DIR"/*
-	rm -rf "$STAREXEC_OUT_DIR"/*
-
-	# Remove original jobscript
-	rm -f "$JOB_IN_DIR/job_$PAIR_ID.bash"
-	rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
-
-	log "execution host $HOSTNAME cleaned"
-	return $?
-}
-
 function copyOutput {
 	log "creating storage directory on master host"
 

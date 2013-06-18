@@ -33,6 +33,39 @@ function log {
 	return $?
 }
 
+# call "safeRm description dirname" to do an "rm -r dirname/*" except if
+# dirname is the empty string, in which case an error message is printed.
+function safeRm {
+  if [ "$2" == "" ] ; then 
+    log "Unsafe rm all detected for $1"
+  else
+    log "Doing rm all on $2 ($1)"
+    rm -rf "$2"/*
+  fi
+}
+
+function cleanWorkspace {
+	log "cleaning execution host workspace..."
+
+	# change ownership and permissions to make sure we can clean everything up
+	sudo chown -R `whoami` $WORKING_DIR 
+	chmod -R gu+rxw $WORKING_DIR
+
+        ls -l $WORKING_DIR
+
+	# Clear the output directory	
+	safeRm output-directory "$STAREXEC_OUT_DIR"
+
+	# Clear the local solver directory	
+	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	# Clear the local benchmark directory	
+	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
+
+	log "execution host $HOSTNAME cleaned"
+	return $?
+}
+
 function sendStatus {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)"
 	log "sent job status $1 to $REPORT_HOST"

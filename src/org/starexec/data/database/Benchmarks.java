@@ -93,15 +93,6 @@ public class Benchmarks {
 		return true;
 	}
 
-	/**
-	 * Adds a new attribute to a benchmark
-	 * @param con The connection to make the insertion on
-	 * @param benchId The id of the benchmark the attribute is for
-	 * @param key The key of the attribute
-	 * @param val The value of the attribute
-	 * @return True if the operation was a success, false otherwise
-	 * @author Tyler Jensen
-	 */
 	protected static boolean addBenchAttrTen(Connection con, int benchId, Entry<Object,Object>[] entryArray , int index) throws Exception {
 		CallableStatement procedure = con.prepareCall("{CALL AddBenchAttrTen(?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?)}");
 

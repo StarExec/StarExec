@@ -99,31 +99,6 @@ function createDir {
 	return $?
 }
 
-function cleanWorkspace {
-	log "cleaning execution host workspace..."
-
-	# change ownership and permissions to make sure we can clean everything up
-	sudo chown -R `whoami` $WORKING_DIR 
-	chmod -R gu+rxw $WORKING_DIR
-
-        ls -l $WORKING_DIR
-
-	# Remove all existing files in the workspace
-	rm -rf "$WORKING_DIR"/*.*
-
-	# Clear the output directory	
-	rm -rf "$STAREXEC_OUT_DIR"/*
-
-	# Clear the local solver directory	
-	rm -rf "$LOCAL_SOLVER_DIR"/*
-
-	# Clear the local benchmark directory	
-	rm -rf "$LOCAL_BENCH_DIR"/*
-
-	log "execution host $HOSTNAME cleaned"
-	return $?
-}
-
 function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
