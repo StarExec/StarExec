@@ -40,7 +40,9 @@ function safeRm {
     log "Unsafe rm all detected for $1"
   else
     log "Doing rm all on $2 ($1)"
-    rm -rf "$2"/*
+    rm -rf "$2"
+    mkdir "$2"
+    chmod gu+rwx "$2"
   fi
 }
 

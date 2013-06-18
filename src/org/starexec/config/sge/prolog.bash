@@ -88,17 +88,6 @@ fi
 return $?
 }
 
-function createDir {
-	mkdir $1
-
-	if [ ! -d $1 ]; then
-		log "job error: cannot create directory '$1'"
-		sendStatus $ERROR_ENVIRONMENT		
-	fi
-
-	return $?
-}
-
 function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
