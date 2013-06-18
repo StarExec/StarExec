@@ -5,7 +5,17 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
-In revision :
+In revision 13041:
+
+-- we distinguish now between linking and copying primitives (solvers
+   and benchmarks).  Copying counts against your quota but gives you 
+   a copy that won't change.  Linking does not count against your quota,
+   but of course, if the owner removes the file, you will get a broken
+   link.
+
+-- StarexecCommand's createjob command now let's you supply the polljob
+   options directly to it.  So you can create a job and immediately start
+   polling it.
 
 -- fixed issue where public spaces were not visible when logged in
    (as a real user, not guest).
