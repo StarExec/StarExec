@@ -74,7 +74,7 @@ function sendStatus {
 	return $?
 }
 
-function sendStatus {
+function sendNode {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, $1)"
 	log "sent Node Id $1 to $REPORT_HOST"
 	return $?
