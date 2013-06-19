@@ -655,18 +655,16 @@ CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
 		LIMIT _cap;
 	END //
 	
--- Retrieves basic info about running job pairs for the given queue id
+-- Retrieves basic info about running job pairs for the given node id
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetRunningJobPairsByQueue;
 CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs
-			-- Where the job_pair is running on the input Queue
-			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
-		WHERE (enqueued.queue_id = _id AND status_code = 4)
-		ORDER BY job_pairs.sge_id ASC
-		LIMIT _cap;
+		WHERE node_id = _id AND status_code = 4
+		ORDER BY sge_id ASC
+		LIMIT _cap
 	END //
 	
 -- Gets the name of the space for a given job id
