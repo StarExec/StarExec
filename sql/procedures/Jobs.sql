@@ -650,7 +650,7 @@ CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 		WHERE (enqueued.queue_id = _id AND status_code = 2)
-		ORDER BY job_pairs.id ASC
+		ORDER BY job_pairs.sge_id ASC
 		LIMIT _cap;
 	END //
 	
