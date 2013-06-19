@@ -110,6 +110,8 @@ public class Cluster {
 			for (JobPair j : jobPairs) {
 				String[] jobInfo;
 				jobInfo = new String[6];
+				log.debug("JOBPAIR ID = " + j.getId());
+				log.debug("JOB ID = " + j.getJobId());
 				
 				Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
 				jobInfo[0] = job.getName();
