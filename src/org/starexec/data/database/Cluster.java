@@ -143,6 +143,7 @@ public class Cluster {
 					jobInfo[4] = "private";
 					jobInfo[5] = "private";
 				}
+				log.debug("JobInfo" + jobInfo);
 				node.putJobPair(j.getId(), jobInfo);
 			}
 		}							
