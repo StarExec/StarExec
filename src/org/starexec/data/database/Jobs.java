@@ -317,6 +317,7 @@ public class Jobs {
 			if (output.exists()) {
 				FileUtils.deleteDirectory(output);
 			}
+			log.debug("Deletion of job id = " + jobId+ " in directory" +output.getAbsolutePath()+ "was successful");
 			return true;
 		} catch (Exception e) {
 			log.error("Delete Job says "+e.getMessage(),e);
@@ -364,7 +365,7 @@ public class Jobs {
 	
 	public static String getDirectory(int jobId) {
 		// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/
-		Job j=Jobs.getDetailed(jobId);
+		Job j=Jobs.getShallow(jobId);
 		return String.format("%s/%d/%d",R.JOB_OUTPUT_DIR,j.getUserId(),jobId);
 	}
 

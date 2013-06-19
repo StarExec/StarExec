@@ -52,6 +52,10 @@ corresponding permission should be set to true. None requires a value.
 
 "d" -Specifies a description. When optional, the empty string is used as a default.
 
+"deleteprims" -When removing a subspace from an existing space, specifies that all the solvers, benchmarks, and
+			   jobs present in the space hierarchy rooted at the subspace being removed should be deleted from disk.
+			   Only the primitives you have permission to delete will be deleted.
+
 "dep" -Specifies a dependency for a benchmark upload.
 
 "df" -Specifies a path to a local file that will contain a description.
@@ -357,9 +361,12 @@ OPTIONAL: None
 REQUIRED: "id" "from"
 OPTIONAL: None
 
--- removesubspace -Removes a subspace from a given space. "id" is the subspace ID.
+-- removesubspace -Removes a subspace from a given space. "id" is the subspace ID. If "deleteprims" is present,
+				   all solvers, benchmarks, and jobs present in the space hierarchy rooted at the given space that 
+				   you have permission to delete will be deleted.
 REQUIRED: "id" "from"
-OPTIONAL: None
+OPTIONAL: "deleteprims" 
+EXAMPLE: 'removesubspace id=10 from=4 deleteprims='
 
 -- removeuser -Removes a user from a given space. "id" is the user ID.
 REQUIRED: "id" "from"
@@ -402,7 +409,7 @@ REQUIRED: "id" "from" "to"
 OPTIONAL: None
 EXAMPLE: 'copybench id=42 from=643 to=56"
 
---linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from" and "to" are
+--linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from""from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None

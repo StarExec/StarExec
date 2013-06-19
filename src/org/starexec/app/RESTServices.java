@@ -1074,7 +1074,7 @@ public class RESTServices {
 				
 				if (newID==-1) {
 					log.error("Unable to copy solver "+s.getName());
-					//TODO: What do we do if we fail to copy a single solver? Many might have been copied already
+					return gson.toJson(9);
 				} else {
 					newSolverIds.add(newID);
 				}
@@ -1492,8 +1492,12 @@ public class RESTServices {
 			return gson.toJson(2);	
 		}
 		boolean deleteAllAllowed=false;
-		if (Util.paramExists("deleteAllowed", request)) {
-			deleteAllAllowed=true;
+		if (Util.paramExists("deletePrims", request)) {
+			if (Boolean.parseBoolean(request.getParameter("deletePrims"))) {
+				log.debug("Request to delete all solvers, benchmarks, and jobs in a hierarchy received");
+				deleteAllAllowed=true;
+			}
+			
 		}
 		Set<Solver> solvers=new HashSet<Solver>();
 		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
@@ -1512,9 +1516,11 @@ public class RESTServices {
 		boolean deletionFailed=false;
 		if (Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request))) {
 			if (deleteAllAllowed) {
+				log.debug("Space removed successfully, deleting primitives");
 				for (Solver s : solvers) {
 					if (s.getUserId()==userId) {
 						if (!Solvers.delete(s.getId())) {
+							log.error("Failed to delete solver with id = "+s.getId());
 							deletionFailed=true;
 						}
 					}
@@ -1523,6 +1529,7 @@ public class RESTServices {
 				for (Benchmark b : benchmarks) {
 					if (b.getUserId()==userId) {
 						if (!Benchmarks.delete(b.getId())) {
+							log.error("Failed to delete benchmark with id = "+b.getId());
 							deletionFailed=true;
 						}
 					}
@@ -1531,6 +1538,7 @@ public class RESTServices {
 				for (Job j : jobs) {
 					if (j.getUserId()==userId) {
 						if (!Jobs.delete(j.getId())) {
+							log.error("Failed to delete job with id = "+j.getId());
 							deletionFailed=true;
 						}
 					}

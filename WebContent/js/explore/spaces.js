@@ -401,6 +401,9 @@ function processErrorCode(errorCode, prim, destName) {
 	case 8: //user tried to copy without having enough disk quota
 		showMessage('error',"you do not have sufficient disk quota to copy the selected "+prim,5000);
 		break;
+	case 9:
+		showMessage('error',"one or more of the selected "+prim+"(s) could not be copied correctly", 5000);
+		break;
 	case 11:
 		showMessage('error',"one or more of the selected "+prim+"(s) have already been deleted",5000);
 		break;
@@ -439,7 +442,10 @@ function onSpaceDrop(event, ui) {
 		}
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
-		} else {
+		} else if (ui.draggable.data('type')[0]=='j') {
+			$('#dialog-confirm-copy-txt').text('do you want to link ' + ui.draggable.data('name') + ' in' + destName + '?');
+		}
+		else {
 			$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
@@ -448,7 +454,10 @@ function onSpaceDrop(event, ui) {
 		}
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
-		} else {
+		} else if (ui.draggable.data('type')[0]=='j') {
+			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's in' + destName + '?');		
+
+		}else {
 			$('#dialog-confirm-copy-txt').text('do you want to copy or link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
 		}
 	}		
@@ -1130,14 +1139,14 @@ function removeJobs(selectedJobs){
  * Handles removal of subspace(s) from a space
  * @author Todd Elvers
  */
-function removeSubspaces(selectedSubspaces){
+function removeSubspaces(selectedSubspaces,deletePrims){
 	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s), and all their subspaces, from ' + spaceName + '?');
 	log('user confirmed (in quickremove dialog) subspace deletion');
 
 
 	$.post(  
 			starexecRoot+"services/remove/subspace/" + spaceId,
-			{selectedSubspaces : selectedSubspaces},					
+			{selectedSubspaces : selectedSubspaces, deletePrims : deletePrims},					
 			function(returnCode) {
 				log('AJAX response received with code ' + returnCode);
 				switch (returnCode) {
@@ -1174,13 +1183,14 @@ function removeSubspaces(selectedSubspaces){
  * @author Ben McCune
  */
 function quickRemove(selectedSubspaces){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s), and all their subspaces, from ' + spaceName + '?');
-
+	$('#dialog-confirm-delete-txt').text('Do you want to delete the solvers, benchmarks, and jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?');
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
+		height: 400,
+		width: 400,
 		buttons: {
-			'yes': function() {
+			'delete primitives and remove subspace(s)': function() {
 				//spaceTable.fnProcessingIndicator();
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
@@ -1196,7 +1206,43 @@ function quickRemove(selectedSubspaces){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(spaceTable);
 								initSpaceExplorer();
-								removeSubspaces(selectedSubspaces);
+								removeSubspaces(selectedSubspaces,true);
+								break;
+							case 1:
+								showMessage('error', "an error occurred while processing your request; please try again", 5000);
+								break;
+							case 2:
+								showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
+								break;
+							case 3:
+								showMessage('error', "you do not have sufficient privileges to remove one or more of the subspaces", 5000);
+								break;
+							}
+							//jobTable.fnProcessingIndicator(false);
+						},
+						"json"
+				).error(function(){
+					log('quick remove subspace error');
+					window.location.reload(true);
+				});
+			},
+			"remove subspace(s) only" : function() {
+				//spaceTable.fnProcessingIndicator();
+				log('user confirmed subspace deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+
+				$.post(  
+						starexecRoot+"services/quickRemove/subspace/" + spaceId,
+						{selectedSubspaces : selectedSubspaces},
+						function(returnCode) {
+							log('AJAX response received with code ' + returnCode);
+							switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(spaceTable);
+								initSpaceExplorer();
+								removeSubspaces(selectedSubspaces,false);
 								break;
 							case 1:
 								showMessage('error', "an error occurred while processing your request; please try again", 5000);

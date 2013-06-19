@@ -565,7 +565,7 @@ public class Connection {
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair("selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]", commandParams.get(R.PARAM_ID)));
-			
+			params.add(new BasicNameValuePair("deletePrims",String.valueOf(commandParams.containsKey(R.PARAM_DELETE_PRIMS))));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			HttpResponse response=client.execute(post);
