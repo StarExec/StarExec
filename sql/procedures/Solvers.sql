@@ -370,7 +370,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				
-				FROM	solvers where user_id = _userId
+				FROM	solvers where user_id = _userId and deleted=false
 				
 				
 				-- Order results depending on what column is being sorted on
@@ -385,7 +385,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			ELSE
 				SELECT 	*
 						
-				FROM	solvers where user_id = _userId
+				FROM	solvers where user_id = _userId and deleted=false
 
 				ORDER BY 
 					 (CASE _colSortedOn
@@ -400,7 +400,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				
-				FROM	solvers where user_id = _userId
+				FROM	solvers where user_id = _userId and deleted=false
 				
 				-- Exclude Solvers whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%'))										
@@ -416,7 +416,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			ELSE
 				SELECT 	*
 						
-				FROM	solvers where user_id = _userId
+				FROM	solvers where user_id = _userId and deleted=false
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 

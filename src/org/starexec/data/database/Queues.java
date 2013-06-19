@@ -14,7 +14,6 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.SessionUtil;
 
 /**
  * Handles all DB interaction for queues

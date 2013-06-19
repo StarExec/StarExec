@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
@@ -20,7 +22,6 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSolver;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
@@ -279,6 +280,92 @@ public class Jobs {
 		procedure.executeUpdate();							
 
 		return true;		
+	}
+	
+	public static boolean delete(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			
+			return delete(jobId,con);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Deletes a job from disk, and also sets the delete property to true in the database. Jobs
+	 * are only removed from  the database entirely when they have no more space associations.
+	 * @param jobId The ID of the job to delete
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	protected static boolean delete(int jobId, Connection con) {
+		try {
+			File output=new File(getDirectory(jobId));
+			CallableStatement procedure = con.prepareCall("{CALL DeleteJob(?)}");
+			procedure.setInt(1, jobId);		
+			procedure.executeUpdate();	
+			
+			if (output.exists()) {
+				FileUtils.deleteDirectory(output);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error("Delete Job says "+e.getMessage(),e);
+		}
+		return false;
+	}
+	
+	/** 
+	 * Determines whether the job with the given ID exists in the database with the column "deleted" set to true
+	 * @param jobId The ID of the job in question
+	 * @return True if the job exists in the database and has the deleted flag set to true
+	 */
+	
+	public static boolean isJobDeleted(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isJobDeleted(con,jobId);
+		} catch (Exception e) {
+			log.error("isJobDeleted says " +e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	protected static boolean isJobDeleted(Connection con, int jobId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL IsJobDeleted(?)}");
+		procedure.setInt(1, jobId);					
+		ResultSet results = procedure.executeQuery();
+		boolean deleted=false;
+		if (results.next()) {
+			deleted=results.getBoolean("jobDeleted");
+		}
+		return deleted;
+	}
+	
+	/**
+	 * Returns the filepath to the directory containing this job's output
+	 * @param jobId The job to get the filepath for
+	 * @return A string representing the path to the output directory
+	 * @author Eric Burns
+	 */
+	
+	public static String getDirectory(int jobId) {
+		// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/
+		Job j=Jobs.getDetailed(jobId);
+		return String.format("%s/%d/%d",R.JOB_OUTPUT_DIR,j.getUserId(),jobId);
 	}
 
 	/**
@@ -820,11 +907,11 @@ public class Jobs {
 	 */
 	private static List<JobPair> getPairsDetailed(int jobId,Integer since) {
 		Connection con = null;	
-		Connection con2=null;
+		
 		ResultSet results=null;
 		try {			
 			con = Common.getConnection();	
-			con2=Common.getConnection();
+			
 			log.info("getting detailed pairs for job " + jobId );
 			if(con.isClosed())
 			{
@@ -909,7 +996,7 @@ public class Jobs {
 				neededBenchmarks.put(curId,Benchmarks.get(curId));
 			}
 			log.debug("about to get attributes for job " +jobId );
-			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con2,jobId);
+			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId);
 			log.debug("just got "+ props.keySet().size() +" out of "+ returnList.size() + " attributes for job " +jobId);
 			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
@@ -940,7 +1027,6 @@ public class Jobs {
 		} finally {
 			Common.closeResultSet(results);
 			Common.safeClose(con);
-			Common.safeClose(con2);
 		}
 
 		return null;		
@@ -956,10 +1042,10 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPairsDetailedForStats(int jobId) {
 		Connection con = null;			
-		Connection con2=null;
+		
 		try {			
 			con = Common.getConnection();
-			con2=Common.getConnection();
+			
 			log.info("getting detailed pairs for job " + jobId );
 			
 			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
@@ -990,7 +1076,7 @@ public class Jobs {
 			
 			Common.closeResultSet(results);
 			log.info("result set closed for job " + jobId);
-			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con2, jobId);
+			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con, jobId);
 						
 			
 			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
@@ -1028,7 +1114,7 @@ public class Jobs {
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(con2);
+			
 		}
 		return null;		
 	}
@@ -1358,6 +1444,37 @@ public class Jobs {
 
 		return false;
 	}
+	
+	/**
+	 * Get next page of the jobs belong to a specific user
+	 * @param startingRecord specifies the number of the entry where should the querry start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param userId Id of the user we are looking for
+	 * @return a list of Jobs belong to the user
+	 * @author Ruoyu Zhang
+	 */
+	public static List<Job> getJobsByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
+		return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, userId,"GetNextPageOfUserJobs");
+	}
+	
+	/**
+	 * Get next page of the jobs belong to a space
+	 * @param startingRecord specifies the number of the entry where should the querry start
+	 * @param recordsPerPage specifies how many records are going to be on one page
+	 * @param isSortedASC specifies whether the sorting is in ascending order
+	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
+	 * @param searchQuery the search query provided by the client
+	 * @param spaceId Id of the space we are looking for
+	 * @return a list of Jobs belong to the user
+	 * @author Ruoyu Zhang
+	 */
+	
+	public static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+		return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, spaceId,"GetNextPageOfJobs");
+	}
 
 	/**
 	 * Gets the minimal number of Jobs necessary in order to service the client's
@@ -1368,23 +1485,23 @@ public class Jobs {
 	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
 	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
 	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param spaceId the id of the space to get the Jobs from
+	 * @param id the id of the space or user to get jobs for
 	 * @return a list of 10, 25, 50, or 100 Jobs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	public static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+	private static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String procedureName) {
 		Connection con = null;			
 
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
 
-			procedure = con.prepareCall("{CALL GetNextPageOfJobs(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
+			procedure.setInt(5, id);
 			procedure.setString(6, searchQuery);
 
 			ResultSet results = procedure.executeQuery();
@@ -1409,7 +1526,10 @@ public class Jobs {
 				Job j = new Job();
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
+				j.setName(results.getString("name"));	
+				if (results.getBoolean("deleted")) {
+					j.setName(j.getName()+" (deleted)");
+				}
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
 				j.setLiteJobPairStats(liteJobPairStats);
@@ -1595,7 +1715,6 @@ public class Jobs {
 				answer.add(rows.get(index));
 			}
 		}
-		
 		if (!isSortedASC) {
 			List<JobSolver> reversed=new LinkedList<JobSolver>();
 			for (JobSolver js : answer) {
@@ -1782,64 +1901,6 @@ public class Jobs {
 
 		return 0;		
 	}
-	
-	/**
-	 * Get next page of the jobs belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the querry start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
-	 * @param userId Id of the user we are looking for
-	 * @return a list of Jobs belong to the user
-	 * @author Ruoyu Zhang
-	 */
-	public static List<Job> getJobsByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		Connection con = null;			
-
-		try {
-			con = Common.getConnection();
-			CallableStatement procedure;	
-
-			procedure = con.prepareCall("{CALL GetNextPageOfUserJobs(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-
-			ResultSet results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
-
-			while(results.next()){
-
-				// Grab the relevant job pair statistics; this prevents a secondary set of queries
-				// to the database in RESTHelpers.java
-				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
-				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
-				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
-				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
-				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
-
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setLiteJobPairStats(liteJobPairStats);
-				jobs.add(j);		
-			}
-			return jobs;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;
-	}
 
 	/**
 	 * Get all the jobs belong to a specific user
@@ -1879,6 +1940,9 @@ public class Jobs {
 	public static boolean isPublic(int jobId) {
 		log.debug("isPublic called on job " + jobId);
 		Job j = Jobs.getDetailedWithoutJobPairs(jobId);
+		if (j==null) {
+			return false;
+		}
 		if (j.getUserId()==R.PUBLIC_USER_ID){
 			log.debug("Public User for Job Id" + jobId);
 			return true;

@@ -6,8 +6,7 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
-		
-		Job j = null;
+		Job j=null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
 		}
@@ -19,9 +18,15 @@
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
+			request.setAttribute("userId",userId);
 		} else {
 			if (j==null) {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+				if (Jobs.isJobDeleted(jobId)) {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
+				} else {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+				}
+				
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Error processesing job summary");
 			}
@@ -143,6 +148,12 @@
 		<ul id="actionList">
 			<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
 			<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
+			<c:if test="${job.userId == userId}"> 
+				<li><button type="button" id="deleteJob">delete job</button></li>
+			</c:if>
 		</ul>
+		<div id="dialog-confirm-delete" title="confirm delete">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+		</div>	
 	</fieldset>		
 </star:template>

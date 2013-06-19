@@ -112,7 +112,7 @@ function attachButtonActions(){
 					);
 				},
 				"cancel": function() {
-					log('user canceled solver deletion');
+					log('user canceled job deletion');
 					$(this).dialog("close");
 				}
 			}

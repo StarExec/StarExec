@@ -169,35 +169,6 @@ CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
 						FROM bench_assoc
 						WHERE space_id = _spaceId);
 	END //
-	
-DROP PROCEDURE IF EXISTS GetNextPageOfBenchmarks;
-CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of benchmarks without filtering for _query
-				SELECT 	id,
-						name,
-						description,
-						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
-						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
-				
-				FROM	benchmarks
-				
-				-- Exclude benchmarks that aren't in the specified space
-				WHERE 	id 	IN (SELECT 	bench_id
-								FROM	bench_assoc
-								WHERE 	space_id = _spaceId)
-										
-				
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN name
-					WHEN 1 THEN benchTypeName
-				END) ASC
-				
-				-- Shrink the results to only those required for the next page of benchmarks
-				LIMIT _recordsPerPage;
-    END //
 
 -- Gets the fewest necessary Benchmarks in order to service a client's
 -- request for the next page of Benchmarks in their DataTable object.  
@@ -213,6 +184,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				SELECT 	id,
 						name,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 				
@@ -237,6 +209,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				SELECT 	id,
 						name,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 				
@@ -265,6 +238,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				SELECT 	id,
 						name,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 				
@@ -293,6 +267,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				SELECT 	id,
 						name,
 						description,
+						deleted,
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 				
@@ -573,7 +548,7 @@ CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 -- request for the next page of Benchmarks in their DataTable object.  
 -- This services the DataTable object by supporting filtering by a query, 
 -- ordering results by a column, and sorting results in ASC or DESC order.
--- Gets benchmarks across all spaces for one user.  
+-- Gets benchmarks across all spaces for one user. Excludes deleted benchmarks
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetNextPageOfUserBenchmarks;
 CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
@@ -590,7 +565,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 
 				
-				FROM	benchmarks where user_id = _userId
+				FROM	benchmarks where user_id = _userId and deleted=false
 				
 				
 				-- Order results depending on what column is being sorted on
@@ -611,7 +586,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 						
-				FROM	benchmarks where user_id = _userId
+				FROM	benchmarks where user_id = _userId and deleted=false
 
 				ORDER BY 
 					 (CASE _colSortedOn
@@ -632,7 +607,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 						
-				FROM	benchmarks where user_id = _userId
+				FROM	benchmarks where user_id = _userId and deleted=false
 				
 				-- Exclude benchmarks whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%'))										
@@ -654,7 +629,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						GetBenchmarkTypeName(bench_type) 		AS 	benchTypeName,
 						GetBenchmarkTypeDescription(bench_type)	AS	benchTypeDescription
 						
-				FROM	benchmarks where user_id = _userId
+				FROM	benchmarks where user_id = _userId and deleted=false
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 

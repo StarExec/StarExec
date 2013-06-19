@@ -1,11 +1,11 @@
 var summaryTable;
 var pairTable;
 $(document).ready(function(){
-	//$("#solveTblField").hide();
 	initUI();
 	initDataTables();
 	setInterval(function() {
-		pairTable.fnDraw(true);
+		pairTable.fnDraw(false);
+		summaryTable.fnDraw(false);
 	},10000);
 });
 
@@ -21,6 +21,7 @@ function createDownloadRequest(item,type) {
  * Initializes the user-interface
  */
 function initUI(){
+	$('#dialog-confirm-delete').hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -32,6 +33,55 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	
+	$('#deleteJob').button({
+		icons: {
+			secondary: "ui-icon-minus"
+		}
+	});
+	
+	$('#dialog-confirm-delete-txt').text('are you sure you want to delete this benchmark?');
+	
+	$("#deleteJob").click(function(){
+		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
+		
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed job deletion.');
+					$('#dialog-confirm-delete').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/delete/job/" + getParameterByName("id"),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										window.location = starexecRoot+'secure/explore/spaces.jsp';
+										break;
+									case 1:
+										showMessage('error', "job was not deleted; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the owner of this job can delete it", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled job deletion');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
 	
 	$('#jobDownload').unbind("click");
 	$('#jobDownload').click(function() {

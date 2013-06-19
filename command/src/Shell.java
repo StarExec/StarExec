@@ -436,6 +436,8 @@ public class Shell {
 				serverStatus=con.deletePrimitive(commandParams,"solver");
 			} else if(c.equals(R.COMMAND_DELETECONFIG))  {
 				serverStatus=con.deletePrimitive(commandParams, "configuration");
+			} else if (c.equals(R.COMMAND_DELETEJOB)) {
+				serverStatus=con.deletePrimitive(commandParams,"job");
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;

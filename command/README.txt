@@ -326,6 +326,9 @@ OPTIONAL: None
 REQUIRED: "id"
 OPTIONAL: None
 
+--deletejob -Deletes a job with the given ID and all of its output
+REQUIRED: "id"
+OPTIONAL: None
 
 --deletesolver -Deletes the solver with the given ID.
 REQUIRED: "id"

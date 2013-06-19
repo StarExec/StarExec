@@ -23,8 +23,8 @@ $(document).ready(function(){
 	
 	//redraw the job table every 10 seconds so we can see continuous results
 	setInterval(function() {
-		if (!spaceId==1 && !spaceId==undefined) {
-			jobTable.fnDraw(true);
+		if (spaceId!=1 && spaceId!=undefined) {
+			jobTable.fnDraw(false);
 		}
 		
 	},10000);
@@ -1480,7 +1480,7 @@ function initDataTables(){
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/space/",
-		"bProcessing"	: true,
+		"bProcessing"	: false,
 		"oLanguage": {
 			"sProcessing": getProcessingMessage()
 		},

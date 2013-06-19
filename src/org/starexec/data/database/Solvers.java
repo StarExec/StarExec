@@ -59,7 +59,7 @@ public class Solvers {
 			
 			return isSolverDeleted(con,solverId);
 		} catch (Exception e) {
-			
+			log.error("isSolverDeleted says " +e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1122,7 +1122,7 @@ public class Solvers {
 	
 	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
 		String procedureName="GetNextPageOfSolvers";
-		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,true,procedureName);
+		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,procedureName);
 	}
 	
 	/**
@@ -1138,7 +1138,7 @@ public class Solvers {
 	 */
 	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
 		String procedureName="GetNextPageOfUserSolvers";
-		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,false,procedureName);
+		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,procedureName);
 	}
 	
 	/**
@@ -1156,7 +1156,7 @@ public class Solvers {
 	 * @return a list of 10, 25, 50, or 100 Solvers containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	private static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, boolean getDeleted, String procedureName) {
+	private static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String procedureName) {
 		Connection con = null;			
 		
 		try {
@@ -1177,12 +1177,12 @@ public class Solvers {
 			// Only get the necessary information to display this solver
 			// in a row in a DataTable object, nothing more.
 			while(results.next()){
-				if (!getDeleted && results.getBoolean("deleted")) {
-					continue;
-				}
 				Solver s = new Solver();
 				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));				
+				s.setName(results.getString("name"));	
+				if (results.getBoolean("deleted")) {
+					s.setName(s.getName()+" (deleted)");
+				}
 				s.setDescription(results.getString("description"));
 				solvers.add(s);	
 			}	

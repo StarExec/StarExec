@@ -232,6 +232,7 @@ CREATE TABLE jobs (
 	pre_processor INT,
 	post_processor INT,		
 	description TEXT,
+	deleted BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,
@@ -288,8 +289,6 @@ CREATE TABLE job_pairs (
 	PRIMARY KEY(id),
 	UNIQUE KEY(sge_id),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE SET NULL,
-	FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL,
 	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION,
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL

@@ -70,6 +70,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -102,6 +103,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -131,6 +133,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -167,6 +170,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -212,13 +216,18 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				
-				FROM	jobs where user_id = _userId
+				FROM	jobs 
+				
+				WHERE user_id = _userId
+				
+				AND deleted=false
 				
 				
 				-- Order results depending on what column is being sorted on
@@ -240,12 +249,17 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
-				FROM	jobs where user_id = _userId
+				FROM	jobs 
+				
+				WHERE user_id = _userId
+				
+				AND deleted=false
 
 				ORDER BY 
 					 (CASE _colSortedOn
@@ -267,13 +281,18 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				
-				FROM	jobs where user_id = _userId
+				FROM	jobs 
+				
+				WHERE user_id = _userId
+				
+				AND deleted=false
 				
 				-- Exclude Jobs whose name and status don't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
@@ -298,12 +317,16 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						user_id, 
 						created, 
 						description, 
+						deleted,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
-				FROM	jobs where user_id = _userId
+				FROM	jobs 
+				WHERE user_id = _userId
+				
+				AND deleted=false
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
@@ -573,7 +596,7 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM jobs
-		WHERE id = _id;
+		WHERE id = _id and deleted=false;
 	END //
 	
 -- Retrieves all jobs with pending job pairs for the given queue
@@ -695,7 +718,7 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.id=_Id;
+		WHERE job_pairs.id=_Id and deleted=false;
 	END //
 	
 -- Gets the job pair with the given id
@@ -705,25 +728,52 @@ CREATE PROCEDURE GetJobPairBySGE(IN _Id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.sge_id=_Id;
+		WHERE job_pairs.sge_id=_Id and deleted=false;
+	END //
+	
+DROP PROCEDURE IF EXISTS IsJobDeleted;
+CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
+	BEGIN
+		SELECT count(*) AS jobDeleted
+		FROM jobs
+		WHERE deleted=true AND id=_jobId;
 	END //
 	
 -- Removes the association between a job and a given space
--- Author: Todd Elvers
+-- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS RemoveJobFromSpace;
 CREATE PROCEDURE RemoveJobFromSpace(IN _jobId INT, IN _spaceId INT)
 BEGIN
 	DELETE FROM job_assoc
 	WHERE job_id = _jobId
 	AND space_id = _spaceId;
-	
-	-- If the job has no other associations in job_assoc, delete it from StarExec
-	IF NOT EXISTS (SELECT * FROM job_assoc WHERE job_id = _jobId) THEN
-		DELETE FROM jobs
-		WHERE id = _jobId;
+	IF ((SELECT COUNT(*) FROM job_assoc WHERE job_id=_jobId)=0) THEN
+		IF NOT EXISTS(SELECT * FROM jobs WHERE deleted=false AND id=_jobId) THEN
+			DELETE FROM jobs 
+			WHERE id=_jobId;
+		END IF;
 	END IF;
 END //
-	
+
+
+-- Sets the "deleted" property of a job to true and deletes all its job pairs from the database
+-- If the job has no more space associations, it is deleted from the database
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS DeleteJob;
+CREATE PROCEDURE DeleteJob(IN _jobId INT)
+	BEGIN
+		UPDATE jobs
+		SET deleted=true
+		WHERE id = _jobId;
+		DELETE FROM job_pairs
+		WHERE job_id=_jobId;
+		-- if the benchmark is associated with no spaces, we can delete it from the database
+		IF ((SELECT COUNT(*) FROM job_assoc WHERE job_id=_jobId)=0) THEN
+			DELETE FROM jobs
+			WHERE id=_jobId;
+		END IF;
+	END //
+
 -- Retrieves all jobs belonging to a space (but not their job pairs)
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetSpaceJobsById;
@@ -846,7 +896,7 @@ CREATE PROCEDURE GetUserJobsById(IN _userId INT)
 	BEGIN
 		SELECT *
 		FROM jobs
-		WHERE user_id=_userId
+		WHERE user_id=_userId and deleted=false
 		ORDER BY created DESC;
 	END //
 
@@ -857,7 +907,7 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
 		FROM jobs
-		WHERE user_id = _userId;
+		WHERE user_id = _userId and deleted=false;
 	END //
 	
 DROP PROCEDURE IF EXISTS GetNameofJobById;
@@ -865,7 +915,7 @@ CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 	BEGIN
 		SELECT name
 		FROM jobs
-		where id = _jobId;
+		where id = _jobId and deleted=false;
 	END //
 	
 	

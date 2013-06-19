@@ -1430,7 +1430,7 @@ public class Benchmarks {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
 	}
 	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
-		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,true,"GetNextPageOfBenchmarks");
+		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,"GetNextPageOfBenchmarks");
 	}
 	/**
 	 * Get next page of the benchmarks belong to a specific user
@@ -1444,7 +1444,7 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,false,"GetNextPageOfUserBenchmarks");
+		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,"GetNextPageOfUserBenchmarks");
 	}
 
 	/**
@@ -1460,7 +1460,7 @@ public class Benchmarks {
 	 * @return a list of 10, 25, 50, or 100 Benchmarks containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	private static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int id, boolean getDeleted, String procedureName) {
+	private static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int id, String procedureName) {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();
@@ -1479,12 +1479,13 @@ public class Benchmarks {
 
 			while(results.next()){
 				//don't include deleted benchmarks in the results if getDeleted is false
-				if (!getDeleted && results.getBoolean("deleted")) {
-					continue;
-				}
+				
 				Benchmark b = new Benchmark();
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
+				if (results.getBoolean("deleted")) {
+					b.setName(b.getName()+" (deleted)");
+				}
 				b.setDescription(results.getString("description"));
 
 				Processor t = new Processor();

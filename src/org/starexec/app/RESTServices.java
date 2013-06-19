@@ -526,7 +526,7 @@ public class RESTServices {
 				return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(1);
 			}
 			return gson.toJson(2);
-		}
+		} 
 		
 		return gson.toJson(1);
 	}
@@ -1614,9 +1614,32 @@ public class RESTServices {
 			gson.toJson(2);
 		}
 		
-		// TODO Need to check if the solver exists in historical space. If it does, we SHOULD NOT delete the solver
-		// Delete the solver from the database
 		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(1);
+	}
+	
+	/**
+	 * Deletes a solver given a solver's id. The id of the solver to delete must
+	 * be included in the path.
+	 * 
+	 * @param id the id of the solver to delete
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/delete/job/{id}")
+	@Produces("application/json")
+	public String deleteJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
+		
+		// Permissions check; if user is NOT the owner of the job, deny deletion request
+		int userId = SessionUtil.getUserId(request);
+		Job j = Jobs.get(jobId);
+		if(j == null || j.getUserId() != userId){
+			gson.toJson(2);
+		}
+		
+		return Jobs.delete(jobId) ? gson.toJson(0) : gson.toJson(1);
 	}
 
 	/**
