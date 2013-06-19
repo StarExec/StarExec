@@ -17,8 +17,8 @@ public abstract class RobustRunnable implements Runnable {
 	try {
 	    dorun();
 	}
-	catch (Exception e) {
-	    log.warn(name+" caught exception: "+e,e);
+	catch (Throwable e) {
+	    log.warn(name+" caught Throwable: "+e,e);
 	}
     }
 }

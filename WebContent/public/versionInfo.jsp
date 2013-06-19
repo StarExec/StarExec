@@ -5,7 +5,15 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
-In revision 13041:
+Release of June 18, 2013:
+
+-- The cluster status page shows enqueued job pairs now for each queue
+   (but node links are broken so please do not use those).
+
+-- StarexecCommand can be run with a filename as its sole command-line
+   argument, and the commands in that file will be executed.  If exit
+   is the last command in the file, StarexecCommand will execute after 
+   the file has been run.
 
 -- we distinguish now between linking and copying primitives (solvers
    and benchmarks).  Copying counts against your quota but gives you 

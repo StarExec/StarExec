@@ -607,8 +607,7 @@ public class Shell {
 			if (valid<0) {
 				return valid;
 			}
-			this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
-			return 0;
+			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
 		} else if (c.equals(R.COMMAND_IGNOREIDS)) {
 			returnIDsOnUpload=false;
 			return 0;
@@ -840,7 +839,9 @@ public class Shell {
 		Shell shell=new Shell();
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
-			shell.runFile(args[0], false);
+		    int status = shell.runFile(args[0], false);
+		    if (status == R.SUCCESS_EXIT) 
+			return;
 		}
 		shell.runShell();
 	}
