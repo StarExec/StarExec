@@ -664,7 +664,7 @@ CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
 		FROM job_pairs
 		WHERE node_id = _id AND status_code = 4
 		ORDER BY sge_id ASC
-		LIMIT _cap
+		LIMIT _cap;
 	END //
 	
 -- Gets the name of the space for a given job id
