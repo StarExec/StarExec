@@ -1,8 +1,10 @@
 package org.starexec.app;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -1034,6 +1036,7 @@ public class RESTServices {
 			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
 				return gson.toJson(4);
 			}
+			
 			if (Solvers.isSolverDeleted(id)) {
 				return gson.toJson(11);
 			}
@@ -1483,14 +1486,65 @@ public class RESTServices {
 			return gson.toJson(1);
 		}
 		
-		// Permissions check; ensures user is the leader of the community
+		// Permissions check; ensures user is the leader of the space
 		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
 		if(null == perm || !perm.isLeader()) {
 			return gson.toJson(2);	
 		}
-		
+		boolean deleteAllAllowed=false;
+		if (Util.paramExists("deleteAllowed", request)) {
+			deleteAllAllowed=true;
+		}
+		Set<Solver> solvers=new HashSet<Solver>();
+		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
+		Set<Job> jobs=new HashSet<Job>();
+		int userId=SessionUtil.getUserId(request);
+		if (deleteAllAllowed) {
+			
+			
+			for (int sid : selectedSubspaces) {
+				solvers.addAll(Solvers.getBySpace(sid));
+				benchmarks.addAll(Benchmarks.getBySpace(sid));
+				jobs.addAll(Jobs.getBySpace(sid));
+			}
+		}
 		// Remove the subspaces from the space
-		return Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(3);
+		boolean deletionFailed=false;
+		if (Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request))) {
+			if (deleteAllAllowed) {
+				for (Solver s : solvers) {
+					if (s.getUserId()==userId) {
+						if (!Solvers.delete(s.getId())) {
+							deletionFailed=true;
+						}
+					}
+				}
+				
+				for (Benchmark b : benchmarks) {
+					if (b.getUserId()==userId) {
+						if (!Benchmarks.delete(b.getId())) {
+							deletionFailed=true;
+						}
+					}
+				}
+				
+				for (Job j : jobs) {
+					if (j.getUserId()==userId) {
+						if (!Jobs.delete(j.getId())) {
+							deletionFailed=true;
+						}
+					}
+				}
+			}
+			if (!deletionFailed) {
+				return gson.toJson(0);
+			} else {
+				return gson.toJson(4);
+			}
+			
+		} else {
+			return gson.toJson(3);
+		}
 	}
 
 	

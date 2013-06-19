@@ -243,6 +243,7 @@ public class Solvers {
 				s.setDownloadable(results.getBoolean("downloadable"));
 				s.setDiskSize(results.getLong("disk_size"));
 				s.setPath(results.getString("path"));
+				s.setUserId(results.getInt("user_id"));
 				solvers.add(s);
 			}			
 						
@@ -1318,4 +1319,5 @@ public class Solvers {
 		}
 		return true;
 	}
+	
 }

@@ -840,6 +840,7 @@ public class Shell {
 	public static void main(String[] args) {
 		
 		Shell shell=new Shell();
+		System.out.println("Last update = "+R.VERSION);
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
 			shell.runFile(args[0], false);

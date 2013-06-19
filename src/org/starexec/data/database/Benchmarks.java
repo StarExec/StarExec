@@ -1190,7 +1190,7 @@ public class Benchmarks {
 				b.setDownloadable(results.getBoolean("bench.downloadable"));	
 				b.setDiskSize(results.getLong("bench.disk_size"));
 				b.setPath(results.getString("bench.path"));
-
+				b.setUserId(results.getInt("bench.user_id"));
 				Processor t = new Processor();
 				t.setId(results.getInt("types.id"));
 				t.setCommunityId(results.getInt("types.community"));
