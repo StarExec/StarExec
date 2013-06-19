@@ -116,8 +116,9 @@ public class Cluster {
 				//Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
 				//log.debug("JOB = " + job);
 				//jobInfo[0] = job.getName();
-				jobInfo[0] = "TEST";
-				jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+				jobInfo[0] = "TEST (temp)";
+				//jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+				jobInfo[1] = "WYATT KAISER (temp)";
 				//Permissions.canUserSeeJob(job.getId(), userId
 				if (true) {
 					jobInfo[2] = (j.getBench().getName());
