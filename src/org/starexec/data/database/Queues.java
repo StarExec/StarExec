@@ -185,7 +185,9 @@ public class Queues {
 						jobInfo[4] = (j.getConfiguration().getName());
 						
 						//This function returns the space that the job is in, not the primitive
-						jobInfo[5] = Jobs.getSpace(j.getId()).getName();
+						//jobInfo[5] = Jobs.getSpace(j.getId()).getName();
+						
+						jobInfo[5] = j.getPath();
 						
 						/*String path = j.getPath();
 						int index = path.lastIndexOf("/");

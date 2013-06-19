@@ -98,16 +98,16 @@ function populateAttributes(jsonData) {
 	$('#queueID').text("id = "+qid);
 	if(jsonData.slotsTotal != null) {
 		// Show the bar showing queue availability (we're dealing with a queue)
-		$('#progressBar').show();
-		$('#progressBar').progressBar(Math.floor((jsonData.slotsAvailable / jsonData.slotsTotal) * 100), 
-			{ max: 100, 
-			textFormat: 'percentage', 
-			boxImage: starexecRoot+'images/progress_bar/progressbar.gif',
-			barImage: {
-				0:  starexecRoot+'images/progress_bar/progressbg_red.gif',
-				40: starexecRoot+'images/progress_bar/progressbg_orange.gif',
-				80: starexecRoot+'images/progress_bar/progressbg_green.gif'
-			}});
+		//$('#progressBar').show();
+		//$('#progressBar').progressBar(Math.floor((jsonData.slotsAvailable / jsonData.slotsTotal) * 100), 
+			//{ max: 100, 
+			//textFormat: 'percentage', 
+			//boxImage: starexecRoot+'images/progress_bar/progressbar.gif',
+			//barImage: {
+			//	0:  starexecRoot+'images/progress_bar/progressbg_red.gif',
+			//	40: starexecRoot+'images/progress_bar/progressbg_orange.gif',
+			//	80: starexecRoot+'images/progress_bar/progressbg_green.gif'
+			//}});
 		$('#activeStatus').hide();
 		
 		//Put all the jobPairs that are running on the queue
