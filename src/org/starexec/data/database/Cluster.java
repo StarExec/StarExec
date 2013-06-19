@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.WorkerNode;
 
 /**
@@ -40,6 +42,27 @@ public class Cluster {
 	}
 	
 	/**
+	 * Gets a worker node with detailed information (Id and name aint with all attributes)
+	 * @param id The id of the node to get detailed information for
+	 * @return A node object containing all of its attributes
+	 * @author Wyatt Kaiser
+	 */
+	public static WorkerNode getNodeDetails(int id, int userId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Cluster.getNodeDetails(con, id, userId);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Gets a worker node with detailed information (Id and name along with all attributes)
 	 * @param con The connection to make the query with
 	 * @param id The id of the node to get detailed information for
@@ -56,16 +79,68 @@ public class Cluster {
 			node.setName(results.getString("name"));
 			node.setId(results.getInt("id"));
 			node.setStatus(results.getString("status"));
+		}							
+		Common.closeResultSet(results);			
+		
+		return node;		
+	}
+	
+	/**
+	 * Gets a worker node with detailed information (Id and name along with all attributes)
+	 * @param con The connection to make the query with
+	 * @param id The id of the node to get detailed information for
+	 * @return A node object containing all of its attributes
+	 * @author Wyatt Kaiser
+	 */
+	protected static WorkerNode getNodeDetails(Connection con, int id, int userId) throws Exception {				
+		CallableStatement procedure = con.prepareCall("{CALL GetNodeDetails(?)}");
+		procedure.setInt(1, id);			
+		ResultSet results = procedure.executeQuery();
+		WorkerNode node = new WorkerNode();
+		
+		if(results.next()){
+			node.setName(results.getString("name"));
+			node.setId(results.getInt("id"));
+			node.setStatus(results.getString("status"));
 			
-			// Start from 4 (first three are ID, name and status)
-			for(int i = 4; i <= results.getMetaData().getColumnCount(); i++) {
-				// Add the column name/value to the node's attributes (get substrings at 1 to remove the prepended _ to prevent keyword conflicts)
-				if(results.getString(i) != null) {
-					// If there exists a value, add it
-					node.putAttribute(results.getMetaData().getColumnName(i).substring(1), results.getString(i).substring(1));
+			//Get all the job pairs that are queued up on the queue
+			List<JobPair> jobPairs = Jobs.getRunningPairsDetailed(results.getInt("id"));
+			//List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
+
+			for (JobPair j : jobPairs) {
+				String[] jobInfo;
+				jobInfo = new String[6];
+				
+				Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+				jobInfo[0] = job.getName();
+				jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+
+				if (Permissions.canUserSeeJob(job.getId(), userId)) {
+					jobInfo[2] = (j.getBench().getName());
+					jobInfo[3] = (j.getSolver().getName());
+					jobInfo[4] = (j.getConfiguration().getName());
+					
+					//This function returns the space that the job is in, not the primitive
+					//jobInfo[5] = Jobs.getSpace(j.getId()).getName();
+					
+					jobInfo[5] = j.getPath();
+					
+					/*String path = j.getPath();
+					int index = path.lastIndexOf("/");
+					if (index != -1) {
+						path = path.substring(index + 1);
+					}
+					jobInfo[5] = (path);
+					*/
+				} else {
+					jobInfo[2] = "private";
+					jobInfo[3] = "private";
+					jobInfo[4] = "private";
+					jobInfo[5] = "private";
 				}
-			}				
-		}			
+				node.putJobPair(j.getId(), jobInfo);
+			}
+		}							
 		Common.closeResultSet(results);			
 		
 		return node;		

@@ -12,6 +12,7 @@ public class WorkerNode extends Identifiable {
 	@Expose private String name;
 	@Expose private String status;
 	@Expose private HashMap<String, String> attributes;
+	@Expose private HashMap<Integer, String[]> jobPairs;
 	
 	public WorkerNode() {
 		// Default constructor
@@ -72,5 +73,16 @@ public class WorkerNode extends Identifiable {
 	@Override
 	public String toString() {
 	 return this.name;
+	}
+	
+	/**
+	 * @return The job pairs
+	 */
+	public HashMap<Integer, String[]> getJobPair() {
+		return jobPairs;
+	}
+	
+	public void putJobPair(int key, String[] values) {
+		this.jobPairs.put(key, values);
 	}
 }

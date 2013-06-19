@@ -175,10 +175,6 @@ public class Queues {
 					jobInfo[0] = job.getName();
 					jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
 
-					//Need to replace true with a function that determines if a user can see
-					//the job (i.e. is a member of the space)
-					//Users.isMemberOfSpace(userId, spaceId)
-					//Permissions.canUserSeeJob(jobId, userId)
 					if (Permissions.canUserSeeJob(job.getId(), userId)) {
 						jobInfo[2] = (j.getBench().getName());
 						jobInfo[3] = (j.getSolver().getName());
@@ -188,14 +184,7 @@ public class Queues {
 						//jobInfo[5] = Jobs.getSpace(j.getId()).getName();
 						
 						jobInfo[5] = j.getPath();
-						
-						/*String path = j.getPath();
-						int index = path.lastIndexOf("/");
-						if (index != -1) {
-							path = path.substring(index + 1);
-						}
-						jobInfo[5] = (path);
-						*/
+
 					} else {
 						jobInfo[2] = "private";
 						jobInfo[3] = "private";

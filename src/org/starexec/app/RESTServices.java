@@ -204,8 +204,9 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
-	public String getNodeDetails(@PathParam("id") int id) {	
-		return gson.toJson(Cluster.getNodeDetails(id));
+	public String getNodeDetails(@PathParam("id") int id, @Context HttpServletRequest request) {	
+		int userId = SessionUtil.getUserId(request);
+		return gson.toJson(Cluster.getNodeDetails(id, userId));
 	}
 	
 	/**

@@ -129,8 +129,8 @@ function populateAttributes(jsonData) {
 		}
 		
 		attrTable.fnClearTable();
-		for(var key in jsonData.attributes){
-			attrTable.fnAddData([key, jsonData.attributes[key]]);            
+		for(var key in jsonData.jobPairs){
+			attrTable.fnAddData([key, jsonData.jobPairs[key]]);            
 	    }
 	}
 	

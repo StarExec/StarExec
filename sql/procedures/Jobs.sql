@@ -596,6 +596,7 @@ CREATE PROCEDURE GetEnqueuedJobs(IN _queueId INT)
 		WHERE id in (select distinct job_id from job_pairs where status_code=2 and queue_id = _queueId);
 	END //
 	
+	
 -- Retrieves the number of jobs with pending job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
@@ -640,7 +641,7 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _cap INT)
 		LIMIT _cap;
 	END //	
 	
--- Retrieves basic info about enqueued job pairs for the given job id
+-- Retrieves basic info about enqueued job pairs for the given queue id
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;
 CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
@@ -650,6 +651,20 @@ CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 		WHERE (enqueued.queue_id = _id AND status_code = 2)
+		ORDER BY job_pairs.sge_id ASC
+		LIMIT _cap;
+	END //
+	
+-- Retrieves basic info about running job pairs for the given queue id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetRunningJobPairsByQueue;
+CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+			-- Where the job_pair is running on the input Queue
+			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
+		WHERE (enqueued.queue_id = _id AND status_code = 4)
 		ORDER BY job_pairs.sge_id ASC
 		LIMIT _cap;
 	END //
@@ -781,10 +796,10 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 -- Updates a job pairs node Id
 -- Author: Wyatt	
 DROP PROCEDURE IF EXISTS UpdateNodeId;
-CREATE PROCEDURE UpdateNodeId (IN _jobPairId INT, IN _nodeId INT)
+CREATE PROCEDURE UpdateNodeId (IN _jobPairId INT, IN _nodeName VARCHAR(128))
 	BEGIN
 		UPDATE job_pairs
-		SET node_id = _nodeId
+		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName)
 		WHERE id = _jobPairId;
 	END //
 	
