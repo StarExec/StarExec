@@ -26,10 +26,14 @@ else
 		if [ "$1" == "-fb2" ]; then
 			SVN_URL=$SVN_URL/branches/fb2/starexec
 		else
-		    if [ "$1" == "-wkshop" ]; then
-			SVN_URL=$SVN_URL/branches/wkshop/starexec
+		    if [ "$1" == "-deployed" ]; then
+                       if [ "$2" == "" ] ; then
+                         echo "Please supply the name of the deployed release with -deployed.";
+                         exit;
+                       fi
+		       SVN_URL=$SVN_URL/deployed/$2/starexec
 		    else
-			echo "please specify a repository to use [-trunk, -fb1, -fb2, -wkshop]"
+			echo "please specify a branch to use [-trunk, -fb1, -fb2, -deployed DATE]"
 			exit 0
 		    fi
 		fi
