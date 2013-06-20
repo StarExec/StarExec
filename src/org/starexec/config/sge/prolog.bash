@@ -177,7 +177,7 @@ JOB_ERROR=`grep 'job error:' $SGE_STDOUT_PATH`
 if [ "$JOB_ERROR" = "" ]; then
 	log "running $SOLVER_NAME ($CONFIG_NAME) on $BENCH_NAME"
 	sendStatus $STATUS_RUNNING
-	sendNode $HOSTNAME
+	sendNode "$HOSTNAME"
 fi
 
 exit 0
