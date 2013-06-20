@@ -50,12 +50,13 @@ public class Benchmarks {
 	 */
 	public static boolean associate(List<Integer> benchIds, int spaceId) {
 		Connection con = null;			
+		CallableStatement procedure = null;
 
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 
-			CallableStatement procedure = con.prepareCall("{CALL AssociateBench(?, ?)}");
+			procedure = con.prepareCall("{CALL AssociateBench(?, ?)}");
 
 			for(int bid : benchIds) {
 				procedure.setInt(1, bid);
@@ -69,6 +70,7 @@ public class Benchmarks {
 			log.error(e.getMessage(), e);	
 			Common.doRollback(con);
 		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -85,16 +87,24 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	protected static boolean addBenchAttr(Connection con, int benchId, String key, String val) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddBenchAttr(?, ?, ?)}");
+	    CallableStatement procedure = null;
+	    try {
+		procedure = con.prepareCall("{CALL AddBenchAttr(?, ?, ?)}");
 		procedure.setInt(1, benchId);
 		procedure.setString(2, key);
 		procedure.setString(3, val);
 		procedure.executeUpdate();
-		return true;
+	    }
+	    finally {
+		Common.safeClose(procedure);
+	    }
+	    return true;
 	}
 
 	protected static boolean addBenchAttrTen(Connection con, int benchId, Entry<Object,Object>[] entryArray , int index) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddBenchAttrTen(?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?)}");
+	    CallableStatement procedure = null;
+	    try {
+		procedure = con.prepareCall("{CALL AddBenchAttrTen(?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?)}");
 
 		for (int i = index; i < index+10; i++)
 		{
@@ -103,7 +113,11 @@ public class Benchmarks {
 			procedure.setString((i-index)*3+3, (String)entryArray[i].getValue());
 		}
 		procedure.executeUpdate();
-		return true;
+	    } 
+	    finally {
+		Common.safeClose(procedure);
+	    }
+	    return true;
 	}
 
 	/**
@@ -503,13 +517,13 @@ public class Benchmarks {
 	 */
 	protected static int add(Connection conParam, Benchmark benchmark, int spaceId) throws Exception {				
 		Connection con = null;
+		CallableStatement procedure = null;			
 		try{
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 
 			log.debug("Driver Name = " + con.getMetaData().getDriverName());
 			log.debug("Driver Version = " + con.getMetaData().getDriverVersion());
-			CallableStatement procedure = null;			
 			Properties attrs = benchmark.getAttributes();
 			log.info("adding benchmark " + benchmark.getName() + " to space " + spaceId);
 			// Setup normal information for the benchmark
@@ -553,7 +567,8 @@ public class Benchmarks {
 			Common.doRollback(con);
 			return -1;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 
@@ -571,11 +586,11 @@ public class Benchmarks {
 	 */
 	protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct, Integer benchIndex) throws Exception {				
 		Connection con = null;
+		CallableStatement procedure = null;			
 		try{
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 
-			CallableStatement procedure = null;			
 			Properties attrs = benchmark.getAttributes();
 			log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
 			// Setup normal information for the benchmark
@@ -623,7 +638,8 @@ public class Benchmarks {
 			Common.doRollback(con);
 			return null;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 
@@ -673,10 +689,10 @@ public class Benchmarks {
 			String includePath) {
 
 		Connection con = null;
+		CallableStatement procedure = null;			
 		try {	
 			con = Common.getConnection();
 			Common.beginTransaction(con);
-			CallableStatement procedure = null;			
 
 			log.debug("Adding dependency");
 			log.debug("primaryBenchId = " + primaryBenchId);
@@ -696,6 +712,7 @@ public class Benchmarks {
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
 		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		return false;
@@ -753,10 +770,11 @@ public class Benchmarks {
 	private static Integer getBenchIdByName(Integer spaceId, String benchName) {
 		
 		Connection con = null;			
+		CallableStatement procedure = null;
 		log.debug("(Within Method) Looking for Benchmark " + benchName +" in Space " + spaceId);
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetBenchByName(?,?)}");
+			procedure = con.prepareCall("{CALL GetBenchByName(?,?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setString(2, benchName);
 
@@ -775,7 +793,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		return -1;
 	}
@@ -912,11 +931,12 @@ public class Benchmarks {
 	 */
 	public static boolean delete(int id){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		File benchToDelete = null;
 		try {
 			con = Common.getConnection();
 
-			CallableStatement procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
+			procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
@@ -935,7 +955,8 @@ public class Benchmarks {
 		} catch (Exception e){		
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
 		return false;
@@ -955,14 +976,24 @@ public class Benchmarks {
 	}
 	
 	protected static boolean isBenchmarkDeleted(Connection con, int benchId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL IsBenchmarkDeleted(?)}");
+	    CallableStatement procedure = null;
+	    ResultSet results = null;
+	    boolean deleted=false;
+	    try {
+		procedure = con.prepareCall("{CALL IsBenchmarkDeleted(?)}");
 		procedure.setInt(1, benchId);					
-		ResultSet results = procedure.executeQuery();
-		boolean deleted=false;
+		results = procedure.executeQuery();
+		
 		if (results.next()) {
-			deleted=results.getBoolean("benchDeleted");
+		    deleted=results.getBoolean("benchDeleted");
 		}
-		return deleted;
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
+	    return deleted;
+	    
 	}
 
 	/**
@@ -1034,11 +1065,14 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	protected static Properties getAttributes(Connection con, int benchId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL GetBenchAttrs(?)}");
+	    CallableStatement procedure = null;
+	    ResultSet results = null;
+	    Properties prop = new Properties();
+	    try {
+		procedure = con.prepareCall("{CALL GetBenchAttrs(?)}");
 		procedure.setInt(1, benchId);					
-		ResultSet results = procedure.executeQuery();
-
-		Properties prop = new Properties();
+		results = procedure.executeQuery();
+		
 		HashMap<String,String> attrMap = new HashMap<String, String>();
 		while(results.next()){
 			attrMap.put(results.getString("attr_key"), results.getString("attr_value"));
@@ -1047,8 +1081,12 @@ public class Benchmarks {
 		if(prop.size() <= 0) {
 			prop = null;
 		}
-
-		return prop;
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
+	    return prop;
 	}
 	
 	
@@ -1081,15 +1119,23 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 */
 	protected static TreeMap<String,String> getSortedAttributes (Connection con, int benchId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL GetBenchAttrs(?)}");
+	    CallableStatement procedure = null;  
+	    ResultSet results = null;  
+	    TreeMap<String,String> sortedMap2 = new TreeMap<String,String>();
+	    try {
+		procedure = con.prepareCall("{CALL GetBenchAttrs(?)}");
 		procedure.setInt(1, benchId);					
-		ResultSet results = procedure.executeQuery();
+		results = procedure.executeQuery();
 
-		TreeMap<String,String> sortedMap2 = new TreeMap<String,String>();
 		while (results.next()){
 			sortedMap2.put(results.getString("attr_key"), results.getString("attr_value"));
 		}
-		return sortedMap2;
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
+	    return sortedMap2;
 	}
 
 	/**
@@ -1099,12 +1145,16 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	protected static Benchmark get(Connection con, int benchId) throws Exception {					
-		CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
+	    CallableStatement procedure = null;  
+	    ResultSet results = null;  
+	    Benchmark b = null;
+	    try {
+		procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
 		procedure.setInt(1, benchId);					
-		ResultSet results = procedure.executeQuery();
+		results = procedure.executeQuery();
 
 		if(results.next()){
-			Benchmark b = new Benchmark();
+			b = new Benchmark();
 			b.setId(results.getInt("bench.id"));
 			b.setUserId(results.getInt("bench.user_id"));
 			b.setName(results.getString("bench.name"));
@@ -1123,11 +1173,15 @@ public class Benchmarks {
 			t.setDiskSize(results.getLong("types.disk_size"));
 
 			b.setType(t);
-			Common.closeResultSet(results);
 			return b;				
-		}													
+		}						
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
 
-		return null;
+	    return null;
 	}
 
 	/**
@@ -1173,12 +1227,14 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getBySpace(int spaceId) {
 		Connection con = null;			
+		CallableStatement procedure = null;  
+		ResultSet results = null;  
 
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
+			procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
 			procedure.setInt(1, spaceId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
@@ -1207,6 +1263,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1222,13 +1280,15 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getMinBySpace(int spaceId) {
 		Connection con = null;			
+		CallableStatement procedure = null;  
+		ResultSet results = null;  
+		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 		try {
 			con = Common.getConnection();	
 			//Test performance before writing new SQL method
-			CallableStatement procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
+			procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
 			procedure.setInt(1, spaceId);					
-			ResultSet results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			results = procedure.executeQuery();
 
 			while(results.next()){
 				Benchmark b = new Benchmark();
@@ -1242,6 +1302,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1256,14 +1318,16 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getMinForHierarchy(int spaceId, int userId) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();	
 			//Test performance before writing new SQL method
-			CallableStatement procedure = con.prepareCall("{CALL GetHierBenchmarksById(?,?,?)}");
+			procedure = con.prepareCall("{CALL GetHierBenchmarksById(?,?,?)}");
 			procedure.setInt(1, spaceId);	
 			procedure.setInt(2, userId);	
 			procedure.setInt(3, R.PUBLIC_USER_ID);	
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
@@ -1278,6 +1342,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1294,12 +1360,13 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getByOwner(int userId) {
 		Connection con = null;			
-
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
+			procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
 			procedure.setInt(1, userId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 
@@ -1325,6 +1392,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1341,12 +1410,13 @@ public class Benchmarks {
 	 */
 	public static List<BenchmarkDependency> getBenchDependencies(int benchmarkId) {
 		Connection con = null;			
-
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL getBenchmarkDependencies(?)}");
+			procedure = con.prepareCall("{CALL getBenchmarkDependencies(?)}");
 			procedure.setInt(1, benchmarkId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<BenchmarkDependency> dependencies = new LinkedList<BenchmarkDependency>();
 
 			while(results.next()){
@@ -1367,6 +1437,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1386,10 +1458,10 @@ public class Benchmarks {
 	 */
 	public static boolean updateDetails(int id, String name, String description, boolean isDownloadable, int benchTypeId){
 		Connection con = null;			
-
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL UpdateBenchmarkDetails(?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateBenchmarkDetails(?, ?, ?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setString(2, name);
 			procedure.setString(3, description);
@@ -1402,6 +1474,7 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1462,9 +1535,10 @@ public class Benchmarks {
 	 */
 	private static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int id, boolean getDeleted, String procedureName) {
 		Connection con = null;			
+		CallableStatement procedure = null;			
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure;			
 
 			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
@@ -1473,8 +1547,8 @@ public class Benchmarks {
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, id);
 			procedure.setString(6, searchQuery);
-
-			ResultSet results = procedure.executeQuery();
+			
+			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
@@ -1500,6 +1574,8 @@ public class Benchmarks {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1516,12 +1592,14 @@ public class Benchmarks {
 	 */
 	public static int getCountInSpace(int spaceId) {
 		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
 
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkCountInSpace(?)}");
+			procedure = con.prepareCall("{CALL GetBenchmarkCountInSpace(?)}");
 			procedure.setInt(1, spaceId);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if (results.next()) {
 				return results.getInt("benchCount");
@@ -1529,6 +1607,8 @@ public class Benchmarks {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1537,13 +1617,14 @@ public class Benchmarks {
 
 	public static boolean isPublic(int benchId) {
 		Connection con = null;
-
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL IsBenchPublic(?,?)}");
+			procedure = con.prepareCall("{CALL IsBenchPublic(?,?)}");
 			procedure.setInt(1, benchId);
 			procedure.setInt(2, R.PUBLIC_USER_ID);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if (results.next()) {
 				return (results.getInt("benchPublic") > 0);
@@ -1551,6 +1632,8 @@ public class Benchmarks {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1567,11 +1650,13 @@ public class Benchmarks {
 	 */
 	public static int isNameEditable(int benchId) {
 		Connection con =null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
 		try {
 			con=Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetBenchAssoc(?)}");
+			procedure = con.prepareCall("{CALL GetBenchAssoc(?)}");
 			procedure.setInt(1, benchId);
-			ResultSet results=procedure.executeQuery();
+			results = procedure.executeQuery();
 			int id=-1;
 			if (results.next()) {
 				id=results.getInt("space_id");
@@ -1590,6 +1675,8 @@ public class Benchmarks {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		return -1;
@@ -1730,12 +1817,14 @@ public class Benchmarks {
 	 */
 	public static int getBenchmarkCountByUser(int userId) {
 		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
 
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkCountByUser(?)}");
+			procedure = con.prepareCall("{CALL GetBenchmarkCountByUser(?)}");
 			procedure.setInt(1, userId);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if (results.next()) {
 				return results.getInt("benchmarkCount");
@@ -1743,6 +1832,8 @@ public class Benchmarks {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 

@@ -299,7 +299,7 @@ public abstract class JobManager {
 	jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
 	jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
 
-	log.debug("The jobscript is: "+jobScript);
+	//log.debug("The jobscript is: "+jobScript);
 
 	String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 	File f = new File(scriptPath);

@@ -72,6 +72,7 @@
 			<property key="MAX_PAIR_VMEM" value="5120" /> <!-- in MB -->
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
+			<property key="CLUSTER_UPDATE_PERIOD" value="3" />
    		</class>
     </configuration>
 	<configuration name="starexec_astump" inherit="stardev">

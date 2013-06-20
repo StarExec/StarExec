@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -191,18 +192,28 @@ public class Common {
 		}
 
 	}
-	
-	/**
-	 * Method which closes a result set
-	 * @param r The result set close
-	 */
-	protected static void closeResultSet(ResultSet r) {
+	protected static void safeClose(Statement c) {
 		try {
-			if(r != null) {
-				r.close();
+			if(c != null && !c.isClosed()) {
+				c.close();
 			}
 		} catch (Exception e){
-			log.error("Close Result set says " + e);
+			// Do nothing
+			log.error("Safe Close says " + e);
 		}
 	}
+	protected static void safeClose(ResultSet c) {
+		try {
+			if(c != null && !c.isClosed()) {
+				c.close();
+			}
+		} catch (Exception e){
+			// Do nothing
+			log.error("Safe Close says " + e);
+		}
+	}
+	
+    //	protected static void closeResultSet(ResultSet r) {
+    //	    safeClose(r);
+    //	}
 }

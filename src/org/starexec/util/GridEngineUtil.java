@@ -237,8 +237,8 @@ public class GridEngineUtil {
 	while(matcher.find()) {
 	    // Parse out the queue and node names from the regex parser and add it to the return list			
 	    capture = matcher.group().split("@");
-	    log.debug("queue = " + capture[0]);
-	    log.debug("node = " + capture[1]);
+	    //log.debug("queue = " + capture[0]);
+	    //log.debug("node = " + capture[1]);
 	    Queues.associate(capture[0], capture[1]);
 	}
 				
@@ -297,11 +297,12 @@ public class GridEngineUtil {
 
 	    // Set all nodes as inactive (we will update them to active as we see them)
 	    Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
-
+	    
 	    // Read the nodes one at a time
 	    String line;		
 	    while((line = nodeResults.readLine()) != null) {
 		String name = line;							
+
 		// In the database, update the attributes for the node
 		Cluster.updateNode(name,  GridEngineUtil.getNodeDetails(name));				
 		// Set the node as active (because we just saw it!)

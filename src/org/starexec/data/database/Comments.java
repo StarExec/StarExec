@@ -28,10 +28,10 @@ public class Comments {
 	 */
 	public static boolean add(long id, long user_id, String desc, CommentType type) {
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = null;
 			
 			switch(type) {
 				case BENCHMARK:
@@ -57,7 +57,8 @@ public class Comments {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		log.warn("Failed to add the comment : "+ desc);
 		return false;
@@ -72,10 +73,10 @@ public class Comments {
 	 */
 	public static List<Comment> getAll(long id, CommentType cmtType) {
 		Connection con = null;
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;		
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = null;
 			
 			switch(cmtType) {
 				case BENCHMARK:
@@ -93,7 +94,7 @@ public class Comments {
 			
 			procedure.setLong(1, id);
 			
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Comment> comments = new LinkedList<Comment>();
 			
 			while (results.next()) {
@@ -113,7 +114,9 @@ public class Comments {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -127,10 +130,10 @@ public class Comments {
 	 */
 	public static boolean delete(long commentId) {
 		Connection con = null;			
+		CallableStatement procedure = null;			
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = null;			
 			
 			procedure = con.prepareCall("{CALL DeleteComment(?)}");
 			procedure.setLong(1, commentId);		
@@ -140,6 +143,7 @@ public class Comments {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		log.warn("unable to delete the comment : " + commentId);

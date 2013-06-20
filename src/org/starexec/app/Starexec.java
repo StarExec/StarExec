@@ -27,7 +27,7 @@ import org.starexec.util.Validator;
  * @author Tyler Jensen
  */
 public class Starexec implements ServletContextListener {
-    private Logger log;
+    private static Logger log;
     private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
     private Session session; // GridEngine session
 	
@@ -102,6 +102,13 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
 	}	
 	
+    static protected void logMem(String str) {
+	int kb = 1024;
+	Runtime rt = Runtime.getRuntime();
+	rt.gc();
+	log.info(str+": current memory used is "+((1.0 * rt.totalMemory() - rt.freeMemory())/kb)+"kb");
+    }
+
 	/**
 	 * Creates and schedules periodic tasks to be run.
 	 */
@@ -110,7 +117,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable updateClusterTask = new RobustRunnable("updateClusterTask") {			
 			@Override
 			protected void dorun() {
-			    log.info("updateClusterTask (periodic)");
+			    logMem("updateClusterTask (periodic)");
 			    GridEngineUtil.loadWorkerNodes();
 			    GridEngineUtil.loadQueues();
 			}
@@ -129,7 +136,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable submitJobsTask = new RobustRunnable("submitJobTasks") {			
 			@Override
 			protected void dorun() {
-			    log.info("submitJobsTask (periodic)");
+			    logMem("submitJobsTask (periodic)");
 			    try {
 				JobManager.checkPendingJobs();
 			    }
@@ -161,7 +168,7 @@ public class Starexec implements ServletContextListener {
 
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
-		    //		    taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
+		    //taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);

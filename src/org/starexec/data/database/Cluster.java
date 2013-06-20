@@ -47,28 +47,34 @@ public class Cluster {
 	 * @author Tyler Jensen
 	 */
 	protected static WorkerNode getNodeDetails(Connection con, int id) throws Exception {				
-		CallableStatement procedure = con.prepareCall("{CALL GetNodeDetails(?)}");
+	    CallableStatement procedure = null;
+	    ResultSet results = null;
+	    WorkerNode node = new WorkerNode();
+	    try {
+		procedure = con.prepareCall("{CALL GetNodeDetails(?)}");
 		procedure.setInt(1, id);			
-		ResultSet results = procedure.executeQuery();
-		WorkerNode node = new WorkerNode();
+		results = procedure.executeQuery();
 		
 		if(results.next()){
-			node.setName(results.getString("name"));
-			node.setId(results.getInt("id"));
-			node.setStatus(results.getString("status"));
-			
-			// Start from 4 (first three are ID, name and status)
-			for(int i = 4; i <= results.getMetaData().getColumnCount(); i++) {
-				// Add the column name/value to the node's attributes (get substrings at 1 to remove the prepended _ to prevent keyword conflicts)
-				if(results.getString(i) != null) {
-					// If there exists a value, add it
-					node.putAttribute(results.getMetaData().getColumnName(i).substring(1), results.getString(i).substring(1));
-				}
-			}				
-		}			
-		Common.closeResultSet(results);			
-		
-		return node;		
+		    node.setName(results.getString("name"));
+		    node.setId(results.getInt("id"));
+		    node.setStatus(results.getString("status"));
+		    
+		    // Start from 4 (first three are ID, name and status)
+		    for(int i = 4; i <= results.getMetaData().getColumnCount(); i++) {
+			// Add the column name/value to the node's attributes (get substrings at 1 to remove the prepended _ to prevent keyword conflicts)
+			if(results.getString(i) != null) {
+			    // If there exists a value, add it
+			    node.putAttribute(results.getMetaData().getColumnName(i).substring(1), results.getString(i).substring(1));
+			}
+		    }				
+		}
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
+	    return node;		
 	}
 	
 	/**
@@ -78,11 +84,12 @@ public class Cluster {
 	 */
 	public static List<WorkerNode> getAllNodes() {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetAllNodes}");
-			ResultSet results = procedure.executeQuery();
+			procedure = con.prepareCall("{CALL GetAllNodes}");
+			results = procedure.executeQuery();
 			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 			
 			while(results.next()){
@@ -97,7 +104,9 @@ public class Cluster {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -111,12 +120,14 @@ public class Cluster {
 	 */
 	public static List<WorkerNode> getNodesForQueue(int id) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetNodesForQueue(?)}");
+			procedure = con.prepareCall("{CALL GetNodesForQueue(?)}");
 			procedure.setInt(1, id);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 			
 			while(results.next()){
@@ -131,7 +142,9 @@ public class Cluster {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -149,16 +162,18 @@ public class Cluster {
 	 */
 	public static boolean updateNode(String name, HashMap<String, String> attributes) {
 		Connection con = null;			
-		
+		CallableStatement procAddNode = null;		
+		CallableStatement procAddCol = null;
+		CallableStatement procUpdateAttr = null;
 		try {
 			con = Common.getConnection();
 			
 			// All or nothing!
 			Common.beginTransaction(con);
 			
-			CallableStatement procAddNode = con.prepareCall("{CALL AddNode(?)}");
-			CallableStatement procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
-			CallableStatement procUpdateAttr = con.prepareCall("{CALL UpdateNodeAttr(?, ?, ?)}");	
+			procAddNode = con.prepareCall("{CALL AddNode(?)}");
+			procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
+			procUpdateAttr = con.prepareCall("{CALL UpdateNodeAttr(?, ?, ?)}");	
 			
 			// First, add the node (MySQL will ignore this if it already exists)
 			procAddNode.setString(1, name);
@@ -189,7 +204,10 @@ public class Cluster {
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procAddNode);
+		    Common.safeClose(procAddCol);
+		    Common.safeClose(procUpdateAttr);
+		    Common.safeClose(con);
 		}
 		
 		log.debug(String.format("Node [%s] failed to be updated.", name));
@@ -213,11 +231,11 @@ public class Cluster {
 	 */
 	public static boolean setNodeStatus(String name, String status) {
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();
 			
-			CallableStatement procedure = null;
 			
 			if(name == null) {
 				// If no name was supplied, apply to all nodes
@@ -236,7 +254,8 @@ public class Cluster {
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		log.debug(String.format("Status for node [%s] failed to be updated.", (name == null) ? "ALL" : name));

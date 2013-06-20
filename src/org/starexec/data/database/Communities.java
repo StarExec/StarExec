@@ -24,11 +24,12 @@ public class Communities {
 	 */
 	public static List<Space> getAll() {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;		
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
-			ResultSet results = procedure.executeQuery();
+			procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
+			results = procedure.executeQuery();
 			List<Space> commSpaces = new LinkedList<Space>();
 			
 			while(results.next()){
@@ -44,7 +45,9 @@ public class Communities {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -70,12 +73,13 @@ public class Communities {
 	 */
 	public static Space getDetails(int id) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;		
 		try {			
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetCommunityById(?)}");
+			procedure = con.prepareCall("{CALL GetCommunityById(?)}");
 			procedure.setInt(1, id);					
-			ResultSet results = procedure.executeQuery();		
+			results = procedure.executeQuery();		
 			
 			if(results.next()){
 				Space s = new Space();
@@ -89,7 +93,9 @@ public class Communities {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -109,10 +115,10 @@ public class Communities {
 		}
 		
 		Connection con = null;			
-		
+		CallableStatement procedure = null;		
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, commId);
 			
@@ -120,13 +126,14 @@ public class Communities {
 			log.debug(String.format("User [id=%d] successfully left community [id=%d].", userId, commId));
 			return true;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		    log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
-		
 		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
 		return false;
+	
 	}
 
 	
@@ -140,20 +147,23 @@ public class Communities {
 	 */
 	public static boolean isCommunity(int spaceId) {
 		Connection con = null;
-
+		CallableStatement procedure = null;
+		ResultSet result = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL IsCommunity(?)}");
+			procedure = con.prepareCall("{CALL IsCommunity(?)}");
 			procedure.setInt(1, spaceId);
 
-			ResultSet result = procedure.executeQuery();
+			result = procedure.executeQuery();
 
 			return result.next();
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(result);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 
 		return false;
@@ -168,13 +178,15 @@ public class Communities {
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0");
 		
 		try {			
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
+			procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
 			procedure.setInt(1, id);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
 			if (results.next()) {
 				procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
@@ -204,7 +216,9 @@ public class Communities {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return listOfDefaultSettings;
@@ -220,9 +234,10 @@ public class Communities {
 	 */
 	public static boolean setDefaultSettings(int id, int num, int setting) {
 		Connection con = null;			
+		CallableStatement procedure = null;
 		try {			
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
 			if ((num==1 || num==5) && setting==-1) {
@@ -238,7 +253,8 @@ public class Communities {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return true;

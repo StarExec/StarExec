@@ -26,11 +26,11 @@ public class Processors {
 	 */
 	public static int add(Processor processor) {
 		Connection con = null;			
+		CallableStatement procedure = null;			
 		
 		try {
 			con = Common.getConnection();		
 			
-			CallableStatement procedure = null;			
 			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?, ?, ?)}");			
 			procedure.setString(1, processor.getName());
 			procedure.setString(2, processor.getDescription());
@@ -47,6 +47,7 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -62,9 +63,10 @@ public class Processors {
 	public static boolean delete(int processorId){
 		Connection con = null;			
 		File processorFile = null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
+			procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
 			procedure.setInt(1, processorId);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
@@ -85,7 +87,8 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		log.debug(String.format("Removal of processor [id=%d] failed.", processorId));
@@ -99,29 +102,31 @@ public class Processors {
 	 * @author Tyler Jensen
 	 */
 	protected static Processor get(Connection con, int processorId) throws Exception {						
-		CallableStatement procedure = con.prepareCall("{CALL GetProcessorById(?)}");
+	    CallableStatement procedure = null;
+	    ResultSet results = null;
+	    try {
+		procedure = con.prepareCall("{CALL GetProcessorById(?)}");
 		procedure.setInt(1, processorId);
-		ResultSet results = procedure.executeQuery();			
-		try {
-			if(results.next()){							
-				Processor t = new Processor();
-				t.setId(results.getInt("id"));
-				t.setCommunityId(results.getInt("community"));
-				t.setDescription(results.getString("description"));
-				t.setName(results.getString("name"));
-				t.setFilePath(results.getString("path"));
-				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
-				t.setDiskSize(results.getLong("disk_size"));
-				return t;					
-			}
-		} catch (Exception e) {
-			
-		} finally {
-			Common.closeResultSet(results);
+		results = procedure.executeQuery();			
+		if(results.next()){							
+		    Processor t = new Processor();
+		    t.setId(results.getInt("id"));
+		    t.setCommunityId(results.getInt("community"));
+		    t.setDescription(results.getString("description"));
+		    t.setName(results.getString("name"));
+		    t.setFilePath(results.getString("path"));
+		    t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+		    t.setDiskSize(results.getLong("disk_size"));
+		    return t;					
 		}
-									
-		
-		return null;
+	    } catch (Exception e) {
+		log.error("DB problem looking up a processor by id: "+e, e);
+	    } finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
+	    
+	    return null;
 	}
 	
 	/**	 
@@ -152,12 +157,13 @@ public class Processors {
 	 */
 	public static List<Processor> getAll(ProcessorType type){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetAllProcessors(?)}");
+			procedure = con.prepareCall("{CALL GetAllProcessors(?)}");
 			procedure.setInt(1, type.getVal());
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Processor> processors = new LinkedList<Processor>();
 			
 			while(results.next()){
@@ -176,7 +182,9 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -190,13 +198,14 @@ public class Processors {
 	 */
 	public static List<Processor> getByCommunity(int communityId, ProcessorType type) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;		
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();					
-			CallableStatement procedure = con.prepareCall("{CALL GetProcessorsByCommunity(?, ?)}");
+			procedure = con.prepareCall("{CALL GetProcessorsByCommunity(?, ?)}");
 			procedure.setInt(1, communityId);
 			procedure.setInt(2, type.getVal());
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Processor> processors = new LinkedList<Processor>();
 			
 			while(results.next()){							
@@ -215,7 +224,9 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -230,10 +241,10 @@ public class Processors {
 	 */
 	public static boolean updateDescription(int processorId, String newDesc){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateProcessorDescription(?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateProcessorDescription(?, ?)}");
 			procedure.setInt(1, processorId);					
 			procedure.setString(2, newDesc);
 			
@@ -242,7 +253,8 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return false;
@@ -258,10 +270,10 @@ public class Processors {
 	 */
 	public static boolean updateName(int processorId, String newName){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateProcessorName(?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateProcessorName(?, ?)}");
 			procedure.setInt(1, processorId);					
 			procedure.setString(2, newName);
 			
@@ -270,7 +282,8 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return false;
@@ -286,10 +299,10 @@ public class Processors {
 	 */
 	public static boolean updatePath(int processorId, String newPath){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateProcessorPath(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateProcessorPath(?, ?, ?)}");
 			procedure.setInt(1, processorId);					
 			procedure.setString(2, newPath);
 			// Also update the disk_size for this processor with the new path's disk size
@@ -301,7 +314,8 @@ public class Processors {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return false;
