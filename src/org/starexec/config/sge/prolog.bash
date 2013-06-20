@@ -164,7 +164,6 @@ echo "execution host: $HOSTNAME"
 echo ""
 
 sendStatus $STATUS_PREPARING
-sendNode $HOSTNAME
 cleanWorkspace
 fillDependArrays
 copyDependencies
