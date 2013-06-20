@@ -718,7 +718,7 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.id=_Id and deleted=false;
+		WHERE job_pairs.id=_Id;
 	END //
 	
 -- Gets the job pair with the given id
@@ -728,7 +728,7 @@ CREATE PROCEDURE GetJobPairBySGE(IN _Id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.sge_id=_Id and deleted=false;
+		WHERE job_pairs.sge_id=_Id;
 	END //
 	
 DROP PROCEDURE IF EXISTS IsJobDeleted;
