@@ -844,7 +844,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 -- Updates a job pairs node Id
 -- Author: Wyatt	
 DROP PROCEDURE IF EXISTS UpdateNodeId;
-CREATE PROCEDURE UpdateNodeId (IN _jobPairId INT, IN _nodeName VARCHAR(128))
+CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128))
 	BEGIN
 		UPDATE job_pairs
 		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName)
