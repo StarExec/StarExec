@@ -70,14 +70,12 @@ function cleanWorkspace {
 
 function sendStatus {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)"
-    log "mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)""
 	log "sent job status $1 to $REPORT_HOST"
 	return $?
 }
 
 function sendNode {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, $1 )"
-    log "mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, $1 )""
 	log "sent Node Id $1 to $REPORT_HOST"
 	return $?
 }
