@@ -11,6 +11,10 @@
 		String userFullName = t_user.getFullName();
 		List<Job> jList = Jobs.getByUserId(t_user.getId());
 		
+		User user = SessionUtil.getUser(request);
+		long disk_usage = Users.getDiskUsage(user.getId());
+
+		
 		if(t_user != null) {
 			// Ensure the user visiting this page is the owner of the solver
 			if(userId != id){
@@ -19,6 +23,8 @@
 			request.setAttribute("owner", owner);
 			request.setAttribute("t_user", t_user);
 			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
+			request.setAttribute("diskQuota", Util.byteCountToDisplaySize(user.getDiskQuota()));
+			request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}
@@ -83,6 +89,29 @@
 			</tr>
 		</table>
 	</fieldset>	
+	<c:if test="${owner}">
+		<fieldset>
+			<legend>user disk quota</legend>
+			<table id="diskUsageTable" class="shaded">
+				<thead>
+					<tr>
+						<th>attribute</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>disk quota</td>
+						<td>${diskQuota}</td>
+					</tr>
+					<tr>
+						<td>current disk usage</td>
+						<td>${diskUsage}</td>
+					</tr>
+				</tbody>			
+			</table>
+		</fieldset>
+	</c:if>
 	<c:if test="${owner}">
 		<fieldset id="solverField">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>

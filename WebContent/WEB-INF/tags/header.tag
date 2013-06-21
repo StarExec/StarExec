@@ -22,7 +22,7 @@
 				<li class="round">
 					<a href="#">account</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="/${starexecRoot}/secure/edit/account.jsp">edit</a></li>  
+			            <li class="round"><a href="/${starexecRoot}/secure/details/user.jsp?id=${user.id}">profile</a></li>  
 			            <li class="round"><a href="#" onclick="javascript:logout();">logout</a></li>  
 			        </ul>  
 				</li>

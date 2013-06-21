@@ -86,27 +86,6 @@
 		</div>
 	</fieldset>
 	<fieldset>
-		<legend>user disk quota</legend>
-		<table id="diskUsageTable" class="shaded">
-			<thead>
-				<tr>
-					<th>attribute</th>
-					<th>value</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>disk quota</td>
-					<td>${diskQuota}</td>
-				</tr>
-				<tr>
-					<td>current disk usage</td>
-					<td>${diskUsage}</td>
-				</tr>
-			</tbody>			
-		</table>
-	</fieldset>
-	<fieldset>
 		<legend>password</legend>
 		<form id="changePassForm">
 			<table id="passwordTable" class="shaded">
