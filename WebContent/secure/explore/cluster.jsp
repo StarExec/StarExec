@@ -21,7 +21,7 @@
 						<th>benchmark</th>
 						<th>solver</th>
 						<th>config</th>
-						<th>space</th>					
+						<th>path</th>					
 					</tr>
 				</thead>			
 			</table>
