@@ -356,10 +356,8 @@ public class Shell {
 			
 			if (c.equals(R.COMMAND_COPYSOLVER)) {
 				serverStatus=con.copyPrimitives(commandParams, true,"solver");
-				
 			} else if (c.equals(R.COMMAND_LINKSOLVER)) {
 				serverStatus=con.copyPrimitives(commandParams, false,"solver");
-				
 			}  else if (c.equals(R.COMMAND_COPYBENCH)) {
 				serverStatus=con.copyPrimitives(commandParams, true,"benchmark");
 			} else if(c.equals(R.COMMAND_LINKBENCH))  {
@@ -373,6 +371,7 @@ public class Shell {
 				serverStatus=con.copyPrimitives(commandParams, false, "user");
 			}
 			else {
+				
 				return R.ERROR_BAD_COMMAND;
 			}
 			
@@ -644,7 +643,7 @@ public class Shell {
 			status=handleCreateCommand(c, commandParams);
 		} else if (c.startsWith("ls")) {
 			status=handleLSCommand(c, commandParams);
-		} else if (c.startsWith("copy") || c.startsWith("mirror")) {
+		} else if (c.startsWith("copy") || c.startsWith("link")) {
 			status=handleCopyCommand(c,commandParams);
 		} else if (c.startsWith("remove")) {
 			status=handleRemoveCommand(c,commandParams);

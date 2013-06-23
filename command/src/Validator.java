@@ -463,7 +463,7 @@ public class Validator {
 		
 		if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
 			String traversalMethod=commandParams.get(R.PARAM_TRAVERSAL);
-			if (!traversalMethod.equals(R.ARG_ROUNDROBIN) && traversalMethod.equals(R.ARG_DEPTHFIRST)) {
+			if (!traversalMethod.equals(R.ARG_ROUNDROBIN) && !traversalMethod.equals(R.ARG_DEPTHFIRST)) {
 				return R.ERROR_BAD_TRAVERSAL_TYPE;
 			}
 		}

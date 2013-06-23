@@ -333,7 +333,7 @@ public class RESTServices {
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
 	 * @author Eric Burns*/
-	@POST
+	@GET
 	@Path("/jobs/{id}/solvers/pagination")
 	@Produces("application/json")
 	public String getJobStatsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {

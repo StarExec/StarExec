@@ -264,29 +264,3 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		showMessage('error',"Internal error populating data table",5000);
 	});
 }
-
-function solverPaginationHandler(sSource, aoData, fnCallback) {
-	var jobId = getParameterByName('id');
-	
-	$.post(  
-			sSource + jobId + "/solvers/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					default:
-						// Replace the current page with the newly received page
-						fnCallback(nextDataTablePage);
-						break;
-				}
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating summary table",5000);
-	});
-}
