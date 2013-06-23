@@ -1,0 +1,11 @@
+fieldset {
+	width: 750px;	
+}
+
+#incompleteHead, #completeHead, #configHead {
+	width: 18%;
+}
+
+.incompleteHead, .completeHead, .configHead {
+	width: 18%;
+}
