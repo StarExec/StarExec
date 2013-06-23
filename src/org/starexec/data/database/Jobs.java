@@ -95,7 +95,7 @@ public class Jobs {
 		} else {
 			procedure.setNull(6, java.sql.Types.INTEGER);
 		}		
-		procedure.setInt(6, job.getPrimarySpace());
+		procedure.setInt(7, job.getPrimarySpace());
 		// The procedure will return the job's new ID in this parameter
 		procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
