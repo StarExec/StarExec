@@ -101,7 +101,7 @@ public class Jobs {
 		procedure.executeUpdate();			
 
 		// Update the job's ID so it can be used outside this method
-		job.setId(procedure.getInt(7));		
+		job.setId(procedure.getInt(8));		
 	}
 
 
