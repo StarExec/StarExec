@@ -54,6 +54,7 @@ public class RESTHelpers {
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
 	private static final String TOTAL_RECORDS = "iTotalRecords";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
+	private static final String SPACE_ID= "spaceId";
 	
 	private static final int EMPTY = 0;
 	private static final int   ASC = 0;
@@ -407,6 +408,10 @@ public class RESTHelpers {
 	
 	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
 		return getNextDataTablesPage(type,id,request,1);
+	}
+	protected static JsonObject getNextDataTablesPageForJobSummaryInSpace(Primitive type, int id, HttpServletRequest request, int spaceId) {
+		request.setAttribute(SPACE_ID, spaceId);
+		return getNextDataTablesPage(type,id,request,2);
 	}
 	
 	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request) {
@@ -965,15 +970,28 @@ public class RESTHelpers {
 		    	List<JobSolver> jobSolversToDisplay = null;
 	    		int [] totalJobSolvers= new int[1];
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-	    		jobSolversToDisplay = Jobs.getJobStatsForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id,													// Job id 
-	    				totalJobSolvers										// reference for storing TOTAL_ENTRIES
-				);
+	    		if (forPage==1) {
+	    			jobSolversToDisplay = Jobs.getJobStatsForNextPage(
+		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id,													// Job id 
+		    				totalJobSolvers										// reference for storing TOTAL_ENTRIES
+					);
+	    		} else {
+	    			jobSolversToDisplay = Jobs.getJobStatsForNextPageInSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id,													// Job id 
+		    				totalJobSolvers,										// reference for storing TOTAL_ENTRIES
+		    				attrMap.get(SPACE_ID)
+					);
+	    		}
+	    		
 	    		
 	    		
 	    		/**

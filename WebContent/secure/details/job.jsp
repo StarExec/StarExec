@@ -148,6 +148,7 @@
 		<ul id="actionList">
 			<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
 			<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
+			<li><a id="spaceSummary" href="/${starexecRoot}/secure/details/spaceSummary.jsp?sid=${job.primarySpace}&id=${jobId}" >space details</a></li>
 			<c:if test="${job.userId == userId}"> 
 				<li><button type="button" id="deleteJob">delete job</button></li>
 			</c:if>

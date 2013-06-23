@@ -71,6 +71,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -104,6 +105,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -134,6 +136,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -171,6 +174,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -217,6 +221,7 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -250,6 +255,7 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -282,6 +288,7 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -318,6 +325,7 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
+						primary_space,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -639,6 +647,19 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
+
+-- Gets all the job pairs for a given job in a particular space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsByJobInSpace;
+CREATE PROCEDURE GetJobPairsByJobInSpace(In _jobId INT, IN _spaceId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs 				JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN status_codes AS status ON job_pairs.status_code=status.code
+		WHERE job_id=_jobId AND space_id =_spaceId;
+	END //
 	
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
 -- Author: Eric Burns
@@ -801,10 +822,10 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
-CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _preProcessor INT, IN _postProcessor INT, OUT _id INT)
+CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _preProcessor INT, IN _postProcessor INT, IN _spaceId INT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, pre_processor, post_processor)
-		VALUES (_userId, _name, _desc, _queueId, _preProcessor, _postProcessor);
+		INSERT INTO jobs (user_id, name, description, queue_id, pre_processor, post_processor, primary_space)
+		VALUES (_userId, _name, _desc, _queueId, _preProcessor, _postProcessor, _spaceId);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	

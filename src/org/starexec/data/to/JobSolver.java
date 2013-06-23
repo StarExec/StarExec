@@ -2,6 +2,12 @@ package org.starexec.data.to;
 
 import com.google.gson.annotations.Expose;
 
+/**
+ * This class stores the statistics for a single solver/configuration pair for a job
+ * @author Eric
+ *
+ */
+
 public class JobSolver extends Identifiable {
 	@Expose private Solver solver=null;
 	@Expose private Configuration configuration=null;

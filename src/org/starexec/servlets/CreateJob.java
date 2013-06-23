@@ -100,7 +100,6 @@ public class CreateJob extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
 			return;
 		}
-
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -109,7 +108,7 @@ public class CreateJob extends HttpServlet {
 				-1, //change to preprocessor ID when implemented
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)));
-
+		j.setPrimarySpace(space);
 		//Create the HashMap to be used for creating job-pair path
 		HashMap<Integer, String> SP = new HashMap<Integer, String>();
 		SP.put(space, Spaces.get(space).getName());

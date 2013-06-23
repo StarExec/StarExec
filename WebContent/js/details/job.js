@@ -5,7 +5,7 @@ $(document).ready(function(){
 	initDataTables();
 	setInterval(function() {
 		pairTable.fnDraw(false);
-		summaryTable.fnReloadAjax();
+		summaryTable.fnReloadAjax(null,null,true);
 	},10000);
 });
 
@@ -25,6 +25,12 @@ function initUI(){
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
+		}
+    });
+	
+	$("#spaceSummary").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-e"
 		}
     });
 	
@@ -172,7 +178,7 @@ function extendDataTableFunctions(){
 	};
 	
 	//allows refreshing a table that is using client-side processing (for the summary table)
-	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw )
+	jQuery.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw )
 	{
 	    if ( sNewSource !== undefined && sNewSource !== null ) {
 	        oSettings.sAjaxSource = sNewSource;

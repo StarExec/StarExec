@@ -24,6 +24,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	@Expose private String description = "no description";
 	private Queue queue = null;
 	@Expose private Timestamp createTime;
+	@Expose private int primarySpace;
 	private List<JobPair> jobPairs;
 	private HashMap<String, Integer> liteJobPairStats;
 	private Processor preProcessor;
@@ -48,6 +49,22 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 */
 	public void setUserId(int userId) {
 		this.userId = userId;
+	}
+	
+	/**
+	 * @return The space the job was created in
+	 */
+	public int getPrimarySpace() {
+		return primarySpace;
+	}
+	
+	/**
+	 * Sets the space this job was created in
+	 * @param space The ID of the space
+	 */
+	
+	public void setPrimarySpace(int space) {
+		this.primarySpace=space;
 	}
 
 	/**

@@ -195,22 +195,22 @@ public class Util {
 		return form;
 	}
 	
-    public static BufferedReader executeCommand(String command) {
-	String[] cmd = new String[1];
-	cmd[0] = command;
-	return executeCommand(cmd);
-    }
+	public static BufferedReader executeCommand(String command) {
+		String[] cmd = new String[1];
+		cmd[0] = command;
+		return executeCommand(cmd);
+	}
 
-    public static BufferedReader executeCommand(String command, String[] env) {
-	String[] cmd = new String[1];
-	cmd[0] = command;
-	return executeCommand(cmd,env);
-    }
+	public static BufferedReader executeCommand(String command, String[] env) {
+		String[] cmd = new String[1];
+		cmd[0] = command;
+		return executeCommand(cmd,env);
+	}
 
-    /** Convenience method for executeCommand() */
-    public static BufferedReader executeCommand(String[] command) {
-	return executeCommand(command,null);
-    }
+	/** Convenience method for executeCommand() */
+	public static BufferedReader executeCommand(String[] command) {
+		return executeCommand(command,null);
+	}
 
 	/**
 	 * Runs a command on the system command line (bash for unix, command line for windows)

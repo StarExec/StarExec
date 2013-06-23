@@ -375,15 +375,39 @@ function onTrashDrop(event, ui){
 	}
 }
 
+function processRemoveErrorCode(errorCode,prim) {
+	switch (errorCode) {
+	case 1:
+		showMessage('error', "an error occurred while processing your request; please try again", 5000);
+		break;
+	case 2:
+		showMessage('error', "you do not have sufficient privileges to remove " +prim+ "s from this space", 5000);
+		break;
+	case 3:
+		showMessage('error', "you do not have permission to remove "+prim+"s from one of the subspaces", 5000);
+		break;
+	case 4:
+		showMessage('error', "you can not remove other leaders of this space", 5000);
+		break;
+	case 5:
+		showMessage('error', "you can not remove yourself from this space in that way, " +
+				"instead use the 'leave' button to leave this community", 5000);
+		break;
+	case 6:
+		showMessge('error', "one of the users you are trying to remove is a leader of one of the subspaces", 5000);
+		break;
+	}
+}
+
 function processErrorCode(errorCode, prim, destName) {
 	switch (errorCode) {
 	case 1: // Database error
 		showMessage('error', "a database error occurred while processing your request", 5000);
 		break;
-	case 2: // Invalid parameters
+	case 3: // Invalid parameters
 		showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
 		break;
-	case 3: // No add permission in dest space
+	case 2: // No add permission in dest space
 		showMessage('error', "you do not have permission to add " +prim+ " to" + destName, 5000);
 		break;
 	case 4: // User doesn't belong to from space
@@ -888,13 +912,9 @@ function removeBenchmarks(selectedBenches){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(benchTable);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove benchmarks from this space", 5000);
-								break;
-							}
+							default:
+								processRemoveErrorCode(returnCode,"benchmark");
+							} 
 						},
 						"json"
 				).error(function(){
@@ -937,27 +957,10 @@ function removeUsers(selectedUsers){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(userTable);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove other users from this space", 5000);
-								break;
-							case 3:
-								showMessage('error', "you can not remove yourself from this space in that way, " +
-										"instead use the 'leave' button to leave this community", 5000);
-								break;
-							case 4:
-								showMessage('error', "you can not remove other leaders of this space", 5000);
-								break;
-							case 5:
-								showMessage('error', "you do not have permission to remove users from one of the subspaces", 5000);
-								break;
-							case 6:
-								showMessge('error', "one of the users you are trying to remove is a leader of one of the subspaces", 5000);
-								break;
-							}
-						},
+							default:
+								processRemoveErrorCode(returnCode,"user");
+						}
+							},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error removing users",5000);
@@ -978,19 +981,8 @@ function removeUsers(selectedUsers){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(userTable);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove other users from this space", 5000);
-								break;
-							case 3:
-								showMessage('error', "you can not remove yourself from this space in that way, " +
-										"instead use the 'leave' button to leave this community", 5000);
-								break;
-							case 4:
-								showMessage('error', "you can not remove other leaders of this space", 5000);
-								break;
+							default:
+								processRemoveErrorCode(returnCode,"user");
 							}
 						},
 						"json"
@@ -1034,15 +1026,8 @@ function removeSolvers(selectedSolvers){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(solverTable);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove solvers from this space", 5000);
-								break;
-							case 3:
-								showMessage('error', "you do not have permission to remove solvers from one of the subspaces", 5000);
-								break;
+							default:
+								processRemoveErrorCode(returnCode,"solver");
 							}
 						},
 						"json"
@@ -1065,12 +1050,8 @@ function removeSolvers(selectedSolvers){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(solverTable);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove solvers from this space", 5000);
-								break;
+							default:
+								processRemoveErrorCode(returnCode,"solver");
 							}
 						},
 						"json"
@@ -1113,12 +1094,8 @@ function removeJobs(selectedJobs){
 								// Remove the rows from the page and update the table size in the legend
 								updateTable(jobTable);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove jobs from this space", 5000);
-								break;
+							default:
+								processRemoveErrorCode(returnCode,"job");
 							}
 							jobTable.fnProcessingIndicator(false);
 						},
@@ -1156,15 +1133,8 @@ function removeSubspaces(selectedSubspaces,deletePrims){
 					//initSpaceExplorer();//should already be done
 					log('actual delete done');
 					break;
-				case 1:
-					showMessage('error', "an error occurred while processing your request; please try again", 5000);
-					break;
-				case 2:
-					showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
-					break;
-				case 3:
-					showMessage('error', "you do not have sufficient privileges to remove one or more of the subspaces", 5000);
-					break;
+				default:
+					processRemoveErrorCode(returnCode,"subspace");
 				}
 				//jobTable.fnProcessingIndicator(false);
 			},
@@ -1208,15 +1178,8 @@ function quickRemove(selectedSubspaces){
 								initSpaceExplorer();
 								removeSubspaces(selectedSubspaces,true);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
-								break;
-							case 3:
-								showMessage('error', "you do not have sufficient privileges to remove one or more of the subspaces", 5000);
-								break;
+							default:
+								processRemoveErrorCode(returnCode,"subspace");
 							}
 							//jobTable.fnProcessingIndicator(false);
 						},
@@ -1244,15 +1207,8 @@ function quickRemove(selectedSubspaces){
 								initSpaceExplorer();
 								removeSubspaces(selectedSubspaces,false);
 								break;
-							case 1:
-								showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "you do not have sufficient privileges to remove subspaces from this space", 5000);
-								break;
-							case 3:
-								showMessage('error', "you do not have sufficient privileges to remove one or more of the subspaces", 5000);
-								break;
+							default:
+								processRemoveErrorCode(returnCode,"subspace");
 							}
 							//jobTable.fnProcessingIndicator(false);
 						},

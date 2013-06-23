@@ -60,6 +60,42 @@ public class RESTServices {
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 	
+	private static final int ERROR_DATABASE=1;
+	private static final int ERROR_INVALID_WEBSITE_TYPE=1;
+	private static final int ERROR_EDIT_VAL_ABSENT=1;
+	private static final int ERROR_IDS_NOT_GIVEN=1;
+	private static final int ERROR_INVALID_COMMENT_TYPE=1;
+	private static final int ERROR_SPACE_ALREADY_PUBLIC=1;
+	private static final int ERROR_SPACE_ALREADY_PRIVATE=1;
+	
+	private static final int ERROR_INVALID_PERMISSIONS=2;
+	private static final int ERROR_INVALID_PASSWORD=2;
+	
+	
+	private static final int ERROR_INVALID_PARAMS=3;
+	private static final int ERROR_CANT_REMOVE_FROM_SUBSPACE=3;
+	private static final int ERROR_PASSWORDS_NOT_EQUAL=3;
+	private static final int ERROR_CANT_EDIT_LEADER_PERMS=3;
+	private static final int ERROR_CANT_PROMOTE_SELF=3;
+	
+	private static final int ERROR_NOT_IN_SPACE=4;
+	private static final int ERROR_CANT_REMOVE_LEADER=4;
+	private static final int ERROR_NOT_ALL_DELETED=4;
+	private static final int ERROR_WRONG_PASSWORD=4; 
+	
+	private static final int ERROR_CANT_REMOVE_SELF=5;
+	private static final int ERROR_SPACE_LOCKED=5;
+	
+	private static final int ERROR_CANT_LINK_TO_SUBSPACE=6;
+	private static final int ERROR_CANT_REMOVE_LEADER_IN_SUBSPACE=6;
+	
+	private static final int ERROR_NOT_UNIQUE_NAME=7;
+	
+	private static final int ERROR_INSUFFICIENT_QUOTA=8;
+	
+	private static final int ERROR_NAME_NOT_EDITABLE=9;
+	
+	private static final int ERROR_PRIM_ALREADY_DELETED=11;
 	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
@@ -285,13 +321,13 @@ public class RESTServices {
 		
 		// Ensure user can view the job they are requesting the pairs from
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
 		
-		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	/**
 	 * Returns the next page of solvers in a job
@@ -304,11 +340,30 @@ public class RESTServices {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
-		return nextDataTablesPage==null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+		
+	}
+	
+	/**
+	 * Returns the next page of solvers in a job
+	 * @param jobID the id of the job to get the next page of solvers for
+	 * @author Eric Burns*/
+	@POST
+	@Path("/jobs/{id}/solvers/pagination/{spaceId}")
+	@Produces("application/json")
+	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		if (!Permissions.canUserSeeJob(jobId, userId) || !Permissions.canUserSeeSpace(spaceId,userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInSpace(RESTHelpers.Primitive.JOB_STATS, jobId, request,spaceId);
+		
+		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}
 	
@@ -333,7 +388,7 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
 		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Query for the next page of primitives and return them to the user
@@ -342,7 +397,7 @@ public class RESTServices {
 		} else if(primType.startsWith("u")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
-			//TODO: Change this to "for spaces", which will wrap the "includeDeleted" and "procedureName" parameters into one
+			
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SOLVER, spaceId, request);
 		} else if(primType.startsWith("sp")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SPACE, spaceId, request);
@@ -353,7 +408,7 @@ public class RESTServices {
 			nextDataTablesPage = RESTHelpers.getResultTable(spaceId, request);
 		}
 		
-		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
 	
@@ -452,7 +507,7 @@ public class RESTServices {
 		} else if (type.equals("solver")) {
 			return gson.toJson(Websites.getAll(id, Websites.WebsiteType.SOLVER));
 		}
-		return gson.toJson(1);
+		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 	
 	/**
@@ -493,7 +548,7 @@ public class RESTServices {
 		}
 		
 		// Passed validation AND Database update successful	
-		return success ? gson.toJson(0) : gson.toJson(1);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	
@@ -513,24 +568,24 @@ public class RESTServices {
 	public String deleteWebsite(@PathParam("type") String type, @PathParam("id") int id, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		
 		if(type.equals("user")){
-			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(1);
+			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader
 			Permission perm = SessionUtil.getPermission(request, id);		
 			if(perm == null || !perm.isLeader()) {
-				return gson.toJson(2);	
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 			}
 			
-			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(1);
+			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("solver")) {
 			Solver s = Solvers.get(id);
 			if (s.getUserId() == SessionUtil.getUserId(request)) {
-				return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(1);
+				return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 			}
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		} 
 		
-		return gson.toJson(1);
+		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 
 	/** 
@@ -593,7 +648,7 @@ public class RESTServices {
 		}
 		
 		// Passed validation AND Database update successful
-		return success ? gson.toJson(0) : gson.toJson(1);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/** 
@@ -615,11 +670,11 @@ public class RESTServices {
 		try {
 			Permission perm = SessionUtil.getPermission(request, id);		
 			if(perm == null || !perm.isLeader()) {
-				return gson.toJson(2);	
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 			}
 			
 			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
-				return gson.toJson(1);
+				return gson.toJson(ERROR_EDIT_VAL_ABSENT);
 			}
 			
 			boolean success = false;
@@ -630,7 +685,7 @@ public class RESTServices {
 				if (true == Validator.isValidPrimName(newName)) {
 					if (!s.getName().equals(newName)) {
 						if (Spaces.notUniquePrimitiveName(newName,id,4)) {
-							return gson.toJson(7);
+							return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 						}
 					}
 					success = Spaces.updateName(id, newName);
@@ -653,10 +708,10 @@ public class RESTServices {
 			}
 			
 			// Passed validation AND Database update successful
-			return success ? gson.toJson(0) : gson.toJson(1);
+			return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-			return gson.toJson(1);
+			return gson.toJson(ERROR_DATABASE);
 		}
 		
 	}
@@ -678,19 +733,19 @@ public class RESTServices {
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("locked", request)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(request.getParameter("name"))
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				|| !Validator.isValidBool(request.getParameter("locked"))){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		Space os=Spaces.get(id);
 		if (!os.getName().equals(request.getParameter("name"))) {
 			if (Spaces.notUniquePrimitiveName(request.getParameter("name"),id,4)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}
 		
@@ -698,7 +753,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		Permission perm = Permissions.get(userId, id);
 		if(perm == null || !perm.isLeader()){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Extract new space details from request and add them to a new space object
@@ -726,7 +781,7 @@ public class RESTServices {
 		s.setPermission(p);
 		
 		// Perform the update and return information according to success/failure
-		return Spaces.updateDetails(userId, s) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.updateDetails(userId, s) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -746,10 +801,10 @@ public class RESTServices {
 		// Permissions check; ensures user is the leader of the community that owns the processor
 		Permission perm = SessionUtil.getPermission(request, p.getCommunityId());		
 		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
-		String answer= Processors.delete(pid) ? gson.toJson(0) : gson.toJson(1);
+		String answer= Processors.delete(pid) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		
 		try {
 			if (Util.paramExists("cid",request) && Util.paramExists("defaultPP",request)) {
@@ -791,32 +846,32 @@ public class RESTServices {
 		Processor p=Processors.get(pid);
 		Permission perm= SessionUtil.getPermission(request, p.getCommunityId());
 		if (perm==null || !perm.isLeader()) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("desc", request)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		String name=request.getParameter("name");
 		String desc=request.getParameter("desc");
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(name)
 				|| !Validator.isValidPrimDescription(desc)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		if (!p.getName().equals(name)) {
 			boolean x=Processors.updateName(pid, name);
 			if (!x) {
-				return gson.toJson(1);
+				return gson.toJson(ERROR_DATABASE);
 			}
 		}
 		
 		if (!p.getDescription().equals(desc)) {
 			boolean x=Processors.updateDescription(pid, desc);
 			if (!x) {
-				return gson.toJson(1);
+				return gson.toJson(ERROR_DATABASE);
 			}
 		}
 		
@@ -838,7 +893,7 @@ public class RESTServices {
 		// Permissions check; ensures user is apart of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
 		if(true == Communities.leave(SessionUtil.getUserId(request), spaceId)) {
@@ -848,7 +903,7 @@ public class RESTServices {
 		}
 		
 		
-		return gson.toJson(1);
+		return gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -866,7 +921,7 @@ public class RESTServices {
 	public String removeBenchmarksFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedBenches[]")){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String bench id's and convert them to Integer
@@ -878,11 +933,11 @@ public class RESTServices {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canRemoveBench()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 
 		// Remove the benchmark from the space
-		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -911,7 +966,7 @@ public class RESTServices {
 				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copyToSubspaces", request)
 				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Get the id of the user who initiated the request
@@ -926,7 +981,7 @@ public class RESTServices {
 		// Check permissions, the user must have add user permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canAddUser()) {
-			return gson.toJson(3);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
 		// TODO: Possible security risk here, the user could spoof ID's of users that they cannot really see and
@@ -934,12 +989,12 @@ public class RESTServices {
 		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(4);
+			return gson.toJson(ERROR_NOT_IN_SPACE);
 		}			
 		
 		// And the space the user is being copied from must not be locked
 		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(5);
+			return gson.toJson(ERROR_SPACE_LOCKED);
 		}
 		
 		// Convert the users to copy to a int list
@@ -959,17 +1014,17 @@ public class RESTServices {
 				subspaceId = subspace.getId();
 				Permission subspacePerm = Permissions.get(requestUserId, subspaceId);	
 				if(subspacePerm == null || !subspacePerm.canAddUser()) {
-					return gson.toJson(6);	
+					return gson.toJson(ERROR_CANT_LINK_TO_SUBSPACE);	
 				}			
 				subspaceIds.add(subspaceId);
 			}
 			
 			
 			// Add the user(s) to the destination space and its subspaces
-			return Users.associate(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+			return Users.associate(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else {
 			// Add the user(s) to the destination space
-			return Users.associate(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(1);
+			return Users.associate(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
 	}
 
@@ -1004,7 +1059,7 @@ public class RESTServices {
 				|| !Util.paramExists("copy", request)
 				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
 				|| !Validator.isValidBool(request.getParameter("copy"))){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Get the id of the user who initiated the request
@@ -1023,33 +1078,33 @@ public class RESTServices {
 		
 		// Verify the space the solvers are being copied from is not locked
 		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(5);
+			return gson.toJson(ERROR_SPACE_LOCKED);
 		}
 		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(4);
+			return gson.toJson(ERROR_NOT_IN_SPACE);
 		}	
 
 		// Make sure the user can see the solver they're trying to copy
 		for (int id : selectedSolvers) {
 			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
-				return gson.toJson(4);
+				return gson.toJson(ERROR_NOT_IN_SPACE);
 			}
 			
 			if (Solvers.isSolverDeleted(id)) {
-				return gson.toJson(11);
+				return gson.toJson(ERROR_PRIM_ALREADY_DELETED);
 			}
 			// Make sure that the solver has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), spaceId, 1)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}
 		
 		// Check permissions - the user must have add solver permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canAddSolver()) {
-			return gson.toJson(3);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}			
 		
 		if (copy) {
@@ -1064,7 +1119,7 @@ public class RESTServices {
 			}
 			if (userDiskQuota<0) {
 				
-				return gson.toJson(8);
+				return gson.toJson(ERROR_INSUFFICIENT_QUOTA);
 			}
 			
 			List<Integer>newSolverIds=new ArrayList<Integer>();
@@ -1074,7 +1129,7 @@ public class RESTServices {
 				
 				if (newID==-1) {
 					log.error("Unable to copy solver "+s.getName());
-					return gson.toJson(9);
+					return gson.toJson(ERROR_DATABASE);
 				} else {
 					newSolverIds.add(newID);
 				}
@@ -1101,16 +1156,16 @@ public class RESTServices {
 				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);	
 				
 				if(subspacePerm == null || !subspacePerm.canAddSolver()) {
-					return gson.toJson(6);	
+					return gson.toJson(ERROR_CANT_LINK_TO_SUBSPACE);	
 				}			
 				subspaceIds.add(subspace.getId());
 			}
 
 			// Add the solvers to the destination space and its subspaces
-			return Solvers.associate(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+			return Solvers.associate(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else {
 			// Add the solvers to the destination space
-			return Solvers.associate(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(1);
+			return Solvers.associate(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
 	}
 	
@@ -1139,7 +1194,7 @@ public class RESTServices {
 				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copy", request)
 				|| !Validator.isValidBool(request.getParameter("copy"))){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Get the id of the user who initiated the request
@@ -1151,17 +1206,17 @@ public class RESTServices {
 		// Check permissions, the user must have add benchmark permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canAddBenchmark()) {
-			return gson.toJson(3);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}			
 		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(4);
+			return gson.toJson(ERROR_NOT_IN_SPACE);
 		}			
 		
 		// And the space the solvers are being copied from must not be locked
 		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(5);
+			return gson.toJson(ERROR_SPACE_LOCKED);
 		}
 		
 		// Convert the benchmarks to copy to a int list
@@ -1170,14 +1225,14 @@ public class RESTServices {
 		// Make sure the user can see the benchmarks they're trying to copy
 		for(int id : selectedBenchs) {
 			if(!Permissions.canUserSeeBench(id, requestUserId)) {
-				return gson.toJson(4);
+				return gson.toJson(ERROR_NOT_IN_SPACE);
 			}
 			if (Benchmarks.isBenchmarkDeleted(id)) {
-				return gson.toJson(11);
+				return gson.toJson(ERROR_PRIM_ALREADY_DELETED);
 			}
 			// Make sure that the benchmark has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), spaceId, 2)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
@@ -1190,14 +1245,14 @@ public class RESTServices {
 				userDiskQuota-=b.getDiskSize();
 			}
 			if (userDiskQuota<0) {
-				return gson.toJson(8);
+				return gson.toJson(ERROR_INSUFFICIENT_QUOTA);
 			}
 			int benchId=-1;
 			for (Benchmark b : oldBenchs) {
 				benchId=Benchmarks.copyBenchmark(b,requestUserId,spaceId);
 				if (benchId<0) {
 					log.error("Benchmark "+b.getName()+" could not be copied successfully");
-					return gson.toJson(1);
+					return gson.toJson(ERROR_DATABASE);
 				}
 				log.debug("Benchmark "+b.getName()+" copied successfully");
 			}
@@ -1210,7 +1265,7 @@ public class RESTServices {
 			boolean success = Benchmarks.associate(selectedBenchs, spaceId);
 			
 			// Return a value based on results from database operation
-			return success ? gson.toJson(0) : gson.toJson(1);
+			return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
 	}
 	
@@ -1236,7 +1291,7 @@ public class RESTServices {
 	public String copyJobToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Get the id of the user who initiated the request
@@ -1248,17 +1303,17 @@ public class RESTServices {
 		// Check permissions, the user must have add benchmark permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canAddJob()) {
-			return gson.toJson(3);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}			
 		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(4);
+			return gson.toJson(ERROR_NOT_IN_SPACE);
 		}			
 		
 		// And the space the solvers are being copied from must not be locked
 		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(5);
+			return gson.toJson(ERROR_SPACE_LOCKED);
 		}
 		
 		// Convert the benchmarks to copy to a int list
@@ -1267,12 +1322,12 @@ public class RESTServices {
 		// Make sure the user can see the benchmarks they're trying to copy
 		for(int id : selectedJobs) {
 			if(!Permissions.canUserSeeJob(id, requestUserId)) {
-				return gson.toJson(4);
+				return gson.toJson(ERROR_NOT_IN_SPACE);
 			}
 			
 			// Make sure that the job has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Jobs.getDetailed(id).getName(), spaceId, 3)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}		
 		
@@ -1280,7 +1335,7 @@ public class RESTServices {
 		boolean success = Jobs.associate(selectedJobs, spaceId);
 		
 		// Return a value based on results from database operation
-		return success ? gson.toJson(0) : gson.toJson(1);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1300,7 +1355,7 @@ public class RESTServices {
 	public String removeUsersFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedUsers[]")){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}		
 		
 		// Get the id of the user who initiated the removal
@@ -1309,7 +1364,7 @@ public class RESTServices {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canRemoveUser()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
 		// Extract the String user id's and convert them to Integer
@@ -1320,11 +1375,11 @@ public class RESTServices {
 		// 2 - Ensuring other leaders of the space aren't in the list of users to remove
 		for(int userId : selectedUsers){
 			if(userId == userIdOfRemover){
-				return gson.toJson(3);
+				return gson.toJson(ERROR_CANT_REMOVE_SELF);
 			}
 			perm = Permissions.get(userId, spaceId);
 			if(perm.isLeader()){
-				return gson.toJson(4);
+				return gson.toJson(ERROR_CANT_REMOVE_LEADER);
 			}
 		}
 		
@@ -1344,24 +1399,24 @@ public class RESTServices {
 				subspaceId = subspace.getId();
 				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
 				if (subspacePerm != null && !subspacePerm.canRemoveUser()) { // Null if we don't belong to that space; that's ok! we skip it
-					return gson.toJson(5);	
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 				}
 				for (int userId : selectedUsers) {
 					// Make sure the users you are trying to remove are not leaders in this subspace
 					perm = Permissions.get(userId, subspace.getId());
 					if (perm != null && perm.isLeader()) {
-						return gson.toJson(6);
+						return gson.toJson(ERROR_CANT_REMOVE_LEADER_IN_SUBSPACE);
 					}
 				subspaceIds.add(subspaceId);
 				}
 			}
 			
 			// Remove the users from the space and its subspaces
-			return Spaces.removeUsersFromHierarchy(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+			return Spaces.removeUsersFromHierarchy(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
 		
 		// Otherwise...
-		return Spaces.removeUsers(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeUsers(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -1381,7 +1436,7 @@ public class RESTServices {
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedSolvers[]")){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String solver id's and convert them to Integer
@@ -1393,7 +1448,7 @@ public class RESTServices {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canRemoveSolver()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 
 		// Passed validation, now remove solver(s) from space(s)
@@ -1412,18 +1467,18 @@ public class RESTServices {
 				subspaceId = subspace.getId();
 				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
 				if (subspacePerm != null && !subspacePerm.canRemoveSolver()) { // Null if we don't belong to that space; that's ok! we skip it
-					return gson.toJson(3);	
+					return gson.toJson(ERROR_CANT_REMOVE_FROM_SUBSPACE);	
 				} 
 				
 				subspaceIds.add(subspaceId);
 			}
 			
-			return Spaces.removeSolversFromHierarchy(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(1);
+			return Spaces.removeSolversFromHierarchy(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 
 		}
 		
 		// Otherwise...
-		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -1442,7 +1497,7 @@ public class RESTServices {
 	public String removeJobsFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedJobs[]")){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String job id's and convert them to Integer
@@ -1454,11 +1509,11 @@ public class RESTServices {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);
 		if (perm == null || !perm.canRemoveJob()) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
 		// Remove the job from the space
-		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson.toJson(1);
+		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1483,13 +1538,13 @@ public class RESTServices {
 				selectedSubspaces.add(Integer.parseInt(id));
 			}
 		} catch(Exception e){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Permissions check; ensures user is the leader of the space
 		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
 		if(null == perm || !perm.isLeader()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		boolean deleteAllAllowed=false;
 		if (Util.paramExists("deletePrims", request)) {
@@ -1547,11 +1602,11 @@ public class RESTServices {
 			if (!deletionFailed) {
 				return gson.toJson(0);
 			} else {
-				return gson.toJson(4);
+				return gson.toJson(ERROR_NOT_ALL_DELETED);
 			}
 			
 		} else {
-			return gson.toJson(3);
+			return gson.toJson(ERROR_DATABASE);
 		}
 	}
 
@@ -1579,18 +1634,18 @@ public class RESTServices {
 				selectedSubspaces.add(Integer.parseInt(id));
 			}
 		} catch(Exception e){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
 		if(null == perm || !perm.isLeader()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
 		// Remove the associations
 		
-		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(3);
+		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	/**
 	 * Updates the details of a solver. Solver id is required in the path. First
@@ -1612,24 +1667,24 @@ public class RESTServices {
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("downloadable", request)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(request.getParameter("name"))
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				|| !Validator.isValidBool(request.getParameter("downloadable"))){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Permissions check; if user is NOT the owner of the solver, deny update request
 		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
 		if(solver == null || solver.getUserId() != userId){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
-		//TODO: We need to remove all these hardcoded error codes and define them  in R or something
+		
 		
 		// Extract new solver details from request
 		String name = request.getParameter("name");
@@ -1637,11 +1692,11 @@ public class RESTServices {
 		if (!solver.getName().equals(name)) {
 			int id=Solvers.isNameEditable(solverId);
 			if (id<0) {
-				return gson.toJson(9);
+				return gson.toJson(ERROR_NAME_NOT_EDITABLE);
 			}
 			
 			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 1)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}
 		
@@ -1651,7 +1706,7 @@ public class RESTServices {
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
 		// Apply new solver details to database
-		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(1);
+		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -1673,10 +1728,10 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
 		if(solver == null || solver.getUserId() != userId){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
-		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(1);
+		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1698,10 +1753,10 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		Job j = Jobs.get(jobId);
 		if(j == null || j.getUserId() != userId){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
-		return Jobs.delete(jobId) ? gson.toJson(0) : gson.toJson(1);
+		return Jobs.delete(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -1723,12 +1778,12 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);		
 		Benchmark bench = Benchmarks.get(benchId);
 		if(bench == null || bench.getUserId() != userId){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		//TODO Need to check if the benchmark exists in historical space. If it does, we SHOULD NOT delete the benchmark
 		// Delete the benchmark from the database
-		return Benchmarks.delete(benchId) ? gson.toJson(0) : gson.toJson(1);
+		return Benchmarks.delete(benchId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -1755,7 +1810,7 @@ public class RESTServices {
 				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("downloadable", request)
 				|| !Util.paramExists("type", request)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Safely extract the type
@@ -1765,21 +1820,21 @@ public class RESTServices {
 			isValidRequest = false;
 		}
 		if(false == isValidRequest){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(request.getParameter("name"))
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				|| !Validator.isValidBool(request.getParameter("downloadable"))){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Permissions check; if user is NOT the owner of the benchmark, deny update request
 		int userId = SessionUtil.getUserId(request);
 		Benchmark bench = Benchmarks.get(benchId);
 		if(bench == null || bench.getUserId() != userId){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Extract new benchmark details from request
@@ -1788,17 +1843,17 @@ public class RESTServices {
 		if (!bench.getName().equals(name)) {
 			int id=Benchmarks.isNameEditable(benchId);
 			if (id<0) {
-				return gson.toJson(9);
+				return gson.toJson(ERROR_NAME_NOT_EDITABLE);
 			}
 			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 2)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		
 		// Apply new benchmark details to database
-		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(1);
+		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -1832,16 +1887,16 @@ public class RESTServices {
 					if (true == Users.updatePassword(userId, newPass)) {
 						return gson.toJson(0);
 					} else {
-						return gson.toJson(1); //Database operation returned false
+						return gson.toJson(ERROR_DATABASE); //Database operation returned false
 					}
 				} else {
-					return gson.toJson(2); //Validate operation returned false
+					return gson.toJson(ERROR_INVALID_PASSWORD); //Validate operation returned false
 				}
 			} else {
-				return gson.toJson(3); //newPass != confirmPass
+				return gson.toJson(ERROR_PASSWORDS_NOT_EQUAL); //newPass != confirmPass
 			}
 		} else {
-			return gson.toJson(4); //hashedPass != databasePass
+			return gson.toJson(ERROR_WRONG_PASSWORD); //hashedPass != databasePass
 		}
 	}
 	
@@ -1863,13 +1918,13 @@ public class RESTServices {
 		// Ensure the user attempting to edit permissions is a leader
 		Permission perm = SessionUtil.getPermission(request, spaceId);
 		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
 		// Ensure the user to edit the permissions of isn't themselves a leader
 		perm = Permissions.get(userId, spaceId);
 		if(perm.isLeader()){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_CANT_EDIT_LEADER_PERMS);
 		}		
 		
 		// Configure a new permission object
@@ -1887,7 +1942,7 @@ public class RESTServices {
 		newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));				
 		
 		// Update database with new permissions
-		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(1);
+		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -1913,14 +1968,14 @@ public class RESTServices {
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("contents", request)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(request.getParameter("name"))
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				||  request.getParameter("contents").isEmpty()){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Permissions check; if user is NOT the owner of the configuration file's solver, deny update request
@@ -1928,7 +1983,7 @@ public class RESTServices {
 		Configuration config = Solvers.getConfiguration(configId);
 		Solver solver = Solvers.get(config.getSolverId());
 		if(null == solver || solver.getUserId() != userId){
-			gson.toJson(2);
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		
@@ -1938,7 +1993,7 @@ public class RESTServices {
 		String contents = (String) request.getParameter("contents");
 		
 		// Apply new solver details to database
-		return Solvers.updateConfigDetails(configId, name, description, contents) ? gson.toJson(0) : gson.toJson(1);
+		return Solvers.updateConfigDetails(configId, name, description, contents) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -1965,28 +2020,28 @@ public class RESTServices {
 		// Validate configuration id parameter
 		Configuration config = Solvers.getConfiguration(configId);
 		if(null == config){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_DATABASE);
 		}
 		
 		// Permissions check; if user is NOT the owner of the configuration file's solver, deny deletion request
 		Solver solver = Solvers.get(config.getSolverId());
 		if(null == solver || solver.getUserId() != userId){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Attempt to remove the configuration's physical file from disk
 		if(false == Solvers.deleteConfigurationFile(config)){
-			return gson.toJson(3);
+			return gson.toJson(ERROR_DATABASE);
 		}
 		
 		// Attempt to remove the configuration's entry in the database
 		if(false == Solvers.deleteConfiguration(configId)){
-			return gson.toJson(4);
+			return gson.toJson(ERROR_DATABASE);
 		}
 		
 		// Attempt to update the disk_size of the parent solver to reflect the file deletion
 		if(false == Solvers.updateSolverDiskSize(solver)){
-			return gson.toJson(5);
+			return gson.toJson(ERROR_DATABASE);
 		}
 		
 		// If this point is reached, then the configuration has been completely removed
@@ -2018,7 +2073,7 @@ public class RESTServices {
 				return gson.toJson(Comments.getAll(id, Comments.CommentType.SOLVER));
 			}
 		}
-		return gson.toJson(1);
+		return gson.toJson(ERROR_INVALID_COMMENT_TYPE);
 	}
 	
 	/**
@@ -2053,7 +2108,7 @@ public class RESTServices {
 		}
 		
 		// Passed validation AND Database update successful	
-		return success ? gson.toJson(0) : gson.toJson(1);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -2076,29 +2131,29 @@ public class RESTServices {
 			Benchmark b = Benchmarks.get(id);
 			// Ensure user is either the owner of the comment or the benchmark
 			 if (uid!=userId && uid!=b.getUserId()) {
-				 return gson.toJson(2);
+				 return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			 }
-			 return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(1);
+			 return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} 
 		 else if (type.startsWith("sp")) {
 			//Permissions check; ensures the user deleting the comment is a leader or owner of the comment
 			Permission perm = SessionUtil.getPermission(request, id);		
 			if((perm == null || !perm.isLeader()) && uid!=userId ) {
-				return gson.toJson(2);	
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 			}
-			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(1);
+			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} 
 		 else if (type.startsWith("so")) {
 			Solver s = Solvers.get(id);
 			// Ensure user is either the owner of the comment or the solver
 			if (s.getUserId() != uid && userId != uid) {
-				return gson.toJson(2);
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
-			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(1);
+			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 			
 		}
 		
-		return gson.toJson(1);
+		return gson.toJson(ERROR_INVALID_COMMENT_TYPE);
 	}
 	
 	/**
@@ -2118,7 +2173,7 @@ public class RESTServices {
 
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedUsers[]")){
-			return gson.toJson(1);
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}		
 		
 		// Get the id of the user who initiated the promotion
@@ -2127,18 +2182,18 @@ public class RESTServices {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(2);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
 		// Extract the String user id's and convert them to Integer
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedUsers[]"));
 		
-		// Validate the list of users to remove by:
-		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
-		// 2 - Ensuring other leaders of the space aren't in the list of users to remove
+		// Validate the list of users to promote by:
+		// 1 - Ensuring the leader who initiated the promotion of users from a space isn't themselves in the list of users to remove
+		// 2 - Ensuring other leaders of the space aren't in the list of users to promote
 		for(int userId : selectedUsers){
 			if(userId == userIdOfPromotion){
-				return gson.toJson(3);
+				return gson.toJson(ERROR_CANT_PROMOTE_SELF);
 			}
 			
 			Permission p = new Permission();
@@ -2181,7 +2236,7 @@ public class RESTServices {
 				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copyHierarchy", request)
 				|| !Validator.isValidBool(request.getParameter("copyHierarchy"))){
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Get the id of the user who initiated the request
@@ -2198,30 +2253,30 @@ public class RESTServices {
 		
 		// Verify the space the subspaces are being copied from is not locked
 		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(5);
+			return gson.toJson(ERROR_SPACE_LOCKED);
 		}
 		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(4);
+			return gson.toJson(ERROR_NOT_IN_SPACE);
 		}	
 
 		// Make sure the user can see the subSpaces they're trying to copy
 		for (int id : selectedSubSpaces) {
 			if (!Permissions.canUserSeeSpace(id, requestUserId)) {
-				return gson.toJson(4);
+				return gson.toJson(ERROR_NOT_IN_SPACE);
 			}
 			
 			// Make sure that the subspace has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), spaceId, 4)) {
-				return gson.toJson(7);
+				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
 			}
 		}
 		
 		// Check permissions - the user must have add space permissions in the destination space
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if(perm == null || !perm.canAddSpace()) {
-			return gson.toJson(3);	
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 
 		// Add the subSpaces to the destination space
@@ -2230,14 +2285,14 @@ public class RESTServices {
 				int newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
 				
 				if (newSpaceId == 0){
-					return gson.toJson(1);
+					return gson.toJson(ERROR_DATABASE);
 				}
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
 				if (newSpaceId == 0){
-					return gson.toJson(1);
+					return gson.toJson(ERROR_DATABASE);
 				}
 			}
 		}
@@ -2248,8 +2303,8 @@ public class RESTServices {
 	@Path("/users/getid")
 	@Produces("application/json")
 	public String getUserID(@Context HttpServletRequest request) {
-		return gson.toJson(1);
-		//return gson.toJson(SessionUtil.getUserId(request));
+		
+		return gson.toJson(SessionUtil.getUserId(request));
 	}
 	/**
 	 * Get the paginated result of the jobs belong to a specified user
@@ -2265,12 +2320,12 @@ public class RESTServices {
 	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
 		if (usrId!=SessionUtil.getUserId(request)) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request);
 		
-		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
 	/**
@@ -2287,13 +2342,13 @@ public class RESTServices {
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
 		if (usrId!=SessionUtil.getUserId(request)) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of solver pairs and return them to the user
 		log.debug(usrId);
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request);
 		
-		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
 	/**
@@ -2310,12 +2365,12 @@ public class RESTServices {
 	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
 		if (usrId!=SessionUtil.getUserId(request)) {
-			return gson.toJson(2);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of solver pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request);
 		
-		return nextDataTablesPage == null ? gson.toJson(1) : gson.toJson(nextDataTablesPage);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
 	
@@ -2334,7 +2389,7 @@ public class RESTServices {
 	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(Spaces.setPublicSpace(spaceId, userId, true, hierarchy))
-			return gson.toJson(1);
+			return gson.toJson(ERROR_SPACE_ALREADY_PUBLIC);
 		else
 			return gson.toJson(0);
 	}
@@ -2353,7 +2408,7 @@ public class RESTServices {
 	public String makePrivate(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(Spaces.setPublicSpace(spaceId, userId, false, hierarchy))
-			return gson.toJson(1);
+			return gson.toJson(ERROR_SPACE_ALREADY_PRIVATE);
 		else
 			return gson.toJson(0);
 	}

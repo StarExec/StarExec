@@ -233,6 +233,7 @@ CREATE TABLE jobs (
 	post_processor INT,		
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
+	primary_space INT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,

@@ -151,30 +151,22 @@ INSERT INTO configurations(solver_id, name, description) VALUES
 	(2, "default", "This is a default configuration for Vampire");
 	
 
-INSERT INTO jobs (user_id, name, description) VALUES
-	(1, 'Sweet Job1','This is an example job description');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(1, 'Sweet Job2','This is an example job description');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(1, 'Sweet Job3','This is an example job description');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(1, 'Sweet Job4','This is an example job description');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(1, 'Sweet Job5','This is an example job description');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(2, 'SMT Job', 'This is another example job description');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(6, 'TPTP Job 1', 'This is an example job for the TPTP community');
-INSERT INTO jobs (user_id, name, description) VALUES
-	(6, 'TPTP Job 2', 'This is another example job for the TPTP community');
-/*
-INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code) 
-	VALUES (1, 1, 1, 1, 1, SYSDATE(), SYSDATE(), 7);
-INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code) 
-	VALUES (1, 2, 1, 1, 1, SYSDATE(), SYSDATE(), 7);
-INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code) 
-	VALUES (1, 3, 1, 1, 1, SYSDATE(), SYSDATE(), 7);
-*/	
+INSERT INTO jobs (user_id, name, description, primary_space) VALUES
+	(1, 'Sweet Job1','This is an example job description',3);
+INSERT INTO jobs (user_id, name, description, primary_space) VALUES
+	(1, 'Sweet Job2','This is an example job description',3);
+INSERT INTO jobs (user_id, name, description, primary_space) VALUES
+	(1, 'Sweet Job3','This is an example job description',3);
+INSERT INTO jobs (user_id, name, description,primary_space) VALUES
+	(1, 'Sweet Job4','This is an example job description',3);
+INSERT INTO jobs (user_id, name, description,primary_space) VALUES
+	(1, 'Sweet Job5','This is an example job description',3);
+INSERT INTO jobs (user_id, name, description,primary_space) VALUES
+	(2, 'SMT Job', 'This is another example job description',3);
+INSERT INTO jobs (user_id, name, description,primary_space) VALUES
+	(6, 'TPTP Job 1', 'This is an example job for the TPTP community',3);
+INSERT INTO jobs (user_id, name, description,primary_space) VALUES
+	(6, 'TPTP Job 2', 'This is another example job for the TPTP community',3);
 
 INSERT INTO job_assoc VALUES (3, 1);
 INSERT INTO job_assoc VALUES (3, 3);
