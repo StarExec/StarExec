@@ -573,8 +573,7 @@ CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
 		SELECT *
 		FROM job_attributes
-		WHERE job_id=_jobId
-		ORDER BY job_id ASC;
+		WHERE job_id=_jobId;
 	END //
 	
 -- Retrieves simple overall statistics for job pairs belonging to a job
@@ -647,6 +646,20 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
+	
+-- Retrieves all the info needed for stats for each job pair
+-- Author: Eric Burns
+
+DROP PROCEDURE IF EXISTS GetJobPairsByJobForStats;
+CREATE PROCEDURE GetJobPairsByJobForStats(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+					   JOIN configurations AS config ON job_pairs.config_id=config.id
+					   JOIN solvers AS solver ON config.solver_id=solver.id
+		WHERE job_pairs.job_id=_id
+		ORDER BY job_pairs.end_time DESC;
+	END //	
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns

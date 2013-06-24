@@ -32,6 +32,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobSolver;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -333,7 +334,7 @@ public class RESTServices {
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
 	 * @author Eric Burns*/
-	@GET
+	@POST
 	@Path("/jobs/{id}/solvers/pagination")
 	@Produces("application/json")
 	public String getJobStatsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {
@@ -342,7 +343,10 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
+		
+		List<JobSolver> stats=Jobs.getAllJobStats(jobId);
+		nextDataTablesPage=RESTHelpers.convertJobSolversToDataTable(stats, stats.size(), stats.size(),1);
+		//nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		

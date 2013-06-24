@@ -6,7 +6,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -718,23 +717,19 @@ public class Jobs {
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
 		
+		log.debug("result set obtained");
 		HashMap<Integer,Properties> props=new HashMap<Integer,Properties>();
 		int id;
-		Properties prop;
+		
 		while(results.next()){
 			id=results.getInt("pair_id");
-			log.debug("Found attribute for job pair = "+id);
-			if (props.containsKey(id)) {
-				prop=props.get(id);
-			} else {
-				prop=new Properties();
-			}
-			prop.put(results.getString("attr_key"), results.getString("attr_value"));	
-			props.put(id, prop);
-			log.debug("attributes for pair "+id+" have been updated");
+			if (!props.containsKey(id)) {
+				props.put(id,new Properties());
+			} 
+			props.get(id).put(results.getString("attr_key"), results.getString("attr_value"));	
 		}			
 		Common.closeResultSet(results);
-		
+		log.debug("returning from attribute function");
 		return props;
 	}
 
@@ -1118,46 +1113,48 @@ public class Jobs {
 	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
 		log.debug("Processing stat results for job ="+jobId);
 		List<JobPair> returnList = new ArrayList<JobPair>();
-		Set<Integer> configIdSet = new HashSet<Integer>();
-		List<Integer> configIdList=new ArrayList<Integer>();
-		int curConfig;
+		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
+		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+		int id;
+		Solver solve=null;
+		Configuration config=null;
 		while(results.next()){
-			
-			JobPair jp = Jobs.resultToPair(results);
+			JobPair jp = Jobs.shallowResultToPair(results);
+			id=results.getInt("solver.id");
+			if (solvers.containsKey(id)) {
+				jp.setSolver(solvers.get(id));
+			} else {
+				solve=new Solver();
+				solve.setId(results.getInt("solver.id"));
+				solve.setName(results.getString("solver.name"));
+				solvers.put(id,solve);
+				jp.setSolver(solve);
+			}
+			id=results.getInt("config.id");
+			if (configs.containsKey(id)) {
+				jp.setConfiguration(configs.get(id));
+			} else {
+				config=new Configuration();
+				config.setId(results.getInt("config.id"));
+				config.setName(results.getString("config.name"));
+				configs.put(id, config);
+				jp.setConfiguration(config);
+			}
 			
 			Status s = new Status();
+			
 			s.setCode(results.getInt("status.code"));
-			s.setStatus(results.getString("status.status"));
-			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
-			returnList.add(jp);
-
-			curConfig=results.getInt("config_id");
-			configIdSet.add(curConfig);
-			configIdList.add(curConfig);
+			returnList.add(jp);			
 			
 		}
 		
 		Common.closeResultSet(results);
 		
 		HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId);
-		Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
-		Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
-		
-		
-		for (int curId : configIdSet) {
-			neededConfigs.put(curId, Solvers.getConfiguration(curId));
-			neededSolvers.put(curId, Solvers.getSolverByConfig(curId));
-		}
-
 		
 		for (Integer i =0; i < returnList.size(); i++){
 			JobPair jp = returnList.get(i);
-			jp.setSolver(neededSolvers.get(configIdList.get(i)));
-			
-			jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
-			
-			
 			//NOTE: for all new jobs, props should always contain the ID of every job pair
 			// that has attributes. The only reason we need to check whether it doesn't is for
 			// backwards compatibility-- jobs run before the job_id column was added to the 
@@ -1187,7 +1184,7 @@ public class Jobs {
 			
 			log.info("getting detailed pairs for job " + jobId );
 			
-			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJobForStats(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
 			
@@ -1393,7 +1390,27 @@ public class Jobs {
 		Common.closeResultSet(results);
 		return returnList;			
 	}
+	
+	/**
+	 * Given a resultset, populates only the fields of a job pair important for displaying stats.
+	 * 
+	 * @param result the result set
+	 * @return A job pair with only a few fields populated.
+	 * @throws Exception
+	 */
+	
+	private static JobPair shallowResultToPair(ResultSet result) throws Exception {
+		JobPair jp = new JobPair();
 
+		jp.setId(result.getInt("id"));
+		jp.setJobId(result.getInt("job_id"));	
+		jp.setWallclockTime(result.getDouble("wallclock"));
+		jp.setCpuUsage(result.getDouble("cpu"));
+		jp.setPath(result.getString("path"));
+		//log.debug("getting job pair from result set for id " + jp.getId());
+		return jp;
+	}
+	
 	/**
 	 * Helper method to extract information from a query for job pairs
 	 * @param result The resultset that is the results from querying for job pairs
@@ -1806,11 +1823,11 @@ public class Jobs {
 		return null;
 	}
 	
-	/**
+	/*
 	 * Helper function for sortJobSolvers-- compares two JobSolvers based on the indexOfColumnSortedBy
 	 * @return true if first<= second, false otherwise.
 	 * @author Eric Burns
-	 */
+	 
 	
 	
 	private static boolean compareJobSolvers(JobSolver first, JobSolver second, int indexOfColumnSortedBy) {
@@ -1832,12 +1849,12 @@ public class Jobs {
 		default:
 			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
 		}
-	}
+	}*/
 	
-	/**
+	/*
 	 * Helper function for GetJobStatsForNextPage-- sorts JobSolver objects based on column and ASC sent from client
 	 * @author Eric Burns
-	 */
+	 *
 	private static List<JobSolver> sortJobSolvers(List<JobSolver> rows, int indexOfSortedColumn, boolean isSortedASC) {
 		if (rows.size()<=1) {
 			return rows;
@@ -1869,7 +1886,7 @@ public class Jobs {
 		}
 		
 		return answer;
-	}
+	}*/
 	
 	public static List<JobSolver> processPairsToJobSolvers(List<JobPair> pairs,int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
 		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
@@ -1881,11 +1898,8 @@ public class Jobs {
 			
 			if (!JobSolvers.containsKey(key)) { // current stats entry does not yet exist
 				JobSolver newSolver=new JobSolver();
-				try {
-					log.debug("adding solver "+jp.getSolver().getName()+ " with configuration "+jp.getConfiguration().getName()+" to stats");
-				} catch (Exception e) {
-					
-				}
+				log.debug("adding solver "+jp.getSolver().getName()+ " with configuration "+jp.getConfiguration().getName()+" to stats");
+				
 				newSolver.setSolver(jp.getSolver());
 				newSolver.setConfiguration(jp.getConfiguration());
 				JobSolvers.put(key, newSolver);
@@ -1904,12 +1918,12 @@ public class Jobs {
 			} else if (statusCode.complete()) {
 			    curSolver.incrementCompleteJobPairs();
 			    if (jp.getAttributes()!=null) {
-				Properties attrs = jp.getAttributes();
-				if (attrs.contains(R.STAREXEC_RESULT) && attrs.contains(R.EXPECTED_RESULT)) {
-				    if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
-				    	curSolver.incrementIncorrectJobPairs();
-				    }
-				}
+			    	Properties attrs = jp.getAttributes();
+			    	if (attrs.contains(R.STAREXEC_RESULT) && attrs.contains(R.EXPECTED_RESULT)) {
+			    		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+			    			curSolver.incrementIncorrectJobPairs();
+			    		}
+			    	}
 			    }
 			}
 		}
@@ -1919,7 +1933,7 @@ public class Jobs {
 		}
 		total[0]=returnValues.size();
 		
-		//carry out filtering function
+		/*carry out filtering function
 		if (!searchQuery.equals("")) {
 			searchQuery=searchQuery.toLowerCase();
 			List<JobSolver> toRemove=new LinkedList<JobSolver>();
@@ -1936,9 +1950,10 @@ public class Jobs {
 		
 		if (recordsPerPage<0) {
 			recordsPerPage=returnValues.size()+1;
-		}
+		}*/
 		
 		//carry out sorting function
+		/*
 		returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
 		List<JobSolver> sublist=null;
 		if (recordsPerPage>returnValues.size()) {
@@ -1956,8 +1971,8 @@ public class Jobs {
 				}
 			}
 			
-		}
-		return sublist;
+		}*/
+		return returnValues;
 	}
 	
 	/**

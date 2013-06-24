@@ -13,14 +13,12 @@
 		
 		if(Permissions.canUserSeeJob(jobId,userId) && Permissions.canUserSeeSpace(spaceId,userId) ) {	
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
-			System.out.println(j.getPrimarySpace());
-			System.out.println(spaceId);
 			Space s=Spaces.get(spaceId);
 			List<Space> subspaces=Spaces.getSubSpaces(spaceId,userId,false);
 			HashMap<Space,List<JobSolver>> subspaceStats=new HashMap<Space,List<JobSolver>>();
 			for (Space sub : subspaces) {
 				List<JobSolver> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
-				if (curStats.size()>0) {
+				if (curStats.size()>=0) {
 					subspaceStats.put(sub,curStats);
 				}
 				
@@ -65,6 +63,7 @@
 		<legend>solver summary</legend>
 		<table id="solveTbl" class="shaded">
 			<thead>
+				
 				<tr>
 					<th>solver</th>
 					<th id="configHead">configuration</th>
@@ -101,9 +100,11 @@
 	<fieldset id="subspaceField">
 	<legend>subspaces</legend>
 	<c:forEach var="sub" items="${subspaceStats.keySet()}">
-		<p><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a></p>
 		<table class="subspaceTable" class="shaded">
 			<thead>
+				<tr>
+					<th colspan="7" class="spaceHeader"><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a></th>
+				</tr>
 				<tr>
 					<th>solver</th>
 					<th class="configHead">configuration</th>
@@ -114,6 +115,7 @@
 					<th>time</th>
 				</tr>		
 			</thead>
+			<tbody>
 			<c:forEach var="cs" items="${subspaceStats.get(sub)}">
 					<tr id="statRow">
 						<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
@@ -125,6 +127,7 @@
 						<td>${cs.time}</td>
 					</tr>
 				</c:forEach>
+			</tbody>
 		</table>
 	</c:forEach>
 	</fieldset>

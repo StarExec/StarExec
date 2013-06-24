@@ -10,10 +10,10 @@
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
 		}
-		List<JobSolver> stats=Jobs.getAllJobStats(jobId);
+		//List<JobSolver> stats=Jobs.getAllJobStats(jobId);
 		
-		if(j != null && stats!=null) {	
-			request.setAttribute("stats",stats);
+		if(j != null) {	
+			//request.setAttribute("stats",stats);
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
@@ -105,17 +105,7 @@
 				</tr>		
 			</thead>	
 			<tbody>
-				<c:forEach var="cs" items="${stats}">
-					<tr id="statRow">
-						<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-						<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-						<td>${cs.completeJobPairs} </td>
-						<td>${cs.incompleteJobPairs} </td>
-						<td>${cs.incorrectJobPairs}</td>
-						<td>${cs.errorJobPairs}</td>
-						<td>${cs.time}</td>
-					</tr>
-				</c:forEach>
+				
 			</tbody>
 		</table>
 	</fieldset>

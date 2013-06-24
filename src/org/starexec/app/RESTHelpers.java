@@ -255,8 +255,6 @@ public class RESTHelpers {
 		    		||	Util.isNullOrEmpty(iDisplayLength)
 		    		||	Util.isNullOrEmpty(sEcho)
 		    		||	Integer.parseInt(iDisplayStart) < 0
-		    		//||	Integer.parseInt(iDisplayLength) < 10
-		    		//||	Integer.parseInt(iDisplayLength) > 100
 		    		||	Integer.parseInt(sEcho) < 0) {
 		    	return null;
 		    }
@@ -1007,56 +1005,68 @@ public class RESTHelpers {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobSolversToDisplay.size());
 		    	}
 			    attrMap.put(TOTAL_RECORDS, totalJobSolvers[0]);
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(JobSolver js : jobSolversToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					
-					
-					// Create the solver link
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(js.getSolver().getName());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-		    		sb.append(js.getSolver().getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(js.getSolver().getName());
-				RESTHelpers.addImg(sb);
-					String solverLink = sb.toString();
-					
-					sb= new StringBuilder();
-					sb.append("<a title=\"");
-		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-		    		sb.append(js.getSolver().getConfigurations().get(0).getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(js.getSolver().getConfigurations().get(0).getName());
-				RESTHelpers.addImg(sb);
-					String configLink = sb.toString();
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(solverLink));
-		    		entry.add(new JsonPrimitive(configLink));
-		    		entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
-		    		entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
-		    		entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
-		    		entry.add(new JsonPrimitive(js.getErrorJobPairs()));
-		    		entry.add(new JsonPrimitive(js.getTime()));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
+			    return convertJobSolversToDataTable(jobSolversToDisplay,totalJobSolvers[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 	    }
 	    
 	    // Build the actual JSON response object and populated it with the created data
 	    nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
 	    nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
 	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
+	    nextPage.add("aaData", dataTablePageEntries);
+	    
+	    // Return the next DataTable page
+    	return nextPage;
+	}
+	
+	public static JsonObject convertJobSolversToDataTable(List<JobSolver> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+    	/**
+    	 * Generate the HTML for the next DataTable page of entries
+    	 */
+    	JsonArray dataTablePageEntries = new JsonArray();
+    	for(JobSolver js : stats){
+    		StringBuilder sb = new StringBuilder();
+			
+			
+			// Create the solver link
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(js.getSolver().getName());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		sb.append(js.getSolver().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(js.getSolver().getName());
+		RESTHelpers.addImg(sb);
+			String solverLink = sb.toString();
+			
+			sb= new StringBuilder();
+			sb.append("<a title=\"");
+    		sb.append(js.getConfiguration().getName());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+    		sb.append(js.getConfiguration().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(js.getConfiguration().getName());
+		RESTHelpers.addImg(sb);
+			String configLink = sb.toString();
+			
+			// Create an object, and inject the above HTML, to represent an entry in the DataTable
+			JsonArray entry = new JsonArray();
+    		entry.add(new JsonPrimitive(solverLink));
+    		entry.add(new JsonPrimitive(configLink));
+    		entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
+    		entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+    		entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
+    		entry.add(new JsonPrimitive(js.getErrorJobPairs()));
+    		entry.add(new JsonPrimitive(js.getTime()));
+    		
+    		dataTablePageEntries.add(entry);
+    	}
+    	
+    	JsonObject nextPage=new JsonObject();
+    	
+    	// Build the actual JSON response object and populated it with the created data
+	    nextPage.addProperty(SYNC_VALUE, syncValue);
+	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
 	    nextPage.add("aaData", dataTablePageEntries);
 	    
 	    // Return the next DataTable page
