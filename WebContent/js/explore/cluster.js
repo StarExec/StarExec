@@ -96,6 +96,18 @@ function populateAttributes(jsonData) {
 	// Populate node details	
 	$('#workerName').text(jsonData.name.split('.')[0]);
 	$('#queueID').text("id = "+qid);
+	
+	//Set up row click to send to pair details page
+
+	$('#details tbody').delegate("a", "click", function(event) {
+		event.stopPropogation();
+	});
+	$("#details tbody").delegate("tr", "click", function(){
+		var pairId = $(this).find('input').val();
+		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+	});
+	
+	//If it is a queue
 	if(jsonData.slotsTotal != null) {
 		$('#activeStatus').hide();
 		

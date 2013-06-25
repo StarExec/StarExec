@@ -23,7 +23,10 @@
 						<th>config</th>
 						<th>path</th>					
 					</tr>
-				</thead>			
+				</thead>
+				<tbody>
+					<!-- This will be populated by the cluster.js -->
+				</tbody>			
 			</table>
 		</fieldset>	
 		

@@ -14,6 +14,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Util;
 
@@ -168,17 +169,67 @@ public class Queues {
 				//Get all the job pairs that are queued up on the queue
 				List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
 
-				for (JobPair j : jobPairs) {
-					StringBuilder sb = new StringBuilder();
+				for (JobPair j : jobPairs) {					
+					// Create the job link
+					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+		    		StringBuilder sb = new StringBuilder();
+					sb.append("<input type=\"hidden\" value=\"");
+					sb.append(job.getId());
+					sb.append("\" prim=\"job\"/>");
+					String hiddenJobId = sb.toString();
+					sb = new StringBuilder();
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
+		    		sb.append(job.getId());
+		    		sb.append("\" target=\"_blank\">");
+		    		sb.append(job.getName());
+		    		RESTHelpers.addImg(sb);
+		    		sb.append(hiddenJobId);
+					String jobLink = sb.toString();
+					
+					
+					//Create the User Link
+		    		sb = new StringBuilder();
+					String hiddenUserId;
+					User user = Users.getUserByJob(j.getJobId());
+					// Create the hidden input tag containing the user id
+					if(user.getId() == userId) {
+						sb.append("<input type=\"hidden\" value=\"");
+						sb.append(user.getId());
+						sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+						hiddenUserId = sb.toString();
+					} else {
+						sb.append("<input type=\"hidden\" value=\"");
+						sb.append(user.getId());
+						sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+						hiddenUserId = sb.toString();
+					}
+		    		// Create the user "details" link and append the hidden input element
+		    		sb = new StringBuilder();
+		    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
+		    		sb.append(user.getId());
+		    		sb.append("\" target=\"_blank\">");
+		    		sb.append(user.getFullName());
+		    		RESTHelpers.addImg(sb);
+		    		sb.append(hiddenUserId);
+					String userLink = sb.toString();
+					
+					
+					
+					
+					
+					
+					
+					
+					sb = new StringBuilder();
 					String hiddenJobPairId;
 					
 					// Create the hidden input tag containing the jobpair id
 					sb.append("<input type=\"hidden\" value=\"");
 					sb.append(j.getId());
 					sb.append("\" name=\"pid\"/>");
-					hiddenJobPairId = sb.toString();
+					hiddenJobPairId = sb.toString();	
 		    		
-		    		// Create the benchmark link and append the hidden input element
+		    		// Create the benchmark link
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
 		    		sb.append(j.getBench().getDescription());
@@ -217,9 +268,11 @@ public class Queues {
 					String[] jobInfo;
 					jobInfo = new String[6];
 					
-					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
-					jobInfo[0] = job.getName();
-					jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+					
+					jobInfo[0] = jobLink;
+					jobInfo[1] = userLink;
+					//jobInfo[0] = job.getName();
+					//jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
 
 					if (Permissions.canUserSeeJob(job.getId(), userId)) {
 						//jobInfo[2] = (j.getBench().getName());
