@@ -719,7 +719,7 @@ CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs
-		WHERE node_id = _id AND status_code = 4
+		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
 		ORDER BY sge_id ASC
 		LIMIT _cap;
 	END //
