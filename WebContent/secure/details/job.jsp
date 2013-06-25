@@ -10,27 +10,20 @@
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
 		}
-		//List<JobSolver> stats=Jobs.getAllJobStats(jobId);
+		
 		
 		if(j != null) {	
-			//request.setAttribute("stats",stats);
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 			request.setAttribute("userId",userId);
 		} else {
-			if (j==null) {
 				if (Jobs.isJobDeleted(jobId)) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 				}
-				
-			} else {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Error processesing job summary");
-			}
-			
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");

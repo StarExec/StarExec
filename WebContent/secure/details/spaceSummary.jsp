@@ -77,7 +77,7 @@
 			<tbody>
 				<c:forEach var="cs" items="${stats}">
 					<tr id="statRow">
-						<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+						<td><a href="/${starexecRoot}/secure/details/pairsInSpace.jsp?id=${cs.solver.id}&configid=${cs.configuration.id}&sid=${space.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 						<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 						<td>${cs.completeJobPairs} </td>
 						<td>${cs.incompleteJobPairs} </td>

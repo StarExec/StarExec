@@ -53,6 +53,26 @@ CREATE PROCEDURE GetJobPairCountByJob(IN _jobId INT)
 		FROM job_pairs
 		WHERE job_id = _jobId;
 	END //
+
+-- Returns the number of jobs pairs for a given job in a given space with a given configuration
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairCountByConfigInSpace;
+CREATE PROCEDURE GetJobPairCountByConfigInSpace(IN _jobId INT, IN _spaceId INT, IN _configId INT)
+	BEGIN
+		SELECT COUNT(*) AS jobPairCount
+		FROM job_pairs
+		WHERE job_id = _jobId AND space_id=_spaceId AND config_id=_configId;
+	END //
+	
+-- Returns the number of jobs pairs for a given job
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetJobPairCountByJobInSpace;
+CREATE PROCEDURE GetJobPairCountByJobInSpace(IN _jobId INT, IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) AS jobPairCount
+		FROM job_pairs
+		WHERE job_id = _jobId AND space_id=_spaceId;
+	END //
 	
 -- Gets the fewest necessary Jobs in order to service a client's
 -- request for the next page of Jobs in their DataTable object.  
@@ -368,6 +388,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
 						job_pairs.config_id,
+						job_pairs.space_id,
 						config.id,
 						config.name,
 						config.description,
@@ -647,6 +668,16 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		ORDER BY job_pairs.end_time DESC;
 	END //
 	
+	
+-- Retrieves basic info about job pairs for the given job id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobPairsByJobForSolverInSpace;
+CREATE PROCEDURE GetJobPairsByJobForSolverInSpace(IN _id INT, IN _spaceId INT, IN _configId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		WHERE job_pairs.job_id=_id AND job_pairs.space_id=_spaceId AND job_pairs.config_id=_configId;
+	END //
 -- Retrieves all the info needed for stats for each job pair
 -- Author: Eric Burns
 

@@ -330,6 +330,36 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
+	
+	/**
+	 * Returns the next page of entries for a job pairs table
+	 *
+	 * @param jobId the id of the job to get the next page of job pairs for
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of job pair entries if successful,<br>
+	 * 		1 if the request fails parameter validation,<br> 
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/jobs/{id}/pairs/pagination/{spaceId}/{configId}")
+	@Produces("application/json")	
+	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		// Ensure user can view the job they are requesting the pairs from
+		if(false == Permissions.canUserSeeJob(jobId, userId)){
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsBySpaceAndSolver(jobId,spaceId,configId, request);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	
 	/**
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
@@ -343,19 +373,22 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
+		//TODO: This is not the right way to handle this--there should be another function in RESTHelpers
 		List<JobSolver> stats=Jobs.getAllJobStats(jobId);
-		nextDataTablesPage=RESTHelpers.convertJobSolversToDataTable(stats, stats.size(), stats.size(),1);
+		nextDataTablesPage=RESTHelpers.convertJobSolversToJsonObject(stats, stats.size(), stats.size(),1,null);
 		//nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}
 	
+	
+	
 	/**
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
-	 * @author Eric Burns*/
+	 * @author Eric Burns
+	 */
 	@POST
 	@Path("/jobs/{id}/solvers/pagination/{spaceId}")
 	@Produces("application/json")
@@ -366,6 +399,26 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInSpace(RESTHelpers.Primitive.JOB_STATS, jobId, request,spaceId);
+		
+		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+		
+	}
+	
+	/**
+	 * Returns the next page of solvers in a job
+	 * @param jobID the id of the job to get the next page of solvers for
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/jobs/{id}/pagination/{spaceId}")
+	@Produces("application/json")
+	public String getJobPairsPaginatedInSpace(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		if (!Permissions.canUserSeeJob(jobId, userId) || !Permissions.canUserSeeSpace(spaceId,userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInSpace(RESTHelpers.Primitive.JOB_PAIR, jobId, request,spaceId);
 		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		

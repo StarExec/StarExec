@@ -38,7 +38,9 @@ import com.google.gson.annotations.Expose;
  */
 public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);		
-	
+	private static final int PAGE_SPACE_EXPLORER=1;
+	private static final int PAGE_USER_DETAILS=2;
+	private static final int PAGE_JOB_DETAILS_BY_SPACE=3;
 	
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
@@ -405,15 +407,53 @@ public class RESTHelpers {
 	 */
 	
 	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
-		return getNextDataTablesPage(type,id,request,1);
+		return getNextDataTablesPage(type,id,request,PAGE_SPACE_EXPLORER);
 	}
 	protected static JsonObject getNextDataTablesPageForJobSummaryInSpace(Primitive type, int id, HttpServletRequest request, int spaceId) {
 		request.setAttribute(SPACE_ID, spaceId);
-		return getNextDataTablesPage(type,id,request,2);
+		return getNextDataTablesPage(type,id,request,PAGE_JOB_DETAILS_BY_SPACE);
 	}
 	
 	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request) {
-		return getNextDataTablesPage(type,id,request,2);
+		return getNextDataTablesPage(type,id,request,PAGE_USER_DETAILS);
+	}
+	
+	public static JsonObject getNextDataTablesPageOfPairsBySpaceAndSolver(int jobId, int spaceId,int configId,HttpServletRequest request) {
+		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
+		if (null==attrMap) {
+			return null;
+		}
+		
+		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+		
+		int totalJobs;
+		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+		
+		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInSpace(
+    			attrMap.get(STARTING_RECORD),						// Record to start at  
+    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+    			attrMap.get(SORT_COLUMN), 							// Column sorted on
+    			request.getParameter(SEARCH_QUERY), 				// Search query
+    			jobId,													// Parent space id
+    			spaceId,
+    			configId
+		);
+		totalJobs = Jobs.getJobPairCountByConfigInSpace(jobId,spaceId,configId);
+		 
+		/**
+    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+    	 */
+    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
+    	} 
+    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+    	else {
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+    	}
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 	}
 	
 	/**
@@ -436,20 +476,16 @@ public class RESTHelpers {
 	    	
 	    	return null;
 	    }
-	    
-	    JsonObject nextPage = new JsonObject();		// JSON object representing next page for client's DataTable object
-	    JsonArray dataTablePageEntries = null;		// JSON array containing the DataTable primitive entries
-	    
+	  
     	int currentUserId = SessionUtil.getUserId(request);
     	
 	    switch(type){
-	    
 		    case JOB:
 	    		List<Job> jobsToDisplay = new LinkedList<Job>();
 	    		
 	    		int totalJobs;
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-	    		if (forPage==1) {
+	    		if (forPage==PAGE_SPACE_EXPLORER) {
 	    			jobsToDisplay = Jobs.getJobsForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -483,56 +519,7 @@ public class RESTHelpers {
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobs);
-
-			    
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(Job job : jobsToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					String hiddenJobId;
-					
-					// Create the hidden input tag containing the job id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(job.getId());
-					sb.append("\" prim=\"job\"/>");
-					hiddenJobId = sb.toString();
-		    		
-		    		// Create the job "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
-		    		sb.append(job.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(job.getName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenJobId);
-					String jobLink = sb.toString();
-					
-					String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(jobLink));
-		    		entry.add(new JsonPrimitive(status));
-		    		if (forPage==1) {
-		    			entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
-			    		entry.add(new JsonPrimitive(getPercentStatHtml("static", job.getLiteJobPairStats().get("totalPairs"), false)));
-			    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
-		    		} else{
-		    			entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
-			    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
-			    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
-		    		}
-		    		
-		    		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
+			   return convertJobsToJsonObject(jobsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),forPage);
 		    	
 		    	
 		    case USER:
@@ -564,59 +551,8 @@ public class RESTHelpers {
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, usersToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalUsersInSpace);
 		    	
-	    		
-		    	
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(User user : usersToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					String hiddenUserId;
-					
-					// Create the hidden input tag containing the user id
-					if(user.getId() == currentUserId) {
-						sb.append("<input type=\"hidden\" value=\"");
-						sb.append(user.getId());
-						sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
-						hiddenUserId = sb.toString();
-					} else {
-						sb.append("<input type=\"hidden\" value=\"");
-						sb.append(user.getId());
-						sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
-						hiddenUserId = sb.toString();
-					}
-		    		
-		    		// Create the user "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
-		    		sb.append(user.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(user.getFullName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenUserId);
-					String userLink = sb.toString();
-					
-					sb = new StringBuilder();
-					sb.append("<a href=\"mailto:");
-					sb.append(user.getEmail());
-					sb.append("\">");
-					sb.append(user.getEmail());
-					RESTHelpers.addImg(sb);
-					String emailLink = sb.toString();
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(userLink));
-		    		entry.add(new JsonPrimitive(user.getInstitution()));
-		    		entry.add(new JsonPrimitive(emailLink));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
+		    	return convertUsersToJsonObject(usersToDisplay,totalUsersInSpace,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),currentUserId);
 		    	
 		    	
 		    case SOLVER:
@@ -624,7 +560,7 @@ public class RESTHelpers {
 	    		
 	    		int totalSolvers;
 	    		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
-	    		if (forPage==1) {
+	    		if (forPage==PAGE_SPACE_EXPLORER) {
 	    			solversToDisplay = Solvers.getSolversForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -644,9 +580,7 @@ public class RESTHelpers {
 		    		);
 	    			totalSolvers =  Solvers.getSolverCountByUser(id);
 	    		}
-	    		
-	    		
-	    		
+
 	    		/**
 		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
 		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
@@ -659,42 +593,7 @@ public class RESTHelpers {
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, solversToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalSolvers);
-		    	
-			    
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(Solver solver : solversToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-		    		
-		    		// Create the hidden input tag containing the solver id
-		    		sb.append("<input type=\"hidden\" value=\"");
-		    		sb.append(solver.getId());
-		    		sb.append("\" prim=\"solver\" />");
-		    		String hiddenSolverId = sb.toString();
-		    		
-		    		// Create the solver "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-		    		sb.append(solver.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(solver.getName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenSolverId);
-					String solverLink = sb.toString();
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(solverLink));
-		    		entry.add(new JsonPrimitive(solver.getDescription()));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
+			    return convertSolversToJsonObject(solversToDisplay, totalSolvers,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 		    	
 		    	
 		    case BENCHMARK:
@@ -703,7 +602,7 @@ public class RESTHelpers {
 		    	int totalBenchmarks;
 		    	
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-		    	if (forPage==1) {
+		    	if (forPage==PAGE_SPACE_EXPLORER) {
 		    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -724,9 +623,7 @@ public class RESTHelpers {
 					);
 		    		totalBenchmarks = Benchmarks.getBenchmarkCountByUser(id);
 		    	}
-		    	
-		    	
-		    	
+
 		    	/**
 		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
 		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
@@ -739,55 +636,7 @@ public class RESTHelpers {
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, benchmarksToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalBenchmarks);
-			    
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(Benchmark bench : benchmarksToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-		    		
-		    		// Create the hidden input tag containing the benchmark id
-		    		sb.append("<input type=\"hidden\" value=\"");
-		    		sb.append(bench.getId());
-		    		sb.append("\" prim=\"benchmark\"/>");
-		    		String hiddenBenchId = sb.toString();
-		    		
-		    		// Create the benchmark "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		// Set the tooltip to be the benchmark's description
-		    		sb.append(bench.getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-		    		sb.append(bench.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(bench.getName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenBenchId);
-					String benchLink = sb.toString();
-					
-					// Create the benchmark type tag
-					sb = new StringBuilder();
-					sb.append("<span title=\"");
-					// Set the tooltip to be the benchmark type's description
-					sb.append(bench.getType().getDescription());
-					sb.append("\">");
-					sb.append(bench.getType().getName());
-					sb.append("</span>");
-					String typeSpan = sb.toString();
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(benchLink));
-		    		entry.add(new JsonPrimitive(typeSpan));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
-		    	
+			    return convertBenchmarksToJsonObject(benchmarksToDisplay,totalBenchmarks,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 		    	
 		    case SPACE:
 		    	List<Space> spacesToDisplay = new LinkedList<Space>();
@@ -819,61 +668,34 @@ public class RESTHelpers {
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, spacesToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalSubspacesInSpace);
-		    	
-		    	
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(Space space : spacesToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					String hiddenSpaceId;
-					
-					// Create the hidden input tag containing the space id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(space.getId());
-					sb.append("\" prim=\"space\" />");
-					hiddenSpaceId = sb.toString();
-		    		
-					// Create the space "details" link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
-		    		sb.append(id);
-		    		sb.append(",");
-		    		sb.append(space.getId());
-		    		sb.append(")\">");
-		    		sb.append(space.getName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenSpaceId);
-					String spaceLink = sb.toString();
-					
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(spaceLink));
-		    		entry.add(new JsonPrimitive(space.getDescription()));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
+		    	return convertSpacesToJsonObject(spacesToDisplay,totalSubspacesInSpace,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),id); 
 		    	
 		    case JOB_PAIR:
 		    	List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
-	    		int totalJobPairsforJob = Jobs.getJobPairCount(id);
 	    		
+		    	int totalJobPairsforJob=0;
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-	    		jobPairsToDisplay = Jobs.getJobPairsForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id													// Job id 
-				);
-	    		
-	    		
+	    		if (forPage==PAGE_JOB_DETAILS_BY_SPACE) {
+	    			jobPairsToDisplay = Jobs.getJobPairsForNextPageInSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id,													// Job id 
+		    				attrMap.get(SPACE_ID)
+		    	);
+	    			totalJobPairsforJob= Jobs.getJobPairCountInSpace(id,attrMap.get(SPACE_ID));
+	    		} else {
+	    			jobPairsToDisplay = Jobs.getJobPairsForNextPage(
+		    				attrMap.get(STARTING_RECORD),						// Record to start at  
+		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+		    				request.getParameter(SEARCH_QUERY), 				// Search query
+		    				id													// Job id 
+					);
+	    			totalJobPairsforJob= Jobs.getJobPairCount(id);
+	    		}
 	    		/**
 		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
 		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
@@ -886,83 +708,7 @@ public class RESTHelpers {
 		    	else {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobPairsforJob);
-
-			    
-			    
-		    	/**
-		    	 * Generate the HTML for the next DataTable page of entries
-		    	 */
-		    	dataTablePageEntries = new JsonArray();
-		    	for(JobPair jp : jobPairsToDisplay){
-		    		StringBuilder sb = new StringBuilder();
-					String hiddenJobPairId;
-					
-					// Create the hidden input tag containing the jobpair id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(jp.getId());
-					sb.append("\" name=\"pid\"/>");
-					hiddenJobPairId = sb.toString();
-		    		
-		    		// Create the benchmark link and append the hidden input element
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(jp.getBench().getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-		    		sb.append(jp.getBench().getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(jp.getBench().getName());
-				RESTHelpers.addImg(sb);
-		    		sb.append(hiddenJobPairId);
-					String benchLink = sb.toString();
-					
-					// Create the solver link
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(jp.getSolver().getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-		    		sb.append(jp.getSolver().getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(jp.getSolver().getName());
-				RESTHelpers.addImg(sb);
-					String solverLink = sb.toString();
-					
-					// Create the configuration link
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(jp.getSolver().getConfigurations().get(0).getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-		    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
-				RESTHelpers.addImg(sb);
-					String configLink = sb.toString();
-					
-					// Create the status field
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(jp.getStatus().getDescription());
-		    		sb.append("\">");
-		    		sb.append(jp.getStatus().getStatus());
-		    		sb.append("</a>");
-					String status = sb.toString();
-					
-					
-					// Create an object, and inject the above HTML, to represent an entry in the DataTable
-					JsonArray entry = new JsonArray();
-		    		entry.add(new JsonPrimitive(benchLink));
-		    		entry.add(new JsonPrimitive(solverLink));
-		    		entry.add(new JsonPrimitive(configLink));
-		    		entry.add(new JsonPrimitive(status));
-		    		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    		
-		    		entry.add(new JsonPrimitive(displayWC + " s"));
-		    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
-		    		entry.add(new JsonPrimitive(jp.getSpace().getName()));
-		    		
-		    		dataTablePageEntries.add(entry);
-		    	}
-		    	
-		    	break;
+			    return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairsforJob,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
 		    
 		    case JOB_STATS:
 		    	List<JobSolver> jobSolversToDisplay = null;
@@ -1005,20 +751,358 @@ public class RESTHelpers {
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobSolversToDisplay.size());
 		    	}
 			    attrMap.put(TOTAL_RECORDS, totalJobSolvers[0]);
-			    return convertJobSolversToDataTable(jobSolversToDisplay,totalJobSolvers[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+			    if (forPage==1) {
+				    return convertJobSolversToJsonObject(jobSolversToDisplay,totalJobSolvers[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),null);
+			    } else {
+				    return convertJobSolversToJsonObject(jobSolversToDisplay,totalJobSolvers[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),attrMap.get(SPACE_ID));
+			    }
 	    }
+	    return null;
+	}
+	
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+		/**
+		 * Generate the HTML for the next DataTable page of entries
+		 */
+		JsonArray dataTablePageEntries = new JsonArray();
+		for(JobPair jp : pairs){
+    		StringBuilder sb = new StringBuilder();
+			String hiddenJobPairId;
+			
+			// Create the hidden input tag containing the jobpair id
+			sb.append("<input type=\"hidden\" value=\"");
+			sb.append(jp.getId());
+			sb.append("\" name=\"pid\"/>");
+			hiddenJobPairId = sb.toString();
+    		
+    		// Create the benchmark link and append the hidden input element
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(jp.getBench().getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+    		sb.append(jp.getBench().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(jp.getBench().getName());
+    		RESTHelpers.addImg(sb);
+    		sb.append(hiddenJobPairId);
+			String benchLink = sb.toString();
+			
+			// Create the solver link
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(jp.getSolver().getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		sb.append(jp.getSolver().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(jp.getSolver().getName());
+    		RESTHelpers.addImg(sb);
+			String solverLink = sb.toString();
+			
+			// Create the configuration link
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(jp.getSolver().getConfigurations().get(0).getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
+    		RESTHelpers.addImg(sb);
+			String configLink = sb.toString();
+			
+			// Create the status field
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(jp.getStatus().getDescription());
+    		sb.append("\">");
+    		sb.append(jp.getStatus().getStatus());
+    		sb.append("</a>");
+			String status = sb.toString();
+			
+			
+			// Create an object, and inject the above HTML, to represent an entry in the DataTable
+			JsonArray entry = new JsonArray();
+    		entry.add(new JsonPrimitive(benchLink));
+    		entry.add(new JsonPrimitive(solverLink));
+    		entry.add(new JsonPrimitive(configLink));
+    		entry.add(new JsonPrimitive(status));
+    		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    		
+    		entry.add(new JsonPrimitive(displayWC + " s"));
+    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
+    		entry.add(new JsonPrimitive(jp.getSpace().getName()));
+    		
+    		dataTablePageEntries.add(entry);
+    	}
+	    	JsonObject nextPage=new JsonObject();
+	    	 // Build the actual JSON response object and populated it with the created data
+		    nextPage.addProperty(SYNC_VALUE, syncValue);
+		    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+		    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+		    nextPage.add("aaData", dataTablePageEntries);
+		    
+		    // Return the next DataTable page
+	    	return nextPage;
+		}
+	
+public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int forPage) {
+	/**
+	 * Generate the HTML for the next DataTable page of entries
+	 */
+	JsonArray dataTablePageEntries = new JsonArray();
+	for(Job job : jobs){
+		StringBuilder sb = new StringBuilder();
+		String hiddenJobId;
+		
+		// Create the hidden input tag containing the job id
+		sb.append("<input type=\"hidden\" value=\"");
+		sb.append(job.getId());
+		sb.append("\" prim=\"job\"/>");
+		hiddenJobId = sb.toString();
+		
+		// Create the job "details" link and append the hidden input element
+		sb = new StringBuilder();
+		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
+		sb.append(job.getId());
+		sb.append("\" target=\"_blank\">");
+		sb.append(job.getName());
+		RESTHelpers.addImg(sb);
+		sb.append(hiddenJobId);
+		String jobLink = sb.toString();
+		
+		String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
+		
+		// Create an object, and inject the above HTML, to represent an entry in the DataTable
+		JsonArray entry = new JsonArray();
+		entry.add(new JsonPrimitive(jobLink));
+		entry.add(new JsonPrimitive(status));
+		if (forPage==PAGE_SPACE_EXPLORER) {
+			entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
+    		entry.add(new JsonPrimitive(getPercentStatHtml("static", job.getLiteJobPairStats().get("totalPairs"), false)));
+    		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
+		} else{
+			entry.add(new JsonPrimitive(getPairStatHtml("asc", job.getLiteJobPairStats().get("completePairs"), job.getLiteJobPairStats().get("totalPairs"))));
+    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("pendingPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+    		entry.add(new JsonPrimitive(getPairStatHtml("desc", job.getLiteJobPairStats().get("errorPairs"), job.getLiteJobPairStats().get("totalPairs"))));
+		}
+		
+		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
+		
+		dataTablePageEntries.add(entry);
+	}
+    	JsonObject nextPage=new JsonObject();
+    	 // Build the actual JSON response object and populated it with the created data
+	    nextPage.addProperty(SYNC_VALUE, syncValue);
+	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+	    nextPage.add("aaData", dataTablePageEntries);
 	    
-	    // Build the actual JSON response object and populated it with the created data
-	    nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
-	    nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
-	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
+	    // Return the next DataTable page
+    	return nextPage;
+	}
+public static JsonObject convertUsersToJsonObject(List<User> users, int totalRecords, int totalRecordsAfterQuery, int syncValue, int currentUserId) {
+	/**
+	 * Generate the HTML for the next DataTable page of entries
+	 */
+	JsonArray dataTablePageEntries = new JsonArray();
+	for(User user : users){
+		StringBuilder sb = new StringBuilder();
+		String hiddenUserId;
+		
+		// Create the hidden input tag containing the user id
+		if(user.getId() == currentUserId) {
+			sb.append("<input type=\"hidden\" value=\"");
+			sb.append(user.getId());
+			sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+			hiddenUserId = sb.toString();
+		} else {
+			sb.append("<input type=\"hidden\" value=\"");
+			sb.append(user.getId());
+			sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+			hiddenUserId = sb.toString();
+		}
+		
+		// Create the user "details" link and append the hidden input element
+		sb = new StringBuilder();
+		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
+		sb.append(user.getId());
+		sb.append("\" target=\"_blank\">");
+		sb.append(user.getFullName());
+	RESTHelpers.addImg(sb);
+		sb.append(hiddenUserId);
+		String userLink = sb.toString();
+		
+		sb = new StringBuilder();
+		sb.append("<a href=\"mailto:");
+		sb.append(user.getEmail());
+		sb.append("\">");
+		sb.append(user.getEmail());
+		RESTHelpers.addImg(sb);
+		String emailLink = sb.toString();
+		
+		// Create an object, and inject the above HTML, to represent an entry in the DataTable
+		JsonArray entry = new JsonArray();
+		entry.add(new JsonPrimitive(userLink));
+		entry.add(new JsonPrimitive(user.getInstitution()));
+		entry.add(new JsonPrimitive(emailLink));
+		
+		dataTablePageEntries.add(entry);
+	}
+    	JsonObject nextPage=new JsonObject();
+    	 // Build the actual JSON response object and populated it with the created data
+	    nextPage.addProperty(SYNC_VALUE, syncValue);
+	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
 	    nextPage.add("aaData", dataTablePageEntries);
 	    
 	    // Return the next DataTable page
     	return nextPage;
 	}
 	
-	public static JsonObject convertJobSolversToDataTable(List<JobSolver> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+public static JsonObject convertSpacesToJsonObject(List<Space> spaces, int totalRecords, int totalRecordsAfterQuery, int syncValue, int id) {
+	/**
+	 * Generate the HTML for the next DataTable page of entries
+	 */
+	JsonArray dataTablePageEntries = new JsonArray();
+	for(Space space : spaces){
+		StringBuilder sb = new StringBuilder();
+		String hiddenSpaceId;
+		
+		// Create the hidden input tag containing the space id
+		sb.append("<input type=\"hidden\" value=\"");
+		sb.append(space.getId());
+		sb.append("\" prim=\"space\" />");
+		hiddenSpaceId = sb.toString();
+		
+		// Create the space "details" link and append the hidden input element
+		sb = new StringBuilder();
+		sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
+		sb.append(id);
+		sb.append(",");
+		sb.append(space.getId());
+		sb.append(")\">");
+		sb.append(space.getName());
+		RESTHelpers.addImg(sb);
+		sb.append(hiddenSpaceId);
+		String spaceLink = sb.toString();
+		
+		
+		// Create an object, and inject the above HTML, to represent an entry in the DataTable
+		JsonArray entry = new JsonArray();
+		entry.add(new JsonPrimitive(spaceLink));
+		entry.add(new JsonPrimitive(space.getDescription()));
+		
+		dataTablePageEntries.add(entry);
+	}
+	
+    	JsonObject nextPage=new JsonObject();
+    	 // Build the actual JSON response object and populated it with the created data
+	    nextPage.addProperty(SYNC_VALUE, syncValue);
+	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+	    nextPage.add("aaData", dataTablePageEntries);
+	    
+	    // Return the next DataTable page
+    	return nextPage;
+	}
+
+public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	/**
+	 * Generate the HTML for the next DataTable page of entries
+	 */
+	JsonArray dataTablePageEntries = new JsonArray();
+	for(Solver solver : solvers){
+		StringBuilder sb = new StringBuilder();
+		
+		// Create the hidden input tag containing the solver id
+		sb.append("<input type=\"hidden\" value=\"");
+		sb.append(solver.getId());
+		sb.append("\" prim=\"solver\" />");
+		String hiddenSolverId = sb.toString();
+		
+		// Create the solver "details" link and append the hidden input element
+		sb = new StringBuilder();
+		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+		sb.append(solver.getId());
+		sb.append("\" target=\"_blank\">");
+		sb.append(solver.getName());
+		RESTHelpers.addImg(sb);
+		sb.append(hiddenSolverId);
+		String solverLink = sb.toString();
+		
+		// Create an object, and inject the above HTML, to represent an entry in the DataTable
+		JsonArray entry = new JsonArray();
+		entry.add(new JsonPrimitive(solverLink));
+		entry.add(new JsonPrimitive(solver.getDescription()));
+		
+		dataTablePageEntries.add(entry);
+	}
+	
+    	JsonObject nextPage=new JsonObject();
+    	 // Build the actual JSON response object and populated it with the created data
+	    nextPage.addProperty(SYNC_VALUE, syncValue);
+	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+	    nextPage.add("aaData", dataTablePageEntries);
+	    
+	    // Return the next DataTable page
+    	return nextPage;
+	}
+	
+	public static JsonObject convertBenchmarksToJsonObject(List<Benchmark> benchmarks, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+		/**
+    	 * Generate the HTML for the next DataTable page of entries
+    	 */
+    	JsonArray dataTablePageEntries = new JsonArray();
+    	for(Benchmark bench : benchmarks){
+    		StringBuilder sb = new StringBuilder();
+    		
+    		// Create the hidden input tag containing the benchmark id
+    		sb.append("<input type=\"hidden\" value=\"");
+    		sb.append(bench.getId());
+    		sb.append("\" prim=\"benchmark\"/>");
+    		String hiddenBenchId = sb.toString();
+    		
+    		// Create the benchmark "details" link and append the hidden input element
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		// Set the tooltip to be the benchmark's description
+    		sb.append(bench.getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+    		sb.append(bench.getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(bench.getName());
+		RESTHelpers.addImg(sb);
+    		sb.append(hiddenBenchId);
+			String benchLink = sb.toString();
+			
+			// Create the benchmark type tag
+			sb = new StringBuilder();
+			sb.append("<span title=\"");
+			// Set the tooltip to be the benchmark type's description
+			sb.append(bench.getType().getDescription());
+			sb.append("\">");
+			sb.append(bench.getType().getName());
+			sb.append("</span>");
+			String typeSpan = sb.toString();
+			
+			// Create an object, and inject the above HTML, to represent an entry in the DataTable
+			JsonArray entry = new JsonArray();
+    		entry.add(new JsonPrimitive(benchLink));
+    		entry.add(new JsonPrimitive(typeSpan));
+    		
+    		dataTablePageEntries.add(entry);
+    	}
+    	JsonObject nextPage=new JsonObject();
+    	 // Build the actual JSON response object and populated it with the created data
+	    nextPage.addProperty(SYNC_VALUE, syncValue);
+	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+	    nextPage.add("aaData", dataTablePageEntries);
+	    
+	    // Return the next DataTable page
+    	return nextPage;
+	}
+	
+	public static JsonObject convertJobSolversToJsonObject(List<JobSolver> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue,Integer spaceId) {
     	/**
     	 * Generate the HTML for the next DataTable page of entries
     	 */
@@ -1031,7 +1115,12 @@ public class RESTHelpers {
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
     		sb.append(js.getSolver().getName());
-    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		if (spaceId==null) {
+    			sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		} else {
+    			sb.append("\" href=\""+Util.docRoot("secure/details/pairsInSpace.jsp?sid="+spaceId +"&id="));
+    		}
+    		
     		sb.append(js.getSolver().getId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(js.getSolver().getName());
