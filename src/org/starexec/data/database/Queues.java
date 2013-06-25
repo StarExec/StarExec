@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.Util;
 
 /**
  * Handles all DB interaction for queues
@@ -167,6 +169,29 @@ public class Queues {
 				List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
 
 				for (JobPair j : jobPairs) {
+					StringBuilder sb = new StringBuilder();
+					String hiddenJobPairId;
+					
+					// Create the hidden input tag containing the jobpair id
+					sb.append("<input type=\"hidden\" value=\"");
+					sb.append(j.getId());
+					sb.append("\" name=\"pid\"/>");
+					hiddenJobPairId = sb.toString();
+		    		
+		    		// Create the benchmark link and append the hidden input element
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(j.getBench().getDescription());
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+		    		sb.append(j.getBench().getId());
+		    		sb.append("\" target=\"_blank\">");
+		    		sb.append(j.getBench().getName());
+		    		RESTHelpers.addImg(sb);
+		    		sb.append(hiddenJobPairId);
+					String benchLink = sb.toString();
+					
+					
+					
 					String[] jobInfo;
 					jobInfo = new String[6];
 					
@@ -175,7 +200,8 @@ public class Queues {
 					jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
 
 					if (Permissions.canUserSeeJob(job.getId(), userId)) {
-						jobInfo[2] = (j.getBench().getName());
+						//jobInfo[2] = (j.getBench().getName());
+						jobInfo[2] = benchLink;
 						jobInfo[3] = (j.getSolver().getName());
 						jobInfo[4] = (j.getConfiguration().getName());
 						

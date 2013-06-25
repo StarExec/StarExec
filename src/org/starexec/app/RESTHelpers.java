@@ -367,7 +367,7 @@ public class RESTHelpers {
      * 
      * @author Aaron Stump 
      */
-    protected static void addImg(StringBuilder sb) {
+    public static void addImg(StringBuilder sb) {
 	sb.append("<img class=\"extLink\" src=\""+Util.docRoot("images/external.png\"/></a>"));
     }
 
