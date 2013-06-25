@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
+import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.WorkerNode;
 
@@ -42,7 +43,7 @@ public class Cluster {
 	}
 	
 	/**
-	 * Gets a worker node with detailed information (Id and name aint with all attributes)
+	 * Gets a worker node with detailed information (Id and name with all attributes)
 	 * @param id The id of the node to get detailed information for
 	 * @return A node object containing all of its attributes
 	 * @author Wyatt Kaiser
@@ -109,16 +110,12 @@ public class Cluster {
 
 			for (JobPair j : jobPairs) {
 				String[] jobInfo;
-				jobInfo = new String[6];
-				log.debug("JOBPAIR ID = " + j.getId());
-				log.debug("JOB ID = " + j.getJobId());
-				
-				//Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
-				//log.debug("JOB = " + job);
-				//jobInfo[0] = job.getName();
-				jobInfo[0] = "TEST (temp)";
-				//jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
-				jobInfo[1] = "WYATT KAISER (temp)";
+				jobInfo = new String[6];				
+				Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+				jobInfo[0] = job.getName();
+				//jobInfo[0] = "TEST (temp)";
+				jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
+				//jobInfo[1] = "WYATT KAISER (temp)";
 				//Permissions.canUserSeeJob(job.getId(), userId
 				if (true) {
 					jobInfo[2] = (j.getBench().getName());
