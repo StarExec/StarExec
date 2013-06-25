@@ -190,6 +190,28 @@ public class Queues {
 		    		sb.append(hiddenJobPairId);
 					String benchLink = sb.toString();
 					
+					// Create the solver link
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(j.getSolver().getDescription());
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+		    		sb.append(j.getSolver().getId());
+		    		sb.append("\" target=\"_blank\">");
+		    		sb.append(j.getSolver().getName());
+		    		RESTHelpers.addImg(sb);
+					String solverLink = sb.toString();
+					
+					// Create the configuration link
+		    		sb = new StringBuilder();
+		    		sb.append("<a title=\"");
+		    		sb.append(j.getSolver().getConfigurations().get(0).getDescription());
+		    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+		    		sb.append(j.getSolver().getConfigurations().get(0).getId());
+		    		sb.append("\" target=\"_blank\">");
+		    		sb.append(j.getSolver().getConfigurations().get(0).getName());
+		    		RESTHelpers.addImg(sb);
+					String configLink = sb.toString();
+					
 					
 					
 					String[] jobInfo;
@@ -202,12 +224,10 @@ public class Queues {
 					if (Permissions.canUserSeeJob(job.getId(), userId)) {
 						//jobInfo[2] = (j.getBench().getName());
 						jobInfo[2] = benchLink;
-						jobInfo[3] = (j.getSolver().getName());
-						jobInfo[4] = (j.getConfiguration().getName());
-						
-						//This function returns the space that the job is in, not the primitive
-						//jobInfo[5] = Jobs.getSpace(j.getId()).getName();
-						
+						jobInfo[3] = solverLink;
+						jobInfo[4] = configLink;
+						//jobInfo[3] = (j.getSolver().getName());
+						//jobInfo[4] = (j.getConfiguration().getName());						
 						jobInfo[5] = j.getPath();
 
 					} else {

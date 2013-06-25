@@ -104,36 +104,22 @@ public class Cluster {
 			node.setId(results.getInt("id"));
 			node.setStatus(results.getString("status"));
 			
-			//Get all the job pairs that are queued up on the queue
+			//Get all the job pairs that are running on the queue
 			List<JobPair> jobPairs = Jobs.getRunningPairsDetailed(results.getInt("id"));
-			//List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
 
 			for (JobPair j : jobPairs) {
 				String[] jobInfo;
 				jobInfo = new String[6];				
 				Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
 				jobInfo[0] = job.getName();
-				//jobInfo[0] = "TEST (temp)";
 				jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
-				//jobInfo[1] = "WYATT KAISER (temp)";
-				//Permissions.canUserSeeJob(job.getId(), userId
-				if (true) {
+
+				if (Permissions.canUserSeeJob(job.getId(), userId)) {
 					jobInfo[2] = (j.getBench().getName());
 					jobInfo[3] = (j.getSolver().getName());
-					jobInfo[4] = (j.getConfiguration().getName());
-					
-					//This function returns the space that the job is in, not the primitive
-					//jobInfo[5] = Jobs.getSpace(j.getId()).getName();
-					
+					jobInfo[4] = (j.getConfiguration().getName());	
 					jobInfo[5] = j.getPath();
-					
-					/*String path = j.getPath();
-					int index = path.lastIndexOf("/");
-					if (index != -1) {
-						path = path.substring(index + 1);
-					}
-					jobInfo[5] = (path);
-					*/
+
 				} else {
 					jobInfo[2] = "private";
 					jobInfo[3] = "private";
