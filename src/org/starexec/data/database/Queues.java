@@ -170,22 +170,25 @@ public class Queues {
 				List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
 
 				for (JobPair j : jobPairs) {					
+					StringBuilder sb = new StringBuilder();
+					String hiddenJobPairId;
+					
+					// Create the hidden input tag containing the jobpair id
+					sb.append("<input type=\"hidden\" value=\"");
+					sb.append(j.getId());
+					sb.append("\" name=\"pid\"/>");
+					hiddenJobPairId = sb.toString();
+					
 					// Create the job link
 					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
-		    		StringBuilder sb = new StringBuilder();
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(job.getId());
-					sb.append("\" prim=\"job\"/>");
-					String hiddenJobId = sb.toString();
-					sb = new StringBuilder();
+		    		sb = new StringBuilder();
 		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
 		    		sb.append(job.getId());
 		    		sb.append("\" target=\"_blank\">");
 		    		sb.append(job.getName());
 		    		RESTHelpers.addImg(sb);
-		    		sb.append(hiddenJobId);
+		    		sb.append(hiddenJobPairId);
 					String jobLink = sb.toString();
-					
 					
 					//Create the User Link
 		    		sb = new StringBuilder();
@@ -203,7 +206,6 @@ public class Queues {
 						sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
 						hiddenUserId = sb.toString();
 					}
-		    		// Create the user "details" link and append the hidden input element
 		    		sb = new StringBuilder();
 		    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
 		    		sb.append(user.getId());
@@ -212,23 +214,7 @@ public class Queues {
 		    		RESTHelpers.addImg(sb);
 		    		sb.append(hiddenUserId);
 					String userLink = sb.toString();
-					
-					
-					
-					
-					
-					
-					
-					
-					sb = new StringBuilder();
-					String hiddenJobPairId;
-					
-					// Create the hidden input tag containing the jobpair id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(j.getId());
-					sb.append("\" name=\"pid\"/>");
-					hiddenJobPairId = sb.toString();	
-		    		
+
 		    		// Create the benchmark link
 		    		sb = new StringBuilder();
 		    		sb.append("<a title=\"");
@@ -271,16 +257,10 @@ public class Queues {
 					
 					jobInfo[0] = jobLink;
 					jobInfo[1] = userLink;
-					//jobInfo[0] = job.getName();
-					//jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
-
 					if (Permissions.canUserSeeJob(job.getId(), userId)) {
-						//jobInfo[2] = (j.getBench().getName());
 						jobInfo[2] = benchLink;
 						jobInfo[3] = solverLink;
-						jobInfo[4] = configLink;
-						//jobInfo[3] = (j.getSolver().getName());
-						//jobInfo[4] = (j.getConfiguration().getName());						
+						jobInfo[4] = configLink;						
 						jobInfo[5] = j.getPath();
 
 					} else {

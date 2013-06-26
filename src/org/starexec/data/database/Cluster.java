@@ -9,11 +9,14 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for cluster resources (queues and worker nodes)
@@ -108,18 +111,97 @@ public class Cluster {
 			List<JobPair> jobPairs = Jobs.getRunningPairsDetailed(results.getInt("id"));
 
 			for (JobPair j : jobPairs) {
+				StringBuilder sb = new StringBuilder();
+				String hiddenJobPairId;
+				
+				// Create the hidden input tag containing the jobpair id
+				sb.append("<input type=\"hidden\" value=\"");
+				sb.append(j.getId());
+				sb.append("\" name=\"pid\"/>");
+				hiddenJobPairId = sb.toString();
+				
+				// Create the job link
+				Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+	    		sb = new StringBuilder();
+	    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
+	    		sb.append(job.getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(job.getName());
+	    		RESTHelpers.addImg(sb);
+	    		sb.append(hiddenJobPairId);
+				String jobLink = sb.toString();
+				
+				//Create the User Link
+	    		sb = new StringBuilder();
+				String hiddenUserId;
+				User user = Users.getUserByJob(j.getJobId());
+				// Create the hidden input tag containing the user id
+				if(user.getId() == userId) {
+					sb.append("<input type=\"hidden\" value=\"");
+					sb.append(user.getId());
+					sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+					hiddenUserId = sb.toString();
+				} else {
+					sb.append("<input type=\"hidden\" value=\"");
+					sb.append(user.getId());
+					sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+					hiddenUserId = sb.toString();
+				}
+	    		sb = new StringBuilder();
+	    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
+	    		sb.append(user.getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(user.getFullName());
+	    		RESTHelpers.addImg(sb);
+	    		sb.append(hiddenUserId);
+				String userLink = sb.toString();
+
+	    		// Create the benchmark link
+	    		sb = new StringBuilder();
+	    		sb.append("<a title=\"");
+	    		sb.append(j.getBench().getDescription());
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+	    		sb.append(j.getBench().getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(j.getBench().getName());
+	    		RESTHelpers.addImg(sb);
+	    		sb.append(hiddenJobPairId);
+				String benchLink = sb.toString();
+				
+				// Create the solver link
+	    		sb = new StringBuilder();
+	    		sb.append("<a title=\"");
+	    		sb.append(j.getSolver().getDescription());
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+	    		sb.append(j.getSolver().getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(j.getSolver().getName());
+	    		RESTHelpers.addImg(sb);
+				String solverLink = sb.toString();
+				
+				// Create the configuration link
+	    		sb = new StringBuilder();
+	    		sb.append("<a title=\"");
+	    		sb.append(j.getSolver().getConfigurations().get(0).getDescription());
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+	    		sb.append(j.getSolver().getConfigurations().get(0).getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(j.getSolver().getConfigurations().get(0).getName());
+	    		RESTHelpers.addImg(sb);
+				String configLink = sb.toString();
+				
+				
+				
 				String[] jobInfo;
 				jobInfo = new String[6];				
-				Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
-				jobInfo[0] = job.getName();
-				jobInfo[1] = Users.getUserByJob(j.getJobId()).getFullName();
 
+				jobInfo[1] = jobLink;
+				jobInfo[2] = userLink;
 				if (Permissions.canUserSeeJob(job.getId(), userId)) {
-					jobInfo[2] = (j.getBench().getName());
-					jobInfo[3] = (j.getSolver().getName());
-					jobInfo[4] = (j.getConfiguration().getName());	
+					jobInfo[2] = benchLink;
+					jobInfo[3] = solverLink;
+					jobInfo[4] = configLink;
 					jobInfo[5] = j.getPath();
-
 				} else {
 					jobInfo[2] = "private";
 					jobInfo[3] = "private";
