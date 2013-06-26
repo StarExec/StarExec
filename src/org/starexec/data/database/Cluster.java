@@ -195,8 +195,8 @@ public class Cluster {
 				String[] jobInfo;
 				jobInfo = new String[6];				
 
-				jobInfo[1] = jobLink;
-				jobInfo[2] = userLink;
+				jobInfo[0] = jobLink;
+				jobInfo[1] = userLink;
 				if (Permissions.canUserSeeJob(job.getId(), userId)) {
 					jobInfo[2] = benchLink;
 					jobInfo[3] = solverLink;
