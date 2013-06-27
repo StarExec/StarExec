@@ -91,37 +91,39 @@
 <star:template title="${space.name}" js="lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}"></span>
-	<fieldset id="solverSumamryField">
-		<legend>solver summary</legend>
-		<table id="solveTbl" class="shaded">
-			<thead>
-				
-				<tr>
-					<th>solver</th>
-					<th id="configHead">configuration</th>
-					<th id="completeHead">solved</th>
-					<th id="incompleteHead">incomplete</th>
-					<th>wrong</th>
-					<th>failed</th>	
-					<th>time</th>
-				</tr>		
-			</thead>	
-			<tbody>
-				<c:forEach var="cs" items="${stats}">
-					<tr id="statRow">
-						<td><a href="/${starexecRoot}/secure/details/pairsInSpace.jsp?id=${cs.solver.id}&configid=${cs.configuration.id}&sid=${space.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-						<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-						<td>${cs.completeJobPairs} </td>
-						<td>${cs.incompleteJobPairs} </td>
-						<td>${cs.incorrectJobPairs}</td>
-						<td>${cs.errorJobPairs}</td>
-						<td>${cs.time}</td>
-					</tr>
-				</c:forEach>
-			</tbody>
-			</table>
-	</fieldset>
+	<c:if test="${pairCount>0}">
+		<fieldset id="solverSumamryField">
 	
+			<legend>solver summary</legend>
+			<table id="solveTbl" class="shaded">
+				<thead>
+				
+					<tr>
+						<th>solver</th>
+						<th id="configHead">configuration</th>
+						<th id="completeHead">solved</th>
+						<th id="incompleteHead">incomplete</th>
+						<th>wrong</th>
+						<th>failed</th>	
+						<th>time</th>
+					</tr>		
+				</thead>	
+				<tbody>
+					<c:forEach var="cs" items="${stats}">
+						<tr id="statRow">
+							<td><a href="/${starexecRoot}/secure/details/pairsInSpace.jsp?id=${cs.solver.id}&configid=${cs.configuration.id}&sid=${space.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+							<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+							<td>${cs.completeJobPairs} </td>
+							<td>${cs.incompleteJobPairs} </td>
+							<td>${cs.incorrectJobPairs}</td>
+							<td>${cs.errorJobPairs}</td>
+							<td>${cs.time}</td>
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+		</fieldset>
+	</c:if>
 	<c:if test="${pairCount>0}">
 		<fieldset id="graphField">
 			<legend>graphs</legend>	

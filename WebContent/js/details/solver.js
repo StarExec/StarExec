@@ -117,7 +117,7 @@ function initUI(){
 			buttons: {
 				'OK': function() {
 					$('#dialog-warning').dialog('close');
-				},
+				}
 			}
 		});
 	}

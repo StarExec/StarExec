@@ -376,7 +376,7 @@ function popUp(uri) {
 			resizable: false,
 			draggable: false,
 			height: 'auto',
-			width: 'auto',
+			width: 'auto'
 		});
 	});  
 }
