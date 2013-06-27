@@ -253,12 +253,13 @@ public class Statistics {
 				}
 			}
 			dataset.addSeries(d);
-			XYSeries diagonal=new XYSeries("");
+			XYSeries diagonal=new XYSeries("diagonal");
 			diagonal.add(0,0);
 			diagonal.add(.001,.001);
+			//.setKey(1);
 			dataset.addSeries(d);
 			
-		
+			
 			
 			
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot", "", "", dataset, PlotOrientation.VERTICAL, true, true,false);
@@ -270,6 +271,7 @@ public class Statistics {
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 			renderer.setSeriesLinesVisible(1, true);
 			renderer.setSeriesPaint(1, color);
+			
 			plot.setRenderer(renderer);
 			
 			LegendTitle legend=chart.getLegend();
