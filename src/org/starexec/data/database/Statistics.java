@@ -245,7 +245,7 @@ public class Statistics {
 				}
 			}
 			
-			XYSeries d=new XYSeries("");
+			XYSeries d=new XYSeries("points");
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(List<Double> time : times.values()) {
 				if (time.size()==2) {
@@ -256,8 +256,8 @@ public class Statistics {
 			XYSeries diagonal=new XYSeries("diagonal");
 			diagonal.add(0,0);
 			diagonal.add(.001,.001);
-			//.setKey(1);
-			dataset.addSeries(d);
+			
+			dataset.addSeries(diagonal);
 			
 			
 			

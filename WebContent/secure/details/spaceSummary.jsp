@@ -124,6 +124,7 @@
 			</table>
 		</fieldset>
 	</c:if>
+	
 	<c:if test="${pairCount>0}">
 		<fieldset id="graphField">
 			<legend>graphs</legend>	
