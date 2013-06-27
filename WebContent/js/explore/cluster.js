@@ -57,7 +57,8 @@ $(document).ready(function(){
 	// DataTables setup
 	attrTable = $('#details').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">',
-        "bPaginate": false
+        "bPaginate": false,
+        "aaSorting": [] 
     });	
 });
  
