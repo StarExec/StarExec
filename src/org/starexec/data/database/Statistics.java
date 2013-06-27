@@ -254,10 +254,7 @@ public class Statistics {
 			}
 			dataset.addSeries(d);
 			XYSeries diagonal=new XYSeries("diagonal");
-			diagonal.add(0,0);
-			diagonal.add(.001,.001);
 			
-			dataset.addSeries(diagonal);
 			
 			
 			
@@ -268,11 +265,6 @@ public class Statistics {
 			
 			XYPlot plot = (XYPlot) chart.getPlot();
 			
-			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-			renderer.setSeriesLinesVisible(1, true);
-			renderer.setSeriesPaint(1, color);
-			
-			plot.setRenderer(renderer);
 			
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
