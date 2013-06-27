@@ -407,7 +407,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config1,spaceId);
+		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,spaceId);
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}

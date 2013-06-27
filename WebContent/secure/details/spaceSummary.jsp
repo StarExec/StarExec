@@ -143,7 +143,7 @@
 						</c:forEach>
 					</select>
 					<select id="solverChoice2" default="${defaultSolver2}">
-						<option value=1> test</option>
+						
 						<c:forEach var="js" items="${stats}">
 							<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
 						</c:forEach>
