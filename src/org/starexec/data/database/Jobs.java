@@ -471,6 +471,7 @@ public class Jobs {
 	public static Job getDetailedWithoutJobPairs(int jobId) {
 		Connection con = null;			
 		ResultSet results=null;
+		log.debug("getting job with job pairs with id = "+jobId);
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
