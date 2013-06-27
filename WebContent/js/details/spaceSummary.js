@@ -67,8 +67,9 @@ function initUI(){
 }
 
 function updateSolverComparison() {
-	config1=("#solverChoice1 option:selected").attr("value");
-	config2=("#solverChoice2 option:selected").attr("value");
+	config1=$("#solverChoice1 option:selected").attr("value");
+	
+	config2=$("#solverChoice2 option:selected").attr("value");
 	$.post(
 			starexecRoot+"services/jobs/" + jobId + "/" + spaceId+"/graphs/solverComparison/"+config1+"/"+config2,
 			{},

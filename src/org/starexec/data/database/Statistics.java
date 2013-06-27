@@ -253,12 +253,7 @@ public class Statistics {
 				}
 			}
 			dataset.addSeries(d);
-			XYSeries diagonal=new XYSeries("diagonal");
-			
-			
-			
-			
-			
+
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot", "", "", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);

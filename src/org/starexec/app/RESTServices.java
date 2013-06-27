@@ -393,7 +393,7 @@ public class RESTServices {
 	}
 	
 	@POST
-	@Path("/jobs/{id}/{spaceId}/graphs/spaceOverview/{config1}/{config2}")
+	@Path("/jobs/{id}/{spaceId}/graphs/solverComparison/{config1}/{config2}")
 	@Produces("application/json")	
 	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
