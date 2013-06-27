@@ -209,7 +209,8 @@ public class Cluster {
 					jobInfo[5] = "private";
 				}
 				log.debug("JobInfo" + jobInfo);
-				node.putJobPair(j.getId(), jobInfo);
+				int sgeId = Jobs.getSGEId(j.getId());
+				node.putJobPair(sgeId, jobInfo);
 			}
 		}							
 		Common.closeResultSet(results);			

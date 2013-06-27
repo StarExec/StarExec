@@ -989,5 +989,12 @@ CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 		where id = _jobId and deleted=false;
 	END //
 	
+DROP PROCEDURE IF EXISTS GetSGEIdByPairId;
+CREATE PROCEDURE GetSGEIdByPairId(IN _pairId INT)
+	BEGIN
+		SELECT sge_id
+		FROM job_pairs
+		WHERE id = _pairId;
+	END //
 	
 DELIMITER ; -- this should always be at the end of the file

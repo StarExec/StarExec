@@ -269,7 +269,8 @@ public class Queues {
 						jobInfo[4] = "private";
 						jobInfo[5] = "private";
 					}
-					queue.putJobPair(j.getId(), jobInfo);
+					int sgeId = Jobs.getSGEId(j.getId());
+					queue.putJobPair(sgeId, jobInfo);
 				}
 			}
 						

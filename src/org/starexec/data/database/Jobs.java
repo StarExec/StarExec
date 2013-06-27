@@ -2495,5 +2495,23 @@ public class Jobs {
 		}
 		return null;
 	}
+
+	public static int getSGEId(int jobPairId) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSGEIdByPairId(?)}");
+			procedure.setInt(1, jobPairId);
+			ResultSet results = procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("sge_id");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return -1;
+	}
 	
 }
