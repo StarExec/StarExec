@@ -1,8 +1,12 @@
 var summaryTable;
 var pairTable;
+var spaceId;
+var jobId;
 $(document).ready(function(){
 	initUI();
 	initDataTables();
+	spaceId=$("#spaceId").attr("value");
+	jobId=$("#jobId").attr("value");
 });
 
 /**
@@ -16,11 +20,75 @@ function initUI(){
 		}
     });
 	
+	// Set the selected post processor to be the default one
+	defaultSolver1 = $('#solverChoice1').attr('default');
+	$('#solverChoice1 option[value=' + defaultSolver1 + ']').attr('selected', 'selected');
+	
+	// Set the selected post processor to be the default one
+	defaultSolver2 = $('#solverChoice2').attr('default');
+	$('#solverChoice2 option[value=' + defaultSolver2 + ']').attr('selected', 'selected');
 	
 	//set all fieldsets as expandable
 	$('fieldset').expandable(true);
+	
+	$("#logScale").change(function() {
+		logY=false;
+		if ($("#logScale").prop("checked")) {
+			logY=true;
+		}
+		
+		$.post(
+				starexecRoot+"services/jobs/" + jobId + "/" + spaceId+"/graphs/spaceOverview",
+				{logY : logY},
+				function(returnCode) {
+					
+					switch (returnCode) {
+					
+					case 1:
+						showMessage('error',"an internal error occured while processing your request: please try again",5000);
+						break;
+					case 2:
+						showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+						break;
+					default:
+						$("#spaceOverview").attr("src",returnCode);
+					}
+				},
+				"text"
+		);
+	});
+	
+	$("#solverChoice1").change(function() {
+		updateSolverComparison();
+	});
+	$("#solverChoice2").change(function() {
+		updateSolverComparison();
+	});
+}
 
-	}
+function updateSolverComparison() {
+	config1=("#solverChoice1 option:selected").attr("value");
+	config2=("#solverChoice2 option:selected").attr("value");
+	$.post(
+			starexecRoot+"services/jobs/" + jobId + "/" + spaceId+"/graphs/solverComparison/"+config1+"/"+config2,
+			{},
+			function(returnCode) {
+				
+				switch (returnCode) {
+				
+				case 1:
+					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					break;
+				case 2:
+					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+					break;
+				default:
+					$("#solverComparison").attr("src",returnCode);
+				}
+			},
+			"text"
+	);
+}
 
 /**
  * Initializes the DataTable objects
@@ -42,6 +110,6 @@ function initDataTables(){
         "bSort": true,
         "bPaginate": true
 	});
-	
-	
 }
+
+

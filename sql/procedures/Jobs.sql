@@ -663,24 +663,15 @@ DROP PROCEDURE IF EXISTS GetJobPairsByJob;
 CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		FROM job_pairs 				JOIN    status_codes    AS  status  ON job_pairs.status_code=status.code
+									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
 	
-	
--- Retrieves basic info about job pairs for the given job id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairsByJobForSolverInSpace;
-CREATE PROCEDURE GetJobPairsByJobForSolverInSpace(IN _id INT, IN _spaceId INT, IN _configId INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.job_id=_id AND job_pairs.space_id=_spaceId AND job_pairs.config_id=_configId;
-	END //
--- Retrieves all the info needed for stats for each job pair
--- Author: Eric Burns
-
 DROP PROCEDURE IF EXISTS GetJobPairsByJobForStats;
 CREATE PROCEDURE GetJobPairsByJobForStats(IN _id INT)
 	BEGIN
@@ -691,6 +682,21 @@ CREATE PROCEDURE GetJobPairsByJobForStats(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //	
+	
+	
+-- Retrieves info about job pairs for a given job in a given space with a given configuration
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsByConfigInSpace;
+CREATE PROCEDURE GetJobPairsByConfigInSpace(IN _id INT, IN _spaceId INT, IN _configId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		WHERE job_pairs.job_id=_id AND job_pairs.space_id=_spaceId AND job_pairs.config_id=_configId;
+	END //
+-- Retrieves all the info needed for stats for each job pair
+-- Author: Eric Burns
+
+
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns

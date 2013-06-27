@@ -26,6 +26,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
@@ -358,6 +359,60 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
+	
+	@POST
+	@Path("/jobs/{id}/{spaceId}/graphs/spaceOverview")
+	@Produces("application/json")	
+	public String getSpaceOverviewGraph(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		String chartPath = null;
+		
+		// Ensure user can view the job they are requesting the pairs from
+		if(false == Permissions.canUserSeeJob(jobId, userId)){
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		if (false == Permissions.canUserSeeSpace(spaceId,userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		boolean logX=false;
+		boolean logY=false;
+		if (Util.paramExists("logX", request)) {
+			if (Boolean.parseBoolean((String)request.getParameter("logX"))) {
+				logX=true;
+			}
+			
+		}
+		if (Util.paramExists("logY", request)) {
+			if (Boolean.parseBoolean((String)request.getParameter("logY"))) {
+				logY=true;
+			}
+		}
+		chartPath=Statistics.makeSpaceOverviewChart(jobId,spaceId,logX,logY);
+		log.debug("chartPath = "+chartPath);
+		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
+	}
+	
+	@POST
+	@Path("/jobs/{id}/{spaceId}/graphs/spaceOverview/{config1}/{config2}")
+	@Produces("application/json")	
+	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		String chartPath = null;
+		
+		// Ensure user can view the job they are requesting the pairs from
+		if(false == Permissions.canUserSeeJob(jobId, userId)){
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		if (false == Permissions.canUserSeeSpace(spaceId,userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config1,spaceId);
+		log.debug("chartPath = "+chartPath);
+		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
+	}
+	
+	
 	
 	
 	/**

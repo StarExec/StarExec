@@ -28,3 +28,17 @@ fieldset {
 	border-color:black;
 	font-weight:bold;
 }
+
+#solverChoice1,#solverChoice2 {
+	width:25%;
+	float:right;
+	margin-right:10px;
+}
+
+#optionField {
+	width:95%;
+}
+
+#solverComparison {
+	float:right;
+}

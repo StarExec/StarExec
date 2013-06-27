@@ -735,9 +735,6 @@ public class RESTHelpers {
 		    				attrMap.get(SPACE_ID)
 					);
 	    		}
-	    		
-	    		
-	    		
 	    		/**
 		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
 		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
@@ -759,6 +756,17 @@ public class RESTHelpers {
 	    }
 	    return null;
 	}
+	/**
+	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
+	 * @param pairs The pairs that will be the rows of the table
+	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+	 * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+	 * (if no search query, this should be the same as totalRecords)
+	 * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+	 * If one isn't present, any integer
+	 * @return A JsonObject that can be used to populate a datatable
+	 * @author Eric Burns
+	 */
 	
 	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
 		/**
@@ -842,7 +850,18 @@ public class RESTHelpers {
 		    // Return the next DataTable page
 	    	return nextPage;
 		}
-	
+	/**
+	 * Given a list of jobs, creates a JsonObject that can be used to populate a datatable client-side
+	 * @param jobs The jobs that will be the rows of the table
+	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+	 * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+	 * (if no search query, this should be the same as totalRecords)
+	 * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+	 * If one isn't present, any integer
+	 * @param forPage An integer code indicating what web page this JsonObject will be used for
+	 * @return A JsonObject that can be used to populate a datatable
+	 * @author Eric Burns
+	 */
 public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int forPage) {
 	/**
 	 * Generate the HTML for the next DataTable page of entries
@@ -898,6 +917,19 @@ public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecord
 	    // Return the next DataTable page
     	return nextPage;
 	}
+
+/**
+ * Given a list of users, creates a JsonObject that can be used to populate a datatable client-side
+ * @param users The users that will be the rows of the table
+ * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+ * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+ * (if no search query, this should be the same as totalRecords)
+ * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+ * If one isn't present, any integer
+ * @param currentUserId the ID of the user making the request for this datatable
+ * @return A JsonObject that can be used to populate a datatable
+ * @author Eric Burns
+ */
 public static JsonObject convertUsersToJsonObject(List<User> users, int totalRecords, int totalRecordsAfterQuery, int syncValue, int currentUserId) {
 	/**
 	 * Generate the HTML for the next DataTable page of entries
@@ -957,6 +989,17 @@ public static JsonObject convertUsersToJsonObject(List<User> users, int totalRec
     	return nextPage;
 	}
 	
+/**
+ * Given a list of spaces, creates a JsonObject that can be used to populate a datatable client-side
+ * @param spaces The spaces that will be the rows of the table
+ * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+ * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+ * (if no search query, this should be the same as totalRecords)
+ * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+ * If one isn't present, any integer
+ * @return A JsonObject that can be used to populate a datatable
+ * @author Eric Burns
+ */
 public static JsonObject convertSpacesToJsonObject(List<Space> spaces, int totalRecords, int totalRecordsAfterQuery, int syncValue, int id) {
 	/**
 	 * Generate the HTML for the next DataTable page of entries
@@ -1004,6 +1047,17 @@ public static JsonObject convertSpacesToJsonObject(List<Space> spaces, int total
     	return nextPage;
 	}
 
+/**
+ * Given a list of solvers, creates a JsonObject that can be used to populate a datatable client-side
+ * @param solvers The solvers that will be the rows of the table
+ * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+ * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+ * (if no search query, this should be the same as totalRecords)
+ * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+ * If one isn't present, any integer
+ * @return A JsonObject that can be used to populate a datatable
+ * @author Eric Burns
+ */
 public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
 	/**
 	 * Generate the HTML for the next DataTable page of entries
@@ -1047,6 +1101,17 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
     	return nextPage;
 	}
 	
+/**
+ * Given a list of benchmarks, creates a JsonObject that can be used to populate a datatable client-side
+ * @param benchmarks The benchmarks that will be the rows of the table
+ * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+ * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+ * (if no search query, this should be the same as totalRecords)
+ * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+ * If one isn't present, any integer
+ * @return A JsonObject that can be used to populate a datatable
+ * @author Eric Burns
+ */
 	public static JsonObject convertBenchmarksToJsonObject(List<Benchmark> benchmarks, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
 		/**
     	 * Generate the HTML for the next DataTable page of entries
@@ -1101,6 +1166,18 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 	    // Return the next DataTable page
     	return nextPage;
 	}
+	
+	/**
+	 * Given a list of JobSolvers, creates a JsonObject that can be used to populate a datatable client-side
+	 * @param stats The JobSolvers that will be the rows of the table
+	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+	 * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
+	 * (if no search query, this should be the same as totalRecords)
+	 * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
+	 * If one isn't present, any integer
+	 * @return A JsonObject that can be used to populate a datatable
+	 * @author Eric Burns
+	 */
 	
 	public static JsonObject convertJobSolversToJsonObject(List<JobSolver> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue,Integer spaceId) {
     	/**

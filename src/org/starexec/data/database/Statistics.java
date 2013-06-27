@@ -16,9 +16,11 @@ import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.starexec.constants.R;
@@ -136,10 +138,9 @@ public class Statistics {
 				configs.put(c.getId(), c);
 				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
 			}
-			configMap.get(configs.get(c.getId())).add(jp.getCpuUsage());
+			configMap.get(configs.get(c.getId())).add(jp.getWallclockTime());
 			
 		}
-		
 		for (HashMap<Configuration,List<Double>> h : answer.values()) {
 			for (List<Double> l : h.values()) {
 				Collections.sort(l);
@@ -157,8 +158,9 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSolverComparisonChart(List<JobPair> pairs) {
+	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY) {
 		try {
+			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY);
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs);
 			XYSeries d;
 			XYSeriesCollection dataset=new XYSeriesCollection();
@@ -174,21 +176,29 @@ public class Statistics {
 					
 				}
 			}
-			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
+			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
 			
 			XYPlot plot = (XYPlot) chart.getPlot();
+			if (logX) {
+				LogAxis xAxis=new LogAxis("# solved");
+				plot.setDomainAxis(xAxis);
+			}
+			if (logY) {
+				LogAxis yAxis=new LogAxis("logtime (s)");
+				plot.setRangeAxis(yAxis);
+			}
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 			renderer.setSeriesLinesVisible(0, true);
 			plot.setRenderer(renderer);
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
-			log.debug("Chart created succesfully, returning filepath ");
+			log.debug("Chart created succesfully, returning filepath " );
 			return Util.docRoot("secure/files/" + filename);
 		} catch (IOException e) {
-			log.error("MakeSolverComparisionChart says "+e.getMessage(),e);
+			log.error("MakeSpaceOverviewChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
@@ -198,19 +208,83 @@ public class Statistics {
 	 * the chart as a png file, and returns a string containing the absolute filepath of the chart
 	 * @param jobId The job id of the job to do the comparison for
 	 * @param spaceId The space that should contain all of the job pairs to compare
+	 * @param logX Whether to use a log scale on the X axis
+	 * @param logY Whether to use a log scale on the Y axis
 	 * @return A String filepath to the newly created graph, or null if there was an error.
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSolverComparisonChart(int jobId, int spaceId) {
-		
+	public static String makeSpaceOverviewChart(int jobId, int spaceId, boolean logX, boolean logY) {
 		try {
 			List<JobPair> pairs=Jobs.getCompletedJobPairsInSpace(jobId, spaceId);
-			return makeSolverComparisonChart(pairs);
+			return makeSpaceOverviewChart(pairs, logX,logY);
 		} catch (Exception e) {
-			log.error("makeSolverComparisonChart says "+e.getMessage());
+			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
 		}
 		
+		return null;
+	}
+	
+	public static String makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2) {
+		try {
+			if (pairs1.size()==0 || pairs2.size()==0) {
+				return null;
+			}
+			log.debug("making solver comparison chart");
+			String solver1=pairs1.get(0).getSolver().getName();
+			String solver2=pairs2.get(0).getSolver().getName();
+			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
+			for (JobPair jp : pairs1) {
+				
+				times.put(jp.getBench().getId(), new ArrayList<Double>());
+				times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+			}
+			for(JobPair jp : pairs2) {
+				if (times.containsKey(jp.getBench().getId())) {
+					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+				}
+			}
+			
+			XYSeries d=new XYSeries("");
+			XYSeriesCollection dataset=new XYSeriesCollection();
+			for(List<Double> time : times.values()) {
+				if (time.size()==2) {
+					d.add(time.get(0),time.get(1));
+				}
+			}
+			dataset.addSeries(d);
+			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot", "", "", dataset, PlotOrientation.VERTICAL, true, true,false);
+			Color color=new Color(0,0,0,0); //makes the background clear
+			chart.setBackgroundPaint(color);
+			
+			XYPlot plot = (XYPlot) chart.getPlot();
+			LegendTitle legend=chart.getLegend();
+			legend.setVisible(false);
+			LogAxis xAxis=new LogAxis(solver1+" time (s)");
+			plot.setDomainAxis(xAxis);
+			
+			LogAxis yAxis=new LogAxis(solver2+" time (s)");
+			plot.setRangeAxis(yAxis);
+			
+			String filename=UUID.randomUUID().toString()+".png";
+			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
+			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			log.debug("Chart created succesfully, returning filepath ");
+			return Util.docRoot("secure/files/" + filename);
+		} catch (Exception e) {
+			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
+		}
+		return null;
+	}
+	
+	public static String makeSolverComparisonChart(int jobId, int configId1, int configId2, int spaceId) {
+		try {
+			List<JobPair> pairs1=Jobs.getPairsDetailedByConfigInSpace(jobId, spaceId, configId1);
+			List<JobPair> pairs2=Jobs.getPairsDetailedByConfigInSpace(jobId,spaceId,configId2);
+			return makeSolverComparisonChart(pairs1,pairs2);
+		} catch (Exception e) {
+			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
+		}
 		return null;
 	}
 	/**
@@ -224,16 +298,13 @@ public class Statistics {
 	protected static HashMap<String, String> getMapFromResult(ResultSet result) throws Exception {
 		// Get resultset's metadata
 		ResultSetMetaData meta = (ResultSetMetaData) result.getMetaData();
-		
 		// Create the map to return
 		HashMap<String, String> map = new HashMap<String, String>();
-
 		// For each column in the record...
 		for(int i = 1; i <= meta.getColumnCount(); i++) {
 			// Add key=column name, value=column value to the map
 			map.put(meta.getColumnName(i), result.getString(i));
 		}
-				
 		return map;
 	}			
 }

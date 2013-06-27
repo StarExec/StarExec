@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -16,29 +16,61 @@
 			Space s=Spaces.get(spaceId);
 			List<Space> subspaces=Spaces.getSubSpaces(spaceId,userId,false);
 			HashMap<Space,List<JobSolver>> subspaceStats=new HashMap<Space,List<JobSolver>>();
+			
 			for (Space sub : subspaces) {
 				List<JobSolver> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
-				if (curStats.size()>=0) {
+				if (curStats.size()>0) {
 					subspaceStats.put(sub,curStats);
 				}
-				
 			}
 			
 			request.setAttribute("subspaceStats",subspaceStats);
-			List<JobPair> pairs=Jobs.getCompletedJobPairsInSpace(jobId,spaceId);
-			request.setAttribute("pairCount", pairs.size());
-			String solverComparisonPath=Statistics.makeSolverComparisonChart(pairs);
 			
-			List<JobSolver> stats=Jobs.getAllJobStatsInSpace(jobId,spaceId);
-			request.setAttribute("stats",stats);
-			request.setAttribute("solverComparisonPath",solverComparisonPath);
+			List<JobPair> pairs=Jobs.getPairsDetailedInSpace(jobId,spaceId);
+			
+			if (pairs.size()>0) {
+				List<JobPair> completedPairs=new ArrayList<JobPair>();
+				for (JobPair jp : pairs) {
+					if (jp.getStatus().getCode().getVal()==Status.StatusCode.STATUS_COMPLETE.getVal()) {
+						completedPairs.add(jp);
+					}
+				}
+				request.setAttribute("pairCount", completedPairs.size());
+				String spaceOverviewPath=Statistics.makeSpaceOverviewChart(completedPairs,false,true);
+				request.setAttribute("spaceOverviewPath",spaceOverviewPath);
+				List<JobSolver> stats=Jobs.processPairsToJobSolvers(pairs,0 , -1, true , 0 , "" , jobId , new int [1]);
+				if (stats.size()>=2) {
+					int default1=stats.get(0).getConfiguration().getId();
+					int default2=stats.get(1).getConfiguration().getId();
+					
+					request.setAttribute("defaultSolver1",default1);
+					request.setAttribute("defaultSolver2",default2);
+					
+					List<JobPair> pairs1=new ArrayList<JobPair>();
+					List<JobPair> pairs2=new ArrayList<JobPair>();
+					for (JobPair jp: completedPairs ) {
+						if (jp.getConfiguration().getId()==default1) {
+							pairs1.add(jp);
+						} else if (jp.getConfiguration().getId()==default2) {
+							pairs2.add(jp);
+						}
+						
+					}
+					
+					String solverComparisonPath=Statistics.makeSolverComparisonChart(pairs1,pairs2);
+					System.out.println(solverComparisonPath);
+					request.setAttribute("solverComparisonPath",solverComparisonPath);
+					
+				}
+				request.setAttribute("stats",stats);
+			} else {
+				request.setAttribute("pairCount",0);
+			}
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
 			int parentSpaceId=Spaces.getParentSpace(spaceId);
 			request.setAttribute("parentSpaceId",parentSpaceId);
-			
-			
 			request.setAttribute("space",s);
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
@@ -56,7 +88,7 @@
 	}
 %>
 
-<star:template title="${space.name}" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, details/shared, details/spaceSummary">			
+<star:template title="${space.name}" js="lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}"></span>
 	<fieldset id="solverSumamryField">
@@ -92,8 +124,28 @@
 	
 	<c:if test="${pairCount>0}">
 		<fieldset id="graphField">
-		<legend>graphs</legend>	
-		<img src="${solverComparisonPath}"/>
+			<legend>graphs</legend>	
+			<img id="spaceOverview" src="${spaceOverviewPath}"/>
+			<c:if test="${stats.size()>=2}">
+				<img id="solverComparison" src="${solverComparisonPath}"/>
+			</c:if>
+			<fieldset id="optionField">
+				<legend>options</legend>
+				<input type="checkbox" id="logScale" checked="checked"/><span>log scale</span>
+				<c:if test="${stats.size()>=2}">
+					<select id="solverChoice1" default="${defaultSolver1}">
+						<c:forEach var="js" items="${stats}">
+							<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
+						</c:forEach>
+					</select>
+					<select id="solverChoice2" default="${defaultSolver2}">
+						<c:forEach var="js" items="${stats}">
+							<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
+						</c:forEach>
+					</select>
+					
+				</c:if>
+			</fieldset>
 		</fieldset>
 	</c:if>
 			
