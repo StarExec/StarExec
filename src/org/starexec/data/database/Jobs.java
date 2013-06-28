@@ -1872,24 +1872,30 @@ public class Jobs {
 			con = Common.getConnection();
 			CallableStatement procedure;	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfJobPairs(?, ?, ?, ?, ?, ?, ? , ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, jobId);
 			procedure.setString(6, searchQuery);
-
+			
+			//the spaceId and configId are not null only if we are getting results by config/space
+			if (spaceId!=null) {
+				procedure.setInt(7, spaceId);
+			} else {
+				procedure.setNull(7,java.sql.Types.INTEGER);
+			}
+			if (configId!=null) {
+				procedure.setInt(8,configId);
+			} else {
+				procedure.setNull(8,java.sql.Types.INTEGER);
+			}
+			
 			ResultSet results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
 			
 			while(results.next()){
-				if (spaceId!=null && results.getInt("job_pairs.space_id")!=spaceId) {
-					continue;
-				}
-				if (configId!=null && results.getInt("job_pairs.config_id")!=configId) {
-					continue;
-				}
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
@@ -2029,7 +2035,7 @@ public class Jobs {
 			JobSolver curSolver=JobSolvers.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
 			curSolver.incrementTotalJobPairs();
-			curSolver.incrementTime(jp.getWallclockTime());
+			curSolver.incrementTime(jp.getCpuUsage());
 			if ( statusCode.error()) {
 			    curSolver.incrementErrorJobPairs();
 			} else if (statusCode.incomplete()) {

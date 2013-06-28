@@ -57,10 +57,12 @@
 						}
 						
 					}
-					
-					String solverComparisonPath=Statistics.makeSolverComparisonChart(pairs1,pairs2);
+					List<String> solverComparisonChart=Statistics.makeSolverComparisonChart(pairs1,pairs2);
+					String solverComparisonPath=solverComparisonChart.get(0);
+					String imageMap=solverComparisonChart.get(1);
 					System.out.println(solverComparisonPath);
 					request.setAttribute("solverComparisonPath",solverComparisonPath);
+					request.setAttribute("imageMap",imageMap);
 					
 				}
 				request.setAttribute("stats",stats);
@@ -101,9 +103,9 @@
 				
 					<tr>
 						<th>solver</th>
-						<th id="configHead">configuration</th>
-						<th id="completeHead">solved</th>
-						<th id="incompleteHead">incomplete</th>
+						<th class="configHead">configuration</th>
+						<th class="completeHead">solved</th>
+						<th class="incompleteHead">incomplete</th>
 						<th>wrong</th>
 						<th>failed</th>	
 						<th>time</th>
@@ -131,7 +133,8 @@
 			<legend>graphs</legend>	
 			<img id="spaceOverview" src="${spaceOverviewPath}"/>
 			<c:if test="${stats.size()>=2}">
-				<img id="solverComparison" src="${solverComparisonPath}"/>
+				<img id="solverComparison" src="${solverComparisonPath}" usemap="#solverComparisonMap"/>
+				${imageMap}
 			</c:if>
 			<fieldset id="optionField">
 				<legend>options</legend>
@@ -152,42 +155,42 @@
 			</fieldset>
 		</fieldset>
 	</c:if>
-			
-	<fieldset id="subspaceField">
-	<legend>subspaces</legend>
-	<c:forEach var="sub" items="${subspaceStats.keySet()}">
-		<table class="subspaceTable" class="shaded">
-			<thead>
-				<tr>
-					<th colspan="7" class="spaceHeader"><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a></th>
-				</tr>
-				<tr>
-					<th>solver</th>
-					<th class="configHead">configuration</th>
-					<th class="completeHead">solved</th>
-					<th class="incompleteHead">incomplete</th>
-					<th>wrong</th>
-					<th>failed</th>	
-					<th>time</th>
-				</tr>		
-			</thead>
-			<tbody>
-			<c:forEach var="cs" items="${subspaceStats.get(sub)}">
-					<tr id="statRow">
-						<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-						<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-						<td>${cs.completeJobPairs} </td>
-						<td>${cs.incompleteJobPairs} </td>
-						<td>${cs.incorrectJobPairs}</td>
-						<td>${cs.errorJobPairs}</td>
-						<td>${cs.time}</td>
+	<c:if test="${subspaceSats.keySet().size()>0}">
+		<fieldset id="subspaceField">
+		<legend>subspaces</legend>
+		<c:forEach var="sub" items="${subspaceStats.keySet()}">
+			<table class="subspaceTable" class="shaded">
+				<thead>
+					<tr>
+						<th colspan="7" class="spaceHeader"><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a></th>
 					</tr>
-				</c:forEach>
-			</tbody>
-		</table>
-	</c:forEach>
-	</fieldset>
-	
+					<tr>
+						<th>solver</th>
+						<th class="configHead">configuration</th>
+						<th class="completeHead">solved</th>
+						<th class="incompleteHead">incomplete</th>
+						<th>wrong</th>
+						<th>failed</th>	
+						<th>time</th>
+					</tr>		
+				</thead>
+				<tbody>
+				<c:forEach var="cs" items="${subspaceStats.get(sub)}">
+						<tr id="statRow">
+							<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+							<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+							<td>${cs.completeJobPairs} </td>
+							<td>${cs.incompleteJobPairs} </td>
+							<td>${cs.incorrectJobPairs}</td>
+							<td>${cs.errorJobPairs}</td>
+							<td>${cs.time}</td>
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+		</c:forEach>
+		</fieldset>
+	</c:if>
 	
 	
 	<fieldset>

@@ -418,7 +418,7 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type,id,request,PAGE_USER_DETAILS);
 	}
 	
-	public static JsonObject getNextDataTablesPageOfPairsBySpaceAndSolver(int jobId, int spaceId,int configId,HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpace(int jobId, int spaceId,int configId,HttpServletRequest request) {
 		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
 		if (null==attrMap) {
 			return null;

@@ -2,7 +2,7 @@ fieldset {
 	width: 750px;	
 }
 
-#incompleteHead, #completeHead, #configHead {
+.incompleteHead, .completeHead, .configHead {
 	width: 18%;
 }
 

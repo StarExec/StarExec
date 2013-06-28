@@ -355,7 +355,7 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsBySpaceAndSolver(jobId,spaceId,configId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpace(jobId,spaceId,configId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -391,13 +391,13 @@ public class RESTServices {
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
-	
+	//TODO: This needs to be a JSONArray with two parts-- the source and the image map (I think?)
 	@POST
 	@Path("/jobs/{id}/{spaceId}/graphs/solverComparison/{config1}/{config2}")
 	@Produces("application/json")	
 	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
-		String chartPath = null;
+		List<String> chartPath = null;
 		
 		// Ensure user can view the job they are requesting the pairs from
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
@@ -409,7 +409,7 @@ public class RESTServices {
 		
 		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,spaceId);
 		log.debug("chartPath = "+chartPath);
-		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
+		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath.get(0);
 	}
 	
 	

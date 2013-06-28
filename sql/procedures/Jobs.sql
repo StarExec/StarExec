@@ -380,7 +380,7 @@ CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPag
 -- ordering results by a column, and sorting results in ASC or DESC order.  
 -- Author: Todd Elvers	
 DROP PROCEDURE IF EXISTS GetNextPageOfJobPairs;
-CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _jobId INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _jobId INT, IN _query TEXT, IN _spaceId INT, IN _configId INT)
 	BEGIN
 		-- If _query is empty, get next page of JobPairs without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
@@ -413,7 +413,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
 				
-				WHERE 	job_id = _jobId
+				WHERE 	job_id = _jobId  AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -457,7 +457,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
 									
-				WHERE 	job_id = _jobId
+				WHERE 	job_id = _jobId AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN bench.name
@@ -502,7 +502,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
 
-				WHERE 	job_id = _jobId
+				WHERE 	job_id = _jobId  AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -555,7 +555,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
 
-				WHERE 	job_id = _jobId
+				WHERE 	job_id = _jobId AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')

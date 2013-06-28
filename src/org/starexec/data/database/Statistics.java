@@ -14,13 +14,18 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.entity.StandardEntityCollection;
+import org.jfree.chart.imagemap.StandardToolTipTagFragmentGenerator;
+import org.jfree.chart.imagemap.StandardURLTagFragmentGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.starexec.constants.R;
@@ -28,6 +33,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
 
 import com.mysql.jdbc.ResultSetMetaData;
@@ -138,7 +144,7 @@ public class Statistics {
 				configs.put(c.getId(), c);
 				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
 			}
-			configMap.get(configs.get(c.getId())).add(jp.getWallclockTime());
+			configMap.get(configs.get(c.getId())).add(jp.getCpuUsage());
 			
 		}
 		for (HashMap<Configuration,List<Double>> h : answer.values()) {
@@ -160,7 +166,7 @@ public class Statistics {
 	
 	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY) {
 		try {
-			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY);
+			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs);
 			XYSeries d;
 			XYSeriesCollection dataset=new XYSeriesCollection();
@@ -225,7 +231,7 @@ public class Statistics {
 		return null;
 	}
 	
-	public static String makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2) {
+	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2) {
 		try {
 			if (pairs1.size()==0 || pairs2.size()==0) {
 				return null;
@@ -234,14 +240,19 @@ public class Statistics {
 			String solver1=pairs1.get(0).getSolver().getName();
 			String solver2=pairs2.get(0).getSolver().getName();
 			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
+			HashMap<String,Integer> urls=new HashMap<String,Integer>();
+			int series=0;
+			int item=0;
 			for (JobPair jp : pairs1) {
 				
 				times.put(jp.getBench().getId(), new ArrayList<Double>());
-				times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+				times.get(jp.getBench().getId()).add(jp.getCpuUsage());
 			}
 			for(JobPair jp : pairs2) {
 				if (times.containsKey(jp.getBench().getId())) {
-					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+					times.get(jp.getBench().getId()).add(jp.getCpuUsage());
+					urls.put(series+":"+item, jp.getBench().getId());
+					item+=1;
 				}
 			}
 			
@@ -253,14 +264,20 @@ public class Statistics {
 				}
 			}
 			dataset.addSeries(d);
-
+			
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot", "", "", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
 			
 			XYPlot plot = (XYPlot) chart.getPlot();
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
+	        
+	        renderer.setURLGenerator(customURLGenerator);
 			
-			
+	        StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
+			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
+			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
 			LogAxis xAxis=new LogAxis(solver1+" time (s)");
@@ -271,16 +288,22 @@ public class Statistics {
 			
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
-			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
+			
+			String map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
+			
 			log.debug("Chart created succesfully, returning filepath ");
-			return Util.docRoot("secure/files/" + filename);
+			List<String> answer=new ArrayList<String>();
+			answer.add(Util.docRoot("secure/files/" + filename));
+			answer.add(map);
+			return answer;
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
 	
-	public static String makeSolverComparisonChart(int jobId, int configId1, int configId2, int spaceId) {
+	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int spaceId) {
 		try {
 			List<JobPair> pairs1=Jobs.getPairsDetailedByConfigInSpace(jobId, spaceId, configId1);
 			List<JobPair> pairs2=Jobs.getPairsDetailedByConfigInSpace(jobId,spaceId,configId2);
