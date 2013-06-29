@@ -21,11 +21,13 @@ import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.entity.StandardEntityCollection;
 import org.jfree.chart.imagemap.StandardToolTipTagFragmentGenerator;
 import org.jfree.chart.imagemap.StandardURLTagFragmentGenerator;
+import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.starexec.constants.R;
@@ -33,6 +35,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
 
@@ -231,6 +234,7 @@ public class Statistics {
 		return null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2) {
 		try {
 			if (pairs1.size()==0 || pairs2.size()==0) {
@@ -241,6 +245,7 @@ public class Statistics {
 			String solver2=pairs2.get(0).getSolver().getName();
 			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
+			HashMap<String,String> names=new HashMap<String,String>();
 			int series=0;
 			int item=0;
 			for (JobPair jp : pairs1) {
@@ -251,7 +256,10 @@ public class Statistics {
 			for(JobPair jp : pairs2) {
 				if (times.containsKey(jp.getBench().getId())) {
 					times.get(jp.getBench().getId()).add(jp.getCpuUsage());
-					urls.put(series+":"+item, jp.getBench().getId());
+					String key=series+":"+item;
+					
+					urls.put(key, jp.getBench().getId());
+					names.put(key, jp.getBench().getName());
 					item+=1;
 				}
 			}
@@ -274,7 +282,8 @@ public class Statistics {
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 	        
 	        renderer.setURLGenerator(customURLGenerator);
-			
+	        XYToolTipGenerator tooltips=new BenchmarkTooltipGenerator(names);
+	        renderer.setToolTipGenerator(tooltips);
 	        StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
 			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());

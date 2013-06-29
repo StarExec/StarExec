@@ -84,7 +84,13 @@ function updateSolverComparison() {
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
 					break;
 				default:
-					$("#solverComparison").attr("src",returnCode);
+					jsonObject=$.parseJSON(returnCode);
+					src=jsonObject.src;
+					map=jsonObject.map
+					
+					$("#solverComparison").attr("src",src);
+					$("#solverComparisonMap").remove();
+					$("#graphField").append(map);
 				}
 			},
 			"text"

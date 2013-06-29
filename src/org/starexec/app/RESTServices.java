@@ -408,8 +408,12 @@ public class RESTServices {
 		}
 		
 		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,spaceId);
+		JsonObject json=new JsonObject();
+		json.addProperty("src", chartPath.get(0));
+		json.addProperty("map",chartPath.get(1));
+		
 		log.debug("chartPath = "+chartPath);
-		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath.get(0);
+		return chartPath == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(json);
 	}
 	
 	

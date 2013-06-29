@@ -25,7 +25,7 @@
 			}
 			
 			request.setAttribute("subspaceStats",subspaceStats);
-			
+			request.setAttribute("subspaceCount",subspaceStats.keySet().size());
 			List<JobPair> pairs=Jobs.getPairsDetailedInSpace(jobId,spaceId);
 			
 			if (pairs.size()>0) {
@@ -75,6 +75,7 @@
 			int parentSpaceId=Spaces.getParentSpace(spaceId);
 			request.setAttribute("parentSpaceId",parentSpaceId);
 			request.setAttribute("space",s);
+			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -146,6 +147,7 @@
 						</c:forEach>
 					</select>
 					<select id="solverChoice2" default="${defaultSolver2}">
+						
 						<c:forEach var="js" items="${stats}">
 							<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
 						</c:forEach>
@@ -155,7 +157,7 @@
 			</fieldset>
 		</fieldset>
 	</c:if>
-	<c:if test="${subspaceSats.keySet().size()>0}">
+	<c:if test="${subspaceCount>0}">
 		<fieldset id="subspaceField">
 		<legend>subspaces</legend>
 		<c:forEach var="sub" items="${subspaceStats.keySet()}">
