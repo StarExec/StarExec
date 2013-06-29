@@ -25,6 +25,9 @@ function initUI(){
 		}
     });
 	
+	//we don't need the last rule, as there is no table below the last one
+	$("hr").last().remove();
+	
 	// Set the selected post processor to be the default one
 	defaultSolver1 = $('#solverChoice1').attr('default');
 	$('#solverChoice1 option[value=' + defaultSolver1 + ']').attr('selected', 'selected');

@@ -1949,7 +1949,7 @@ public class Jobs {
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
-				jp.setWallclockTime(results.getDouble("wallclock"));
+				jp.setCpuUsage(results.getDouble("cpu"));
 
 				Benchmark bench = new Benchmark();
 				bench.setId(results.getInt("bench.id"));
