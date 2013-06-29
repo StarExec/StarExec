@@ -310,8 +310,10 @@ public class Statistics {
 			double minY=(dataset.getRangeLowerBound(false))*.9;
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
 			ValueAxis axis=plot.getDomainAxis();
+			axis.setAutoRange(false);
 			axis.setRange(Math.min(minX,minY), Math.max(maxX, maxY));
 			axis=plot.getRangeAxis();
+			axis.setAutoRange(false);
 			axis.setRange(Math.min(minX,minY), Math.max(maxX, maxY));
 			
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();

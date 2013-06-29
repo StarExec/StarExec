@@ -42,3 +42,7 @@ fieldset {
 #solverComparison {
 	float:right;
 }
+
+#returnToRoot {
+	margin-left:10px;
+}

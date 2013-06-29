@@ -191,6 +191,7 @@
 					</c:forEach>
 				</tbody>
 			</table>
+			<hr/>
 		</c:forEach>
 		</fieldset>
 	</c:if>
