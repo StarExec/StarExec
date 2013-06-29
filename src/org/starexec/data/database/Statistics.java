@@ -18,6 +18,7 @@ import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.StandardEntityCollection;
 import org.jfree.chart.imagemap.StandardToolTipTagFragmentGenerator;
 import org.jfree.chart.imagemap.StandardURLTagFragmentGenerator;
@@ -27,7 +28,6 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.starexec.constants.R;
@@ -195,7 +195,7 @@ public class Statistics {
 				plot.setDomainAxis(xAxis);
 			}
 			if (logY) {
-				LogAxis yAxis=new LogAxis("logtime (s)");
+				LogAxis yAxis=new LogAxis("time (s)");
 				plot.setRangeAxis(yAxis);
 			}
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -234,31 +234,55 @@ public class Statistics {
 		return null;
 	}
 	
+	/**
+	 * Given two lists of job pairs, each list representing a single solver/configuration pair,
+	 * creates a .png image file comparing the running times of the two pairs on all benchmarks
+	 * that they both solved.
+	 * @param pairs1 A list of job pairs from a single solver/configuration pair
+	 * @param pairs2 A list of job pairs from a single solver/configuration pair
+	 * @return A size 2 List of String objects, with the first string being the path
+	 * to the new graph and the second string being an HTML image map for the graph.
+	 * Returns null on error
+	 * @author Eric Burns
+	 */
+	
 	@SuppressWarnings("deprecation")
 	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2) {
 		try {
+			
+			//there are no points if either list of pairs is empty
 			if (pairs1.size()==0 || pairs2.size()==0) {
 				return null;
 			}
 			log.debug("making solver comparison chart");
+			
 			String solver1=pairs1.get(0).getSolver().getName();
 			String solver2=pairs2.get(0).getSolver().getName();
 			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
+			
+			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
 			int series=0;
 			int item=0;
 			for (JobPair jp : pairs1) {
-				
 				times.put(jp.getBench().getId(), new ArrayList<Double>());
 				times.get(jp.getBench().getId()).add(jp.getCpuUsage());
 			}
 			for(JobPair jp : pairs2) {
+				
+				//if we haven't seen this benchmark, then it wasn't in pairs1 and
+				//there is no comparison to make on it
 				if (times.containsKey(jp.getBench().getId())) {
 					times.get(jp.getBench().getId()).add(jp.getCpuUsage());
+					//points are identified by their series and item number
 					String key=series+":"+item;
 					
+					//put the id in urls so we can link to the benchmark details page
 					urls.put(key, jp.getBench().getId());
+					
+					//put the name in names so we can create a tooltip of the name
+					//when hovering over the point in the image map
 					names.put(key, jp.getBench().getName());
 					item+=1;
 				}
@@ -278,10 +302,23 @@ public class Statistics {
 			chart.setBackgroundPaint(color);
 			
 			XYPlot plot = (XYPlot) chart.getPlot();
+			
+			//make both axes identical, and make them span from 90% of the minimum value
+			//to 110% of the maximum value
+			double minX=(dataset.getDomainLowerBound(false))*.9;
+			double maxX=dataset.getDomainUpperBound(false)*1.1;
+			double minY=(dataset.getRangeLowerBound(false))*.9;
+			double maxY=dataset.getRangeUpperBound(false)*1.1;
+			ValueAxis axis=plot.getDomainAxis();
+			axis.setRange(Math.min(minX,minY), Math.max(maxX, maxY));
+			axis=plot.getRangeAxis();
+			axis.setRange(Math.min(minX,minY), Math.max(maxX, maxY));
+			
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 	        
 	        renderer.setURLGenerator(customURLGenerator);
+	        
 	        XYToolTipGenerator tooltips=new BenchmarkTooltipGenerator(names);
 	        renderer.setToolTipGenerator(tooltips);
 	        StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
@@ -311,6 +348,18 @@ public class Statistics {
 		}
 		return null;
 	}
+	
+	/**
+	 * Creates a chart that compares the running times of two solver/configuration pairs
+	 * on benchmarks that they both completed for a given job in a given space
+	 * @param jobId The job ID to look at
+	 * @param configId1 The first configuration ID (which is used to get the first solver)
+	 * @param configId2 The second configuration ID (which is used to get the second solver)
+	 * @param spaceId The ID  of the space containing all the jobs
+	 * @return A list of strings of size 2, where the first string is the path to the new graph
+	 * and the second string is an HTML image map. Returns null on failure.
+	 * @author Eric Burns
+	 */
 	
 	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int spaceId) {
 		try {

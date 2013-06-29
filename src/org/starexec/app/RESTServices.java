@@ -33,7 +33,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSolver;
+import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -433,8 +433,8 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		//TODO: This is not the right way to handle this--there should be another function in RESTHelpers
-		List<JobSolver> stats=Jobs.getAllJobStats(jobId);
-		nextDataTablesPage=RESTHelpers.convertJobSolversToJsonObject(stats, stats.size(), stats.size(),1,null);
+		List<SolverStats> stats=Jobs.getAllJobStats(jobId);
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
 		//nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
 		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);

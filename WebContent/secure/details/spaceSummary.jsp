@@ -13,12 +13,13 @@
 		
 		if(Permissions.canUserSeeJob(jobId,userId) && Permissions.canUserSeeSpace(spaceId,userId) ) {	
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
+			
 			Space s=Spaces.get(spaceId);
 			List<Space> subspaces=Spaces.getSubSpaces(spaceId,userId,false);
-			HashMap<Space,List<JobSolver>> subspaceStats=new HashMap<Space,List<JobSolver>>();
+			HashMap<Space,List<SolverStats>> subspaceStats=new HashMap<Space,List<SolverStats>>();
 			
 			for (Space sub : subspaces) {
-				List<JobSolver> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
+				List<SolverStats> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
 				if (curStats.size()>0) {
 					subspaceStats.put(sub,curStats);
 				}
@@ -38,7 +39,7 @@
 				request.setAttribute("pairCount", completedPairs.size());
 				String spaceOverviewPath=Statistics.makeSpaceOverviewChart(completedPairs,false,true);
 				request.setAttribute("spaceOverviewPath",spaceOverviewPath);
-				List<JobSolver> stats=Jobs.processPairsToJobSolvers(pairs,0 , -1, true , 0 , "" , jobId , new int [1]);
+				List<SolverStats> stats=Jobs.processPairsToSolverStats(pairs,0 , -1, true , 0 , "" , jobId , new int [1]);
 				if (stats.size()>=2) {
 					int default1=stats.get(0).getConfiguration().getId();
 					int default2=stats.get(1).getConfiguration().getId();
@@ -199,6 +200,7 @@
 	<legend>actions</legend>
 	<c:if test="${job.primarySpace!=space.id}">
 		<a id="goToParent" href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${parentSpaceId}">return to parent</a>
+		<a id="goToRoot" href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${job.primarySpace}">return to job root</a>
 	</c:if>
 	</fieldset>		
 </star:template>

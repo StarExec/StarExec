@@ -20,7 +20,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSolver;
+import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
@@ -328,6 +328,7 @@ public class Jobs {
 	 * Determines whether the job with the given ID exists in the database with the column "deleted" set to true
 	 * @param jobId The ID of the job in question
 	 * @return True if the job exists in the database and has the deleted flag set to true
+	 * @author Eric Burns
 	 */
 	
 	public static boolean isJobDeleted(int jobId) {
@@ -343,8 +344,16 @@ public class Jobs {
 		}
 		return false;
 	}
+	/**
+	 * Checks whether the given job is set to "deleted" in the database
+	 * @param con The open connection to make the call on 
+	 * @param jobId The ID of the job in question
+	 * @return True if the job exists in the database with the deleted flag set to true, false otherwise
+	 * @throws Exception 
+	 * @author Eric Burns
+	 */
 	
-	protected static boolean isJobDeleted(Connection con, int jobId) throws Exception {
+	public static boolean isJobDeleted(Connection con, int jobId) throws Exception {
 		CallableStatement procedure = con.prepareCall("{CALL IsJobDeleted(?)}");
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
@@ -1082,7 +1091,7 @@ public class Jobs {
 	
 	/**
 	 * Returns all of the job pairs in a given space, populated with all the fields necessary
-	 * to display in a JobSolver table
+	 * to display in a SolverStats table
 	 * @param jobId The ID of the job in question
 	 * @param spaceId The space ID of the space containing the solvers to get stats for
 	 * @return A list of job pairs for the given job for which the solver is in the given space
@@ -1112,7 +1121,7 @@ public class Jobs {
 	
 	/**
 	 * Returns all of the job pairs in space hierarchy rooted at the given space, populated with all the fields necessary
-	 * to display in a JobSolver table
+	 * to display in a SolverStats table
 	 * @param jobId The ID of the job in question
 	 * @param spaceId The space ID of the space containing the solvers to get stats for
 	 * @param userId Ensures only the subspaces the user can see are returned
@@ -1790,7 +1799,8 @@ public class Jobs {
 	
 	//TODO: Get attributes for these job pairs
 	public static List<JobPair> getCompletedJobPairsInSpace(int jobId, int spaceId) {
-		Connection con = null;			
+		Connection con = null;	
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
@@ -1799,7 +1809,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,	spaceId);
 			
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
 			
 			while(results.next()){
@@ -1829,25 +1839,65 @@ public class Jobs {
 				jp.setConfiguration(config);
 				jobPairs.add(jp);		
 			}	
-			Common.closeResultSet(results);
+			
 			return jobPairs;
 		} catch (Exception e){			
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.closeResultSet(results);
 			
 		}
 
 		return null;
 	}
+	/**
+	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object
+	 * @param startingRecord The first record to return
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
+	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
+	 * @param jobId The ID of the job in question
+	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
+	 */
 	
 	public static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
 		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,null,null);
 	}
 	
+	/**
+	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
+	 * all the job pairs are in the given space
+	 * @param startingRecord The first record to return
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
+	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
+	 * @param jobId The ID of the job in question
+	 * @param spaceID The space that contains the job pairs
+	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
+	 * @author Eric Burns
+	 */
+	
 	public static List<JobPair> getJobPairsForNextPageInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int spaceId) {
 		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,spaceId,null);
 	}
+	
+	/**
+	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
+	 * all the job pairs are in the given space and were operated on by the configuration with the given config ID
+	 * @param startingRecord The first record to return
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
+	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
+	 * @param jobId The ID of the job in question
+	 * @param spaceID The space that contains the job pairs
+	 * @param configID The ID of the configuration responsible for the job pairs
+	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
+	 * @author Eric Burns
+	 */
 	
 	public static List<JobPair> getJobPairsForNextPageByConfigInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int spaceId, int configId) {
 		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,spaceId,configId);
@@ -1948,14 +1998,18 @@ public class Jobs {
 		return null;
 	}
 	
+	//the following code is used to do server-side processing of information for job stats datatables.
+	//Currently, we're only doing client-side sorting, querying, etc. of these tables, but we
+	//might want to do server side processing in the future.
+	
 	/*
-	 * Helper function for sortJobSolvers-- compares two JobSolvers based on the indexOfColumnSortedBy
+	 * Helper function for sortSolverStats-- compares two SolverStats based on the indexOfColumnSortedBy
 	 * @return true if first<= second, false otherwise.
 	 * @author Eric Burns
 	 
 	
 	
-	private static boolean compareJobSolvers(JobSolver first, JobSolver second, int indexOfColumnSortedBy) {
+	private static boolean compareSolverStats(SolverStats first, SolverStats second, int indexOfColumnSortedBy) {
 		switch (indexOfColumnSortedBy) {
 		case 0:
 			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
@@ -1977,20 +2031,20 @@ public class Jobs {
 	}*/
 	
 	/*
-	 * Helper function for GetJobStatsForNextPage-- sorts JobSolver objects based on column and ASC sent from client
+	 * Helper function for GetJobStatsForNextPage-- sorts SolverStats objects based on column and ASC sent from client
 	 * @author Eric Burns
 	 *
-	private static List<JobSolver> sortJobSolvers(List<JobSolver> rows, int indexOfSortedColumn, boolean isSortedASC) {
+	private static List<SolverStats> sortSolverStats(List<SolverStats> rows, int indexOfSortedColumn, boolean isSortedASC) {
 		if (rows.size()<=1) {
 			return rows;
 		}
 		
-		List<JobSolver> answer=new LinkedList<JobSolver>();
+		List<SolverStats> answer=new LinkedList<SolverStats>();
 		answer.add(rows.get(0));
 		for (int index=1;index<rows.size();index++) {
 			boolean inserted=false;
 			for (int index2=0;index2<answer.size();index2++) {
-				if (compareJobSolvers(rows.get(index), answer.get(index2), indexOfSortedColumn)) {
+				if (compareSolverStats(rows.get(index), answer.get(index2), indexOfSortedColumn)) {
 					answer.add(index2, rows.get(index));
 					inserted=true;
 					break;
@@ -2002,8 +2056,8 @@ public class Jobs {
 			}
 		}
 		if (!isSortedASC) {
-			List<JobSolver> reversed=new LinkedList<JobSolver>();
-			for (JobSolver js : answer) {
+			List<SolverStats> reversed=new LinkedList<SolverStats>();
+			for (SolverStats js : answer) {
 				reversed.add(0,js);
 			}
 			
@@ -2013,26 +2067,26 @@ public class Jobs {
 		return answer;
 	}*/
 	
-	public static List<JobSolver> processPairsToJobSolvers(List<JobPair> pairs,int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
-		Hashtable<String, JobSolver> JobSolvers=new Hashtable<String,JobSolver>();
+	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs,int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
+		Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
 		String key=null;
 		for (JobPair jp : pairs) {
 			
 			//entries in the stats table determined by solver/configuration pairs
 			key=String.valueOf(jp.getSolver().getId())+":"+String.valueOf(jp.getConfiguration().getId());
 			
-			if (!JobSolvers.containsKey(key)) { // current stats entry does not yet exist
-				JobSolver newSolver=new JobSolver();
+			if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
+				SolverStats newSolver=new SolverStats();
 				log.debug("adding solver "+jp.getSolver().getName()+ " with configuration "+jp.getConfiguration().getName()+" to stats");
 				
 				newSolver.setSolver(jp.getSolver());
 				newSolver.setConfiguration(jp.getConfiguration());
-				JobSolvers.put(key, newSolver);
+				SolverStats.put(key, newSolver);
 			}
 			
 			
 			//update stats info for entry that current job-pair belongs to
-			JobSolver curSolver=JobSolvers.get(key);
+			SolverStats curSolver=SolverStats.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
 			curSolver.incrementTotalJobPairs();
 			curSolver.incrementTime(jp.getCpuUsage());
@@ -2052,8 +2106,8 @@ public class Jobs {
 			    }
 			}
 		}
-		List<JobSolver> returnValues=new LinkedList<JobSolver>();
-		for (JobSolver js : JobSolvers.values()) {
+		List<SolverStats> returnValues=new LinkedList<SolverStats>();
+		for (SolverStats js : SolverStats.values()) {
 			returnValues.add(js);
 		}
 		total[0]=returnValues.size();
@@ -2061,14 +2115,14 @@ public class Jobs {
 		/*carry out filtering function
 		if (!searchQuery.equals("")) {
 			searchQuery=searchQuery.toLowerCase();
-			List<JobSolver> toRemove=new LinkedList<JobSolver>();
-			for (JobSolver js : returnValues) {
+			List<SolverStats> toRemove=new LinkedList<SolverStats>();
+			for (SolverStats js : returnValues) {
 				if ( (!js.getSolver().getName().toLowerCase().contains(searchQuery)) &&
 				(!js.getConfiguration().getName().toLowerCase().contains(searchQuery)) ) {
 					toRemove.add(js);
 				}
 			}
-			for (JobSolver js : toRemove) {
+			for (SolverStats js : toRemove) {
 				returnValues.remove(js);
 			}
 		}
@@ -2079,8 +2133,8 @@ public class Jobs {
 		
 		//carry out sorting function
 		/*
-		returnValues=sortJobSolvers(returnValues, indexOfColumnSortedBy, isSortedASC);
-		List<JobSolver> sublist=null;
+		returnValues=sortSolverStats(returnValues, indexOfColumnSortedBy, isSortedASC);
+		List<SolverStats> sublist=null;
 		if (recordsPerPage>returnValues.size()) {
 			sublist=returnValues;
 		} else if (startingRecord+recordsPerPage>returnValues.size()) {
@@ -2107,14 +2161,14 @@ public class Jobs {
 	 * @param indexOfColumnSortedBy The column of the client-side datatable to sort on
 	 * @param searchQuery A search that includes the solver name and config name
 	 * @param jobId the ID of the job in question
-	 * @param total-- a reference to a 1-element int array used to return the total number of JobSolver objects
+	 * @param total-- a reference to a 1-element int array used to return the total number of SolverStats objects
 	 * @author Eric Burns
 	 */
 
-	public static List<JobSolver> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
+	public static List<SolverStats> getJobStatsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total) {
 		try {
 			List<JobPair> pairs=getPairsDetailedForStats(jobId);
-			return processPairsToJobSolvers(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
+			return processPairsToSolverStats(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
 		} catch (Exception e) {
 			log.error("getJobStatsForNextPage says " +e.getMessage(),e);
 		}
@@ -2129,15 +2183,15 @@ public class Jobs {
 	 * @param indexOfColumnSortedBy The column of the client-side datatable to sort on
 	 * @param searchQuery A search that includes the solver name and config name
 	 * @param jobId the ID of the job in question
-	 * @param total-- a reference to a 1-element int array used to return the total number of JobSolver objects
+	 * @param total-- a reference to a 1-element int array used to return the total number of SolverStats objects
 	 * @param spaceId The ID of the space to get data for
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobSolver> getJobStatsForNextPageInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int spaceId) {
+	public static List<SolverStats> getJobStatsForNextPageInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int spaceId) {
 		try {
 			List<JobPair> pairs=getPairsForStatsInSpace(jobId,spaceId);
-			return processPairsToJobSolvers(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
+			return processPairsToSolverStats(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
 		} catch (Exception e) {
 			log.error("getJobStatsForNextPageInSpace says " +e.getMessage(),e);
 		}
@@ -2152,15 +2206,15 @@ public class Jobs {
 	 * @param indexOfColumnSortedBy The column of the client-side datatable to sort on
 	 * @param searchQuery A search that includes the solver name and config name
 	 * @param jobId the ID of the job in question
-	 * @param total-- a reference to a 1-element int array used to return the total number of JobSolver objects
+	 * @param total-- a reference to a 1-element int array used to return the total number of SolverStats objects
 	 * @param spaceId The ID of the space to get data for
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobSolver> getJobStatsForNextPageInSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int spaceId, int userId) {
+	public static List<SolverStats> getJobStatsForNextPageInSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int spaceId, int userId) {
 		try {
 			List<JobPair> pairs=getPairsForStatsInSpaceHierarchy(jobId,spaceId,userId);
-			return processPairsToJobSolvers(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
+			return processPairsToSolverStats(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
 		} catch (Exception e) {
 			log.error("getJobStatsForNextPageInSpace says " +e.getMessage(),e);
 		}
@@ -2169,21 +2223,38 @@ public class Jobs {
 	}
 	
 	/**
-	 * Gets all JobSolver objects for a given job
+	 * Gets all SolverStats objects for a given job
 	 * @param jobId the job in question
-	 * @return every JobSolver associated with the given job
+	 * @return every SolverStats associated with the given job
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobSolver> getAllJobStats(int jobId) {
+	public static List<SolverStats> getAllJobStats(int jobId) {
 		return getJobStatsForNextPage(0 , -1, true , 0 , "" , jobId , new int [1] );
 	}
+	
+	/**
+	 * Gets all the SolverStats objects for a given job in the given space
+	 * @param jobId the job in question
+	 * @param spaceId The ID of the space in question
+	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
+	 * @author Eric Burns
+	 */
 
-	public static List<JobSolver> getAllJobStatsInSpace(int jobId,int spaceId) {
+	public static List<SolverStats> getAllJobStatsInSpace(int jobId,int spaceId) {
 		return getJobStatsForNextPageInSpace(0 , -1, true , 0 , "" , jobId , new int [1],spaceId);
 	}
 	
-	public static List<JobSolver> getAllJobStatsInSpaceHierarchy(int jobId, int spaceId, int userId) {
+	/**
+	 * Gets all the SolverStats objects for a given job in the space hierarchy rooted at the given space
+	 * @param jobId the job in question
+	 * @param spaceId The ID of the space in question
+	 * @param userId The user ID, used to get only the subspace info the user can see
+	 * @return A list containing every SolverStats for the given job in the space hierarchy rooted at the given space
+	 * @author Eric Burns
+	 */
+	
+	public static List<SolverStats> getAllJobStatsInSpaceHierarchy(int jobId, int spaceId, int userId) {
 		return getJobStatsForNextPageInSpaceHierarchy(0 , -1, true , 0 , "" , jobId , new int [1],spaceId, userId);
 	}
 

@@ -17,7 +17,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSolver;
+import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
@@ -711,27 +711,27 @@ public class RESTHelpers {
 			    return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairsforJob,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
 		    
 		    case JOB_STATS:
-		    	List<JobSolver> jobSolversToDisplay = null;
-	    		int [] totalJobSolvers= new int[1];
+		    	List<SolverStats> SolverStatsToDisplay = null;
+	    		int [] totalSolverStats= new int[1];
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
 	    		if (forPage==1) {
-	    			jobSolversToDisplay = Jobs.getJobStatsForNextPage(
+	    			SolverStatsToDisplay = Jobs.getJobStatsForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 		    				request.getParameter(SEARCH_QUERY), 				// Search query
 		    				id,													// Job id 
-		    				totalJobSolvers										// reference for storing TOTAL_ENTRIES
+		    				totalSolverStats										// reference for storing TOTAL_ENTRIES
 					);
 	    		} else {
-	    			jobSolversToDisplay = Jobs.getJobStatsForNextPageInSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
+	    			SolverStatsToDisplay = Jobs.getJobStatsForNextPageInSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 		    				request.getParameter(SEARCH_QUERY), 				// Search query
 		    				id,													// Job id 
-		    				totalJobSolvers,										// reference for storing TOTAL_ENTRIES
+		    				totalSolverStats,										// reference for storing TOTAL_ENTRIES
 		    				attrMap.get(SPACE_ID)
 					);
 	    		}
@@ -741,17 +741,17 @@ public class RESTHelpers {
 		    	 */
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobSolvers[0]);
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolverStats[0]);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobSolversToDisplay.size());
+		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, SolverStatsToDisplay.size());
 		    	}
-			    attrMap.put(TOTAL_RECORDS, totalJobSolvers[0]);
+			    attrMap.put(TOTAL_RECORDS, totalSolverStats[0]);
 			    if (forPage==1) {
-				    return convertJobSolversToJsonObject(jobSolversToDisplay,totalJobSolvers[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),null);
+				    return convertSolverStatsToJsonObject(SolverStatsToDisplay,totalSolverStats[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),null);
 			    } else {
-				    return convertJobSolversToJsonObject(jobSolversToDisplay,totalJobSolvers[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),attrMap.get(SPACE_ID));
+				    return convertSolverStatsToJsonObject(SolverStatsToDisplay,totalSolverStats[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),attrMap.get(SPACE_ID));
 			    }
 	    }
 	    return null;
@@ -833,7 +833,7 @@ public class RESTHelpers {
     		entry.add(new JsonPrimitive(solverLink));
     		entry.add(new JsonPrimitive(configLink));
     		entry.add(new JsonPrimitive(status));
-    		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    		
+    		double displayWC = Math.round(jp.getCpuUsage()*100)/100.0;		    		
     		entry.add(new JsonPrimitive(displayWC + " s"));
     		entry.add(new JsonPrimitive(jp.getStarexecResult()));
     		entry.add(new JsonPrimitive(jp.getSpace().getName()));
@@ -1168,8 +1168,8 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 	}
 	
 	/**
-	 * Given a list of JobSolvers, creates a JsonObject that can be used to populate a datatable client-side
-	 * @param stats The JobSolvers that will be the rows of the table
+	 * Given a list of SolverStats, creates a JsonObject that can be used to populate a datatable client-side
+	 * @param stats The SolverStats that will be the rows of the table
 	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
 	 * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
 	 * (if no search query, this should be the same as totalRecords)
@@ -1179,12 +1179,12 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 	 * @author Eric Burns
 	 */
 	
-	public static JsonObject convertJobSolversToJsonObject(List<JobSolver> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue,Integer spaceId) {
+	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue,Integer spaceId) {
     	/**
     	 * Generate the HTML for the next DataTable page of entries
     	 */
     	JsonArray dataTablePageEntries = new JsonArray();
-    	for(JobSolver js : stats){
+    	for(SolverStats js : stats){
     		StringBuilder sb = new StringBuilder();
 			
 			

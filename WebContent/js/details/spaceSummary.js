@@ -19,6 +19,11 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-n"
 		}
     });
+	$("#goToRoot").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+    });
 	
 	// Set the selected post processor to be the default one
 	defaultSolver1 = $('#solverChoice1').attr('default');
