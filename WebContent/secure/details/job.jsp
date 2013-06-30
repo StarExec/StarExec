@@ -145,5 +145,8 @@
 		<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>	
+		<div id="dialog-confirm-pause" title="confirm pause">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
+		</div>		
 	</fieldset>		
 </star:template>
