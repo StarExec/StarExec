@@ -28,6 +28,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
+import org.jfree.data.Range;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.starexec.constants.R;
@@ -309,13 +310,7 @@ public class Statistics {
 			double maxX=dataset.getDomainUpperBound(false)*1.1;
 			double minY=(dataset.getRangeLowerBound(false))*.9;
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
-			ValueAxis axis=plot.getDomainAxis();
-			axis.setAutoRange(false);
-			axis.setRange(Math.min(minX,minY), Math.max(maxX, maxY));
-			axis=plot.getRangeAxis();
-			axis.setAutoRange(false);
-			axis.setRange(Math.min(minX,minY), Math.max(maxX, maxY));
-			
+			Range range=new Range(Math.min(minX,minY),Math.max(maxX, maxY));
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 	        
@@ -329,9 +324,14 @@ public class Statistics {
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
 			LogAxis xAxis=new LogAxis(solver1+" time (s)");
+			xAxis.setAutoRange(false);
+			xAxis.setRange(range);
 			plot.setDomainAxis(xAxis);
 			
 			LogAxis yAxis=new LogAxis(solver2+" time (s)");
+			
+			yAxis.setAutoRange(false);
+			yAxis.setRange(range);
 			plot.setRangeAxis(yAxis);
 			
 			String filename=UUID.randomUUID().toString()+".png";

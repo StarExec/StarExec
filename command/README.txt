@@ -314,9 +314,9 @@ Delete Commands
 ---------------
 
 These commands are all used to delete primitives from Starexec. All of them accept a single parameter, 
-"id." Delete commands all look like the following example...
+"id." You may delete multiple primitives at once by putting all the ids in a comma-seperated list Delete commands all look like the following example.
 
-'deleteconfig id=5'
+'deleteconfig id=5,47,23'
 
 --deletebench -Deletes the benchmark with the given ID.
 REQUIRED: "id"
@@ -346,12 +346,13 @@ Remove Commands
 ---------------
 
 This set of commands can be used to remove the associations between primitives
-and spaces. Solvers and benchmarks that are removed from every space they 
-belong to will be deleted.
+and spaces. You may remove multiple primitives at the same time by putting ids in a comma-seperated list, as illustrated 
+in the examples below.
 
 -- removebench -Removes a benchmark from a given space. "id" is the benchmark ID.
 REQUIRED: "id" "from"
 OPTIONAL: None
+EXAMPLE: 'removebench id=54,241,1 from=3'
 
 -- removejob -Removes a job from a given space. "id" is the job ID.
 REQUIRED: "id" "from"
@@ -401,18 +402,21 @@ These commands can be used to either copy or link primitives from one space to a
 a primitive means to create a deep copy-- you will become the owner of a copied solver or benchmark,
 and it will count towards your disk usage. To 'link' a primitive means that you are using a primitive
 that still belongs to another user. If they choose to delete a solver or benchmark that you have linked,
-then you will lose access to it. You may also copy or link primitives that you own.
+then you will lose access to it. You may also copy or link primitives that you own. You may copy or link
+multiple primitives at the same time by putting ids in a comma-seperated list, as illustrated in the examples
+below.
 
 --copybench -Copies a benchmark from one space to another. "id" is a benchmark id, and "from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None
-EXAMPLE: 'copybench id=42 from=643 to=56"
+EXAMPLE: 'copybench id=42,10,1 from=643 to=56"
 
 --linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from""from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None
+EXAMPLE: 'linkbench id=6 from=63 to=124
 
 --copysolver -Copies a solver from one space and places it into a new space or hierarchy. "id" is a solver id, and "from"
 and "to" are space ids
@@ -424,7 +428,7 @@ and "to" are space ids
 REQUIRED: "id" "from" "to"
 OPTIONAL: "hier"
 
---copyjob -Copies an existing job and associates it with a space. "id" is a job id, and "from" and "to" are
+--linkjob -Links an existing job in a new space space. "id" is a job id, and "from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None

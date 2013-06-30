@@ -375,6 +375,17 @@ function onTrashDrop(event, ui){
 	}
 }
 
+function processDeleteErrorCode(errorCode,prim) {
+	switch (errorCode) {
+	case 1: 
+		showMessage('error', "an error occurred while processing your request; please try again", 5000);
+		break;
+	case 2:
+		showMessage('error', "only the owner of a" +prim+ " can delete it", 5000);
+		break;
+	}
+}
+
 function processRemoveErrorCode(errorCode,prim) {
 	switch (errorCode) {
 	case 1:
@@ -623,7 +634,7 @@ function onSpaceDrop(event, ui) {
 								log('AJAX response recieved with code ' + returnCode);
 								if (returnCode==0) {
 									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' ' + 'jobs successfully copied to' + destName, 2000);
+										showMessage('success', ids.length + ' ' + 'jobs successfully linked in' + destName, 2000);
 									} else {					    		
 										showMessage('success', 'job successfully copied to' + destName, 2000);	
 									}
@@ -891,20 +902,44 @@ function initSpaceExplorer(){
  * @author Todd Elvers
  */
 function removeBenchmarks(selectedBenches){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected benchmark(s) from ' + spaceName + '? This will NOT delete the selected benchmark(s)');
+	$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to delete them permanently?');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		buttons: {
-			'yes': function() {
-				log('user confirmed benchmark deletion');
+			'remove benchmark': function() {
+				log('user confirmed benchmark removal');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
 						starexecRoot+"services/remove/benchmark/" + spaceId,
-						{selectedBenches : selectedBenches},
+						{selectedBenchmarks : selectedBenches},
+						function(returnCode) {
+							log('AJAX response received with code ' + returnCode);
+							switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(benchTable);
+								break;
+							default:
+								processRemoveErrorCode(returnCode,"benchmark");
+							} 
+						},
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error removing benchmarks",5000);
+				});		
+			},
+			'delete permanently': function() {
+				log('user confirmed benchmark deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+
+				$.post(  
+						starexecRoot+"services/delete/benchmark",
+						{selectedBenchmarks : selectedBenches},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1003,7 +1038,7 @@ function removeUsers(selectedUsers){
  * @author Todd Elvers & Skylar Stark
  */
 function removeSolvers(selectedSolvers){
-	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '? This will NOT delete the selected solver(s).');
+	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to delete them permanently?');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
@@ -1011,8 +1046,8 @@ function removeSolvers(selectedSolvers){
 		width: 380,
 		height: 165,
 		buttons: {
-			'space hierarchy': function() {
-				log('user confirmed solver deletion from space and its hierarchy');
+			'remove from space hierarchy': function() {
+				log('user confirmed solver removal from space and its hierarchy');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
@@ -1035,14 +1070,38 @@ function removeSolvers(selectedSolvers){
 					showMessage('error',"Internal error removing solvers",5000);
 				});
 			},
-			'space': function() {
-				log('user confirmed solver deletion');
+			'remove from space': function() {
+				log('user confirmed solver removal');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
 						starexecRoot+"services/remove/solver/" + spaceId,
 						{selectedSolvers : selectedSolvers, hierarchy : false},
+						function(returnCode) {
+							log('AJAX response received with code ' + returnCode);
+							switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(solverTable);
+								break;
+							default:
+								processRemoveErrorCode(returnCode,"solver");
+							}
+						},
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error removing solvers",5000);
+				});
+			},
+			'delete permanently': function() {
+				log('user confirmed solver deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+
+				$.post(  
+						starexecRoot+"services/delete/solver",
+						{selectedSolvers : selectedSolvers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1072,13 +1131,13 @@ function removeSolvers(selectedSolvers){
  * @author Todd Elvers
  */
 function removeJobs(selectedJobs){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected job(s) from ' + spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('do you want to remove the selected job(s) from ' + spaceName + ', or do you want to delete them permanently?');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		buttons: {
-			'yes': function() {
+			'remove jobs': function() {
 				jobTable.fnProcessingIndicator();
 				log('user confirmed job deletion');
 				// If the user actually confirms, close the dialog right away
@@ -1096,6 +1155,32 @@ function removeJobs(selectedJobs){
 								break;
 							default:
 								processRemoveErrorCode(returnCode,"job");
+							}
+							jobTable.fnProcessingIndicator(false);
+						},
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error removing jobs",5000);
+				});
+			},
+			'delete permanently': function() {
+				jobTable.fnProcessingIndicator();
+				log('user confirmed job deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+
+				$.post(  
+						starexecRoot+"services/delete/job",
+						{selectedJobs : selectedJobs},
+						function(returnCode) {
+							log('AJAX response received with code ' + returnCode);
+							switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(jobTable);
+								break;
+							default:
+								processDeleteErrorCode(returnCode,"job");
 							}
 							jobTable.fnProcessingIndicator(false);
 						},

@@ -72,7 +72,7 @@ public class Validator {
 			return R.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))
+		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))
 				|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
 			return R.ERROR_INVALID_ID;
 		}
@@ -91,7 +91,7 @@ public class Validator {
 		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
 			return R.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedDeleteParams,commandParams);
@@ -170,13 +170,30 @@ public class Validator {
     public static boolean isValidPrimDescription(String desc){
     	return patternPrimDesc.matcher(desc).matches();
     }
+    
+    /**
+     * Determines whether the given string is a valid comma-separated list of positive integers
+     * @param ids The string to check
+     * @return True if the string is a comma-separated list of positive integers, false otherwise
+     */
+    
+    public static boolean isValidPosIntegerList(String ids) {
+    	String[] idArray=ids.split(",");
+    	for (String id : idArray) {
+    		if (!isValidPosInteger(id)) {
+    			return false;
+    		}
+    	}
+    	
+    	return true;
+    }
 	
     public static int isValidCopyRequest(HashMap<String,String> commandParams, String type) {
     	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO},commandParams)) {
     		return R.ERROR_MISSING_PARAM;
     	}
     	
-    	if (!isValidPosInteger(commandParams.get(R.PARAM_ID)) 
+    	if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID)) 
     			|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))
     			|| !isValidPosInteger(commandParams.get(R.PARAM_TO))) {
     		return R.ERROR_INVALID_ID;

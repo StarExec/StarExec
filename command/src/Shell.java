@@ -365,8 +365,8 @@ public class Shell {
 			} else if (c.equals(R.COMMAND_COPYSPACE)) {
 				
 				serverStatus=con.copyPrimitives(commandParams,true,"space");
-			} else if (c.equals(R.COMMAND_COPYJOB)) {
-				serverStatus=con.copyPrimitives(commandParams,true,"job");
+			} else if (c.equals(R.COMMAND_LINKJOB)) {
+				serverStatus=con.copyPrimitives(commandParams,false,"job");
 			} else if (c.equals(R.COMMAND_LINKUSER)) {
 				serverStatus=con.copyPrimitives(commandParams, false, "user");
 			}
@@ -842,7 +842,7 @@ public class Shell {
 		System.out.println("Last update = "+R.VERSION);
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
-			shell.runFile(args[0], false);
+			shell.runFile(args[0], true);
 		}
 		shell.runShell();
 	}

@@ -19,6 +19,8 @@
 			Space s=Spaces.get(spaceId);
 			request.setAttribute("space",s);
 			request.setAttribute("configId",configId);
+			Solver solver =Solvers.getSolverByConfig(configId);
+			request.setAttribute("solver",solver);
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
@@ -37,7 +39,7 @@
 	}
 %>
 
-<star:template title="${space.name}" js="lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Job Pairs for ${solver.name} in ${space.name}" js="lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
 	<span style="display:none" id="configId" value="${configId}" > </span>

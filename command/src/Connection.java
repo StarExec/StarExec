@@ -417,6 +417,16 @@ public class Connection {
 		}
 	}
 	
+	private String[] convertToIDArray(String idString) {
+		String[] ids=idString.split(",");
+		for (int x=0;x<ids.length;x++) {
+			ids[x]=ids[x].trim();
+		}
+		
+		return ids;
+		       
+	}
+	
 	
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
@@ -451,11 +461,15 @@ public class Connection {
 			
 			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
 			
+			String[] ids=convertToIDArray(commandParams.get(R.PARAM_ID));
 			//not all of the following are needed for every copy request, but including them does no harm
 			//and allows all the copy commands to be handled by this function
 			params.add(new BasicNameValuePair("copyToSubspaces", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
 			params.add(new BasicNameValuePair("fromSpace",commandParams.get(R.PARAM_FROM)));
-			params.add(new BasicNameValuePair("selectedIDs[]",commandParams.get(R.PARAM_ID)));
+			for (String id : ids) {
+				params.add(new BasicNameValuePair("selectedIds[]",id));
+			}
+			
 			params.add(new BasicNameValuePair("copy",String.valueOf(copy)));
 			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
@@ -561,10 +575,14 @@ public class Connection {
 				return valid;
 			}
 			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_FROM));
-			
+			String [] ids=convertToIDArray(commandParams.get(R.PARAM_ID));
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
-			params.add(new BasicNameValuePair("selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]", commandParams.get(R.PARAM_ID)));
+			String key="selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]";
+			for (String id : ids) {
+				params.add(new BasicNameValuePair(key, id));
+			}
+			
 			params.add(new BasicNameValuePair("deletePrims",String.valueOf(commandParams.containsKey(R.PARAM_DELETE_PRIMS))));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
@@ -593,8 +611,18 @@ public class Connection {
 			if (valid<0) {
 				return valid;
 			}
-			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_ID));
+			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type);
 			post=(HttpPost) setHeaders(post);
+			String[] ids=convertToIDArray(commandParams.get(R.PARAM_ID));
+			List<NameValuePair> params=new ArrayList<NameValuePair>();
+			for (String id :ids) {
+				params.add(new BasicNameValuePair("selectedIds[]",id));
+			}
+			
+			
+			
+			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
+			
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();

@@ -947,6 +947,48 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Deletes a list of processors
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/delete/processor")
+	@Produces("application/json")
+	public String deleteProcessors(@Context HttpServletRequest request) {
+		
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedProcessors[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		// Extract the String solver id's and convert them to Integer
+		ArrayList<Integer> selectedProcessors = new ArrayList<Integer>();
+		for(String id : request.getParameterValues("selectedProcessors[]")){
+			selectedProcessors.add(Integer.parseInt(id));
+		}
+		
+		for (int id : selectedProcessors) {
+			Processor p = Processors.get(id);
+			
+			// Permissions check; ensures user is the leader of the community that owns the processor
+			Permission perm = SessionUtil.getPermission(request, p.getCommunityId());		
+			if(perm == null || !perm.isLeader()) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+			}
+			
+			if (!Processors.delete(id)) {
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+		return gson.toJson(0);
+	}
+	
+	
+	
+	/**
 	 * Handles an update request for a processor
 	 * 
 	 * @return a json string containing 0 for success, 1 for a server error,
@@ -1036,13 +1078,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String removeBenchmarksFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedBenches[]")){
+		if(null == request.getParameterValues("selectedBenchmarks[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String bench id's and convert them to Integer
 		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedBenches[]")){
+		for(String id : request.getParameterValues("selectedBenchmarks[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		
@@ -1054,6 +1096,42 @@ public class RESTServices {
 
 		// Remove the benchmark from the space
 		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Deletes a list of benchmarks
+	 * 
+	 * @return	0: if the benchmark was successfully removed from the space,<br> 
+	 * 			1: if there was a failure at the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author 	Eric Burns
+	 */
+	@POST
+	@Path("/delete/benchmark")
+	@Produces("application/json")
+	public String deleteBenchmarks(@Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedBenchmarks[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		// Extract the String bench id's and convert them to Integer
+		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		for(String id : request.getParameterValues("selectedBenchmarks[]")){
+			selectedBenches.add(Integer.parseInt(id));
+		}
+		int userId=SessionUtil.getUserId(request);
+		for (int id : selectedBenches) {
+			
+			if(userId!=Benchmarks.get(id).getUserId()) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+			}
+			boolean success=Benchmarks.delete(id);
+			if (!success) {
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+		return gson.toJson(0);
 	}
 	
 	
@@ -1305,6 +1383,7 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
 	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
@@ -1599,6 +1678,100 @@ public class RESTServices {
 	
 	
 	/**
+	 * Deletes a list of solvers
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/delete/solver")
+	@Produces("application/json")
+	public String deleteSolvers(@Context HttpServletRequest request) {
+		int userIdOfRemover = SessionUtil.getUserId(request);
+		
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedSolvers[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		// Extract the String solver id's and convert them to Integer
+		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		for(String id : request.getParameterValues("selectedSolvers[]")){
+			selectedSolvers.add(Integer.parseInt(id));
+		}
+		
+		for (int id : selectedSolvers) {
+			if (userIdOfRemover!=Solvers.get(id).getUserId()) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
+			
+			boolean success=Solvers.delete(id);
+			if (!success) {
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Deletes a list of configurations
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/delete/configuration")
+	@Produces("application/json")
+	public String deleteConfigurations(@Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedConfigurations[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		int userId=SessionUtil.getUserId(request);
+		// Extract the String solver id's and convert them to Integer
+		ArrayList<Integer> selectedConfigs = new ArrayList<Integer>();
+		for(String id : request.getParameterValues("selectedConfigurations[]")){
+			selectedConfigs.add(Integer.parseInt(id));
+		}
+		
+		for (int id : selectedConfigs) {
+			// Validate configuration id parameter
+			Configuration config = Solvers.getConfiguration(id);
+			if(null == config){
+				return gson.toJson(ERROR_DATABASE);
+			}
+			
+			// Permissions check; if user is NOT the owner of the configuration file's solver, deny deletion request
+			Solver solver = Solvers.get(config.getSolverId());
+			if(null == solver || solver.getUserId() != userId){
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
+			
+			// Attempt to remove the configuration's physical file from disk
+			if(false == Solvers.deleteConfigurationFile(config)){
+				return gson.toJson(ERROR_DATABASE);
+			}
+			
+			// Attempt to remove the configuration's entry in the database
+			if(false == Solvers.deleteConfiguration(id)){
+				return gson.toJson(ERROR_DATABASE);
+			}
+			
+			// Attempt to update the disk_size of the parent solver to reflect the file deletion
+			if(false == Solvers.updateSolverDiskSize(solver)){
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+		
+		
+		return gson.toJson(0);
+	}
+	
+	/**
 	 * Removes a job's association with a space, thereby removing the job from
 	 * the space
 	 * TODO: improve performance
@@ -1630,6 +1803,43 @@ public class RESTServices {
 
 		// Remove the job from the space
 		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+
+	/**
+	 * Deletes a list of jobs
+	 * TODO: improve performance
+	 * @return 	0: success,<br>
+	 * 			1: database level error,<br>
+	 * 			2: insufficient permissions
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/delete/job")
+	@Produces("application/json")
+	public String deleteJobs( @Context HttpServletRequest request) {
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedJobs[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		// Extract the String job id's and convert them to Integer
+		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		for (String id : request.getParameterValues("selectedJobs[]")) {
+			selectedJobs.add(Integer.parseInt(id));
+		}
+		int userId=SessionUtil.getUserId(request);
+		for (int id : selectedJobs) {
+			if (userId!=Jobs.get(id).getUserId()) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
+			boolean success=Jobs.delete(id);
+			if (!success) {
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+	
+		return gson.toJson(0);
 	}
 	
 	/**
