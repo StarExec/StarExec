@@ -1851,10 +1851,10 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Deletes a solver given a solver's id. The id of the solver to delete must
+	 * Deletes a job given a job's id. The id of the job to delete must
 	 * be included in the path.
 	 * 
-	 * @param id the id of the solver to delete
+	 * @param id the id of the job to delete
 	 * @return 	0: success,<br>
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions
@@ -1873,6 +1873,30 @@ public class RESTServices {
 		}
 		
 		return Jobs.delete(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Pauses a job given a job's id. The id of the job to delete must
+	 * be included in the path.
+	 * 
+	 * @param id the id of the job to delete
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/pause/job/{id}")
+	@Produces("application/json")
+	public String pauseJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
+		// Permissions check; if user is NOT the owner of the job, deny pause request
+		int userId = SessionUtil.getUserId(request);
+		Job j = Jobs.get(jobId);
+		if(j == null || j.getUserId() != userId){
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		return Jobs.pause(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**

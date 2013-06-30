@@ -324,6 +324,44 @@ public class Jobs {
 		return false;
 	}
 	
+	public static boolean pause(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			
+			return pause(jobId,con);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Pauses a job, and also sets the paused property to true in the database. Jobs
+	 * @param jobId The ID of the job to pause
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	protected static boolean pause(int jobId, Connection con) {
+		try {
+			CallableStatement procedure = con.prepareCall("{CALL PauseJob(?)}");
+			procedure.setInt(1, jobId);		
+			procedure.executeUpdate();	
+
+			log.debug("Pausation of job id = " + jobId + " was successful");
+			return true;
+		} catch (Exception e) {
+			log.error("Pause Job says "+e.getMessage(),e);
+		}
+		return false;
+	}
+	
 	/** 
 	 * Determines whether the job with the given ID exists in the database with the column "deleted" set to true
 	 * @param jobId The ID of the job in question

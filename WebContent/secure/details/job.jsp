@@ -135,6 +135,12 @@
 			<c:if test="${job.userId == userId}"> 
 				<li><button type="button" id="deleteJob">delete job</button></li>
 			</c:if>
+			<c:if test="${job.userId == userId}">
+				<li><button type="button" id="pauseJob">pause job</button></li>
+			</c:if>
+			<c:if test="${job.userId == userId}">
+				<li><button type="button" id="stopJob">stop job</button></li>
+			</c:if>
 		</ul>
 		<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>

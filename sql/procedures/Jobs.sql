@@ -845,6 +845,16 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 			WHERE id=_jobId;
 		END IF;
 	END //
+	
+-- Sets the "paused" property of a job to true
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS PauseJob;
+CREATE PROCEDURE PauseJob(IN _jobId INT)
+	BEGIN
+		UPDATE jobs
+		SET paused=true
+		WHERE id = _jobId;
+	END //
 
 -- Retrieves all jobs belonging to a space (but not their job pairs)
 -- Author: Tyler Jensen

@@ -5,7 +5,7 @@ $(document).ready(function(){
 	initDataTables();
 	setInterval(function() {
 		pairTable.fnDraw(false);
-		summaryTable.fnReloadAjax(null,null,true);
+		summaryTable.fnReloadAjax();
 	},10000);
 });
 
@@ -28,12 +28,6 @@ function initUI(){
 		}
     });
 	
-	$("#spaceSummary").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-e"
-		}
-    });
-	
 	$("#jobDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -41,6 +35,18 @@ function initUI(){
     });
 	
 	$('#deleteJob').button({
+		icons: {
+			secondary: "ui-icon-minus"
+		}
+	});
+	
+	$('#pauseJob').button({
+		icons: {
+			secondary: "ui-icon-minus"
+		}
+	});
+	
+	$('#stopJob').button({
 		icons: {
 			secondary: "ui-icon-minus"
 		}
@@ -83,6 +89,47 @@ function initUI(){
 				},
 				"cancel": function() {
 					log('user canceled job deletion');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$("#pauseJob").click(function(){
+		$('#dialog-confirm-pause-txt').text('are you sure you want to pause this job?');
+		
+		$('#dialog-confirm-pause').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed job pause.');
+					$('#dialog-confirm-pause').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/pause/job/" + getParameterByName("id"),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										window.location = starexecRoot+'secure/explore/spaces.jsp';
+										break;
+									case 1:
+										showMessage('error', "job was not deleted; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the owner of this job can delete it", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled job pause');
 					$(this).dialog("close");
 				}
 			}
@@ -150,10 +197,7 @@ function initDataTables(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bSort": true,
-        "bPaginate": true,
-        "sAjaxSource"	: starexecRoot+"services/jobs/",
-        "sServerMethod" : "POST",
-        "fnServerData" : fnStatsPaginationHandler
+        "bPaginate": true
     });
 	
 	// Change the filter so that it only queries the server when the user stops typing
@@ -181,7 +225,7 @@ function extendDataTableFunctions(){
 	};
 	
 	//allows refreshing a table that is using client-side processing (for the summary table)
-	jQuery.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw )
+	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw )
 	{
 	    if ( sNewSource !== undefined && sNewSource !== null ) {
 	        oSettings.sAjaxSource = sNewSource;
@@ -268,11 +312,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	});
 }
 
-function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
+function solverPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
 	
 	$.post(  
-			sSource + jobId+"/solvers/pagination",
+			sSource + jobId + "/solvers/pagination",
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){
@@ -290,6 +334,6 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+		showMessage('error',"Internal error populating summary table",5000);
 	});
 }
