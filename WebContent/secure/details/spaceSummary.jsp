@@ -12,7 +12,7 @@
 		Job j=null;
 		
 		if(Permissions.canUserSeeJob(jobId,userId) &&  Permissions.canUserSeeSpace(spaceId,userId)) {	
-			request.setAttribute("jobVisible",true);
+			
 			Space s=Spaces.get(spaceId);
 			List<Space> subspaces=Spaces.getSubSpaces(spaceId,userId,false);
 			HashMap<Space,List<SolverStats>> subspaceStats=new HashMap<Space,List<SolverStats>>();
@@ -24,7 +24,8 @@
 				}
 			}
 			
-			if (s.isPublic() || Users.isMemberOfSpace(userId,s.getId())) {
+			if (s.isPublic() || Users.isMemberOfSpace(userId,spaceId)) {
+				request.setAttribute("jobVisible",true);
 				j = Jobs.getDetailedWithoutJobPairs(jobId);
 
 				request.setAttribute("subspaceStats",subspaceStats);
@@ -70,11 +71,10 @@
 					}
 					request.setAttribute("stats",stats);
 			} else {
-				request.setAttribute("jobVisible",false);
+				request.setAttribute("pairCount",0);	
 			}
-			
 			} else {
-				request.setAttribute("pairCount",0);
+				request.setAttribute("jobVisible",false);
 			}
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
@@ -104,13 +104,16 @@
 	<span style="display:none" id="spaceId" value="${space.id}"></span>
 	
 	<c:if test="${!jobVisible}">
-		<p id="unauthorizedMessage">you are not authorized to see this space, so you may not see job information in it. You may
-		still navigate to subspaces you are authorized to see.</p>
+		<fieldset id="solverSummaryField">
+		<legend>solver summary</legend>
+			<p id="unauthorizedMessage">you are not authorized to see this space, so you may not see job information in it. You may
+			still navigate to subspaces you are authorized to see.</p>
+		</fieldset>
+		
 	</c:if>
 	
 	<c:if test="${pairCount>0 && jobVisible}">
 		<fieldset id="solverSumamryField">
-	
 			<legend>solver summary</legend>
 			<table id="solveTbl" class="shaded">
 				<thead>
