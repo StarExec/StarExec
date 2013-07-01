@@ -20,9 +20,9 @@
 			
 			for (Space sub : subspaces) {
 				List<SolverStats> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
-				if (curStats.size()>0) {
+				//if (curStats.size()>0) {
 					subspaceStats.put(sub,curStats);
-				}
+				//}
 			}
 			
 			request.setAttribute("subspaceStats",subspaceStats);
@@ -162,11 +162,9 @@
 		<fieldset id="subspaceField">
 		<legend>subspaces</legend>
 		<c:forEach var="sub" items="${subspaceStats.keySet()}">
+		<p class="tableHeader"><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a>
 			<table class="subspaceTable" class="shaded">
-				<thead>
-					<tr>
-						<th colspan="7" class="spaceHeader"><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a></th>
-					</tr>
+				<thead>					
 					<tr>
 						<th>solver</th>
 						<th class="configHead">configuration</th>

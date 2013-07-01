@@ -21,12 +21,16 @@ fieldset {
 	margin-bottom:10px;
 }
 
-.spaceHeader {
+.tableHeader {
 	background-color: #222222;
 	border-style:solid;
-	border-width:2px;
+	border-width:1px;
 	border-color:black;
 	font-weight:bold;
+	width:750px;
+	height:25px;
+	text-align:center;
+	padding-top:11px;
 }
 
 #solverChoice1,#solverChoice2 {
