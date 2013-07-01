@@ -2089,7 +2089,7 @@ public class RESTServices {
 	 * Pauses a job given a job's id. The id of the job to delete must
 	 * be included in the path.
 	 * 
-	 * @param id the id of the job to delete
+	 * @param id the id of the job to pause
 	 * @return 	0: success,<br>
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions
@@ -2107,6 +2107,30 @@ public class RESTServices {
 		}
 		
 		return Jobs.pause(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Resumes a job given a job's id. The id of the job to delete must
+	 * be included in the path.
+	 * 
+	 * @param id the id of the job to resume
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/resume/job/{id}")
+	@Produces("application/json")
+	public String resumeJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
+		// Permissions check; if user is NOT the owner of the job, deny resume request
+		int userId = SessionUtil.getUserId(request);
+		Job j = Jobs.get(jobId);
+		if(j == null || j.getUserId() != userId){
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		return Jobs.resume(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**

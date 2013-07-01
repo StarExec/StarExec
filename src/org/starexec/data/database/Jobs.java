@@ -341,7 +341,7 @@ public class Jobs {
 	}
 	
 	/**
-	 * Pauses a job, and also sets the paused property to true in the database. Jobs
+	 * Pauses a job, and also sets the paused property to true in the database. 
 	 * @param jobId The ID of the job to pause
 	 * @param con An open database connection
 	 * @return True on success, false otherwise
@@ -358,6 +358,44 @@ public class Jobs {
 			return true;
 		} catch (Exception e) {
 			log.error("Pause Job says "+e.getMessage(),e);
+		}
+		return false;
+	}
+	
+	public static boolean resume(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			
+			return resume(jobId,con);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Resumes a paused job, and also sets the paused property to false in the database. 
+	 * @param jobId The ID of the job to resume
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	protected static boolean resume(int jobId, Connection con) {
+		try {
+			CallableStatement procedure = con.prepareCall("{CALL ResumeJob(?)}");
+			procedure.setInt(1, jobId);		
+			procedure.executeUpdate();	
+
+			log.debug("Resume of job id = " + jobId + " was successful");
+			return true;
+		} catch (Exception e) {
+			log.error("Resume Job says "+e.getMessage(),e);
 		}
 		return false;
 	}
@@ -400,6 +438,47 @@ public class Jobs {
 			deleted=results.getBoolean("jobDeleted");
 		}
 		return deleted;
+	}
+	
+	
+	/** 
+	 * Determines whether the job with the given ID exists in the database with the column "paused" set to true
+	 * @param jobId The ID of the job in question
+	 * @return True if the job is paused (i.e. the paused flag is set to true), false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static boolean isJobPaused(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isJobPaused(con,jobId);
+		} catch (Exception e) {
+			log.error("isJobPaused says " +e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	/**
+	 * Checks whether the given job is set to "paused" in the database
+	 * @param con The open connection to make the call on 
+	 * @param jobId The ID of the job in question
+	 * @return True if the job is paused (i.e. the paused flag is set to true), false otherwise
+	 * @throws Exception 
+	 * @author Eric Burns
+	 */
+	
+	public static boolean isJobPaused(Connection con, int jobId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL IsJobPaused(?)}");
+		procedure.setInt(1, jobId);					
+		ResultSet results = procedure.executeQuery();
+		boolean paused=false;
+		if (results.next()) {
+			paused=results.getBoolean("jobPaused");
+		}
+		return paused;
 	}
 	
 	/**

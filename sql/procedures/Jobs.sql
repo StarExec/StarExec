@@ -803,12 +803,24 @@ CREATE PROCEDURE GetJobPairBySGE(IN _Id INT)
 		WHERE job_pairs.sge_id=_Id;
 	END //
 	
+-- Returns true if the job in question has the deleted flag set as true
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS IsJobDeleted;
 CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
 	BEGIN
 		SELECT count(*) AS jobDeleted
 		FROM jobs
 		WHERE deleted=true AND id=_jobId;
+	END //
+
+-- Returns true if the job in question has the paused flag set to true	
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS IsJobPaused;
+CREATE PROCEDURE IsJobPaused(IN _jobId INT)
+	BEGIN
+		SELECT count(*) AS jobPaused
+		FROM jobs
+		WHERE paused=true AND id=_jobId;
 	END //
 	
 -- Removes the association between a job and a given space
@@ -853,6 +865,16 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
 		SET paused=true
+		WHERE id = _jobId;
+	END //
+	
+-- Sets the "paused" property of a job to false
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS ResumeJob;
+CREATE PROCEDURE ResumeJob(IN _jobId INT)
+	BEGIN
+		UPDATE jobs
+		SET paused=false
 		WHERE id = _jobId;
 	END //
 

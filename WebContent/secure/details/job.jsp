@@ -6,6 +6,7 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
+		boolean isPaused = Jobs.isJobPaused(jobId);
 		Job j=null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
@@ -18,6 +19,7 @@
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 			request.setAttribute("userId",userId);
+			request.setAttribute("isPaused", isPaused);
 		} else {
 				if (Jobs.isJobDeleted(jobId)) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -136,10 +138,14 @@
 				<li><button type="button" id="deleteJob">delete job</button></li>
 			</c:if>
 			<c:if test="${job.userId == userId}">
-				<li><button type="button" id="pauseJob">pause job</button></li>
+				<c:if test="${not isPaused}">
+					<li><button type="button" id="pauseJob">pause job</button></li>
+				</c:if>
 			</c:if>
 			<c:if test="${job.userId == userId}">
-				<li><button type="button" id="stopJob">stop job</button></li>
+				<c:if test="${isPaused}">
+					<li><button type="button" id="resumeJob">resume job</button></li>
+				</c:if>
 			</c:if>
 		</ul>
 		<div id="dialog-confirm-delete" title="confirm delete">
@@ -147,6 +153,9 @@
 		</div>	
 		<div id="dialog-confirm-pause" title="confirm pause">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
-		</div>		
+		</div>	
+		<div id="dialog-confirm-resume" title="confirm resume">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-resume-txt"></span></p>
+		</div>	
 	</fieldset>		
 </star:template>

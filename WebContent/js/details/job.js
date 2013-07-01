@@ -22,7 +22,8 @@ function createDownloadRequest(item,type) {
  */
 function initUI(){
 	$('#dialog-confirm-delete').hide();
-	$("#dialog-confirm-pause").hide();
+	$('#dialog-confirm-pause').hide();
+	$('#dialog-confirm-resume').hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -53,7 +54,7 @@ function initUI(){
 		}
 	});
 	
-	$('#stopJob').button({
+	$('#resumeJob').button({
 		icons: {
 			secondary: "ui-icon-minus"
 		}
@@ -119,13 +120,14 @@ function initUI(){
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
-										window.location = starexecRoot+'secure/explore/spaces.jsp';
+										//window.location = starexecRoot+'secure/details/job.jsp?id=' +  getParametByName("id");
+										document.location.reload(true);
 										break;
 									case 1:
-										showMessage('error', "job was not deleted; please try again", 5000);
+										showMessage('error', "job was not paused; please try again", 5000);
 										break;
 									case 2:
-										showMessage('error', "only the owner of this job can delete it", 5000);
+										showMessage('error', "only the owner of this job can pause it", 5000);
 										break;
 									default:
 										showMessage('error', "invalid parameters", 5000);
@@ -137,6 +139,48 @@ function initUI(){
 				},
 				"cancel": function() {
 					log('user canceled job pause');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$("#resumeJob").click(function(){
+		$('#dialog-confirm-resume-txt').text('are you sure you want to resume this job?');
+		
+		$('#dialog-confirm-resume').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed job resume.');
+					$('#dialog-confirm-resume').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/resume/job/" + getParameterByName("id"),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										//window.location = starexecRoot+'secure/details/job.jsp?id=' +  getParametByName("id");
+										document.location.reload(true);
+										break;
+									case 1:
+										showMessage('error', "job was not resumed; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the owner of this job can resume it", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled job resume');
 					$(this).dialog("close");
 				}
 			}
