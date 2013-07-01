@@ -46,3 +46,11 @@ fieldset {
 #goToRoot {
 	margin-left:10px;
 }
+
+hr {
+	color:black;
+	border-color:black;
+	background-color:black;
+	height: 1px;
+	
+}

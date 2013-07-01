@@ -5,7 +5,7 @@ $(document).ready(function(){
 	initDataTables();
 	setInterval(function() {
 		pairTable.fnDraw(false);
-		summaryTable.fnReloadAjax();
+		summaryTable.fnReloadAjax(null,null,true);
 	},10000);
 });
 
@@ -22,11 +22,18 @@ function createDownloadRequest(item,type) {
  */
 function initUI(){
 	$('#dialog-confirm-delete').hide();
+	$("#dialog-confirm-pause").hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	
+	$("#spaceSummary").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-e"
+		}
+	});
 	
 	$("#jobDownload").button({
 		icons: {
@@ -197,7 +204,10 @@ function initDataTables(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bSort": true,
-        "bPaginate": true
+        "bPaginate": true,
+        "sAjaxSource"	: starexecRoot+"services/jobs/",
+        "sServerMethod" : "POST",
+        "fnServerData" : fnStatsPaginationHandler
     });
 	
 	// Change the filter so that it only queries the server when the user stops typing
@@ -312,11 +322,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	});
 }
 
-function solverPaginationHandler(sSource, aoData, fnCallback) {
+function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
 	
 	$.post(  
-			sSource + jobId + "/solvers/pagination",
+			sSource + jobId+"/solvers/pagination",
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){
@@ -334,6 +344,6 @@ function solverPaginationHandler(sSource, aoData, fnCallback) {
 			},  
 			"json"
 	).error(function(){
-		showMessage('error',"Internal error populating summary table",5000);
+		showMessage('error',"Internal error populating data table",5000);
 	});
 }

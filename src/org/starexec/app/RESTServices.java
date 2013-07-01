@@ -320,7 +320,7 @@ public class RESTServices {
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		
+		System.out.println("here");
 		// Ensure user can view the job they are requesting the pairs from
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);

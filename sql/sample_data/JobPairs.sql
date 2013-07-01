@@ -1,4 +1,4 @@
-USE starexec;y
+USE starexec;
 INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code,space_id,wallclock,cpuTimeout,clockTimeout,cpu) VALUES (1,1, 1,1, 1, SYSDATE(), SYSDATE(), 7, 3, 5 ,1,1,5);
 INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code,space_id,wallclock,cpuTimeout,clockTimeout,cpu) VALUES (1,2, 1,2, 1, SYSDATE(), SYSDATE(), 7, 3, 5 ,1,1,5);
 INSERT INTO job_pairs(job_id, sge_id, config_id, bench_id, node_id, start_time, end_time, status_code,space_id,wallclock,cpuTimeout,clockTimeout,cpu) VALUES (1,3, 1,3, 1, SYSDATE(), SYSDATE(), 7, 3, 5 ,1,1,5);
