@@ -11,62 +11,68 @@
 		
 		Job j=null;
 		
-		if(Permissions.canUserSeeJob(jobId,userId) && Permissions.canUserSeeSpace(spaceId,userId) ) {	
-			j = Jobs.getDetailedWithoutJobPairs(jobId);
-			
+		if(Permissions.canUserSeeJob(jobId,userId) &&  Permissions.canUserSeeSpace(spaceId,userId)) {	
+			request.setAttribute("jobVisible",true);
 			Space s=Spaces.get(spaceId);
 			List<Space> subspaces=Spaces.getSubSpaces(spaceId,userId,false);
 			HashMap<Space,List<SolverStats>> subspaceStats=new HashMap<Space,List<SolverStats>>();
 			
 			for (Space sub : subspaces) {
 				List<SolverStats> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
-				//if (curStats.size()>0) {
+				if (curStats.size()>0) {
 					subspaceStats.put(sub,curStats);
-				//}
+				}
 			}
 			
-			request.setAttribute("subspaceStats",subspaceStats);
-			request.setAttribute("subspaceCount",subspaceStats.keySet().size());
-			List<JobPair> pairs=Jobs.getPairsDetailedInSpace(jobId,spaceId);
-			
-			if (pairs.size()>0) {
-				List<JobPair> completedPairs=new ArrayList<JobPair>();
-				for (JobPair jp : pairs) {
-					if (jp.getStatus().getCode().getVal()==Status.StatusCode.STATUS_COMPLETE.getVal()) {
-						completedPairs.add(jp);
-					}
-				}
-				request.setAttribute("pairCount", completedPairs.size());
-				String spaceOverviewPath=Statistics.makeSpaceOverviewChart(completedPairs,false,true);
-				request.setAttribute("spaceOverviewPath",spaceOverviewPath);
-				List<SolverStats> stats=Jobs.processPairsToSolverStats(pairs,0 , -1, true , 0 , "" , jobId , new int [1]);
-				if (stats.size()>=2) {
-					int default1=stats.get(0).getConfiguration().getId();
-					int default2=stats.get(1).getConfiguration().getId();
-					
-					request.setAttribute("defaultSolver1",default1);
-					request.setAttribute("defaultSolver2",default2);
-					
-					List<JobPair> pairs1=new ArrayList<JobPair>();
-					List<JobPair> pairs2=new ArrayList<JobPair>();
-					for (JobPair jp: completedPairs ) {
-						if (jp.getConfiguration().getId()==default1) {
-							pairs1.add(jp);
-						} 
-						if (jp.getConfiguration().getId()==default2) {
-							pairs2.add(jp);
+			if (s.isPublic() || Users.isMemberOfSpace(userId,s.getId())) {
+				j = Jobs.getDetailedWithoutJobPairs(jobId);
+
+				request.setAttribute("subspaceStats",subspaceStats);
+				request.setAttribute("subspaceCount",subspaceStats.keySet().size());
+				List<JobPair> pairs=Jobs.getPairsDetailedInSpace(jobId,spaceId);
+				
+				if (pairs.size()>0) {
+					List<JobPair> completedPairs=new ArrayList<JobPair>();
+					for (JobPair jp : pairs) {
+						if (jp.getStatus().getCode().getVal()==Status.StatusCode.STATUS_COMPLETE.getVal()) {
+							completedPairs.add(jp);
 						}
+					}
+					request.setAttribute("pairCount", completedPairs.size());
+					String spaceOverviewPath=Statistics.makeSpaceOverviewChart(completedPairs,false,true);
+					request.setAttribute("spaceOverviewPath",spaceOverviewPath);
+					List<SolverStats> stats=Jobs.processPairsToSolverStats(pairs,0 , -1, true , 0 , "" , jobId , new int [1]);
+					if (stats.size()>=2) {
+						int default1=stats.get(0).getConfiguration().getId();
+						int default2=stats.get(1).getConfiguration().getId();
+						
+						request.setAttribute("defaultSolver1",default1);
+						request.setAttribute("defaultSolver2",default2);
+						
+						List<JobPair> pairs1=new ArrayList<JobPair>();
+						List<JobPair> pairs2=new ArrayList<JobPair>();
+						for (JobPair jp: completedPairs ) {
+							if (jp.getConfiguration().getId()==default1) {
+								pairs1.add(jp);
+							} 
+							if (jp.getConfiguration().getId()==default2) {
+								pairs2.add(jp);
+							}
+							
+						}
+						List<String> solverComparisonChart=Statistics.makeSolverComparisonChart(pairs1,pairs2);
+						String solverComparisonPath=solverComparisonChart.get(0);
+						String imageMap=solverComparisonChart.get(1);
+						System.out.println(solverComparisonPath);
+						request.setAttribute("solverComparisonPath",solverComparisonPath);
+						request.setAttribute("imageMap",imageMap);
 						
 					}
-					List<String> solverComparisonChart=Statistics.makeSolverComparisonChart(pairs1,pairs2);
-					String solverComparisonPath=solverComparisonChart.get(0);
-					String imageMap=solverComparisonChart.get(1);
-					System.out.println(solverComparisonPath);
-					request.setAttribute("solverComparisonPath",solverComparisonPath);
-					request.setAttribute("imageMap",imageMap);
-					
-				}
-				request.setAttribute("stats",stats);
+					request.setAttribute("stats",stats);
+			} else {
+				request.setAttribute("jobVisible",false);
+			}
+			
 			} else {
 				request.setAttribute("pairCount",0);
 			}
@@ -96,7 +102,13 @@
 <star:template title="${space.name}" js="lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}"></span>
-	<c:if test="${pairCount>0}">
+	
+	<c:if test="${!jobVisible}">
+		<p id="unauthorizedMessage">you are not authorized to see this space, so you may not see job information in it. You may
+		still navigate to subspaces you are authorized to see.</p>
+	</c:if>
+	
+	<c:if test="${pairCount>0 && jobVisible}">
 		<fieldset id="solverSumamryField">
 	
 			<legend>solver summary</legend>
@@ -130,7 +142,7 @@
 		</fieldset>
 	</c:if>
 	
-	<c:if test="${pairCount>0}">
+	<c:if test="${pairCount>0 && jobVisible}">
 		<fieldset id="graphField">
 			<legend>graphs</legend>	
 			<img id="spaceOverview" src="${spaceOverviewPath}"/>

@@ -5,3 +5,7 @@ fieldset {
 #benchHead {
 	width: 18%;
 }
+
+#pairTbl tr {
+	cursor:pointer;	
+}

@@ -208,7 +208,10 @@
 		<textarea class=contentTextarea id="jpLog" readonly="readonly"></textarea>
 		<a href="/starexec/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
 	</fieldset>
-
-	<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
-	<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
+	<fieldset id="fieldActions">
+	<legend>actions</legend>
+		<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
+		<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
+	</fieldset>
+	
 </star:template>

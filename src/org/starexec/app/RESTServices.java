@@ -703,6 +703,22 @@ public class RESTServices {
 		
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
+	
+	@POST
+	@Path("/edit/user/quota/{userId}/{val}")
+	@Produces("application/json")
+	//TODO: We need to do a permissions check to make sure only an admin can do this.
+	public String editUserDiskQuota(@PathParam("userId") int userId,@PathParam("val") long newQuota, @Context HttpServletRequest request) {
+		int u=SessionUtil.getUserId(request);
+		return gson.toJson(ERROR_DATABASE);
+		
+		//boolean success=Users.setDiskQuota(userId, newQuota);
+		
+		//return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		
+		
+		
+	}
 
 	/** 
 	 * Updates information in the database using a POST. Attribute and

@@ -375,16 +375,32 @@ function onTrashDrop(event, ui){
 	}
 }
 
+/**
+ * Shows an error message given an error code returned by any of the delete requests
+ * @param errorCode An integer error code
+ * @param prim The type of the primitive that was being deleted when the error was triggered 
+ * (solver, user, benchmark, etc.)
+ * @author Eric Burns
+ */
+
 function processDeleteErrorCode(errorCode,prim) {
 	switch (errorCode) {
 	case 1: 
 		showMessage('error', "an error occurred while processing your request; please try again", 5000);
 		break;
 	case 2:
-		showMessage('error', "only the owner of a" +prim+ " can delete it", 5000);
+		showMessage('error', "only the owner of a " +prim+ " can delete it", 5000);
 		break;
 	}
 }
+
+/**
+ * Shows an error message given an error code returned by any of the remove requests
+ * @param errorCode An integer error code
+ * @param prim The type of the primitive that was being removed from a space when the error was triggered 
+ * (solver, user, benchmark, etc.)
+ * @author Eric Burns
+ */
 
 function processRemoveErrorCode(errorCode,prim) {
 	switch (errorCode) {
@@ -410,7 +426,16 @@ function processRemoveErrorCode(errorCode,prim) {
 	}
 }
 
-function processErrorCode(errorCode, prim, destName) {
+/**
+ * Shows an error message given an error code returned by any of the copying or linking requests
+ * @param errorCode An integer error code
+ * @param prim The type of the primitive that was being copied or linked when the error was triggered 
+ * (solver, user, benchmark, etc.)
+ * @param destName The name of the space that was being copied too
+ * @author Eric Burns
+ */
+
+function processCopyErrorCode(errorCode, prim, destName) {
 	switch (errorCode) {
 	case 1: // Database error
 		showMessage('error', "a database error occurred while processing your request", 5000);
@@ -639,7 +664,7 @@ function onSpaceDrop(event, ui) {
 										showMessage('success', 'job successfully copied to' + destName, 2000);	
 									}
 								}else {
-									processErrorCode(returnCode, "jobs",destName);
+									processCopyErrorCode(returnCode, "jobs",destName);
 								}
 							},
 							"json"
@@ -667,7 +692,7 @@ function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
 					showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
 					$('#exploreList').jstree("refresh");
 				} else {
-					processErrorCode(returnCode, "subspaces", destName);
+					processCopyErrorCode(returnCode, "subspaces", destName);
 				}
 			},
 			"json"
@@ -689,7 +714,7 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName){
 						showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
 					}
 				}else {
-						processErrorCode(returnCode, "users",destName);
+						processCopyErrorCode(returnCode, "users",destName);
 					}
 			},
 			"json"
@@ -726,7 +751,7 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 						showMessage('success', 'benchmark successfully '+copyOrLink+' to ' + destName, 2000);	
 					}
 				}else {
-					processErrorCode(returnCode,"benchmarks",destName);
+					processCopyErrorCode(returnCode,"benchmarks",destName);
 				}
 			},
 			"json"
@@ -775,7 +800,7 @@ function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
 						}
 					}
 				}else {
-						processErrorCode(returnCode,"solvers", destName);
+						processCopyErrorCode(returnCode,"solvers", destName);
 				}
 			},
 			"json"
@@ -1214,8 +1239,6 @@ function removeSubspaces(selectedSubspaces,deletePrims){
 				switch (returnCode) {
 				case 0:
 					// Remove the rows from the page and update the table size in the legend
-					//updateTable(spaceTable);//should already be done	
-					//initSpaceExplorer();//should already be done
 					log('actual delete done');
 					break;
 				default:

@@ -156,7 +156,7 @@ CREATE PROCEDURE GetUploadStatusById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM benchmark_uploads 
-		WHERE id = _id and deleted=false;
+		WHERE id = _id;
 	END //	
 -- Returns the number of benchmarks in a given space
 -- Author: Todd Elvers

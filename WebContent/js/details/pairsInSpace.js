@@ -13,9 +13,6 @@ $(document).ready(function(){
  */
 function initUI(){
 	
-
-	$('fieldset').expandable(true);
-	
 	$('#pairTbl tbody').delegate("a", "click", function(event) {
 		event.stopPropogation();
 	});

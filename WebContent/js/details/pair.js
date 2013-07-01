@@ -23,7 +23,7 @@ $(document).ready(function(){
 	$('#fieldDetails').expandable(false);
 	$('#fieldStats').expandable(true);
 	$('#fieldAttrs').expandable(true);
-	
+	$("#fieldActions").expandable(true);
 	$('#fieldOutput').expandable(true, function() {
 		if($(this).data('requested') == undefined) {
 			$(this).data('requested', true);

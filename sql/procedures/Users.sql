@@ -295,7 +295,7 @@ CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
 		WHERE users.id = _id;
 	END //
 
--- Increments the disk_quota attribute of the users table by the value of _newBytes
+-- Sets the user disk quota limit to the value of _newBytes
 -- for the given user
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateUserDiskQuota;
