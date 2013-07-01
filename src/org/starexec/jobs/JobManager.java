@@ -198,7 +198,6 @@ public abstract class JobManager {
 			if(sgeId >= 0) {											
 			    log.info("Submission of pair "+pair.getId() + " successful.");
 			    Jobs.updateGridEngineId(pair.getId(), sgeId);
-			    Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 			}
 			else
 			    log.warn("Error submitting pair "+pair.getId() + " to SGE.");
@@ -245,6 +244,8 @@ public abstract class JobManager {
 	    // Tell the job where the script to be executed is
 	    sgeTemplate.setRemoteCommand(scriptPath);	        
 	    //log.debug("submitScript - Set Remote Command for  " + pair.getId());
+
+	    Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 
 	    // Actually submit the job to the grid engine
 	    String id = session.runJob(sgeTemplate);
