@@ -173,7 +173,13 @@ public abstract class JobManager {
 		    it.remove();
 		    continue;
 		}
+		
+		if (Jobs.isJobPaused(s.job.getId())) {
+			//The job is paused so do not add the job_pairs
+			continue;
 			
+		}
+		
 		log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME +" pairs "
 			 +"for job " + s.job.getId() 
 			 + ", queue = "+q.getName() 
