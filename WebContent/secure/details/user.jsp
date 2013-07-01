@@ -7,34 +7,35 @@
 		int id = Integer.parseInt(request.getParameter("id"));	
 		User t_user = Users.get(id);
 		int userId = SessionUtil.getUserId(request);
-		boolean owner = true;
-		String userFullName = t_user.getFullName();
-		List<Job> jList = Jobs.getByUserId(t_user.getId());
 		
-		User user = SessionUtil.getUser(request);
-		long disk_usage = Users.getDiskUsage(user.getId());
 
-		
 		if(t_user != null) {
+			request.setAttribute("t_user", t_user);
+			boolean owner = true;
+			String userFullName = t_user.getFullName();
+			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
 			if(userId != id){
 				owner = false;
+			} else {
+				List<Job> jList = Jobs.getByUserId(t_user.getId());
+				long disk_usage = Users.getDiskUsage(t_user.getId());
+				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
+				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
+				
+				if(jList != null) {			
+					request.setAttribute("jobList", jList);
+					request.setAttribute("userFullName", userFullName);
+				} else {;
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+				}
 			}
-			request.setAttribute("owner", owner);
-			request.setAttribute("t_user", t_user);
-			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
-			request.setAttribute("diskQuota", Util.byteCountToDisplaySize(user.getDiskQuota()));
-			request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
+			request.setAttribute("owner", owner);			
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}
 		
-		if(jList != null) {			
-			request.setAttribute("jobList", jList);
-			request.setAttribute("userFullName", userFullName);
-		} else {;
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
-		}
+		
 		
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
@@ -48,7 +49,7 @@
   		<img id="popImage" src=""/>
 	</div>				
 	<fieldset>
-		<legend>details<c:if test="${owner}"> (<a href="/${starexecRoot}/secure/edit/account.jsp">edit</a>)</c:if></legend>
+		<legend>details</legend>
 		<table id="infoTable">
 		<tr>
 			<td id="picSection">
@@ -111,8 +112,6 @@
 				</tbody>			
 			</table>
 		</fieldset>
-	</c:if>
-	<c:if test="${owner}">
 		<fieldset id="solverField">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
 			<table id="solvers" uid=${t_user.id}>
@@ -124,8 +123,6 @@
 				</thead>
 			</table>
 		</fieldset>
-	</c:if>
-	<c:if test="${owner}">
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
 			<table id="benchmarks" uid=${t_user.id}>
@@ -137,8 +134,6 @@
 				</thead>		
 			</table>
 		</fieldset>			
-	</c:if>
-	<c:if test="${owner}"> 
 		<fieldset id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
 			<table id="jobs" uid=${t_user.id}>
@@ -154,5 +149,9 @@
 				</thead>			
 			</table>
 		</fieldset>	
+		<fieldset id="actionField">
+		<legend>actions</legend>
+			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp">edit</a>
+		</fieldset>
 	</c:if>
 </star:template>

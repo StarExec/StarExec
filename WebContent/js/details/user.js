@@ -2,26 +2,17 @@ var jobTable;
 $(document).ready(function(){
 	// Hide loading images by default
 	$('legend img').hide();
+	$("fieldset:not(:first)").expandable(true);
 	
 	$('.popoutLink').button({
 		icons: {
 			secondary: "ui-icon-newwin"
     }});
 	
-	$('#downLink').button({
-		icons: {
-			secondary: "ui-icon-arrowthick-1-s"
-    }});
-	
-	$('#editLink').button({
+	$('#editButton').button({
 		icons: {
 			secondary: "ui-icon-pencil"
 	}});
-	
-	$('#returnLink, #returnLinkMargin').button({
-		icons: {
-			secondary: "ui-icon-arrowreturnthick-1-w"
-		}});
 	
 	$('img').click(function(event){
 		PopUp($(this).attr('enlarge'));
