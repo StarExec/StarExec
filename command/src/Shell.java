@@ -3,7 +3,6 @@ package org.starexec.command;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 
@@ -105,8 +104,6 @@ public class Shell {
 					System.out.println("Job done");
 					return 0;
 				}
-				
-				
 				Thread.sleep((long)interval);
 			}
 
@@ -132,14 +129,10 @@ public class Shell {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 		
 			urlParams.put(R.FORMPARAM_ID,commandParams.get(R.PARAM_ID));
-			
 			if (c.equals(R.COMMAND_GETJOBOUT)) {
 				urlParams.put(R.FORMPARAM_TYPE,"j_outputs");
-				
 			} else if (c.equals(R.COMMAND_GETJOBINFO)) {
-				
 				urlParams.put(R.FORMPARAM_TYPE,"job");
-				
 			} else if (c.equals(R.COMMAND_GETSPACEXML)) {
 				urlParams.put(R.FORMPARAM_TYPE,"spaceXML");
 				
@@ -170,7 +163,6 @@ public class Shell {
 				
 			} else if (c.equals(R.COMMAND_GETNEWJOBINFO)) {
 				urlParams.put(R.FORMPARAM_TYPE, "job");
-				
 				//Note: The reason the parameter "since" is not being taken from R.PARAM_SINCE
 				//is that it is actually expected on StarExec-- it is not a command line parameter,
 				//even though that parameter also happens to be "since"
@@ -179,8 +171,6 @@ public class Shell {
 				} else {
 					urlParams.put(R.FORMPARAM_SINCE,String.valueOf(con.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
 				}
-				
-				
 			} else if (c.equals(R.COMMAND_GETNEWJOBOUT)) {
 				urlParams.put("type", "j_outputs");
 				if (commandParams.containsKey(R.PARAM_SINCE)) {
@@ -190,7 +180,6 @@ public class Shell {
 				}
 				
 			}
-			
 			else {
 				return R.ERROR_BAD_COMMAND;
 			}
@@ -249,8 +238,7 @@ public class Shell {
 	private int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus;
-			
-			
+
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
 				serverStatus=con.uploadBenchmarks(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHBENCHPROC)) {
@@ -560,7 +548,7 @@ public class Shell {
 		
 		String [] splitCommand=command.split(" ");
 		String c=splitCommand[0].toLowerCase().trim();
-		HashMap<String,String> commandParams=setParams(command);
+		HashMap<String,String> commandParams=CommandParser.extractParams(command);
 		if (command.equalsIgnoreCase(R.COMMAND_EXIT)) {
 			if (con!=null) {
 				con.logout();
@@ -774,75 +762,14 @@ public class Shell {
 			return R.ERROR_COMMAND_FILE_TERMINATING;
 		}
 	}
-	
-	
-	
-	/**
-	 * This function parses a command given by the user and extracts all of the parameters and flags
-	 * @param command The string given by the user at the command line
-	 * @return A HashMap containing key/value pairs representing parameters input by the user,
-	 * or null if there was a parsing error
-	 * @author Eric Burns
-	 */
-	
-	private static HashMap<String,String> setParams(String command) {
-		List<String> args=Arrays.asList(command.split(" "));
-		
-		//the first element is the command, which we don't want
-		args=args.subList(1, args.size());
-		HashMap<String,String> answer=new HashMap<String,String>();
-		int index=0;
-		String x;
-		StringBuilder value;
-		while (index<args.size()) {
-			x=args.get(index);
-			int equalsIndex=x.indexOf('=');
-			
-			//no equals sign means a parsing error, so return null
-			if (equalsIndex==-1) {
-				return null;
-			}
-			String key=x.substring(0,equalsIndex).toLowerCase();
-			
-			//we shouldn't have duplicate parameters-- indicates an error
-			if (answer.containsKey(key)) {
-				return null;
-			}
-			
-			//the value is everything up until the next token with an equals sign
-			value=new StringBuilder();
-			value.append(x.substring(equalsIndex+1));
-			index+=1;
-			String nextString;
-			while (true) {
-				if (index==args.size()) {
-					break;
-				}
-				nextString=args.get(index);
-				//the next string contains the next key
-				if (nextString.contains("=")) {
-					break;
-				} else {
-					//otherwise, this string is part of the current value
-					value.append(" ");
-					value.append(nextString);
-					index+=1;
-				}
-			}
-			
-			answer.put(key, value.toString());
-		}
-		return answer;
-	}
-	
-	
+
 	public static void main(String[] args) {
 		
 		Shell shell=new Shell();
 		System.out.println("Last update = "+R.VERSION);
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
-			shell.runFile(args[0], true);
+			shell.runFile(args[0], false);
 		}
 		shell.runShell();
 	}

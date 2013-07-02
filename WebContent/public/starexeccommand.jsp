@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="starexec help">
+<star:template title="StarExecCommand">
 	
 		<style type="text/css">
 			#content a:link {
@@ -15,8 +15,8 @@
 				padding: 3px;
 			}
 		</style>		
-		<p>StarExec Command is a Java program that allows users to make requests of the StarExec server from a command prompt.<br/><br/>
-		<a href="/${starexecRoot}/public/starexeccommand.zip">Download StarExec Command</a></p>
+		<p>StarExecCommand is a Java program that allows users to make requests of the StarExec server from a command prompt.<br/><br/>
+		<a href="/${starexecRoot}/public/starexeccommand.zip">Download StarExecCommand</a></p>
 		
 
 </star:template>

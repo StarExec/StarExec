@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="6/30/2013-1";
+	public static String VERSION="7/02/2013-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -195,7 +195,6 @@ public class R {
 	public static String COMMAND_SETARCHIVETYPE="setarchivetype";
 	public static String COMMAND_SETFIRSTNAME="setfirstname";
 	public static String COMMAND_SETLASTNAME="setlastname";
-	//public static String COMMAND_SETEMAIL="setemail";
 	public static String COMMAND_SETINSTITUTION="setinstitution";
 	public static String COMMAND_SETSPACEPUBLIC="setspacepublic";
 	public static String COMMAND_SETSPACEPRIVATE="setspaceprivate";

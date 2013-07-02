@@ -129,6 +129,12 @@ public class Connection {
 		job_out_indices=con.getOutIndices();
 	}
 	
+	/**
+	 * Sets the new Connection object's username and password based on user-specified parameters.
+	 * Also sets the instance of StarExec that is being connected to
+	 * @param commandParams User specified parameters
+	 */
+	
 	public Connection(HashMap<String,String> commandParams) {
 
 		if (commandParams.containsKey(R.PARAM_BASEURL)) {
@@ -179,6 +185,11 @@ public class Connection {
 		} 
 		return job_out_indices.get(jobID);
 	}
+	
+	/**
+	 * Gets all of the completion indices for job output (not job info)
+	 * @return A map of job IDs to the last seen completion indices for those jobs. 
+	 */
 	
 	public HashMap<Integer,Integer> getOutIndices() {
 		return job_out_indices;
@@ -340,7 +351,7 @@ public class Connection {
 			while (line!=null) {
 				
 				line=line.trim();
-				keyValue=extractNameValue(line);
+				keyValue=HTMLParser.extractNameValue(line);
 				if (keyValue!=null) {
 					
 					//we can't put cpuTimeout or wallclockTimeout into the entity immediately
@@ -398,7 +409,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("queue",commandParams.get(R.PARAM_QUEUEID)));
 			params.add(new BasicNameValuePair("postProcess",commandParams.get(R.PARAM_PROCID)));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
-			//TODO: Possibly allow other methods of running jobs
+			
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
@@ -416,17 +427,6 @@ public class Connection {
 			return R.ERROR_SERVER;
 		}
 	}
-	
-	private String[] convertToIDArray(String idString) {
-		String[] ids=idString.split(",");
-		for (int x=0;x<ids.length;x++) {
-			ids[x]=ids[x].trim();
-		}
-		
-		return ids;
-		       
-	}
-	
 	
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
@@ -461,7 +461,7 @@ public class Connection {
 			
 			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
 			
-			String[] ids=convertToIDArray(commandParams.get(R.PARAM_ID));
+			String[] ids=CommandParser.convertToArray(commandParams.get(R.PARAM_ID));
 			//not all of the following are needed for every copy request, but including them does no harm
 			//and allows all the copy commands to be handled by this function
 			params.add(new BasicNameValuePair("copyToSubspaces", String.valueOf(commandParams.containsKey(R.PARAM_HIERARCHY))));
@@ -575,7 +575,7 @@ public class Connection {
 				return valid;
 			}
 			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+commandParams.get(R.PARAM_FROM));
-			String [] ids=convertToIDArray(commandParams.get(R.PARAM_ID));
+			String [] ids=CommandParser.convertToArray(commandParams.get(R.PARAM_ID));
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
 			String key="selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]";
@@ -613,16 +613,12 @@ public class Connection {
 			}
 			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type);
 			post=(HttpPost) setHeaders(post);
-			String[] ids=convertToIDArray(commandParams.get(R.PARAM_ID));
+			String[] ids=CommandParser.convertToArray(commandParams.get(R.PARAM_ID));
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
 			for (String id :ids) {
 				params.add(new BasicNameValuePair("selectedIds[]",id));
 			}
-			
-			
-			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-			
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
@@ -632,9 +628,6 @@ public class Connection {
 			return R.ERROR_SERVER;
 		}
 	}
-	
-	
-	
 	
 	/**
 	 * Function for downloading archives from StarExec with the given parameters and 
@@ -743,22 +736,19 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			if (response!=null) {
-				try {
-					response.getEntity().getContent().close();
-				} catch (Exception z) {
-					//TODO: Determine behavior if for some reason we can't close the response
-				}
-				
-			}
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			
-			//Flow control was broken, so some error occurred.
 			return R.ERROR_SERVER;
 		}
 		
 	}
+	
+	/**
+	 * Given an HttpRespone with a JsonElement in its content, returns
+	 * the JsonElement
+	 * @param response The HttpResponse that should contain the JsonElement
+	 * @return The JsonElement
+	 * @throws Exception
+	 */
 	
 	private JsonElement getJsonString(HttpResponse response) throws Exception {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
@@ -767,10 +757,14 @@ public class Connection {
 		    builder.append(line).append("\n");
 		}
 		JsonParser parser=new JsonParser();
-		
 		return parser.parse(builder.toString());
 		
 	}
+	
+	/**
+	 * Gets the ID of the user currently logged in to StarExec
+	 * @return The integer user ID
+	 */
 	
 	private int getUserID() {
 		try {
@@ -796,8 +790,6 @@ public class Connection {
 	 * error
 	 * @author Eric Burns
 	 */
-	
-	//TODO: Interpret a JSON '1' or '2' as a particular error, not just "R.ERROR_SERVER"
 	public HashMap<Integer,String> getPrimsInSpace(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
 		HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 		HashMap<Integer,String> prims=new HashMap<Integer,String>();
@@ -892,8 +884,8 @@ public class Connection {
 				for (JsonElement y : curPrim) {
 					element=y.getAsJsonPrimitive();
 					
-					id=extractIDFromJson(element.getAsString());
-					name=extractNameFromJson(element.getAsString(),urlParams.get("type"));
+					id=HTMLParser.extractIDFromJson(element.getAsString());
+					name=HTMLParser.extractNameFromJson(element.getAsString(),urlParams.get("type"));
 					
 					//if the element has an ID and a name, save them
 					if (id!=null && name!=null) {
@@ -1418,9 +1410,6 @@ public class Connection {
 
 		return msg;
 	}
-	
-	
-	
 	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg) {
 		return setHeaders(msg,new String[0]);
 	}
@@ -1506,7 +1495,6 @@ public class Connection {
 		return 0;
 	}
 	
-	
 	/**
 	 * Returns the string name given to a primitive if none is specified. The date is used currently
 	 * @param prefix A prefix which should be added to the name
@@ -1519,135 +1507,4 @@ public class Connection {
 		
 		return prefix+date;
 	}
-	
-	/**
-	 * Extracts the substring between a pair of quotes, where startIndex is the index of the first quote.
-	 * If there is no closing quote, the rest of the string from startindex+1 to the end is returned
-	 * @param str The string upon which to do the extraction
-	 * @param startIndex The index of the first quote
-	 * @return The contents of the string between the start quote and the end quote
-	 * @author Eric Burns
-	 */
-	
-	private String extractQuotedString(String str, int startIndex) {
-		int endIndex=startIndex+1;
-		while (endIndex<str.length()) {
-			if (str.charAt(endIndex)=='"') {
-				break;
-			}
-			endIndex+=1;
-		}
-		
-		return str.substring(startIndex+1,endIndex);
-	}
-	
-	
-	/**
-	 * If present, extracts the name and value from the current html line. Returns null if it doesn't exist
-	 * @param htmlString The string to be processed
-	 * @return A BasicNameValuePair containing the name and the value of an html tag.
-	 * @author Eric Burns
-	 */
-	private BasicNameValuePair extractNameValue(String htmlString) {
-		
-		int startNameIndex=htmlString.indexOf("name=");
-		if (startNameIndex<0) {
-			return null;
-		}
-		
-		String name=extractQuotedString(htmlString,startNameIndex+5);
-		int startValueIndex=htmlString.indexOf("value=");
-		if (startValueIndex<0) {
-			return null;
-		}
-		String value=extractQuotedString(htmlString,startValueIndex+6);
-		BasicNameValuePair pair=new BasicNameValuePair(name,value);
-		
-		return pair;
-	}
-	
-	/**
-	 * Given a Json string formatted as StarExec does it's first line in a table
-	 * extract the name of a primitive
-	 * @param jsonString The Json string to test for an name
-	 * @return The name if it exists or null if it does not
-	 */
-	private String extractNameFromJson(String jsonString, String type) {
-		
-		//spaces are formatted differently from any other primitive
-		if (type.equals("spaces")) {
-			//space names are flanked on the left by the following
-			int startIndex=jsonString.indexOf("onclick=\"openSpace");
-			if (startIndex<0) {
-				return null;
-			}
-			
-			
-			while (startIndex<jsonString.length() && jsonString.charAt(startIndex)!='>') {
-				startIndex+=1;
-			}
-			if (startIndex>=jsonString.length()-1) {
-				return null;
-			}
-			startIndex+=1;
-			int endIndex=startIndex+1;
-			while (endIndex<jsonString.length() && jsonString.charAt(endIndex)!='<') {
-				endIndex+=1;
-			}
-			
-			return jsonString.substring(startIndex,endIndex);
-			
-		}
-		//Names are flanked on the left by a link that ends with target="_blank"\>
-		int startIndex=jsonString.indexOf("_blank\">");
-		
-		if (startIndex<0) {
-			return null;
-		}
-		
-		//move across "_blank"\>
-		startIndex+=8;
-		int endIndex=startIndex+1;
-		
-		//names are flanked on the right by the start of another tag
-		while (endIndex<jsonString.length() && jsonString.charAt(endIndex)!='<') {
-			endIndex+=1;
-		}
-		return (jsonString.substring(startIndex,endIndex));
-	}
-	
-	
-	/**
-	 * Given a Json string formatted as StarExec does it's first line in a table
-	 * extract the ID of a primitive
-	 * @param jsonString The Json string to test for an ID
-	 * @return The ID if it exists or null if it does not
-	 */
-	private Integer extractIDFromJson(String jsonString) {
-		
-		//IDs are stored as the 'value' of a hidden input
-		int startIndex=jsonString.indexOf("type=\"hidden\"");
-		while (startIndex>=0 && jsonString.charAt(startIndex)!='<') {
-			startIndex-=1;
-		}
-		if (startIndex<0) {
-			return null;
-		}
-		startIndex=jsonString.indexOf("value",startIndex);
-		if (startIndex<0) {
-			return null;
-		}
-		startIndex+=7;
-		int endIndex=startIndex+1;
-		while (endIndex<jsonString.length() && jsonString.charAt(endIndex)!='"') {
-			endIndex+=1;
-		}
-		String id=jsonString.substring(startIndex,endIndex);
-		if (Validator.isValidPosInteger(id)) {
-			return Integer.valueOf(id);
-		}
-		
-		return null;
-	}
-	
 }
