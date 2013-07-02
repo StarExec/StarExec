@@ -49,7 +49,7 @@
 				<tr title="${pairStats.pendingPairs == 0 ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
 					<td>status</td>		
 					<c:if test="${isPaused}">
-						<td>'paused'</td>
+						<td>paused</td>
 					</c:if>
 					<c:if test="${not isPaused}">	
 						<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>

@@ -50,13 +50,13 @@ function initUI(){
 	
 	$('#pauseJob').button({
 		icons: {
-			secondary: "ui-icon-minus"
+			secondary: "ui-icon-pause"
 		}
 	});
 	
 	$('#resumeJob').button({
 		icons: {
-			secondary: "ui-icon-minus"
+			secondary: "ui-icon-play"
 		}
 	});
 	
