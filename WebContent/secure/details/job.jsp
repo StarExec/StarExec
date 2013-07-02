@@ -47,8 +47,13 @@
 			</thead>
 			<tbody>
 				<tr title="${pairStats.pendingPairs == 0 ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
-					<td>status</td>			
-					<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
+					<td>status</td>		
+					<c:if test="${isPaused}">
+						<td>'paused'</td>
+					</c:if>
+					<c:if test="${not isPaused}">	
+						<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
+					</c:if>
 				</tr>
 				<tr title="the job creator's description for this job">
 					<td>description</td>			
@@ -137,14 +142,16 @@
 			<c:if test="${job.userId == userId}"> 
 				<li><button type="button" id="deleteJob">delete job</button></li>
 			</c:if>
-			<c:if test="${job.userId == userId}">
-				<c:if test="${not isPaused}">
-					<li><button type="button" id="pauseJob">pause job</button></li>
+			<c:if test="${pairStats.pendingPairs > 0}">
+				<c:if test="${job.userId == userId}">
+					<c:if test="${not isPaused}">
+						<li><button type="button" id="pauseJob">pause job</button></li>
+					</c:if>
 				</c:if>
-			</c:if>
-			<c:if test="${job.userId == userId}">
-				<c:if test="${isPaused}">
-					<li><button type="button" id="resumeJob">resume job</button></li>
+				<c:if test="${job.userId == userId}">
+					<c:if test="${isPaused}">
+						<li><button type="button" id="resumeJob">resume job</button></li>
+					</c:if>
 				</c:if>
 			</c:if>
 		</ul>

@@ -888,6 +888,9 @@ public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecord
 		String jobLink = sb.toString();
 		
 		String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
+		if (Jobs.isJobPaused(job.getId())) {
+			status = "paused";
+		}
 		
 		// Create an object, and inject the above HTML, to represent an entry in the DataTable
 		JsonArray entry = new JsonArray();

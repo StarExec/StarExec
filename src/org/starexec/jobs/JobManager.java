@@ -176,6 +176,11 @@ public abstract class JobManager {
 		
 		if (Jobs.isJobPaused(s.job.getId())) {
 			//The job is paused so do not add the job_pairs
+			log.info("Not going to submit " + R.NUM_JOB_PAIRS_AT_A_TIME + " pairs "
+					+ "for job " + s.job.getId()
+					+ ", queue = " + q.getName()
+					+ ", user = " + s.job.getUserId()
+					+ ", because job is paused.");
 			continue;
 			
 		}
