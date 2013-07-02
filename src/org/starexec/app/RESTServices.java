@@ -711,7 +711,6 @@ public class RESTServices {
 	public String editUserDiskQuota(@PathParam("userId") int userId,@PathParam("val") long newQuota, @Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
 		return gson.toJson(ERROR_DATABASE);
-		
 		//boolean success=Users.setDiskQuota(userId, newQuota);
 		
 		//return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);

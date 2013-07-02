@@ -28,6 +28,7 @@ function initUI(){
 		}
 	});
 	
+	$("fieldset:not(:first)").expandable(true);
 	
 	$("#cancel").click(function() {
 		window.location=href=starexecRoot+"secure/edit/community.jsp?cid="+$("#cid").attr("value");

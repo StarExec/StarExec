@@ -38,3 +38,9 @@ tr th {
 .error {
 	vertical-align: middle;
 }
+
+#actionField button {
+	float:left;
+	margin-left:5px;
+	margin-bottom:10px;
+}

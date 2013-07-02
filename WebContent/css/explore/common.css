@@ -57,7 +57,8 @@
 
 #actionList li {
 	float: left;
-	margin: 5px;
+	margin-left: 5px;
+	margin-bottom: 10px;
 }
 
 .expd, #actionList li a ,

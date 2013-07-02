@@ -91,6 +91,7 @@ $(document).ready(function(){
 									// Remove the rows from the page and update the table size in the legend
 									updateTable(memberTable);
 									$("#removeUser").fadeOut("fast");
+									showMessage('success', "user(s) removed succesfully", 5000);
 									break;
 								case 1:
 									showMessage('error', "an error occurred while processing your request; please try again", 5000);
@@ -128,6 +129,7 @@ $(document).ready(function(){
 					switch (returnCode) {
 						case 0:
 							$("#makeLeader").fadeOut("fast");
+							showMessage('success',"user(s) promoted successfully",5000);
 							break;
 						case 1:
 							showMessage('error', "an error occurred while processing your request; please try again", 5000);
@@ -234,8 +236,8 @@ function populateDetails(jsonData) {
 		
 		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
 		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href=starexecRoot+"secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';			
+		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>' + hiddenUserId;
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>';			
 		if (!user.isPublic) {
 			memberTable.fnAddData([userLink, user.institution, emailLink]);
 			} else {

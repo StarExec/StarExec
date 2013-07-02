@@ -973,7 +973,7 @@ function removeBenchmarks(selectedBenches){
 								updateTable(benchTable);
 								break;
 							default:
-								processRemoveErrorCode(returnCode,"benchmark");
+								processDeleteErrorCode(returnCode,"benchmark");
 							} 
 						},
 						"json"
@@ -1135,7 +1135,7 @@ function removeSolvers(selectedSolvers){
 								updateTable(solverTable);
 								break;
 							default:
-								processRemoveErrorCode(returnCode,"solver");
+								processDeleteErrorCode(returnCode,"solver");
 							}
 						},
 						"json"

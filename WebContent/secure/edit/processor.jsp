@@ -74,9 +74,13 @@ try {
 				
 			</tbody>	
 		</table>
+		
+	</fieldset>
+	</form>
+	<fieldset id="actionField">
+		<legend>actions</legend>
 		<button type="button" id="delete">delete</button>
 		<button type="button" id="cancel">cancel</button>
 		<button type="button" id="update">update</button>
 	</fieldset>
-	</form>
 </star:template>

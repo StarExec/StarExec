@@ -51,7 +51,7 @@
 %>
 
 <star:template title="edit ${com.name}" js="lib/jquery.dataTables.min, lib/jquery.validate.min, edit/community" css="common/table, edit/community">
-	<p>manage the ${com.name} community</p>
+	
 	<input type="hidden" value="${com.id}" id="comId"/>
 	<fieldset>
 		<legend>community details</legend>
