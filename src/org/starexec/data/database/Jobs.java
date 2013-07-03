@@ -597,7 +597,6 @@ public class Jobs {
 	public static Job getDetailedWithoutJobPairs(int jobId) {
 		Connection con = null;			
 		ResultSet results=null;
-		log.debug("getting job with job pairs with id = "+jobId);
 		try {			
 			con = Common.getConnection();		
 			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
@@ -1429,7 +1428,7 @@ public class Jobs {
 			con = Common.getConnection();		
 			return Jobs.getEnqueuedPairsDetailed(con, qId);
 		} catch (Exception e){			
-			log.error("getEnqueuedPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
+			log.error("getEnqueuedPairsDetailed for queue " + qId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1968,6 +1967,8 @@ public class Jobs {
 
 		return null;
 	}
+	
+	
 	/**
 	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object
 	 * @param startingRecord The first record to return
@@ -2020,6 +2021,103 @@ public class Jobs {
 		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,spaceId,configId);
 	}
 	
+	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
+		if (type == "queue") {
+			return getNextPageOfEnqueuedJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+		} else if (type == "node") {
+			return getNextPageOfRunningJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+		} else {
+			return null;
+		}
+	}
+	
+	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
+		Connection con = null;			
+		try {			
+			con = Common.getConnection();	
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, id);
+			procedure.setString(6, searchQuery);
+			
+			
+			ResultSet results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+
+			while(results.next()){
+				JobPair jp = Jobs.resultToPair(results);
+				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				Status s = new Status();
+
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
+				returnList.add(jp);
+			}			
+
+			Common.closeResultSet(results);
+			return returnList;			
+			
+		} catch (Exception e){			
+			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+			return null;		
+	}	
+	
+	private static List<JobPair> getNextPageOfRunningJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
+		Connection con = null;			
+		try {			
+			con = Common.getConnection();	
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, id);
+			procedure.setString(6, searchQuery);
+			
+			
+			ResultSet results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+
+			while(results.next()){
+				JobPair jp = Jobs.resultToPair(results);
+				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				
+				Status s = new Status();
+				s.setCode(results.getInt("status_code"));
+				
+				jp.setStatus(s);
+				jp.setAttributes(Jobs.getAttributes(con, jp.getId()));
+				returnList.add(jp);
+			}			
+
+			Common.closeResultSet(results);
+			return returnList;			
+			
+		} catch (Exception e){			
+			log.error("getNextPageOfRunningJobPairs for node " + id + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+			return null;		
+	}
+
 	/**
 	 * Gets the minimal number of Job Pairs necessary in order to service the client's
 	 * request for the next page of Job Pairs in their DataTables object

@@ -12,7 +12,7 @@
 		<h3 id="workerName"></h3> <span id="progressBar"></span> <span id="activeStatus"></span>		
 		<p class="accent" id="queueID"></p>
 		<fieldset id="detailField">
-			<legend>details</legend>
+			<legend class="expd" id="clusterExpd">Job Pairs</legend>
 			<table id="details" class="shaded">
 				<thead>
 					<tr>
@@ -23,10 +23,7 @@
 						<th>config</th>
 						<th>path</th>					
 					</tr>
-				</thead>
-				<tbody>
-					<!-- This will be populated by the cluster.js -->
-				</tbody>			
+				</thead>			
 			</table>
 		</fieldset>	
 		

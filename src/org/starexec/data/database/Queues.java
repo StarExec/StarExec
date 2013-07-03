@@ -146,8 +146,7 @@ public class Queues {
 	 * @return A queue object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
-	public static Queue getDetails(int id, int userId) {
-		log.debug("USER ID = " + userId);
+	public static Queue getDetails(int id) {
 		Connection con = null;			
 		
 		try {
@@ -164,117 +163,9 @@ public class Queues {
 				queue.setSlotsTotal(results.getInt("slots_total"));
 				queue.setSlotsAvailable(results.getInt("slots_free"));
 				queue.setSlotsReserved(results.getInt("slots_reserved"));
-				queue.setSlotsUsed(results.getInt("slots_used"));
-
-				//Get all the job pairs that are queued up on the queue
-				List<JobPair> jobPairs = Jobs.getEnqueuedPairsDetailed(results.getInt("id"));
-
-				for (JobPair j : jobPairs) {					
-					StringBuilder sb = new StringBuilder();
-					String hiddenJobPairId;
-					
-					// Create the hidden input tag containing the jobpair id
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(j.getId());
-					sb.append("\" name=\"pid\"/>");
-					hiddenJobPairId = sb.toString();
-					
-					// Create the job link
-					Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
-		    		sb.append(job.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(job.getName());
-		    		RESTHelpers.addImg(sb);
-		    		sb.append(hiddenJobPairId);
-					String jobLink = sb.toString();
-					
-					//Create the User Link
-		    		sb = new StringBuilder();
-					String hiddenUserId;
-					User user = Users.getUserByJob(j.getJobId());
-					// Create the hidden input tag containing the user id
-					if(user.getId() == userId) {
-						sb.append("<input type=\"hidden\" value=\"");
-						sb.append(user.getId());
-						sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
-						hiddenUserId = sb.toString();
-					} else {
-						sb.append("<input type=\"hidden\" value=\"");
-						sb.append(user.getId());
-						sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
-						hiddenUserId = sb.toString();
-					}
-		    		sb = new StringBuilder();
-		    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
-		    		sb.append(user.getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(user.getFullName());
-		    		RESTHelpers.addImg(sb);
-		    		sb.append(hiddenUserId);
-					String userLink = sb.toString();
-
-		    		// Create the benchmark link
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(j.getBench().getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-		    		sb.append(j.getBench().getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(j.getBench().getName());
-		    		RESTHelpers.addImg(sb);
-		    		sb.append(hiddenJobPairId);
-					String benchLink = sb.toString();
-					
-					// Create the solver link
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(j.getSolver().getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-		    		sb.append(j.getSolver().getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(j.getSolver().getName());
-		    		RESTHelpers.addImg(sb);
-					String solverLink = sb.toString();
-					
-					// Create the configuration link
-		    		sb = new StringBuilder();
-		    		sb.append("<a title=\"");
-		    		sb.append(j.getSolver().getConfigurations().get(0).getDescription());
-		    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-		    		sb.append(j.getSolver().getConfigurations().get(0).getId());
-		    		sb.append("\" target=\"_blank\">");
-		    		sb.append(j.getSolver().getConfigurations().get(0).getName());
-		    		RESTHelpers.addImg(sb);
-					String configLink = sb.toString();
-					
-					
-					
-					String[] jobInfo;
-					jobInfo = new String[6];
-					
-					
-					jobInfo[0] = jobLink;
-					jobInfo[1] = userLink;
-					if (Permissions.canUserSeeJob(job.getId(), userId)) {
-						jobInfo[2] = benchLink;
-						jobInfo[3] = solverLink;
-						jobInfo[4] = configLink;						
-						jobInfo[5] = j.getPath();
-
-					} else {
-						jobInfo[2] = "private";
-						jobInfo[3] = "private";
-						jobInfo[4] = "private";
-						jobInfo[5] = "private";
-					}
-					int sgeId = Jobs.getSGEId(j.getId());
-					queue.putJobPair(sgeId, jobInfo);
-				}
+				queue.setSlotsUsed(results.getInt("slots_used"));		
+				return queue;
 			}
-						
-			return queue;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

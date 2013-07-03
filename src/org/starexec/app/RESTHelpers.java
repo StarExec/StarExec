@@ -230,6 +230,73 @@ public class RESTHelpers {
 		}
 	}
 	
+	/**
+	 * Validate the parameters of a request for a DataTable page
+	 *
+	 * @param type the primitive type being queried for
+	 * @param request the object containing the parameters to validate
+	 * @return an attribute map containing the valid parameters parsed from the request object,<br>
+	 * 		or null if parameter validation fails
+	 * @author Todd Elvers
+	 */
+	private static HashMap<String, Integer> getAttrMapCluster(String type, HttpServletRequest request){
+		HashMap<String, Integer> attrMap = new HashMap<String, Integer>();
+		
+		try{
+			// Parameters from the DataTable object
+		    String iDisplayStart = (String) request.getParameter(STARTING_RECORD);	// Represents the record number the current page starts at (0 for page 1, 10 for page 2, etc.) 
+		    String iDisplayLength = (String) request.getParameter(RECORDS_PER_PAGE);// Represents the number of records in a page (default = 10 records per page)
+		    String sEcho = (String) request.getParameter(SYNC_VALUE);				// Unique number used to keep the client-server interaction synchronized
+		    String iSortCol = (String) request.getParameter(SORT_COLUMN);			// Given an array of the column names, this is an index to which column is being used to sort
+		    String sDir = (String) request.getParameter(SORT_DIRECTION);			// Represents the sorting direction ('asc' for ascending or 'desc' for descending)
+		    String sSearch = (String) request.getParameter(SEARCH_QUERY);			// Represents the filter/search query (if no filter/search query is provided, this is empty)
+		    
+		    // Validates the starting record, the number of records per page, and the sync value
+		    if(Util.isNullOrEmpty(iDisplayStart)
+		    		||	Util.isNullOrEmpty(iDisplayLength)
+		    		||	Util.isNullOrEmpty(sEcho)
+		    		||	Integer.parseInt(iDisplayStart) < 0
+		    		||	Integer.parseInt(sEcho) < 0) {
+		    	return null;
+		    }
+		    
+		    if (Util.isNullOrEmpty(iSortCol)) {
+		    	return null;
+		    } else {
+		    	int sortColumnIndex = Integer.parseInt(iSortCol);
+		    	attrMap.put(SORT_COLUMN, sortColumnIndex);
+		    }
+	    	if (Util.isNullOrEmpty(sDir)) {
+	    		attrMap.put(SORT_DIRECTION, DESC);
+	    	} else {
+	    		if (sDir.contains("asc") || sDir.contains("desc")) {
+	    			attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASC : DESC));
+	    		} else {
+	    			return null;
+	    		}
+	    	}
+	    	// Depending on if the search/filter is empty or not, this will be 0 or 1
+	    	if (Util.isNullOrEmpty(sSearch)) {
+	    		attrMap.put(SEARCH_QUERY, EMPTY);
+	    	} else {
+	    		attrMap.put(SEARCH_QUERY, 1);
+	    	}
+	    	
+	    	// The request is valid if it makes it this far;
+	    	// Finish the validation by adding the remaining attributes to the map
+	    	attrMap.put(RECORDS_PER_PAGE, Integer.parseInt(iDisplayLength));
+    		attrMap.put(STARTING_RECORD, Integer.parseInt(iDisplayStart));
+    		attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
+	    	attrMap.put(TOTAL_RECORDS, EMPTY);
+	    	attrMap.put(TOTAL_RECORDS_AFTER_QUERY, EMPTY);
+	    	
+	    	return attrMap;
+	    } catch(Exception e){
+	    	log.error(e.getMessage(), e);
+	    }
+	    
+	    return null;
+	}
 	
 	/**
 	 * Validate the parameters of a request for a DataTable page
@@ -394,6 +461,18 @@ public class RESTHelpers {
 		sb.append("</p>");
 		return sb.toString();
 	}
+	
+	/**
+	 * 
+	 * @param type either queue or node
+	 * @param id the id of the queue/node
+	 * @param userId the id of the user that is accessing the page
+	 * 
+	 * @return the next page of job_pairs for the cluster status page
+	 */
+	protected static JsonObject getNextDataTablesPageForClusterExplorer(String type, int id, int userId, HttpServletRequest request) {
+		return getNextDataTablesPageCluster(type, id, userId, request, PAGE_SPACE_EXPLORER);
+	}
 	/**
 	 * Gets the next page of entries for a DataTable object
 	 *
@@ -455,6 +534,91 @@ public class RESTHelpers {
     	}
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 	}
+	
+	
+	/**
+	 * Gets the next page of entries for a DataTable object
+	 *
+	 * @param type the kind of primitives to query for
+	 * @param id either the id of the space to get the primitives from, or the id of the job
+	 * to get job pairs for
+	 * @param request the object containing all the DataTable parameters
+	 * @param forPage An integer code indicating what the results are for. 1: space explorer 2: user details
+	 * @return a JSON object representing the next page of primitives to return to the client,<br>
+	 * 		or null if the parameters of the request fail validation
+	 * @author Todd Elvers
+	 */
+	
+	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request, int forPage){
+		
+		// Parameter validation
+	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapCluster(type, request);
+	    if(null == attrMap){
+	    	return null;
+	    }
+	    
+    	List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+    	int totalJobPairs = 0;
+    	    	
+		switch(type){
+		    case "queue":	
+	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+    			jobPairsToDisplay = Jobs.getJobPairsForNextClusterPage(
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id,													// Parent space id 
+	    				"queue"												// It is a queue, not a node
+				);
+    			List<JobPair> enqueuedPairs = Jobs.getEnqueuedPairsDetailed(id);
+    			totalJobPairs = enqueuedPairs.size();
+    			/**
+    	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+    	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+    	    	 */
+    	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+    	    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+    	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+    	    	} 
+    	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+    	    	else {
+    	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+    	    	}
+    		    return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE), userId);
+
+	    
+		    case "node":
+	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+    			jobPairsToDisplay = Jobs.getJobPairsForNextClusterPage(
+	    				attrMap.get(STARTING_RECORD),						// Record to start at  
+	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    				request.getParameter(SEARCH_QUERY), 				// Search query
+	    				id,													// Parent space id 
+	    				"node"												// It is a node, not a queue
+				);
+    			List<JobPair> runningPairs = Jobs.getRunningPairsDetailed(id);
+    			totalJobPairs = runningPairs.size();	
+    			/**
+    	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+    	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+    	    	 */
+    	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+    	    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+    	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+    	    	} 
+    	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+    	    	else {
+    	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+    	    	}
+    		    return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE), userId);
+	    }
+		return null;
+	}
+		    	
 	
 	/**
 	 * Gets the next page of entries for a DataTable object
@@ -756,6 +920,117 @@ public class RESTHelpers {
 	    }
 	    return null;
 	}
+	
+	
+	
+	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int userId) {
+		/**
+		 * Generate the HTML for the next DataTable page of entries
+		 */
+		JsonArray dataTablePageEntries = new JsonArray();
+		for(JobPair j : pairs){
+			StringBuilder sb = new StringBuilder();
+			String hiddenJobPairId;
+			
+			// Create the hidden input tag containing the jobpair id
+			sb.append("<input type=\"hidden\" value=\"");
+			sb.append(j.getId());
+			sb.append("\" name=\"pid\"/>");
+			hiddenJobPairId = sb.toString();
+			
+			// Create the job link
+			Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+    		sb = new StringBuilder();
+    		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
+    		sb.append(job.getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(job.getName());
+    		RESTHelpers.addImg(sb);
+    		sb.append(hiddenJobPairId);
+			String jobLink = sb.toString();
+			
+			//Create the User Link
+    		sb = new StringBuilder();
+			String hiddenUserId;
+			User user = Users.getUserByJob(j.getJobId());
+			// Create the hidden input tag containing the user id
+			if(user.getId() == userId) {
+				sb.append("<input type=\"hidden\" value=\"");
+				sb.append(user.getId());
+				sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+				hiddenUserId = sb.toString();
+			} else {
+				sb.append("<input type=\"hidden\" value=\"");
+				sb.append(user.getId());
+				sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
+				hiddenUserId = sb.toString();
+			}
+    		sb = new StringBuilder();
+    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
+    		sb.append(user.getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(user.getFullName());
+    		RESTHelpers.addImg(sb);
+    		sb.append(hiddenUserId);
+			String userLink = sb.toString();
+			
+    		// Create the benchmark link
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(j.getBench().getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+    		sb.append(j.getBench().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(j.getBench().getName());
+    		RESTHelpers.addImg(sb);
+    		sb.append(hiddenJobPairId);
+			String benchLink = sb.toString();
+			
+			// Create the solver link
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(j.getSolver().getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		sb.append(j.getSolver().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(j.getSolver().getName());
+    		RESTHelpers.addImg(sb);
+			String solverLink = sb.toString();
+			
+			// Create the configuration link
+    		sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append(j.getSolver().getConfigurations().get(0).getDescription());
+    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+    		sb.append(j.getSolver().getConfigurations().get(0).getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(j.getSolver().getConfigurations().get(0).getName());
+    		RESTHelpers.addImg(sb);
+			String configLink = sb.toString();
+			
+			String path = j.getPath();
+			
+			// Create an object, and inject the above HTML, to represent an entry in the DataTable
+			JsonArray entry = new JsonArray();
+    		entry.add(new JsonPrimitive(jobLink));
+    		entry.add(new JsonPrimitive(userLink));
+    		entry.add(new JsonPrimitive(benchLink));
+    		entry.add(new JsonPrimitive(solverLink));
+    		entry.add(new JsonPrimitive(configLink));
+    		entry.add(new JsonPrimitive(path));
+    		dataTablePageEntries.add(entry);
+    	}
+		
+	    	JsonObject nextPage=new JsonObject();
+	    	 // Build the actual JSON response object and populated it with the created data
+		    nextPage.addProperty(SYNC_VALUE, syncValue);
+		    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+		    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+		    nextPage.add("aaData", dataTablePageEntries);
+		    
+		    // Return the next DataTable page
+	    	return nextPage;
+		}
 	/**
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table

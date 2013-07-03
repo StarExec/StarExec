@@ -245,8 +245,7 @@ public class RESTServices {
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
 	public String getNodeDetails(@PathParam("id") int id, @Context HttpServletRequest request) {	
-		int userId = SessionUtil.getUserId(request);
-		return gson.toJson(Cluster.getNodeDetails(id, userId));
+		return gson.toJson(Cluster.getNodeDetails(id));
 	}
 	
 	/**
@@ -257,8 +256,38 @@ public class RESTServices {
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
 	public String getQueueDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
+		log.debug("getting queue details");
+		return gson.toJson(Queues.getDetails(id));
+	}
+	
+	/**
+	 * @return a string representing all attributes of the node with the given id
+	 * @author Wyatt Kaiser2
+	 */
+	@GET
+	@Path("/cluster/nodes/{id}/pagination")
+	@Produces("application/json")	
+	public String getNodeJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
-		return gson.toJson(Queues.getDetails(id, userId));
+		JsonObject nextDataTablesPage = null;
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("node", id, userId, request);
+
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	/**
+	 * @return a json string representing all attributes of the queue with the given id
+	 * @author Wyatt Kaiser2
+	 */
+	@GET
+	@Path("/cluster/queues/{id}/pagination")
+	@Produces("application/json")	
+	public String getQueueJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
+
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
 	/**
