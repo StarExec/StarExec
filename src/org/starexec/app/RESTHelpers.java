@@ -469,9 +469,10 @@ public class RESTHelpers {
 	 * @param userId the id of the user that is accessing the page
 	 * 
 	 * @return the next page of job_pairs for the cluster status page
+	 * @author Wyatt Kaiser
 	 */
 	protected static JsonObject getNextDataTablesPageForClusterExplorer(String type, int id, int userId, HttpServletRequest request) {
-		return getNextDataTablesPageCluster(type, id, userId, request, PAGE_SPACE_EXPLORER);
+		return getNextDataTablesPageCluster(type, id, userId, request);
 	}
 	/**
 	 * Gets the next page of entries for a DataTable object
@@ -537,19 +538,17 @@ public class RESTHelpers {
 	
 	
 	/**
-	 * Gets the next page of entries for a DataTable object
+	 * Gets the next page of job_pair entries for a DataTable object on cluster Status page
 	 *
-	 * @param type the kind of primitives to query for
-	 * @param id either the id of the space to get the primitives from, or the id of the job
-	 * to get job pairs for
+	 * @param type either queue or node
+	 * @param id the id of the queue/node to get job pairs for
 	 * @param request the object containing all the DataTable parameters
-	 * @param forPage An integer code indicating what the results are for. 1: space explorer 2: user details
 	 * @return a JSON object representing the next page of primitives to return to the client,<br>
 	 * 		or null if the parameters of the request fail validation
-	 * @author Todd Elvers
+	 * @author Wyatt Kaiser
 	 */
 	
-	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request, int forPage){
+	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request){
 		
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapCluster(type, request);
@@ -560,8 +559,7 @@ public class RESTHelpers {
     	List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
     	int totalJobPairs = 0;
     	    	
-		switch(type){
-		    case "queue":	
+		if (type.equals("queue")) {	
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
     			jobPairsToDisplay = Jobs.getJobPairsForNextClusterPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -588,8 +586,7 @@ public class RESTHelpers {
     	    	}
     		    return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE), userId);
 
-	    
-		    case "node":
+		} else if (type.equals("node")) {
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
     			jobPairsToDisplay = Jobs.getJobPairsForNextClusterPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  
