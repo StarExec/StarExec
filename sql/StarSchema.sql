@@ -498,3 +498,12 @@ CREATE TABLE unvalidated_benchmarks (
 	PRIMARY KEY (id)
 );
 
+
+-- Saves associations between spaces relevent to a particular job
+-- Author: Eric Burns
+CREATE TABLE job_space_assoc (
+	parent INT NOT NULL,
+	child INT NOT NULL,
+	job_id INT NOT NULL,
+	UNIQUE KEY (parent, child, job_id)
+);

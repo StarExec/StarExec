@@ -198,12 +198,22 @@ public class Statistics {
 				LogAxis yAxis=new LogAxis("time (s)");
 				plot.setRangeAxis(yAxis);
 			}
+			plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
+			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
+			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
+			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 			renderer.setSeriesLinesVisible(0, true);
 			plot.setRenderer(renderer);
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
+			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
+			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
+			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
+			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
+			ChartUtilities.saveChartAsPNG(output, chart, 600, 600);
 			log.debug("Chart created succesfully, returning filepath " );
 			return Util.docRoot("secure/files/" + filename);
 		} catch (IOException e) {
@@ -311,6 +321,7 @@ public class Statistics {
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
 			Range range=new Range(Math.min(minX,minY),Math.max(maxX, maxY));
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 	        
 	        renderer.setURLGenerator(customURLGenerator);
@@ -322,21 +333,30 @@ public class Statistics {
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
+			
 			LogAxis xAxis=new LogAxis(solver1+" time (s)");
+			xAxis.setTickLabelPaint(new Color(255,255,255));
+			xAxis.setLabelPaint(new Color(255,255,255));
 			xAxis.setAutoRange(false);
 			xAxis.setRange(range);
 			plot.setDomainAxis(xAxis);
-			
 			LogAxis yAxis=new LogAxis(solver2+" time (s)");
 			
 			yAxis.setAutoRange(false);
 			yAxis.setRange(range);
+			yAxis.setTickLabelPaint(new Color(255,255,255));
+			yAxis.setLabelPaint(new Color(255,255,255));
 			plot.setRangeAxis(yAxis);
 			
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
-			
+			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
+			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
+			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
+			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
+			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
+			ChartUtilities.saveChartAsPNG(output, chart, 600, 600);
 			String map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
 			
 			log.debug("Chart created succesfully, returning filepath ");

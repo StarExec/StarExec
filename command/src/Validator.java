@@ -29,27 +29,24 @@ public class Validator {
 	private static String missingParam=null;
 	private static List<String> unnecessaryParams=new ArrayList<String>();
 	
-	
+	//the following lists specify the parameters, either required or optional, that are accepted by a certain
+	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
-	
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
-	
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
-	
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
 		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
-	
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
 		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
@@ -187,6 +184,14 @@ public class Validator {
     	
     	return true;
     }
+    
+    /**
+     * Validates the given parameters to determine if they can be used to construct a valid
+     * request to copy primitives on StarExec
+     * @param commandParams A set of key/value parameters
+     * @param type The type of primitive (solver, benchmark, etc.) being copied
+     * @return 0 if the request is valid, and a negative error code otherwise
+     */
 	
     public static int isValidCopyRequest(HashMap<String,String> commandParams, String type) {
     	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO},commandParams)) {
@@ -723,6 +728,10 @@ public class Validator {
 			}
 		}
 	}
+	
+	/**
+	 * @return A list of parameters that were not usable by the command that was last validated
+	 */
 	public static List<String> getUnnecessaryParams() {
 		return unnecessaryParams;
 	}

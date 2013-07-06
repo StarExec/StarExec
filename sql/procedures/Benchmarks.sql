@@ -132,8 +132,11 @@ CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
 		WHERE id = _benchmarkId;
 		-- if the benchmark is associated with no spaces, we can delete it from the database
 		IF ((SELECT COUNT(*) FROM bench_assoc WHERE bench_id=_benchmarkId)=0) THEN
-			DELETE FROM benchmarks
-			WHERE id=_benchmarkId;
+			IF ((SELECT COUNT(*) FROM job_pairs WHERE bench_id=_benchmarkId)=0) THEN
+			
+				DELETE FROM benchmarks
+				WHERE id=_benchmarkId;
+			END IF;
 		END IF;
 	END //	
 	
@@ -367,8 +370,10 @@ CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT)
 		IF NOT EXISTS(SELECT * FROM bench_assoc WHERE bench_id =_benchId) THEN
 			-- if the solver has been deleted already, remove it from the database
 			IF NOT EXISTS(SELECT * FROM benchmarks WHERE _benchId=id AND deleted=false) THEN
-				DELETE FROM benchmarks
-				WHERE id=_benchId;
+				IF ((SELECT COUNT(*) FROM job_pairs WHERE bench_id=_benchmarkId)=0) THEN
+					DELETE FROM benchmarks
+					WHERE id=_benchId;
+				END IF;
 			END IF;
 		END IF;
 	END //

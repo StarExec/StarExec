@@ -60,6 +60,7 @@ function initUI(){
 						break;
 					default:
 						$("#spaceOverview").attr("src",returnCode);
+						$("#spaceOverviewLink").attr("src",returnCode+"600");
 					}
 				},
 				"text"
@@ -94,9 +95,10 @@ function updateSolverComparison() {
 				default:
 					jsonObject=$.parseJSON(returnCode);
 					src=jsonObject.src;
-					map=jsonObject.map
+					map=jsonObject.map;
 					
 					$("#solverComparison").attr("src",src);
+					$("#solverComparisonLink").attr("href",src+"600");
 					$("#solverComparisonMap").remove();
 					$("#graphField").append(map);
 				}

@@ -68,6 +68,7 @@ public class Communities {
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
+	//TODO: Is this different than spaces.get?
 	public static Space getDetails(int id) {
 		Connection con = null;			
 		

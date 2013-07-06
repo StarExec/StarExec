@@ -86,8 +86,10 @@ CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
 		WHERE id = _solverId;
 		-- if the solver is associated with no spaces, we can delete it from the database
 		IF ((SELECT COUNT(*) FROM solver_assoc WHERE solver_id=_solverId)=0) THEN
-			DELETE FROM solvers
-			WHERE id=_solverId;
+			IF ((SELECT COUNT(*) FROM job_pairs WHERE solver_id=_solverId)=0) THEN
+				DELETE FROM solvers
+				WHERE id=_solverId;
+			END IF;
 		END IF;
 		
 	END //	
@@ -294,8 +296,10 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 		IF NOT EXISTS(SELECT * FROM solver_assoc WHERE solver_id =_solverId) THEN
 			-- if the solver has been deleted already, remove it from the database
 			IF NOT EXISTS(SELECT * FROM solvers WHERE _solverId=id AND deleted=false) THEN
-				DELETE FROM solvers
-				WHERE id=_solverId;
+				IF ((SELECT COUNT(*) FROM job_pairs WHERE solver_id=_solverId)=0) THEN
+					DELETE FROM solvers
+					WHERE id=_solverId;
+				END IF;
 			END IF;
 		END IF;
 	END // 

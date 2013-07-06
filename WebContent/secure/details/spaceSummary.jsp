@@ -148,9 +148,9 @@
 	<c:if test="${pairCount>0 && jobVisible}">
 		<fieldset id="graphField">
 			<legend>graphs</legend>	
-			<img id="spaceOverview" src="${spaceOverviewPath}"/>
+			<a id="spaceOverviewLink" href="${spaceOverviewPath}600"><img id="spaceOverview" src="${spaceOverviewPath}" width="300" height="300"/></a>
 			<c:if test="${stats.size()>=2}">
-				<img id="solverComparison" src="${solverComparisonPath}" usemap="#solverComparisonMap"/>
+				<a id="solverComparisonLink" href="${solverComparisonPath}600"><img id="solverComparison" width="300" height="300" src="${solverComparisonPath}" usemap="#solverComparisonMap"/></a>
 				${imageMap}
 			</c:if>
 			<fieldset id="optionField">

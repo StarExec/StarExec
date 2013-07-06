@@ -521,6 +521,30 @@ public class Spaces {
 	}
 	
 	/**
+	 * Gets all the subspaces of the given space that are used by the given job
+	 * 
+	 * @param spaceId The id of the space to get the subspaces of
+	 * @param jobId The job for which we want to get used spaces
+	 * @return the list of subspaces of the given space used in the given job
+	 * @throws Exception
+	 * @author Eric Burns
+	 */
+	public static List<Space> getSubSpacesForJob(int spaceId, int jobId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Spaces.getSubSpacesForJob(spaceId, spaceId, con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Gets all subspaces belonging to another space
 	 * @param spaceId The id of the parent space. Give an id <= 0 to get the root space
 	 * @param userId The id of the user requesting the subspaces. This is used to verify the user can see the space
@@ -606,6 +630,37 @@ public class Spaces {
 			subSpaces.addAll(additionalSubspaces);
 		}
 		log.debug("Returning from adding subspaces");
+		return subSpaces;
+	}
+	
+	/**
+	 * Gets all the subspaces of the given space that are used by the given job
+	 * 
+	 * @param spaceId The id of the space to get the subspaces of
+	 * @param jobId The job for which we want to get used spaces
+	 * @param con the open database connection to use
+	 * @return the list of subspaces of the given space used in the given job
+	 * @throws Exception
+	 * @author Eric Burns
+	 */
+	protected static List<Space> getSubSpacesForJob(int spaceId, int jobId, Connection con) throws Exception{
+		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesOfJob(?, ?)}");
+		procedure.setInt(1, spaceId);
+		procedure.setInt(2, jobId);
+		
+		ResultSet results = procedure.executeQuery();
+		List<Space> subSpaces = new LinkedList<Space>();
+		
+		while(results.next()){
+			Space s = new Space();
+			s.setName(results.getString("name"));
+			s.setId(results.getInt("id"));
+			s.setDescription(results.getString("description"));
+			s.setLocked(results.getBoolean("locked"));
+			subSpaces.add(s);
+		}
+		
+		log.debug("Returning from getting subspaces of job id ="+jobId);
 		return subSpaces;
 	}
 	

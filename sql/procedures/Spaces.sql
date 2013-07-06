@@ -280,6 +280,20 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 		ORDER BY name;
 	END //
 	
+-- Gets all the subspaces of a given space needed for a given job (non-recursive)
+-- Author: Eric Burns	
+
+DROP PROCEDURE IF EXISTS GetSubSpacesOfJob;
+CREATE PROCEDURE GetSubspacesOfJob(IN _spaceId INT, IN _jobId INT)
+	BEGIN 
+		SELECT *
+		FROM spaces
+		WHERE id IN 
+					(SELECT child FROM job_space_assoc WHERE job_id=_jobId AND parent=space_id)
+		ORDER BY NAME;
+	END //
+	
+	
 	
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers

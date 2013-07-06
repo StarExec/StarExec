@@ -78,7 +78,7 @@ public class RESTHelpers {
 		for(Space space: spaceList){
 			JSTreeItem t;
 			
-			if (Spaces.getSubSpaces(space.getId(), userID, false).size()>0) {
+			if (Spaces.getCountInSpace(space.getId(), userID)>0) {
 				 t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
 			} else {
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf", "space");	

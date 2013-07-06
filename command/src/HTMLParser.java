@@ -4,12 +4,10 @@ package org.starexec.command;
  * This class reads HTML strings from StarExec and parses out necessary information from them.
  */
 
+import org.apache.http.Header;
 import org.apache.http.message.BasicNameValuePair;
 
 public class HTMLParser {
-
-	
-	
 	/**
 	 * Extracts the substring between a pair of quotes, where startIndex is the index of the first quote.
 	 * If there is no closing quote, the rest of the string from startindex+1 to the end is returned
@@ -103,8 +101,7 @@ public class HTMLParser {
 		}
 		return (jsonString.substring(startIndex,endIndex));
 	}
-	
-	
+
 	/**
 	 * Given a Json string formatted as StarExec does it's first line in a table
 	 * extract the ID of a primitive
@@ -134,6 +131,49 @@ public class HTMLParser {
 		if (Validator.isValidPosInteger(id)) {
 			return Integer.valueOf(id);
 		}	
+		return null;
+	}
+	
+
+	
+	/**
+	 * Given the headers of an HttpResponse and the name of a cookie,
+	 * check to see if that cookie was set and return its value if so
+	 * @param headers-- An array of HTTP headers 
+	 * @param cookieName the name of a cookie
+	 * @return The value of the given cookie, or null if it was not present
+	 * @author Eric Burns
+	 */
+	
+	public static String extractCookie(Header[] headers, String cookieName) {
+		
+		for (Header x : headers) {
+			if (x.getName().equals("Set-Cookie")) {
+				String value=x.getValue().trim();
+				if (value.contains(cookieName)) {
+					int begin=value.indexOf(cookieName);
+					
+					if (begin<0) {
+						return null;
+					}
+					begin+=cookieName.length()+1;
+					
+					int end=-1;
+					for (int character=begin;character<value.length();character++) {
+						if (value.substring(character,character+1).equals(";")) {
+							end=character;
+							break;
+						}
+					}
+					
+					//no semicolon means the cookie is at the end, so use the entire tail of the string
+					if (end==-1) {
+						end=value.length();
+					}
+					return value.substring(begin,end);
+				}
+			}
+		}
 		return null;
 	}
 }

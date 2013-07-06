@@ -917,9 +917,6 @@ function initSpaceExplorer(){
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
-
-	// Create the space tooltips on <a> elements that are children of $(#exploreList)
-	//createTooltip($('#exploreList'), 'a', 'space');
 }
 
 /**

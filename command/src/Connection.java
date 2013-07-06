@@ -72,11 +72,14 @@ public class Connection {
 	 * for StarExec is currently not valid
 	 * @return An HttpClient that ignores SSL certificates.
 	 */
-	
+	//TODO: If StarExec gets a valid certificate, we shouldn't have to do this anymore
 	private HttpClient getClient() {
 		try{
 			HttpClient base=new DefaultHttpClient();
 			SSLContext ctx = SSLContext.getInstance("TLS");
+			
+			//just create a trustmanager that does nothing, as we already know StarExec's certificate
+			//is invalid
 			X509TrustManager tm = new X509TrustManager() {
 
 
@@ -169,6 +172,11 @@ public class Connection {
 		return job_info_indices.get(jobID);
 	}
 	
+	/**
+	 * Gets all of the completion indices for job information (not job output)
+	 * @return A map of job IDs to the last seen completion indices for those jobs. 
+	 */
+	
 	public HashMap<Integer,Integer> getInfoIndices() {
 		return job_info_indices;
 	}
@@ -247,7 +255,7 @@ public class Connection {
 		try {
 			HttpGet get = new HttpGet(baseURL+R.URL_HOME);
 			HttpResponse response=client.execute(get);
-			sessionID=extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
+			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
 			response.getEntity().getContent().close();
 			if (!this.isValid()) {
 				//if the user specified their own URL, it is probably the problem.
@@ -277,7 +285,7 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
 			
-			sessionID=extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
+			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
 			
 			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
@@ -420,7 +428,7 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_SERVER;
 			}
-			int id=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return id;
 		} catch (Exception e) {
 			
@@ -554,7 +562,7 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_BAD_PARENT_SPACE;
 			}
-			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return newID;
 		} catch (Exception e) {
 			return R.ERROR_SERVER;
@@ -661,8 +669,8 @@ public class Connection {
 			if (urlParams.containsKey(R.FORMPARAM_SINCE)) {
 				
 				//check to see if the job is complete
-				done=extractCookie(response.getAllHeaders(),"Job-Complete");
-				lastSeen=Integer.parseInt(extractCookie(response.getAllHeaders(),"Max-Completion"));
+				done=HTMLParser.extractCookie(response.getAllHeaders(),"Job-Complete");
+				lastSeen=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Completion"));
 				
 				//indicates there was no new informatoin
 				if (lastSeen<=Integer.parseInt(urlParams.get(R.FORMPARAM_SINCE))) {
@@ -1005,8 +1013,6 @@ public class Connection {
 		
 		Charset utf8=Charset.forName("UTF-8");
 		
-		
-		
 		Boolean dependency=false;
 		String depRoot="";
 		Boolean depLinked=false;
@@ -1144,7 +1150,7 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return R.ERROR_BAD_ARGS;
 			}
-			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return newID;
 		} catch (Exception e) {
 			return R.ERROR_SERVER;
@@ -1208,7 +1214,7 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return R.ERROR_BAD_ARGS;
 			}
-			int id=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return id;
 		} catch (Exception e) {
 			
@@ -1368,7 +1374,7 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			response.getEntity().getContent().close();
-			int newID=Integer.valueOf(extractCookie(response.getAllHeaders(),"New_ID"));
+			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return newID;
 		} catch (Exception e) {	
 			return R.ERROR_SERVER;
@@ -1437,48 +1443,6 @@ public class Connection {
 		return answer.substring(0,answer.length()-1);
 	}
 	
-	
-	/**
-	 * Given the headers of an HttpResponse and the name of a cookie,
-	 * check to see if that cookie was set and return its value if so
-	 * @param headers-- An array of HTTP headers 
-	 * @param cookieName the name of a cookie
-	 * @return The value of the given cookie, or null if it was not present
-	 * @author Eric Burns
-	 */
-	
-	private String extractCookie(Header[] headers, String cookieName) {
-		
-		for (Header x : headers) {
-			if (x.getName().equals("Set-Cookie")) {
-				String value=x.getValue().trim();
-				if (value.contains(cookieName)) {
-					int begin=value.indexOf(cookieName);
-					
-					if (begin<0) {
-						return null;
-					}
-					begin+=cookieName.length()+1;
-					
-					int end=-1;
-					for (int character=begin;character<value.length();character++) {
-						if (value.substring(character,character+1).equals(";")) {
-							end=character;
-							break;
-						}
-					}
-					
-					//no semicolon means the cookie is at the end, so use the entire tail of the string
-					if (end==-1) {
-						end=value.length();
-					}
-					return value.substring(begin,end);
-				}
-			}
-		}
-		return null;
-	}
-	
 	/**
 	 * Updates the JSESSIONID of the current connection if the server has sent a new ID
 	 * @param headers an array of HTTP headers
@@ -1487,7 +1451,7 @@ public class Connection {
 	 */
 	
 	private int setSessionIDIfExists(Header [] headers) {
-		String id=extractCookie(headers, R.TYPE_SESSIONID);
+		String id=HTMLParser.extractCookie(headers, R.TYPE_SESSIONID);
 		if (id==null) {
 			return -1;
 		}

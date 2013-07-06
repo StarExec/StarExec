@@ -98,6 +98,29 @@ public class RESTServices {
 	private static final int ERROR_NAME_NOT_EDITABLE=9;
 	
 	private static final int ERROR_PRIM_ALREADY_DELETED=11;
+	
+	/**
+	 * @return a json string representing all the subspaces of the space with
+	 * the given id. If the given id is <= 0, then the root space is returned
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/space/{jobid}/subspaces")
+	@Produces("application/json")	
+	//TODO: What should the permissions be for a user who can see the job but not one of the subspaces the job uses?
+	public String getSubSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
+		int userId = SessionUtil.getUserId(request);
+		
+		List<Space> subspaces=new ArrayList<Space>();
+		
+		//don't populate the subspaces if the user can't see the job
+		if (Permissions.canUserSeeJob(jobId, userId)) {
+			subspaces=Spaces.getSubSpacesForJob(parentId, jobId);
+		}
+		
+		return gson.toJson(RESTHelpers.toSpaceTree(subspaces,userId));
+	}
+	
 	/**
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
@@ -420,7 +443,6 @@ public class RESTServices {
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
-	//TODO: This needs to be a JSONArray with two parts-- the source and the image map (I think?)
 	@POST
 	@Path("/jobs/{id}/{spaceId}/graphs/solverComparison/{config1}/{config2}")
 	@Produces("application/json")	
@@ -461,17 +483,11 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		//TODO: This is not the right way to handle this--there should be another function in RESTHelpers
 		List<SolverStats> stats=Jobs.getAllJobStats(jobId);
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
-		//nextDataTablesPage=RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_STATS, jobId, request);
-		
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}
-	
-	
-	
 	/**
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
@@ -1222,9 +1238,6 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
 		
-		// TODO: Possible security risk here, the user could spoof ID's of users that they cannot really see and
-		// end up adding them to the destination space.
-		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
 			return gson.toJson(ERROR_NOT_IN_SPACE);
@@ -1237,7 +1250,11 @@ public class RESTServices {
 		
 		// Convert the users to copy to a int list
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		
+		for (int id : selectedUsers) {
+			if (!Users.isMemberOfSpace(id, fromSpace)) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
+		}
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (copyToSubspaces == true) {
 			int subspaceId;
@@ -1818,7 +1835,7 @@ public class RESTServices {
 	/**
 	 * Removes a job's association with a space, thereby removing the job from
 	 * the space
-	 * TODO: improve performance
+	 * 
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
@@ -1852,7 +1869,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes a list of jobs
-	 * TODO: improve performance
+	 * 
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * 			2: insufficient permissions
@@ -2199,7 +2216,6 @@ public class RESTServices {
 			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
-		//TODO Need to check if the benchmark exists in historical space. If it does, we SHOULD NOT delete the benchmark
 		// Delete the benchmark from the database
 		return Benchmarks.delete(benchId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}

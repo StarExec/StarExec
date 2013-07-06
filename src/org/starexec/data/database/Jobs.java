@@ -32,6 +32,12 @@ import org.starexec.util.Util;
  * Handles all database interaction for jobs (NOT grid engine job execution, see JobManager for that)
  * @author Tyler Jensen
  */
+
+//TODO: This file is extremely large with many similarly named functions. There should be a JobPairs.java
+//to at least reduce the number of functions in this one file.
+
+//TODO: We should improve naming conventions-- we should use "JobPairs" everywhere and not use "Pairs" in names
+//of functions
 public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 
