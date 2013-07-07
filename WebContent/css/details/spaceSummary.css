@@ -1,5 +1,5 @@
 fieldset {
-	width: 750px;	
+	width: 100%;	
 }
 
 .incompleteHead, .completeHead, .configHead {
@@ -14,7 +14,7 @@ fieldset {
 }
 
 .subspaceTable {
-	width: 750px;
+	width: 95%;
 }
 
 #subspaceField .clear {
@@ -56,5 +56,4 @@ hr {
 	border-color:black;
 	background-color:black;
 	height: 1px;
-	
 }

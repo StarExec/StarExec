@@ -937,7 +937,7 @@ function removeBenchmarks(selectedBenches){
 
 				$.post(  
 						starexecRoot+"services/remove/benchmark/" + spaceId,
-						{selectedBenchmarks : selectedBenches},
+						{selectedIds : selectedBenches},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -961,7 +961,7 @@ function removeBenchmarks(selectedBenches){
 
 				$.post(  
 						starexecRoot+"services/delete/benchmark",
-						{selectedBenchmarks : selectedBenches},
+						{selectedIds : selectedBenches},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1006,7 +1006,7 @@ function removeUsers(selectedUsers){
 
 				$.post(  
 						starexecRoot+"services/remove/user/" + spaceId,
-						{selectedUsers : selectedUsers, hierarchy : true},
+						{selectedIds : selectedUsers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1030,7 +1030,7 @@ function removeUsers(selectedUsers){
 
 				$.post(  
 						starexecRoot+"services/remove/user/" + spaceId,
-						{selectedUsers : selectedUsers, hierarchy : false},
+						{selectedIds : selectedUsers, hierarchy : false},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1066,7 +1066,7 @@ function removeSolvers(selectedSolvers){
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		width: 380,
-		height: 165,
+		height: 220,
 		buttons: {
 			'remove from space hierarchy': function() {
 				log('user confirmed solver removal from space and its hierarchy');
@@ -1075,7 +1075,7 @@ function removeSolvers(selectedSolvers){
 
 				$.post(  
 						starexecRoot+"services/remove/solver/" + spaceId,
-						{selectedSolvers : selectedSolvers, hierarchy : true},
+						{selectedIds : selectedSolvers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1099,7 +1099,7 @@ function removeSolvers(selectedSolvers){
 
 				$.post(  
 						starexecRoot+"services/remove/solver/" + spaceId,
-						{selectedSolvers : selectedSolvers, hierarchy : false},
+						{selectedIds : selectedSolvers, hierarchy : false},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1123,7 +1123,7 @@ function removeSolvers(selectedSolvers){
 
 				$.post(  
 						starexecRoot+"services/delete/solver",
-						{selectedSolvers : selectedSolvers, hierarchy : true},
+						{selectedIds : selectedSolvers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1167,7 +1167,7 @@ function removeJobs(selectedJobs){
 
 				$.post(  
 						starexecRoot+"services/remove/job/" + spaceId,
-						{selectedJobs : selectedJobs},
+						{selectedIds : selectedJobs},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1193,7 +1193,7 @@ function removeJobs(selectedJobs){
 
 				$.post(  
 						starexecRoot+"services/delete/job",
-						{selectedJobs : selectedJobs},
+						{selectedIds : selectedJobs},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1230,7 +1230,7 @@ function removeSubspaces(selectedSubspaces,deletePrims){
 
 	$.post(  
 			starexecRoot+"services/remove/subspace/" + spaceId,
-			{selectedSubspaces : selectedSubspaces, deletePrims : deletePrims},					
+			{selectedIds : selectedSubspaces, deletePrims : deletePrims},					
 			function(returnCode) {
 				log('AJAX response received with code ' + returnCode);
 				switch (returnCode) {
@@ -1273,7 +1273,7 @@ function quickRemove(selectedSubspaces){
 
 				$.post(  
 						starexecRoot+"services/quickRemove/subspace/" + spaceId,
-						{selectedSubspaces : selectedSubspaces},
+						{selectedIds : selectedSubspaces},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {
@@ -1302,7 +1302,7 @@ function quickRemove(selectedSubspaces){
 
 				$.post(  
 						starexecRoot+"services/quickRemove/subspace/" + spaceId,
-						{selectedSubspaces : selectedSubspaces},
+						{selectedIds : selectedSubspaces},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
 							switch (returnCode) {

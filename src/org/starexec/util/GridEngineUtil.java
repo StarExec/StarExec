@@ -21,6 +21,7 @@ import org.ggf.drmaa.SessionFactory;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
 import org.starexec.data.to.Job;
@@ -386,7 +387,7 @@ public class GridEngineUtil {
 
 							success = success && GridEngineUtil.processAttributes(safeId);	
 							log.info("Statistic AND Attribute processing success for " + safeId + " = " + success);
-							Jobs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
+							JobPairs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
 
 							log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
 							//	}
@@ -423,7 +424,7 @@ public class GridEngineUtil {
 
 			// Update the database with the pair
 			log.info("About to add pair to db for sgeId = " + sgeId);
-			Jobs.updatePairStatistics(pair);
+			JobPairs.updatePairStatistics(pair);
 			log.info("Stats written to db for sgeId = " + sgeId);
 			return true;			
 		} catch (Exception e) {
@@ -442,7 +443,7 @@ public class GridEngineUtil {
     private static boolean processAttributes(int sgeId) {
     	log.info("processing attributes for " + sgeId);
     	BufferedReader reader = null;		
-    	JobPair pair = Jobs.getSGEPairDetailed(sgeId);
+    	JobPair pair = JobPairs.getSGEPairDetailed(sgeId);
     	Job job = Jobs.getDetailed(pair.getJobId());
     	log.info("successfully retrieved pair id " + pair.getId()  + " and job id " + job.getId() + " from sgeId " + sgeId);
     	try {
@@ -600,7 +601,7 @@ public class GridEngineUtil {
      * @return All console output from a job pair run for the given pair
      */
     public static String getStdOut(Job job, JobPair pair, int limit) {
-    	pair = Jobs.getPairDetailed(pair.getId());
+    	pair = JobPairs.getPairDetailed(pair.getId());
     	return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName(), limit);
     }
 

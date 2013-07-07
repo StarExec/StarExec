@@ -9,14 +9,13 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.User;
+import org.starexec.data.to.Status;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.Util;
+
 
 /**
  * Handles all DB interaction for queues
@@ -369,5 +368,336 @@ public class Queues {
 		
 		log.debug(String.format("Status for queue [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
+	}
+	
+
+	public static Integer getSizeOfQueue(int queueId) {
+		Connection con = null;					
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetNumEnqueuedJobs(?)}");					
+			procedure.setInt(1, queueId);					
+			ResultSet results = procedure.executeQuery();
+
+			Integer qSize = -1;
+			while(results.next()){
+				qSize = results.getInt("count");	
+			}							
+			return qSize;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+	
+	 /**
+     * Gets jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     * @author Ben McCune and Aaron Stump
+     */
+	public static List<Job> getEnqueuedJobs(int queueId) {
+		Connection con = null;					
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobs(?)}");					
+			procedure.setInt(1, queueId);					
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+
+			while(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));	
+				j.setPrimarySpace(results.getInt("primary_space"));
+				j.getQueue().setId(results.getInt("queue_id"));
+				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+
+				jobs.add(j);				
+			}							
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+	
+	/**
+     * Gets jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     * @author Ben McCune and Aaron Stump
+     */
+	public static List<Job> getPendingJobs(int queueId) {
+		Connection con = null;					
+		try {
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
+			procedure.setInt(1, queueId);					
+			ResultSet results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+
+			while(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));				
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));	
+				j.setPrimarySpace(results.getInt("primary_space"));
+				j.getQueue().setId(results.getInt("queue_id"));
+				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+
+				jobs.add(j);				
+			}							
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+	
+
+	/**
+	 * Gets all job pairs that are running (up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	public static List<JobPair> getRunningPairsDetailed(int qId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			return getRunningPairsDetailed(con, qId);
+		} catch (Exception e){			
+			log.error("getRunningPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
+	
+	/**
+	 * Gets all job pairs that are enqueued (up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	public static List<JobPair> getEnqueuedPairsDetailed(int qId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			return getEnqueuedPairsDetailed(con, qId);
+		} catch (Exception e){			
+			log.error("getEnqueuedPairsDetailed for queue " + qId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
+	
+
+	/**
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getEnqueuedPairsDetailed(Connection con, int qId) throws Exception {	
+
+		if(con.isClosed())
+		{
+			log.warn("GetEnqueuedPairsDetailed with Job Id = " + qId + " but connection is closed.");
+		}
+		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?,?)}");
+		procedure.setInt(1, qId);					
+		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+		ResultSet results = procedure.executeQuery();
+		List<JobPair> returnList = new LinkedList<JobPair>();
+
+		while(results.next()){
+			JobPair jp = JobPairs.resultToPair(results);
+			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			Status s = new Status();
+
+			s.setCode(results.getInt("status_code"));
+			//s.setStatus(results.getString("status.status"));
+			//s.setDescription(results.getString("status.description"));
+			jp.setStatus(s);
+			jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+			returnList.add(jp);
+		}			
+
+		Common.closeResultSet(results);
+		return returnList;			
+	}
+	
+	
+	/**
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getRunningPairsDetailed(Connection con, int qId) throws Exception {	
+
+		if(con.isClosed())
+		{
+			log.warn("GetRunningPairsDetailed with Job Id = " + qId + " but connection is closed.");
+		}
+		CallableStatement procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?,?)}");
+		procedure.setInt(1, qId);					
+		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+		ResultSet results = procedure.executeQuery();
+		List<JobPair> returnList = new LinkedList<JobPair>();
+
+		while(results.next()){
+			JobPair jp = JobPairs.resultToPair(results);
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			Status s = new Status();
+
+			s.setCode(results.getInt("status_code"));
+			jp.setStatus(s);
+			jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+			returnList.add(jp);
+		}			
+
+		Common.closeResultSet(results);
+		return returnList;			
+	}
+	
+
+
+	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
+		Connection con = null;			
+		try {			
+			con = Common.getConnection();	
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, id);
+			procedure.setString(6, searchQuery);
+			
+			
+			ResultSet results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+
+			while(results.next()){
+				JobPair jp = JobPairs.resultToPair(results);
+				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				Status s = new Status();
+
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+				returnList.add(jp);
+			}			
+
+			Common.closeResultSet(results);
+			return returnList;			
+			
+		} catch (Exception e){			
+			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+			return null;		
+	}	
+	
+	private static List<JobPair> getNextPageOfRunningJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
+		Connection con = null;			
+		try {			
+			con = Common.getConnection();	
+			CallableStatement procedure;	
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, id);
+			procedure.setString(6, searchQuery);
+			
+			
+			ResultSet results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+
+			while(results.next()){
+				JobPair jp = JobPairs.resultToPair(results);
+				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				
+				Status s = new Status();
+				s.setCode(results.getInt("status_code"));
+				
+				jp.setStatus(s);
+				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+				returnList.add(jp);
+			}			
+
+			Common.closeResultSet(results);
+			return returnList;			
+			
+		} catch (Exception e){			
+			log.error("getNextPageOfRunningJobPairs for node " + id + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+			return null;		
+	}
+	
+
+	
+	
+	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
+		if (type == "queue") {
+			return getNextPageOfEnqueuedJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+		} else if (type == "node") {
+			return getNextPageOfRunningJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+		} else {
+			return null;
+		}
 	}
 }

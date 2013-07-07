@@ -309,7 +309,6 @@ public class RESTHelpers {
 	 */
 	private static HashMap<String, Integer> getAttrMap(Primitive type, HttpServletRequest request){
 		HashMap<String, Integer> attrMap = new HashMap<String, Integer>();
-		
 		try{
 			// Parameters from the DataTable object
 		    String iDisplayStart = (String) request.getParameter(STARTING_RECORD);	// Represents the record number the current page starts at (0 for page 1, 10 for page 2, etc.) 
@@ -318,7 +317,6 @@ public class RESTHelpers {
 		    String iSortCol = (String) request.getParameter(SORT_COLUMN);			// Given an array of the column names, this is an index to which column is being used to sort
 		    String sDir = (String) request.getParameter(SORT_DIRECTION);			// Represents the sorting direction ('asc' for ascending or 'desc' for descending)
 		    String sSearch = (String) request.getParameter(SEARCH_QUERY);			// Represents the filter/search query (if no filter/search query is provided, this is empty)
-		    
 		    // Validates the starting record, the number of records per page, and the sync value
 		    if(Util.isNullOrEmpty(iDisplayStart)
 		    		||	Util.isNullOrEmpty(iDisplayLength)
@@ -327,7 +325,6 @@ public class RESTHelpers {
 		    		||	Integer.parseInt(sEcho) < 0) {
 		    	return null;
 		    }
-	    	
 	    	// Validates that the columns to sort on are specified and valid
 	    	if (Util.isNullOrEmpty(iSortCol)) {
 	    		// Allow jobs datatable to have a sort column null, then set
@@ -366,7 +363,6 @@ public class RESTHelpers {
 	    		}
 	    	}
 	    	
-	    	
 	    	// Validates that the sort direction is specified and valid
 	    	if (Util.isNullOrEmpty(sDir)) {
 	    		// Only permit the jobs table to have a null sorting direction;
@@ -383,7 +379,6 @@ public class RESTHelpers {
 	    			return null;
 	    		}
 	    	}
-	    	
 	    	// Depending on if the search/filter is empty or not, this will be 0 or 1
 	    	if (Util.isNullOrEmpty(sSearch)) {
 	    		attrMap.put(SEARCH_QUERY, EMPTY);
@@ -561,7 +556,7 @@ public class RESTHelpers {
     	    	
 		if (type.equals("queue")) {	
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-    			jobPairsToDisplay = Jobs.getJobPairsForNextClusterPage(
+    			jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  
 	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
@@ -570,7 +565,7 @@ public class RESTHelpers {
 	    				id,													// Parent space id 
 	    				"queue"												// It is a queue, not a node
 				);
-    			List<JobPair> enqueuedPairs = Jobs.getEnqueuedPairsDetailed(id);
+    			List<JobPair> enqueuedPairs = Queues.getEnqueuedPairsDetailed(id);
     			totalJobPairs = enqueuedPairs.size();
     			/**
     	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
@@ -588,7 +583,7 @@ public class RESTHelpers {
 
 		} else if (type.equals("node")) {
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-    			jobPairsToDisplay = Jobs.getJobPairsForNextClusterPage(
+    			jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
 	    				attrMap.get(STARTING_RECORD),						// Record to start at  
 	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
@@ -597,7 +592,7 @@ public class RESTHelpers {
 	    				id,													// Parent space id 
 	    				"node"												// It is a node, not a queue
 				);
-    			List<JobPair> runningPairs = Jobs.getRunningPairsDetailed(id);
+    			List<JobPair> runningPairs = Queues.getRunningPairsDetailed(id);
     			totalJobPairs = runningPairs.size();	
     			/**
     	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
@@ -872,6 +867,7 @@ public class RESTHelpers {
 			    return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairsforJob,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
 		    
 		    case JOB_STATS:
+		    	log.debug("getting next page of job stats for page with number = "+forPage);
 		    	List<SolverStats> SolverStatsToDisplay = null;
 	    		int [] totalSolverStats= new int[1];
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client

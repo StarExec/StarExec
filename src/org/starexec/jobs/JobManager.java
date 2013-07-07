@@ -14,6 +14,7 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
@@ -56,10 +57,10 @@ public abstract class JobManager {
 	    int qId = q.getId();
 	    String qname = q.getName();
 
-	    int queueSize = Jobs.getSizeOfQueue(qId);
+	    int queueSize = Queues.getSizeOfQueue(qId);
 		
 	    if (queueSize < R.NUM_JOB_SCRIPTS) {	
-		List<Job> joblist = Jobs.getPendingJobs(qId);
+		List<Job> joblist = Queues.getPendingJobs(qId);
 		if (joblist.size() > 0) 
 		    submitJobs(joblist, q, queueSize);
 	    }
@@ -208,8 +209,8 @@ public abstract class JobManager {
 			// If the submission was successful
 			if(sgeId >= 0) {											
 			    log.info("Submission of pair "+pair.getId() + " successful.");
-			    Jobs.updateGridEngineId(pair.getId(), sgeId);
-			    Jobs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+			    JobPairs.updateGridEngineId(pair.getId(), sgeId);
+			    JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 			}
 			else
 			    log.warn("Error submitting pair "+pair.getId() + " to SGE.");
@@ -265,10 +266,10 @@ public abstract class JobManager {
 	} catch (org.ggf.drmaa.DrmaaException drme) {
 	    log.warn("script Path = " + scriptPath);
 	    //log.warn("sgeTemplate = " +sgeTemplate.toString());
-	    Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
+	    JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
 	    log.error("submitScript says " + drme.getMessage(), drme);
 	} catch (Exception e) {
-	    Jobs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
+	    JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 	    log.error(e.getMessage(), e);
 	} finally {
 	    // Cleanup. Session's MUST be exited or SGE will be mean to you

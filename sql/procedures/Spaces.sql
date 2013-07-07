@@ -282,14 +282,12 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 	
 -- Gets all the subspaces of a given space needed for a given job (non-recursive)
 -- Author: Eric Burns	
-
+-- TODO: Change this function to use the job_space_assoc table, or however we want to do it
 DROP PROCEDURE IF EXISTS GetSubSpacesOfJob;
 CREATE PROCEDURE GetSubspacesOfJob(IN _spaceId INT, IN _jobId INT)
 	BEGIN 
 		SELECT *
-		FROM spaces
-		WHERE id IN 
-					(SELECT child FROM job_space_assoc WHERE job_id=_jobId AND parent=space_id)
+		FROM spaces WHERE id IN (SELECT child_id FROM set_assoc WHERE space_id = _spaceId)
 		ORDER BY NAME;
 	END //
 	

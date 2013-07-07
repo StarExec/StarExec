@@ -9,14 +9,10 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.Util;
+
 
 /**
  * Handles all database interaction for cluster resources (queues and worker nodes)

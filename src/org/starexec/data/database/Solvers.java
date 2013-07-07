@@ -434,6 +434,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean delete(int id){
+		log.debug("Solvers.delete() called on solver with id = "+id);
 		Connection con = null;			
 		File solverToDelete = null;
 		try {

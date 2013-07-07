@@ -544,6 +544,8 @@ public class Spaces {
 		return null;
 	}
 	
+
+	
 	/**
 	 * Gets all subspaces belonging to another space
 	 * @param spaceId The id of the parent space. Give an id <= 0 to get the root space
@@ -644,6 +646,7 @@ public class Spaces {
 	 * @author Eric Burns
 	 */
 	protected static List<Space> getSubSpacesForJob(int spaceId, int jobId, Connection con) throws Exception{
+		log.debug("Getting subspaces for job id = "+jobId);
 		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesOfJob(?, ?)}");
 		procedure.setInt(1, spaceId);
 		procedure.setInt(2, jobId);
@@ -660,7 +663,7 @@ public class Spaces {
 			subSpaces.add(s);
 		}
 		
-		log.debug("Returning from getting subspaces of job id ="+jobId);
+		log.debug("Returning " +subSpaces.size()+ "subspaces for job ="+jobId);
 		return subSpaces;
 	}
 	

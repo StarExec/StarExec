@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
@@ -80,7 +81,7 @@ public class Download extends HttpServlet {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleBenchmark(b, u.getId(), u.getArchiveType(), response);
 			} else if (request.getParameter("type").equals("jp_output")) {
-				JobPair jp = Jobs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
+				JobPair jp = JobPairs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
 				fileName = handlePairOutput(jp, u.getId(), u.getArchiveType(), response);				
 			} else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));

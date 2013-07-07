@@ -20,6 +20,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Comments;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
@@ -115,9 +116,20 @@ public class RESTServices {
 		
 		//don't populate the subspaces if the user can't see the job
 		if (Permissions.canUserSeeJob(jobId, userId)) {
-			subspaces=Spaces.getSubSpacesForJob(parentId, jobId);
+			if (parentId>0) {
+				
+				subspaces=Spaces.getSubSpacesForJob(parentId, jobId);
+			} else {
+				Job j=Jobs.get(jobId);
+				Space s=Spaces.get(j.getPrimarySpace());
+				subspaces.add(s);
+			}
+			
+		} else  {
+			
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
+		log.debug("making next tree layer with "+subspaces.size()+" spaces");
 		return gson.toJson(RESTHelpers.toSpaceTree(subspaces,userId));
 	}
 	
@@ -195,7 +207,7 @@ public class RESTServices {
 	@Path("/jobs/pairs/{id}/log")
 	@Produces("text/plain")		
 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
-		JobPair jp = Jobs.getPair(id);
+		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
 		
 		if(jp != null) {			
@@ -243,7 +255,7 @@ public class RESTServices {
 	@Path("/jobs/pairs/{id}/stdout")
 	@Produces("text/plain")	
 	public String getJobPairStdout(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
-		JobPair jp = Jobs.getPair(id);
+		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
 		
 		if(jp != null) {			
@@ -483,6 +495,7 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
+		
 		List<SolverStats> stats=Jobs.getAllJobStats(jobId);
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
@@ -500,10 +513,11 @@ public class RESTServices {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		if (!Permissions.canUserSeeJob(jobId, userId) || !Permissions.canUserSeeSpace(spaceId,userId)) {
+			
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInSpace(RESTHelpers.Primitive.JOB_STATS, jobId, request,spaceId);
-		
+		List<SolverStats> stats=Jobs.getAllJobStatsInSpace(jobId, spaceId);
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}
@@ -1020,13 +1034,13 @@ public class RESTServices {
 	public String deleteProcessors(@Context HttpServletRequest request) {
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedProcessors[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String solver id's and convert them to Integer
 		ArrayList<Integer> selectedProcessors = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedProcessors[]")){
+		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 		}
 		
@@ -1138,13 +1152,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String removeBenchmarksFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedBenchmarks[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String bench id's and convert them to Integer
 		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedBenchmarks[]")){
+		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		
@@ -1171,13 +1185,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteBenchmarks(@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedBenchmarks[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String bench id's and convert them to Integer
 		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedBenchmarks[]")){
+		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
@@ -1610,7 +1624,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String removeUsersFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedUsers[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}		
 		
@@ -1624,7 +1638,7 @@ public class RESTServices {
 		}
 		
 		// Extract the String user id's and convert them to Integer
-		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedUsers[]"));
+		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
 		// Validate the list of users to remove by:
 		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
@@ -1691,13 +1705,13 @@ public class RESTServices {
 		int userIdOfRemover = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedSolvers[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String solver id's and convert them to Integer
 		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedSolvers[]")){
+		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
@@ -1753,13 +1767,13 @@ public class RESTServices {
 		int userIdOfRemover = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedSolvers[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String solver id's and convert them to Integer
 		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedSolvers[]")){
+		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
@@ -1789,13 +1803,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteConfigurations(@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedConfigurations[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		int userId=SessionUtil.getUserId(request);
 		// Extract the String solver id's and convert them to Integer
 		ArrayList<Integer> selectedConfigs = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedConfigurations[]")){
+		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedConfigs.add(Integer.parseInt(id));
 		}
 		
@@ -1846,13 +1860,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String removeJobsFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedJobs[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String job id's and convert them to Integer
 		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
-		for (String id : request.getParameterValues("selectedJobs[]")) {
+		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 		}
 
@@ -1880,13 +1894,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteJobs( @Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedJobs[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
 		// Extract the String job id's and convert them to Integer
 		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
-		for (String id : request.getParameterValues("selectedJobs[]")) {
+		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
@@ -1921,7 +1935,7 @@ public class RESTServices {
 		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
 		try{
 			// Extract the String subspace id's and convert them to Integers
-			for(String id : request.getParameterValues("selectedSubspaces[]")){
+			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedSubspaces.add(Integer.parseInt(id));
 			}
 		} catch(Exception e){
@@ -2017,7 +2031,7 @@ public class RESTServices {
 		log.debug("quickRemove called from " + parentSpaceId);
 		try{
 			// Extract the String subspace id's and convert them to Integers
-			for(String id : request.getParameterValues("selectedSubspaces[]")){
+			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedSubspaces.add(Integer.parseInt(id));
 			}
 		} catch(Exception e){
@@ -2606,7 +2620,7 @@ public class RESTServices {
 	public String makeLeader(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedUsers[]")){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}		
 		
@@ -2620,7 +2634,7 @@ public class RESTServices {
 		}
 		
 		// Extract the String user id's and convert them to Integer
-		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedUsers[]"));
+		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
 		// Validate the list of users to promote by:
 		// 1 - Ensuring the leader who initiated the promotion of users from a space isn't themselves in the list of users to remove

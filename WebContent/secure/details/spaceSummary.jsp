@@ -14,22 +14,10 @@
 		if(Permissions.canUserSeeJob(jobId,userId) &&  Permissions.canUserSeeSpace(spaceId,userId)) {	
 			
 			Space s=Spaces.get(spaceId);
-			List<Space> subspaces=Spaces.getSubSpaces(spaceId,userId,false);
-			HashMap<Space,List<SolverStats>> subspaceStats=new HashMap<Space,List<SolverStats>>();
-			
-			for (Space sub : subspaces) {
-				List<SolverStats> curStats=Jobs.getAllJobStatsInSpaceHierarchy(jobId,sub.getId(),userId);
-				if (curStats.size()>0) {
-					subspaceStats.put(sub,curStats);
-				}
-			}
-			
+
 			if (s.isPublic() || Users.isMemberOfSpace(userId,spaceId)) {
 				request.setAttribute("jobVisible",true);
 				j = Jobs.getDetailedWithoutJobPairs(jobId);
-
-				request.setAttribute("subspaceStats",subspaceStats);
-				request.setAttribute("subspaceCount",subspaceStats.keySet().size());
 				List<JobPair> pairs=Jobs.getPairsDetailedInSpace(jobId,spaceId);
 				
 				if (pairs.size()>0) {
@@ -79,9 +67,7 @@
 			request.setAttribute("usr", Users.get(j.getUserId()));
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
-			int parentSpaceId=Spaces.getParentSpace(spaceId);
-			request.setAttribute("parentSpaceId",parentSpaceId);
-			request.setAttribute("space",s);
+			request.setAttribute("spaceId",spaceId);
 			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
@@ -99,122 +85,62 @@
 	}
 %>
 
-<star:template title="${space.name}" js="lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/spaceSummary">			
+<star:template title="${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
-	<span style="display:none" id="spaceId" value="${space.id}"></span>
-	
-	<c:if test="${!jobVisible}">
-		<fieldset id="solverSummaryField">
-		<legend>solver summary</legend>
-			<p id="unauthorizedMessage">you are not authorized to see this space, so you may not see job information in it. You may
-			still navigate to subspaces you are authorized to see.</p>
-		</fieldset>
-		
-	</c:if>
-	
-	<c:if test="${pairCount>0 && jobVisible}">
-		<fieldset id="solverSumamryField">
-			<legend>solver summary</legend>
+	<span style="display:none" id="spaceId" value="${spaceId}"></span>
+	<div id="explorer">
+		<h3>spaces</h3>
+		<ul id="exploreList">
+		</ul>
+	</div>
+	<div id="detailPanel">
+		<c:if test="${pairCount>0 && jobVisible}">
+			<fieldset id="solverSumamryField"><legend>solver
+			summary</legend>
 			<table id="solveTbl" class="shaded">
 				<thead>
-				
 					<tr>
 						<th>solver</th>
 						<th class="configHead">configuration</th>
 						<th class="completeHead">solved</th>
 						<th class="incompleteHead">incomplete</th>
 						<th>wrong</th>
-						<th>failed</th>	
+						<th>failed</th>
 						<th>time</th>
-					</tr>		
-				</thead>	
-				<tbody>
-					<c:forEach var="cs" items="${stats}">
-						<tr id="statRow">
-							<td><a href="/${starexecRoot}/secure/details/pairsInSpace.jsp?id=${jobId}&configid=${cs.configuration.id}&sid=${space.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-							<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-							<td>${cs.completeJobPairs} </td>
-							<td>${cs.incompleteJobPairs} </td>
-							<td>${cs.incorrectJobPairs}</td>
-							<td>${cs.errorJobPairs}</td>
-							<td>${cs.time}</td>
-						</tr>
-					</c:forEach>
-				</tbody>
-			</table>
-		</fieldset>
-	</c:if>
-	
-	<c:if test="${pairCount>0 && jobVisible}">
-		<fieldset id="graphField">
-			<legend>graphs</legend>	
-			<a id="spaceOverviewLink" href="${spaceOverviewPath}600"><img id="spaceOverview" src="${spaceOverviewPath}" width="300" height="300"/></a>
-			<c:if test="${stats.size()>=2}">
-				<a id="solverComparisonLink" href="${solverComparisonPath}600"><img id="solverComparison" width="300" height="300" src="${solverComparisonPath}" usemap="#solverComparisonMap"/></a>
-				${imageMap}
-			</c:if>
-			<fieldset id="optionField">
-				<legend>options</legend>
-				<input type="checkbox" id="logScale" checked="checked"/><span>log scale</span>
-				<c:if test="${stats.size()>=2}">
-					<select id="solverChoice1" default="${defaultSolver1}">
-						<c:forEach var="js" items="${stats}">
-							<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
-						</c:forEach>
-					</select>
-					<select id="solverChoice2" default="${defaultSolver2}">
-						
-						<c:forEach var="js" items="${stats}">
-							<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
-						</c:forEach>
-					</select>
-					
-				</c:if>
-			</fieldset>
-		</fieldset>
-	</c:if>
-	<c:if test="${subspaceCount>0}">
-		<fieldset id="subspaceField">
-		<legend>subspaces</legend>
-		<c:forEach var="sub" items="${subspaceStats.keySet()}">
-		<p class="tableHeader"><a href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${sub.id}">${sub.name}</a>
-			<table class="subspaceTable" class="shaded">
-				<thead>					
-					<tr>
-						<th>solver</th>
-						<th class="configHead">configuration</th>
-						<th class="completeHead">solved</th>
-						<th class="incompleteHead">incomplete</th>
-						<th>wrong</th>
-						<th>failed</th>	
-						<th>time</th>
-					</tr>		
+					</tr>
 				</thead>
 				<tbody>
-				<c:forEach var="cs" items="${subspaceStats.get(sub)}">
-						<tr id="statRow">
-							<td><a href="/${starexecRoot}/secure/details/solver.jsp?id=${cs.solver.id}" target="_blank">${cs.solver.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-							<td><a href="/${starexecRoot}/secure/details/configuration.jsp?id=${cs.configuration.id}" target="_blank">${cs.configuration.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
-							<td>${cs.completeJobPairs} </td>
-							<td>${cs.incompleteJobPairs} </td>
-							<td>${cs.incorrectJobPairs}</td>
-							<td>${cs.errorJobPairs}</td>
-							<td>${cs.time}</td>
-						</tr>
-					</c:forEach>
+					
 				</tbody>
 			</table>
-			<hr/>
-		</c:forEach>
-		</fieldset>
-	</c:if>
+			</fieldset>
+		</c:if> 
+		<c:if test="${pairCount>0 && jobVisible}">
+			<fieldset id="graphField"><legend>graphs</legend> <a
+				id="spaceOverviewLink" href="${spaceOverviewPath}600"><img
+				id="spaceOverview" src="${spaceOverviewPath}" width="300"
+				height="300" /></a> <c:if test="${stats.size()>=2}">
+				<a id="solverComparisonLink" href="${solverComparisonPath}600"><img
+					id="solverComparison" width="300" height="300"
+					src="${solverComparisonPath}" usemap="#solverComparisonMap" /></a>
+					${imageMap}
+				</c:if>
+			<fieldset id="optionField"><legend>options</legend> <input
+				type="checkbox" id="logScale" checked="checked" /><span>log
+			scale</span> <c:if test="${stats.size()>=2}">
+				<select id="solverChoice1" default="${defaultSolver1}">
+					<c:forEach var="js" items="${stats}">
+						<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
+					</c:forEach>
+				</select>
+				<select id="solverChoice2" default="${defaultSolver2}">
 	
-	
-	<fieldset>
-	<legend>actions</legend>
-	<c:if test="${job.primarySpace!=space.id}">
-		<a id="goToParent" href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${parentSpaceId}">return to parent</a>
-		<a id="goToRoot" href="/${starexecRoot}/secure/details/spaceSummary.jsp?id=${jobId}&sid=${job.primarySpace}">return to job root</a>
-	</c:if>
-	</fieldset>		
+					<c:forEach var="js" items="${stats}">
+						<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
+					</c:forEach>
+				</select>
+			</c:if></fieldset>
+			</fieldset>
+		</c:if>	
+		</div>
 </star:template>

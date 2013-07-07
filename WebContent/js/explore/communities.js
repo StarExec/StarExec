@@ -84,7 +84,7 @@ $(document).ready(function(){
 					
 					$.post(  
 						starexecRoot+"services/remove/user/" + id,
-						{selectedUsers : selectedUsers},
+						{selectedIds : selectedUsers},
 						function(returnCode) {
 							switch (returnCode) {
 								case 0:
@@ -124,7 +124,7 @@ $(document).ready(function(){
 		
 		$.post(  
 				starexecRoot+"services/makeLeader/" + id ,
-				{selectedUsers : selectedUsers},
+				{selectedIds : selectedUsers},
 				function(returnCode) {
 					switch (returnCode) {
 						case 0:
