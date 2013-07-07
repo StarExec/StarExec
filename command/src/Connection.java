@@ -586,7 +586,7 @@ public class Connection {
 			String [] ids=CommandParser.convertToArray(commandParams.get(R.PARAM_ID));
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
-			String key="selected"+type.substring(0,1).toUpperCase()+type.substring(1)+"s[]";
+			String key="selectedIds[]";
 			for (String id : ids) {
 				params.add(new BasicNameValuePair(key, id));
 			}

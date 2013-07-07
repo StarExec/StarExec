@@ -15,9 +15,8 @@ public class CommandParser {
 	private Connection con=null;
 	
 	private boolean returnIDsOnUpload=false;
-	public CommandParser(Connection newCon) {
-		con=newCon;
-		
+	public CommandParser() {
+		con=null;
 	}
 	
 	/**

@@ -6,12 +6,12 @@ import java.util.List;
 
 public class Shell {
 	
-	private Connection con;
+	
 	private CommandParser parser=null;
 	
 	public Shell() {
-		con=null;
-		parser=new CommandParser(con);
+		
+		parser=new CommandParser();
 	}
 	
 	
@@ -75,9 +75,7 @@ public class Shell {
 				//if the user typed 'exit,' quit the program
 				if (status==R.SUCCESS_EXIT) {
 					return;
-				} else if (status==R.ERROR_CONNECTION_LOST) {
-					con=null;
-				}
+				} 
 			}
 		} catch (Exception e) {	
 			e.printStackTrace();
