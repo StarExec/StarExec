@@ -1189,6 +1189,7 @@ public class Jobs {
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")));			 
 			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			jp.setGridEngineId(results.getInt("sge_id"));
 			Status s = new Status();
 
 			s.setCode(results.getInt("status_code"));
