@@ -64,8 +64,24 @@ public abstract class JobManager {
 		if (joblist.size() > 0) 
 		    submitJobs(joblist, q, queueSize);
 	    }
-	    else
+	    else {
 		log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
+		List<Job> joblist = Queues.getEnqueuedJobs(qId);
+		for (Job j: joblist) {
+			if (Jobs.isJobPaused(j.getId())) {
+				List<JobPair> jobPairs = Jobs.getEnqueuedPairs(j.getId());
+				for (JobPair jp : jobPairs) {
+					int sge_id = jp.getGridEngineId();
+					log.debug("sge_id = " + sge_id);
+					Util.executeCommand("qdel " + sge_id);
+					log.debug("Just executed qdel " + sge_id);
+					
+					Jobs.UpdateStatus(jp.getId(), 1);
+					log.debug("Updating of status complete.");
+				}
+			}
+		}
+	    }
 	}
 	return false;
     }
