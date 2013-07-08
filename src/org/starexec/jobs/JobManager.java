@@ -175,7 +175,7 @@ public abstract class JobManager {
 		    it.remove();
 		    continue;
 		}
-		/*
+		
 		if (Jobs.isJobPaused(s.job.getId())) {
 			//The job is paused so do not add the job_pairs
 			log.info("Not going to submit " + R.NUM_JOB_PAIRS_AT_A_TIME + " pairs "
@@ -183,12 +183,12 @@ public abstract class JobManager {
 					+ ", queue = " + q.getName()
 					+ ", user = " + s.job.getUserId()
 					+ ", because job is paused.");
-			//Jobs.getEnqueuedPairsDetailed(qId);
+			
+			//Also need to remove all job pairs from the queue and set their status to pending again
 			List<JobPair> jobPairs = Jobs.getEnqueuedPairs(s.job.getId());
 			for (JobPair jp : jobPairs) {
 				int sge_id = jp.getGridEngineId();
 				Util.executeCommand("qdel " + sge_id);
-				//jp.setStatus(1);
 				
 				Status status = jp.getStatus();
 				status.setCode(1);
@@ -196,7 +196,7 @@ public abstract class JobManager {
 			}
 			continue;
 		}
-		*/
+		
 		
 		log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME +" pairs "
 			 +"for job " + s.job.getId() 
