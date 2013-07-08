@@ -822,6 +822,17 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _cap INT)
 		LIMIT _cap;
 	END //	
 	
+-- Retrieves basic info about enqueued job pairs for the given job id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByJob;
+CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+		WHERE (job_id = _id AND status_code = 2)
+		ORDER BY sge_id ASC;
+	END //
+	
 -- Retrieves basic info about enqueued job pairs for the given queue id
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;

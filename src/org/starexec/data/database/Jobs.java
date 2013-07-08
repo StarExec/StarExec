@@ -1097,6 +1097,242 @@ public class Jobs {
 		return null;		
 	}
 	
+	/**
+	 * Gets all job pairs that are enqueued (up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param qId The id of the queue to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	public static List<JobPair> getEnqueuedPairsDetailed(int qId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			return Jobs.getEnqueuedPairsDetailed(con, qId);
+		} catch (Exception e){			
+			log.error("getEnqueuedPairsDetailed for queue " + qId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
+	
+	/**
+	 * Gets all job pairs that are enqueued (up to limit) for the given job and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	public static List<JobPair> getEnqueuedPairs(int jobId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			return Jobs.getEnqueuedPairs(con, jobId);
+		} catch (Exception e){			
+			log.error("getEnqueuedPairsDetailed for queue " + jobId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
+	
+	/**
+	 * Gets all job pairs that are running (up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * @param qId The id of the queue to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	public static List<JobPair> getRunningPairsDetailed(int qId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			return Jobs.getRunningPairsDetailed(con, qId);
+		} catch (Exception e){			
+			log.error("getRunningPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
+	
+	
+	/**
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
+
+		if(con.isClosed())
+		{
+			log.warn("GetEnqueuedPairs with Job Id = " + jobId + " but connection is closed.");
+		}
+		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByJob(?,?)}");
+		procedure.setInt(1, jobId);					
+		ResultSet results = procedure.executeQuery();
+		List<JobPair> returnList = new LinkedList<JobPair>();
+
+		while(results.next()){
+			JobPair jp = Jobs.resultToPair(results);
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));			 
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			Status s = new Status();
+
+			s.setCode(results.getInt("status_code"));
+			jp.setStatus(s);
+			returnList.add(jp);
+		}			
+
+		Common.closeResultSet(results);
+		return returnList;			
+	}
+	
+	/**
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param qId The id of the queue to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getEnqueuedPairsDetailed(Connection con, int qId) throws Exception {	
+
+		if(con.isClosed())
+		{
+			log.warn("GetEnqueuedPairsDetailed with Queue Id = " + qId + " but connection is closed.");
+		}
+		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?,?)}");
+		procedure.setInt(1, qId);					
+		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+		ResultSet results = procedure.executeQuery();
+		List<JobPair> returnList = new LinkedList<JobPair>();
+
+		while(results.next()){
+			JobPair jp = Jobs.resultToPair(results);
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			Status s = new Status();
+
+			s.setCode(results.getInt("status_code"));
+			jp.setStatus(s);
+			returnList.add(jp);
+		}			
+
+		Common.closeResultSet(results);
+		return returnList;			
+	}
+	
+	
+	/**
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param qId The id of the queue to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getRunningPairsDetailed(Connection con, int qId) throws Exception {	
+
+		if(con.isClosed())
+		{
+			log.warn("GetRunningPairsDetailed with Queue Id = " + qId + " but connection is closed.");
+		}
+		CallableStatement procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?,?)}");
+		procedure.setInt(1, qId);					
+		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+		ResultSet results = procedure.executeQuery();
+		List<JobPair> returnList = new LinkedList<JobPair>();
+
+		while(results.next()){
+			JobPair jp = Jobs.resultToPair(results);
+			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			Status s = new Status();
+
+			s.setCode(results.getInt("status_code"));
+			jp.setStatus(s);
+			returnList.add(jp);
+		}			
+
+		Common.closeResultSet(results);
+		return returnList;			
+	}
+	
+	/**
+	 * Given a resultset, populates only the fields of a job pair important for displaying stats.
+	 * 
+	 * @param result the result set
+	 * @return A job pair with only a few fields populated.
+	 * @throws Exception
+	 */
+	
+	private static JobPair shallowResultToPair(ResultSet result) throws Exception {
+		JobPair jp = new JobPair();
+
+		jp.setId(result.getInt("id"));
+		jp.setJobId(result.getInt("job_id"));	
+		jp.setWallclockTime(result.getDouble("wallclock"));
+		jp.setCpuUsage(result.getDouble("cpu"));
+		jp.setPath(result.getString("path"));
+		//log.debug("getting job pair from result set for id " + jp.getId());
+		return jp;
+	}
+	
+	/**
+	 * Helper method to extract information from a query for job pairs
+	 * @param result The resultset that is the results from querying for job pairs
+	 * @return A job pair object populated with data from the result set
+	 */
+	private static JobPair resultToPair(ResultSet result) throws Exception {
+
+		JobPair jp = new JobPair();
+
+		jp.setId(result.getInt("id"));
+		jp.setJobId(result.getInt("job_id"));
+		jp.setGridEngineId(result.getInt("sge_id"));	
+		jp.setCpuTimeout(result.getInt("cpuTimeout"));		
+		jp.setWallclockTimeout(result.getInt("clockTimeout"));
+		jp.setQueueSubmitTime(result.getTimestamp("queuesub_time"));
+		jp.setStartTime(result.getTimestamp("start_time"));
+		jp.setEndTime(result.getTimestamp("end_time"));
+		jp.setExitStatus(result.getInt("exit_status"));
+		jp.setWallclockTime(result.getDouble("wallclock"));
+		jp.setCpuUsage(result.getDouble("cpu"));
+		jp.setUserTime(result.getDouble("user_time"));
+		jp.setSystemTime(result.getDouble("system_time"));
+		jp.setIoDataUsage(result.getDouble("io_data"));
+		jp.setIoDataWait(result.getDouble("io_wait"));
+		jp.setMemoryUsage(result.getDouble("mem_usage"));
+		jp.setMaxVirtualMemory(result.getDouble("max_vmem"));
+		jp.setMaxResidenceSetSize(result.getDouble("max_res_set"));
+		jp.setPageReclaims(result.getDouble("page_reclaims"));
+		jp.setPageFaults(result.getDouble("page_faults"));
+		jp.setBlockInput(result.getDouble("block_input"));
+		jp.setBlockOutput(result.getDouble("block_output"));
+		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
+		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
+		jp.setPath(result.getString("path"));
+		//log.debug("getting job pair from result set for id " + jp.getId());
+		return jp;
+	}
+
 	/** 
 	 * @param code The status code to retrieve the status for
 	 * @return A status object containing information about  the given status code
