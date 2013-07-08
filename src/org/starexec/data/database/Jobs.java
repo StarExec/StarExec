@@ -1178,7 +1178,7 @@ public class Jobs {
 		{
 			log.warn("GetEnqueuedPairs with Job Id = " + jobId + " but connection is closed.");
 		}
-		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByJob(?,?)}");
+		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByJob(?)}");
 		procedure.setInt(1, jobId);					
 		ResultSet results = procedure.executeQuery();
 		List<JobPair> returnList = new LinkedList<JobPair>();
