@@ -1480,7 +1480,9 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
     		sb.append(js.getConfiguration().getName());
     		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
     		sb.append(js.getConfiguration().getId());
-    		sb.append("\" target=\"_blank\">");
+    		sb.append("\" target=\"_blank\" id=\"");
+    		sb.append(js.getConfiguration().getId());
+    		sb.append("\">");
     		sb.append(js.getConfiguration().getName());
 		RESTHelpers.addImg(sb);
 			String configLink = sb.toString();

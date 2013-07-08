@@ -10,7 +10,7 @@ $(document).ready(function(){
 	initUI();
 	initSpaceExplorer();
 	initDataTables();
-	
+	reloadSummaryTable();
 });
 
 
@@ -58,17 +58,58 @@ function initSpaceExplorer() {
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
-		log('Space explorer node ' + id + ' was clicked');
+		name = data.rslt.obj.attr("name");
+		$("#spaceName").text($('.jstree-clicked').text());
 
-		updateDetails(id);
+		reloadSummaryTable(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 	
 }
 
-function updateDetails(id) {
+function reloadSummaryTable(id) {
 	curSpaceId=id;
-	summaryTable.fnReloadAjax();
-	//TODO: Basically, we need to make all of our ajax calls for new data tables, graphs, etc. here. Also, permissions?
+	summaryTable.fnReloadAjax(null,null,null,null,id);
+	
+	
+}
+
+function update(id) {
+	$("#solverChoice1").empty();
+	$("#solverChoice2").empty();
+	rows = $("#solveTbl tbody tr");
+	rows.each(function() {
+		configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
+		if (typeof(configId)=='undefined') {
+			
+		} else {
+			$(this).wrap('<a href="'+ starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId +'"></a>');
+		}
+		
+	});
+	
+	$("#solverSummaryField").show();
+		
+	$("#graphField").show();
+	updateSpaceOverview();
+	if (rows.length>1) {
+		$("#solverComparison").show();
+		$("#solverChoice1").show();
+		$("#solverChoice2").show();
+		rows.each(function() {
+			solverName=$(this).find("a:first").attr("title");
+			configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
+			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
+			$("#solverChoice1").append('<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>');
+			$("#solverChoice2").append('<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>');
+		});
+		$("#solverChoice1").children("option:first").prop("selected",true);
+		$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
+		updateSolverComparison();
+	} else {
+		$("#solverComparison").hide();
+		$("#solverChoice1").hide();
+		$("#solverChoice2").hide();
+	}
 }
 
 /**
@@ -102,31 +143,7 @@ function initUI(){
 	$('fieldset').expandable(true);
 	
 	$("#logScale").change(function() {
-		logY=false;
-		if ($("#logScale").prop("checked")) {
-			logY=true;
-		}
-		
-		$.post(
-				starexecRoot+"services/jobs/" + jobId + "/" + spaceId+"/graphs/spaceOverview",
-				{logY : logY},
-				function(returnCode) {
-					
-					switch (returnCode) {
-					
-					case 1:
-						showMessage('error',"an internal error occured while processing your request: please try again",5000);
-						break;
-					case 2:
-						showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
-						break;
-					default:
-						$("#spaceOverview").attr("src",returnCode);
-						$("#spaceOverviewLink").attr("src",returnCode+"600");
-					}
-				},
-				"text"
-		);
+		updateSpaceOverview(logY);
 	});
 	
 	$("#solverChoice1").change(function() {
@@ -135,6 +152,33 @@ function initUI(){
 	$("#solverChoice2").change(function() {
 		updateSolverComparison();
 	});
+}
+
+function updateSpaceOverview() {
+	logY=false;
+	if ($("#logScale").prop("checked")) {
+		logY=true;
+	}
+	$.post(
+			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/spaceOverview",
+			{logY : logY},
+			function(returnCode) {
+				
+				switch (returnCode) {
+				
+				case 1:
+					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					break;
+				case 2:
+					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+					break;
+				default:
+					$("#spaceOverview").attr("src",returnCode);
+					$("#spaceOverviewLink").attr("src",returnCode+"600");
+				}
+			},
+			"text"
+	);
 }
 
 function updateSolverComparison() {
@@ -216,7 +260,7 @@ function extendDataTableFunctions(){
 	};
 	
 	//allows refreshing a table that is using client-side processing (for the summary table)
-	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw )
+	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw, id )
 	{
 	    if ( sNewSource !== undefined && sNewSource !== null ) {
 	        oSettings.sAjaxSource = sNewSource;
@@ -260,13 +304,14 @@ function extendDataTableFunctions(){
 	        }
 	 
 	        that.oApi._fnProcessingDisplay( oSettings, false );
-	 
+	        update(id);
 	        /* Callback user function - for event handlers etc */
 	        if ( typeof fnCallback == 'function' && fnCallback !== null )
 	        {
 	            fnCallback( oSettings );
 	        }
 	    }, oSettings );
+	    
 	};
 }
 

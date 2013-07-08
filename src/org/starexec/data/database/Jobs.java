@@ -1097,27 +1097,7 @@ public class Jobs {
 		return null;		
 	}
 	
-	/**
-	 * Gets all job pairs that are enqueued (up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 */
-	public static List<JobPair> getEnqueuedPairsDetailed(int qId) {
-		Connection con = null;			
-
-		try {			
-			con = Common.getConnection();		
-			return Jobs.getEnqueuedPairsDetailed(con, qId);
-		} catch (Exception e){			
-			log.error("getEnqueuedPairsDetailed for queue " + qId + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;		
-	}
+	
 	
 	/**
 	 * Gets all job pairs that are enqueued (up to limit) for the given job and also populates its used resource TOs 
@@ -1276,25 +1256,6 @@ public class Jobs {
 		return returnList;			
 	}
 	
-	/**
-	 * Given a resultset, populates only the fields of a job pair important for displaying stats.
-	 * 
-	 * @param result the result set
-	 * @return A job pair with only a few fields populated.
-	 * @throws Exception
-	 */
-	
-	private static JobPair shallowResultToPair(ResultSet result) throws Exception {
-		JobPair jp = new JobPair();
-
-		jp.setId(result.getInt("id"));
-		jp.setJobId(result.getInt("job_id"));	
-		jp.setWallclockTime(result.getDouble("wallclock"));
-		jp.setCpuUsage(result.getDouble("cpu"));
-		jp.setPath(result.getString("path"));
-		//log.debug("getting job pair from result set for id " + jp.getId());
-		return jp;
-	}
 	
 	/**
 	 * Helper method to extract information from a query for job pairs
@@ -2326,21 +2287,6 @@ public class Jobs {
 	}
 
 
-	public static void UpdateStatus(int jobPairId, int status_code) {
-		Connection con = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
-			procedure.setInt(1, jobPairId);
-			procedure.setInt(2, status_code);
-			results = procedure.executeQuery();
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.closeResultSet(results);
-		}		
-	}
+	
 	
 }

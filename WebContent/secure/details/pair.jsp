@@ -7,7 +7,7 @@
 		int userId = SessionUtil.getUserId(request);
 		int pairId = Integer.parseInt(request.getParameter("id"));
 		
-		JobPair jp = Jobs.getPairDetailed(pairId);
+		JobPair jp = JobPairs.getPairDetailed(pairId);
 		
 		if(jp == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	

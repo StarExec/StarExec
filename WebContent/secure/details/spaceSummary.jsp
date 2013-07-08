@@ -10,63 +10,10 @@
 		
 		
 		Job j=null;
-		
-		if(Permissions.canUserSeeJob(jobId,userId) &&  Permissions.canUserSeeSpace(spaceId,userId)) {	
-			
-			Space s=Spaces.get(spaceId);
-
-			if (s.isPublic() || Users.isMemberOfSpace(userId,spaceId)) {
-				request.setAttribute("jobVisible",true);
-				j = Jobs.getDetailedWithoutJobPairs(jobId);
-				List<JobPair> pairs=Jobs.getPairsDetailedInSpace(jobId,spaceId);
-				
-				if (pairs.size()>0) {
-					List<JobPair> completedPairs=new ArrayList<JobPair>();
-					for (JobPair jp : pairs) {
-						if (jp.getStatus().getCode().getVal()==Status.StatusCode.STATUS_COMPLETE.getVal()) {
-							completedPairs.add(jp);
-						}
-					}
-					request.setAttribute("pairCount", completedPairs.size());
-					String spaceOverviewPath=Statistics.makeSpaceOverviewChart(completedPairs,false,true);
-					request.setAttribute("spaceOverviewPath",spaceOverviewPath);
-					List<SolverStats> stats=Jobs.processPairsToSolverStats(pairs,0 , -1, true , 0 , "" , jobId , new int [1]);
-					if (stats.size()>=2) {
-						int default1=stats.get(0).getConfiguration().getId();
-						int default2=stats.get(1).getConfiguration().getId();
-						
-						request.setAttribute("defaultSolver1",default1);
-						request.setAttribute("defaultSolver2",default2);
-						
-						List<JobPair> pairs1=new ArrayList<JobPair>();
-						List<JobPair> pairs2=new ArrayList<JobPair>();
-						for (JobPair jp: completedPairs ) {
-							if (jp.getConfiguration().getId()==default1) {
-								pairs1.add(jp);
-							} 
-							if (jp.getConfiguration().getId()==default2) {
-								pairs2.add(jp);
-							}
-							
-						}
-						List<String> solverComparisonChart=Statistics.makeSolverComparisonChart(pairs1,pairs2);
-						String solverComparisonPath=solverComparisonChart.get(0);
-						String imageMap=solverComparisonChart.get(1);
-						System.out.println(solverComparisonPath);
-						request.setAttribute("solverComparisonPath",solverComparisonPath);
-						request.setAttribute("imageMap",imageMap);
-						
-					}
-					request.setAttribute("stats",stats);
-			} else {
-				request.setAttribute("pairCount",0);	
-			}
-			} else {
-				request.setAttribute("jobVisible",false);
-			}
-			request.setAttribute("usr", Users.get(j.getUserId()));
+		//TODO: Figure out the permissions here
+		if(Permissions.canUserSeeJob(jobId,userId)) {
+			j=Jobs.get(jobId);
 			request.setAttribute("job", j);
-			request.setAttribute("jobId", jobId);
 			request.setAttribute("spaceId",spaceId);
 			
 		} else {
@@ -86,7 +33,7 @@
 %>
 
 <star:template title="${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/spaceSummary">			
-	<span style="display:none" id="jobId" value="${jobId}" > </span>
+	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${spaceId}"></span>
 	<div id="explorer">
 		<h3>spaces</h3>
@@ -94,9 +41,8 @@
 		</ul>
 	</div>
 	<div id="detailPanel">
-		<c:if test="${pairCount>0 && jobVisible}">
-			<fieldset id="solverSumamryField"><legend>solver
-			summary</legend>
+			<h3 id="spaceName"></h3>
+			<fieldset id="solverSumamryField"><legend>solver summary</legend>
 			<table id="solveTbl" class="shaded">
 				<thead>
 					<tr>
@@ -114,33 +60,24 @@
 				</tbody>
 			</table>
 			</fieldset>
-		</c:if> 
-		<c:if test="${pairCount>0 && jobVisible}">
-			<fieldset id="graphField"><legend>graphs</legend> <a
-				id="spaceOverviewLink" href="${spaceOverviewPath}600"><img
-				id="spaceOverview" src="${spaceOverviewPath}" width="300"
-				height="300" /></a> <c:if test="${stats.size()>=2}">
-				<a id="solverComparisonLink" href="${solverComparisonPath}600"><img
-					id="solverComparison" width="300" height="300"
-					src="${solverComparisonPath}" usemap="#solverComparisonMap" /></a>
-					${imageMap}
-				</c:if>
+		
+		
+			<fieldset id="graphField">
+			<legend>graphs</legend> 
+			<a id="spaceOverviewLink" href=""><img id="spaceOverview" src="" width="300"
+				height="300" /></a> 
+				
+				<a id="solverComparisonLink" href=""><img id="solverComparison" width="300" height="300" src="" usemap="#solverComparisonMap" /></a>
 			<fieldset id="optionField"><legend>options</legend> <input
 				type="checkbox" id="logScale" checked="checked" /><span>log
-			scale</span> <c:if test="${stats.size()>=2}">
-				<select id="solverChoice1" default="${defaultSolver1}">
-					<c:forEach var="js" items="${stats}">
-						<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
-					</c:forEach>
+			scale</span> 
+				<select id="solverChoice1">
+					
 				</select>
-				<select id="solverChoice2" default="${defaultSolver2}">
-	
-					<c:forEach var="js" items="${stats}">
-						<option value="${js.getConfiguration().id}">${js.getSolver().name}/${js.getConfiguration().name}</option>
-					</c:forEach>
+				<select id="solverChoice2">
 				</select>
-			</c:if></fieldset>
 			</fieldset>
-		</c:if>	
+			</fieldset>
+		
 		</div>
 </star:template>

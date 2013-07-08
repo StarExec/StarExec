@@ -29,7 +29,6 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
 
@@ -192,7 +191,7 @@ public abstract class JobManager {
 				Util.executeCommand("qdel " + sge_id);
 				log.debug("Just executed qdel " + sge_id);
 				
-				Jobs.UpdateStatus(jp.getId(), 1);
+				JobPairs.UpdateStatus(jp.getId(), 1);
 				log.debug("Updating of status complete.");
 			}
 			continue;
