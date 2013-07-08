@@ -192,9 +192,8 @@ public abstract class JobManager {
 				Util.executeCommand("qdel " + sge_id);
 				log.debug("Just executed qdel " + sge_id);
 				
-				Status status = jp.getStatus();
-				status.setCode(1);
-				jp.setStatus(status);
+				Jobs.UpdateStatus(jp.getId(), 1);
+				log.debug("Updating of status complete.");
 			}
 			continue;
 		}

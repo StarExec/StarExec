@@ -2324,5 +2324,23 @@ public class Jobs {
 		}
 		return 0;
 	}
+
+
+	public static void UpdateStatus(int jobPairId, int status_code) {
+		Connection con = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
+			procedure.setInt(1, jobPairId);
+			procedure.setInt(2, status_code);
+			results = procedure.executeQuery();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.closeResultSet(results);
+		}		
+	}
 	
 }
