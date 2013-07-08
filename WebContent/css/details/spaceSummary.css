@@ -13,25 +13,19 @@ fieldset {
 	
 }
 
-.subspaceTable {
+#solveTbl {
+
 	width: 95%;
+}
+
+#solveTbl tr {
+	width: 100%;
 }
 
 #subspaceField .clear {
 	margin-bottom:10px;
 }
 
-.tableHeader {
-	background-color: #222222;
-	border-style:solid;
-	border-width:1px;
-	border-color:black;
-	font-weight:bold;
-	width:750px;
-	height:25px;
-	text-align:center;
-	padding-top:11px;
-}
 
 #solverChoice1,#solverChoice2 {
 	width:25%;
@@ -45,15 +39,4 @@ fieldset {
 
 #solverComparison {
 	float:right;
-}
-
-#goToRoot {
-	margin-left:10px;
-}
-
-hr {
-	color:black;
-	border-color:black;
-	background-color:black;
-	height: 1px;
 }

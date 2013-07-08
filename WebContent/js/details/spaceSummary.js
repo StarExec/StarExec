@@ -10,7 +10,7 @@ $(document).ready(function(){
 	initUI();
 	initSpaceExplorer();
 	initDataTables();
-	reloadSummaryTable();
+	//reloadSummaryTable();
 });
 
 
@@ -318,7 +318,9 @@ function extendDataTableFunctions(){
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
-	
+	if (curSpaceId==undefined) {
+		curSpaceId=spaceId;
+	}
 	$.post(  
 			sSource + jobId+"/solvers/pagination/"+curSpaceId,
 			aoData,
