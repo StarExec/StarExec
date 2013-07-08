@@ -1131,7 +1131,8 @@ DROP PROCEDURE IF EXISTS UpdateJobPairStatus;
 CREATE PROCEDURE UpdateJobPairStatus(IN _pairId INT, IN _statusCode INT)
 	BEGIN
 		UPDATE job_pairs
-		SET status_code = _statusCode;
+		SET status_code = _statusCode
+		WHERE id = _pairId;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file
