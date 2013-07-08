@@ -188,7 +188,9 @@ public abstract class JobManager {
 			List<JobPair> jobPairs = Jobs.getEnqueuedPairs(s.job.getId());
 			for (JobPair jp : jobPairs) {
 				int sge_id = jp.getGridEngineId();
+				log.debug("sge_id = " + sge_id);
 				Util.executeCommand("qdel " + sge_id);
+				log.debug("Just executed qdel " + sge_id);
 				
 				Status status = jp.getStatus();
 				status.setCode(1);
