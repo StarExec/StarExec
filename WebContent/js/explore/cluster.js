@@ -3,6 +3,15 @@ var qid=0;
 // When the document is ready to be executed on
 $(document).ready(function(){
 	 
+	//Set up row click to send to pair details page
+	$('#details tbody').delegate("a", "click", function(event) {
+		event.stopPropogation();
+	});
+	$("#details tbody").delegate("tr", "click", function(){
+		var pairId = $(this).find('input').val();
+		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+	});
+	
 	// Build left-hand side of page (cluster explorer)
 	 initClusterExplorer();
 
@@ -11,6 +20,7 @@ $(document).ready(function(){
 	 setInterval(function() {
 		 jobPairTable.fnDraw(false);
 	 }, 10000);
+
 	 
 });
 	 
@@ -74,6 +84,7 @@ function initDataTables() {
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
+        "bFilter"		: false,
         "sAjaxSource"	: starexecRoot+"services/cluster/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
@@ -84,8 +95,14 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
     //var type2 = data.rslt.obj.attr("rel"); 
     //alert("type 2 = " + type2);
 	var type = "queue";
+	
+	//alert("before type2");
+	//var type2 = $('#exploreList').find('.jstree-clicked').parent().prop("name");
+	//alert("type2 = " + type2);
+	
+	
 	var id = $('#exploreList').find('.jstree-clicked').parent().attr("id");
-	//If we can't find the id of the queue/node feorm the DOM, get it from the cookie instead
+	//If we can't find the id of the queue/node from the DOM, get it from the cookie instead
 	if (id == null || id == undefined) {
 		id = $.cookie("jstree_select");
 		// If we also can't find the cookie, then just set the space selected to be the root space
