@@ -83,11 +83,12 @@ function update(id) {
 		}
 		
 	});
-	
-	$("#solverSummaryField").show();
-		
-	$("#graphField").show();
-	updateSpaceOverview();
+	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
+		$("#graphField").hide();
+	} else {
+		$("#graphField").show();
+		updateSpaceOverview();
+	}
 	if (rows.length>1) {
 		$("#solverComparison").show();
 		$("#solverChoice1").show();
@@ -319,6 +320,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 					default:
 						// Replace the current page with the newly received page
 						fnCallback(nextDataTablePage);
+						update(curSpaceId);
 						break;
 				}
 			},  

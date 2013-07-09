@@ -1,9 +1,41 @@
-fieldset {
+#explorer.jobDetails {
+	width: 20%;
+}
+
+#explorer a:link {
+	text-decoration: none;	
+}
+
+#detailPanel.jobDetails {	
+	width: 73%;
+}
+
+#detailPanel fieldset {
 	width: 100%;	
 }
 
-.incompleteHead, .completeHead, .configHead {
-	width: 18%;
+tr {
+	width:100%;
+}
+
+thead {
+	width:inherit;
+}
+
+.completeHead {
+	width: 16%;
+}
+
+.incompleteHead{
+	width: 19%
+}
+
+.configHead { 
+	width: 21%;
+}
+
+.timeHead, .solverHead, .failedHead, .wrongHead {
+	width: 11%;
 }
 
 #graphField img {

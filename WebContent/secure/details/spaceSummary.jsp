@@ -13,8 +13,9 @@
 		//TODO: Figure out the permissions here
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			j=Jobs.get(jobId);
+			Space s=Spaces.get(spaceId);
 			request.setAttribute("job", j);
-			request.setAttribute("spaceId",spaceId);
+			request.setAttribute("space",s);
 			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
@@ -34,25 +35,25 @@
 
 <star:template title="${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
-	<span style="display:none" id="spaceId" value="${spaceId}"></span>
+	<span style="display:none" id="spaceId" value="${space.id}"></span>
 	<div id="explorer" class="jobDetails">
 		<h3>spaces</h3>
 		<ul id="exploreList">
 		</ul>
 	</div>
 	<div id="detailPanel" class="jobDetails">
-			<h3 id="spaceName"></h3>
+			<h3 id="spaceName">${space.name}</h3>
 			<fieldset id="solverSumamryField"><legend>solver summary</legend>
 			<table id="solveTbl" class="shaded">
 				<thead>
 					<tr>
-						<th>solver</th>
+						<th class="solverHead">solver</th>
 						<th class="configHead">configuration</th>
 						<th class="completeHead">solved</th>
 						<th class="incompleteHead">incomplete</th>
-						<th>wrong</th>
-						<th>failed</th>
-						<th>time</th>
+						<th class="wrongHead">wrong</th>
+						<th class="failedHead">failed</th>
+						<th class="timeHead">time</th>
 					</tr>
 				</thead>
 				<tbody>
