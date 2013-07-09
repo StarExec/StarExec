@@ -8,9 +8,8 @@ $(document).ready(function(){
 	curSpaceId=spaceId;
 	jobId=$("#jobId").attr("value");
 	initUI();
-	initSpaceExplorer();
 	initDataTables();
-	//reloadSummaryTable();
+	initSpaceExplorer();
 });
 
 
@@ -60,17 +59,13 @@ function initSpaceExplorer() {
 		id = data.rslt.obj.attr("id");
 		name = data.rslt.obj.attr("name");
 		$("#spaceName").text($('.jstree-clicked').text());
-
 		reloadSummaryTable(id);
-	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
-	
+	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
 }
 
 function reloadSummaryTable(id) {
 	curSpaceId=id;
-	summaryTable.fnReloadAjax(null,null,null,null,id);
-	
-	
+	summaryTable.fnReloadAjax(null,null,null,true,id);
 }
 
 function update(id) {
@@ -82,7 +77,9 @@ function update(id) {
 		if (typeof(configId)=='undefined') {
 			
 		} else {
-			$(this).wrap('<a href="'+ starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId +'"></a>');
+			$(this).click(function() {
+				window.location.href=(starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId);
+			});
 		}
 		
 	});
@@ -116,21 +113,7 @@ function update(id) {
  * Initializes the user-interface
  */
 function initUI(){
-	
-	$("#goToParent").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-n"
-		}
-    });
-	$("#goToRoot").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-n"
-		}
-    });
-	
-	//we don't need the last rule, as there is no table below the last one
-	$("hr").last().remove();
-	
+		
 	// Set the selected post processor to be the default one
 	defaultSolver1 = $('#solverChoice1').attr('default');
 	$('#solverChoice1 option[value=' + defaultSolver1 + ']').attr('selected', 'selected');
@@ -304,12 +287,13 @@ function extendDataTableFunctions(){
 	        }
 	 
 	        that.oApi._fnProcessingDisplay( oSettings, false );
-	        update(id);
+	        
 	        /* Callback user function - for event handlers etc */
 	        if ( typeof fnCallback == 'function' && fnCallback !== null )
 	        {
 	            fnCallback( oSettings );
 	        }
+	        update(id);
 	    }, oSettings );
 	    
 	};

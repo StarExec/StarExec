@@ -77,7 +77,7 @@ public class JobPairs {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSpaceByJobId(?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetSpaceByJobPairId(?)}");
 			procedure.setInt(1, jobPairId);
 			ResultSet results = procedure.executeQuery();
 			if (results.next()) {

@@ -24,7 +24,10 @@ $(document).ready(function(){
 	//redraw the job table every 10 seconds so we can see continuous results
 	setInterval(function() {
 		if (spaceId!=1 && spaceId!=undefined) {
-			jobTable.fnDraw(false);
+			rows = $(jobTable).children('tbody').children('tr.row_selected');
+			if (rows.length==0) {
+				jobTable.fnDraw(false);
+			}	
 		}
 		
 	},10000);

@@ -665,17 +665,6 @@ CREATE PROCEDURE GetNextPageOfRunningJobPairs(IN _startingRecord INT, IN _record
 	END //
 
 	
--- Retrieves all attributes for a job pair 
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetPairAttrs;
-CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
-	BEGIN
-		SELECT *
-		FROM job_attributes 
-		WHERE pair_id=_pairId
-		ORDER BY attr_key ASC;
-	END //
-	
 DROP PROCEDURE IF EXISTS GetJobAttrs;
 CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
@@ -714,36 +703,6 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 		WHERE id = _id and deleted=false;
 	END //
 	
--- Retrieves all jobs with pending job pairs for the given queue
--- Author: Benton McCune and Aaron Stump
-DROP PROCEDURE IF EXISTS GetPendingJobs;
-CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
-	BEGIN
-		SELECT *
-		FROM jobs
-		WHERE id in (select distinct job_id from job_pairs where status_code=1 and queue_id = _queueId);
-	END //
-	
--- Retrieves all jobs with enqueued job pairs for the given queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEnqueuedJobs;
-CREATE PROCEDURE GetEnqueuedJobs(IN _queueId INT)
-	BEGIN
-		SELECT *
-		FROM jobs
-		WHERE id in (select distinct job_id from job_pairs where status_code=2 and queue_id = _queueId);
-	END //
-	
-	
--- Retrieves the number of jobs with pending job pairs for the given queue
--- Author: Benton McCune and Aaron Stump
-DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
-CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
-	BEGIN
-		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
-                WHERE job_pairs.status_code=2 AND jobs.queue_id = _queueId;
-	END //	
-	
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairsByJob;
@@ -758,6 +717,9 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
+
+-- Gets job pair information necessary for stats (benchmark information excluded)
+-- Author: Eric Burns
 	
 DROP PROCEDURE IF EXISTS GetJobPairsByJobForStats;
 CREATE PROCEDURE GetJobPairsByJobForStats(IN _id INT)
@@ -833,73 +795,6 @@ CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 		ORDER BY sge_id ASC;
 	END //
 	
--- Retrieves basic info about enqueued job pairs for the given queue id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;
-CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs
-			-- Where the job_pair is running on the input Queue
-			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
-		WHERE (enqueued.queue_id = _id AND status_code = 2)
-		ORDER BY job_pairs.sge_id ASC
-		LIMIT _cap;
-	END //
-	
--- Retrieves basic info about running job pairs for the given node id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetRunningJobPairsByQueue;
-CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs
-		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
-		ORDER BY sge_id ASC
-		LIMIT _cap;
-	END //
-	
--- Gets the name of the space for a given job id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetSpaceByJobId;
-CREATE PROCEDURE GetSpaceByJobId(IN _jobId INT)
-	BEGIN
-		SELECT *
-		FROM spaces
-			INNER JOIN job_pairs AS jp ON  spaces.id = jp.space_id
-		WHERE jp.id = _jobId;
-	END //
-	
--- Gets the job pair associated with the given sge id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairBySgeId;
-CREATE PROCEDURE GetJobPairBySgeId(IN _sgeId INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs
-		WHERE sge_id=_sgeId;
-	END //
-	
--- Gets the job pair with the given id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairById;
-CREATE PROCEDURE GetJobPairById(IN _Id INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.id=_Id;
-	END //
-	
--- Gets the job pair with the given id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairBySGE;
-CREATE PROCEDURE GetJobPairBySGE(IN _Id INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.sge_id=_Id;
-	END //
-	
 -- Returns true if the job in question has the deleted flag set as true
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS IsJobDeleted;
@@ -920,22 +815,6 @@ CREATE PROCEDURE IsJobPaused(IN _jobId INT)
 		WHERE paused=true AND id=_jobId;
 	END //
 	
--- Removes the association between a job and a given space
--- Author: Todd Elvers + Eric Burns
-DROP PROCEDURE IF EXISTS RemoveJobFromSpace;
-CREATE PROCEDURE RemoveJobFromSpace(IN _jobId INT, IN _spaceId INT)
-BEGIN
-	DELETE FROM job_assoc
-	WHERE job_id = _jobId
-	AND space_id = _spaceId;
-	IF ((SELECT COUNT(*) FROM job_assoc WHERE job_id=_jobId)=0) THEN
-		IF NOT EXISTS(SELECT * FROM jobs WHERE deleted=false AND id=_jobId) THEN
-			DELETE FROM jobs 
-			WHERE id=_jobId;
-		END IF;
-	END IF;
-END //
-
 
 -- Sets the "deleted" property of a job to true and deletes all its job pairs from the database
 -- If the job has no more space associations, it is deleted from the database
@@ -975,20 +854,6 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		WHERE id = _jobId;
 	END //
 
--- Retrieves all jobs belonging to a space (but not their job pairs)
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetSpaceJobsById;
-CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
-	BEGIN
-		SELECT *
-		FROM jobs
-		WHERE id IN
-			(SELECT job_id
-			 FROM job_assoc
-			 WHERE space_id=_spaceId) 
-		ORDER BY created DESC;
-	END //
-
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobPair;
@@ -1009,15 +874,7 @@ CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN 
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	
--- Updates a job pair's sge id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS SetSGEJobId;
-CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
-	BEGIN
-		UPDATE job_pairs
-		SET sge_id=_sgeId
-		WHERE id=_jobPairId;
-	END //
+
 	
 -- Gets all SGE ids that have a certain status code
 -- Author: Tyler Jensen
@@ -1028,67 +885,6 @@ CREATE PROCEDURE GetSGEIdsByStatus(IN _statusCode TINYINT)
 		FROM job_pairs
 		WHERE status_code=_statusCode;
 	END //	
-	
--- Updates a job pair's status
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdatePairStatus;
-CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
-	BEGIN
-		UPDATE job_pairs
-		SET status_code=_statusCode
-		WHERE id=_jobPairId ;
-		IF _statusCode>6 THEN
-			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
-		END IF;
-	END //
-	
--- Updates a job pairs node Id
--- Author: Wyatt	
-DROP PROCEDURE IF EXISTS UpdateNodeId;
-CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128))
-	BEGIN
-		UPDATE job_pairs
-		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName)
-		WHERE id = _jobPairId;
-	END //
-	
-	
--- Updates a job pair's status given its sge id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateSGEPairStatus;
-CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
-	BEGIN
-		UPDATE job_pairs
-		SET status_code=_statusCode
-		WHERE sge_id=_sgeId;
-		IF _statusCode>6 THEN
-			INSERT IGNORE INTO job_pair_completion (pair_id) VALUES (_jobPairId);
-		END IF;
-			
-	END //		
-	
--- Updates a job pair's statistics directly from the execution node
--- Author: Benton McCune
-DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
-CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _pageReclaims BIGINT, IN _pageFaults BIGINT, IN _blockInput BIGINT, IN _blockOutput BIGINT, IN _volContexSwtch BIGINT, IN _involContexSwtch BIGINT)
-	BEGIN
-		UPDATE job_pairs
-		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
-			wallclock = _wallClock,
-			cpu=_cpu,
-			user_time=_userTime,
-			system_time=_systemTime,
-			max_vmem=_maxVmem,
-			max_res_set=_maxResSet,
-			page_reclaims=_pageReclaims,
-			page_faults=_pageFaults,
-			block_input=_blockInput,
-			block_output=_blockOutput,
-			vol_contex_swtch=_volContexSwtch,
-			invol_contex_swtch=_involContexSwtch
-		WHERE id=_jobPairId;
-	END //
-	
 
 -- Retrieves all jobs belonging to a user (but not their job pairs)
 -- Author: Ruoyu Zhang
@@ -1117,22 +913,6 @@ CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 		SELECT name
 		FROM jobs
 		where id = _jobId and deleted=false;
-	END //
-	
-DROP PROCEDURE IF EXISTS GetSGEIdByPairId;
-CREATE PROCEDURE GetSGEIdByPairId(IN _pairId INT)
-	BEGIN
-		SELECT sge_id
-		FROM job_pairs
-		WHERE id = _pairId;
-	END //
-	
-DROP PROCEDURE IF EXISTS UpdateJobPairStatus;
-CREATE PROCEDURE UpdateJobPairStatus(IN _pairId INT, IN _statusCode INT)
-	BEGIN
-		UPDATE job_pairs
-		SET status_code = _statusCode
-		WHERE id = _pairId;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file

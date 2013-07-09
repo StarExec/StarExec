@@ -35,12 +35,12 @@
 <star:template title="${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${spaceId}"></span>
-	<div id="explorer">
+	<div id="explorer" class="jobDetails">
 		<h3>spaces</h3>
 		<ul id="exploreList">
 		</ul>
 	</div>
-	<div id="detailPanel">
+	<div id="detailPanel" class="jobDetails">
 			<h3 id="spaceName"></h3>
 			<fieldset id="solverSumamryField"><legend>solver summary</legend>
 			<table id="solveTbl" class="shaded">

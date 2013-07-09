@@ -13,19 +13,9 @@ fieldset {
 	
 }
 
-#solveTbl {
-
-	width: 95%;
+#solveTbl tbody tr {
+	cursor:pointer;
 }
-
-#solveTbl tr {
-	width: 100%;
-}
-
-#subspaceField .clear {
-	margin-bottom:10px;
-}
-
 
 #solverChoice1,#solverChoice2 {
 	width:25%;

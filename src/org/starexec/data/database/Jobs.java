@@ -1121,27 +1121,7 @@ public class Jobs {
 		return null;		
 	}
 	
-	/**
-	 * Gets all job pairs that are running (up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 */
-	public static List<JobPair> getRunningPairsDetailed(int qId) {
-		Connection con = null;			
-
-		try {			
-			con = Common.getConnection();		
-			return Jobs.getRunningPairsDetailed(con, qId);
-		} catch (Exception e){			
-			log.error("getRunningPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;		
-	}
+	
 	
 	
 	/**
@@ -1181,80 +1161,8 @@ public class Jobs {
 		return returnList;			
 	}
 	
-	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
-	 * @param con The connection to make the query on 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 */
-	protected static List<JobPair> getEnqueuedPairsDetailed(Connection con, int qId) throws Exception {	
-
-		if(con.isClosed())
-		{
-			log.warn("GetEnqueuedPairsDetailed with Queue Id = " + qId + " but connection is closed.");
-		}
-		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?,?)}");
-		procedure.setInt(1, qId);					
-		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
-		ResultSet results = procedure.executeQuery();
-		List<JobPair> returnList = new LinkedList<JobPair>();
-
-		while(results.next()){
-			JobPair jp = Jobs.resultToPair(results);
-			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
-			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			Status s = new Status();
-
-			s.setCode(results.getInt("status_code"));
-			jp.setStatus(s);
-			returnList.add(jp);
-		}			
-
-		Common.closeResultSet(results);
-		return returnList;			
-	}
 	
 	
-	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
-	 * @param con The connection to make the query on 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 */
-	protected static List<JobPair> getRunningPairsDetailed(Connection con, int qId) throws Exception {	
-
-		if(con.isClosed())
-		{
-			log.warn("GetRunningPairsDetailed with Queue Id = " + qId + " but connection is closed.");
-		}
-		CallableStatement procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?,?)}");
-		procedure.setInt(1, qId);					
-		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
-		ResultSet results = procedure.executeQuery();
-		List<JobPair> returnList = new LinkedList<JobPair>();
-
-		while(results.next()){
-			JobPair jp = Jobs.resultToPair(results);
-			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
-			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			Status s = new Status();
-
-			s.setCode(results.getInt("status_code"));
-			jp.setStatus(s);
-			returnList.add(jp);
-		}			
-
-		Common.closeResultSet(results);
-		return returnList;			
-	}
 	
 	
 	/**

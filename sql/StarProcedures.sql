@@ -14,3 +14,5 @@ source procedures/Solvers.sql;
 source procedures/Spaces.sql;
 source procedures/Users.sql;
 source procedures/Websites.sql;
+source procedures/JobPairs.sql;
+source procedures/Queues.sql;

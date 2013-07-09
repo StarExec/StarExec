@@ -488,5 +488,35 @@ CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(128), IN _spaceId INT)
 		WHERE parent.id = _spaceId AND child.name = _name
 		;
 	END //
+	
+-- Retrieves all jobs belonging to a space (but not their job pairs)
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSpaceJobsById;
+CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
+	BEGIN
+		SELECT *
+		FROM jobs
+		WHERE id IN
+			(SELECT job_id
+			 FROM job_assoc
+			 WHERE space_id=_spaceId) 
+		ORDER BY created DESC;
+	END //
+	
+-- Removes the association between a job and a given space
+-- Author: Todd Elvers + Eric Burns
+DROP PROCEDURE IF EXISTS RemoveJobFromSpace;
+CREATE PROCEDURE RemoveJobFromSpace(IN _jobId INT, IN _spaceId INT)
+BEGIN
+	DELETE FROM job_assoc
+	WHERE job_id = _jobId
+	AND space_id = _spaceId;
+	IF ((SELECT COUNT(*) FROM job_assoc WHERE job_id=_jobId)=0) THEN
+		IF NOT EXISTS(SELECT * FROM jobs WHERE deleted=false AND id=_jobId) THEN
+			DELETE FROM jobs 
+			WHERE id=_jobId;
+		END IF;
+	END IF;
+END //
 
 DELIMITER ; -- This should always be at the end of this file
