@@ -80,15 +80,23 @@ public class Statistics {
 	 * (this method includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
 	protected static HashMap<String, String> getJobPairOverview(Connection con, int jobId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL GetJobPairOverview(?)}");				
+	    CallableStatement procedure = null;
+	    ResultSet results = null;
+	    try {
+		procedure = con.prepareCall("{CALL GetJobPairOverview(?)}");				
 		procedure.setInt(1, jobId);		
-		ResultSet results = procedure.executeQuery();		
+		results = procedure.executeQuery();		
 		
 		if(results.first()) {
 			return Statistics.getMapFromResult(results);
 		}
 		
-		return null;						
+		return null;
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
 	}
 	
 	/**

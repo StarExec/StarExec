@@ -552,7 +552,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return false;
@@ -664,13 +665,21 @@ public class Spaces {
  */
 	
 	protected static Integer getParentSpace(int spaceId, Connection con) throws Exception{
-		CallableStatement procedure = con.prepareCall("{CALL GetParentSpaceById(?)}");
+	    CallableStatement procedure = null;
+	    ResultSet results = null;
+	    try {
+		procedure = con.prepareCall("{CALL GetParentSpaceById(?)}");
 		procedure.setInt(1, spaceId);
-		ResultSet results = procedure.executeQuery();
+		results = procedure.executeQuery();
 		while(results.next()) {
 			return results.getInt("MAX(ancestor)");
 		}
 		return 1;
+	    }
+	    finally {
+		Common.safeClose(results);
+		Common.safeClose(procedure);
+	    }
 	}
 	
 	/**
@@ -727,12 +736,13 @@ public class Spaces {
 	 */
 	public static List<Space> GetSpacesByUser(int userId) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSpacesByUser(?)}");
+			procedure = con.prepareCall("{CALL GetSpacesByUser(?)}");
 			procedure.setInt(1, userId);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Space> spaces = new LinkedList<Space>();
 			
 			while(results.next()){
@@ -747,6 +757,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -761,12 +773,14 @@ public class Spaces {
 	 */
 	public static String getName(int spaceId){
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSpaceById(?)}");
+			procedure = con.prepareCall("{CALL GetSpaceById(?)}");
 			procedure.setInt(1, spaceId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			String communityName = null;
 
 			if(results.next()){
@@ -777,6 +791,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -816,12 +832,14 @@ public class Spaces {
 	 */
 	public static List<User> getUsers(int spaceId) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSpaceUsersById(?)}");
+			procedure = con.prepareCall("{CALL GetSpaceUsersById(?)}");
 			procedure.setInt(1, spaceId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<User> users= new LinkedList<User>();
 			
 			while(results.next()){
@@ -840,6 +858,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -1019,10 +1039,11 @@ public class Spaces {
 	 */
 	public static boolean updateName(int spaceId, String newName){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceName(?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateSpaceName(?, ?)}");
 			procedure.setInt(1, spaceId);					
 			procedure.setString(2, newName);
 			
@@ -1032,6 +1053,7 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -1090,38 +1112,48 @@ public class Spaces {
 		int defaultPermId = Permissions.add(s.getPermission(), con);
 		
 		// Add the space with the default permissions
-		CallableStatement procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
-		procAddSpace.setString(1, s.getName());
-		procAddSpace.setString(2, s.getDescription());
-		procAddSpace.setBoolean(3, s.isLocked());
-		procAddSpace.setInt(4, defaultPermId);
-		procAddSpace.setInt(5, parentId);
-		procAddSpace.registerOutParameter(6, java.sql.Types.INTEGER);		
-		procAddSpace.executeUpdate();
-		int newSpaceId = procAddSpace.getInt(6);
-		
-	    log.debug("Calling AssociateSpace");
+		CallableStatement procAddSpace = null;
+		CallableStatement procSubspace = null;
+		CallableStatement procAddUser = null;
+		try {
+		    procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
+		    procAddSpace.setString(1, s.getName());
+		    procAddSpace.setString(2, s.getDescription());
+		    procAddSpace.setBoolean(3, s.isLocked());
+		    procAddSpace.setInt(4, defaultPermId);
+		    procAddSpace.setInt(5, parentId);
+		    procAddSpace.registerOutParameter(6, java.sql.Types.INTEGER);		
+		    procAddSpace.executeUpdate();
+		    int newSpaceId = procAddSpace.getInt(6);
+		    
+		    log.debug("Calling AssociateSpace");
 		// Add the new space as a child space of the parent space
-		CallableStatement procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
-		procSubspace.setInt(1, parentId);
-		procSubspace.setInt(2, newSpaceId);
-		procSubspace.executeUpdate();		
-		
-	    log.debug("Calling AddUserToSpace");
+		    procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
+		    procSubspace.setInt(1, parentId);
+		    procSubspace.setInt(2, newSpaceId);
+		    procSubspace.executeUpdate();		
+		    
+		    log.debug("Calling AddUserToSpace");
 		// Add the adding user to the space with the maximal permissions
-		CallableStatement procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
-		procAddUser.setInt(1, userId);
-		procAddUser.setInt(2, newSpaceId);
-		procAddUser.setInt(3, newSpaceId);				
-		procAddUser.executeUpdate();
-		
-		// Set maximal permissions for the user who added the space	
-		Permissions.set(userId, newSpaceId, new Permission(true), con);
-		
-		//Do we necessarily want to end the transaction here?  I don't think we do.
-		//Common.endTransaction(con);
-		log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
-		return newSpaceId;
+		    procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
+		    procAddUser.setInt(1, userId);
+		    procAddUser.setInt(2, newSpaceId);
+		    procAddUser.setInt(3, newSpaceId);				
+		    procAddUser.executeUpdate();
+		    
+		    // Set maximal permissions for the user who added the space	
+		    Permissions.set(userId, newSpaceId, new Permission(true), con);
+		    
+		    //Do we necessarily want to end the transaction here?  I don't think we do.
+		    //Common.endTransaction(con);
+		    log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
+		    return newSpaceId;
+		}
+		finally {
+		    Common.safeClose(procAddSpace);
+		    Common.safeClose(procSubspace);
+		    Common.safeClose(procAddUser);
+		}
 	}
 	
 	
@@ -1134,17 +1166,21 @@ public class Spaces {
 	 */
 	public static boolean isLeaf(int spaceId){
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetDescendantsOfSpace(?)}");
+			procedure = con.prepareCall("{CALL GetDescendantsOfSpace(?)}");
 			procedure.setInt(1, spaceId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
 			return !results.next();			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		return false;
@@ -1196,7 +1232,10 @@ public class Spaces {
 	 * @author Skylar Stark
 	 */
 	protected static boolean updateDetails(Space s, Connection con) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?)}");	
+	    CallableStatement procedure = null;
+
+	    try {
+		procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?)}");	
 		
 		procedure.setInt(1, s.getId());
 		procedure.setString(2, s.getName());
@@ -1211,6 +1250,10 @@ public class Spaces {
 		Permissions.updatePermission(permId, s.getPermission(), con);
 		
 		return true;
+	    }
+	    finally {
+		Common.safeClose(procedure);
+	    }
 	}
 	
 	
@@ -1231,10 +1274,10 @@ public class Spaces {
 	 */
 	public static List<Space> getSpacesForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId, int userId) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure;			
 			
 			procedure = con.prepareCall("{CALL GetNextPageOfSpaces(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
@@ -1246,7 +1289,7 @@ public class Spaces {
 			procedure.setString(7, searchQuery);
 			procedure.setInt(8, R.PUBLIC_USER_ID);
 			
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Space> spaces = new LinkedList<Space>();
 			
 			while(results.next()){
@@ -1263,6 +1306,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -1280,14 +1325,16 @@ public class Spaces {
 	 */
 	public static int getCountInSpace(int spaceId, int userId) {
 		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
 
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			procedure.setInt(3, R.PUBLIC_USER_ID);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if (results.next()) {
 				return results.getInt("spaceCount");
@@ -1295,6 +1342,8 @@ public class Spaces {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 
@@ -1322,10 +1371,12 @@ public class Spaces {
 	 */
 	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSubSpaceByName(?,?,?)}");
+			procedure = con.prepareCall("{CALL GetSubSpaceByName(?,?,?)}");
 
 			log.debug("Space ID = " + spaceId);
 			procedure.setInt(1, spaceId);
@@ -1333,7 +1384,7 @@ public class Spaces {
 			procedure.setInt(2, userId);
 			log.debug("Subspace named " + subSpaceName);
 			procedure.setString(3, subSpaceName);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			Integer subSpaceId = -1;
 
 			if(results.next()){
@@ -1351,6 +1402,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		return -1;
@@ -1364,12 +1417,14 @@ public class Spaces {
 	 */
 	public static int GetCommunityOfSpace(int id) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {			
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
+			procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
 			procedure.setInt(1, id);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			if(results.next()) {
 				return results.getInt("community");
 			}
@@ -1377,6 +1432,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(con);
 			Common.safeClose(con);
 		}
 		
@@ -1427,13 +1484,19 @@ public class Spaces {
 	 * @author Skylar Stark
 	 */
 	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId) throws SQLException {
-		CallableStatement procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+	    CallableStatement procedure = null;
+	    try {
+		procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
 		for(int userId : userIds){
 			procedure.setInt(1, userId);
 			procedure.setInt(2, spaceId);
 			
 			procedure.executeUpdate();			
 		}
+	    }
+	    finally {
+		Common.safeClose(procedure);
+	    }
 	}
 
 	/** 
@@ -1478,13 +1541,15 @@ public class Spaces {
 	 */
 	public static boolean isPublicSpace(int spaceId){
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL IsPublicSpace(?,?)}");
+			procedure = con.prepareCall("{CALL IsPublicSpace(?,?)}");
 			procedure.setInt(1, spaceId);	
 			procedure.setInt(2, R.PUBLIC_USER_ID);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 		
 			if(results.first()) {
 				return (results.getInt(1)>0);
@@ -1492,6 +1557,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		
@@ -1520,6 +1587,7 @@ public class Spaces {
 		}
 		if(!hierarchy){
 		    Connection con = null;			
+		    CallableStatement procedure = null;
 			try {
 				con = Common.getConnection();
 				if(!pbc){
@@ -1527,14 +1595,15 @@ public class Spaces {
 					userIds.add(R.PUBLIC_USER_ID);
 					Spaces.removeUsers(con, userIds, spaceId);
 				}
-				CallableStatement procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
+				procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
 				procedure.setInt(1, spaceId);
 				procedure.setBoolean(2, pbc);
 				procedure.executeUpdate();
 			} catch (Exception e){			
 				log.error(e.getMessage(), e);		
 			} finally {
-				Common.safeClose(con);
+			    Common.safeClose(procedure);
+			    Common.safeClose(con);
 			}
 		} else {//is hierarchy, call recursively
 			List<Space> subSpaces = Spaces.getSubSpaces(spaceId, usrId, true);
@@ -1642,6 +1711,8 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 		

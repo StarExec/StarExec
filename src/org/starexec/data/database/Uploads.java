@@ -23,12 +23,13 @@ public class Uploads {
 	 */
 	public static Integer createUploadStatus(Integer spaceId, Integer userId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL CreateUploadStatus(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL CreateUploadStatus(?, ?, ?)}");
 		
 				procedure.setInt(1, spaceId);
 				procedure.setInt(2, userId);	
@@ -42,7 +43,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return -1;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	
@@ -53,12 +55,13 @@ public class Uploads {
 	 */
 	public static Boolean fileUploadComplete(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL FileUploadComplete(?)}");
+			procedure = con.prepareCall("{CALL FileUploadComplete(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -69,7 +72,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	/**
@@ -79,12 +83,13 @@ public class Uploads {
 	 */
 	public static Boolean fileExtractComplete(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
-				
-			CallableStatement procedure = con.prepareCall("{CALL FileExtractComplete(?)}");
+			
+			procedure = con.prepareCall("{CALL FileExtractComplete(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -95,7 +100,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	/**
@@ -106,12 +112,13 @@ public class Uploads {
 	 */
 	public static Boolean everythingComplete(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL EverythingComplete(?)}");
+			procedure = con.prepareCall("{CALL EverythingComplete(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -122,7 +129,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	
@@ -134,12 +142,14 @@ public class Uploads {
 	 */
 	public static UploadStatus get(int statusId) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {			
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetUploadStatusById(?)}");
+			procedure = con.prepareCall("{CALL GetUploadStatusById(?)}");
 			procedure.setInt(1, statusId);					
-			ResultSet results = procedure.executeQuery();		
+			results = procedure.executeQuery();		
 			
 			if(results.next()){
 				UploadStatus s = new UploadStatus();
@@ -163,7 +173,9 @@ public class Uploads {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -177,12 +189,14 @@ public class Uploads {
 	 */
 	public static List<String> getFailedBenches(int statusId) {
 		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		
 		try {			
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetUnvalidatedBenchmarks(?)}");
+			procedure = con.prepareCall("{CALL GetUnvalidatedBenchmarks(?)}");
 			procedure.setInt(1, statusId);					
-			ResultSet results = procedure.executeQuery();		
+			results = procedure.executeQuery();		
 			List<String> badBenches = new LinkedList<String>();
 			while(results.next()){
 				badBenches.add(results.getString("bench_name"));
@@ -191,7 +205,9 @@ public class Uploads {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(results);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 		
 		return null;
@@ -204,12 +220,13 @@ public class Uploads {
 	 */
 	public static Boolean processingBegun(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL processingBegun(?)}");
+			procedure = con.prepareCall("{CALL processingBegun(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -220,7 +237,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	
@@ -232,12 +250,13 @@ public class Uploads {
 	 */
 	public static Boolean incrementTotalSpaces(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL IncrementTotalSpaces(?)}");
+			procedure = con.prepareCall("{CALL IncrementTotalSpaces(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -248,7 +267,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	/**
@@ -259,12 +279,13 @@ public class Uploads {
 	 */
 	public static Boolean incrementTotalBenchmarks(Integer statusId){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+	    
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
-				
-			CallableStatement procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?)}");
+			
+			procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -275,7 +296,8 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(procedure);
+		    Common.safeClose(con);
 		}
 	}
 	
@@ -287,12 +309,13 @@ public class Uploads {
 	 */
 	public static Boolean incrementValidatedBenchmarks(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL IncrementValidatedBenchmarks(?)}");
+			procedure = con.prepareCall("{CALL IncrementValidatedBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -303,6 +326,7 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
+		        Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}
@@ -314,12 +338,13 @@ public class Uploads {
 	 */
 	public static Boolean incrementCompletedSpaces(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL IncrementCompletedSpaces(?)}");
+			procedure = con.prepareCall("{CALL IncrementCompletedSpaces(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -330,6 +355,7 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
+		        Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}
@@ -341,12 +367,13 @@ public class Uploads {
 	 */
 	public static Boolean incrementCompletedBenchmarks(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
-				
-			CallableStatement procedure = con.prepareCall("{CALL IncrementCompletedBenchmarks(?)}");
+			
+			procedure = con.prepareCall("{CALL IncrementCompletedBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -357,6 +384,7 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
+		        Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}
@@ -368,12 +396,13 @@ public class Uploads {
 	 */
 	public static Boolean incrementFailedBenchmarks(Integer statusId){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL IncrementFailedBenchmarks(?)}");
+			procedure = con.prepareCall("{CALL IncrementFailedBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -384,6 +413,7 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
+		        Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}
@@ -395,6 +425,7 @@ public class Uploads {
 	 */
 	public static Boolean setErrorMessage(Integer statusId, String message){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		if (message.length() > 512){
 			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
 		}
@@ -402,7 +433,7 @@ public class Uploads {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL SetErrorMessage(?,?)}");
+			procedure = con.prepareCall("{CALL SetErrorMessage(?,?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.setString(2,message);
@@ -414,6 +445,7 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
+		        Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}
@@ -425,6 +457,7 @@ public class Uploads {
 	 */
 	public static Boolean addFailedBenchmark(Integer statusId, String name){
 		Connection con = null;			
+		CallableStatement procedure = null;
 		if (name.length() > 512){
 			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + name.length());
 		}
@@ -432,7 +465,7 @@ public class Uploads {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			CallableStatement procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?)}");
+			procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.setString(2,name);
@@ -444,6 +477,7 @@ public class Uploads {
 			Common.doRollback(con);
 			return false;
 		} finally {
+		        Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}
