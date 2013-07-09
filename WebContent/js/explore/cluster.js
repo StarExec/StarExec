@@ -91,15 +91,9 @@ function initDataTables() {
     });
 }
 
-function fnPaginationHandler(sSource, aoData, fnCallback) {	
-    //var type2 = data.rslt.obj.attr("rel"); 
-    //alert("type 2 = " + type2);
-	var type = "queue";
-	
-	//alert("before type2");
-	//var type2 = $('#exploreList').find('.jstree-clicked').parent().prop("name");
-	//alert("type2 = " + type2);
-	
+function fnPaginationHandler(sSource, aoData, fnCallback) {		
+	var type = $('.jstree-clicked').text();
+	type = type.split('.')[1];	
 	
 	var id = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 	//If we can't find the id of the queue/node from the DOM, get it from the cookie instead
@@ -114,9 +108,9 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		}
 	}
 			
-	if(type == 'queue') {
+	if(type == 'q') {
 		type = 'queues';
-	} else if(type == 'enabled_node' || type == 'disabled_node') {
+	} else if(type == undefined) {
 		type = 'nodes';
 	} else  {
 		showMessage('error',"Invalid node type",5000);
