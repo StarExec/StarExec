@@ -65,10 +65,10 @@ function initSpaceExplorer() {
 
 function reloadSummaryTable(id) {
 	curSpaceId=id;
-	summaryTable.fnReloadAjax(null,null,null,true,id);
+	summaryTable.fnReloadAjax(null,null,true,id);
 }
 
-function update(id) {
+function update() {
 	$("#solverChoice1").empty();
 	$("#solverChoice2").empty();
 	rows = $("#solveTbl tbody tr");
@@ -244,6 +244,8 @@ function extendDataTableFunctions(){
 	};
 	
 	//allows refreshing a table that is using client-side processing (for the summary table)
+	//modified to work for the summary table-- this version of fnReloadAjax should not be used
+	//anywhere else
 	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw, id )
 	{
 	    if ( sNewSource !== undefined && sNewSource !== null ) {
@@ -264,6 +266,11 @@ function extendDataTableFunctions(){
 	    this.oApi._fnServerParams( oSettings, aData );
 	 
 	    oSettings.fnServerData.call( oSettings.oInstance, oSettings.sAjaxSource, aData, function(json) {
+	    	//if we aren't on the same space anymore, don't update the table with this data.
+	    	if (id!=curSpaceId) {
+	    		
+	    		return;
+	    	}
 	        /* Clear the old information from the table */
 	        that.oApi._fnClearTable( oSettings );
 	 
@@ -294,7 +301,7 @@ function extendDataTableFunctions(){
 	        {
 	            fnCallback( oSettings );
 	        }
-	        update(id);
+	        update();
 	    }, oSettings );
 	    
 	};
@@ -306,8 +313,10 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (curSpaceId==undefined) {
 		curSpaceId=spaceId;
 	}
+	outSpaceId=curSpaceId;
+	
 	$.post(  
-			sSource + jobId+"/solvers/pagination/"+curSpaceId,
+			sSource + jobId+"/solvers/pagination/"+outSpaceId,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){
@@ -318,9 +327,12 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
 						break;
 					default:
-						// Replace the current page with the newly received page
-						fnCallback(nextDataTablePage);
-						update(curSpaceId);
+						// Replace the current page with the newly received page only if we haven't
+						//changed spaces since this request was sent out
+						if (outSpaceId==curSpaceId) {
+							fnCallback(nextDataTablePage);
+							update(curSpaceId);
+						}
 						break;
 				}
 			},  
