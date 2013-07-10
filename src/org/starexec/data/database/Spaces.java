@@ -1176,12 +1176,11 @@ public class Spaces {
 	public static int addJobSpace(String name, Connection con) throws Exception {
 		
 		// Add the space with the default permissions
-		CallableStatement procAddSpace = con.prepareCall("{CALL AddJobSpace(?)}");	
+		CallableStatement procAddSpace = con.prepareCall("{CALL AddJobSpace(?, ?)}");	
 		procAddSpace.setString(1, name);
-		
-		procAddSpace.registerOutParameter(3, java.sql.Types.INTEGER);		
+		procAddSpace.registerOutParameter(2, java.sql.Types.INTEGER);		
 		procAddSpace.executeUpdate();
-		int newSpaceId = procAddSpace.getInt(3);
+		int newSpaceId = procAddSpace.getInt(2);
 		
 		return newSpaceId;
 	}
