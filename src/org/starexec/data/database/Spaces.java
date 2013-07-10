@@ -787,7 +787,7 @@ public class Spaces {
 		procedure.setInt(1, spaceId);
 		ResultSet results = procedure.executeQuery();
 		while(results.next()) {
-			return results.getInt("MAX(ancestor)");
+			return results.getInt("id");
 		}
 		return 1;
 	}
