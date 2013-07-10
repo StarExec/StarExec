@@ -512,8 +512,8 @@ CREATE TABLE job_spaces (
 -- Saves associations between spaces relevent to a particular job
 -- Author: Eric Burns
 CREATE TABLE job_space_assoc (
-	parent INT NOT NULL,
+	space_id INT NOT NULL,
 	child_id INT NOT NULL,
-	FOREIGN KEY (parent) REFERENCES job_spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
