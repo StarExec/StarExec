@@ -1,5 +1,6 @@
 var jobPairTable;
 var qid=0;
+var type;
 // When the document is ready to be executed on
 $(document).ready(function(){
 	 
@@ -73,7 +74,7 @@ function initClusterExplorer() {
 		}).bind("select_node.jstree", function (event, data) {
 			// When a node is clicked, get its ID and display the info in the details pane		
 			id = data.rslt.obj.attr("id");
-	        type = data.rslt.obj.attr("rel");   
+	        window['type'] = data.rslt.obj.attr("rel"); 
 	        getDetails(id, type);
 	    }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 }
@@ -92,8 +93,6 @@ function initDataTables() {
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {		
-	var type = $('.jstree-clicked').text();
-	type = type.split('.')[1];	
 	
 	var id = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 	//If we can't find the id of the queue/node from the DOM, get it from the cookie instead
@@ -107,16 +106,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			id = id[1];
 		}
 	}
-			
-	if(type == 'q') {
-		type = 'queues';
-	} else if(type == undefined) {
-		type = 'nodes';
-	} else  {
-		showMessage('error',"Invalid node type",5000);
-		return;
+
+	//In case the paginate happens before type is set
+	if (type == undefined) {
+		window['type'] = 'queues';
 	}
-	
 
 	$.get(  
 			sSource + type + "/" + id + "/pagination",
@@ -148,8 +142,10 @@ function getDetails(id, type) {
 	qid=id;
 	if(type == 'queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
+		window['type'] = 'queues';
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
 		url = starexecRoot+"services/cluster/nodes/details/" + id;
+		window['type'] = 'nodes';
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
