@@ -287,6 +287,7 @@ CREATE TABLE job_pairs (
 	vol_contex_swtch DOUBLE,
 	invol_contex_swtch DOUBLE,
 	space_id INT,
+	job_space_id INT,
 	path VARCHAR(2048),
 	PRIMARY KEY(id),
 	UNIQUE KEY(sge_id),
@@ -499,12 +500,20 @@ CREATE TABLE unvalidated_benchmarks (
 	PRIMARY KEY (id)
 );
 
+-- Saves all job space information
+-- Author: Eric Burns
+CREATE TABLE job_spaces (
+	id INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(128),
+	PRIMARY KEY (id)
+);
+
 
 -- Saves associations between spaces relevent to a particular job
 -- Author: Eric Burns
 CREATE TABLE job_space_assoc (
-	parent INT NOT NULL,
-	child INT NOT NULL,
-	job_id INT NOT NULL,
-	UNIQUE KEY (parent, child, job_id)
+	space_id INT NOT NULL,
+	child_id INT NOT NULL,
+	FOREIGN KEY (space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
+	FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );

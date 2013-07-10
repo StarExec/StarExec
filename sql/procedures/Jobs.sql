@@ -735,12 +735,12 @@ CREATE PROCEDURE GetJobPairsByJobForStats(IN _id INT)
 	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByConfigInSpace;
-CREATE PROCEDURE GetJobPairsByConfigInSpace(IN _id INT, IN _spaceId INT, IN _configId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsByConfigInJobSpace;
+CREATE PROCEDURE GetJobPairsByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_pairs.job_id=_id AND job_pairs.space_id=_spaceId AND job_pairs.config_id=_configId;
+		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 -- Retrieves all the info needed for stats for each job pair
 -- Author: Eric Burns
@@ -749,15 +749,15 @@ CREATE PROCEDURE GetJobPairsByConfigInSpace(IN _id INT, IN _spaceId INT, IN _con
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByJobInSpace;
-CREATE PROCEDURE GetJobPairsByJobInSpace(In _jobId INT, IN _spaceId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
+CREATE PROCEDURE GetJobPairsByJobInJobSpace(In _jobId INT, IN _jobSpaceId INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 				JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN status_codes AS status ON job_pairs.status_code=status.code
-		WHERE job_id=_jobId AND space_id =_spaceId;
+		WHERE job_id=_jobId AND job_space_id =_jobSpaceId;
 	END //
 	
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
@@ -857,10 +857,10 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _spaceId INT, IN _path VARCHAR(2048), OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _spaceId INT, IN _path VARCHAR(2048),IN _jobSpaceId INT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, space_id, path)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _spaceId, _path);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, space_id, path,job_space_id)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _spaceId, _path, _jobSpaceId);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 

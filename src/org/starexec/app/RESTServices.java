@@ -101,14 +101,13 @@ public class RESTServices {
 	private static final int ERROR_PRIM_ALREADY_DELETED=11;
 	
 	/**
-	 * @return a json string representing all the subspaces of the space with
-	 * the given id. If the given id is <= 0, then the root space is returned
-	 * @author Tyler Jensen
+	 * @return a json string representing all the subspaces of the job space
+	 * with the given id
+	 * @author Eric Burns
 	 */
 	@GET
 	@Path("/space/{jobid}/subspaces")
 	@Produces("application/json")	
-	//TODO: What should the permissions be for a user who can see the job but not one of the subspaces the job uses?
 	public String getSubSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		
@@ -118,8 +117,9 @@ public class RESTServices {
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			if (parentId>0) {
 				
-				subspaces=Spaces.getSubSpacesForJob(parentId, jobId);
+				subspaces=Spaces.getSubSpacesForJob(parentId);
 			} else {
+				//if the id given is 0, we want to get the root space
 				Job j=Jobs.get(jobId);
 				Space s=Spaces.get(j.getPrimarySpace());
 				subspaces.add(s);
@@ -130,7 +130,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
-		return gson.toJson(RESTHelpers.toSpaceTree(subspaces,userId));
+		return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
 	}
 	
 	/**
@@ -384,7 +384,6 @@ public class RESTServices {
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		System.out.println("here");
 		// Ensure user can view the job they are requesting the pairs from
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -425,9 +424,9 @@ public class RESTServices {
 	}
 	
 	@POST
-	@Path("/jobs/{id}/{spaceId}/graphs/spaceOverview")
+	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview")
 	@Produces("application/json")	
-	public String getSpaceOverviewGraph(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {			
+	public String getSpaceOverviewGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		
@@ -435,9 +434,7 @@ public class RESTServices {
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		if (false == Permissions.canUserSeeSpace(spaceId,userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		
 		boolean logX=false;
 		boolean logY=false;
 		if (Util.paramExists("logX", request)) {
@@ -451,14 +448,14 @@ public class RESTServices {
 				logY=true;
 			}
 		}
-		chartPath=Statistics.makeSpaceOverviewChart(jobId,spaceId,logX,logY);
+		chartPath=Statistics.makeSpaceOverviewChart(jobId,jobSpaceId,logX,logY);
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
 	@POST
-	@Path("/jobs/{id}/{spaceId}/graphs/solverComparison/{config1}/{config2}")
+	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}")
 	@Produces("application/json")	
-	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
@@ -466,11 +463,9 @@ public class RESTServices {
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		if (false == Permissions.canUserSeeSpace(spaceId,userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,spaceId);
+		
+		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId);
 		JsonObject json=new JsonObject();
 		json.addProperty("src", chartPath.get(0));
 		json.addProperty("map",chartPath.get(1));
@@ -507,16 +502,15 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/solvers/pagination/{spaceId}")
+	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		if (!Permissions.canUserSeeJob(jobId, userId) || !Permissions.canUserSeeSpace(spaceId,userId)) {
-			
+		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		List<SolverStats> stats=Jobs.getAllJobStatsInSpace(jobId, spaceId);
+		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpace(jobId, jobSpaceId);
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
@@ -528,15 +522,15 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/pagination/{spaceId}")
+	@Path("/jobs/{id}/pagination/{jobSpaceId}")
 	@Produces("application/json")
-	public String getJobPairsPaginatedInSpace(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String getJobPairsPaginatedInSpace(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		if (!Permissions.canUserSeeJob(jobId, userId) || !Permissions.canUserSeeSpace(spaceId,userId)) {
+		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInSpace(RESTHelpers.Primitive.JOB_PAIR, jobId, request,spaceId);
+		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInJobSpace(RESTHelpers.Primitive.JOB_PAIR, jobId, request,jobSpaceId);
 		
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		

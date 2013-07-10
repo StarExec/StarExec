@@ -6,16 +6,16 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
-		int spaceId=Integer.parseInt(request.getParameter("sid"));
+		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
 		
 		
 		Job j=null;
 		//TODO: Figure out the permissions here
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			j=Jobs.get(jobId);
-			Space s=Spaces.get(spaceId);
+			Space s=Spaces.getJobSpace(jobSpaceId);
 			request.setAttribute("job", j);
-			request.setAttribute("space",s);
+			request.setAttribute("jobspace",s);
 			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
@@ -35,14 +35,14 @@
 
 <star:template title="${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/spaceSummary, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/spaceSummary">			
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
-	<span style="display:none" id="spaceId" value="${space.id}"></span>
+	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
 	<div id="explorer" class="jobDetails">
 		<h3>spaces</h3>
 		<ul id="exploreList">
 		</ul>
 	</div>
 	<div id="detailPanel" class="jobDetails">
-			<h3 id="spaceName">${space.name}</h3>
+			<h3 id="spaceName">${jobspace.name}</h3>
 			<fieldset id="solverSumamryField"><legend>solver summary</legend>
 			<table id="solveTbl" class="shaded">
 				<thead>

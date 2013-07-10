@@ -91,6 +91,33 @@ public class RESTHelpers {
 	}
 	
 	/**
+	 * Takes in a list of spaces and converts it into
+	 * a list of JSTreeItems suitable for being displayed
+	 * on the client side with the jsTree plugin.
+	 * @param spaces The list of spaces to convert
+	 * @return List of JSTreeItems to be serialized and sent to client
+	 * @author Tyler Jensen
+	 */
+	protected static List<JSTreeItem> toJobSpaceTree(List<Space> jobSpaceList){
+		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		
+		
+		for(Space space: jobSpaceList){
+			JSTreeItem t;
+			
+			if (Spaces.getCountInJobSpace(space.getId())>0) {
+				 t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
+			} else {
+				t = new JSTreeItem(space.getName(), space.getId(), "leaf", "space");	
+			}
+			
+			list.add(t);
+		}
+
+		return list;
+	}
+	
+	/**
 	 * Takes in a list of worker nodes and converts it into
 	 * a list of JSTreeItems suitable for being displayed
 	 * on the client side with the jsTree plugin.
@@ -484,8 +511,8 @@ public class RESTHelpers {
 	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
 		return getNextDataTablesPage(type,id,request,PAGE_SPACE_EXPLORER);
 	}
-	protected static JsonObject getNextDataTablesPageForJobSummaryInSpace(Primitive type, int id, HttpServletRequest request, int spaceId) {
-		request.setAttribute(SPACE_ID, spaceId);
+	protected static JsonObject getNextDataTablesPageForJobSummaryInJobSpace(Primitive type, int id, HttpServletRequest request, int jobSpaceId) {
+		request.setAttribute(SPACE_ID, jobSpaceId);
 		return getNextDataTablesPage(type,id,request,PAGE_JOB_DETAILS_BY_SPACE);
 	}
 	
@@ -882,7 +909,7 @@ public class RESTHelpers {
 		    				totalSolverStats										// reference for storing TOTAL_ENTRIES
 					);
 	    		} else {
-	    			SolverStatsToDisplay = Jobs.getJobStatsForNextPageInSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
+	    			SolverStatsToDisplay = Jobs.getJobStatsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 		    				attrMap.get(SORT_COLUMN), 							// Column sorted on

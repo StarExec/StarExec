@@ -20,6 +20,16 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(128), IN _desc TEXT, IN _locked TINYI
 			WHERE descendant = _parent
 			UNION ALL SELECT _parent, id UNION SELECT id, id; 
 	END //
+	
+-- Adds a new space with the given information
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddJobSpace;
+CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(128), OUT id INT)
+	BEGIN		
+		INSERT INTO job_spaces (name)
+		VALUES (_name);
+		SELECT LAST_INSERT_ID() INTO id;
+	END //
 
 -- Adds an association between two spaces
 -- Author: Tyler Jensen
@@ -27,6 +37,15 @@ DROP PROCEDURE IF EXISTS AssociateSpaces;
 CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT)
 	BEGIN		
 		INSERT IGNORE INTO set_assoc
+		VALUES (_parentId, _childId);
+	END //
+	
+-- Adds an association between two job spaces
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS AssociateJobSpaces;
+CREATE PROCEDURE AssociateJobSpaces(IN _parentId INT, IN _childId INT)
+	BEGIN		
+		INSERT IGNORE INTO job_space_assoc
 		VALUES (_parentId, _childId);
 	END //
 	
@@ -171,6 +190,16 @@ CREATE PROCEDURE GetSpaceById(IN _id INT)
 		FROM spaces
 		WHERE id = _id;
 	END //
+	
+-- Returns basic space information for the space with the given id
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobSpaceById;
+CREATE PROCEDURE GetJobSpaceById(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_spaces
+		WHERE id = _id;
+	END //
 
 	
 -- Gets all the spaces that a user has access to
@@ -283,15 +312,22 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 -- Gets all the subspaces of a given space needed for a given job (non-recursive)
 -- Author: Eric Burns	
 -- TODO: Change this function to use the job_space_assoc table, or however we want to do it
-DROP PROCEDURE IF EXISTS GetSubSpacesOfJob;
-CREATE PROCEDURE GetSubspacesOfJob(IN _spaceId INT, IN _jobId INT)
+DROP PROCEDURE IF EXISTS GetJobSubSpaces;
+CREATE PROCEDURE GetJobSubspaces(IN _spaceId INT)
 	BEGIN 
 		SELECT *
-		FROM spaces WHERE id IN (SELECT child_id FROM set_assoc WHERE space_id = _spaceId)
+		FROM job_spaces WHERE id IN (SELECT child_id FROM job_space_assoc WHERE space_id = _spaceId)
 		ORDER BY NAME;
 	END //
 	
-	
+-- Gets the ids of the first level of subspaces of a given space (not recursive)
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSubSpaceIds;
+CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
+	BEGIN
+		SELECT id
+		FROM spaces WHERE id IN (SELECT child_id FROM set_assoc WHERE space_id = _spaceId);
+	END //
 	
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers
@@ -305,6 +341,18 @@ CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT, IN _
 							JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
 							WHERE 	set_assoc.space_id = _spaceId
 							AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId));	
+	END //
+	
+-- Returns the number of subspaces in a given space
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetSubspaceCountByJobSpaceId;
+CREATE PROCEDURE GetSubspaceCountByJobSpaceId(IN _spaceId INT)
+	BEGIN
+		SELECT 	COUNT(*) AS spaceCount
+		FROM 	job_spaces
+		WHERE 	id 		IN (SELECT 	child_id
+							FROM	job_space_assoc
+							WHERE space_id=_spaceId);
 	END //
 	
 	

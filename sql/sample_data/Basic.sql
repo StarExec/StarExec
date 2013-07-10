@@ -80,6 +80,8 @@ INSERT INTO spaces(name, created, description, locked, default_permission) VALUE
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('fakeSpace', SYSDATE(), 'this is the unviewable space for benchmarks and jobs from public', 0, 5);
 
+INSERT INTO job_spaces(name) VALUES('SAT');	
+
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
 	('no_type', 'This is a sample SAT benchmark type', 'C:\\SATPROCESSOR', 1, 3, 1024);
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES
@@ -152,21 +154,21 @@ INSERT INTO configurations(solver_id, name, description) VALUES
 	
 
 INSERT INTO jobs (user_id, name, description, primary_space) VALUES
-	(1, 'Sweet Job1','This is an example job description',3);
+	(1, 'Sweet Job1','This is an example job description',1);
 INSERT INTO jobs (user_id, name, description, primary_space) VALUES
-	(1, 'Sweet Job2','This is an example job description',3);
+	(1, 'Sweet Job2','This is an example job description',1);
 INSERT INTO jobs (user_id, name, description, primary_space) VALUES
-	(1, 'Sweet Job3','This is an example job description',3);
+	(1, 'Sweet Job3','This is an example job description',1);
 INSERT INTO jobs (user_id, name, description,primary_space) VALUES
-	(1, 'Sweet Job4','This is an example job description',3);
+	(1, 'Sweet Job4','This is an example job description',1);
 INSERT INTO jobs (user_id, name, description,primary_space) VALUES
-	(1, 'Sweet Job5','This is an example job description',3);
+	(1, 'Sweet Job5','This is an example job description',1);
 INSERT INTO jobs (user_id, name, description,primary_space) VALUES
-	(2, 'SMT Job', 'This is another example job description',3);
+	(2, 'SMT Job', 'This is another example job description',1);
 INSERT INTO jobs (user_id, name, description,primary_space) VALUES
-	(6, 'TPTP Job 1', 'This is an example job for the TPTP community',3);
+	(6, 'TPTP Job 1', 'This is an example job for the TPTP community',1);
 INSERT INTO jobs (user_id, name, description,primary_space) VALUES
-	(6, 'TPTP Job 2', 'This is another example job for the TPTP community',3);
+	(6, 'TPTP Job 2', 'This is another example job for the TPTP community',1);
 
 INSERT INTO job_assoc VALUES (3, 1);
 INSERT INTO job_assoc VALUES (3, 3);

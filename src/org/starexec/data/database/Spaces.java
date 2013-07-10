@@ -39,6 +39,44 @@ public class Spaces {
 	private static final Logger log = Logger.getLogger(Spaces.class);
 	
 	/**
+	 * Given a parent ID and a child ID, associates two job spaces
+	 * @param parentId The ID of the parent space
+	 * @param childId The ID of the child space
+	 * @return True on success and false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean associateJobSpaces(int parentId, int childId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			associateJobSpaces(parentId,childId,con);
+			return true;
+		} catch (Exception e) {
+			log.error("associateJobSpaces says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	/**
+	 * Given a parent ID and a child ID, associates two job spaces
+	 * @param parentId The ID of the parent space
+	 * @param childId The ID of the child space
+	 * @param con The open connection to run the procedure on
+	 * @return True on success and false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean associateJobSpaces(int parentId, int childId, Connection con) throws Exception {
+		CallableStatement procedure=con.prepareCall("{CALL AssociateJobSpaces(?, ?)}");
+		procedure.setInt(1, parentId);
+		procedure.setInt(2,childId);
+		procedure.executeQuery();
+		return true;
+	}
+	
+	/**
 	 * Gets a space with minimal information (only details about the space itself)
 	 * @param spaceId The id of the space to get information for
 	 * @return A space object consisting of shallow information about the space
@@ -60,6 +98,35 @@ public class Spaces {
 				s.setLocked(results.getBoolean("locked"));
 				s.setCreated(results.getTimestamp("created"));
 				s.setPublic(results.getBoolean("public_access"));
+				return s;
+			}														
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a job space's name and id
+	 * @param jobSpaceId The id of the job space to get information for
+	 * @return A space object of just an ID and a name
+	 * @author Eric Burns
+	 */
+	public static Space getJobSpace(int jobSpaceId) {
+		Connection con = null;			
+		try {			
+			con = Common.getConnection();		
+			CallableStatement procedure = con.prepareCall("{CALL GetJobSpaceById(?)}");
+			procedure.setInt(1, jobSpaceId);					
+			ResultSet results = procedure.executeQuery();		
+			
+			if(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getInt("id"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -529,12 +596,12 @@ public class Spaces {
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	public static List<Space> getSubSpacesForJob(int spaceId, int jobId) {
+	public static List<Space> getSubSpacesForJob(int jobSpaceId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();		
-			return Spaces.getSubSpacesForJob(spaceId, spaceId, con);
+			return Spaces.getSubSpacesForJob(jobSpaceId, con);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -567,6 +634,48 @@ public class Spaces {
 		}
 		
 		return null;
+	}
+	/**
+	 * Gets the ids of all subspaces of a given space (non-recursive)
+	 * @param spaceId The space to get subspaces for 
+	 * @return A list of integers representing the ids of the subspaces
+	 * @author Eric Burns
+	 */
+	
+	public static List<Integer> getSubSpaceIds(int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Spaces.getSubSpaceIds(spaceId, con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets the ids of all the subspaces of a given space (non recursive)
+	 * @param spaceId The id of the space to get subspaces of
+	 * @param con An open connection that will be used to make the calls
+	 * @return A list of subspace ids
+	 * @throws Exception
+	 * @author Eric Burns
+	 */
+	
+	public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws Exception {
+		CallableStatement procedure=con.prepareCall("{CALL GetSubspaceIds(?)}");
+		procedure.setInt(1, spaceId);
+		ResultSet results=procedure.executeQuery();
+		List<Integer> ids=new ArrayList<Integer>();
+		while (results.next()) {
+			ids.add(results.getInt("id"));
+		}
+		
+		return ids;
 	}
 	
 	/**
@@ -645,11 +754,10 @@ public class Spaces {
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	protected static List<Space> getSubSpacesForJob(int spaceId, int jobId, Connection con) throws Exception{
-		log.debug("Getting subspaces for job id = "+jobId);
-		CallableStatement procedure = con.prepareCall("{CALL GetSubSpacesOfJob(?, ?)}");
-		procedure.setInt(1, spaceId);
-		procedure.setInt(2, jobId);
+	protected static List<Space> getSubSpacesForJob(int jobSpaceId, Connection con) throws Exception{
+		log.debug("Getting job space subspaces for job space id = "+jobSpaceId);
+		CallableStatement procedure = con.prepareCall("{CALL GetJobSubSpaces(?)}");
+		procedure.setInt(1, jobSpaceId);
 		
 		ResultSet results = procedure.executeQuery();
 		List<Space> subSpaces = new LinkedList<Space>();
@@ -658,12 +766,11 @@ public class Spaces {
 			Space s = new Space();
 			s.setName(results.getString("name"));
 			s.setId(results.getInt("id"));
-			s.setDescription(results.getString("description"));
-			s.setLocked(results.getBoolean("locked"));
+			
 			subSpaces.add(s);
 		}
 		
-		log.debug("Returning " +subSpaces.size()+ "subspaces for job ="+jobId);
+		log.debug("Returning " +subSpaces.size()+ "subspaces for job space id ="+jobSpaceId);
 		return subSpaces;
 	}
 	
@@ -1050,6 +1157,35 @@ public class Spaces {
 		return false;
 	}
 	
+	public static int addJobSpace(String name) {
+		Connection con = null;
+		
+		try {
+			con=Common.getConnection();
+			int newSpaceId=addJobSpace(name,con);
+			return newSpaceId;
+		} catch (Exception e) {
+			log.error("addJobSpace says "+e.getMessage(),e);
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		return -1;
+	}
+	
+	public static int addJobSpace(String name, Connection con) throws Exception {
+		
+		// Add the space with the default permissions
+		CallableStatement procAddSpace = con.prepareCall("{CALL AddJobSpace(?)}");	
+		procAddSpace.setString(1, name);
+		
+		procAddSpace.registerOutParameter(3, java.sql.Types.INTEGER);		
+		procAddSpace.executeUpdate();
+		int newSpaceId = procAddSpace.getInt(3);
+		
+		return newSpaceId;
+	}
+	
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a
 	 * default permission record for the space, and adds a new association
@@ -1299,6 +1435,34 @@ public class Spaces {
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			procedure.setInt(3, R.PUBLIC_USER_ID);
+			ResultSet results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("spaceCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return 0;
+	}
+	
+	/**
+	 * Gets the number of  subspaces of a given job space
+	 * 
+	 * @param jobSpaceId the id of the job space to count the Spaces in
+	 * @return the number of JobSpaces
+	 * @author Eric Burns
+	 */
+	public static int getCountInJobSpace(int jobSpaceId) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL GetSubspaceCountByJobSpaceId(?)}");
+			procedure.setInt(1, jobSpaceId);
 			ResultSet results = procedure.executeQuery();
 
 			if (results.next()) {

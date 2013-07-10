@@ -15,6 +15,7 @@ public class JobPair extends Identifiable {
 	private int cpuTimeout = -1;
 	private int wallclockTimeout = -1;
 	private int completionId=-1;
+	private int jobSpaceId=-1;
 	private WorkerNode node = null;
 	private Solver solver = null;
 	private Benchmark bench = null;	
@@ -496,5 +497,13 @@ public class JobPair extends Identifiable {
 
 	public String getPath() {
 		return path;
+	}
+
+	public void setJobSpaceId(int jobSpaceId) {
+		this.jobSpaceId = jobSpaceId;
+	}
+
+	public int getJobSpaceId() {
+		return jobSpaceId;
 	}
 }

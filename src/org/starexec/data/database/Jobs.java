@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,15 +54,42 @@ public class Jobs {
 		Connection con = null;
 
 		try {
+			HashMap<Integer,String> idsToNames=new HashMap<Integer,String>();
+			HashMap<Integer,Integer> idMap= new HashMap<Integer,Integer>();
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
-
+			
+			
+			
+			
+			
+			for (JobPair pair : job) {
+				idsToNames.put(pair.getSpace().getId(), pair.getSpace().getName());
+			}
+			
+			
+			for (int id : idsToNames.keySet()) {
+				int jobSpaceId=Spaces.addJobSpace(idsToNames.get(id),con);
+				idMap.put(id, jobSpaceId);
+			}
+			for (int id : idMap.keySet()) {
+				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
+				for (int subspaceId : subspaceIds) {
+					if (idMap.containsKey(subspaceId)) {
+						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId));
+					}
+				}
+			}
+			
+			//the primary space of a job should be a job space ID instead of a space ID
+			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
 			Jobs.addJob(con, job);
 			Jobs.associate(con, job.getId(), spaceId);
-
+			
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
+				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
 				Jobs.addJobPair(con, pair);
 			}
 
@@ -94,13 +122,13 @@ public class Jobs {
 		procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
 		procedure.setInt(7, pair.getSpace().getId());
 		procedure.setString(8, pair.getPath());
-		
+		procedure.setInt(9,pair.getJobSpaceId());
 		// The procedure will return the pair's new ID in this parameter
-		procedure.registerOutParameter(9, java.sql.Types.INTEGER);	
+		procedure.registerOutParameter(10, java.sql.Types.INTEGER);	
 		procedure.executeUpdate();			
 
 		// Update the pair's ID so it can be used outside this method
-		pair.setId(procedure.getInt(9));
+		pair.setId(procedure.getInt(10));
 
 		return true;
 	}
@@ -804,18 +832,18 @@ public class Jobs {
 		return null;
 	}
 	
-	public static List<JobPair> getPairsDetailedByConfigInSpace(int jobId,int spaceId, int configId) {
+	public static List<JobPair> getPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId) {
 		Connection con = null;	
 		
 		ResultSet results=null;
 		try {			
 			con = Common.getConnection();	
 			
-			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+spaceId);
+			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByConfigInSpace(?, ?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByConfigInJobSpace(?, ?, ?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,spaceId);
+			procedure.setInt(2,jobSpaceId);
 			procedure.setInt(3,configId);
 			results = procedure.executeQuery();
 			return getPairsDetailed(jobId,con,results,false);
@@ -942,19 +970,19 @@ public class Jobs {
 	 * Returns all of the job pairs in a given space, populated with all the fields necessary
 	 * to display in a SolverStats table
 	 * @param jobId The ID of the job in question
-	 * @param spaceId The space ID of the space containing the solvers to get stats for
+	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getPairsForStatsInSpace(int jobId, int spaceId) {
+	public static List<JobPair> getPairsForStatsInJobSpace(int jobId, int jobSpaceId) {
 		Connection con = null;
 		ResultSet results = null;
-		log.debug("Getting pairs for job = "+jobId+" in space = "+spaceId);
+		log.debug("Getting pairs for job = "+jobId+" in space = "+jobSpaceId);
 		try {
 			con=Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJobInSpace(?, ?)}");
+			CallableStatement procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,spaceId);
+			procedure.setInt(2,jobSpaceId);
 			results = procedure.executeQuery();
 			
 			return processStatResults(results, jobId,con);
@@ -983,10 +1011,10 @@ public class Jobs {
 	public static List<JobPair> getPairsForStatsInSpaceHierarchy(int jobId, int spaceId, int userId) {
 		log.debug("Getting pairs for job = "+jobId+" in space = "+spaceId);
 		try {
-			List<JobPair> pairs= getPairsForStatsInSpace(jobId,spaceId);
+			List<JobPair> pairs= getPairsForStatsInJobSpace(jobId,spaceId);
 			List<Space> subspaces=Spaces.getSubSpaces(spaceId, userId, true);
 			for (Space s : subspaces) {
-				pairs.addAll(getPairsForStatsInSpace(jobId,s.getId()));
+				pairs.addAll(getPairsForStatsInJobSpace(jobId,s.getId()));
 			}
 			return pairs;
 		} catch (Exception e) {
@@ -1397,16 +1425,16 @@ public class Jobs {
 	 */
 	
 	//TODO: Get attributes for these job pairs
-	public static List<JobPair> getCompletedJobPairsInSpace(int jobId, int spaceId) {
+	public static List<JobPair> getCompletedJobPairsInJobSpace(int jobId, int jobSpaceId) {
 		Connection con = null;	
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure;	
 			
-			procedure = con.prepareCall("{CALL GetJobPairsByJobInSpace(?, ?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,	spaceId);
+			procedure.setInt(2,	jobSpaceId);
 			
 			results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
@@ -1643,9 +1671,9 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<SolverStats> getJobStatsForNextPageInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int spaceId) {
+	public static List<SolverStats> getJobStatsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int jobSpaceId) {
 		try {
-			List<JobPair> pairs=getPairsForStatsInSpace(jobId,spaceId);
+			List<JobPair> pairs=getPairsForStatsInJobSpace(jobId,jobSpaceId);
 			return processPairsToSolverStats(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
 		} catch (Exception e) {
 			log.error("getJobStatsForNextPageInSpace says " +e.getMessage(),e);
@@ -1696,8 +1724,8 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 
-	public static List<SolverStats> getAllJobStatsInSpace(int jobId,int spaceId) {
-		return getJobStatsForNextPageInSpace(0 , -1, true , 0 , "" , jobId , new int [1],spaceId);
+	public static List<SolverStats> getAllJobStatsInJobSpace(int jobId,int jobSpaceId) {
+		return getJobStatsForNextPageInJobSpace(0 , -1, true , 0 , "" , jobId , new int [1],jobSpaceId);
 	}
 	
 	/**
