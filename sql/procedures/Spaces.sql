@@ -250,7 +250,7 @@ CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
 				(SELECT MIN(id)
 				FROM spaces);
 		ELSE					
-			SELECT space_id
+			SELECT space_id AS id
 			FROM set_assoc
 			WHERE child_id = _spaceId;
 		END IF;
