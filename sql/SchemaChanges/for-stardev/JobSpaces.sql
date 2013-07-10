@@ -5,9 +5,7 @@ USE starexec;
 CREATE TABLE job_spaces (
 	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(128),
-	job_id INT NOT NULL,
-	PRIMARY KEY (id),
-	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+	PRIMARY KEY (id)
 );
 
 
