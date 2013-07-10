@@ -324,7 +324,7 @@ CREATE PROCEDURE GetJobSubspaces(IN _spaceId INT)
 DROP PROCEDURE IF EXISTS GetSubSpaceIds;
 CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
 	BEGIN
-		SELECT child_id AS id FROM set_assoc WHERE parent_id=_spaceId;
+		SELECT child_id AS id FROM set_assoc WHERE space_id=_spaceId;
 	END //
 	
 -- Returns the number of subspaces in a given space
