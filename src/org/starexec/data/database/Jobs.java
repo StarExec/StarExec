@@ -83,10 +83,10 @@ public class Jobs {
 				idMap.put(id, jobSpaceId);
 			}
 			for (int id : idMap.keySet()) {
-				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
 				log.debug("getting subspaces for space = "+id);
+				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
+				log.debug("found "+subspaceIds.size()+"subspaces");
 				for (int subspaceId : subspaceIds) {
-					
 					if (idMap.containsKey(subspaceId)) {
 						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId));
 					}
