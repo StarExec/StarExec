@@ -63,6 +63,9 @@ public class Jobs {
 			Common.beginTransaction(con);
 
 			for (JobPair pair : job) {
+				if (idsToNames.containsKey(pair.getSpace().getId())) {
+					continue;
+				}
 				idsToNames.put(pair.getSpace().getId(), pair.getSpace().getName());
 				int parentId=Spaces.getParentSpace(pair.getSpace().getId());
 				
@@ -90,7 +93,7 @@ public class Jobs {
 					
 					if (idMap.containsKey(subspaceId)) {
 						log.debug("found an association between two spaces needed for a job");
-						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId));
+						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId), con);
 					}
 				}
 			}
