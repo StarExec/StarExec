@@ -73,6 +73,7 @@ public class Spaces {
 		CallableStatement procedure=con.prepareCall("{CALL AssociateJobSpaces(?, ?)}");
 		procedure.setInt(1, parentId);
 		procedure.setInt(2,childId);
+		log.debug("about to execute job association");
 		procedure.executeUpdate();
 		log.debug("job space association created succesfully");
 		return true;
