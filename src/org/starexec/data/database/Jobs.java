@@ -76,24 +76,29 @@ public class Jobs {
 				}
 			}
 			
+			log.debug("finished adding spaces, starting to get job space associations");
+			
 			for (int id : idsToNames.keySet()) {
 				int jobSpaceId=Spaces.addJobSpace(idsToNames.get(id),con);
 				idMap.put(id, jobSpaceId);
 			}
 			for (int id : idMap.keySet()) {
 				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
+				log.debug("getting subspaces for space = "+id);
 				for (int subspaceId : subspaceIds) {
+					
 					if (idMap.containsKey(subspaceId)) {
 						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId));
 					}
 				}
 			}
-			
+			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
 			Jobs.addJob(con, job);
 			Jobs.associate(con, job.getId(), spaceId);
 			
+			log.debug("adding job pairs");
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
 				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
@@ -101,6 +106,7 @@ public class Jobs {
 			}
 
 			Common.endTransaction(con);
+			log.debug("job added successfully");
 			return true;
 		} catch(Exception e) {
 			Common.doRollback(con);
