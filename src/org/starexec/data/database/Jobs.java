@@ -64,6 +64,15 @@ public class Jobs {
 
 			for (JobPair pair : job) {
 				idsToNames.put(pair.getSpace().getId(), pair.getSpace().getName());
+				int parentId=Spaces.getParentSpace(pair.getSpace().getId());
+				
+				//get all necessary spaces up the hierarchy
+				//We've already added the root space for the job, so this is guaranteed to stop either
+				//there or earlier
+				while (!idsToNames.containsKey(parentId)) {
+					idsToNames.put(parentId, Spaces.getName(parentId));
+					parentId=Spaces.getParentSpace(parentId);
+				}
 			}
 			
 			for (int id : idsToNames.keySet()) {
