@@ -110,7 +110,7 @@ public class Jobs {
 	 * @return True if the operation was successful
 	 */
 	private static boolean addJobPair(Connection con, JobPair pair) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 		procedure.setInt(1, pair.getJobId());
 		procedure.setInt(2, pair.getBench().getId());
 		procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
