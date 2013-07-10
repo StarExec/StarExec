@@ -55,19 +55,16 @@ public class Jobs {
 
 		try {
 			HashMap<Integer,String> idsToNames=new HashMap<Integer,String>();
+			
+			idsToNames.put(job.getPrimarySpace(), Spaces.getName(job.getPrimarySpace()));
 			HashMap<Integer,Integer> idMap= new HashMap<Integer,Integer>();
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
-			
-			
-			
-			
-			
+
 			for (JobPair pair : job) {
 				idsToNames.put(pair.getSpace().getId(), pair.getSpace().getName());
 			}
-			
 			
 			for (int id : idsToNames.keySet()) {
 				int jobSpaceId=Spaces.addJobSpace(idsToNames.get(id),con);
