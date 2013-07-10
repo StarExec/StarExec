@@ -50,8 +50,8 @@ public class Spaces {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			associateJobSpaces(parentId,childId,con);
-			return true;
+			boolean success=associateJobSpaces(parentId,childId,con);
+			return success;
 		} catch (Exception e) {
 			log.error("associateJobSpaces says "+e.getMessage(),e);
 		} finally {
@@ -69,10 +69,12 @@ public class Spaces {
 	 */
 	
 	public static boolean associateJobSpaces(int parentId, int childId, Connection con) throws Exception {
+		log.debug("associating parent job space "+parentId+" with child job space "+childId);
 		CallableStatement procedure=con.prepareCall("{CALL AssociateJobSpaces(?, ?)}");
 		procedure.setInt(1, parentId);
 		procedure.setInt(2,childId);
 		procedure.executeQuery();
+		log.debug("job space association created succesfully");
 		return true;
 	}
 	

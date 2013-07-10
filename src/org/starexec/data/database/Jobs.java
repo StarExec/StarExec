@@ -85,9 +85,11 @@ public class Jobs {
 			for (int id : idMap.keySet()) {
 				log.debug("getting subspaces for space = "+id);
 				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
-				log.debug("found "+subspaceIds.size()+"subspaces");
+				log.debug("found "+subspaceIds.size()+" subspaces");
 				for (int subspaceId : subspaceIds) {
+					
 					if (idMap.containsKey(subspaceId)) {
+						log.debug("found an association between two spaces needed for a job");
 						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId));
 					}
 				}
@@ -109,8 +111,9 @@ public class Jobs {
 			log.debug("job added successfully");
 			return true;
 		} catch(Exception e) {
-			Common.doRollback(con);
 			log.error("add says " + e.getMessage(), e);
+			Common.doRollback(con);
+			
 		} finally {			
 			Common.safeClose(con);	
 		}
