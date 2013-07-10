@@ -250,10 +250,9 @@ CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
 				(SELECT MIN(id)
 				FROM spaces);
 		ELSE					
-			SELECT MAX(ancestor)
-			FROM closure
-			WHERE descendant = _spaceId
-			AND ancestor < _spaceId;
+			SELECT space_id
+			FROM set_assoc
+			WHERE child_id = _spaceId;
 		END IF;
 	END //
 	

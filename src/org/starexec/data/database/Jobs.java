@@ -72,6 +72,7 @@ public class Jobs {
 				while (!idsToNames.containsKey(parentId)) {
 					idsToNames.put(parentId, Spaces.getName(parentId));
 					parentId=Spaces.getParentSpace(parentId);
+					log.debug("got new parent space id = "+parentId);
 				}
 			}
 			
