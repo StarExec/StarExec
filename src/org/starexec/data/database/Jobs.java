@@ -2001,44 +2001,53 @@ public class Jobs {
 	 */
 	
 	public static int setupJobSpaces(int jobId) {
-		List<JobPair> p=Jobs.getPairsDetailed(jobId);
-		Integer primarySpaceId=null;
-		HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
-		for (JobPair jp : p) {
-			String[] path=jp.getPath().split("/");
-			String key="";
-			//exclude the last element of the path since it is a benchmark name, not a space
-			for (int index=0;index<path.length-1; index++) {
-				
-				String spaceName=path[index];
-				key=key+"/"+spaceName;
-				if (namesToIds.containsKey(key)) {
-					if (index==(path.length-2)) {
-						jp.setJobSpaceId(namesToIds.get(key));
+		
+		try {
+			log.debug("Setting up job space hierarchy for old job id = "+jobId);
+			List<JobPair> p=Jobs.getPairsDetailed(jobId);
+			Integer primarySpaceId=null;
+			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
+			for (JobPair jp : p) {
+				String[] path=jp.getPath().split("/");
+				String key="";
+				//exclude the last element of the path since it is a benchmark name, not a space
+				for (int index=0;index<path.length-1; index++) {
+					
+					String spaceName=path[index];
+					key=key+"/"+spaceName;
+					if (namesToIds.containsKey(key)) {
+						if (index==(path.length-2)) {
+							jp.setJobSpaceId(namesToIds.get(key));
+						}
+						continue; //means we've already added this space
 					}
-					continue; //means we've already added this space
-				}
-				
-				int newJobSpaceId=Spaces.addJobSpace(spaceName);
-				if (index==0) {
-					primarySpaceId=newJobSpaceId;
-				}
-				if (newJobSpaceId>0) {
-					namesToIds.put(key, newJobSpaceId);
-					if (index==(path.length-2)) {
-						jp.setJobSpaceId(newJobSpaceId);
+					
+					int newJobSpaceId=Spaces.addJobSpace(spaceName);
+					if (index==0) {
+						primarySpaceId=newJobSpaceId;
 					}
-					String parentKey=key.substring(0,key.lastIndexOf("/"));
-					if (namesToIds.containsKey(parentKey)) {
-						Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
+					if (newJobSpaceId>0) {
+						namesToIds.put(key, newJobSpaceId);
+						if (index==(path.length-2)) {
+							jp.setJobSpaceId(newJobSpaceId);
+						}
+						String parentKey=key.substring(0,key.lastIndexOf("/"));
+						if (namesToIds.containsKey(parentKey)) {
+							Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
+						}
 					}
 				}
 			}
+			
+			JobPairs.UpdateJobSpaces(p);
+			updatePrimarySpace(jobId,primarySpaceId);
+			log.debug("returning new job space id = "+primarySpaceId);
+			return primarySpaceId;
+		} catch (Exception e) {
+			log.error("setupJobSpaces says "+e.getMessage(),e);
 		}
 		
-		JobPairs.UpdateJobSpaces(p);
-		updatePrimarySpace(jobId,primarySpaceId);
-		return primarySpaceId;
+		return -1;
 	}
 	
 	/**
