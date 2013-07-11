@@ -121,12 +121,10 @@ public class RESTServices {
 			} else {
 				//if the id given is 0, we want to get the root space
 				Job j=Jobs.get(jobId);
-				Space s=Spaces.get(j.getPrimarySpace());
+				Space s=Spaces.getJobSpace(j.getPrimarySpace());
 				subspaces.add(s);
 			}
-			
 		} else  {
-			
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
