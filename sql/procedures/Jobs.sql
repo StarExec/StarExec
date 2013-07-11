@@ -853,6 +853,16 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		SET paused=false
 		WHERE id = _jobId;
 	END //
+	
+-- Sets the "killed" property of a job to true
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS KillJob;
+CREATE PROCEDURE KillJob(IN _jobId INT)
+	BEGIN
+		UPDATE jobs
+		SET killed=true
+		WHERE id = _jobId;
+	END //
 
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen

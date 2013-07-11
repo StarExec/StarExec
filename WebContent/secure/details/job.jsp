@@ -153,6 +153,9 @@
 						<li><button type="button" id="resumeJob">resume job</button></li>
 					</c:if>
 				</c:if>
+				<c:if test="${job.userId == userId}">
+						<li><button type="button" id="killJob">kill job</button></li>
+				</c:if>
 			</c:if>
 		</ul>
 		<div id="dialog-confirm-delete" title="confirm delete">
@@ -164,5 +167,8 @@
 		<div id="dialog-confirm-resume" title="confirm resume">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-resume-txt"></span></p>
 		</div>	
+		<div id="dialog-confirm-kill" title="confirm kill">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-kill-txt"></span></p>
+		</div>
 	</fieldset>		
 </star:template>

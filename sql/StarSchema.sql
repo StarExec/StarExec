@@ -234,6 +234,7 @@ CREATE TABLE jobs (
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
+	killed BOOLEAN DEFAULT FALSE,
 	primary_space INT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,

@@ -324,6 +324,13 @@ public class Jobs {
 		return false;
 	}
 	
+	/**
+	 * Pauses a job, and also sets the paused property to true in the database. 
+	 * @param jobId The ID of the job to pause
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
 	public static boolean pause(int jobId) {
 		Connection con=null;
 		try {
@@ -340,14 +347,6 @@ public class Jobs {
 		return false;
 	}
 	
-	/**
-	 * Pauses a job, and also sets the paused property to true in the database. 
-	 * @param jobId The ID of the job to pause
-	 * @param con An open database connection
-	 * @return True on success, false otherwise
-	 * @author Wyatt Kaiser
-	 */
-	
 	protected static boolean pause(int jobId, Connection con) {
 		try {
 			CallableStatement procedure = con.prepareCall("{CALL PauseJob(?)}");
@@ -362,6 +361,14 @@ public class Jobs {
 		return false;
 	}
 	
+	
+	/**
+	 * Resumes a paused job, and also sets the paused property to false in the database. 
+	 * @param jobId The ID of the job to resume
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
 	public static boolean resume(int jobId) {
 		Connection con=null;
 		try {
@@ -378,14 +385,6 @@ public class Jobs {
 		return false;
 	}
 	
-	/**
-	 * Resumes a paused job, and also sets the paused property to false in the database. 
-	 * @param jobId The ID of the job to resume
-	 * @param con An open database connection
-	 * @return True on success, false otherwise
-	 * @author Wyatt Kaiser
-	 */
-	
 	protected static boolean resume(int jobId, Connection con) {
 		try {
 			CallableStatement procedure = con.prepareCall("{CALL ResumeJob(?)}");
@@ -396,6 +395,44 @@ public class Jobs {
 			return true;
 		} catch (Exception e) {
 			log.error("Resume Job says "+e.getMessage(),e);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * kills a running/paused job, and also sets the killed property to true in the database. 
+	 * @param jobId The ID of the job to kill
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	public static boolean kill(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			
+			return kill(jobId,con);
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	protected static boolean kill(int jobId, Connection con) {
+		try {
+			CallableStatement procedure = con.prepareCall("{CALL KillJob(?)}");
+			procedure.setInt(1, jobId);		
+			procedure.executeUpdate();	
+
+			log.debug("Killing of job id = " + jobId + " was successful");
+			return true;
+		} catch (Exception e) {
+			log.error("Kill Job says "+e.getMessage(),e);
 		}
 		return false;
 	}

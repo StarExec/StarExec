@@ -24,6 +24,7 @@ function initUI(){
 	$('#dialog-confirm-delete').hide();
 	$('#dialog-confirm-pause').hide();
 	$('#dialog-confirm-resume').hide();
+	$('#dialog-confirm-kill').hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -57,6 +58,12 @@ function initUI(){
 	$('#resumeJob').button({
 		icons: {
 			secondary: "ui-icon-play"
+		}
+	});
+	
+	$('#killJob').button({
+		icons: {
+			secondary: "ui-icon-closethick"
 		}
 	});
 	
@@ -181,6 +188,48 @@ function initUI(){
 				},
 				"cancel": function() {
 					log('user canceled job resume');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$("#killJob").click(function(){
+		$('#dialog-confirm-kill-txt').text('are you sure you want to kill this job?');
+		
+		$('#dialog-confirm-kill').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed job kill.');
+					$('#dialog-confirm-kill').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/kill/job/" + getParameterByName("id"),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										//window.location = starexecRoot+'secure/details/job.jsp?id=' +  getParametByName("id");
+										document.location.reload(true);
+										break;
+									case 1:
+										showMessage('error', "job was not paused; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the owner of this job can pause it", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled job kill');
 					$(this).dialog("close");
 				}
 			}

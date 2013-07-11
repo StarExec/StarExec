@@ -2153,7 +2153,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Pauses a job given a job's id. The id of the job to delete must
+	 * Pauses a job given a job's id. The id of the job to pause must
 	 * be included in the path.
 	 * 
 	 * @param id the id of the job to pause
@@ -2177,7 +2177,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Resumes a job given a job's id. The id of the job to delete must
+	 * Resumes a job given a job's id. The id of the job to resume must
 	 * be included in the path.
 	 * 
 	 * @param id the id of the job to resume
@@ -2198,6 +2198,30 @@ public class RESTServices {
 		}
 		
 		return Jobs.resume(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Kills a job given a job's id. The id of the job to kill must
+	 * be included in the path.
+	 * 
+	 * @param id the id of the job to kill
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/kill/job/{id}")
+	@Produces("application/json")
+	public String killJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
+		// Permissions check; if user is NOT the owner of the job, deny kill request
+		int userId = SessionUtil.getUserId(request);
+		Job j = Jobs.get(jobId);
+		if(j == null || j.getUserId() != userId){
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		return Jobs.kill(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
