@@ -72,7 +72,8 @@ public abstract class JobManager {
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 					for (JobPair jp : jobPairsEnqueued) {
 						int sge_id = jp.getGridEngineId();
-						Util.executeCommand("qdel " + sge_id);				
+						Util.executeCommand("qdel " + sge_id);
+						log.debug("Just executed qdel " + sge_id);
 						JobPairs.UpdateStatus(jp.getId(), 20);
 					}
 				}
@@ -80,7 +81,8 @@ public abstract class JobManager {
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 					for (JobPair jp : jobPairsEnqueued) {
 						int sge_id = jp.getGridEngineId();
-						Util.executeCommand("qdel " + sge_id);				
+						Util.executeCommand("qdel " + sge_id);	
+						log.debug("Just executed qdel " + sge_id);
 						JobPairs.UpdateStatus(jp.getId(), 21);
 					}
 				}
@@ -196,24 +198,12 @@ public abstract class JobManager {
 		}
 		
 		if (Jobs.isJobPaused(s.job.getId())) {
-			//The job is paused so do not add the job_pairs
-			/*log.info("Not going to submit " + R.NUM_JOB_PAIRS_AT_A_TIME + " pairs "
-					+ "for job " + s.job.getId()
-					+ ", queue = " + q.getName()
-					+ ", user = " + s.job.getUserId()
-					+ ", because job is paused.");
-			*/
-			
-			//Also need to remove all job pairs from the queue and set their status to pending again
 			List<JobPair> jobPairs = Jobs.getEnqueuedPairs(s.job.getId());
 			for (JobPair jp : jobPairs) {
 				int sge_id = jp.getGridEngineId();
-				log.debug("sge_id = " + sge_id);
 				Util.executeCommand("qdel " + sge_id);
 				log.debug("Just executed qdel " + sge_id);
-				
-				JobPairs.UpdateStatus(jp.getId(), 1);
-				log.debug("Updating of status complete.");
+				JobPairs.UpdateStatus(jp.getId(), 20);
 			}
 			continue;
 		}

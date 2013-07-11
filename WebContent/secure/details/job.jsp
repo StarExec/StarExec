@@ -156,7 +156,7 @@
 					</c:if>
 				</c:if>
 				<c:if test="${job.userId == userId}">
-					<c:if test="${isPaused and not isKilled}">
+					<c:if test="${isPaused}">
 						<li><button type="button" id="resumeJob">resume job</button></li>
 					</c:if>
 				</c:if>
