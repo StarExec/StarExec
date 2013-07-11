@@ -2027,7 +2027,7 @@ public class Jobs {
 					}
 					if (newJobSpaceId>0) {
 						namesToIds.put(key, newJobSpaceId);
-						if (index==(path.length-2)) {
+						if (index==(path.length-1)) {
 							jp.setJobSpaceId(newJobSpaceId);
 						}
 						String parentKey=key.substring(0,key.lastIndexOf("/"));
