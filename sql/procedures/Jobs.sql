@@ -815,6 +815,15 @@ CREATE PROCEDURE IsJobPaused(IN _jobId INT)
 		WHERE paused=true AND id=_jobId;
 	END //
 	
+-- Returns true if the job in question has the killed flag set to true	
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS IsJobKilled;
+CREATE PROCEDURE IsJobKilled(IN _jobId INT)
+	BEGIN
+		SELECT count(*) AS jobKilled
+		FROM jobs
+		WHERE killed=true AND id=_jobId;
+	END //
 
 -- Sets the "deleted" property of a job to true and deletes all its job pairs from the database
 -- If the job has no more space associations, it is deleted from the database
@@ -842,6 +851,10 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 		UPDATE jobs
 		SET paused=true
 		WHERE id = _jobId;
+		
+		UPDATE job_pairs
+		SET status_code = 20
+		WHERE job_id = _jobId AND status_code = 1;
 	END //
 	
 -- Sets the "paused" property of a job to false
@@ -852,6 +865,10 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		UPDATE jobs
 		SET paused=false
 		WHERE id = _jobId;
+		
+		UPDATE job_pairs
+		SET status_code = 1
+		WHERE job_id = _jobId AND status_code = 20;
 	END //
 	
 -- Sets the "killed" property of a job to true
@@ -862,6 +879,10 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 		UPDATE jobs
 		SET killed=true
 		WHERE id = _jobId;
+		
+		UPDATE job_pairs
+		SET status_code = 21
+		WHERE job_id = _jobId AND status_code = 1;
 	END //
 
 -- Adds a new job pair record to the database

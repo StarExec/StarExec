@@ -65,22 +65,26 @@ public abstract class JobManager {
 		    submitJobs(joblist, q, queueSize);
 	    }
 	    else {
-		log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
-		List<Job> joblist = Queues.getEnqueuedJobs(qId);
-		for (Job j: joblist) {
-			if (Jobs.isJobPaused(j.getId())) {
-				List<JobPair> jobPairs = Jobs.getEnqueuedPairs(j.getId());
-				for (JobPair jp : jobPairs) {
-					int sge_id = jp.getGridEngineId();
-					log.debug("sge_id = " + sge_id);
-					Util.executeCommand("qdel " + sge_id);
-					log.debug("Just executed qdel " + sge_id);
-					
-					JobPairs.UpdateStatus(jp.getId(), 1);
-					log.debug("Updating of status complete.");
+			log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
+			List<Job> joblist = Queues.getEnqueuedJobs(qId);
+			for (Job j: joblist) {
+				if (Jobs.isJobPaused(j.getId())) {
+					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+					for (JobPair jp : jobPairsEnqueued) {
+						int sge_id = jp.getGridEngineId();
+						Util.executeCommand("qdel " + sge_id);				
+						JobPairs.UpdateStatus(jp.getId(), 20);
+					}
+				}
+				if (Jobs.isJobKilled(j.getId())) {
+					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+					for (JobPair jp : jobPairsEnqueued) {
+						int sge_id = jp.getGridEngineId();
+						Util.executeCommand("qdel " + sge_id);				
+						JobPairs.UpdateStatus(jp.getId(), 21);
+					}
 				}
 			}
-		}
 	    }
 	}
 	return false;

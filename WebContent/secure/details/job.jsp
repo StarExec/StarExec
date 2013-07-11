@@ -7,6 +7,7 @@
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		boolean isPaused = Jobs.isJobPaused(jobId);
+		boolean isKilled = Jobs.isJobKilled(jobId);
 		Job j=null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.getDetailedWithoutJobPairs(jobId);
@@ -20,6 +21,7 @@
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 			request.setAttribute("userId",userId);
 			request.setAttribute("isPaused", isPaused);
+			request.setAttribute("isKilled", isKilled);
 		} else {
 				if (Jobs.isJobDeleted(jobId)) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -51,9 +53,13 @@
 					<c:if test="${isPaused}">
 						<td>paused</td>
 					</c:if>
-					<c:if test="${not isPaused}">	
+					<c:if test="${isKilled}">
+						<td>killed</td>
+					</c:if>
+					<c:if test="${not isPaused && not isKilled}">	
 						<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
 					</c:if>
+
 				</tr>
 				<tr title="the job creator's description for this job">
 					<td>description</td>			
@@ -142,21 +148,25 @@
 			<c:if test="${job.userId == userId}"> 
 				<li><button type="button" id="deleteJob">delete job</button></li>
 			</c:if>
+			
 			<c:if test="${pairStats.pendingPairs > 0}">
 				<c:if test="${job.userId == userId}">
-					<c:if test="${not isPaused}">
+					<c:if test="${not isPaused and not isKilled}">
 						<li><button type="button" id="pauseJob">pause job</button></li>
 					</c:if>
 				</c:if>
 				<c:if test="${job.userId == userId}">
-					<c:if test="${isPaused}">
+					<c:if test="${isPaused and not isKilled}">
 						<li><button type="button" id="resumeJob">resume job</button></li>
 					</c:if>
 				</c:if>
 				<c:if test="${job.userId == userId}">
+					<c:if test="${not isKilled}">
 						<li><button type="button" id="killJob">kill job</button></li>
+					</c:if>
 				</c:if>
 			</c:if>
+			
 		</ul>
 		<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>

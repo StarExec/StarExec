@@ -504,7 +504,7 @@ public class Jobs {
 	 * @param jobId The ID of the job in question
 	 * @return True if the job is paused (i.e. the paused flag is set to true), false otherwise
 	 * @throws Exception 
-	 * @author Eric Burns
+	 * @author Wyatt Kaiser
 	 */
 	
 	public static boolean isJobPaused(Connection con, int jobId) throws Exception {
@@ -516,6 +516,46 @@ public class Jobs {
 			paused=results.getBoolean("jobPaused");
 		}
 		return paused;
+	}
+	
+	/** 
+	 * Determines whether the job with the given ID exists in the database with the column "killed" set to true
+	 * @param jobId The ID of the job in question
+	 * @return True if the job is killed (i.e. the killed flag is set to true), false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static boolean isJobKilled(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isJobKilled(con,jobId);
+		} catch (Exception e) {
+			log.error("isJobKilled says " +e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	/**
+	 * Checks whether the given job is set to "killed" in the database
+	 * @param con The open connection to make the call on 
+	 * @param jobId The ID of the job in question
+	 * @return True if the job is killed (i.e. the killed flag is set to true), false otherwise
+	 * @throws Exception 
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static boolean isJobKilled(Connection con, int jobId) throws Exception {
+		CallableStatement procedure = con.prepareCall("{CALL IsJobKilled(?)}");
+		procedure.setInt(1, jobId);					
+		ResultSet results = procedure.executeQuery();
+		boolean killed=false;
+		if (results.next()) {
+			killed=results.getBoolean("jobKilled");
+		}
+		return killed;
 	}
 	
 	/**

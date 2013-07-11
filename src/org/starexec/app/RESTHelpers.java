@@ -1186,6 +1186,9 @@ public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecord
 		if (Jobs.isJobPaused(job.getId())) {
 			status = "paused";
 		}
+		if (Jobs.isJobKilled(job.getId())) {
+			status = "incomplete (killed)";
+		}
 		
 		// Create an object, and inject the above HTML, to represent an entry in the DataTable
 		JsonArray entry = new JsonArray();

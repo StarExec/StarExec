@@ -27,7 +27,10 @@ public class Status {
 		EXCEED_FILE_WRITE(16),
 		EXCEED_MEM(17),
 		ERROR_GENERAL(18),
-		STATUS_PROCESSING_RESULTS(19);
+		STATUS_PROCESSING_RESULTS(19),
+		STATUS_PAUSED(20),
+		STATUS_KILLED(21);
+		
 		private int val;
 		
 		private StatusCode(int val) {
@@ -86,6 +89,10 @@ public class Status {
 			return ERROR_GENERAL;
 		    case 19:
 			return STATUS_PROCESSING_RESULTS;
+		    case 20:
+		    return STATUS_PAUSED;
+		    case 21:
+		    return STATUS_KILLED;
 		    }
 		    return STATUS_UNKNOWN;
 		}
