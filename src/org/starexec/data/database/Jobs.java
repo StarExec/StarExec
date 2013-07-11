@@ -1953,6 +1953,81 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * This function makes older jobs, which have path info but no job space information
+	 * @param jobId The jobId to create the job space info for
+	 * @return The ID of the primary job  space of the job
+	 * @author Eric Burns
+	 */
+	
+	public static int setupJobSpaces(int jobId) {
+		List<JobPair> p=Jobs.getPairsDetailed(jobId);
+		Integer primarySpaceId=null;
+		HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
+		for (JobPair jp : p) {
+			String[] path=jp.getPath().split("/");
+			String key="";
+			//exclude the last element of the path since it is a benchmark name, not a space
+			for (int index=0;index<path.length-1; index++) {
+				
+				String spaceName=path[index];
+				key=key+"/"+spaceName;
+				if (namesToIds.containsKey(key)) {
+					if (index==(path.length-2)) {
+						jp.setJobSpaceId(namesToIds.get(key));
+					}
+					continue; //means we've already added this space
+				}
+				
+				int newJobSpaceId=Spaces.addJobSpace(spaceName);
+				if (index==0) {
+					primarySpaceId=newJobSpaceId;
+				}
+				if (newJobSpaceId>0) {
+					namesToIds.put(key, newJobSpaceId);
+					if (index==(path.length-2)) {
+						jp.setJobSpaceId(newJobSpaceId);
+					}
+					String parentKey=key.substring(0,key.lastIndexOf("/"));
+					if (namesToIds.containsKey(parentKey)) {
+						Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
+					}
+				}
+			}
+		}
+		
+		JobPairs.UpdateJobSpaces(p);
+		updatePrimarySpace(jobId,primarySpaceId);
+		return primarySpaceId;
+	}
+	
+	/**
+	 * Updates the primary space of a job. This should only be necessary when changing the primary space
+	 * of an older job from nothing to its new job space
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The new job space ID
+	 * @return true on success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	private static boolean updatePrimarySpace(int jobId, int jobSpaceId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			CallableStatement procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
+			procedure.setInt(1, jobId);		
+			procedure.setInt(2, jobSpaceId);
+			procedure.executeUpdate();	
+
+			log.debug("Primary space for job with id = "+jobId + " updated succesfully");
+			return true;
+		} catch (Exception e) {
+			log.error("Update Primary Space says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
 
 
 	/**

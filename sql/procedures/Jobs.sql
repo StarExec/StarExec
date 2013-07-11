@@ -925,4 +925,14 @@ CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 		where id = _jobId and deleted=false;
 	END //
 	
+-- Sets the "paused" property of a job to true
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdatePrimarySpace;
+CREATE PROCEDURE UpdatePrimarySpace(IN _jobId INT, IN _jobSpaceId INT)
+	BEGIN
+		UPDATE jobs
+		SET primary_space=_jobSpaceId
+		WHERE id = _jobId;
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

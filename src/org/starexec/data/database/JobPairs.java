@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Configuration;
@@ -443,6 +444,55 @@ public class JobPairs {
 
 		return false;
 	}
+	
+	/**
+	 * Updates the database to give the job pair with the given ID the given job space.
+	 * @param jobPairId The ID of the job pair in question
+	 * @param jobSpaceId The job space ID of the pair
+	 * @param con The open connection to perform the update on
+	 * @throws Exception
+	 * @author Eric Burns
+	 */
+	
+	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) throws Exception {
+		
+		ResultSet results = null;
+		
+		con = Common.getConnection();
+		CallableStatement procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
+		procedure.setInt(1, jobPairId);
+		procedure.setInt(2, jobSpaceId);
+		results = procedure.executeQuery();
+		Common.closeResultSet(results);
+		
+	}
+	
+	/**
+	 * Given a list of JobPair objects that have their jobSpaceIds set, updates the database
+	 * to reflect these new job space ids
+	 * @param jobPairs The pairs to update
+	 * @return True on success and false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean UpdateJobSpaces(List<JobPair> jobPairs) {
+		Connection con = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			for (JobPair jp : jobPairs) {
+				UpdateJobSpaces(jp.getId(),jp.getJobSpaceId(),con);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.closeResultSet(results);
+		}		
+		return false;
+	}
+	
 	
 	public static void UpdateStatus(int jobPairId, int status_code) {
 		Connection con = null;

@@ -12,6 +12,14 @@
 		Job j=null;
 		//TODO: Figure out the permissions here
 		if(Permissions.canUserSeeJob(jobId,userId)) {
+			
+			
+			//this means it's an old job and we should run the backwards-compatibility routine
+			//to get everything set up first
+			if (jobSpaceId==0) {
+				jobSpaceId=Jobs.setupJobSpaces(jobId);
+				
+			}
 			j=Jobs.get(jobId);
 			Space s=Spaces.getJobSpace(jobSpaceId);
 			request.setAttribute("job", j);
