@@ -13,17 +13,20 @@
 		//TODO: Figure out the permissions here
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			
-			
 			//this means it's an old job and we should run the backwards-compatibility routine
 			//to get everything set up first
 			if (jobSpaceId==0) {
 				jobSpaceId=Jobs.setupJobSpaces(jobId);
-				
 			}
-			j=Jobs.get(jobId);
-			Space s=Spaces.getJobSpace(jobSpaceId);
-			request.setAttribute("job", j);
-			request.setAttribute("jobspace",s);
+			if (jobSpaceId>0) {
+				j=Jobs.get(jobId);
+				Space s=Spaces.getJobSpace(jobSpaceId);
+				request.setAttribute("job", j);
+				request.setAttribute("jobspace",s);
+			} else {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
+			}
+			
 			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {

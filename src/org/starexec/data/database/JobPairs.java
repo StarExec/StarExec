@@ -457,8 +457,6 @@ public class JobPairs {
 	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) throws Exception {
 		
 		ResultSet results = null;
-		
-		con = Common.getConnection();
 		CallableStatement procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
 		procedure.setInt(1, jobPairId);
 		procedure.setInt(2, jobSpaceId);
