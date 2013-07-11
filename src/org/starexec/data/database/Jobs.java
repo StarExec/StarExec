@@ -2010,13 +2010,12 @@ public class Jobs {
 			for (JobPair jp : p) {
 				String[] path=jp.getPath().split("/");
 				String key="";
-				//exclude the last element of the path since it is a benchmark name, not a space
-				for (int index=0;index<path.length-1; index++) {
+				for (int index=0;index<path.length; index++) {
 					
 					String spaceName=path[index];
 					key=key+"/"+spaceName;
 					if (namesToIds.containsKey(key)) {
-						if (index==(path.length-2)) {
+						if (index==(path.length-1)) {
 							jp.setJobSpaceId(namesToIds.get(key));
 						}
 						continue; //means we've already added this space
