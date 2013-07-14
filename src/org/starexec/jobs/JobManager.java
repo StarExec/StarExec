@@ -29,6 +29,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
 
@@ -216,10 +217,16 @@ public abstract class JobManager {
 
 		int i = 0;
 		while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
-		    i++;
+		    
 			
 		    JobPair pair = s.pairIter.next();
-			
+			if (pair.getSolver()==null || pair.getBench()==null) {
+				// if the solver or benchmark is null, they were deleted. Indicate that the pair's
+				//submission failed and move on
+				JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
+				continue;
+			}
+			i++;
 		    log.debug("About to submit pair " + pair.getId());
 
 		    try {

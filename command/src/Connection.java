@@ -653,11 +653,15 @@ public class Connection {
 			if (valid<0) {
 				return valid;
 			}
+			//if the use put in the include ids param, pass it on to the server
+			if (commandParams.containsKey(R.PARAM_INCLUDE_IDS)) {
+				urlParams.put("returnids","true");
+			}
 			String location=commandParams.get(R.PARAM_OUTPUT_FILE);
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
 			
-			HttpGet get=new HttpGet(URLEncode(baseURL+R.URL_DOWNLOAD,urlParams));
+			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+R.URL_DOWNLOAD,urlParams));
 			
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
@@ -1420,28 +1424,6 @@ public class Connection {
 		return setHeaders(msg,new String[0]);
 	}
 	
-	/**
-	 * This method encodes a given set of parameters into the given URL to be
-	 * used in HTTP Get requests
-	 * @param u-- The initial URL to be built upon
-	 * @param params-- a list of name/value pairs to be encoded into the URL
-	 * @return A new URL with the base u and the parameters in params encoded
-	 * @author Eric Burns
-	 */
-	
-	private String URLEncode(String u, HashMap<String,String> params) {
-		StringBuilder answer=new StringBuilder();
-		answer.append(u);
-		answer.append("?");
-		for (String key : params.keySet()) {
-			answer.append(key);
-			answer.append("=");
-			answer.append(params.get(key));
-			answer.append("&");
-		}
-		
-		return answer.substring(0,answer.length()-1);
-	}
 	
 	/**
 	 * Updates the JSESSIONID of the current connection if the server has sent a new ID

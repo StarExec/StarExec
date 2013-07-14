@@ -932,6 +932,7 @@ function removeBenchmarks(selectedBenches){
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
+		height: 220,
 		buttons: {
 			'remove benchmark': function() {
 				log('user confirmed benchmark removal');
@@ -1069,7 +1070,7 @@ function removeSolvers(selectedSolvers){
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		width: 380,
-		height: 220,
+		height: 250,
 		buttons: {
 			'remove from space hierarchy': function() {
 				log('user confirmed solver removal from space and its hierarchy');
@@ -1161,6 +1162,7 @@ function removeJobs(selectedJobs){
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
+		height: 250,
 		buttons: {
 			'remove jobs': function() {
 				jobTable.fnProcessingIndicator();

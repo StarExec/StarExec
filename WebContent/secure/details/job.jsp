@@ -180,5 +180,8 @@
 		<div id="dialog-confirm-kill" title="confirm kill">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-kill-txt"></span></p>
 		</div>
+		<div id="dialog-return-ids" title="return ids">
+			<p><span id="dialog-return-ids-txt"></span></p>
+		</div>
 	</fieldset>		
 </star:template>

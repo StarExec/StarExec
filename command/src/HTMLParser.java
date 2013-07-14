@@ -4,10 +4,36 @@ package org.starexec.command;
  * This class reads HTML strings from StarExec and parses out necessary information from them.
  */
 
+import java.util.HashMap;
+
 import org.apache.http.Header;
 import org.apache.http.message.BasicNameValuePair;
 
 public class HTMLParser {
+	
+
+	/**
+	 * This method encodes a given set of parameters into the given URL to be
+	 * used in HTTP Get requests
+	 * @param u-- The initial URL to be built upon
+	 * @param params-- a list of name/value pairs to be encoded into the URL
+	 * @return A new URL with the base u and the parameters in params encoded
+	 * @author Eric Burns
+	 */
+	
+	public static String URLEncode(String u, HashMap<String,String> params) {
+		StringBuilder answer=new StringBuilder();
+		answer.append(u);
+		answer.append("?");
+		for (String key : params.keySet()) {
+			answer.append(key);
+			answer.append("=");
+			answer.append(params.get(key));
+			answer.append("&");
+		}
+		
+		return answer.substring(0,answer.length()-1);
+	}
 	/**
 	 * Extracts the substring between a pair of quotes, where startIndex is the index of the first quote.
 	 * If there is no closing quote, the rest of the string from startindex+1 to the end is returned

@@ -71,6 +71,9 @@ structure. By default, all benchmarks are placed in the space being uploaded to.
 
 "id" -Specifies the ID of a primitive, whether that be a space, job, benchmark, etc.
 
+"includeids" -When downloading a job CSV file, indicates that IDs for job pairs, solvers, configurations, and benchmarks
+			should be included.
+
 "limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print.
 
 "link" -When uploading benchmarks with dependencies, indicates that the first directory in the path 
@@ -187,7 +190,8 @@ OPTIONAL: "ow"
 
 --getjobinfo -Get the CSV pertaining to the job associated with the given id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow" "includeids"
+EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.tar includeids='
 
 --getjobout -Gets the output for all the job pairs associated with the job with the given id.
 REQUIRED: "id" "out"

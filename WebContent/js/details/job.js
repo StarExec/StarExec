@@ -10,11 +10,16 @@ $(document).ready(function(){
 });
 
 
-function createDownloadRequest(item,type) {
+function createDownloadRequest(item,type,returnIds) {
 	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
 	token=Math.floor(Math.random()*100000000);
-	$(item).attr('href', starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value"));
+	href = starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
+	if (returnIds!=undefined) {
+		href=href+"&returnids="+returnIds;
+	}
+	$(item).attr('href', href);
 	destroyOnReturn(token);
+	window.location.href = href;
 }
 
 /**
@@ -25,6 +30,7 @@ function initUI(){
 	$('#dialog-confirm-pause').hide();
 	$('#dialog-confirm-resume').hide();
 	$('#dialog-confirm-kill').hide();
+	$("#dialog-return-ids").hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -237,12 +243,34 @@ function initUI(){
 	});
 	
 	$('#jobDownload').unbind("click");
-	$('#jobDownload').click(function() {
-		createDownloadRequest("#jobDownload","job");		
+	$('#jobDownload').click(function(e) {
+		e.preventDefault();
+		$('#dialog-return-ids-txt').text('do you want ids for job pairs, solvers, and benchmarks to be included in the CSV?');
+		
+		$('#dialog-return-ids').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'yes': function() {
+					$('#dialog-return-ids').dialog('close');
+					createDownloadRequest("#jobDownload","job",true);		
+				},
+				"no": function() {
+					$('#dialog-return-ids').dialog('close');
+					createDownloadRequest("#jobDownload","job",false);		
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+
 	});
 	
 	$('#jobOutputDownload').unbind("click");
-	$('#jobOutputDownload').click(function() {
+	$('#jobOutputDownload').click(function(e) {
+		e.preventDefault();
 		createDownloadRequest("#jobOutputDownload","j_outputs");
 	});
 	

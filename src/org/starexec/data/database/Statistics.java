@@ -198,10 +198,18 @@ public class Statistics {
 				LogAxis yAxis=new LogAxis("time (s)");
 				plot.setRangeAxis(yAxis);
 			}
+			double maxX=dataset.getDomainUpperBound(false)*1.1;
+			double maxY=dataset.getRangeUpperBound(false)*1.1;
+			Range range=new Range(0,Math.max(maxX, maxY));
 			plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
+			plot.getDomainAxis().setAutoRange(false);
+			plot.getDomainAxis().setRange(range);
+			
 			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
 			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
 			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
+			plot.getRangeAxis().setAutoRange(false);
+			plot.getRangeAxis().setRange(range);
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 			renderer.setSeriesLinesVisible(0, true);
 			plot.setRenderer(renderer);
@@ -313,13 +321,11 @@ public class Statistics {
 			
 			XYPlot plot = (XYPlot) chart.getPlot();
 			
-			//make both axes identical, and make them span from 90% of the minimum value
+			//make both axes identical, and make them span from 0
 			//to 110% of the maximum value
-			double minX=(dataset.getDomainLowerBound(false))*.9;
 			double maxX=dataset.getDomainUpperBound(false)*1.1;
-			double minY=(dataset.getRangeLowerBound(false))*.9;
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
-			Range range=new Range(Math.min(minX,minY),Math.max(maxX, maxY));
+			Range range=new Range(0,Math.max(maxX, maxY));
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
