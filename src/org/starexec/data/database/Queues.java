@@ -371,6 +371,11 @@ public class Queues {
 		return false;
 	}
 	
+	/**
+	 * Returns the number of jobs with enqueued pairs in the given queue
+	 * @param queueId The queue in question
+	 * @return The integer number of jobs, or null on failure
+	 */
 
 	public static Integer getSizeOfQueue(int queueId) {
 		Connection con = null;					
@@ -517,8 +522,6 @@ public class Queues {
 		return null;		
 	}
 	
-	
-
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -601,7 +604,16 @@ public class Queues {
 		return returnList;			
 	}
 	
-
+	/**
+	 * Gets enqueued job pairs for the next page of a client-side datatables page
+	 * @param startingRecord The first desired records
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
+	 * @param searchQuery The search query to filter the results by
+	 * @param id The ID of the queue
+	 * @return A List of JobPairs enqueued in the given queue
+	 */
 
 	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
 		Connection con = null;			
@@ -644,7 +656,18 @@ public class Queues {
 			Common.safeClose(con);
 		}
 			return null;		
-	}	
+	}
+	
+	/**
+	 * Gets running job pairs for the next page of a client-side datatables page
+	 * @param startingRecord The first desired records
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
+	 * @param searchQuery The search query to filter the results by
+	 * @param id The ID of the node
+	 * @return A List of JobPairs  running on the node
+	 */
 	
 	private static List<JobPair> getNextPageOfRunningJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
 		Connection con = null;			
@@ -691,7 +714,17 @@ public class Queues {
 	}
 	
 
-	
+	/**
+	 * Gets all the necessary job pairs for populating a datatables page on the cluster status page
+	 * @param startingRecord The first desired records
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
+	 * @param searchQuery The search query to filter the results by
+	 * @param id The ID of the queue or node
+	 * @param type The type of the table on the cluster status page (either queue or node)
+	 * @return A list of JobPairs running on the node
+	 */
 	
 	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
 		if (type == "queue") {

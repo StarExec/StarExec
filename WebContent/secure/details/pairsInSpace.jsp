@@ -11,7 +11,7 @@
 		int spaceId=Integer.parseInt(request.getParameter("sid"));
 		
 		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.getDetailedWithoutJobPairs(jobId);
+			j = Jobs.get(jobId);
 		}
 		
 		

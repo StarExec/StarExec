@@ -959,7 +959,7 @@ public class RESTHelpers {
 			hiddenJobPairId = sb.toString();
 			
 			// Create the job link
-			Job job = Jobs.getDetailedWithoutJobPairs(j.getJobId());
+			Job job = Jobs.get(j.getJobId());
     		sb = new StringBuilder();
     		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
     		sb.append(job.getId());

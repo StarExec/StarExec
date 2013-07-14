@@ -9,8 +9,7 @@
 		
 		Job j = null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.getDetailedWithoutJobPairs(jobId);
-			//log.debug("on job page, job is " + j.getName());
+			j = Jobs.get(jobId);
 		}
 		
 		if(j != null) {			

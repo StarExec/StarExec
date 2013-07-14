@@ -10,7 +10,7 @@
 		boolean isKilled = Jobs.isJobKilled(jobId);
 		Job j=null;
 		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.getDetailedWithoutJobPairs(jobId);
+			j = Jobs.get(jobId);
 		}
 		
 		

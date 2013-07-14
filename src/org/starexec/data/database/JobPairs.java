@@ -98,6 +98,12 @@ public class JobPairs {
 		}
 		return null;
 	}
+	
+	/**
+	 * Gets the SGEID of the given job pair
+	 * @param jobPairId The ID of the job pair in question
+	 * @return The SGE ID, or -1 on error
+	 */
 
 	public static int getSGEId(int jobPairId) {
 		Connection con = null;
@@ -457,7 +463,7 @@ public class JobPairs {
 	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) throws Exception {
 		
 		ResultSet results = null;
-		CallableStatement procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
+		CallableStatement procedure = con.prepareCall("{CALL UpdateJobSpaceId(?, ?)}");
 		procedure.setInt(1, jobPairId);
 		procedure.setInt(2, jobSpaceId);
 		results = procedure.executeQuery();
@@ -491,8 +497,13 @@ public class JobPairs {
 		return false;
 	}
 	
-	
-	public static void UpdateStatus(int jobPairId, int status_code) {
+	/**
+	 * Updates the status of the given job pair, replacing its current status code with the given one
+	 * @param jobPairId The ID of the job pair in question
+	 * @param status_code The new status code to assign to the job pair
+	 * @return True on success, false otherwise
+	 */
+	public static boolean UpdateStatus(int jobPairId, int status_code) {
 		Connection con = null;
 		ResultSet results = null;
 		try {
@@ -501,11 +512,13 @@ public class JobPairs {
 			procedure.setInt(1, jobPairId);
 			procedure.setInt(2, status_code);
 			results = procedure.executeQuery();
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.closeResultSet(results);
-		}		
+		}
+		return true;
 	}
 }

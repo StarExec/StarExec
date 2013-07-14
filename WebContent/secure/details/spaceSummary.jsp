@@ -10,7 +10,6 @@
 		
 		
 		Job j=null;
-		//TODO: Figure out the permissions here
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			
 			//this means it's an old job and we should run the backwards-compatibility routine
@@ -68,7 +67,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					
+						<!-- This will be populated by the job pair pagination feature -->
 				</tbody>
 			</table>
 			</fieldset>
