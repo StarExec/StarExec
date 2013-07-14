@@ -7,7 +7,7 @@
 }
 
 #detailPanel.jobDetails {	
-	width: 76%;
+	width: 70%;
 }
 
 #detailPanel fieldset {
@@ -31,11 +31,14 @@ thead {
 }
 
 .configHead { 
-	width: 21%;
+	width: 23%;
 }
 
-.timeHead, .solverHead, .failedHead, .wrongHead {
+.timeHead, .solverHead, .failedHead {
 	width: 11%;
+}
+.wrongHead {
+	width: 9%;
 }
 
 #graphField img {
