@@ -1680,10 +1680,6 @@ public class Jobs {
 	 */
 	protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId) throws Exception {	
 
-		if(con.isClosed())
-		{
-			log.warn("GetPendingPairsDetailed with Job Id = " + jobId + " but connection is closed.");
-		}
 		CallableStatement procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
 		procedure.setInt(1, jobId);					
 		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
@@ -1692,13 +1688,19 @@ public class Jobs {
 
 		while(results.next()){
 			JobPair jp = JobPairs.resultToPair(results);
-			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
 			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
-			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+			//we need to check to see if the benchId and configId are null, since they might
+			//have been deleted while the the job is still pending
+			Integer benchId=results.getInt("bench_id");
+			if (benchId!=null) {
+				jp.setBench(Benchmarks.get(benchId));
+			}
+			Integer configId=results.getInt("config_id");
+			if (configId!=null) {
+				jp.setSolver(Solvers.getSolverByConfig(configId));
+				jp.setConfiguration(Solvers.getConfiguration(configId));
+			}
+			
 			Status s = new Status();
 
 			s.setCode(results.getInt("status_code"));
