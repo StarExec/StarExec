@@ -307,7 +307,7 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 			-- if the solver has been deleted already, remove it from the database
 			
 			IF NOT EXISTS(SELECT * FROM solvers WHERE _solverId=id AND deleted=false) THEN
-				IF ((SELECT COUNT(*) FROM job_pairs WHERE solver_id=_solverId)=0) THEN
+				IF ((SELECT COUNT(*) FROM job_pairs JOIN configurations AS config WHERE config.id=config_id AND config.solver_id=_solverId)=0) THEN
 					DELETE FROM solvers
 					WHERE id=_solverId;
 				END IF;
