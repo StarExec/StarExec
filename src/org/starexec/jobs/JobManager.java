@@ -65,9 +65,33 @@ public abstract class JobManager {
 	    if (queueSize < R.NUM_JOB_SCRIPTS) {
 	    	log.debug("queue size is small enough");
 			List<Job> joblist = Queues.getPendingJobs(qId);
-			if (joblist.size() > 0) 
+			if (joblist.size() > 0) {
 				log.debug("about to submit jobs");
+			
+				//Get the enqueued jobs
+				List<Job> enqueuedJobs = Queues.getEnqueuedJobs(qId);
+				for (Job j : enqueuedJobs) {	
+					if (Jobs.isJobPaused(j.getId())) {
+						List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+						for (JobPair jp : jobPairsEnqueued) {
+							int sge_id = jp.getGridEngineId();
+							Util.executeCommand("qdel " + sge_id);
+							log.debug("Just executed qdel " + sge_id);
+							JobPairs.UpdateStatus(jp.getId(), 20);
+						}
+					}
+					if (Jobs.isJobKilled(j.getId())) {
+						List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+						for (JobPair jp : jobPairsEnqueued) {
+							int sge_id = jp.getGridEngineId();
+							Util.executeCommand("qdel " + sge_id);	
+							log.debug("Just executed qdel " + sge_id);
+							JobPairs.UpdateStatus(jp.getId(), 21);
+						}
+					}
+				}
 			    submitJobs(joblist, q, queueSize);
+			}
 		} else {
 			log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
 			List<Job> joblist = Queues.getEnqueuedJobs(qId);
@@ -142,6 +166,7 @@ public abstract class JobManager {
      */
     public static void submitJobs(List<Job> joblist, Queue q, int queueSize) {		
 	log.debug("submitJobs() begins");
+	
 	initMainTemplateIf();
 
 	LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
@@ -199,19 +224,7 @@ public abstract class JobManager {
 		    // we will remove this SchedulingState from the schedule, since it is out of job pairs
 		    it.remove();
 		    continue;
-		}
-		
-		if (Jobs.isJobPaused(s.job.getId())) {
-			List<JobPair> jobPairs = Jobs.getEnqueuedPairs(s.job.getId());
-			for (JobPair jp : jobPairs) {
-				int sge_id = jp.getGridEngineId();
-				Util.executeCommand("qdel " + sge_id);
-				log.debug("Just executed qdel " + sge_id);
-				JobPairs.UpdateStatus(jp.getId(), 20);
-			}
-			continue;
-		}
-		
+		}		
 		
 		log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME +" pairs "
 			 +"for job " + s.job.getId() 
