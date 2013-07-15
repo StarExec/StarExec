@@ -96,7 +96,7 @@ public class Solvers {
 		if (!includeDeleted) {
 			procedure = con.prepareCall("{CALL GetSolverById(?)}");
 		} else {
-			procedure=con.prepareCall("{CALL GetSolverByIdIncludeDeleted}");
+			procedure=con.prepareCall("{CALL GetSolverByIdIncludeDeleted(?)}");
 		}
 		procedure.setInt(1, solverId);					
 		ResultSet results = procedure.executeQuery();
@@ -159,12 +159,15 @@ public class Solvers {
 			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");
 			return null;
 		}
+		Solver s;
 		if (includeDeleted) {
-			Solver s=Solvers.getIncludeDeleted(c.getSolverId());
-			s.addConfiguration(c);
-			return s;
+			s=Solvers.getIncludeDeleted(c.getSolverId());
+		} else {
+			s=Solvers.get(c.getSolverId());
 		}
-		Solver s=Solvers.get(c.getSolverId());
+		if (s==null) {
+			return null;
+		}
 		s.addConfiguration(c);
 		return s;
 	}

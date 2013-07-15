@@ -158,7 +158,7 @@ function updateSpaceOverview() {
 					break;
 				default:
 					$("#spaceOverview").attr("src",returnCode);
-					$("#spaceOverviewLink").attr("src",returnCode+"600");
+					$("#spaceOverviewLink").attr("href",returnCode+"600");
 				}
 			},
 			"text"
