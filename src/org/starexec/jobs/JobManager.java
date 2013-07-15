@@ -53,17 +53,14 @@ public abstract class JobManager {
     }
 
     public synchronized static boolean checkPendingJobs(){
-    log.debug("Started CheckPendingJobs()");
 	List<Queue> queues = Queues.getAll();
 	for (Queue q : queues) {
-		log.debug("entered the for loop");
 	    int qId = q.getId();
 	    String qname = q.getName();
 	    
 		List<Job> enqueuedJobs = Queues.getEnqueuedJobs(qId);
 		for (Job j: enqueuedJobs) {
 			if (Jobs.isJobPaused(j.getId())) {
-				log.debug("job is paused");
 				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 				for (JobPair jp : jobPairsEnqueued) {
 					int sge_id = jp.getGridEngineId();
@@ -73,7 +70,6 @@ public abstract class JobManager {
 				}
 			}
 			if (Jobs.isJobKilled(j.getId())) {
-				log.debug("job is killed");
 				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 				for (JobPair jp : jobPairsEnqueued) {
 					int sge_id = jp.getGridEngineId();
@@ -87,10 +83,8 @@ public abstract class JobManager {
 	    int queueSize = Queues.getSizeOfQueue(qId);
 		
 	    if (queueSize < R.NUM_JOB_SCRIPTS) {
-	    	log.debug("queue size is small enough");
 			List<Job> joblist = Queues.getPendingJobs(qId);
 			if (joblist.size() > 0) {
-				log.debug("about to submit jobs");
 			    submitJobs(joblist, q, queueSize);
 			}
 		} else {
