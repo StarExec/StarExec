@@ -53,19 +53,22 @@ public abstract class JobManager {
     }
 
     public synchronized static boolean checkPendingJobs(){
+    log.debug("Started CheckPendingJobs()");
 	List<Queue> queues = Queues.getAll();
 	for (Queue q : queues) {
+		log.debug("entered the for loop");
 	    int qId = q.getId();
 	    String qname = q.getName();
 
 	    int queueSize = Queues.getSizeOfQueue(qId);
 		
-	    if (queueSize < R.NUM_JOB_SCRIPTS) {	
-		List<Job> joblist = Queues.getPendingJobs(qId);
-		if (joblist.size() > 0) 
-		    submitJobs(joblist, q, queueSize);
-	    }
-	    else {
+	    if (queueSize < R.NUM_JOB_SCRIPTS) {
+	    	log.debug("queue size is small enough");
+			List<Job> joblist = Queues.getPendingJobs(qId);
+			if (joblist.size() > 0) 
+				log.debug("about to submit jobs");
+			    submitJobs(joblist, q, queueSize);
+		} else {
 			log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
 			List<Job> joblist = Queues.getEnqueuedJobs(qId);
 			for (Job j: joblist) {
