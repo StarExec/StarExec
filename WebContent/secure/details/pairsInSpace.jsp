@@ -19,12 +19,9 @@
 			Space s=Spaces.get(spaceId);
 			request.setAttribute("space",s);
 			request.setAttribute("configId",configId);
-			Solver solver =Solvers.getSolverByConfig(configId);
+			Solver solver =Solvers.getSolverByConfig(configId,true);
 			request.setAttribute("solver",solver);
-			request.setAttribute("usr", Users.get(j.getUserId()));
-			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
-			request.setAttribute("userId",userId);
 		} else {
 				if (Jobs.isJobDeleted(jobId)) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");

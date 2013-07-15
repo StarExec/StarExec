@@ -131,12 +131,12 @@ public class Solvers {
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
-	public static Solver getSolverByConfig(int configId) throws Exception {			
+	public static Solver getSolverByConfig(int configId, boolean includeDeleted) throws Exception {			
 		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
-			return Solvers.getSolverByConfig(con, configId);		
+			return Solvers.getSolverByConfig(con, configId, includeDeleted);		
 		} catch (Exception e){			
 			log.error("getSolverByConfig says " + e.getMessage(), e);		
 		} finally {
@@ -153,12 +153,20 @@ public class Solvers {
 	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId) throws Exception {		
+	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws Exception {		
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c==null) {
+			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");
 			return null;
 		}
-		return Solvers.getWithConfig(c.getSolverId(), c.getId());
+		if (includeDeleted) {
+			Solver s=Solvers.getIncludeDeleted(c.getSolverId());
+			s.addConfiguration(c);
+			return s;
+		}
+		Solver s=Solvers.get(c.getSolverId());
+		s.addConfiguration(c);
+		return s;
 	}
 	
 	
@@ -1026,7 +1034,7 @@ public class Solvers {
 				return false;
 			}
 			
-			Solver s = Solvers.getSolverByConfig(configId);
+			Solver s = Solvers.getSolverByConfig(configId,false);
 			Configuration config = Solvers.getConfiguration(configId);
 			boolean isConfigNameUnchanged = true;
 			
@@ -1113,7 +1121,7 @@ public class Solvers {
 	public static boolean deleteConfigurationFile(Configuration config) {
 		try {
 			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
-			File configFile = new File(Util.getSolverConfigPath(Solvers.getSolverByConfig(config.getId()).getPath(), config.getName()));
+			File configFile = new File(Util.getSolverConfigPath(Solvers.getSolverByConfig(config.getId(),false).getPath(), config.getName()));
 			if(configFile.delete()){
 				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
 				return true;

@@ -687,7 +687,7 @@ public class Jobs {
 			JobPair jp = Jobs.resultToPair(results);
 			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")));			 
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			jp.setGridEngineId(results.getInt("sge_id"));
 			Status s = new Status();
@@ -1423,7 +1423,7 @@ public class Jobs {
 			Set<Integer> idSet=neededConfigs.keySet();
 			for (int curId : idSet) {
 				neededConfigs.put(curId, Solvers.getConfiguration(curId));
-				neededSolvers.put(curId, Solvers.getSolverByConfig(curId));
+				neededSolvers.put(curId, Solvers.getSolverByConfig(curId,false));
 			}
 			
 			idSet=neededNodes.keySet();
@@ -1718,7 +1718,7 @@ public class Jobs {
 			}
 			Integer configId=results.getInt("config_id");
 			if (configId!=null) {
-				jp.setSolver(Solvers.getSolverByConfig(configId));
+				jp.setSolver(Solvers.getSolverByConfig(configId,false));
 				jp.setConfiguration(Solvers.getConfiguration(configId));
 			}
 			

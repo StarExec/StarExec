@@ -549,7 +549,7 @@ public class Queues {
 			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
 			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			Status s = new Status();
 
@@ -590,7 +590,7 @@ public class Queues {
 			JobPair jp = JobPairs.resultToPair(results);
 			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 			Status s = new Status();
 
@@ -637,7 +637,7 @@ public class Queues {
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 				Status s = new Status();
 
@@ -691,7 +691,7 @@ public class Queues {
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 				
 				Status s = new Status();

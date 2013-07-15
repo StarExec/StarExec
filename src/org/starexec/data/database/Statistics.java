@@ -323,9 +323,9 @@ public class Statistics {
 			
 			//make both axes identical, and make them span from 0
 			//to 110% of the maximum value
-			double maxX=dataset.getDomainUpperBound(false)*1.1;
-			double maxY=dataset.getRangeUpperBound(false)*1.1;
-			Range range=new Range(0,Math.max(maxX, maxY));
+			//double maxX=dataset.getDomainUpperBound(false)*1.1;
+			//double maxY=dataset.getRangeUpperBound(false)*1.1;
+			//Range range=new Range(0,Math.max(maxX, maxY));
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
