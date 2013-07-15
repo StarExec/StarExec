@@ -795,7 +795,7 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 		
 		UPDATE job_pairs
 		SET status_code = 21
-		WHERE job_id = _jobId AND status_code = 1;
+		WHERE job_id = _jobId AND (status_code = 1 OR status_code = 20);
 	END //
 
 -- Adds a new job pair record to the database
