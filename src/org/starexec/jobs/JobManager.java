@@ -59,6 +59,30 @@ public abstract class JobManager {
 		log.debug("entered the for loop");
 	    int qId = q.getId();
 	    String qname = q.getName();
+	    
+		List<Job> enqueuedJobs = Queues.getEnqueuedJobs(qId);
+		for (Job j: enqueuedJobs) {
+			if (Jobs.isJobPaused(j.getId())) {
+				log.debug("job is paused");
+				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+				for (JobPair jp : jobPairsEnqueued) {
+					int sge_id = jp.getGridEngineId();
+					Util.executeCommand("qdel " + sge_id);
+					log.debug("Just executed qdel " + sge_id);
+					JobPairs.UpdateStatus(jp.getId(), 20);
+				}
+			}
+			if (Jobs.isJobKilled(j.getId())) {
+				log.debug("job is killed");
+				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+				for (JobPair jp : jobPairsEnqueued) {
+					int sge_id = jp.getGridEngineId();
+					Util.executeCommand("qdel " + sge_id);	
+					log.debug("Just executed qdel " + sge_id);
+					JobPairs.UpdateStatus(jp.getId(), 21);
+				}
+			}
+		}
 
 	    int queueSize = Queues.getSizeOfQueue(qId);
 		
@@ -67,54 +91,10 @@ public abstract class JobManager {
 			List<Job> joblist = Queues.getPendingJobs(qId);
 			if (joblist.size() > 0) {
 				log.debug("about to submit jobs");
-			
-				//Get the enqueued jobs
-				List<Job> enqueuedJobs = Queues.getEnqueuedJobs(qId);
-				for (Job j : enqueuedJobs) {	
-					if (Jobs.isJobPaused(j.getId())) {
-						List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-						for (JobPair jp : jobPairsEnqueued) {
-							int sge_id = jp.getGridEngineId();
-							Util.executeCommand("qdel " + sge_id);
-							log.debug("Just executed qdel " + sge_id);
-							JobPairs.UpdateStatus(jp.getId(), 20);
-						}
-					}
-					if (Jobs.isJobKilled(j.getId())) {
-						List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-						for (JobPair jp : jobPairsEnqueued) {
-							int sge_id = jp.getGridEngineId();
-							Util.executeCommand("qdel " + sge_id);	
-							log.debug("Just executed qdel " + sge_id);
-							JobPairs.UpdateStatus(jp.getId(), 21);
-						}
-					}
-				}
 			    submitJobs(joblist, q, queueSize);
 			}
 		} else {
 			log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
-			List<Job> joblist = Queues.getEnqueuedJobs(qId);
-			for (Job j: joblist) {
-				if (Jobs.isJobPaused(j.getId())) {
-					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-					for (JobPair jp : jobPairsEnqueued) {
-						int sge_id = jp.getGridEngineId();
-						Util.executeCommand("qdel " + sge_id);
-						log.debug("Just executed qdel " + sge_id);
-						JobPairs.UpdateStatus(jp.getId(), 20);
-					}
-				}
-				if (Jobs.isJobKilled(j.getId())) {
-					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-					for (JobPair jp : jobPairsEnqueued) {
-						int sge_id = jp.getGridEngineId();
-						Util.executeCommand("qdel " + sge_id);	
-						log.debug("Just executed qdel " + sge_id);
-						JobPairs.UpdateStatus(jp.getId(), 21);
-					}
-				}
-			}
 	    }
 	}
 	return false;
