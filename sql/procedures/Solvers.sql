@@ -239,6 +239,16 @@ CREATE PROCEDURE GetSolverById(IN _id INT)
 		WHERE id = _id and deleted=false;
 	END //
 	
+-- Retrieves the solver with the given id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetSolverByIdIncludeDeleted;
+CREATE PROCEDURE GetSolverByIdIncludeDeleted(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM solvers
+		WHERE id = _id;
+	END //
+	
 	
 -- Returns the number of solvers in a given space
 -- Author: Todd Elvers	
@@ -295,6 +305,7 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 		-- Ensure the solver isn't being used in any other space
 		IF NOT EXISTS(SELECT * FROM solver_assoc WHERE solver_id =_solverId) THEN
 			-- if the solver has been deleted already, remove it from the database
+			
 			IF NOT EXISTS(SELECT * FROM solvers WHERE _solverId=id AND deleted=false) THEN
 				IF ((SELECT COUNT(*) FROM job_pairs WHERE solver_id=_solverId)=0) THEN
 					DELETE FROM solvers

@@ -152,6 +152,18 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 		WHERE bench.id = _id and deleted=false;
 	END //
 	
+-- Retrieves the benchmark with the given id
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeleted;
+CREATE PROCEDURE GetBenchmarkByIdIncludeDeleted(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM benchmarks AS bench
+			LEFT OUTER JOIN processors AS types
+			ON bench.bench_type=types.id
+		WHERE bench.id = _id;
+	END //
+	
 -- Retrieves the upload status with the given id
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS GetUploadStatusById;

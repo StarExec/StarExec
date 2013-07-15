@@ -40,7 +40,7 @@ public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
 	public static final int NO_TYPE = 1;
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
-	
+
 	/**
 	 * Associates the benchmarks with the given ids to the given space
 	 * @param benchIds The list of benchmark ids to associate with the space
@@ -135,7 +135,7 @@ public class Benchmarks {
 				Common.doRollback(con);
 				log.error(e.getMessage(), e);	
 				throw e;
-				
+
 			} finally {
 				Common.safeClose(con);
 			}
@@ -216,7 +216,7 @@ public class Benchmarks {
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
 				Common.endTransaction(con);
-				
+
 				log.info("About to attach attributes to " + benchmarks.size());
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
@@ -482,7 +482,6 @@ public class Benchmarks {
 			} catch (Exception e) {
 				log.warn(e.getMessage(), e);
 				return false;
-				//TODO handle 
 			} finally {
 				if(reader != null) {
 					try { reader.close(); } catch(Exception e) {log.error(e);}
@@ -710,9 +709,7 @@ public class Benchmarks {
 	 * @return benchId
 	 * @author Benton McCune	
 	 */
-	private static Integer findDependentBench(Integer spaceId,
-			String includePath, Boolean linked, Integer userId) {
-		// TODO Auto-generated method stub
+	private static Integer findDependentBench(Integer spaceId, String includePath, Boolean linked, Integer userId) {
 		String[] spaces = includePath.split("/");//splitting up path
 		log.debug("Length of spaces string array = " +spaces.length);
 		if (spaces.length == 0)
@@ -751,7 +748,7 @@ public class Benchmarks {
 	 * @author Benton McCune
 	 */
 	private static Integer getBenchIdByName(Integer spaceId, String benchName) {
-		
+
 		Connection con = null;			
 		log.debug("(Within Method) Looking for Benchmark " + benchName +" in Space " + spaceId);
 		try {
@@ -840,7 +837,7 @@ public class Benchmarks {
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 		return benchmarks;	
 	}
-	
+
 	/**
 	 * Makes a deep copy of an existing benchmark, gives it a new user, and places it
 	 * into a space
@@ -850,36 +847,36 @@ public class Benchmarks {
 	 * @return The ID of the new benchmark, or -1 on failure
 	 * @author Eric Burns
 	 */
-	
+
 	public static int copyBenchmark(Benchmark b, int userId, int spaceId) {
 		try {
 			log.debug("Copying benchmark "+b.getName()+" to new user id= "+String.valueOf(userId));
 			Benchmark newBenchmark=new Benchmark();
 			newBenchmark.setAttributes(b.getAttributes());
 			newBenchmark.setType(b.getType());
-		
+
 			newBenchmark.setDescription(b.getDescription());
 			newBenchmark.setName(b.getName());
 			newBenchmark.setUserId(userId);
 			newBenchmark.setUploadDate(b.getUploadDate());
 			newBenchmark.setDiskSize(b.getDiskSize());
 			newBenchmark.setDownloadable(b.isDownloadable());
-			
+
 			if (newBenchmark.getAttributes()==null) {
 				newBenchmark.setAttributes(new Properties());
 			}
-			
+
 			//this benchmark must be valid, since it is just a copy of 
 			//an old benchmark that already passed validation
 			newBenchmark.getAttributes().put("starexec-valid", "true");
 			File benchmarkFile=new File(b.getPath());
-		
+
 			File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
 			uniqueDir = new File(uniqueDir, newBenchmark.getName());
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 			uniqueDir.mkdirs();
 			newBenchmark.setPath(uniqueDir.getAbsolutePath()+File.separator+benchmarkFile.getName());
-		
+
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
 			int benchId= Benchmarks.add(newBenchmark, spaceId);
 			if (benchId<0) {
@@ -888,20 +885,20 @@ public class Benchmarks {
 			}
 			log.debug("Benchmark added successfully to the database, now adding dependency associations");
 			List<BenchmarkDependency> deps=Benchmarks.getBenchDependencies(b.getId());
-			
+
 			for (BenchmarkDependency dep : deps) {
 				Benchmarks.addBenchDependency(benchId, dep.getSecondaryBench().getId(), dep.getDependencyPath());
 			}
-			
+
 			log.debug("Benchmark copied successfully, return new benchmark ID = "+benchId);
 			return benchId;
-			
+
 		} catch (Exception e) {
 			log.error("copyBenchmark says "+e.getMessage());
 			return -1;
 		}
-		
-		
+
+
 	}
 
 	/**
@@ -940,7 +937,7 @@ public class Benchmarks {
 		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
 		return false;
 	}	
-	
+
 	public static boolean isBenchmarkDeleted(int benchId) {
 		Connection con=null;
 		try {
@@ -953,7 +950,7 @@ public class Benchmarks {
 		}
 		return false;
 	}
-	
+
 	protected static boolean isBenchmarkDeleted(Connection con, int benchId) throws Exception {
 		CallableStatement procedure = con.prepareCall("{CALL IsBenchmarkDeleted(?)}");
 		procedure.setInt(1, benchId);					
@@ -972,7 +969,11 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	public static Benchmark get(int benchId) {
-		return Benchmarks.get(benchId, false);
+		return Benchmarks.get(benchId, false,false);
+	}
+
+	public static Benchmark getIncludeDeleted(int benchId) {
+		return Benchmarks.get(benchId,false,true);
 	}
 
 	/**
@@ -981,12 +982,12 @@ public class Benchmarks {
 	 * @return A benchmark object representing the benchmark with the given ID
 	 * @author Tyler Jensen
 	 */
-	public static Benchmark get(int benchId, boolean includeAttrs) {
+	public static Benchmark get(int benchId, boolean includeAttrs, boolean includeDeleted) {
 		Connection con = null;			
 
 		try {
 			con = Common.getConnection();		
-			Benchmark b = Benchmarks.get(con, benchId);
+			Benchmark b = Benchmarks.get(con, benchId,includeDeleted);
 			if (b==null) {
 				return null;
 			}
@@ -1043,15 +1044,15 @@ public class Benchmarks {
 		while(results.next()){
 			attrMap.put(results.getString("attr_key"), results.getString("attr_value"));
 		}
-		
+
 		if(prop.size() <= 0) {
 			prop = null;
 		}
 
 		return prop;
 	}
-	
-	
+
+
 
 	/**
 	 * Retrieves all attributes (key/value of the given benchmark in alphabetic order
@@ -1098,8 +1099,15 @@ public class Benchmarks {
 	 * @return A benchmark object representing the benchmark with the given ID
 	 * @author Tyler Jensen
 	 */
-	protected static Benchmark get(Connection con, int benchId) throws Exception {					
-		CallableStatement procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
+	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws Exception {	
+		CallableStatement procedure=null;
+		if (!includeDeleted) {
+			procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
+
+		} else {
+			procedure = con.prepareCall("{CALL GetBenchmarkByIdIncludeDeleted(?)}");
+
+		}
 		procedure.setInt(1, benchId);					
 		ResultSet results = procedure.executeQuery();
 
@@ -1143,13 +1151,13 @@ public class Benchmarks {
 			List<Benchmark> benchList = new ArrayList<Benchmark>();
 
 			for(int id : benchIds) {				
-				benchList.add(Benchmarks.get(con, id));
+				benchList.add(Benchmarks.get(con, id,false));
 				if (includeAttrs) {
 					benchList.get(benchList.size()-1).setAttributes(Benchmarks.getAttributes(con,id));
 				}
 			}
-			
-			
+
+
 
 			return benchList;
 		} catch (Exception e){			
@@ -1160,7 +1168,7 @@ public class Benchmarks {
 
 		return null;
 	}
-	
+
 	public static List<Benchmark> get(List<Integer> benchIds) {
 		return get(benchIds,false);
 	}
@@ -1212,7 +1220,7 @@ public class Benchmarks {
 
 		return null;
 	}
-	
+
 	/**
 	 * Might not use this method anymore
 	 * 
@@ -1247,7 +1255,7 @@ public class Benchmarks {
 
 		return null;
 	}
-	
+
 	/**
 	 * @param spaceId The id of the root of the space hierarchy
 	 *  to get benchmarks with minimal info
@@ -1283,7 +1291,7 @@ public class Benchmarks {
 
 		return null;
 	}
-	
+
 
 	/**
 	 * Returns a list of benchmarks owned by a given user
@@ -1479,7 +1487,7 @@ public class Benchmarks {
 
 			while(results.next()){
 				//don't include deleted benchmarks in the results if getDeleted is false
-				
+
 				Benchmark b = new Benchmark();
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
@@ -1557,7 +1565,7 @@ public class Benchmarks {
 
 		return false;
 	}
-	
+
 	/**
 	 * Determines whether the benchmark identified by the given benchmark ID has an
 	 * editable name
@@ -1580,14 +1588,14 @@ public class Benchmarks {
 				log.debug("Benchmark associated with no spaces, so its name is editable");
 				return 0;
 			}
-			
+
 			if (results.next()) {
 				log.debug("Benchmark is found in multiple spaces, so its name is not editable");
 				return -1;
 			}
 			log.debug("Benchmark associated with one space id = "+id +" , so its name is editable");
 			return id;
-			
+
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
@@ -1618,7 +1626,7 @@ public class Benchmarks {
 		space.setName(directory.getName());
 		space.setPermission(perm);
 		String strUnzipped = "";
-		
+
 		// Search for description file within the directory...
 		for (File f : directory.listFiles()) {
 			if(f.getName().equals(R.BENCHMARK_DESC_PATH)){
@@ -1644,16 +1652,16 @@ public class Benchmarks {
 			}
 		}
 		space.setDescription(strUnzipped);
-		
+
 		for(File f : directory.listFiles()) {
 			// If it's a sub-directory			
 			if(f.isDirectory()) {
 				// Recursively extract spaces/benchmarks from that directory
-			    space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, 
-											   userId, downloadable, perm, statusId));
-			    Uploads.incrementTotalSpaces(statusId);//for upload status page
+				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, 
+						userId, downloadable, perm, statusId));
+				Uploads.incrementTotalSpaces(statusId);//for upload status page
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
-				
+
 				if (Validator.isValidPrimName(f.getName())) {
 					Processor t = new Processor();
 					t.setId(typeId);
@@ -1664,18 +1672,18 @@ public class Benchmarks {
 					b.setType(t);
 					b.setUserId(userId);
 					b.setDownloadable(downloadable);
-													
+
 					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
 					// Make sure that the benchmark has a unique name in the space.
 					if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
-					    throw new Exception("\""+b.getName() + "\" is not a unique name in the space.");
+						throw new Exception("\""+b.getName() + "\" is not a unique name in the space.");
 					}
 
 					space.addBenchmark(b);
 				} else {
-				    throw new Exception("\""+f.getName() + "\" is not accepted as a legal benchmark name.");
+					throw new Exception("\""+f.getName() + "\" is not accepted as a legal benchmark name.");
 				}
-				
+
 			}
 		}
 
@@ -1693,14 +1701,14 @@ public class Benchmarks {
 	public static List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
 		// Initialize the list we will return at the end...
 		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-		
+
 		// For each file in the directory
 		for(File f : directory.listFiles()) {
 			if(f.isDirectory()) {
 				// If it's a directory, recursively extract all benchmarks from it and add them to our list
 				benchmarks.addAll(Benchmarks.extractBenchmarks(f, typeId, userId, downloadable));
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
-				
+
 				//make sure the name is valid
 				if (Validator.isValidPrimName(f.getName())) {
 					Processor t = new Processor();

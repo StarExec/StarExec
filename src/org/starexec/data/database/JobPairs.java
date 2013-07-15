@@ -265,7 +265,7 @@ public class JobPairs {
 		if(results.next()){
 			JobPair jp = JobPairs.resultToPair(results);
 			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
-			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+			jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),false));
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 
@@ -371,7 +371,7 @@ public class JobPairs {
 		if(results.next()){
 			JobPair jp = JobPairs.resultToPair(results);
 			jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
-			jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+			jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),false));
 			jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));
 			jp.setAttributes(getAttributes(pairId));
 			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));

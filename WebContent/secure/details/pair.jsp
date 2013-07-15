@@ -13,6 +13,7 @@
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	
 		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			Job j = Jobs.getShallow(jp.getJobId());
+			
 			User u = Users.get(j.getUserId());
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);

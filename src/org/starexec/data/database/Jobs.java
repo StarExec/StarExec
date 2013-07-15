@@ -326,17 +326,36 @@ public class Jobs {
 	}
 	
 	
+	public static Job getIncludingDeleted(int jobId) {
+		return get(jobId,true);
+	}
+	
 	/**
 	 * Gets information about the job with the given ID. Job pair information is not returned
 	 * @param jobId The ID of the job in question
 	 * @return The Job object that represents the job with the given ID
 	 */
 	public static Job get(int jobId) {
+		return get(jobId,false);
+	}
+	
+	/**
+	 * Gets information about the job with the given ID. Job pair information is not returned
+	 * @param jobId The ID of the job in question
+	 * @return The Job object that represents the job with the given ID
+	 */
+	private static Job get(int jobId, boolean includeDeleted) {
 		Connection con = null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetJobById(?)}");
+			CallableStatement procedure=null;
+			if (!includeDeleted) {
+				procedure = con.prepareCall("{CALL GetJobById(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetJobByIdIncludeDeleted(?)}");
+			}
+			
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
 			if(results.next()){
@@ -360,6 +379,8 @@ public class Jobs {
 		}
 		return null;
 	}
+	
+	
 		
 	/**
 	 * Gets all SolverStats objects for a given job

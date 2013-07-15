@@ -32,12 +32,12 @@ public class Solvers {
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	public static Solver get(int solverId) {
+	public static Solver get(int solverId, boolean includeDeleted) {
 		Connection con = null;			
 		
 		try {			
 			con = Common.getConnection();		
-			return Solvers.get(con, solverId);		
+			return Solvers.get(con, solverId,includeDeleted);		
 		} catch (Exception e){			
 			log.error("Solver get says " + e.getMessage(), e);		
 		} finally {
@@ -46,6 +46,14 @@ public class Solvers {
 		
 		return null;
 	}
+	
+	public static Solver get(int solverId) {
+		return get(solverId,false);
+	}
+	public static Solver getIncludeDeleted(int solverId) {
+		return get(solverId,true);
+	}
+	
 	/** 
 	 * Determines whether the solver with the given ID exists in the database with the column "deleted" set to true
 	 * @param solverId The ID of the solver in question
@@ -83,13 +91,13 @@ public class Solvers {
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	protected static Solver get(Connection con, int solverId) throws Exception {			
-		if(con.isClosed())
-		{
-			log.warn("Getting Solver " + solverId + " but connection is closed.");
+	protected static Solver get(Connection con, int solverId, boolean includeDeleted) throws Exception {	
+		CallableStatement procedure=null;
+		if (!includeDeleted) {
+			procedure = con.prepareCall("{CALL GetSolverById(?)}");
+		} else {
+			procedure=con.prepareCall("{CALL GetSolverByIdIncludeDeleted}");
 		}
-		
-		CallableStatement procedure = con.prepareCall("{CALL GetSolverById(?)}");
 		procedure.setInt(1, solverId);					
 		ResultSet results = procedure.executeQuery();
 		
@@ -167,7 +175,7 @@ public class Solvers {
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			for(int id : solverIds) {
-				solvers.add(Solvers.get(con, id));
+				solvers.add(Solvers.get(con, id,false));
 			}
 			
 			return solvers;
@@ -718,13 +726,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	protected static Configuration getConfiguration(Connection con, int configId) throws Exception {
-		if(con.isClosed())
-		{
-			log.warn("Getting Configuration " + configId+ " but connection is closed.");
-		}
-		
-		CallableStatement procedure = con.prepareCall("{CALL GetConfiguration(?)}");
-		
+		CallableStatement procedure = con.prepareCall("{CALL GetConfiguration(?)}");	
 		procedure.setInt(1, configId);					
 		ResultSet results = procedure.executeQuery();
 		try {
@@ -738,7 +740,7 @@ public class Solvers {
 				return c;
 			}	
 		} catch (Exception e) {
-			
+			log.error("getConfiguration says "+e.getMessage(),e);
 		} finally {
 			Common.closeResultSet(results);
 		}

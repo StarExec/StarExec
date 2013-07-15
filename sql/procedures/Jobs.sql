@@ -616,6 +616,16 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 		WHERE id = _id and deleted=false;
 	END //
 	
+-- Retrieves basic info about a job from the jobs table
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS GetJobByIdIncludeDeleted;
+CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM jobs
+		WHERE id = _id;
+	END //	
+
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairsByJob;
