@@ -155,18 +155,19 @@
 						<li><button type="button" id="pauseJob">pause job</button></li>
 					</c:if>
 				</c:if>
-				<c:if test="${job.userId == userId}">
-					<c:if test="${isPaused}">
-						<li><button type="button" id="resumeJob">resume job</button></li>
-					</c:if>
+			</c:if>
+			<c:if test="${job.userId == userId}">
+				<c:if test="${isPaused}">
+					<li><button type="button" id="resumeJob">resume job</button></li>
 				</c:if>
+			</c:if>
+			<c:if test="${pairStats.pendingPairs > 0 or isPaused}">
 				<c:if test="${job.userId == userId}">
 					<c:if test="${not isKilled}">
 						<li><button type="button" id="killJob">kill job</button></li>
 					</c:if>
-				</c:if>
+				</c:if>			
 			</c:if>
-			
 		</ul>
 		<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
