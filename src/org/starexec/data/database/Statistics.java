@@ -194,22 +194,22 @@ public class Statistics {
 				LogAxis xAxis=new LogAxis("# solved");
 				plot.setDomainAxis(xAxis);
 			}
+			
+			//TODO: Figure out how to make setting a manual range work with the log axis
 			if (logY) {
 				LogAxis yAxis=new LogAxis("time (s)");
 				plot.setRangeAxis(yAxis);
+			} else {
+				plot.getRangeAxis().setAutoRange(false);
+				plot.getRangeAxis().setRange(new Range(0,dataset.getRangeUpperBound(false)*1.1));
 			}
-			double maxX=dataset.getDomainUpperBound(false)*1.1;
-			double maxY=dataset.getRangeUpperBound(false)*1.1;
-			Range range=new Range(0,Math.max(maxX, maxY));
+			
 			plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
-			plot.getDomainAxis().setAutoRange(false);
-			plot.getDomainAxis().setRange(range);
 			
 			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
 			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
 			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
-			plot.getRangeAxis().setAutoRange(false);
-			plot.getRangeAxis().setRange(range);
+			
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 			renderer.setSeriesLinesVisible(0, true);
 			plot.setRenderer(renderer);
@@ -343,13 +343,13 @@ public class Statistics {
 			LogAxis xAxis=new LogAxis(solver1+" time (s)");
 			xAxis.setTickLabelPaint(new Color(255,255,255));
 			xAxis.setLabelPaint(new Color(255,255,255));
-			xAxis.setAutoRange(false);
-			xAxis.setRange(range);
+			//xAxis.setAutoRange(false);
+			//xAxis.setRange(range);
 			plot.setDomainAxis(xAxis);
 			LogAxis yAxis=new LogAxis(solver2+" time (s)");
 			
-			yAxis.setAutoRange(false);
-			yAxis.setRange(range);
+			//yAxis.setAutoRange(false);
+			//yAxis.setRange(range);
 			yAxis.setTickLabelPaint(new Color(255,255,255));
 			yAxis.setLabelPaint(new Color(255,255,255));
 			plot.setRangeAxis(yAxis);

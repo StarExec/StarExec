@@ -141,15 +141,15 @@ public class Solvers {
 	/**
 	 * @param con The connection to make the query on
 	 * @param configId The id of the configuration to retrieve the owning solver for
-	 * @return A solver object representing the solver that contains the given configuration
+	 * @return A solver object representing the solver that contains the given configuration, or null
+	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
 	protected static Solver getSolverByConfig(Connection con, int configId) throws Exception {		
-		if(con.isClosed())
-		{
-			log.warn("Getting SolverbyConfig with configId " + configId + " but connection is closed.");
-		}
 		Configuration c = Solvers.getConfiguration(con, configId);
+		if (c==null) {
+			return null;
+		}
 		return Solvers.getWithConfig(c.getSolverId(), c.getId());
 	}
 	
@@ -845,6 +845,9 @@ public class Solvers {
 		
 		Solver s = Solvers.get(solverId);
 		Configuration c = Solvers.getConfiguration(configId);
+		if (s==null) {
+			return null;
+		}
 		if(s.getId() == c.getSolverId()) {
 			// Make sure this configuration actually belongs to the solver, and add it if it does
 			s.addConfiguration(c);	

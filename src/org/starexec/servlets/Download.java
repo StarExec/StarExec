@@ -422,8 +422,6 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	//TODO: if returnIds is true, we should be returning job pair, solver, configuration, and benchmark
-	//ids in the CSV in some format
 	private static String CreateJobCSV(Job job, Boolean returnIds) throws IOException {
 		log.debug("CreateJobCSV called with returnIds set to "+returnIds);
 		StringBuilder sb = new StringBuilder();
@@ -441,7 +439,12 @@ public class Download extends HttpServlet {
 
 		/* generate the table header */
 		sb.delete(0, sb.length());
-		sb.append("benchmark,solver,configuration,status,time(s),result");
+		if (!returnIds) {
+			sb.append("benchmark,solver,configuration,status,time(s),result");
+		} else {
+			sb.append("pair id, benchmark,benchmark id, solver,solver id,configuration,configuration id,status,time(s),result");
+		}
+		
 
 		/* use the attribute names for the first completed job pair (if any) for more headings for the table
 	    We will put result first, then expected if it is there; other attributes follow */
@@ -467,16 +470,32 @@ public class Download extends HttpServlet {
 
 		while(itr.hasNext()) {
 			JobPair pair = itr.next();
+			if (returnIds) {
+				sb.append(pair.getId());
+				sb.append(",");
+			}
 			if (pair.getPath()!=null) {
 				sb.append(pair.getPath()+"/"+pair.getBench().getName());
 			} else {
 				sb.append(pair.getBench().getName());
 			}
 			sb.append(",");
+			if (returnIds) {
+				sb.append(pair.getBench().getId());
+				sb.append(",");
+			}
 			sb.append(pair.getSolver().getName());
 			sb.append(",");
+			if (returnIds) {
+				sb.append(pair.getSolver().getId());
+				sb.append(",");
+			}
 			sb.append(pair.getSolver().getConfigurations().get(0).getName());
 			sb.append(",");
+			if (returnIds) {
+				sb.append(pair.getSolver().getConfigurations().get(0).getId());
+				sb.append(",");
+			}
 			sb.append(pair.getStatus().toString());
 
 			if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) {
