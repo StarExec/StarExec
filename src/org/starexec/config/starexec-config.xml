@@ -18,7 +18,8 @@
 			<property key="PROCESSOR_DIR" value="/home/starexec/processor_scripts" />											
 			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
-			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />					
+			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />	
+						
 			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
 			<property key="NODE_WORKING_DIR" value="/export/starexec/sandbox/" />
 			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
@@ -82,7 +83,6 @@
                 <property key="MYSQL_PASSWORD" value="astump" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
-
                 <!-- Path Configuration (Changing these requires changes to the jobscript and prolog/epilog scripts) -->
                 <property key="SPACE_XML_SCHEMA_LOC" value="/home/astump/starexec_astump_data/batchSpace/batchSpaceSchema.xsd" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
@@ -156,6 +156,7 @@
 	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
 	  <property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
 	  <property key="PICTURE_PATH" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\pictures" />
+	  
 	  <property key="BATCH_SPACE_XML_DIR" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\batch\\uploads" />  
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
