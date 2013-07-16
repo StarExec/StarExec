@@ -275,7 +275,7 @@ public class JobPairs {
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);
 			log.info("about to close result set for sgeId " + sgeId);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return jp;
 		}
 		else
@@ -306,7 +306,7 @@ public class JobPairs {
 		if(prop.size() <= 0) {
 			prop = null;
 		}
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		return prop;
 	}
 	
@@ -382,7 +382,7 @@ public class JobPairs {
 			s.setStatus(results.getString("status.status"));
 			s.setDescription(results.getString("status.description"));
 			jp.setStatus(s);					
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return jp;
 		}			
 
@@ -414,7 +414,7 @@ public class JobPairs {
 				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
 				return jp;
 			}		
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -467,7 +467,7 @@ public class JobPairs {
 		procedure.setInt(1, jobPairId);
 		procedure.setInt(2, jobSpaceId);
 		results = procedure.executeQuery();
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		
 	}
 	
@@ -492,7 +492,7 @@ public class JobPairs {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}		
 		return false;
 	}
@@ -517,7 +517,7 @@ public class JobPairs {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return true;
 	}

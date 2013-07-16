@@ -60,7 +60,7 @@ public class Cluster {
 			node.setId(results.getInt("id"));
 			node.setStatus(results.getString("status"));
 		}							
-		Common.closeResultSet(results);			
+		Common.safeClose(results);			
 		
 		return node;		
 	}

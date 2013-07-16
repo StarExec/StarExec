@@ -374,7 +374,7 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			Common.safeClose(con);
 		}
 		return null;
@@ -446,7 +446,7 @@ public class Jobs {
 				j.setCreateTime(results.getTimestamp("created"));					
 				jobs.add(j);				
 			}			
-			Common.closeResultSet(results);			
+			Common.safeClose(results);			
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -550,7 +550,7 @@ public class Jobs {
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			
 		}
 
@@ -575,7 +575,7 @@ public class Jobs {
 			if (results.next()) {
 				jobCount = results.getInt("jobCount");
 			}
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return jobCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -644,7 +644,7 @@ public class Jobs {
 		} catch (Exception e){			
 			log.error("job get detailed for job id = " + jobId + " says " + e.getMessage(), e);		
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			Common.safeClose(con);
 		}
 
@@ -697,7 +697,7 @@ public class Jobs {
 			returnList.add(jp);
 		}			
 
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		return returnList;			
 	}
 
@@ -749,7 +749,7 @@ public class Jobs {
 			} 
 			props.get(id).put(results.getString("attr_key"), results.getString("attr_value"));	
 		}			
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		log.debug("returning from attribute function");
 		return props;
 	}
@@ -821,7 +821,7 @@ public class Jobs {
 			if (results.next()) {
 				jobPairCount = results.getInt("jobPairCount");
 			}
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return jobPairCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -862,7 +862,7 @@ public class Jobs {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return 0;
 	}
@@ -893,7 +893,7 @@ public class Jobs {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 
 		return 0;		
@@ -1000,7 +1000,7 @@ public class Jobs {
 				jp.setAttributes(attributes);
 				jobPairs.add(jp);		
 			}	
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return jobPairs;
 		} catch (Exception e){			
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
@@ -1139,7 +1139,7 @@ public class Jobs {
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return jobs;
 		} catch (Exception e){			
 			log.error("getJobsForNextPageSays " + e.getMessage(), e);
@@ -1247,7 +1247,7 @@ public class Jobs {
 			
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -1288,7 +1288,7 @@ public class Jobs {
 			jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
 			returnList.add(jp);
 		}			
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		return returnList;				
 	}
 
@@ -1317,7 +1317,7 @@ public class Jobs {
 				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
 				returnList.add(jp);
 			}			
-			Common.closeResultSet(results);	
+			Common.safeClose(results);	
 			return returnList;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1356,7 +1356,7 @@ public class Jobs {
 			
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -1465,7 +1465,7 @@ public class Jobs {
 		} catch (Exception e){			
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 
 		return null;		
@@ -1500,7 +1500,7 @@ public class Jobs {
 			e.printStackTrace();
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -1529,7 +1529,7 @@ public class Jobs {
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return null;		
 	}
@@ -1559,7 +1559,7 @@ public class Jobs {
 			
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -1589,7 +1589,7 @@ public class Jobs {
 			
 		} finally {
 			Common.safeClose(con);
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			
 		}	
 		return null;
@@ -1732,7 +1732,7 @@ public class Jobs {
 			returnList.add(jp);
 		}			
 
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		return returnList;			
 	}
 	
@@ -1776,7 +1776,7 @@ public class Jobs {
 			while(results.next()){
 				ids.add(results.getInt("sge_id"));
 			}	
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			
 			return ids;
 		} catch (Exception e){			
@@ -1817,7 +1817,7 @@ public class Jobs {
 
 				return j;
 			}		
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -2255,7 +2255,7 @@ public class Jobs {
 			
 		}
 		
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		
 		HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId);
 		

@@ -187,16 +187,27 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
-			log.error("Safe Close says " + e);
+			log.error("Safe Close says " + e.getMessage(),e);
 		}
 
+	}
+	
+	protected static void safeClose(CallableStatement statement) {
+		try {
+			if (statement!=null) {
+				statement.close();
+			}
+		
+		} catch (Exception e) {
+			log.error("safeClose statement says "+e.getMessage(),e);
+		}	
 	}
 	
 	/**
 	 * Method which closes a result set
 	 * @param r The result set close
 	 */
-	protected static void closeResultSet(ResultSet r) {
+	protected static void safeClose(ResultSet r) {
 		try {
 			if(r != null) {
 				r.close();

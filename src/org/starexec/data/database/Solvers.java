@@ -113,13 +113,13 @@ public class Solvers {
 				s.setDescription(results.getString("description"));
 				s.setDownloadable(results.getBoolean("downloadable"));
 				s.setDiskSize(results.getLong("disk_size"));
-				Common.closeResultSet(results);
+				Common.safeClose(results);
 				return s;
 			}
 		} catch (Exception e) {
 			
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 										
 		
@@ -747,13 +747,13 @@ public class Solvers {
 				c.setName(results.getString("name"));			
 				c.setSolverId(results.getInt("solver_id"));
 				c.setDescription(results.getString("description"));
-				Common.closeResultSet(results);
+				Common.safeClose(results);
 				return c;
 			}	
 		} catch (Exception e) {
 			log.error("getConfiguration says "+e.getMessage(),e);
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 									
 				
@@ -841,7 +841,7 @@ public class Solvers {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			Common.safeClose(con);
 		}
 		

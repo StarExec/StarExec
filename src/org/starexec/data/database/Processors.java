@@ -117,7 +117,7 @@ public class Processors {
 		} catch (Exception e) {
 			
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 									
 		

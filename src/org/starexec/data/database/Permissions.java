@@ -210,7 +210,7 @@ public class Permissions {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			Common.safeClose(con);
 		}
 

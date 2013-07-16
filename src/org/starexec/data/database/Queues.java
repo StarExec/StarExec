@@ -133,7 +133,7 @@ public class Queues {
 		} catch (Exception e) {
 			
 		} finally {
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 		}
 		return null;
 	}	
@@ -561,7 +561,7 @@ public class Queues {
 			returnList.add(jp);
 		}			
 
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		return returnList;			
 	}
 	
@@ -600,7 +600,7 @@ public class Queues {
 			returnList.add(jp);
 		}			
 
-		Common.closeResultSet(results);
+		Common.safeClose(results);
 		return returnList;			
 	}
 	
@@ -647,7 +647,7 @@ public class Queues {
 				returnList.add(jp);
 			}			
 
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return returnList;			
 			
 		} catch (Exception e){			
@@ -702,7 +702,7 @@ public class Queues {
 				returnList.add(jp);
 			}			
 
-			Common.closeResultSet(results);
+			Common.safeClose(results);
 			return returnList;			
 			
 		} catch (Exception e){			
