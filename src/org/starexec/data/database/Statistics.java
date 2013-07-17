@@ -253,7 +253,7 @@ public class Statistics {
 	
 	public static String makeSpaceOverviewChart(int jobId, int jobSpaceId, boolean logX, boolean logY) {
 		try {
-			List<JobPair> pairs=Jobs.getCompletedJobPairsInJobSpace(jobId, jobSpaceId);
+			List<JobPair> pairs=Jobs.getCompletedJobPairsInJobSpace(jobId, jobSpaceId, true);
 			return makeSpaceOverviewChart(pairs, logX,logY);
 		} catch (Exception e) {
 			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
@@ -400,8 +400,8 @@ public class Statistics {
 	
 	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId) {
 		try {
-			List<JobPair> pairs1=Jobs.getPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configId1);
-			List<JobPair> pairs2=Jobs.getPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId2);
+			List<JobPair> pairs1=Jobs.getPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configId1,true);
+			List<JobPair> pairs2=Jobs.getPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId2,true);
 			return makeSolverComparisonChart(pairs1,pairs2);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);

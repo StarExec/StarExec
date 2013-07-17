@@ -638,18 +638,28 @@ public class Spaces {
 	/**
 	 * Gets all the subspaces of the given space that are used by the given job
 	 * 
-	 * @param spaceId The id of the space to get the subspaces of
-	 * @param jobId The job for which we want to get used spaces
+	 * @param jobSpaceId The id of the space to get the subspaces of
+	 * @param recursive Whether to get all subspaces (true) or only the first level (false)
 	 * @return the list of subspaces of the given space used in the given job
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	public static List<Space> getSubSpacesForJob(int jobSpaceId) {
+	public static List<Space> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
 		Connection con = null;			
 		
 		try {
-			con = Common.getConnection();		
-			return Spaces.getSubSpacesForJob(jobSpaceId, con);
+			con = Common.getConnection();
+			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, con);
+			if (!recursive) {
+				return subspaces;
+			} else {
+				int index=0;
+				while (index<subspaces.size()) {
+					int curSubspace=subspaces.get(index).getId();
+					subspaces.addAll(Spaces.getSubSpacesForJob(curSubspace,con));
+					index++;
+				}
+			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

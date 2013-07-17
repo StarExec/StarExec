@@ -117,7 +117,7 @@ public class RESTServices {
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			if (parentId>0) {
 				
-				subspaces=Spaces.getSubSpacesForJob(parentId);
+				subspaces=Spaces.getSubSpacesForJob(parentId,false);
 			} else {
 				//if the id given is 0, we want to get the root space
 				Job j=Jobs.get(jobId);
@@ -508,7 +508,7 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpace(jobId, jobSpaceId);
+		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		

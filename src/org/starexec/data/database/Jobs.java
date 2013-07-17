@@ -445,6 +445,18 @@ public class Jobs {
 	}
 	
 	/**
+	 * Gets all the SolverStats objects for a given job in the given space
+	 * @param jobId the job in question
+	 * @param spaceId The ID of the space in question
+	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
+	 * @author Eric Burns
+	 */
+
+	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId) {
+		return getJobStatsForNextPageInJobSpaceHierarchy(0 , -1, true , 0 , "" , jobId , new int [1],jobSpaceId);
+	}
+	
+	/**
 	 * Gets all the SolverStats objects for a given job in the space hierarchy rooted at the given space
 	 * @param jobId the job in question
 	 * @param spaceId The ID of the space in question
@@ -547,7 +559,7 @@ public class Jobs {
 	 */
 	
 	//TODO: Get attributes for these job pairs
-	public static List<JobPair> getCompletedJobPairsInJobSpace(int jobId, int jobSpaceId) {
+	public static List<JobPair> getCompletedJobPairsInJobSpace(int jobId, int jobSpaceId, boolean hierarchy) {
 		Connection con = null;	
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -588,7 +600,12 @@ public class Jobs {
 				jp.setConfiguration(config);
 				jobPairs.add(jp);		
 			}	
-			
+			if (hierarchy) {
+				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+				for (Space s : subspaces) {
+					jobPairs.addAll(getCompletedJobPairsInJobSpace(jobId,s.getId(),false));
+				}
+			}
 			return jobPairs;
 		} catch (Exception e){			
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
@@ -1288,6 +1305,33 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
+	public static List<SolverStats> getJobStatsForNextPageInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int jobSpaceId) {
+		try {
+			List<JobPair> pairs=getPairsForStatsInJobSpace(jobId,jobSpaceId);
+			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+			for (Space s : subspaces) {
+				pairs.addAll(getPairsForStatsInJobSpace(jobId,s.getId()));
+			}
+			return processPairsToSolverStats(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,total);
+		} catch (Exception e) {
+			log.error("getJobStatsForNextPageInSpace says " +e.getMessage(),e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets next page of solver statistics for space details page of a job
+	 * @param recordsPerPage-- returns a list of this size, or every record if value is less than 0
+	 * @param isSortedASC Whether to sort ascending (true) or descending (false)
+	 * @param indexOfColumnSortedBy The column of the client-side datatable to sort on
+	 * @param searchQuery A search that includes the solver name and config name
+	 * @param jobId the ID of the job in question
+	 * @param total-- a reference to a 1-element int array used to return the total number of SolverStats objects
+	 * @param spaceId The ID of the space to get data for
+	 * @author Eric Burns
+	 */
+	
 	public static List<SolverStats> getJobStatsForNextPageInSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int [] total, int spaceId, int userId) {
 		try {
 			List<JobPair> pairs=getPairsForStatsInSpaceHierarchy(jobId,spaceId,userId);
@@ -1581,7 +1625,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobPair> getPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId) {
+	public static List<JobPair> getPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1596,7 +1640,16 @@ public class Jobs {
 			procedure.setInt(2,jobSpaceId);
 			procedure.setInt(3,configId);
 			results = procedure.executeQuery();
-			return getPairsDetailed(jobId,con,results,false);
+			List<JobPair> pairs = getPairsDetailed(jobId,con,results,false);
+			
+			if (hierarchy) {
+				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+				for (Space s : subspaces) {
+					pairs.addAll(getPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,hierarchy));
+				}
+			}
+			
+			return pairs;
 		}catch (Exception e) {
 			e.printStackTrace();
 		} finally {
