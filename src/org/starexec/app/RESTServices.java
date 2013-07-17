@@ -1900,8 +1900,9 @@ public class RESTServices {
 			if (userId!=Jobs.get(id).getUserId()) {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
-			boolean success=Jobs.delete(id);
-			if (!success) {
+			boolean success_kill = Jobs.kill(id);
+			boolean success_delete = Jobs.delete(id);
+			if (!success_delete || !success_kill) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
