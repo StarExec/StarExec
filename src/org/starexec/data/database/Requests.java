@@ -25,9 +25,10 @@ public class Requests {
 	 * @author Todd Elvers
 	 */
 	protected static boolean addActivationCode(Connection con, User user, String code) {
+		CallableStatement procedure = null;
 		try {			
 			// Add a new entry to the VERIFY table
-			CallableStatement procedure = con.prepareCall("{CALL AddCode(?, ?)}");
+			 procedure = con.prepareCall("{CALL AddCode(?, ?)}");
 			procedure.setInt(1, user.getId());
 			procedure.setString(2, code);
 
@@ -37,6 +38,8 @@ public class Requests {
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Adding activation record failed for [%s]", user.getFullName()));
@@ -55,9 +58,10 @@ public class Requests {
 	 * @author Todd Elvers
 	 */
 	protected static boolean addCommunityRequest(Connection con, User user, int communityId, String code, String message ) {
+		CallableStatement procedure = null;
 		try {		
 			// Add a new entry to the community_request table
-			CallableStatement procedure = con.prepareCall("{CALL AddCommunityRequest(?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL AddCommunityRequest(?, ?, ?, ?)}");
 			procedure.setInt(1, user.getId());
 			procedure.setInt(2, communityId);
 			procedure.setString(3, code);
@@ -68,6 +72,8 @@ public class Requests {
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Add invitation record failed for user [%s] on community %d", user, communityId));
@@ -107,11 +113,12 @@ public class Requests {
 	 */
 	public static int redeemActivationCode(String codeFromUser){
 		Connection con = null;
+		CallableStatement procedure = null;
 		try {
 			
 			con = Common.getConnection();
 
-			CallableStatement procedure = con.prepareCall("{CALL RedeemActivationCode(?, ?)}");
+			 procedure = con.prepareCall("{CALL RedeemActivationCode(?, ?)}");
 			procedure.setString(1, codeFromUser);
 			procedure.registerOutParameter(2, java.sql.Types.INTEGER);
 			
@@ -123,6 +130,7 @@ public class Requests {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return -1;
@@ -138,10 +146,11 @@ public class Requests {
 	 */
 	public static boolean approveCommunityRequest(int userId, int communityId){
 		Connection con = null;
+		CallableStatement procedure = null;
 		try {		
 			con = Common.getConnection();
 
-			CallableStatement procedure = con.prepareCall("{CALL ApproveCommunityRequest(?, ?)}");
+			procedure = con.prepareCall("{CALL ApproveCommunityRequest(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, communityId);
 			
@@ -151,6 +160,7 @@ public class Requests {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -166,11 +176,11 @@ public class Requests {
 	 */
 	public static boolean declineCommunityRequest(int userId, int communityId){
 		Connection con = null;
-		
+		CallableStatement procedure = null;
 		try {			
 			con = Common.getConnection();
 
-			CallableStatement procedure = con.prepareCall("{CALL DeclineCommunityRequest(?, ?)}");
+			 procedure = con.prepareCall("{CALL DeclineCommunityRequest(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, communityId);
 			
@@ -180,6 +190,7 @@ public class Requests {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -193,12 +204,13 @@ public class Requests {
 	 */
 	public static CommunityRequest getCommunityRequest(int userId){
 		Connection con = null;			
-		
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetCommunityRequestById(?)}");
+			 procedure = con.prepareCall("{CALL GetCommunityRequestById(?)}");
 			procedure.setInt(1, userId);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			
 			if(results.next()){
 				CommunityRequest req = new CommunityRequest();
@@ -213,6 +225,8 @@ public class Requests {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -226,12 +240,13 @@ public class Requests {
 	 */
 	public static CommunityRequest getCommunityRequest(String code){
 		Connection con = null;			
-		
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetCommunityRequestByCode(?)}");
+			 procedure = con.prepareCall("{CALL GetCommunityRequestByCode(?)}");
 			procedure.setString(1, code);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			
 			if(results.next()){
 				CommunityRequest req = new CommunityRequest();
@@ -247,6 +262,8 @@ public class Requests {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		
 		return null;
@@ -264,10 +281,10 @@ public class Requests {
 	 */
 	public static boolean addPassResetRequest(int userId, String code){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL AddPassResetRequest(?, ?)}");
+			 procedure = con.prepareCall("{CALL AddPassResetRequest(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setString(2, code);
 			
@@ -277,6 +294,7 @@ public class Requests {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -293,10 +311,10 @@ public class Requests {
 	 */
 	public static int redeemPassResetRequest(String code){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL RedeemPassResetRequestByCode(?, ?)}");
+			 procedure = con.prepareCall("{CALL RedeemPassResetRequestByCode(?, ?)}");
 			procedure.setString(1, code);
 			procedure.registerOutParameter(2, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
@@ -306,6 +324,7 @@ public class Requests {
 			log.error(e.getMessage(), e);	
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return -1;

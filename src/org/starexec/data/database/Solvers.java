@@ -74,15 +74,32 @@ public class Solvers {
 		return false;
 	}
 	
+	/**
+	 * Returns whether a solver with the given ID is present in the database and marked "deleted"
+	 * @param con The open connection to make the query on
+	 * @param solverId The ID of the solver in question
+	 * @return True if the solver has been deleted, false otherwise (includes the possibility of an error)
+	 * 
+	 */
+	
 	protected static boolean isSolverDeleted(Connection con, int solverId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL IsSolverDeleted(?)}");
-		procedure.setInt(1, solverId);					
-		ResultSet results = procedure.executeQuery();
-		boolean deleted=false;
-		if (results.next()) {
-			deleted=results.getBoolean("solverDeleted");
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			 procedure = con.prepareCall("{CALL IsSolverDeleted(?)}");
+			procedure.setInt(1, solverId);					
+			 results = procedure.executeQuery();
+			boolean deleted=false;
+			if (results.next()) {
+				deleted=results.getBoolean("solverDeleted");
+			}
+			return deleted;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(procedure);
 		}
-		return deleted;
+		return false;
 	}
 	
 	/**
@@ -93,16 +110,17 @@ public class Solvers {
 	 */
 	protected static Solver get(Connection con, int solverId, boolean includeDeleted) throws Exception {	
 		CallableStatement procedure=null;
-		if (!includeDeleted) {
-			procedure = con.prepareCall("{CALL GetSolverById(?)}");
-		} else {
-			procedure=con.prepareCall("{CALL GetSolverByIdIncludeDeleted(?)}");
-		}
-		procedure.setInt(1, solverId);					
-		ResultSet results = procedure.executeQuery();
 		
+		ResultSet results= null;
 		
 		try {
+			if (!includeDeleted) {
+				procedure = con.prepareCall("{CALL GetSolverById(?)}");
+			} else {
+				procedure=con.prepareCall("{CALL GetSolverByIdIncludeDeleted(?)}");
+			}
+			procedure.setInt(1, solverId);					
+			results = procedure.executeQuery();
 			if(results.next()){
 				Solver s = new Solver();
 				s.setId(results.getInt("id"));
@@ -120,6 +138,7 @@ public class Solvers {
 			
 		} finally {
 			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 										
 		
@@ -209,11 +228,13 @@ public class Solvers {
 	 */
 	public static int isNameEditable(int solverId) {
 		Connection con =null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con=Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSolverAssoc(?)}");
+			 procedure = con.prepareCall("{CALL GetSolverAssoc(?)}");
 			procedure.setInt(1, solverId);
-			ResultSet results=procedure.executeQuery();
+			 results=procedure.executeQuery();
 			int id=-1;
 			if (results.next()) {
 				id=results.getInt("space_id");
@@ -233,6 +254,8 @@ public class Solvers {
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return -1;
 	}
@@ -245,12 +268,13 @@ public class Solvers {
 	 */
 	public static List<Solver> getBySpace(int spaceId) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSpaceSolversById(?)}");
+			 procedure = con.prepareCall("{CALL GetSpaceSolversById(?)}");
 			procedure.setInt(1, spaceId);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			while(results.next()){
@@ -271,6 +295,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -307,11 +333,13 @@ public class Solvers {
 	 * @author Benton McCune
 	 */
 	public static List<Solver> getPublicSolvers(){
-		Connection con = null;		
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetPublicSolvers()}");				
-			ResultSet results = procedure.executeQuery();
+			 procedure = con.prepareCall("{CALL GetPublicSolvers()}");				
+			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			while(results.next()){
@@ -330,6 +358,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -340,13 +370,14 @@ public class Solvers {
 	 */
 	public static List<Solver> getPublicSolversByCommunity(Integer commId){
 		Connection con = null;	
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetPublicSolversByCommunity(?,?)}");	
+			 procedure = con.prepareCall("{CALL GetPublicSolversByCommunity(?,?)}");	
 			procedure.setInt(1, commId);
 			procedure.setInt(2, R.PUBLIC_USER_ID);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			while(results.next()){
@@ -365,6 +396,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		return null;
 	}
@@ -381,10 +414,10 @@ public class Solvers {
 	 */
 	public static boolean updateDetails(int id, String name, String description, boolean isDownloadable){
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL UpdateSolverDetails(?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateSolverDetails(?, ?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setString(2, name);
 			procedure.setString(3, description);
@@ -397,6 +430,7 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Solver [id=%d] failed to be updated.", id));
@@ -456,10 +490,11 @@ public class Solvers {
 		log.debug("Solvers.delete() called on solver with id = "+id);
 		Connection con = null;			
 		File solverToDelete = null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
-			CallableStatement procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
+			 procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
@@ -479,6 +514,7 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Deletion of solver [id=%d] failed.", id));
@@ -493,13 +529,21 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	protected static boolean addConfiguration(Connection con, Configuration c) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
-		procedure.setInt(1, c.getSolverId());
-		procedure.setString(2, c.getName());
-		procedure.setString(3, c.getDescription());
-		
-		procedure.executeUpdate();		
-		return true;		
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
+			procedure.setInt(1, c.getSolverId());
+			procedure.setString(2, c.getName());
+			procedure.setString(3, c.getDescription());
+			
+			procedure.executeUpdate();		
+			return true;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 	
 	/**
@@ -514,9 +558,10 @@ public class Solvers {
 	 */
 	public static int addConfiguration(Solver s, Configuration c) {
 		Connection con = null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
 			procedure.setInt(1, s.getId());
 			procedure.setString(2, c.getName());
 			procedure.setString(3, c.getDescription());
@@ -533,6 +578,7 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}		
 		
 		return -1;
@@ -571,16 +617,23 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	private static void updateSolverDiskSize(Connection con, Solver s) throws Exception {
-		// Get the size of the solver's directory
-		File solverDir = new File(s.getPath());
-		s.setDiskSize(FileUtils.sizeOfDirectory(solverDir));
-		
-		// Update the database to reflect the solver's directory size
-		CallableStatement procedure = con.prepareCall("{CALL UpdateSolverDiskSize(?, ?)}");
-		procedure.setInt(1, s.getId());
-		procedure.setLong(2, s.getDiskSize());
-		
-		procedure.executeUpdate();		
+		CallableStatement procedure = null;
+		try {
+			// Get the size of the solver's directory
+			File solverDir = new File(s.getPath());
+			s.setDiskSize(FileUtils.sizeOfDirectory(solverDir));
+			
+			// Update the database to reflect the solver's directory size
+			 procedure = con.prepareCall("{CALL UpdateSolverDiskSize(?, ?)}");
+			procedure.setInt(1, s.getId());
+			procedure.setLong(2, s.getDiskSize());
+			
+			procedure.executeUpdate();
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(procedure);
+		}
 	}
 	
 	/**
@@ -593,11 +646,12 @@ public class Solvers {
 	 */
 	public static int add(Solver s, int spaceId) {
 		Connection con = null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
 			// Add the solver
-			CallableStatement procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, s.getUserId());
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
@@ -623,6 +677,7 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}		
 		
 		return -1;
@@ -637,12 +692,20 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	protected static boolean associate(Connection con, int spaceId, int solverId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
-		procedure.setInt(1, spaceId);
-		procedure.setInt(2, solverId);
-		
-		procedure.executeUpdate();		
-		return true;
+		CallableStatement procedure = null;
+		try {
+			 procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setInt(2, solverId);
+			
+			procedure.executeUpdate();		
+			return true;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 	
 	/**
@@ -737,10 +800,13 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	protected static Configuration getConfiguration(Connection con, int configId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL GetConfiguration(?)}");	
-		procedure.setInt(1, configId);					
-		ResultSet results = procedure.executeQuery();
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		 
 		try {
+			procedure = con.prepareCall("{CALL GetConfiguration(?)}");	
+			procedure.setInt(1, configId);					
+			 results = procedure.executeQuery();
 			if(results.next()){
 				Configuration c = new Configuration();
 				c.setId(results.getInt("id"));			
@@ -754,6 +820,8 @@ public class Solvers {
 			log.error("getConfiguration says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
+			Common.safeClose(procedure);
+			
 		}
 									
 				
@@ -820,9 +888,10 @@ public class Solvers {
 	private static Solver getByConfigId(int configId) {
 		Connection con = null;			
 		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSolverIdByConfigId(?)}");
+			 procedure = con.prepareCall("{CALL GetSolverIdByConfigId(?)}");
 			procedure.setInt(1, configId);	
 			results = procedure.executeQuery();
 
@@ -843,6 +912,7 @@ public class Solvers {
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return null;
@@ -879,12 +949,13 @@ public class Solvers {
 	 */
 	public static List<Configuration> getConfigsForSolver(int solverId) {
 		Connection con = null;			
-		
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetConfigsForSolver(?)}");
+			 procedure = con.prepareCall("{CALL GetConfigsForSolver(?)}");
 			procedure.setInt(1, solverId);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Configuration> configs = new LinkedList<Configuration>();
 			
 			while(results.next()){
@@ -901,6 +972,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;		
@@ -942,12 +1015,13 @@ public class Solvers {
 	 */
 	public static List<Solver> getByOwner(int userId) {
 		Connection con = null;			
-		
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetSolversByOwner(?)}");
+			 procedure = con.prepareCall("{CALL GetSolversByOwner(?)}");
 			procedure.setInt(1, userId);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			
@@ -973,6 +1047,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		log.debug(String.format("Getting the solvers owned by user %d failed.", userId));
@@ -992,7 +1068,7 @@ public class Solvers {
 	 */
 	public static boolean updateConfigDetails(int configId, String name, String description, String contents) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			
 			// Try and update the configuration file's name and/or contents
@@ -1000,7 +1076,7 @@ public class Solvers {
 				
 				// If the physical configuration file was successfully renamed, update the database too
 				con = Common.getConnection();
-				CallableStatement procedure = con.prepareCall("{CALL UpdateConfigurationDetails(?, ?, ?)}");
+				 procedure = con.prepareCall("{CALL UpdateConfigurationDetails(?, ?, ?)}");
 				procedure.setInt(1, configId);
 				procedure.setString(2, name);
 				procedure.setString(3, description);
@@ -1013,6 +1089,7 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		log.warn(String.format("Configuration [%s] failed to update properly.", name));
@@ -1093,10 +1170,10 @@ public class Solvers {
 	 */
 	public static boolean deleteConfiguration(int configId) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");	
+			 procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");	
 			procedure.setInt(1, configId);
 			procedure.executeUpdate();
 			
@@ -1106,6 +1183,7 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		log.warn(String.format("Configuration %d has failed to be deleted from the database.", configId));
@@ -1176,10 +1254,10 @@ public class Solvers {
 	 */
 	private static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String procedureName) {
 		Connection con = null;			
-		
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure;	
 			
 			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
@@ -1189,7 +1267,7 @@ public class Solvers {
 			procedure.setInt(5, id);
 			procedure.setString(6, searchQuery);
 				
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			// Only get the necessary information to display this solver
@@ -1210,6 +1288,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -1224,12 +1304,13 @@ public class Solvers {
 	 */
 	public static int getCountInSpace(int spaceId) {
 		Connection con = null;
-
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSolverCountInSpace(?)}");
+			 procedure = con.prepareCall("{CALL GetSolverCountInSpace(?)}");
 			procedure.setInt(1, spaceId);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 
 			if (results.next()) {
 				return results.getInt("solverCount");
@@ -1238,6 +1319,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return 0;
@@ -1245,13 +1328,14 @@ public class Solvers {
 
 	public static boolean isPublic(int solverId) {
 		Connection con = null;
-
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL IsSolverPublic(?,?)}");
+			 procedure = con.prepareCall("{CALL IsSolverPublic(?,?)}");
 			procedure.setInt(1, solverId);
 			procedure.setInt(2, R.PUBLIC_USER_ID);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 
 			if (results.next()) {
 				return (results.getInt("solverPublic") > 0);
@@ -1260,6 +1344,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 
 		return false;
@@ -1273,12 +1359,13 @@ public class Solvers {
 	 */
 	public static int getSolverCountByUser(int userId) {
 		Connection con = null;
-
+		ResultSet results=null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetSolverCountByUser(?)}");
+			 procedure = con.prepareCall("{CALL GetSolverCountByUser(?)}");
 			procedure.setInt(1, userId);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 
 			if (results.next()) {
 				return results.getInt("solverCount");
@@ -1287,6 +1374,8 @@ public class Solvers {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return 0;		

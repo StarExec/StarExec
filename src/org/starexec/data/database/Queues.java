@@ -33,10 +33,10 @@ public class Queues {
 	 */
 	public static boolean associate(String queueName, String nodeName) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
+			 procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
 			procedure.setString(1, queueName);
 			procedure.setString(2, nodeName);
 			
@@ -46,6 +46,7 @@ public class Queues {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -59,16 +60,17 @@ public class Queues {
 	 */
 	public static boolean clearQueueAssociations() {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL clearQueueAssociations()}");			
+			 procedure = con.prepareCall("{CALL clearQueueAssociations()}");			
 			procedure.executeUpdate();						
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -112,11 +114,15 @@ public class Queues {
 	 * @return a queue object representing the queue to retrieve
 	 */
 	protected static Queue get(Connection con, int qid) throws Exception {		
-		CallableStatement procedure = con.prepareCall("{CALL GetQueue(?)}");
-		procedure.setInt(1, qid);			
-		ResultSet results = procedure.executeQuery();			
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		
+					
 		
 		try {
+			procedure = con.prepareCall("{CALL GetQueue(?)}");
+			procedure.setInt(1, qid);			
+			results = procedure.executeQuery();
 			if(results.next()){
 				Queue queue = new Queue();
 				queue.setName(results.getString("name"));
@@ -134,6 +140,7 @@ public class Queues {
 			
 		} finally {
 			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		return null;
 	}	
@@ -148,12 +155,13 @@ public class Queues {
 	 */
 	public static Queue getDetails(int id) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetQueueDetails(?)}");
+			 procedure = con.prepareCall("{CALL GetQueueDetails(?)}");
 			procedure.setInt(1, id);			
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			Queue queue = new Queue();
 			
 			if(results.next()){
@@ -170,6 +178,8 @@ public class Queues {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		
 		return null;
@@ -183,10 +193,10 @@ public class Queues {
 	 */
 	protected static List<Queue> getQueues(int userId) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure;
 			if (userId == 0) 
 			    procedure = con.prepareCall("{CALL GetAllQueues}");
 			else {
@@ -194,7 +204,7 @@ public class Queues {
 			    procedure.setInt(1, userId);
 			}
 
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Queue> queues = new LinkedList<Queue>();
 			
 			while(results.next()){
@@ -210,6 +220,8 @@ public class Queues {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		
 		return null;
@@ -244,17 +256,19 @@ public class Queues {
 	 * @author Tyler Jensen
 	 */
 	public static boolean update(String name, HashMap<String, String> attributes) {
-		Connection con = null;			
-		
+		Connection con = null;	
+		CallableStatement procAddQueue = null;
+		CallableStatement procAddCol = null;
+		CallableStatement procUpdateAttr = null;
 		try {
 			con = Common.getConnection();
 			
 			// All or nothing!
 			Common.beginTransaction(con);
 			
-			CallableStatement procAddQueue = con.prepareCall("{CALL AddQueue(?)}");
-			CallableStatement procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
-			CallableStatement procUpdateAttr = con.prepareCall("{CALL UpdateQueueAttr(?, ?, ?)}");	
+			 procAddQueue = con.prepareCall("{CALL AddQueue(?)}");
+			 procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
+			 procUpdateAttr = con.prepareCall("{CALL UpdateQueueAttr(?, ?, ?)}");	
 			
 			// First, add the node (MySQL will ignore this if it already exists)
 			procAddQueue.setString(1, name);
@@ -286,6 +300,9 @@ public class Queues {
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procUpdateAttr);
+			Common.safeClose(procAddCol);
+			Common.safeClose(procAddQueue);
 		}
 		
 		log.debug(String.format("Queue [%s] failed to be updated.", name));
@@ -299,11 +316,11 @@ public class Queues {
 	 */
 	public static boolean updateUsage(Queue q) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
-			CallableStatement procedure = con.prepareCall("{CALL UpdateQueueUseage(?, ?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateQueueUseage(?, ?, ?, ?, ?)}");
 			
 			procedure.setString(1, q.getName());
 			procedure.setInt(2, q.getSlotsTotal());
@@ -319,6 +336,7 @@ public class Queues {
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Usage for queue [%s] failed to be updated.", q.getName()));
@@ -342,11 +360,11 @@ public class Queues {
 	 */
 	public static boolean setStatus(String name, String status) {
 		Connection con = null;			
-		
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
-			CallableStatement procedure = null;
+			 procedure = null;
 			
 			if(name == null) {
 				// If no name was supplied, apply to all queues
@@ -365,6 +383,7 @@ public class Queues {
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Status for queue [%s] failed to be updated.", (name == null) ? "ALL" : name));
@@ -378,12 +397,14 @@ public class Queues {
 	 */
 
 	public static Integer getSizeOfQueue(int queueId) {
-		Connection con = null;					
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetNumEnqueuedJobs(?)}");					
+			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobs(?)}");					
 			procedure.setInt(1, queueId);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 
 			Integer qSize = -1;
 			while(results.next()){
@@ -394,6 +415,8 @@ public class Queues {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return null;
@@ -406,12 +429,14 @@ public class Queues {
      * @author Ben McCune and Aaron Stump
      */
 	public static List<Job> getEnqueuedJobs(int queueId) {
-		Connection con = null;					
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobs(?)}");					
+			 procedure = con.prepareCall("{CALL GetEnqueuedJobs(?)}");					
 			procedure.setInt(1, queueId);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
@@ -433,6 +458,8 @@ public class Queues {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return null;
@@ -445,12 +472,14 @@ public class Queues {
      * @author Ben McCune and Aaron Stump
      */
 	public static List<Job> getPendingJobs(int queueId) {
-		Connection con = null;					
+		Connection con = null;		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
+			 procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
 			procedure.setInt(1, queueId);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
@@ -472,6 +501,8 @@ public class Queues {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return null;
@@ -531,38 +562,44 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 */
 	protected static List<JobPair> getEnqueuedPairsDetailed(Connection con, int qId) throws Exception {	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		try {
+			 procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?,?)}");
+			procedure.setInt(1, qId);					
+			procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+			 results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
 
-		if(con.isClosed())
-		{
-			log.warn("GetEnqueuedPairsDetailed with Job Id = " + qId + " but connection is closed.");
+			while(results.next()){
+				JobPair jp = JobPairs.resultToPair(results);
+				//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
+				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
+				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
+				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				Status s = new Status();
+
+				s.setCode(results.getInt("status_code"));
+				//s.setStatus(results.getString("status.status"));
+				//s.setDescription(results.getString("status.description"));
+				jp.setStatus(s);
+				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+				returnList.add(jp);
+			}			
+
+			Common.safeClose(results);
+			return returnList;
+		} catch (Exception e) {
+		
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
-		CallableStatement procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?,?)}");
-		procedure.setInt(1, qId);					
-		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
-		ResultSet results = procedure.executeQuery();
-		List<JobPair> returnList = new LinkedList<JobPair>();
-
-		while(results.next()){
-			JobPair jp = JobPairs.resultToPair(results);
-			//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
-			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			Status s = new Status();
-
-			s.setCode(results.getInt("status_code"));
-			//s.setStatus(results.getString("status.status"));
-			//s.setDescription(results.getString("status.description"));
-			jp.setStatus(s);
-			jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
-			returnList.add(jp);
-		}			
-
-		Common.safeClose(results);
-		return returnList;			
+		return null;
 	}
 	
 	
@@ -575,33 +612,38 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 */
 	protected static List<JobPair> getRunningPairsDetailed(Connection con, int qId) throws Exception {	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?,?)}");
+			procedure.setInt(1, qId);					
+			procedure.setInt(2, R.NUM_JOB_SCRIPTS);
+			results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
 
-		if(con.isClosed())
-		{
-			log.warn("GetRunningPairsDetailed with Job Id = " + qId + " but connection is closed.");
+			while(results.next()){
+				JobPair jp = JobPairs.resultToPair(results);
+				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
+				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				Status s = new Status();
+
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+				returnList.add(jp);
+			}			
+
+			Common.safeClose(results);
+			return returnList;
+		} catch (Exception e) {
+		
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
-		CallableStatement procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?,?)}");
-		procedure.setInt(1, qId);					
-		procedure.setInt(2, R.NUM_JOB_SCRIPTS);
-		ResultSet results = procedure.executeQuery();
-		List<JobPair> returnList = new LinkedList<JobPair>();
-
-		while(results.next()){
-			JobPair jp = JobPairs.resultToPair(results);
-			jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-			jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-			jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-			jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-			Status s = new Status();
-
-			s.setCode(results.getInt("status_code"));
-			jp.setStatus(s);
-			jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
-			returnList.add(jp);
-		}			
-
-		Common.safeClose(results);
-		return returnList;			
+		return null;
 	}
 	
 	/**
@@ -616,10 +658,11 @@ public class Queues {
 	 */
 
 	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
-		Connection con = null;			
+		Connection con = null;		
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
-			CallableStatement procedure;	
 			
 			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
@@ -630,7 +673,7 @@ public class Queues {
 			procedure.setString(6, searchQuery);
 			
 			
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 
 			while(results.next()){
@@ -654,6 +697,8 @@ public class Queues {
 			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 			return null;		
 	}
@@ -670,10 +715,11 @@ public class Queues {
 	 */
 	
 	private static List<JobPair> getNextPageOfRunningJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
-		Connection con = null;			
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
-			CallableStatement procedure;	
 			
 			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
@@ -684,7 +730,7 @@ public class Queues {
 			procedure.setString(6, searchQuery);
 			
 			
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 
 			while(results.next()){
@@ -709,6 +755,8 @@ public class Queues {
 			log.error("getNextPageOfRunningJobPairs for node " + id + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 			return null;		
 	}

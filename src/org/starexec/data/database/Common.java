@@ -40,7 +40,7 @@ public class Common {
 				log.warn("Attempted to initialize datapool when it was already initialized");
 				return;
 			}
-			
+		
 			log.debug("Setting up data connection pool properties");
 			PoolProperties poolProp = new PoolProperties();				// Set up the Tomcat JDBC connection pool with the following properties
 			poolProp.setUrl(R.MYSQL_URL);								// URL to the database we want to use
@@ -57,7 +57,7 @@ public class Common {
 			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
 			poolProp.setRemoveAbandonedTimeout(3600);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
 			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too int
-		
+			
 			log.debug("Creating new datapool with supplied properties");		
 			dataPool = new DataSource(poolProp);						// Create the connection pool with the supplied properties
 		
@@ -110,10 +110,11 @@ public class Common {
 	 * @param browser The browser/agent information about the browser the user logged in with
 	 */
 	public static void addLoginRecord(int userId, String ipAddress, String browser) {
-		Connection con = null;		
+		Connection con = null;	
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setString(2, ipAddress);
 			procedure.setString(3, browser);			
@@ -122,6 +123,7 @@ public class Common {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}				
 	}	
 	

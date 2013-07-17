@@ -27,10 +27,10 @@ public class Websites {
 	 */
 	public static boolean add(int id, String url, String name, WebsiteType type) {
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = null;
+			 procedure = null;
 			
 			switch(type) {
 				case USER:
@@ -57,6 +57,7 @@ public class Websites {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -71,10 +72,11 @@ public class Websites {
 	 */
 	public static List<Website> getAll(int id, WebsiteType webType) {
 		Connection con = null;
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = null;
+			 procedure = null;
 			
 			switch(webType) {
 				case USER:
@@ -92,7 +94,7 @@ public class Websites {
 			
 			procedure.setInt(1, id);
 			
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			List<Website> websites = new LinkedList<Website>();
 			
 			while (results.next()) {
@@ -109,6 +111,8 @@ public class Websites {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -124,10 +128,10 @@ public class Websites {
 	 */
 	public static boolean delete(int websiteId, int entityId, WebsiteType webType) {
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = null;			
+			 procedure = null;			
 			
 			switch(webType) {
 				case USER:
@@ -153,6 +157,7 @@ public class Websites {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;

@@ -28,14 +28,22 @@ public class Users {
 	 * @author Tyler Jensen
 	 */
 	protected static boolean associate(Connection con, int userId, int spaceId) throws Exception {
-		CallableStatement procedure = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
-		procedure.setInt(1, userId);
-		procedure.setInt(2, spaceId);
-		procedure.setInt(3, spaceId);
+		CallableStatement procedure= null;
+		try {
+			 procedure = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
+			procedure.setInt(1, userId);
+			procedure.setInt(2, spaceId);
+			procedure.setInt(3, spaceId);
 
-		procedure.executeUpdate();						
-		log.info(String.format("User [%d] added to space [%d]", userId, spaceId));	
-		return true;
+			procedure.executeUpdate();						
+			log.info(String.format("User [%d] added to space [%d]", userId, spaceId));	
+			return true;
+		} catch (Exception e) {
+		
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 	
 	/**
@@ -153,12 +161,13 @@ public class Users {
 	 */
 	public static User get(String email){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
+			 procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
 			procedure.setString(1, email);					
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
 			if(results.next()){
 				User u = new User();
@@ -178,6 +187,8 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -196,14 +207,14 @@ public class Users {
 	 */
 	public static boolean register(User user, int communityId, String code, String message){
 		Connection con = null;
-		
+		CallableStatement procedure= null;
 		try{
 			con = Common.getConnection();					
 			Common.beginTransaction(con);
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			
-			CallableStatement procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
@@ -243,6 +254,7 @@ public class Users {
 			Common.doRollback(con);						
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -258,12 +270,13 @@ public class Users {
 	 */
 	public static User getUnregistered(int id) {
 		Connection con = null;
-
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
+			 procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
 			procedure.setInt(1, id);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			
 			if (results.next()) {
 				User u = new User();
@@ -281,6 +294,8 @@ public class Users {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		
 		return null;
@@ -294,12 +309,13 @@ public class Users {
 	 */
 	public static User get(int id){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL GetUserById(?)}");
+			 procedure = con.prepareCall("{CALL GetUserById(?)}");
 			procedure.setInt(1, id);					
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			
 			if(results.next()){
 				User u = new User();
@@ -319,6 +335,8 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -332,12 +350,13 @@ public class Users {
 	 */
 	public static String getPassword(int userId) {
 		Connection con = null;
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetPasswordById(?)}");
+			 procedure = con.prepareCall("{CALL GetPasswordById(?)}");
 			procedure.setInt(1, userId);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			
 			if (results.next()) {
 				return results.getString("password");
@@ -347,6 +366,8 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -363,10 +384,10 @@ public class Users {
 	 */
 	public static boolean updateFirstName(int userId, String newValue){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateFirstName(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
@@ -377,6 +398,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -393,10 +415,10 @@ public class Users {
 	 */
 	public static boolean updateLastName(int userId, String newValue){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateLastName(?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateLastName(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
@@ -407,6 +429,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -422,10 +445,10 @@ public class Users {
 	 */
 	public static boolean updateEmail(int userId, String newValue){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateEmail(?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateEmail(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
@@ -436,6 +459,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -451,10 +475,10 @@ public class Users {
 	 */
 	public static boolean updateInstitution(int userId, String newValue){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateInstitution(?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateInstitution(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
@@ -465,6 +489,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -481,10 +506,10 @@ public class Users {
 	 */
 	public static boolean setDiskQuota(int userId, long newDiskQuota) {
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateUserDiskQuota(?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateUserDiskQuota(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setLong(2, newDiskQuota);
 			
@@ -497,6 +522,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		
@@ -514,12 +540,14 @@ public class Users {
 	public static long getDiskUsage(int userId) {
 		Connection con = null;
 		long solverUsage=0;
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetUserSolverDiskUsage(?)}");
+			 procedure = con.prepareCall("{CALL GetUserSolverDiskUsage(?)}");
 			procedure.setInt(1, userId);
 
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			while(results.next()){
 				solverUsage=results.getLong("disk_usage");
 			}
@@ -527,16 +555,18 @@ public class Users {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		con = null;
 		
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetUserBenchmarkDiskUsage(?)}");
+			 procedure = con.prepareCall("{CALL GetUserBenchmarkDiskUsage(?)}");
 			procedure.setInt(1, userId);
 
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			while(results.next()){
 				return solverUsage+results.getLong("disk_usage");
 			}
@@ -544,6 +574,8 @@ public class Users {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return 0;
@@ -560,10 +592,10 @@ public class Users {
 	 */
 	public static boolean updatePassword(int userId, String newValue){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdatePassword(?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdatePassword(?, ?)}");
 			procedure.setInt(1, userId);
 			String hashedPassword = Hash.hashPassword(newValue);
 			procedure.setString(2, hashedPassword);
@@ -575,6 +607,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -590,10 +623,10 @@ public class Users {
 	 */
 	public static boolean setPassword(int user_id, String password){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL SetPasswordByUserId(?, ?)}");
+			 procedure = con.prepareCall("{CALL SetPasswordByUserId(?, ?)}");
 			procedure.setInt(1, user_id);
 			procedure.setString(2, Hash.hashPassword(password));
 			
@@ -603,6 +636,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -617,10 +651,10 @@ public class Users {
 	 */
 	public static boolean updateArchiveType(int userId, String newValue) {
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL UpdateArchiveType(?, ?)}");
+			 procedure = con.prepareCall("{CALL UpdateArchiveType(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setString(2, newValue);
 			
@@ -631,6 +665,7 @@ public class Users {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -647,18 +682,21 @@ public class Users {
 	 */
 	public static boolean isMemberOfSpace(int userId, int spaceId){
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();		
-			CallableStatement procedure = con.prepareCall("{CALL IsMemberOfSpace(?, ?)}");
+			 procedure = con.prepareCall("{CALL IsMemberOfSpace(?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setInt(2, spaceId);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			return results.next();
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return false;
@@ -681,10 +719,10 @@ public class Users {
 	 */
 	public static List<User> getUsersForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
 		Connection con = null;			
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure;			
 			
 			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, startingRecord);
@@ -694,7 +732,7 @@ public class Users {
 			procedure.setInt(5, spaceId);
 			procedure.setString(6, searchQuery);
 			procedure.setInt(7, R.PUBLIC_USER_ID);
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			
 			while(results.next()){
@@ -716,6 +754,8 @@ public class Users {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		
 		return null;
@@ -730,12 +770,13 @@ public class Users {
 	 */
 	public static int getCountInSpace(int spaceId) {
 		Connection con = null;
-
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetUserCountInSpace(?)}");
+			 procedure = con.prepareCall("{CALL GetUserCountInSpace(?)}");
 			procedure.setInt(1, spaceId);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 
 			if (results.next()) {
 				return results.getInt("userCount");
@@ -744,6 +785,8 @@ public class Users {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 
 		return 0;
@@ -759,12 +802,13 @@ public class Users {
 
 	public static boolean getUserByEmail(String email) {
 		Connection con = null;
-		
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
+			 procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
 			procedure.setString(1,email);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			
 			if (results.next()) {
 				return true;
@@ -775,6 +819,8 @@ public class Users {
 			log.error (e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}
@@ -786,11 +832,13 @@ public class Users {
 	 */
 	public static User getUserByJob(int jobId) {
 		Connection con = null;
+		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL GetNameofUserByJob(?)}");
+			 procedure = con.prepareCall("{CALL GetNameofUserByJob(?)}");
 			procedure.setInt(1, jobId);
-			ResultSet results = procedure.executeQuery();
+			 results = procedure.executeQuery();
 			while (results.next()) {
 				User u = new User();
 				u.setId(results.getInt("id"));
@@ -805,6 +853,8 @@ public class Users {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
