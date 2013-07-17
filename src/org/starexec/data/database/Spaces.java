@@ -659,13 +659,13 @@ public class Spaces {
 					subspaces.addAll(Spaces.getSubSpacesForJob(curSubspace,con));
 					index++;
 				}
+				return subspaces;
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
-		
 		return null;
 	}
 	
@@ -851,15 +851,14 @@ public class Spaces {
 				subSpaces.add(s);
 			}
 			
-			log.debug("Returning " +subSpaces.size()+ "subspaces for job space id ="+jobSpaceId);
+			log.debug("Returning " +subSpaces.size()+ "subspaces for job space id = "+jobSpaceId);
 			return subSpaces;
 		} catch (Exception e) {
-			
+			log.error("getSubSpacesForJob says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
 		return null;
 	}
 	
