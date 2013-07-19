@@ -71,6 +71,26 @@
 				</tbody>
 			</table>
 			</fieldset>
+			<fieldset id="#pairTblField">
+	
+		<legend>job pairs</legend>	
+			<table id="pairTbl" class="shaded">
+				<thead>
+					<tr>
+						<th id="benchHead">benchmark</th>
+						<th>solver</th>
+						<th>config</th>
+						<th>status</th>
+						<th>time</th>
+						<th>result</th>	
+						<th>space</th>			
+					</tr>		
+				</thead>	
+				<tbody>
+					<!-- This will be populated by the job pair pagination feature -->
+				</tbody>
+			</table>
+		</fieldset>
 		
 		
 			<fieldset id="graphField">

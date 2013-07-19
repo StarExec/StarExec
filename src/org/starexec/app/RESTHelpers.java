@@ -520,7 +520,7 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type,id,request,PAGE_USER_DETAILS);
 	}
 	
-	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpace(int jobId, int spaceId,int configId,HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
 		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
 		if (null==attrMap) {
 			return null;
@@ -531,17 +531,55 @@ public class RESTHelpers {
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
 		
-		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInSpace(
+		jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
     			attrMap.get(STARTING_RECORD),						// Record to start at  
     			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
     			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
     			attrMap.get(SORT_COLUMN), 							// Column sorted on
     			request.getParameter(SEARCH_QUERY), 				// Search query
     			jobId,													// Parent space id
-    			spaceId,
+    			jobSpaceId
+    			
+		);
+		totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId);
+		 
+		/**
+    	 * Used to display the 'total entries' information at the bottom of the DataTable;
+    	 * also indirectly controls whether or not the pagination buttons are toggle-able
+    	 */
+    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
+    	} 
+    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+    	else {
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+    	}
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+	}
+	
+	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(int jobId, int jobSpaceId,int configId,HttpServletRequest request) {
+		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
+		if (null==attrMap) {
+			return null;
+		}
+		
+		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+		
+		int totalJobs;
+		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
+		
+		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(
+    			attrMap.get(STARTING_RECORD),						// Record to start at  
+    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+    			attrMap.get(SORT_COLUMN), 							// Column sorted on
+    			request.getParameter(SEARCH_QUERY), 				// Search query
+    			jobId,													// Parent space id
+    			jobSpaceId,
     			configId
 		);
-		totalJobs = Jobs.getJobPairCountByConfigInSpace(jobId,spaceId,configId);
+		totalJobs = Jobs.getJobPairCountByConfigInJobSpace(jobId,jobSpaceId,configId);
 		 
 		/**
     	 * Used to display the 'total entries' information at the bottom of the DataTable;
@@ -859,7 +897,7 @@ public class RESTHelpers {
 		    	int totalJobPairsforJob=0;
 	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
 	    		if (forPage==PAGE_JOB_DETAILS_BY_SPACE) {
-	    			jobPairsToDisplay = Jobs.getJobPairsForNextPageInSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
+	    			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
 		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
@@ -867,7 +905,7 @@ public class RESTHelpers {
 		    				id,													// Job id 
 		    				attrMap.get(SPACE_ID)
 		    	);
-	    			totalJobPairsforJob= Jobs.getJobPairCountInSpace(id,attrMap.get(SPACE_ID));
+	    			totalJobPairsforJob= Jobs.getJobPairCountInJobSpace(id,attrMap.get(SPACE_ID));
 	    		} else {
 	    			jobPairsToDisplay = Jobs.getJobPairsForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -1131,7 +1169,7 @@ public class RESTHelpers {
     		double displayWC = Math.round(jp.getCpuUsage()*100)/100.0;		    		
     		entry.add(new JsonPrimitive(displayWC + " s"));
     		entry.add(new JsonPrimitive(jp.getStarexecResult()));
-    		entry.add(new JsonPrimitive(jp.getSpace().getName()));
+    		entry.add(new JsonPrimitive(jp.getJobSpaceName()));
     		
     		dataTablePageEntries.add(entry);
     	}

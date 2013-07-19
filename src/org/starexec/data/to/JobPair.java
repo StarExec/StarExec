@@ -16,6 +16,7 @@ public class JobPair extends Identifiable {
 	private int wallclockTimeout = -1;
 	private int completionId=-1;
 	private int jobSpaceId=-1;
+	private String jobSpaceName="";
 	private WorkerNode node = null;
 	private Solver solver = null;
 	private Benchmark bench = null;	
@@ -45,6 +46,7 @@ public class JobPair extends Identifiable {
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
 							  //the job is initiated to the space the benchmark is in
+	
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.solver = new Solver();
@@ -505,5 +507,13 @@ public class JobPair extends Identifiable {
 
 	public int getJobSpaceId() {
 		return jobSpaceId;
+	}
+
+	public void setJobSpaceName(String jobSpaceName) {
+		this.jobSpaceName = jobSpaceName;
+	}
+
+	public String getJobSpaceName() {
+		return jobSpaceName;
 	}
 }

@@ -54,24 +54,25 @@ CREATE PROCEDURE GetJobPairCountByJob(IN _jobId INT)
 		WHERE job_id = _jobId;
 	END //
 
+	
 -- Returns the number of jobs pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairCountByConfigInSpace;
-CREATE PROCEDURE GetJobPairCountByConfigInSpace(IN _jobId INT, IN _spaceId INT, IN _configId INT)
+DROP PROCEDURE IF EXISTS GetJobPairCountByConfigInJobSpace;
+CREATE PROCEDURE GetJobPairCountByConfigInJobSpace(IN _jobId INT, IN _spaceId INT, IN _configId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobPairCount
 		FROM job_pairs
-		WHERE job_id = _jobId AND space_id=_spaceId AND config_id=_configId;
+		WHERE job_id = _jobId AND job_space_id=_spaceId AND config_id=_configId;
 	END //
 	
 -- Returns the number of jobs pairs for a given job
 -- Author: Todd Elvers	
-DROP PROCEDURE IF EXISTS GetJobPairCountByJobInSpace;
-CREATE PROCEDURE GetJobPairCountByJobInSpace(IN _jobId INT, IN _spaceId INT)
+DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpace;
+CREATE PROCEDURE GetJobPairCountByJobInJobSpace(IN _jobId INT, IN _jobSpaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobPairCount
 		FROM job_pairs
-		WHERE job_id = _jobId AND space_id=_spaceId;
+		WHERE job_id = _jobId AND job_space_id=_jobSpaceId;
 	END //
 	
 -- Gets the fewest necessary Jobs in order to service a client's
@@ -388,8 +389,8 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
 						job_pairs.config_id,
-						job_pairs.space_id,
 						job_pairs.cpu,
+						job_pairs.job_space_id,
 						config.id,
 						config.name,
 						config.description,
@@ -402,9 +403,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.id,
 						bench.name,
 						bench.description,
-						space.id,
-						space.name,
-						space.description,
+						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu
 						
@@ -412,9 +411,9 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+									JOIN 	job_spaces		AS jobSpace ON job_pairs.job_space_id=jobSpace.id	
 				
-				WHERE 	job_id = _jobId  AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
+				WHERE 	job_id = _jobId  AND ((_spaceId IS NULL) OR job_space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -425,7 +424,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
-					 	WHEN 6 THEN space.name
+					 	WHEN 6 THEN jobSpace.name
 					 END) ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
@@ -434,7 +433,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
 						job_pairs.config_id,
-						job_pairs.space_id,
+						job_pairs.job_space_id,
 						config.id,
 						config.name,
 						config.description,
@@ -447,18 +446,16 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.id,
 						bench.name,
 						bench.description,
-						space.id,
-						space.name,
-						space.description,
+						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+									JOIN 	job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 									
-				WHERE 	job_id = _jobId AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
+				WHERE 	job_id = _jobId AND ((_spaceId IS NULL) OR job_space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN bench.name
@@ -467,7 +464,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
-					 	WHEN 6 THEN space.name
+					 	WHEN 6 THEN jobSpace.name
 					 END) DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
@@ -478,7 +475,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
 						job_pairs.config_id,
-						job_pairs.space_id,
+						job_pairs.job_space_id,
 						config.id,
 						config.name,
 						config.description,
@@ -491,9 +488,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.id,
 						bench.name,
 						bench.description,
-						space.id,
-						space.name,
-						space.description,
+						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu
 						
@@ -501,16 +496,16 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+									JOIN	job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 
-				WHERE 	job_id = _jobId  AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
+				WHERE 	job_id = _jobId  AND ((_spaceId IS NULL) OR job_space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and cpu
 				-- don't include the query
 				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')
-				OR 		space.name		LIKE	CONCAT('%', _query, '%')
+				OR 		jobSpace.name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
@@ -523,7 +518,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
-					 	WHEN 6 THEN space.name
+					 	WHEN 6 THEN jobSpace.name
 					 END) ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
@@ -532,7 +527,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
 						job_pairs.config_id,
-						job_pairs.space_id,
+						job_pairs.job_space_id,
 						config.id,
 						config.name,
 						config.description,
@@ -545,22 +540,20 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.id,
 						bench.name,
 						bench.description,
-						space.id,
-						space.name,
-						space.description,
+						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN	spaces			AS 	space	ON 	job_pairs.space_id = space.id
+									JOIN 	job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 
-				WHERE 	job_id = _jobId AND ((_spaceId IS NULL) OR space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
+				WHERE 	job_id = _jobId AND ((_spaceId IS NULL) OR job_space_id=_spaceId) AND ((_configId IS NULL) OR config_id=_configId)
 				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')
-				OR		space.name		LIKE	CONCAT('%', _query, '%')
+				OR		jobSpace.name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 
@@ -571,7 +564,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
-					 	WHEN 6 THEN space.name 
+					 	WHEN 6 THEN jobSpace.name 
 					 END) DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
@@ -582,8 +575,9 @@ DROP PROCEDURE IF EXISTS GetJobAttrs;
 CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
 		SELECT *
-		FROM job_attributes
-		WHERE job_id=_jobId;
+		FROM job_pairs AS pair 
+			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
+			WHERE pair.job_id=_jobId;
 	END //
 	
 -- Retrieves simple overall statistics for job pairs belonging to a job
@@ -663,6 +657,7 @@ CREATE PROCEDURE GetJobPairsByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, I
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+					   JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 -- Retrieves all the info needed for stats for each job pair
@@ -680,6 +675,7 @@ CREATE PROCEDURE GetJobPairsByJobInJobSpace(In _jobId INT, IN _jobSpaceId INT)
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN status_codes AS status ON job_pairs.status_code=status.code
+									JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_id=_jobId AND job_space_id =_jobSpaceId;
 	END //
 	
@@ -691,6 +687,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
 					   INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
+					   JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId
 		ORDER BY job_pairs.end_time DESC;
 	END //
@@ -816,10 +813,10 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _spaceId INT, IN _path VARCHAR(2048),IN _jobSpaceId INT, OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, space_id, path,job_space_id)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _spaceId, _path, _jobSpaceId);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 

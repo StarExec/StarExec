@@ -404,9 +404,9 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{spaceId}/{configId}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("spaceId") int spaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		
@@ -416,10 +416,39 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpace(jobId,spaceId,configId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
+	
+	/**
+	 * Returns the next page of entries for a job pairs table
+	 *
+	 * @param jobId the id of the job to get the next page of job pairs for
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of job pair entries if successful,<br>
+	 * 		1 if the request fails parameter validation,<br> 
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}")
+	@Produces("application/json")	
+	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		// Ensure user can view the job they are requesting the pairs from
+		if(false == Permissions.canUserSeeJob(jobId, userId)){
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
 	
 	@POST
 	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview")

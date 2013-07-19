@@ -1,10 +1,8 @@
 var summaryTable;
-var pairTable;
 $(document).ready(function(){
 	initUI();
 	initDataTables();
 	setInterval(function() {
-		pairTable.fnDraw(false);
 		summaryTable.fnReloadAjax(null,null,true);
 	},10000);
 });
@@ -230,21 +228,6 @@ function initUI(){
 	// Job details and job pair tables are open by default
 	$('fieldset:first, fieldset:eq(1)').expandable(false);
 	$('fieldset:not(:first, :eq(1))').expandable(true);
-	
-	$('#pairTbl tbody').delegate("a", "click", function(event) {
-		event.stopPropogation();
-	});
-
-	
-	//Set up row click to send to pair details page
-	$("#pairTbl tbody").delegate("tr", "click", function(){
-		var pairId = $(this).find('input').val();
-		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
-	});
-
-
-	
-	
 }
 
 /**
@@ -261,16 +244,7 @@ function initDataTables(){
 		"bSort": true        
 	});
 	
-	// Job pairs table
-	pairTable=$('#pairTbl').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
-        "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
-        "bServerSide"	: true,
-        "sAjaxSource"	: starexecRoot+"services/jobs/",
-        "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler 
-    });
+	
 	
 	//summary table
 	summaryTable=$('#solveTbl').dataTable( {
@@ -284,8 +258,7 @@ function initDataTables(){
         "fnServerData" : fnStatsPaginationHandler
     });
 	
-	// Change the filter so that it only queries the server when the user stops typing
-	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
+	
 	
 }
 
@@ -363,38 +336,6 @@ function extendDataTableFunctions(){
 	};
 }
 
-/**
- * Handles querying for pages in a given DataTable object
- * 
- * @param sSource the "sAjaxSource" of the calling table
- * @param aoData the parameters of the DataTable object to send to the server
- * @param fnCallback the function that actually maps the returned page to the DataTable object
- */
-function fnPaginationHandler(sSource, aoData, fnCallback) {
-	var jobId = getParameterByName('id');
-	
-	$.post(  
-			sSource + jobId + "/pairs/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					default:
-						// Replace the current page with the newly received page
-						fnCallback(nextDataTablePage);
-						break;
-				}
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
-	});
-}
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');

@@ -168,6 +168,8 @@ public class JobPairs {
 		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
 		jp.setPath(result.getString("path"));
+		jp.setJobSpaceId(result.getInt("job_space_id"));
+		
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
@@ -408,7 +410,6 @@ public class JobPairs {
 				jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id"),true));
 				jp.setAttributes(getAttributes(pairId));
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-				jp.setSpace(Spaces.get(results.getInt("space_id")));
 
 				Status s = new Status();
 				s.setCode(results.getInt("status.code"));

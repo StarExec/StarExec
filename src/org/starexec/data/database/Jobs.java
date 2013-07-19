@@ -5,6 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -226,22 +227,21 @@ public class Jobs {
 	private static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
 			procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());
 			procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
 			procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
-			procedure.setInt(7, pair.getSpace().getId());
-			procedure.setString(8, pair.getPath());
-			procedure.setInt(9,pair.getJobSpaceId());
+			procedure.setString(7, pair.getPath());
+			procedure.setInt(8,pair.getJobSpaceId());
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(10, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(9, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(10));
+			pair.setId(procedure.getInt(9));
 
 			return true;
 		} catch (Exception e) {
@@ -807,7 +807,6 @@ public class Jobs {
 	protected static HashMap<Integer,Properties> getJobAttributes(Connection con, int jobId) throws Exception {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
 		log.debug("Getting all attributes for job with ID = "+jobId);
 		 try {
 			procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
@@ -819,17 +818,22 @@ public class Jobs {
 			int id;
 			
 			while(results.next()){
-				id=results.getInt("pair_id");
+				id=results.getInt("pair.id");
 				if (!props.containsKey(id)) {
 					props.put(id,new Properties());
-				} 
-				props.get(id).put(results.getString("attr_key"), results.getString("attr_value"));	
+				}
+				String key=results.getString("attr.attr_key");
+				String value=results.getString("attr.attr_value");
+				if (key!=null && value!=null) {
+					props.get(id).put(key, value);	
+
+				}
 			}			
 			Common.safeClose(results);
 			log.debug("returning from attribute function");
 			return props;
 		} catch (Exception e) {
-			
+			log.error("get Job Attrs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -931,13 +935,13 @@ public class Jobs {
 	 * @return the number of job pairs
 	 * @author Eric Burns
 	 */
-	public static int getJobPairCountByConfigInSpace(int jobId,int spaceId, int configId) {
+	public static int getJobPairCountByConfigInJobSpace(int jobId,int spaceId, int configId) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByConfigInSpace(?,?, ?)}");
+			 procedure = con.prepareCall("{CALL GetJobPairCountByConfigInJobSpace(?,?, ?)}");
 			procedure.setInt(1,jobId);
 			procedure.setInt(2, spaceId);
 			procedure.setInt(3, configId);
@@ -965,15 +969,15 @@ public class Jobs {
 	 * @return the number of job pairs for the given job
 	 * @author Eric Burns
 	 */
-	public static int getJobPairCountInSpace(int jobId, int spaceId) {
+	public static int getJobPairCountInJobSpace(int jobId, int jobSpaceId) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInSpace(?, ?)}");
+			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpace(?, ?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,spaceId);
+			procedure.setInt(2,jobSpaceId);
 			results = procedure.executeQuery();
 			int jobPairCount=0;
 			if (results.next()) {
@@ -1004,7 +1008,7 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
-		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,null,null);
+		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,null,null, false);
 	}
 
 	
@@ -1022,7 +1026,7 @@ public class Jobs {
 	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	private static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, Integer spaceId, Integer configId) {
+	private static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, Integer jobSpaceId, Integer configId, boolean hierarchy) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1039,8 +1043,8 @@ public class Jobs {
 			procedure.setString(6, searchQuery);
 			
 			//the spaceId and configId are not null only if we are getting results by config/space
-			if (spaceId!=null) {
-				procedure.setInt(7, spaceId);
+			if (jobSpaceId!=null) {
+				procedure.setInt(7, jobSpaceId);
 			} else {
 				procedure.setNull(7,java.sql.Types.INTEGER);
 			}
@@ -1073,12 +1077,7 @@ public class Jobs {
 				config.setId(results.getInt("config.id"));
 				config.setName(results.getString("config.name"));
 				config.setDescription(results.getString("config.description"));
-
-				Space space = new Space();
-				space.setId(results.getInt("space.id"));
-				space.setName(results.getString("space.name"));
-				space.setDescription(results.getString("space.description"));
-
+				
 				Status status = new Status();
 				status.setCode(results.getInt("status.code"));
 				status.setStatus(results.getString("status.status"));
@@ -1090,12 +1089,13 @@ public class Jobs {
 				solver.addConfiguration(config);
 				jp.setBench(bench);
 				jp.setSolver(solver);
-				jp.setSpace(space);
 				jp.setStatus(status);
 				jp.setAttributes(attributes);
+				jp.setJobSpaceName(results.getString("jobSpace.name"));
 				jobPairs.add(jp);		
 			}	
 			Common.safeClose(results);
+			
 			return jobPairs;
 		} catch (Exception e){			
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
@@ -1122,9 +1122,28 @@ public class Jobs {
 	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
 	 * @author Eric Burns
 	 */
-	
-	public static List<JobPair> getJobPairsForNextPageByConfigInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int spaceId, int configId) {
-		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,spaceId,configId);
+	//TODO: All the sorting, filtering, etc. now has to be done in java, as we just can't do this in SQL easily
+	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId) {
+		List<JobPair> pairs=Jobs.getPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
+		
+		
+		
+		//TODO: Now we have all the pairs, so we need to sort and filter them (will do later)
+		
+		
+		List<JobPair> returnList=new ArrayList<JobPair>();
+		if (startingRecord>=pairs.size()) {
+			returnList = new ArrayList<JobPair>();
+		} else if (startingRecord+recordsPerPage>pairs.size()) {
+			returnList = pairs.subList(startingRecord, pairs.size());
+		} else {
+			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
+		}
+		//TODO: This should actually be an argument to the sorting function
+		if (!isSortedASC) {
+			Collections.reverse(returnList);
+		}
+		return returnList;
 	}
 	
 	/**
@@ -1141,8 +1160,8 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobPair> getJobPairsForNextPageInSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int spaceId) {
-		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,spaceId,null);
+	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId) {
+		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,jobSpaceId,null,false);
 	}
 	
 	/**
@@ -1547,6 +1566,7 @@ public class Jobs {
 				if (getCompletionId) {
 					jp.setCompletionId(results.getInt("complete.completion_id"));
 				}
+				jp.setJobSpaceName(results.getString("jobSpace.name"));
 				returnList.add(jp);
 				curNode=results.getInt("node_id");
 				curBench=results.getInt("bench_id");
@@ -1592,12 +1612,13 @@ public class Jobs {
 				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
 				
 				//NOTE: for all new jobs, props should always contain the ID of every job pair
-				// that has attributes. The only reason we need to check whether it doesn't is for
+				// in  the job, regardless of whether it has any attributes. The only reason we need to check whether it doesn't is for
 				// backwards compatibility-- jobs run before the job_id column was added to the 
 				//attributes table will not work with the getJobAttributes method.
 				if (props.containsKey(jp.getId())) {
 					jp.setAttributes(props.get(jp.getId()));
 				} else {
+					System.out.println("here");
 					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
 				}
 				
@@ -1698,8 +1719,9 @@ public class Jobs {
 	 * @return A List of JobPairs in the given space associated with the given job
 	 * @author Eric Burns
 	 */
-	
-	public static List<JobPair> getPairsDetailedInSpace(int jobId, int spaceId) {
+	//TODO: This is no longer used because we are only getting job pairs in a space by config. 
+	//Do we need this?
+	public static List<JobPair> getJobPairsDetailedInSpace(int jobId, int spaceId) {
 		Connection con = null;	
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -1708,7 +1730,7 @@ public class Jobs {
 			
 			log.info("getting detailed pairs for job " + jobId +" in space "+spaceId );
 			
-			 procedure = con.prepareCall("{CALL GetJobPairsByJobInSpace(?, ?)}");
+			 procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,spaceId);
 			results = procedure.executeQuery();
@@ -2486,6 +2508,7 @@ public class Jobs {
 			// that has attributes. The only reason we need to check whether it doesn't is for
 			// backwards compatibility-- jobs run before the job_id column was added to the 
 			//attributes table will not work with the getJobAttributes method.
+			
 			if (props.containsKey(jp.getId())) {
 				jp.setAttributes(props.get(jp.getId()));
 			} else {

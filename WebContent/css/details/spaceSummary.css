@@ -58,8 +58,8 @@ thead {
 	margin-right:10px;
 }
 
-#optionField {
-	width:90%;
+#detailPanel #optionField {
+	width:95%;
 }
 
 #solverComparison {
