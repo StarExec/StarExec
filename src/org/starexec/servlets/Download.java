@@ -754,8 +754,7 @@ public class Download extends HttpServlet {
 		//Write to description file
 		if (!(curDesc.equals("no description"))) {
 			File description = new File(tempdest + File.separator + R.SOLVER_DESC_PATH);
-
-			FileWriter fw = new FileWriter(description.getAbsoluteFile());
+			FileWriter fw = new FileWriter(description);
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(curDesc);
 			bw.close();
