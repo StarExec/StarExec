@@ -655,13 +655,21 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
+			File benchDir=new File(tempDir,"benchmarks");
+			File solverDir=new File(tempDir,"solvers");
 			if (!hierarchy) {
 				descriptions.add(space.getDescription());
 				tempDir.mkdirs();
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
+				List<Solver> solverList=Solvers.getBySpace(space.getId());
 				for(Benchmark b: benchList){
 					if(b.isDownloadable()){
-						copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName(), descriptions);
+						copyFile(b.getPath(), benchDir.getAbsolutePath() + File.separator + b.getName(), descriptions);
+					}
+				}
+				for (Solver s : solverList) {
+					if (s.isDownloadable()) {
+						FileUtils.copyDirectory(new File(s.getPath()), solverDir);
 					}
 				}
 			} else {
@@ -693,13 +701,21 @@ public class Download extends HttpServlet {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
+			File benchmarkDir=new File(tempDir,"benchmarks");
+			File solverDir=new File(tempDir,"solvers");
 			log.debug("[new directory] temp dir = " + dest);
 			tempDir.mkdirs();
 
 			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
+			List<Solver> solverList=Solvers.getBySpace(space.getId());
 			for(Benchmark b: benchList){
-				if(b.isDownloadable()){
-					copyFile(b.getPath(), tempDir.getAbsolutePath() + File.separator + b.getName(), descriptions);		
+				if(b.isDownloadable() || b.getUserId()==uid ){
+					copyFile(b.getPath(), benchmarkDir.getAbsolutePath() + File.separator + b.getName(), descriptions);		
+				}
+			}
+			for (Solver s : solverList) {
+				if (s.isDownloadable() || s.getUserId()==uid) {
+					FileUtils.copyDirectory(new File(s.getPath()),solverDir);
 				}
 			}
 

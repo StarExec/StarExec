@@ -1910,7 +1910,6 @@ public class RESTServices {
 
 	/**
 	 * Deletes a list of jobs
-	 * 
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * 			2: insufficient permissions
@@ -1935,6 +1934,8 @@ public class RESTServices {
 			if (userId!=Jobs.get(id).getUserId()) {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
+			//first kill a job, then delete it. Killing it first ensures no additional job pairs are run
+			//after the deletion
 			boolean success_kill = Jobs.kill(id);
 			boolean success_delete = Jobs.delete(id);
 			if (!success_delete || !success_kill) {

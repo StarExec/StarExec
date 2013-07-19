@@ -319,7 +319,7 @@ public class BatchUtil {
 				}
 			}
 			else{
-				log.warn("Space " + spaceId + " has a node should be an element, but isn't");
+				log.warn("Space " + spaceId + " has a node that should be an element, but isn't");
 			}
 		}
 		if (!benchmarks.isEmpty()){
