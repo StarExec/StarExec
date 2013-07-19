@@ -630,6 +630,7 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN	job_spaces 		AS  jobSpace ON jobSpace.id=job_pairs.job_space_id
 									
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;

@@ -2,12 +2,14 @@ package org.starexec.data.to;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.jfree.util.Log;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
 
@@ -126,14 +128,13 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	}
 
 	/**
-	 * @return the attribute names for the first completed job pair in the job,
-	 * or null if there are no completed job pairs.
+	 * @return all the attribute names for every completed job pair in this job
 	 */
 	public Set<String> attributeNames() {
 	    if (jobPairs == null || jobPairs.size()==0) {
 	    	return null;
 	    }
-		
+		Set<String> attrs=new HashSet<String>();
 	    Iterator<JobPair> itr = jobPairs.iterator();
 	    while(itr.hasNext()) {
 	    	JobPair pair = itr.next();
@@ -142,9 +143,11 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	    		continue;
 	    	}
 	    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
-	    		return props.stringPropertyNames(); 
+	    		attrs.addAll(props.stringPropertyNames());
+	    		
 	    }
-	    return null;
+	    Log.debug("Returning "+attrs.size()+" unique attr names");
+	    return attrs;
 	}
 
 	/**

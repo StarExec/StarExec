@@ -100,6 +100,8 @@ public class RESTServices {
 	
 	private static final int ERROR_PRIM_ALREADY_DELETED=11;
 	
+	private static final int ERROR_TOO_MANY_JOB_PAIRS=12;
+	
 	/**
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id
@@ -445,8 +447,12 @@ public class RESTServices {
 		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request);
-		
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+		if (nextDataTablesPage==null) {
+			return gson.toJson(ERROR_DATABASE);
+		} else if (nextDataTablesPage.has("maxpairs")) {
+			return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
+		}
+		return gson.toJson(nextDataTablesPage); 
 	}
 	
 	

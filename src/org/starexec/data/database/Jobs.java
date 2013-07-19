@@ -1510,12 +1510,12 @@ public class Jobs {
 			{
 				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
 			}
-			 procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
 			return getPairsDetailed(jobId,con,results,false);
 		} catch (Exception e) {
-			
+			log.error("Get Pairs Detailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1536,7 +1536,6 @@ public class Jobs {
 	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId) {
 		
 		try {			
-			
 			List<JobPair> returnList = new ArrayList<JobPair>();
 			//because there is a lot of redundancy in node, bench, and config IDs
 			// we don't want to query the database once per job pair to get them. Instead,
@@ -1553,7 +1552,6 @@ public class Jobs {
 			List<Integer> configIdList=new ArrayList<Integer>();
 			int curNode,curBench,curConfig;
 			while(results.next()){
-				log.debug("getting result to pair, result set closed = " + results.isClosed());
 				JobPair jp = JobPairs.resultToPair(results);
 				
 				Status s = new Status();
@@ -1582,7 +1580,6 @@ public class Jobs {
 				log.debug("Finished with results for pair " + jp.getId());
 			}
 			
-			log.info("result set closed for job " + jobId);
 			
 			Set<Integer> idSet=neededConfigs.keySet();
 			for (int curId : idSet) {
@@ -1618,7 +1615,6 @@ public class Jobs {
 				if (props.containsKey(jp.getId())) {
 					jp.setAttributes(props.get(jp.getId()));
 				} else {
-					System.out.println("here");
 					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
 				}
 				
@@ -1629,8 +1625,6 @@ public class Jobs {
 			
 		} catch (Exception e){			
 			log.error("getPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(results);
 		}
 
 		return null;		
@@ -1656,7 +1650,7 @@ public class Jobs {
 			
 			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			 procedure = con.prepareCall("{CALL GetJobPairsByConfigInJobSpace(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsByConfigInJobSpace(?, ?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,jobSpaceId);
 			procedure.setInt(3,configId);

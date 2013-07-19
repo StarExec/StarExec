@@ -392,6 +392,9 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 					case 2:
 						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
 						break;
+					case 12:
+						showMessage('error', "There are too many  job pairs in this space to display");
+						break;
 					default:
 						// Replace the current page with the newly received page
 						fnCallback(nextDataTablePage);

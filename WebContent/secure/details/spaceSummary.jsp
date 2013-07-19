@@ -77,7 +77,7 @@
 			<table id="pairTbl" class="shaded">
 				<thead>
 					<tr>
-						<th id="benchHead">benchmark</th>
+						<th class="benchHead">benchmark</th>
 						<th>solver</th>
 						<th>config</th>
 						<th>status</th>

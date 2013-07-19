@@ -79,7 +79,7 @@
 				</c:if>
 				<tr>
 					<td>space</td>
-					<td>${pair.space.name}</td>
+					<td>${pair.jobSpaceName}</td>
 				</tr>											
 			</tbody>
 		</table>	

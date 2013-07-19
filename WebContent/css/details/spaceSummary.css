@@ -26,7 +26,7 @@ thead {
 	width: 16%;
 }
 
-.incompleteHead{
+.incompleteHead, .benchHead{
 	width: 19%
 }
 
@@ -34,10 +34,10 @@ thead {
 	width: 23%;
 }
 
-.timeHead, .solverHead, .failedHead {
+.solverHead, .failedHead, .wrongHead {
 	width: 11%;
 }
-.wrongHead {
+.timeHead {
 	width: 9%;
 }
 
@@ -49,6 +49,10 @@ thead {
 }
 
 #solveTbl tbody tr {
+	cursor:pointer;
+}
+
+#pairTbl tbody tr {
 	cursor:pointer;
 }
 

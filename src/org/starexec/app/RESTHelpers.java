@@ -7,6 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -41,7 +42,6 @@ public class RESTHelpers {
 	private static final int PAGE_SPACE_EXPLORER=1;
 	private static final int PAGE_USER_DETAILS=2;
 	private static final int PAGE_JOB_DETAILS_BY_SPACE=3;
-	
 	// Job pairs aren't technically a primitive class according to how 
 	// we've discussed primitives, but to save time and energy I've included them here as such
 	public enum Primitive {
@@ -530,7 +530,13 @@ public class RESTHelpers {
 		
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-		
+		totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId);
+		if (totalJobs>R.MAXIMUM_JOB_PAIRS) {
+			//there are too many job pairs to display quickly, so just don't query for them
+			JsonObject ob= new JsonObject();
+			ob.addProperty("maxpairs", true);
+			return ob;
+		}
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
     			attrMap.get(STARTING_RECORD),						// Record to start at  
     			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -541,7 +547,6 @@ public class RESTHelpers {
     			jobSpaceId
     			
 		);
-		totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId);
 		 
 		/**
     	 * Used to display the 'total entries' information at the bottom of the DataTable;
