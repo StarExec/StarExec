@@ -655,16 +655,18 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
-			File benchDir=new File(tempDir,"benchmarks");
+			File benchmarkDir=new File(tempDir,"benchmarks");
 			File solverDir=new File(tempDir,"solvers");
 			if (!hierarchy) {
 				descriptions.add(space.getDescription());
 				tempDir.mkdirs();
+				solverDir.mkdirs();
+				benchmarkDir.mkdirs();
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 				List<Solver> solverList=Solvers.getBySpace(space.getId());
 				for(Benchmark b: benchList){
 					if(b.isDownloadable()){
-						copyFile(b.getPath(), benchDir.getAbsolutePath() + File.separator + b.getName(), descriptions);
+						copyFile(b.getPath(), benchmarkDir.getAbsolutePath() + File.separator + b.getName(), descriptions);
 					}
 				}
 				for (Solver s : solverList) {
@@ -703,6 +705,8 @@ public class Download extends HttpServlet {
 			File tempDir = new File(dest);
 			File benchmarkDir=new File(tempDir,"benchmarks");
 			File solverDir=new File(tempDir,"solvers");
+			solverDir.mkdirs();
+			benchmarkDir.mkdirs();
 			log.debug("[new directory] temp dir = " + dest);
 			tempDir.mkdirs();
 
@@ -754,7 +758,8 @@ public class Download extends HttpServlet {
 		//Write to description file
 		if (!(curDesc.equals("no description"))) {
 			File description = new File(tempdest + File.separator + R.SOLVER_DESC_PATH);
-			FileWriter fw = new FileWriter(description);
+			
+			FileWriter fw = new FileWriter(description.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(curDesc);
 			bw.close();
