@@ -62,13 +62,14 @@ function initSpaceExplorer() {
 		id = data.rslt.obj.attr("id");
 		name = data.rslt.obj.attr("name");
 		$("#spaceName").text($('.jstree-clicked').text());
-		reloadSummaryTable(id);
+		reloadTables(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
 }
 
-function reloadSummaryTable(id) {
+function reloadTables(id) {
 	curSpaceId=id;
 	summaryTable.fnReloadAjax(null,null,true,id);
+	pairTable.fnDraw();
 }
 
 function update() {
@@ -381,7 +382,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
 	
 	$.post(  
-			sSource + jobId + "/pairs/pagination",
+			sSource + jobId + "/pairs/pagination/"+curSpaceId,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){
