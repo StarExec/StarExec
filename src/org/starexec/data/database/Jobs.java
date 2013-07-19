@@ -1124,7 +1124,7 @@ public class Jobs {
 	 */
 	//TODO: All the sorting, filtering, etc. now has to be done in java, as we just can't do this in SQL easily
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId) {
-		List<JobPair> pairs=Jobs.getPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
+		List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
 		
 		
 		
@@ -1646,7 +1646,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobPair> getPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
+	public static List<JobPair> getJobPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1666,7 +1666,7 @@ public class Jobs {
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 				for (Space s : subspaces) {
-					pairs.addAll(getPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,hierarchy));
+					pairs.addAll(getJobPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,false));
 				}
 			}
 			

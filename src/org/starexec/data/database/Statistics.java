@@ -400,8 +400,8 @@ public class Statistics {
 	
 	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId) {
 		try {
-			List<JobPair> pairs1=Jobs.getPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configId1,true);
-			List<JobPair> pairs2=Jobs.getPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId2,true);
+			List<JobPair> pairs1=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configId1,true);
+			List<JobPair> pairs2=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId2,true);
 			return makeSolverComparisonChart(pairs1,pairs2);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
