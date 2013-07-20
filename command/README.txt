@@ -132,6 +132,11 @@ These commands have a range of functions.
 REQUIRED: None
 OPTIONAL: None
 
+--ignoreids -Instructs StarExecCommand to stop printing the IDs of newly uploaded solvers and processors and
+			 newly created jobs and spaces. This command does nothing if this behavior is already disabled.
+REQUIRED: None
+OPTIONAL: None
+
 --login -Logs the user into StarExec.
 REQUIRED: "u", "p". If "u" equals "guest" then "p" is not required.
 OPTIONAL: "addr"
@@ -153,6 +158,14 @@ deeper page, and it should end with a '/'
 REQUIRED: None
 OPTIONAL: None
 
+--pausejob -Pauses a job that is currently running on starexec. "id" refers to a job ID.
+REQUIRED: "id"
+OPTIONAL: None
+
+--resumejob -Resumes a job that was paused previously. "id" refers to a job ID.
+REQUIRED: "id"
+OPTIONAL: None
+
 --runfile -Given a file containing a sequence of commands, runs all the commands in succession.
 REQUIRED: "f"
 OPTIONAL: "verbose"
@@ -164,9 +177,10 @@ OPTIONAL: None
 --returnids -Instructs StarexecCommand to print the IDs of newly uploaded solvers and processors and newly
 			 created jobs and spaces in the form "id={newId}\n" The default behavior at the start of a session 
 			 is not to do this. This command does nothing if this behavior is already enabled.
+REQUIRED: None
+Optional: None
 
---ignoreids -Instructs StarExecCommand to stop printing the IDs of newly uploaded solvers and processors and
-			 newly created jobs and spaces. This command does nothing if this behavior is already disabled.
+
 
 Download Commands
 -----------------

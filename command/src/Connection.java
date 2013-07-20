@@ -606,6 +606,60 @@ public class Connection {
 	}
 	
 	/**
+	 * Resumes a job on starexec that was paused previously
+	 * @param commandParams Parameters given by the user at the command line. Should include an ID
+	 * @return 0 on success or a negative error code on failure
+	 */
+	
+	public int resumeJob(HashMap<String,String> commandParams) {
+		return pauseOrResumeJob(commandParams,false);
+	}
+	/**
+	 * Pauses a job that is currently running on starexec
+	 * @param commandParams Parameters given by the user at the command line. Should include an ID
+	 * @return 0 on success or a negative error code on failure
+	 */
+	
+	public int pauseJob(HashMap<String,String> commandParams) {
+		return pauseOrResumeJob(commandParams,true);
+	}
+	
+	/**
+	 * Pauses or resumes a job depending on the value of pause
+	 * @param commandParams Parameters given by the user at the command line
+	 * @param pause Pauses a job if true and resumes it if false
+	 * @return 0 on success or a negative error code on failure
+	 */
+	
+	private int pauseOrResumeJob(HashMap<String,String> commandParams, boolean pause) {
+		try {
+			int valid=Validator.isValidPauseOrResumeRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			String URL=baseURL+R.URL_PAUSEORRESUME;
+			if (pause) {
+				URL=URL.replace("{method}", "pause");
+			} else {
+				URL=URL.replace("{method}","resume");
+			}
+			URL=URL.replace("{id}", commandParams.get(R.PARAM_ID));
+			HttpPost post=new HttpPost(URL);
+			post=(HttpPost) setHeaders(post);
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
+			HttpResponse response=client.execute(post);
+			setSessionIDIfExists(response.getAllHeaders());
+			response.getEntity().getContent().close();
+			return 0;
+			
+		} catch (Exception e) {
+			return R.ERROR_SERVER; 
+		}
+		
+		
+	}
+	
+	/**
 	 * Deletes a primitive on StarExec
 	 * @param commandParams A HashMap of key/value pairs given by the user at the command line
 	 * @param type -- The type of primitive to delete

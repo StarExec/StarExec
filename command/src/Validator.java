@@ -43,6 +43,7 @@ public class Validator {
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
+	private static String[] allowedPauseOrResumeParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
@@ -594,6 +595,19 @@ public class Validator {
 		}
 		findUnnecessaryParams(allowedLoginParams,commandParams);
 		return 0;
+	}
+	
+	public static int isValidPauseOrResumeRequest(HashMap<String,String> commandParams) {
+		if (!paramsExist(new String[]{R.PARAM_ID}, commandParams)) {
+			return R.ERROR_MISSING_PARAM;
+		}
+		
+		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+			return R.ERROR_INVALID_ID;
+		}
+		findUnnecessaryParams(allowedPauseOrResumeParams,commandParams);
+		return 0;
+		
 	}
 	
 	/**

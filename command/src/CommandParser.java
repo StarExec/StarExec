@@ -483,6 +483,10 @@ public class CommandParser {
 			
 		} else if (c.equals(R.COMMAND_POLLJOB)) {
 			status=pollJob(commandParams);
+		} else if (c.equals(R.COMMAND_RESUMEJOB)) {
+			status=con.resumeJob(commandParams);
+		} else if (c.equals(R.COMMAND_PAUSEJOB)) {
+			status=con.pauseJob(commandParams);
 		}
 		else if (c.startsWith("get")) {
 			status=handleGetCommand(c,commandParams);
