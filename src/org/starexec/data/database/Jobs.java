@@ -558,7 +558,6 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	//TODO: Get attributes for these job pairs
 	public static List<JobPair> getCompletedJobPairsInJobSpace(int jobId, int jobSpaceId, boolean hierarchy) {
 		Connection con = null;	
 		ResultSet results=null;

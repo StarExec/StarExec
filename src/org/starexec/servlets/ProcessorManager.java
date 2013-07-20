@@ -30,7 +30,6 @@ import org.starexec.util.Validator;
 /**
  * Servlet which handles incoming requests to add and update processors
  * @author Tyler Jensen
- * TODO: edit out of this file everything unneccesary.
  */
 @SuppressWarnings("serial")
 public class ProcessorManager extends HttpServlet {		
@@ -72,8 +71,6 @@ public class ProcessorManager extends HttpServlet {
 					// Delegate the request based on the action
 					if(action.equals(ADD_ACTION)) {
 						this.handleAddRequest(form, request, response);
-					//} else if(action.equals(UPDATE_ACTION)) {
-					//	this.handleUpdateRequest(form, request, response);
 					} else {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid form action");	
 					}

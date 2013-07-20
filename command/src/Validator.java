@@ -33,6 +33,7 @@ public class Validator {
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
+	private static String[] allowedDownloadSpaceParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_EXCLUDE_BENCHMARKS,R.PARAM_EXCLUDE_SOLVERS};
 	private static String[] allowedDownloadCSVParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_INCLUDE_IDS};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
@@ -249,7 +250,10 @@ public class Validator {
 		}
 		if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
 			findUnnecessaryParams(allowedDownloadCSVParams,commandParams);
-		} else {
+		} else if  (urlParams.get(R.FORMPARAM_TYPE).equals("space")) {
+			findUnnecessaryParams(allowedDownloadSpaceParams,commandParams);
+		}
+		else {
 			findUnnecessaryParams(allowedDownloadParams,commandParams);
 		}
 		

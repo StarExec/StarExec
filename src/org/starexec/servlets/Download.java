@@ -741,7 +741,11 @@ public class Download extends HttpServlet {
 		}
 		return;
 	}
-
+	
+	
+	//TODO: Why are we doing this description thing? It seems like we only want to 
+	//write one description file per space, but we are checking this description queue
+	//every time we copy a benchmark
 	private void copyFile(String src, String dest, Queue<String> descriptions) throws IOException{
 		String curDesc = "no description";
 		log.debug("copying file - source = " +src + ", dest = " + dest);
@@ -759,7 +763,7 @@ public class Download extends HttpServlet {
 
 		//Write to description file
 		if (!(curDesc.equals("no description"))) {
-			File description = new File(tempdest + File.separator + R.SOLVER_DESC_PATH);
+			File description = new File(tempdest + File.separator + R.DESC_PATH);
 			
 			FileWriter fw = new FileWriter(description.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);

@@ -71,7 +71,7 @@ structure. By default, all benchmarks are placed in the space being uploaded to.
 
 "id" -Specifies the ID of a primitive, whether that be a space, job, benchmark, etc.
 
-"includeids" -When downloading a job CSV file, indicates that IDs for job pairs, solvers, configurations, and benchmarks
+"incids" -When downloading a job CSV file, indicates that IDs for job pairs, solvers, configurations, and benchmarks
 			should be included.
 
 "limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print.
@@ -82,6 +82,10 @@ corresponds to a dependent bench space.
 "lock" -Sets a newly created subspace as locked.
 
 "n" -Specifies a name. When optional, the default is the date.
+
+"nosolve" -When downloading a space, indicates solvers should not be downloaded
+
+"nobench" -When downloading a space, indicates benchmarks should not be downloaded
 
 "out" -Specifies a filepath to which a file should be downloaded.
 
@@ -190,8 +194,8 @@ OPTIONAL: "ow"
 
 --getjobinfo -Get the CSV pertaining to the job associated with the given id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow" "includeids"
-EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.tar includeids='
+OPTIONAL: "ow" "incids"
+EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.tar incids='
 
 --getjobout -Gets the output for all the job pairs associated with the job with the given id.
 REQUIRED: "id" "out"
@@ -221,9 +225,10 @@ OPTIONAL: "ow"
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
---getspace -Donwloads the space at the given ID.
+--getspace -Donwloads the space at the given ID. Solvers and benchmarks are both included by default,
+but can be excluded by using "nosolve" and "nobench"
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacehierarchy -Downloads the space hierarchy associated with the given space id.
 REQUIRED: "id" "out"

@@ -23,9 +23,7 @@ public class Common {
 	protected static Integer connectionsOpened = 0;
 	protected static Integer connectionsClosed = 0;
 	
-	public Common() {
-		// TODO Auto-generated constructor stub
-	}
+	
 	/**
 	 * Configures and sets up the Tomcat JDBC connection pool. This method can only be called once in the
 	 * lifetime of the application.

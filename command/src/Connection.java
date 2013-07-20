@@ -657,6 +657,12 @@ public class Connection {
 			if (commandParams.containsKey(R.PARAM_INCLUDE_IDS)) {
 				urlParams.put("returnids","true");
 			}
+			if (commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS)) {
+				urlParams.put("includebenchmarks", "false");
+			}
+			if (commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS)) {
+				urlParams.put("includesolvers","false");
+			}
 			String location=commandParams.get(R.PARAM_OUTPUT_FILE);
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
