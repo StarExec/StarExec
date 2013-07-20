@@ -655,7 +655,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang + Eric Burns
 	 */
-	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeSolvers,boolean includeBenchmarks) throws IOException {
+	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws IOException {
 		// If we can see this space AND the space is downloadable...
 
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	

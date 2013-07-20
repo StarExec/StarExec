@@ -2042,14 +2042,15 @@ function updateButtonIds(id) {
 			height: 250,
 			buttons: {
 				'space': function(){
-					downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
-					downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
-					createDownloadSpacePost(false,downloadBenchmarks,downloadSolvers,id);
+					
+					createDownloadSpacePost(false,id);
+					$(this).dialog("close");
+
 				},
 				'hierarchy': function(){
-					downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
-					downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
-					createDownloadSpacePost(true,downloadBenchmarks,downloadSolvers,id);
+				
+					createDownloadSpacePost(true,id);
+					$(this).dialog("close");
 
 				},
 				"cancel": function() {
@@ -2061,7 +2062,9 @@ function updateButtonIds(id) {
 	log('updated action button space ids to ' + id);
 }
 
-function createDownloadSpacePost(hierarchy,downloadBenchmarks,downloadSolvers,id) {
+function createDownloadSpacePost(hierarchy,id) {
+	downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
+	downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
 	$(this).dialog("close");
 	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 	token=Math.floor(Math.random()*100000000);
