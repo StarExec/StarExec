@@ -57,6 +57,7 @@ function isFieldsetOpen(fieldset){
 function initDialogs() {	
 	$( "#dialog-confirm-copy" ).hide();
 	$( "#dialog-confirm-delete" ).hide();
+	$("#dialog-download-space").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -2032,35 +2033,40 @@ function updateButtonIds(id) {
 	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog
-		$('#dialog-confirm-copy-txt').text('do you want to download the single space or the hierarchy?');
-		$('#dialog-confirm-copy').dialog({
+		$('#dialog-download-space-txt').text('do you want to download the single space or the hierarchy?');
+		$("#downloadBoth").prop("checked","checked");
+
+		$('#dialog-download-space').dialog({
 			modal: true,
 			width: 380,
-			height: 165,
+			height: 250,
 			buttons: {
 				'space': function(){
-					$(this).dialog("close");
-					createDialog("Processing your download request, please wait. This will take some time for large spaces.");
-					token=Math.floor(Math.random()*100000000);
-					window.location.href=starexecRoot+"secure/download?token="+token+"&type=space&hierarchy=false&id="+id;
-					destroyOnReturn(token);
-					
+					downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
+					downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
+					createDownloadSpacePost(false,downloadBenchmarks,downloadSolvers,id);
 				},
 				'hierarchy': function(){
-					$(this).dialog("close");
-					createDialog("Processing your download request, please wait. This will take some time for large spaces.");
-					token=Math.floor(Math.random()*100000000);
-					window.location.href=starexecRoot+"secure/download?token="+token+"&type=space&hierarchy=true&id="+id;
-					destroyOnReturn(token);
+					downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
+					downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
+					createDownloadSpacePost(true,downloadBenchmarks,downloadSolvers,id);
+
 				},
 				"cancel": function() {
-					log('user canceled copy action');
 					$(this).dialog("close");
 				}
 			}
 		});
 	});
 	log('updated action button space ids to ' + id);
+}
+
+function createDownloadSpacePost(hierarchy,downloadBenchmarks,downloadSolvers,id) {
+	$(this).dialog("close");
+	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
+	token=Math.floor(Math.random()*100000000);
+	window.location.href=starexecRoot+"secure/download?includesolvers="+downloadSolvers+"&includebenchmarks="+downloadBenchmarks+"&token="+token+"&type=space&hierarchy="+hierarchy+"&id="+id;
+	destroyOnReturn(token);
 }
 
 

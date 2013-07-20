@@ -110,10 +110,21 @@ public class Download extends HttpServlet {
 				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
+				// we will  look for these attributes, but if they aren't there then the default should be
+				//to get both solvers and benchmarks
+				boolean includeSolvers=true;
+				boolean includeBenchmarks=true;
+				if (Util.paramExists("includesolvers", request)) {
+					includeSolvers=Boolean.parseBoolean(request.getParameter("includesolvers"));
+				}
+				if (Util.paramExists("includebenchmarks", request)) {
+					includeBenchmarks=Boolean.parseBoolean(request.getParameter("includebenchmarks"));
+				}
+				
 				if(request.getParameter("hierarchy").equals("false")){
-					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,false);
+					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,false,includeBenchmarks,includeSolvers);
 				} else {
-					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,true);
+					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,true,includeBenchmarks,includeSolvers);
 				}
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
@@ -605,7 +616,6 @@ public class Download extends HttpServlet {
 					FileUtils.copyFileToDirectory(file,dir);
 
 				}
-
 			}
 			if (since!=null) {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
@@ -639,12 +649,13 @@ public class Download extends HttpServlet {
 	 * @param format The file format of the generated compressed file
 	 * @param hierarchy True if downloading a hierarchy, false for a single space
 	 * @param response The servlet response sent back
+	 * @param includeBenchmarks Whether to include benchmarks in the directory
+	 * @param includeSolvers Whether to include solvers in the directory
 	 * @return Name of the generated file
 	 * @throws IOException
-	 * @author Ruoyu Zhang
+	 * @author Ruoyu Zhang + Eric Burns
 	 */
-
-	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy) throws IOException {
+	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeSolvers,boolean includeBenchmarks) throws IOException {
 		// If we can see this space AND the space is downloadable...
 
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
@@ -655,29 +666,8 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
-			File benchmarkDir=new File(tempDir,"benchmarks");
-			File solverDir=new File(tempDir,"solvers");
-			if (!hierarchy) {
-				descriptions.add(space.getDescription());
-				tempDir.mkdirs();
-				solverDir.mkdirs();
-				benchmarkDir.mkdirs();
-				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
-				List<Solver> solverList=Solvers.getBySpace(space.getId());
-				for(Benchmark b: benchList){
-					if(b.isDownloadable()){
-						copyFile(b.getPath(), benchmarkDir.getAbsolutePath() + File.separator + b.getName(), descriptions);
-					}
-				}
-				for (Solver s : solverList) {
-					if (s.isDownloadable()) {
-						FileUtils.copyDirectory(new File(s.getPath()), solverDir);
-					}
-				}
-			} else {
-				descriptions.add(space.getDescription());
-				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), descriptions);
-			}
+			descriptions.add(space.getDescription());
+			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), descriptions, includeBenchmarks,includeSolvers,hierarchy);
 			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
 			if(tempDir.exists()){
 				tempDir.delete();
@@ -692,35 +682,47 @@ public class Download extends HttpServlet {
 
 
 	/**
-	 * Store a space and all its subspaces into the specified directory with their hierarchy
+	 * Store a space and possibly all its subspaces into the specified directory with their hierarchy
 	 * @param space The space needed to be stored
 	 * @param uid The user who make the request
 	 * @param dest The destination directory
+	 * @param includeBenchmarks -- Whether to include benchmarks in the directory
+	 * @param  includeSolvers Whether to include solvers in the directory
+	 * @param recursive Whether to include subspaces or not
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest, Queue<String> descriptions) throws IOException {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, Queue<String> descriptions, boolean includeBenchmarks, boolean includeSolvers, boolean recursive) throws IOException {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
-			File benchmarkDir=new File(tempDir,"benchmarks");
-			File solverDir=new File(tempDir,"solvers");
-			solverDir.mkdirs();
-			benchmarkDir.mkdirs();
 			log.debug("[new directory] temp dir = " + dest);
 			tempDir.mkdirs();
 
-			List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
-			List<Solver> solverList=Solvers.getBySpace(space.getId());
-			for(Benchmark b: benchList){
-				if(b.isDownloadable() || b.getUserId()==uid ){
-					copyFile(b.getPath(), benchmarkDir.getAbsolutePath() + File.separator + b.getName(), descriptions);		
+			if (includeBenchmarks) {
+				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
+				File benchmarkDir=new File(tempDir,"benchmarks");
+				benchmarkDir.mkdirs();
+				for(Benchmark b: benchList){
+					if(b.isDownloadable() || b.getUserId()==uid ){
+						copyFile(b.getPath(), benchmarkDir.getAbsolutePath() + File.separator + b.getName(), descriptions);		
+					}
 				}
 			}
-			for (Solver s : solverList) {
-				if (s.isDownloadable() || s.getUserId()==uid) {
-					FileUtils.copyDirectory(new File(s.getPath()),solverDir);
+			
+			if (includeSolvers) {
+				List<Solver> solverList=Solvers.getBySpace(space.getId());
+				File solverDir=new File(tempDir,"solvers");
+				solverDir.mkdirs();
+				for (Solver s : solverList) {
+					if (s.isDownloadable() || s.getUserId()==uid) {
+						FileUtils.copyDirectory(new File(s.getPath()),solverDir);
+					}
 				}
+			}
+			//if we aren't getting subspaces, we're done
+			if (!recursive) {
+				return;
 			}
 
 
@@ -732,7 +734,7 @@ public class Download extends HttpServlet {
 			for(Space s: subspaceList){
 				descriptions.add(s.getDescription());
 				String subDir = dest + File.separator + s.getName();
-				storeSpaceHierarchy(s, uid, subDir, descriptions);
+				storeSpaceHierarchy(s, uid, subDir, descriptions,includeBenchmarks,includeSolvers,recursive);
 			}
 
 			return;

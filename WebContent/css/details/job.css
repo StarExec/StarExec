@@ -25,3 +25,75 @@ fieldset {
 #pairTbl {
 	table-layout:auto;
 }
+
+#explorer.jobDetails {
+	width: 23%;
+}
+
+#explorer a:link {
+	text-decoration: none;	
+}
+
+#detailPanel.jobDetails {	
+	width: 70%;
+}
+
+#detailPanel fieldset {
+	width: 100%;	
+}
+
+tr {
+	width:100%;
+}
+
+thead {
+	width:inherit;
+}
+
+.completeHead {
+	width: 16%;
+}
+
+.incompleteHead, .benchHead{
+	width: 19%
+}
+
+.configHead { 
+	width: 23%;
+}
+
+.solverHead, .failedHead, .wrongHead {
+	width: 11%;
+}
+.timeHead {
+	width: 9%;
+}
+
+#graphField img {
+	border-style:solid;
+	border-width:1px;
+	border-color:black;
+	
+}
+
+#solveTbl tbody tr {
+	cursor:pointer;
+}
+
+#pairTbl tbody tr {
+	cursor:pointer;
+}
+
+#solverChoice1,#solverChoice2 {
+	width:25%;
+	float:right;
+	margin-right:10px;
+}
+
+#detailPanel #optionField {
+	width:95%;
+}
+
+#solverComparison {
+	float:right;
+}
