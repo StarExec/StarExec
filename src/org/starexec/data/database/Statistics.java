@@ -349,8 +349,7 @@ public class Statistics {
 			legend.setVisible(false);
 			
 			LogAxis xAxis=new LogAxis(solver1+" time (s)");
-			xAxis.setTickLabelPaint(new Color(255,255,255));
-			xAxis.setLabelPaint(new Color(255,255,255));
+			
 			//xAxis.setAutoRange(false);
 			//xAxis.setRange(range);
 			plot.setDomainAxis(xAxis);
@@ -358,8 +357,7 @@ public class Statistics {
 			
 			//yAxis.setAutoRange(false);
 			//yAxis.setRange(range);
-			yAxis.setTickLabelPaint(new Color(255,255,255));
-			yAxis.setLabelPaint(new Color(255,255,255));
+			
 			plot.setRangeAxis(yAxis);
 			
 			String filename=UUID.randomUUID().toString()+".png";
@@ -368,8 +366,16 @@ public class Statistics {
 			
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 			if (!large) {
+				xAxis.setTickLabelPaint(new Color(255,255,255));
+				xAxis.setLabelPaint(new Color(255,255,255));
+				yAxis.setTickLabelPaint(new Color(255,255,255));
+				yAxis.setLabelPaint(new Color(255,255,255));
 				ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
 			} else {
+				plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
+				plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
+				plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
+				plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
 				ChartUtilities.saveChartAsPNG(output, chart, 600, 600,info);
 			}
 		
@@ -379,7 +385,7 @@ public class Statistics {
 			if (!large) {
 				map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
 			} else {
-				map=ChartUtilities.getImageMap("bigSolverComparisonMap", info,tag,url);
+				map=ChartUtilities.getImageMap("bigyolverComparisonMap", info,tag,url);
 			}
 			
 			log.debug("Chart created succesfully, returning filepath ");
