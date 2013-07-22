@@ -97,3 +97,8 @@ thead {
 #solverComparison {
 	float:right;
 }
+
+p.accent {
+	color: #666666;
+	font-style: italic;
+}

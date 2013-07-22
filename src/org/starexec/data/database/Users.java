@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -78,26 +79,8 @@ public class Users {
 	 * @author Tyler Jensen
 	 */
 	public static boolean associate(List<Integer> userIds, int spaceId) {
-		Connection con = null;			
-		
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);					
-			
-			for(int user : userIds) {
-				Users.associate(con, user, spaceId);	
-			}
-			
-			Common.endTransaction(con);									
-			return true;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-		}
-		
-		return false;
+		List<Integer> space=new ArrayList<Integer>();
+		return associate(userIds,space);
 	}
 	
 	/**

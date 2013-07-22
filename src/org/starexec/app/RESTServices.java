@@ -388,10 +388,8 @@ public class RESTServices {
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
-		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
@@ -444,9 +442,9 @@ public class RESTServices {
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request);
+
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
@@ -462,7 +460,6 @@ public class RESTServices {
 	public String getSpaceOverviewGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
-		
 		// Ensure user can view the job they are requesting the pairs from
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -482,6 +479,7 @@ public class RESTServices {
 			}
 		}
 		chartPath=Statistics.makeSpaceOverviewChart(jobId,jobSpaceId,logX,logY);
+
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
@@ -545,6 +543,7 @@ public class RESTServices {
 		}
 		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
+
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}

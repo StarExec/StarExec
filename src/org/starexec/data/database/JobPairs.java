@@ -6,15 +6,53 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.Status.StatusCode;
+import org.starexec.util.Util;
 
 
 public class JobPairs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 	
+	
+	/**
+	 * Adds a job pair record to the database. This is a helper method for the Jobs.add method
+	 * @param con The connection the update will take place on
+	 * @param pair The pair to add
+	 * @return True if the operation was successful
+	 */
+	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
+		CallableStatement procedure = null;
+		 try {
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, pair.getJobId());
+			procedure.setInt(2, pair.getBench().getId());
+			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
+			procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
+			procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
+			procedure.setString(7, pair.getPath());
+			procedure.setInt(8,pair.getJobSpaceId());
+			// The procedure will return the pair's new ID in this parameter
+			procedure.registerOutParameter(9, java.sql.Types.INTEGER);	
+			procedure.executeUpdate();			
+
+			// Update the pair's ID so it can be used outside this method
+			pair.setId(procedure.getInt(9));
+
+			return true;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(procedure);
+			
+		}
+		return false;
+	}
 	/**
 	 * @param pairId the id of the pair to update the status of
 	 * @param statusCode the status code to set for the pair
@@ -191,7 +229,6 @@ public class JobPairs {
 		jp.setWallclockTime(result.getDouble("wallclock"));
 		jp.setCpuUsage(result.getDouble("cpu"));
 		jp.setPath(result.getString("path"));
-		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
 
@@ -477,7 +514,7 @@ public class JobPairs {
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();									
-			 procedure = con.prepareCall("{CALL SetSGEJobId(?, ?)}");
+			procedure = con.prepareCall("{CALL SetSGEJobId(?, ?)}");
 
 			procedure.setInt(1, pairId);
 			procedure.setInt(2, sgeId);			
@@ -505,17 +542,14 @@ public class JobPairs {
 	
 	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) throws Exception {
 		CallableStatement procedure= null;
-		ResultSet results=null;
 		try {
-			 results = null;
-			 procedure = con.prepareCall("{CALL UpdateJobSpaceId(?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateJobSpaceId(?, ?)}");
 			procedure.setInt(1, jobPairId);
 			procedure.setInt(2, jobSpaceId);
-			results = procedure.executeQuery();
+			procedure.executeUpdate();
 		} catch (Exception e) {
 			
 		} finally {
-			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		
@@ -531,7 +565,6 @@ public class JobPairs {
 	
 	public static boolean UpdateJobSpaces(List<JobPair> jobPairs) {
 		Connection con = null;
-		ResultSet results = null;
 		try {
 			con = Common.getConnection();
 			for (JobPair jp : jobPairs) {
@@ -542,7 +575,6 @@ public class JobPairs {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
 		}		
 		return false;
 	}
@@ -555,20 +587,18 @@ public class JobPairs {
 	 */
 	public static boolean UpdateStatus(int jobPairId, int status_code) {
 		Connection con = null;
-		ResultSet results = null;
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
+			procedure = con.prepareCall("{CALL UpdateJobPairStatus(?, ?)}");
 			procedure.setInt(1, jobPairId);
 			procedure.setInt(2, status_code);
-			results = procedure.executeQuery();
+			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		return true;

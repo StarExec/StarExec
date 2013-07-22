@@ -8,8 +8,8 @@ $(document).ready(function(){
 	curSpaceId=spaceId;
 	jobId=$("#jobId").attr("value");
 	initUI();
-	initDataTables();
 	initSpaceExplorer();
+	initDataTables();
 	setInterval(function() {
 		pairTable.fnDraw(false);
 	},10000);
@@ -79,9 +79,13 @@ function initSpaceExplorer() {
 }
 
 function reloadTables(id) {
-	curSpaceId=id;
-	summaryTable.fnReloadAjax(null,null,true,id);
-	pairTable.fnDraw();
+	//we  only need to update if we've actually selected a new space
+	if (curSpaceId!=id) {
+		curSpaceId=id;
+		summaryTable.fnReloadAjax(null,null,true,id);
+		pairTable.fnDraw();
+	}
+
 }
 
 function update() {
@@ -337,7 +341,7 @@ function initUI(){
 	$('fieldset').expandable(false);
 	
 	$("#logScale").change(function() {
-		updateSpaceOverview(logY);
+		updateSpaceOverview();
 	});
 	
 	$("#solverChoice1").change(function() {
@@ -452,7 +456,6 @@ function initDataTables(){
 	$('#pairTbl tbody').delegate("a", "click", function(event) {
 		event.stopPropogation();
 	});
-
 	
 	//Set up row click to send to pair details page
 	$("#pairTbl tbody").delegate("tr", "click", function(){
