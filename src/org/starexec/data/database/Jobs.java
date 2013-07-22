@@ -1466,10 +1466,7 @@ public class Jobs {
 			con = Common.getConnection();	
 			
 			log.info("getting detailed pairs for job " + jobId );
-			if(con.isClosed())
-			{
-				log.warn("GetPairsDetailed with Job Id = " + jobId + " but connection is closed.");
-			}
+			
 			procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
@@ -1580,7 +1577,7 @@ public class Jobs {
 				
 				
 			}
-			log.info("returning detailed pairs for job " + jobId );
+			log.info("returning "+ returnList.size()+ " detailed pairs for job " + jobId );
 			return returnList;	
 			
 		} catch (Exception e){			
