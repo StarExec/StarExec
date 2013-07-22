@@ -667,7 +667,8 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
 			descriptions.add(space.getDescription());
-			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), descriptions, includeBenchmarks,includeSolvers,hierarchy);
+			
+			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy);
 			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
 			if(tempDir.exists()){
 				tempDir.delete();
@@ -692,7 +693,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest, Queue<String> descriptions, boolean includeBenchmarks, boolean includeSolvers, boolean recursive) throws IOException {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive) throws IOException {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
@@ -705,7 +706,7 @@ public class Download extends HttpServlet {
 				benchmarkDir.mkdirs();
 				for(Benchmark b: benchList){
 					if(b.isDownloadable() || b.getUserId()==uid ){
-						copyFile(b.getPath(), benchmarkDir.getAbsolutePath() + File.separator + b.getName(), descriptions);		
+						FileUtils.copyFile(new File(b.getPath()), benchmarkDir);		
 					}
 				}
 			}
@@ -720,6 +721,14 @@ public class Download extends HttpServlet {
 					}
 				}
 			}
+					
+			File description = new File(tempDir + File.separator + R.DESC_PATH);
+			FileWriter fw = new FileWriter(description.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(space.getDescription());
+			bw.close();
+			
+			
 			//if we aren't getting subspaces, we're done
 			if (!recursive) {
 				return;
@@ -732,9 +741,8 @@ public class Download extends HttpServlet {
 			}
 
 			for(Space s: subspaceList){
-				descriptions.add(s.getDescription());
 				String subDir = dest + File.separator + s.getName();
-				storeSpaceHierarchy(s, uid, subDir, descriptions,includeBenchmarks,includeSolvers,recursive);
+				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,includeSolvers,recursive);
 			}
 
 			return;
@@ -742,44 +750,6 @@ public class Download extends HttpServlet {
 		return;
 	}
 	
-	
-	//TODO: Why are we doing this description thing? It seems like we only want to 
-	//write one description file per space, but we are checking this description queue
-	//every time we copy a benchmark
-	private void copyFile(String src, String dest, Queue<String> descriptions) throws IOException{
-		String curDesc = "no description";
-		log.debug("copying file - source = " +src + ", dest = " + dest);
-		if (descriptions.size() != 0) {
-			curDesc = descriptions.remove();
-		}
-
-
-		File tempSrcFile = new File(src);
-		File tempDestFile = new File(dest);
-
-
-		int index = dest.lastIndexOf(File.separator);
-		String tempdest = dest.substring(0, index);
-
-		//Write to description file
-		if (!(curDesc.equals("no description"))) {
-			File description = new File(tempdest + File.separator + R.DESC_PATH);
-			
-			FileWriter fw = new FileWriter(description.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(curDesc);
-			bw.close();
-
-			FileUtils.copyFile(description, tempDestFile);
-			description = null;
-		}
-
-		FileUtils.copyFile(tempSrcFile, tempDestFile);
-
-		tempSrcFile = null;
-		tempDestFile = null;
-
-	}
 
 	/**
 	 * Validates the download request to make sure the requested data is of the right format
