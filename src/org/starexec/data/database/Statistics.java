@@ -385,7 +385,7 @@ public class Statistics {
 			if (!large) {
 				map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
 			} else {
-				map=ChartUtilities.getImageMap("bigyolverComparisonMap", info,tag,url);
+				map=ChartUtilities.getImageMap("bigSolverComparisonMap", info,tag,url);
 			}
 			
 			log.debug("Chart created succesfully, returning filepath ");
