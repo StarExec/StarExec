@@ -706,7 +706,8 @@ public class Download extends HttpServlet {
 				benchmarkDir.mkdirs();
 				for(Benchmark b: benchList){
 					if(b.isDownloadable() || b.getUserId()==uid ){
-						FileUtils.copyFile(new File(b.getPath()), benchmarkDir);		
+						FileUtils.copyFileToDirectory(new File(b.getPath()), benchmarkDir);
+					
 					}
 				}
 			}
@@ -717,7 +718,7 @@ public class Download extends HttpServlet {
 				solverDir.mkdirs();
 				for (Solver s : solverList) {
 					if (s.isDownloadable() || s.getUserId()==uid) {
-						FileUtils.copyDirectory(new File(s.getPath()),solverDir);
+						FileUtils.copyDirectoryToDirectory(new File(s.getPath()),solverDir);
 					}
 				}
 			}
