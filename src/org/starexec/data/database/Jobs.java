@@ -2578,9 +2578,11 @@ public class Jobs {
 			for (JobPair jp : p) {
 				String[] path=jp.getPath().split("/");
 				String key="";
+				log.debug("processing jp with path ="+jp.getPath());
 				for (int index=0;index<path.length; index++) {
 					
 					String spaceName=path[index];
+					log.debug("currently working on job space "+spaceName);
 					key=key+"/"+spaceName;
 					if (namesToIds.containsKey(key)) {
 						if (index==(path.length-1)) {
@@ -2590,6 +2592,7 @@ public class Jobs {
 					}
 					
 					int newJobSpaceId=Spaces.addJobSpace(spaceName);
+					log.debug("new job space added with id = "+newJobSpaceId);
 					if (index==0) {
 						primarySpaceId=newJobSpaceId;
 					}

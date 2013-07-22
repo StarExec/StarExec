@@ -1267,14 +1267,13 @@ public class Spaces {
 	
 	public static int addJobSpace(String name) {
 		Connection con = null;
-		
+		log.debug("adding new job space with name ="+name);
 		try {
 			con=Common.getConnection();
 			int newSpaceId=addJobSpace(name,con);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("addJobSpace says "+e.getMessage(),e);
-			
 		} finally {
 			Common.safeClose(con);
 		}

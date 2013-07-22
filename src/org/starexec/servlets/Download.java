@@ -641,7 +641,6 @@ public class Download extends HttpServlet {
 		return null;
 	}
 
-
 	/**
 	 * Handles download of a single space or a hierarchy, return the name of compressed file containing the space.
 	 * @param space The space needed to be downloaded
@@ -722,12 +721,13 @@ public class Download extends HttpServlet {
 					}
 				}
 			}
-					
+			//write the description of the current space to a file
 			File description = new File(tempDir + File.separator + R.DESC_PATH);
 			FileWriter fw = new FileWriter(description.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(space.getDescription());
 			bw.close();
+			fw.close();
 			
 			
 			//if we aren't getting subspaces, we're done
