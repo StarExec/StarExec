@@ -103,6 +103,7 @@ function update() {
 		}
 		
 	});
+	
 	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
 		$("#graphField").hide();
 	} else {
@@ -139,6 +140,8 @@ function initUI(){
 	$('#dialog-confirm-pause').hide();
 	$('#dialog-confirm-resume').hide();
 	$("#dialog-return-ids").hide();
+	$("#dialog-solverComparison").hide();
+	$("#dialog-spaceOverview").hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -338,17 +341,34 @@ function initUI(){
 	$('#solverChoice2 option[value=' + defaultSolver2 + ']').attr('selected', 'selected');
 	
 	//set all fieldsets as expandable
-	$('fieldset').expandable(false);
-	
+	$('#solverSummaryField').expandable(false);
+	$("#pairTblField").expandable(false);
+	$("#graphField").expandable(false);
+	$("#detailField").expandable(true);
+	$("#actionField").expandable(true);
 	$("#logScale").change(function() {
 		updateSpaceOverview();
 	});
 	
 	$("#solverChoice1").change(function() {
-		updateSolverComparison();
+		updateSolverComparison(false);
 	});
 	$("#solverChoice2").change(function() {
-		updateSolverComparison();
+		updateSolverComparison(false);
+	});
+	$("#solverComparison").click(function() {
+		$('#dialog-solverComparison').dialog({
+			modal: true,
+			width: 650,
+			height: 650
+		});
+	});
+	$("#spaceOverview").click(function() {
+		$('#dialog-spaceOverview').dialog({
+			modal: true,
+			width: 650,
+			height: 650
+		});
 	});
 }
 
@@ -372,19 +392,21 @@ function updateSpaceOverview() {
 					break;
 				default:
 					$("#spaceOverview").attr("src",returnCode);
-					$("#spaceOverviewLink").attr("href",returnCode+"600");
+					$("#bigSpaceOverview").attr("src",returnCode+"600");
 				}
 			},
 			"text"
 	);
 }
 
-function updateSolverComparison() {
+
+//big is a boolean that determines whether we should get the big or the small map
+function updateSolverComparison(big) {
 	config1=$("#solverChoice1 option:selected").attr("value");
-	
 	config2=$("#solverChoice2 option:selected").attr("value");
+	
 	$.post(
-			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2,
+			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big,
 			{},
 			function(returnCode) {
 				
@@ -400,11 +422,17 @@ function updateSolverComparison() {
 					jsonObject=$.parseJSON(returnCode);
 					src=jsonObject.src;
 					map=jsonObject.map;
+					if (big) {
+						$("#bigSolverComparison").attr("src",src);
+						$("#bigSolverComparisonMap").remove();
+						$("#dialog-solverComparison").append(map);
+					} else {
+						$("#solverComparison").attr("src",src);
+						$("#solverComparisonMap").remove();
+						$("#graphField").append(map);
+						updateSolverComparison(true);
+					}
 					
-					$("#solverComparison").attr("src",src);
-					$("#solverComparisonLink").attr("href",src+"600");
-					$("#solverComparisonMap").remove();
-					$("#graphField").append(map);
 				}
 			},
 			"text"
@@ -614,6 +642,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 					default:
 						// Replace the current page with the newly received page
 						fnCallback(nextDataTablePage);
+						if (pairTable.fnSettings().fnRecordsTotal()==0) {
+							$("#pairTblField").hide();
+						} else {
+							$("#pairTblField").show();
+						}
 						break;
 				}
 			},  

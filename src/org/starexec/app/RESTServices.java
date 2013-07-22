@@ -484,9 +484,9 @@ public class RESTServices {
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}")
+	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}")
 	@Produces("application/json")	
-	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
@@ -496,12 +496,11 @@ public class RESTServices {
 		}
 		
 		
-		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId);
+		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large);
 		JsonObject json=new JsonObject();
 		json.addProperty("src", chartPath.get(0));
 		json.addProperty("map",chartPath.get(1));
 		
-		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(json);
 	}
 	

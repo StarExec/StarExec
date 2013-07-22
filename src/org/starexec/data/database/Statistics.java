@@ -275,7 +275,7 @@ public class Statistics {
 	 */
 	
 	@SuppressWarnings("deprecation")
-	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2) {
+	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, boolean large) {
 		try {
 			
 			//there are no points if either list of pairs is empty
@@ -344,9 +344,7 @@ public class Statistics {
 	        
 	        XYToolTipGenerator tooltips=new BenchmarkTooltipGenerator(names);
 	        renderer.setToolTipGenerator(tooltips);
-	        StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
-			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
-			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
+	        
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
 			
@@ -366,14 +364,23 @@ public class Statistics {
 			
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
-			ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
-			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
-			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
-			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
-			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
-			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
-			ChartUtilities.saveChartAsPNG(output, chart, 600, 600);
-			String map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
+			
+			
+			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
+			if (!large) {
+				ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
+			} else {
+				ChartUtilities.saveChartAsPNG(output, chart, 600, 600,info);
+			}
+		
+			StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
+			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
+			String map;
+			if (!large) {
+				map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
+			} else {
+				map=ChartUtilities.getImageMap("bigSolverComparisonMap", info,tag,url);
+			}
 			
 			log.debug("Chart created succesfully, returning filepath ");
 			List<String> answer=new ArrayList<String>();
@@ -398,11 +405,11 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId) {
+	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large) {
 		try {
 			List<JobPair> pairs1=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configId1,true);
 			List<JobPair> pairs2=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId2,true);
-			return makeSolverComparisonChart(pairs1,pairs2);
+			return makeSolverComparisonChart(pairs1,pairs2, large);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}

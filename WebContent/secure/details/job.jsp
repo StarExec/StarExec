@@ -61,7 +61,8 @@
 	</div>
 	<div id="detailPanel" class="jobDetails">
 			<h3 id="spaceName">${jobspace.name}</h3>
-			<fieldset id="solverSumamryField"><legend>solver summary</legend>
+			<fieldset id="solverSummaryField">
+			<legend>solver summary</legend>
 			<table id="solveTbl" class="shaded">
 				<thead>
 					<tr>
@@ -79,9 +80,8 @@
 				</tbody>
 			</table>
 			</fieldset>
-			<fieldset id="#pairTblField">
-	
-		<legend>job pairs</legend>	
+		<fieldset id="pairTblField">
+			<legend>job pairs</legend>	
 			<table id="pairTbl" class="shaded">
 				<thead>
 					<tr>
@@ -103,10 +103,9 @@
 		
 			<fieldset id="graphField">
 			<legend>graphs</legend> 
-			<a id="spaceOverviewLink" href=""><img id="spaceOverview" src="" width="300"
-				height="300" /></a> 
+			<img id="spaceOverview" src="" width="300" height="300" /> 
 				
-				<a id="solverComparisonLink" href=""><img id="solverComparison" width="300" height="300" src="" usemap="#solverComparisonMap" /></a>
+				<img id="solverComparison" width="300" height="300" src="" usemap="#solverComparisonMap" />
 			<fieldset id="optionField"><legend>options</legend> <input
 				type="checkbox" id="logScale" checked="checked" /><span>log
 			scale</span> 
@@ -118,7 +117,7 @@
 			</fieldset>
 			</fieldset>
 			
-			<fieldset>
+			<fieldset id="detailField">
 				<legend>job overview</legend>
 				<table id="detailTbl" class="shaded">
 					<thead>
@@ -176,7 +175,7 @@
 			</fieldset>
 			
 			
-			<fieldset>
+			<fieldset id="actionField">
 				<legend>actions</legend>
 				<ul id="actionList">
 					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
@@ -209,6 +208,13 @@
 				</div>	
 				<div id="dialog-return-ids" title="return ids">
 					<p><span id="dialog-return-ids-txt"></span></p>
+				</div>
+				<div id="dialog-solverComparison" title="solver comparison chart">
+					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>
+					<map id="bigSolverComparisonMap"></map>
+				</div>
+				<div id="dialog-spaceOverview" title="space overview chart">
+					<img src="" id="bigSpaceOverview"/>
 				</div>
 			</fieldset>		
 		</div>

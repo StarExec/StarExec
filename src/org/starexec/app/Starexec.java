@@ -148,12 +148,12 @@ public class Starexec implements ServletContextListener {
 			}
 		};	
 		
-		/*  Create a task that deletes job logs older than 30 days */
+		/*  Create a task that deletes job logs older than 3 days */
 		final Runnable clearJobLogTask = new RobustRunnable("clearJobLogTask") {			
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 30);
+				Util.clearOldFiles(R.JOB_LOG_DIR, 3);
 			}
 			};
 		
@@ -164,7 +164,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
-		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);
+		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		}
 	
 	}

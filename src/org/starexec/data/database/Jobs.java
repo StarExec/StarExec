@@ -1534,7 +1534,6 @@ public class Jobs {
 				nodeIdList.add(curNode);
 				benchIdList.add(curBench);
 				configIdList.add(curConfig);
-				log.debug("Finished with results for pair " + jp.getId());
 			}
 			
 			
@@ -1559,7 +1558,6 @@ public class Jobs {
 			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
 				JobPair jp = returnList.get(i);
-				log.debug("setting details for " + jp.getId());
 				jp.setNode(neededNodes.get(nodeIdList.get(i)));
 				jp.setBench(neededBenchmarks.get(benchIdList.get(i)));
 				jp.setSolver(neededSolvers.get(configIdList.get(i)));
