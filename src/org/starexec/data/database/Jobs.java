@@ -27,6 +27,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for jobs (NOT grid engine job execution, see JobManager for that)
@@ -2233,6 +2234,16 @@ public class Jobs {
 			procedure.executeUpdate();	
 
 			log.debug("Killing of job id = " + jobId + " was successful");
+			
+			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
+			for (JobPair jp : jobPairsEnqueued) {
+				int sge_id = jp.getGridEngineId();
+				Util.executeCommand("qdel " + sge_id);	
+				log.debug("Just executed qdel " + sge_id);
+				JobPairs.UpdateStatus(jp.getId(), 21);
+			}
+			
+			log.debug("deletion of killed job pairs from the queue was successful");
 			return true;
 		} catch (Exception e) {
 			log.error("Kill Job says "+e.getMessage(),e);
@@ -2282,6 +2293,16 @@ public class Jobs {
 			procedure.executeUpdate();	
 
 			log.debug("Pausation of job id = " + jobId + " was successful");
+			
+			//Get the enqueued job pairs and remove them
+			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
+			for (JobPair jp : jobPairsEnqueued) {
+				int sge_id = jp.getGridEngineId();
+				Util.executeCommand("qdel " + sge_id);
+				log.debug("Just executed qdel " + sge_id);
+				JobPairs.UpdateStatus(jp.getId(), 20);
+			}
+			log.debug("Deletion of paused job pairs from queue was succesful");
 			return true;
 		} catch (Exception e) {
 			log.error("Pause Job says "+e.getMessage(),e);

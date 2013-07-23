@@ -58,8 +58,10 @@ public abstract class JobManager {
 	    int qId = q.getId();
 	    String qname = q.getName();
 	    
+	    /*
 		List<Job> enqueuedJobs = Queues.getEnqueuedJobs(qId);
 		for (Job j: enqueuedJobs) {
+			/*
 			if (Jobs.isJobPaused(j.getId())) {
 				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 				for (JobPair jp : jobPairsEnqueued) {
@@ -69,6 +71,7 @@ public abstract class JobManager {
 					JobPairs.UpdateStatus(jp.getId(), 20);
 				}
 			}
+			
 			if (Jobs.isJobKilled(j.getId())) {
 				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 				for (JobPair jp : jobPairsEnqueued) {
@@ -79,6 +82,7 @@ public abstract class JobManager {
 				}
 			}
 		}
+		*/
 
 	    int queueSize = Queues.getSizeOfQueue(qId);
 		
