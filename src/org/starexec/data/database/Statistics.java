@@ -268,6 +268,7 @@ public class Statistics {
 	 * that they both solved.
 	 * @param pairs1 A list of job pairs from a single solver/configuration pair
 	 * @param pairs2 A list of job pairs from a single solver/configuration pair
+	 * @param large Whether the graph will be the larger or smaller graph on Starexec (needs to be changed to a pixel size + an Axis color, this is a very bad abstraction)
 	 * @return A size 2 List of String objects, with the first string being the path
 	 * to the new graph and the second string being an HTML image map for the graph.
 	 * Returns null on error
@@ -366,12 +367,14 @@ public class Statistics {
 			
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 			if (!large) {
+				//we're displaying the small graph on black, so we want white axes
 				xAxis.setTickLabelPaint(new Color(255,255,255));
 				xAxis.setLabelPaint(new Color(255,255,255));
 				yAxis.setTickLabelPaint(new Color(255,255,255));
 				yAxis.setLabelPaint(new Color(255,255,255));
 				ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
 			} else {
+				//the large graph is getting displayed on white, so we need black axes
 				plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
 				plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
 				plot.getDomainAxis().setLabelPaint(new Color(0,0,0));

@@ -22,6 +22,8 @@
 				boolean isPaused = Jobs.isJobPaused(jobId);
 				boolean isKilled = Jobs.isJobKilled(jobId);
 				Space s=Spaces.getJobSpace(jobSpaceId);
+				User u=Users.get(j.getUserId());
+				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
 				request.setAttribute("jobspace",s);
 				request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
@@ -63,59 +65,58 @@
 			<h3 id="spaceName">${jobspace.name}</h3>
 			<fieldset id="solverSummaryField">
 			<legend>solver summary</legend>
-			<table id="solveTbl" class="shaded">
-				<thead>
-					<tr>
-						<th class="solverHead">solver</th>
-						<th class="configHead">configuration</th>
-						<th class="completeHead">solved</th>
-						<th class="incompleteHead">incomplete</th>
-						<th class="wrongHead">wrong</th>
-						<th class="failedHead">failed</th>
-						<th class="timeHead">time</th>
-					</tr>
-				</thead>
-				<tbody>
-						<!-- This will be populated by the job pair pagination feature -->
-				</tbody>
-			</table>
+				<table id="solveTbl" class="shaded">
+					<thead>
+						<tr>
+							<th class="solverHead">solver</th>
+							<th class="configHead">configuration</th>
+							<th class="completeHead">solved</th>
+							<th class="incompleteHead">incomplete</th>
+							<th class="wrongHead">wrong</th>
+							<th class="failedHead">failed</th>
+							<th class="timeHead">time</th>
+						</tr>
+					</thead>
+					<tbody>
+							<!-- This will be populated by the job pair pagination feature -->
+					</tbody>
+				</table>
 			</fieldset>
-		<fieldset id="pairTblField">
-			<legend>job pairs</legend>	
-			<table id="pairTbl" class="shaded">
-				<thead>
-					<tr>
-						<th class="benchHead">benchmark</th>
-						<th>solver</th>
-						<th>config</th>
-						<th>status</th>
-						<th>time</th>
-						<th>result</th>	
-						<th>space</th>			
-					</tr>		
-				</thead>	
-				<tbody>
-					<!-- This will be populated by the job pair pagination feature -->
-				</tbody>
-			</table>
-		</fieldset>
-		
-		
-			<fieldset id="graphField">
+			
+				<fieldset id="graphField">
 			<legend>graphs</legend> 
 			<img id="spaceOverview" src="" width="300" height="300" /> 
 				
 				<img id="solverComparison" width="300" height="300" src="" usemap="#solverComparisonMap" />
-			<fieldset id="optionField"><legend>options</legend> <input
-				type="checkbox" id="logScale" checked="checked" /><span>log
-			scale</span> 
-				<select id="solverChoice1">
+				<fieldset id="optionField"><legend>options</legend> <input type="checkbox" id="logScale" checked="checked" /><span>log scale</span> 
+					<select id="solverChoice1">
 					
-				</select>
-				<select id="solverChoice2">
-				</select>
+					</select>
+					<select id="solverChoice2">
+					</select>
+				</fieldset>
 			</fieldset>
+		
+			<fieldset id="pairTblField">
+				<legend>job pairs</legend>	
+				<table id="pairTbl" class="shaded">
+					<thead>
+						<tr>
+							<th class="benchHead">benchmark</th>
+							<th>solver</th>
+							<th>config</th>
+							<th>status</th>
+							<th>time</th>
+							<th>result</th>	
+							<th>space</th>			
+						</tr>		
+					</thead>	
+					<tbody>
+						<!-- This will be populated by the job pair pagination feature -->
+					</tbody>
+				</table>
 			</fieldset>
+		
 			
 			<fieldset id="detailField">
 				<legend>job overview</legend>

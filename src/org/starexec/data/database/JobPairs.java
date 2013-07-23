@@ -453,10 +453,11 @@ public class JobPairs {
 				s.setStatus(results.getString("status.status"));
 				s.setDescription(results.getString("status.description"));
 				jp.setStatus(s);					
+				jp.setJobSpaceName(results.getString("jobSpace.name"));
 				return jp;
 			}
 		} catch (Exception e) {
-		
+			log.error("Get JobPair says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);

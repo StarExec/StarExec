@@ -92,6 +92,7 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.id=_Id;
 	END //
 	
