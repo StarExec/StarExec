@@ -5,6 +5,18 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+In revision 13525:
+
+-- ability to pause jobs, removing all running job pairs
+
+-- job space explorer, with graphic visualization of job results
+
+-- improved cluster status page, showing which job pairs are running on
+   which nodes
+
+-- ability to optionally download job CSV with ids for job pairs, solvers,
+   and benchmarks in the CSV
+
 In revision 13041:
 
 -- we distinguish now between linking and copying primitives (solvers
