@@ -102,3 +102,8 @@ p.accent {
 	color: #666666;
 	font-style: italic;
 }
+
+#spaceOverviewSelections {
+overflow-y: scroll;
+width: 25%;
+}

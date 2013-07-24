@@ -35,6 +35,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Status;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
@@ -247,13 +248,31 @@ public class Statistics {
 	 * @param spaceId The space that should contain all of the job pairs to compare
 	 * @param logX Whether to use a log scale on the X axis
 	 * @param logY Whether to use a log scale on the Y axis
+	 * @param configIds The IDs of the configurations that should be included in this graph
 	 * @return A String filepath to the newly created graph, or null if there was an error.
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSpaceOverviewChart(int jobId, int jobSpaceId, boolean logX, boolean logY) {
+	public static String makeSpaceOverviewChart(int jobId, int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds) {
 		try {
-			List<JobPair> pairs=Jobs.getCompletedJobPairsInJobSpace(jobId, jobSpaceId, true);
+			if (configIds.size()==0) {
+				return null;
+			}
+			
+			
+			List<JobPair> prelimPairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true);
+			for (int x=1;x<configIds.size();x++) {
+				prelimPairs.addAll(Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true));
+			}
+			
+			//TODO: We could eliminate this with some new procedures to get only completed job pairs
+			List<JobPair> pairs=new ArrayList<JobPair>();
+			for (JobPair jp  : prelimPairs) {
+				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
+					pairs.add(jp);
+				}
+			}
+			
 			return makeSpaceOverviewChart(pairs, logX,logY);
 		} catch (Exception e) {
 			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
