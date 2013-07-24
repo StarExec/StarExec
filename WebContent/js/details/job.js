@@ -81,9 +81,14 @@ function initSpaceExplorer() {
 function reloadTables(id) {
 	//we  only need to update if we've actually selected a new space
 	if (curSpaceId!=id) {
+		summaryTable.fnClearTable();
+		pairTable.fnClearTable();
+		summaryTable.fnProcessingIndicator(true);
+		pairTable.fnProcessingIndicator(false);
 		curSpaceId=id;
-		summaryTable.fnReloadAjax(null,null,true,id);
 		pairTable.fnDraw();
+		summaryTable.fnReloadAjax(null,null,true,id);
+		
 	}
 
 }
@@ -91,6 +96,7 @@ function reloadTables(id) {
 function update() {
 	$("#solverChoice1").empty();
 	$("#solverChoice2").empty();
+	summaryTable.fnProcessingIndicator(false);
 	rows = $("#solveTbl tbody tr");
 	rows.each(function() {
 		configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
@@ -142,6 +148,7 @@ function initUI(){
 	$("#dialog-return-ids").hide();
 	$("#dialog-solverComparison").hide();
 	$("#dialog-spaceOverview").hide();
+	$("#errorField").hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -344,6 +351,7 @@ function initUI(){
 	$('#solverSummaryField').expandable(false);
 	$("#pairTblField").expandable(false);
 	$("#graphField").expandable(false);
+	$("#errorField").expandable(false);
 	$("#detailField").expandable(true);
 	$("#actionField").expandable(true);
 	$("#logScale").change(function() {
@@ -501,6 +509,14 @@ function initDataTables(){
  * Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
  */
 function extendDataTableFunctions(){
+	
+	// Allows manually turning on and off of the processing indicator (used for jobs table)
+	jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function (oSettings, onoff)	{
+		if( typeof(onoff) == 'undefined' ) {
+			onoff = true;
+		}
+		this.oApi._fnProcessingDisplay(oSettings, onoff);
+	};
 	// Changes the filter so that it only queries when the user is done typing
 	jQuery.fn.dataTableExt.oApi.fnFilterOnDoneTyping = function (oSettings) {
 	    var _that = this;
@@ -637,11 +653,14 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
 						break;
 					case 12:
-						showMessage('error', "There are too many  job pairs in this space to display");
+						$("#pairTblField").hide();
+						$("#errorField").show();
 						break;
 					default:
 						// Replace the current page with the newly received page
+						pairTable.fnProcessingIndicator(false);
 						fnCallback(nextDataTablePage);
+						$("#errorField").hide();
 						if (pairTable.fnSettings().fnRecordsTotal()==0) {
 							$("#pairTblField").hide();
 						} else {

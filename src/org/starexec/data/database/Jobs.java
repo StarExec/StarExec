@@ -2592,13 +2592,15 @@ public class Jobs {
 			Integer primarySpaceId=null;
 			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
 			for (JobPair jp : p) {
-				String[] path=jp.getPath().split("/");
+				String pathString=jp.getPath();
+				if (pathString==null) {
+					pathString="job space";
+				}
+				String[] path=pathString.split("/");
 				String key="";
-				log.debug("processing jp with path ="+jp.getPath());
 				for (int index=0;index<path.length; index++) {
 					
 					String spaceName=path[index];
-					log.debug("currently working on job space "+spaceName);
 					key=key+"/"+spaceName;
 					if (namesToIds.containsKey(key)) {
 						if (index==(path.length-1)) {
@@ -2608,7 +2610,6 @@ public class Jobs {
 					}
 					
 					int newJobSpaceId=Spaces.addJobSpace(spaceName);
-					log.debug("new job space added with id = "+newJobSpaceId);
 					if (index==0) {
 						primarySpaceId=newJobSpaceId;
 					}
@@ -2625,7 +2626,7 @@ public class Jobs {
 					}
 				}
 			}
-			
+			log.debug("setupjobpairs-- done looking at pairs, updating the database");
 			JobPairs.UpdateJobSpaces(p);
 			updatePrimarySpace(jobId,primarySpaceId);
 			log.debug("returning new job space id = "+primarySpaceId);

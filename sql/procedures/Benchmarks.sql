@@ -130,10 +130,9 @@ CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
 		UPDATE benchmarks
 		SET disk_size=0
 		WHERE id = _benchmarkId;
-		-- if the benchmark is associated with no spaces, we can delete it from the database
+		-- if the benchmark is associated with no spaces or job pairs, we can delete it from the database
 		IF ((SELECT COUNT(*) FROM bench_assoc WHERE bench_id=_benchmarkId)=0) THEN
-			IF ((SELECT COUNT(*) FROM job_pairs WHERE bench_id=_benchmarkId)=0) THEN
-			
+			IF ((SELECT COUNT(*) FROM job_pairs WHERE bench_id=_benchmarkId)=0) THEN			
 				DELETE FROM benchmarks
 				WHERE id=_benchmarkId;
 			END IF;
