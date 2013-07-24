@@ -292,6 +292,8 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	PRIMARY KEY(id),
+	KEY (job_space_id),
+	KEY (config_id),
 	UNIQUE KEY(sge_id),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,

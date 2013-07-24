@@ -231,7 +231,7 @@ public class Statistics {
 			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
 			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
-			ChartUtilities.saveChartAsPNG(output, chart, 600, 600);
+			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
 			log.debug("Chart created succesfully, returning filepath " );
 			return Util.docRoot("secure/files/" + filename);
 		} catch (IOException e) {
@@ -379,7 +379,7 @@ public class Statistics {
 				plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
 				plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
 				plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
-				ChartUtilities.saveChartAsPNG(output, chart, 600, 600,info);
+				ChartUtilities.saveChartAsPNG(output, chart, 800, 800,info);
 			}
 		
 			StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
