@@ -660,7 +660,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						// Replace the current page with the newly received page
 						pairTable.fnProcessingIndicator(false);
 						fnCallback(nextDataTablePage);
-						$("#errorField").show();
+						$("#errorField").hide();
 						if (pairTable.fnSettings().fnRecordsTotal()==0) {
 							$("#pairTblField").hide();
 						} else {
