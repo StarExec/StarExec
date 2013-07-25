@@ -16,6 +16,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Comments;
@@ -101,6 +102,7 @@ public class RESTServices {
 	private static final int ERROR_PRIM_ALREADY_DELETED=11;
 	
 	private static final int ERROR_TOO_MANY_JOB_PAIRS=12;
+	private static final int ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=12;
 	
 	/**
 	 * @return a json string representing all the subspaces of the job space
@@ -464,7 +466,7 @@ public class RESTServices {
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
+		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean logX=false;
 		boolean logY=false;
 		if (Util.paramExists("logX", request)) {
@@ -478,7 +480,12 @@ public class RESTServices {
 				logY=true;
 			}
 		}
-		chartPath=Statistics.makeSpaceOverviewChart(jobId,jobSpaceId,logX,logY);
+		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
+			
+			chartPath=Statistics.makeSpaceOverviewChart(jobId,jobSpaceId,logX,logY,configIds);
+		} else {
+			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);
+		}
 
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;

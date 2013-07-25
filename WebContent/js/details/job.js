@@ -3,6 +3,7 @@ var pairTable;
 var spaceId;
 var curSpaceId;
 var jobId;
+var lastValidSelectOption;
 $(document).ready(function(){
 	spaceId=$("#spaceId").attr("value");
 	curSpaceId=spaceId;
@@ -83,6 +84,9 @@ function reloadTables(id) {
 	if (curSpaceId!=id) {
 		summaryTable.fnClearTable();
 		pairTable.fnClearTable();
+		$("#solverChoice1").empty();
+		$("#solverChoice2").empty();
+		$("#spaceOverviewSelections").empty();
 		summaryTable.fnProcessingIndicator(true);
 		pairTable.fnProcessingIndicator(false);
 		curSpaceId=id;
@@ -94,8 +98,7 @@ function reloadTables(id) {
 }
 
 function update() {
-	$("#solverChoice1").empty();
-	$("#solverChoice2").empty();
+	
 	summaryTable.fnProcessingIndicator(false);
 	rows = $("#solveTbl tbody tr");
 	rows.each(function() {
@@ -114,27 +117,37 @@ function update() {
 		$("#graphField").hide();
 	} else {
 		$("#graphField").show();
-		updateSpaceOverview();
-	}
-	if (rows.length>1) {
-		$("#solverComparison").show();
-		$("#solverChoice1").show();
-		$("#solverChoice2").show();
 		rows.each(function() {
 			solverName=$(this).find("a:first").attr("title");
 			configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
 			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			$("#solverChoice1").append('<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>');
-			$("#solverChoice2").append('<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>');
+			htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
+			$("#spaceOverviewSelections").append(htmlString);
+			$("#solverChoice1").append(htmlString);
+			$("#solverChoice2").append(htmlString);
 		});
-		$("#solverChoice1").children("option:first").prop("selected",true);
-		$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
-		updateSolverComparison();
-	} else {
-		$("#solverComparison").hide();
-		$("#solverChoice1").hide();
-		$("#solverChoice2").hide();
+		//select first five solver/ configuration pairs
+		$("#spaceOverviewSelections").children("option:lt(5)").prop("selected",true);
+		lastValidSelectOption = $("#spaceOverviewSelections").val();
+		updateSpaceOverview();
+		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
+			$("#solverComparison").show();
+			$("#solverChoice1").show();
+			$("#solverChoice2").show();
+			
+			$("#solverChoice1").children("option:first").prop("selected",true);
+			$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
+			updateSolverComparison();
+		} else {
+			$("#solverComparison").hide();
+			$("#solverChoice1").hide();
+			$("#solverChoice2").hide();
+		}
+		
 	}
+	
+	
+	
 }
 
 /**
@@ -352,10 +365,27 @@ function initUI(){
 	$("#pairTblField").expandable(false);
 	$("#graphField").expandable(false);
 	$("#errorField").expandable(false);
+	$("#optionField").expandable(true);
 	$("#detailField").expandable(true);
 	$("#actionField").expandable(true);
 	$("#logScale").change(function() {
 		updateSpaceOverview();
+	});
+	
+	lastValidSelectOption = $("#spaceOverviewSelections").val();
+	
+	$("#spaceOverviewSelections").change(function() {
+	        if ($(this).val().length > 5) {
+	          showMessage('error',"You may only choose a maximum of 5 solver / configuration pairs to display at one time",5000);
+	          $(this).val(lastValidSelectOption);
+	        } else {
+	        	lastValidSelectOption = $(this).val();
+	        	//don't update if nothing is selected, as there would be nothing to display
+	  			if ($("#spaceOverviewSelections").children("option:selected").size()>0) {
+	  				updateSpaceOverview();
+	  			}
+	        }
+	      
 	});
 	
 	$("#solverChoice1").change(function() {
@@ -367,27 +397,33 @@ function initUI(){
 	$("#solverComparison").click(function() {
 		$('#dialog-solverComparison').dialog({
 			modal: true,
-			width: 650,
-			height: 650
+			width: 850,
+			height: 850
 		});
 	});
 	$("#spaceOverview").click(function() {
 		$('#dialog-spaceOverview').dialog({
 			modal: true,
-			width: 650,
-			height: 650
+			width: 850,
+			height: 850
 		});
 	});
 }
 
 function updateSpaceOverview() {
+	
+	var configs = new Array();
+	$("#spaceOverviewSelections option:selected").each(function() {
+		configs.push($(this).attr("value"));
+	});
 	logY=false;
 	if ($("#logScale").prop("checked")) {
 		logY=true;
 	}
+	
 	$.post(
 			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/spaceOverview",
-			{logY : logY},
+			{logY : logY, selectedIds: configs},
 			function(returnCode) {
 				
 				switch (returnCode) {
@@ -424,7 +460,10 @@ function updateSolverComparison(big) {
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
 					break;
 				case 2:
-					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+					showMessage('error',"You do not have sufficient permission to view job pair details for this job",5000);
+					break;
+				case 12:
+					showMessage('error',"you have selected too many solver / configuration pairs",5000);
 					break;
 				default:
 					jsonObject=$.parseJSON(returnCode);
