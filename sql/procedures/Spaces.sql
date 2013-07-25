@@ -314,8 +314,7 @@ DROP PROCEDURE IF EXISTS GetJobSubSpaces;
 CREATE PROCEDURE GetJobSubspaces(IN _spaceId INT)
 	BEGIN 
 		SELECT *
-		FROM job_spaces WHERE id IN (SELECT child_id FROM job_space_assoc WHERE space_id = _spaceId)
-		ORDER BY NAME;
+		FROM job_spaces WHERE id IN (SELECT child_id FROM job_space_assoc WHERE space_id = _spaceId);
 	END //
 	
 -- Gets the ids of the first level of subspaces of a given space (not recursive)

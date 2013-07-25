@@ -644,6 +644,8 @@ public class Spaces {
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
+	//TODO: This shouldn't happen, but a cycle in the space hierarchy would
+	//cause this to run forever. Is that enough of a concern to use some extra time / memory preventing it?
 	public static List<Space> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
 		Connection con = null;			
 		

@@ -209,7 +209,9 @@ public class Statistics {
 			//TODO: Figure out how to make setting a manual range work with the log axis
 			if (logY) {
 				LogAxis yAxis=new LogAxis("time (s)");
+				
 				plot.setRangeAxis(yAxis);
+				
 			} else {
 				plot.getRangeAxis().setAutoRange(false);
 				plot.getRangeAxis().setRange(new Range(0,dataset.getRangeUpperBound(false)*1.1));
