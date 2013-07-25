@@ -59,10 +59,7 @@ public class JobPairs {
 		try {
 			String str1=null;
 			String str2=null;
-			if (sortIndex==1) {
-				str1=jp1.getSolver().getName();
-				str2=jp2.getSolver().getName();
-			} else if (sortIndex==2) {
+			if (sortIndex==2) {
 				str1=jp1.getConfiguration().getName();
 				str2=jp2.getConfiguration().getName();
 			} else if (sortIndex==3) {
@@ -74,6 +71,9 @@ public class JobPairs {
 			} else if (sortIndex==6) {
 				str1=jp1.getJobSpaceName();
 				str2=jp2.getJobSpaceName();
+			} else {
+				str1=jp1.getSolver().getName();
+				str2=jp2.getSolver().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			if (str1.compareTo(str2)>0) {

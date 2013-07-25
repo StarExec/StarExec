@@ -1091,6 +1091,7 @@ public class Jobs {
 	 */
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId) {
 		//get all of the pairs first, then carry out sorting and filtering
+		log.debug("the index of the column being sorted on is "+indexOfColumnSortedBy);
 		List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
 		
 		List<JobPair> returnList=new ArrayList<JobPair>();
