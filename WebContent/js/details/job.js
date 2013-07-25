@@ -106,8 +106,9 @@ function update() {
 		if (typeof(configId)=='undefined') {
 			
 		} else {
+			hrefString=starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId;
 			$(this).click(function() {
-				window.location.href=(starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId);
+				window.location.href=(hrefString);
 			});
 		}
 		

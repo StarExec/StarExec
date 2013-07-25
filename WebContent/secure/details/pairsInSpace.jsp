@@ -8,7 +8,7 @@
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		int configId=Integer.parseInt(request.getParameter("configid"));
 		Job j=null;
-		int spaceId=Integer.parseInt(request.getParameter("sid"));
+		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
 		
 		if(Permissions.canUserSeeJob(jobId, userId)) {
 			j = Jobs.get(jobId);
@@ -16,7 +16,7 @@
 		
 		
 		if(j != null) {	
-			Space s=Spaces.get(spaceId);
+			Space s=Spaces.getJobSpace(jobSpaceId);
 			request.setAttribute("space",s);
 			request.setAttribute("configId",configId);
 			Solver solver =Solvers.getSolverByConfig(configId,true);
