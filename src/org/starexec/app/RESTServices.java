@@ -481,6 +481,7 @@ public class RESTServices {
 			}
 		}
 		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
+			
 			chartPath=Statistics.makeSpaceOverviewChart(jobId,jobSpaceId,logX,logY,configIds);
 		} else {
 			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);

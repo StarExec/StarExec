@@ -397,15 +397,15 @@ function initUI(){
 	$("#solverComparison").click(function() {
 		$('#dialog-solverComparison').dialog({
 			modal: true,
-			width: 650,
-			height: 650
+			width: 850,
+			height: 850
 		});
 	});
 	$("#spaceOverview").click(function() {
 		$('#dialog-spaceOverview').dialog({
 			modal: true,
-			width: 650,
-			height: 650
+			width: 850,
+			height: 850
 		});
 	});
 }
@@ -413,7 +413,7 @@ function initUI(){
 function updateSpaceOverview() {
 	
 	var configs = new Array();
-	$("#solverChoice1 option:selected").each(function() {
+	$("#spaceOverviewSelections option:selected").each(function() {
 		configs.push($(this).attr("value"));
 	});
 	logY=false;
