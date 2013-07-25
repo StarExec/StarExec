@@ -169,6 +169,11 @@ public class JobPairs {
 				list2Index++;
 			}
 		}
+		if (list1Index==list1.size()) {
+			mergedList.addAll(list2.subList(list2Index, list2.size()));
+		} else {
+			mergedList.addAll(list1.subList(list1Index, list1.size()));
+		}
 		return mergedList;
 	}
 	

@@ -1086,21 +1086,25 @@ public class Jobs {
 	 * @param jobId The ID of the job in question
 	 * @param spaceID The space that contains the job pairs
 	 * @param configID The ID of the configuration responsible for the job pairs
+	 * @param totals A size 2 int array that, upon return, will contain in the first slot the total number
+	 * of pairs and in the second slot the total number of pairs after filtering
 	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId) {
+	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals) {
 		//get all of the pairs first, then carry out sorting and filtering
-		log.debug("the index of the column being sorted on is "+indexOfColumnSortedBy);
+		long a =System.currentTimeMillis();
 		List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
-		
+		log.debug("after getting pairs = " +(System.currentTimeMillis()-a));
+		totals[0]=pairs.size();
 		List<JobPair> returnList=new ArrayList<JobPair>();
-		log.debug("we have found "+pairs.size()+" pairs going into the filtering function");
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
-		log.debug("we still have "+pairs.size()+" pairs coming out of the filtering function");
+		log.debug("after filter = " +(System.currentTimeMillis()-a));
+
+		totals[1]=pairs.size();
 		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC);
-		
-		
+		log.debug("after sort = " +(System.currentTimeMillis()-a));
+
 		if (startingRecord>=pairs.size()) {
 			//we'll just return nothing
 		} else if (startingRecord+recordsPerPage>pairs.size()) {
@@ -1108,7 +1112,9 @@ public class Jobs {
 		} else {
 			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
 		}
-		
+		log.debug("after all = " +(System.currentTimeMillis()-a));
+
+		log.debug("the size of the return list is "+returnList.size());
 		return returnList;
 	}
 	

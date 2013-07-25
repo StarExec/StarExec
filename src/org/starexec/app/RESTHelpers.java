@@ -573,7 +573,7 @@ public class RESTHelpers {
 		
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-		
+		int[] totals=new int[2];
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(
     			attrMap.get(STARTING_RECORD),						// Record to start at  
     			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -582,22 +582,18 @@ public class RESTHelpers {
     			request.getParameter(SEARCH_QUERY), 				// Search query
     			jobId,													// Parent space id
     			jobSpaceId,
-    			configId
+    			configId,
+    			totals
 		);
-		totalJobs = Jobs.getJobPairCountByConfigInJobSpace(jobId,jobSpaceId,configId);
+		totalJobs = totals[0];
 		 
 		/**
-    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-    	 */
-    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
-    	} 
-    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-    	else {
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
-    	}
+    	* Used to display the 'total entries' information at the bottom of the DataTable;
+    	* also indirectly controls whether or not the pagination buttons are toggle-able
+    	*/
+    
+       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+    	
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 	}
 	
