@@ -1089,21 +1089,24 @@ public class Jobs {
 	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
 	 * @author Eric Burns
 	 */
-	//TODO: All the sorting, filtering, etc. now has to be done in java, as we just can't do this in SQL easily
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId) {
+		//get all of the pairs first, then carry out sorting and filtering
 		List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
 		
 		List<JobPair> returnList=new ArrayList<JobPair>();
+		
+		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC);
+		
+		
 		if (startingRecord>=pairs.size()) {
-			returnList = new ArrayList<JobPair>();
+			//we'll just return nothing
 		} else if (startingRecord+recordsPerPage>pairs.size()) {
 			returnList = pairs.subList(startingRecord, pairs.size());
 		} else {
 			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
 		}
-		if (!isSortedASC) {
-			Collections.reverse(returnList);
-		}
+		
 		return returnList;
 	}
 	
