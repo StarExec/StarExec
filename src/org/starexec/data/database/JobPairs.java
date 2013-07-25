@@ -34,11 +34,13 @@ public class JobPairs {
 		if (searchQuery==null || searchQuery=="") {
 			return pairs;
 		}
+		
+		searchQuery=searchQuery.toLowerCase();
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
 			try {
-				if (jp.getSolver().getName().contains(searchQuery) || jp.getConfiguration().getName().contains(searchQuery) ||
-						jp.getBench().getName().contains(searchQuery)) {
+				if (jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
+						jp.getBench().getName().toLowerCase().contains(searchQuery)) {
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
