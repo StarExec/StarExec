@@ -381,7 +381,7 @@ function initUI(){
 	        } else {
 	        	lastValidSelectOption = $(this).val();
 	        	//don't update if nothing is selected, as there would be nothing to display
-	  			if ($("#spaceOverviewSelections").children("option:selected").size()>1) {
+	  			if ($("#spaceOverviewSelections").children("option:selected").size()>0) {
 	  				updateSpaceOverview();
 	  			}
 	        }
