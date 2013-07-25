@@ -1095,8 +1095,9 @@ public class Jobs {
 		List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
 		
 		List<JobPair> returnList=new ArrayList<JobPair>();
-		
+		log.debug("we have found "+pairs.size()+" pairs going into the filtering function");
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		log.debug("we still have "+pairs.size()+" pairs coming out of the filtering function");
 		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC);
 		
 		

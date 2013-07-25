@@ -30,6 +30,10 @@ public class JobPairs {
 	 * @author Eric burns
 	 */
 	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery) {
+		//no filtering is necessary if there's no query
+		if (searchQuery==null || searchQuery=="") {
+			return pairs;
+		}
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
 			try {
@@ -59,12 +63,16 @@ public class JobPairs {
 		try {
 			String str1=null;
 			String str2=null;
+			if (sortIndex==1) {
+				str1=jp1.getSolver().getName();
+				str2=jp2.getSolver().getName();
+			}
 			if (sortIndex==2) {
 				str1=jp1.getConfiguration().getName();
 				str2=jp2.getConfiguration().getName();
 			} else if (sortIndex==3) {
-				str1=jp1.getBench().getName();
-				str2=jp2.getBench().getName();
+				str1=jp1.getStatus().getDescription();
+				str2=jp2.getStatus().getDescription();
 			} else if (sortIndex==5) {
 				str1=jp1.getAttributes().getProperty("starexec-result");
 				str2=jp2.getAttributes().getProperty("starexec-result");
@@ -72,8 +80,8 @@ public class JobPairs {
 				str1=jp1.getJobSpaceName();
 				str2=jp2.getJobSpaceName();
 			} else {
-				str1=jp1.getSolver().getName();
-				str2=jp2.getSolver().getName();
+				str1=jp1.getBench().getName();
+				str2=jp2.getBench().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			if (str1.compareTo(str2)>0) {
@@ -128,6 +136,7 @@ public class JobPairs {
 	 * @param list1 The first list to merge
 	 * @param list2 The second list to merge
 	 * @param sortColumn The column to sort on. 0 = benchmark name
+	 * 0 = benchmark name
 	 * 1 = solver name
 	 * 2 = config name
 	 * 3 = status name
