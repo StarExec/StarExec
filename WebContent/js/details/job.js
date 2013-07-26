@@ -102,14 +102,15 @@ function update() {
 	summaryTable.fnProcessingIndicator(false);
 	rows = $("#solveTbl tbody tr");
 	rows.each(function() {
-		configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-		if (typeof(configId)=='undefined') {
-			
-		} else {
-			$(this).click(function() {
-				window.location.href=(starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId);
-			});
-		}
+	
+		$(this).click(function() {
+			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
+			if (typeof(configId!='undefined')) {
+				hrefString=starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId;		
+				window.location.href=(hrefString);
+			}			
+		});
+		
 		
 	});
 	

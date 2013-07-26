@@ -73,12 +73,10 @@ public class RESTHelpers {
 	 */
 	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList, int userID){
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
-		
-		
 		for(Space space: spaceList){
 			JSTreeItem t;
 			
-			if (Spaces.getCountInSpace(space.getId(), userID)>0) {
+			if (Spaces.getCountInSpace(space.getId(), userID,true)>0) {
 				 t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
 			} else {
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf", "space");	
@@ -573,7 +571,7 @@ public class RESTHelpers {
 		
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-		
+		int[] totals=new int[2];
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(
     			attrMap.get(STARTING_RECORD),						// Record to start at  
     			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
@@ -582,22 +580,18 @@ public class RESTHelpers {
     			request.getParameter(SEARCH_QUERY), 				// Search query
     			jobId,													// Parent space id
     			jobSpaceId,
-    			configId
+    			configId,
+    			totals
 		);
-		totalJobs = Jobs.getJobPairCountByConfigInJobSpace(jobId,jobSpaceId,configId);
+		totalJobs = totals[0];
 		 
 		/**
-    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-    	 */
-    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
-    	} 
-    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-    	else {
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
-    	}
+    	* Used to display the 'total entries' information at the bottom of the DataTable;
+    	* also indirectly controls whether or not the pagination buttons are toggle-able
+    	*/
+    
+       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+    	
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 	}
 	
@@ -868,7 +862,7 @@ public class RESTHelpers {
 		    	List<Space> spacesToDisplay = new LinkedList<Space>();
 		    	
 	    		int userId = SessionUtil.getUserId(request);
-	    		int totalSubspacesInSpace = Spaces.getCountInSpace(id, userId);
+	    		int totalSubspacesInSpace = Spaces.getCountInSpace(id, userId,false);
 	    		
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 		    	spacesToDisplay = Spaces.getSpacesForNextPage(
@@ -936,50 +930,7 @@ public class RESTHelpers {
 		    	}
 			    return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairsforJob,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
 		    
-		    case JOB_STATS:
-		    	log.debug("getting next page of job stats for page with number = "+forPage);
-		    	List<SolverStats> SolverStatsToDisplay = null;
-	    		int [] totalSolverStats= new int[1];
-	    		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-	    		if (forPage==1) {
-	    			SolverStatsToDisplay = Jobs.getJobStatsForNextPage(
-		    				attrMap.get(STARTING_RECORD),						// Record to start at  
-		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-		    				request.getParameter(SEARCH_QUERY), 				// Search query
-		    				id,													// Job id 
-		    				totalSolverStats										// reference for storing TOTAL_ENTRIES
-					);
-	    		} else {
-	    			SolverStatsToDisplay = Jobs.getJobStatsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),						// Record to start at  
-		    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-		    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-		    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-		    				request.getParameter(SEARCH_QUERY), 				// Search query
-		    				id,													// Job id 
-		    				totalSolverStats,										// reference for storing TOTAL_ENTRIES
-		    				attrMap.get(SPACE_ID)
-					);
-	    		}
-	    		/**
-		    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-		    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-		    	 */
-		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolverStats[0]);
-		    	} 
-		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, SolverStatsToDisplay.size());
-		    	}
-			    attrMap.put(TOTAL_RECORDS, totalSolverStats[0]);
-			    if (forPage==1) {
-				    return convertSolverStatsToJsonObject(SolverStatsToDisplay,totalSolverStats[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),null);
-			    } else {
-				    return convertSolverStatsToJsonObject(SolverStatsToDisplay,totalSolverStats[0],attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),attrMap.get(SPACE_ID));
-			    }
+		  
 	    }
 	    return null;
 	}

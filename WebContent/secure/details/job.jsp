@@ -90,7 +90,7 @@
 				<img id="solverComparison" width="300" height="300" src="" usemap="#solverComparisonMap" />
 				<fieldset id="optionField">
 				<legend>options</legend> 
-					<input type="checkbox" id="logScale" checked="checked" /> <span>log scale</span> 
+					<input type="checkbox" id="logScale"/> <span>log scale</span> 
 					<select multiple size="5" id="spaceOverviewSelections">
 					
 					</select>

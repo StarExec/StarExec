@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
@@ -17,6 +18,184 @@ import org.starexec.util.Util;
 
 public class JobPairs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
+	
+	
+	/**
+	 * Filters a list of job pairs against some search query. The query is compared to 
+	 * solver, benchmark, and config names. The job pair is not filtered if the query
+	 * is a case-insensitive substring of any of those names
+	 * @param pairs The pairs to filter
+	 * @param searchQuery The query
+	 * @return A filtered list of job pairs
+	 * @author Eric burns
+	 */
+	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery) {
+		//no filtering is necessary if there's no query
+		if (searchQuery==null || searchQuery=="") {
+			return pairs;
+		}
+		
+		searchQuery=searchQuery.toLowerCase();
+		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+		for (JobPair jp : pairs) {
+			try {
+				if (jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
+						jp.getBench().getName().toLowerCase().contains(searchQuery)) {
+					filteredPairs.add(jp);
+				}
+			} catch (Exception e) {
+				log.warn("filterPairs says jp with id = "+jp.getId()+" threw a null pointer");
+			}
+			
+				
+		}
+		
+		return filteredPairs;
+	}
+	
+	/**
+	 * Compares the solver names of jp1 and jp2 
+	 * @param jp1 The first job pair
+	 * @param jp2 The second job pair
+	 * @param ASC Whether sorting is to be done ASC or DESC
+	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
+	 */ 
+	private static int compareJobPairStrings(JobPair jp1, JobPair jp2, int sortIndex, boolean ASC) {
+		int answer=0;
+		try {
+			String str1=null;
+			String str2=null;
+			if (sortIndex==1) {
+				str1=jp1.getSolver().getName();
+				str2=jp2.getSolver().getName();
+			}
+			if (sortIndex==2) {
+				str1=jp1.getConfiguration().getName();
+				str2=jp2.getConfiguration().getName();
+			} else if (sortIndex==3) {
+				str1=jp1.getStatus().getDescription();
+				str2=jp2.getStatus().getDescription();
+			} else if (sortIndex==5) {
+				str1=jp1.getAttributes().getProperty("starexec-result");
+				str2=jp2.getAttributes().getProperty("starexec-result");
+			} else if (sortIndex==6) {
+				str1=jp1.getJobSpaceName();
+				str2=jp2.getJobSpaceName();
+			} else {
+				str1=jp1.getBench().getName();
+				str2=jp2.getBench().getName();
+			}
+			//if str1 lexicographically follows str2, put str2 first
+			if (str1.compareTo(str2)>0) {
+				answer=1;
+			}
+		} catch (Exception e) {
+			//either solver name was null, so we can just return jp1 as being first
+		}
+		//if we are descending, flip the answer
+		if (!ASC) {
+			answer=1-answer;
+		}
+		return answer;
+	}
+	
+	/**
+	 * Compares the solver names of jp1 and jp2 
+	 * @param jp1 The first job pair
+	 * @param jp2 The second job pair
+	 * @param ASC Whether sorting is to be done ASC or DESC
+	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
+	 */ 
+	private static int compareJobPairInts(JobPair jp1, JobPair jp2, int sortIndex, boolean ASC) {
+		int answer=0;
+		try {
+			double db1=0;
+			double db2=0;
+			if (sortIndex==4) {
+				db1=jp1.getCpuUsage();
+				db2=jp2.getCpuUsage();
+			} 
+			//if db1> db2, then db2 should go first
+			if (db1>db2) {
+				answer=1;
+			}
+			
+			
+		} catch (Exception e) {
+			//either solver name was null, so we can just return jp1 as being first
+		}
+		//if we are descending, flip the answer
+		if (!ASC) {
+			answer=1-answer;
+		}
+		return answer;
+	}
+	
+	
+	/**
+	 * Given two lists of JobPairs that are sorted in the direction indicated by ASC, returns a single list
+	 * containing all the JobPairs
+	 * @param list1 The first list to merge
+	 * @param list2 The second list to merge
+	 * @param sortColumn The column to sort on. 0 = benchmark name
+	 * 0 = benchmark name
+	 * 1 = solver name
+	 * 2 = config name
+	 * 3 = status name
+	 * 4 = cpu time
+	 * 5 = starexec-result attr
+	 * 6 = job space name
+	 * any other = solver name
+	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
+	 * @return A single list containing all the elements of lists 1 and 2 in sorted order
+	 */
+	private static List<JobPair> mergeJobPairs(List<JobPair> list1, List<JobPair> list2, int sortColumn, boolean ASC) {
+		
+		int list1Index=0;
+		int list2Index=0;
+		int first;
+		List<JobPair> mergedList=new ArrayList<JobPair>();
+		while (list1Index<list1.size() && list2Index<list2.size()) {
+			if (sortColumn!=4) {
+				first=compareJobPairStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
+			} else {
+				first=compareJobPairInts(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
+			}
+			if (first==0) {
+				mergedList.add(list1.get(list1Index));
+				list1Index++;
+			} else {
+				mergedList.add(list2.get(list2Index));
+				list2Index++;
+			}
+		}
+		if (list1Index==list1.size()) {
+			mergedList.addAll(list2.subList(list2Index, list2.size()));
+		} else {
+			mergedList.addAll(list1.subList(list1Index, list1.size()));
+		}
+		return mergedList;
+	}
+	
+	/**
+	 * Sorts the given list of job pairs on the column given by the integer sortColumn
+	 * @param pairs The list  of pairs to sort
+	 * @param sortColumn The 
+	 * @param Whether to sort ASC or DESC
+	 * @return
+	 */
+	
+	protected static List<JobPair> mergeSortJobPairs(List<JobPair> pairs,int sortColumn,boolean ASC) {
+		if (pairs.size()<=1) {
+			return pairs;
+		}
+		int middle=pairs.size()/2;
+		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC);
+		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC);
+		return mergeJobPairs(list1,list2,sortColumn,ASC);
+		
+		
+	}
 	
 	
 	/**

@@ -514,25 +514,7 @@ public class RESTServices {
 	
 	
 	
-	/**
-	 * Returns the next page of solvers in a job
-	 * @param jobID the id of the job to get the next page of solvers for
-	 * @author Eric Burns*/
-	@POST
-	@Path("/jobs/{id}/solvers/pagination")
-	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		
-		List<SolverStats> stats=Jobs.getAllJobStats(jobId);
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);		
-		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-		
-	}
+	
 	/**
 	 * Returns the next page of solvers in a job
 	 * @param jobID the id of the job to get the next page of solvers for
@@ -652,7 +634,7 @@ public class RESTServices {
 		} else if(primType.startsWith("so")){
 			count = Solvers.getCountInSpace(spaceId);	
 		}  else if(primType.startsWith("sp")){
-			count = Spaces.getCountInSpace(spaceId, SessionUtil.getUserId(request));
+			count = Spaces.getCountInSpace(spaceId, SessionUtil.getUserId(request),false);
 		}
 		
 		return gson.toJson(count);
