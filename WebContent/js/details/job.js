@@ -442,7 +442,8 @@ function updateSpaceOverview() {
 					});
 					//we only want to update the graph if the request we made still matches what the user has put in
 					//it is possible the user changed their selections and sent out a new request which has returned already
-					if (currentConfigs==configs) {
+					//also, equality checking doesn't work on arrays, but less than and greater than do
+					if (!(currentConfigs>configs) && !(currentConfigs<configs)) {
 						$("#spaceOverview").attr("src",returnCode);
 						$("#bigSpaceOverview").attr("src",returnCode+"600");
 					}
