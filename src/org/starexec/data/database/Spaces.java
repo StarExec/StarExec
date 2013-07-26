@@ -1592,8 +1592,6 @@ public class Spaces {
 			 results = procedure.executeQuery();
 
 			if (results.next()) {
-				int answer=results.getInt("spaceCount");
-				System.out.println(answer);
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {

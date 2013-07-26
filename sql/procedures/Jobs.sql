@@ -673,9 +673,7 @@ CREATE PROCEDURE GetJobPairsByJobInJobSpace(In _jobId INT, IN _jobSpaceId INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 				JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN status_codes AS status ON job_pairs.status_code=status.code
 									JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_id=_jobId AND job_space_id =_jobSpaceId;
 	END //

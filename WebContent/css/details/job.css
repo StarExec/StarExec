@@ -105,5 +105,6 @@ p.accent {
 
 #spaceOverviewSelections {
 overflow-y: scroll;
-width: 25%;
+overflow-x: scroll;
+width: 50%;
 }

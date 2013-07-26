@@ -436,8 +436,17 @@ function updateSpaceOverview() {
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
 					break;
 				default:
-					$("#spaceOverview").attr("src",returnCode);
-					$("#bigSpaceOverview").attr("src",returnCode+"600");
+					currentConfigs=new Array();
+					$("#spaceOverviewSelections option:selected").each(function() {
+						currentConfigs.push($(this).attr("value"));
+					});
+					//we only want to update the graph if the request we made still matches what the user has put in
+					//it is possible the user changed their selections and sent out a new request which has returned already
+					if (currentConfigs==configs) {
+						$("#spaceOverview").attr("src",returnCode);
+						$("#bigSpaceOverview").attr("src",returnCode+"600");
+					}
+					
 				}
 			},
 			"text"

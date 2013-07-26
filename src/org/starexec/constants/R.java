@@ -44,7 +44,7 @@ public class R {
     public static int PROCESSOR_DESC_LEN=1024;
     
     // Maximum job pair setting
-    public static int MAXIMUM_JOB_PAIRS=5000;
+    public static int MAXIMUM_JOB_PAIRS=1000;
     public static int MAXIMUM_SOLVER_CONFIG_PAIRS=5;
     //Regex patterns
     public static String BOOLEAN_PATTERN="true|false";

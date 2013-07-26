@@ -1594,7 +1594,7 @@ public class Jobs {
 		log.debug("Getting pairs for job = "+jobId+" in space = "+jobSpaceId);
 		try {
 			con=Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,jobSpaceId);
 			results = procedure.executeQuery();
@@ -2303,7 +2303,7 @@ public class Jobs {
 			
 			Status s = new Status();
 			
-			s.setCode(results.getInt("status.code"));
+			s.setCode(results.getInt("status_code"));
 			jp.setStatus(s);
 			returnList.add(jp);			
 			
