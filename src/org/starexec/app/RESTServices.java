@@ -634,7 +634,7 @@ public class RESTServices {
 		} else if(primType.startsWith("so")){
 			count = Solvers.getCountInSpace(spaceId);	
 		}  else if(primType.startsWith("sp")){
-			count = Spaces.getCountInSpace(spaceId, SessionUtil.getUserId(request));
+			count = Spaces.getCountInSpace(spaceId, SessionUtil.getUserId(request),false);
 		}
 		
 		return gson.toJson(count);

@@ -73,12 +73,10 @@ public class RESTHelpers {
 	 */
 	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList, int userID){
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
-		
-		
 		for(Space space: spaceList){
 			JSTreeItem t;
 			
-			if (Spaces.getCountInSpace(space.getId(), userID)>0) {
+			if (Spaces.getCountInSpace(space.getId(), userID,true)>0) {
 				 t = new JSTreeItem(space.getName(), space.getId(), "closed", "space");	
 			} else {
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf", "space");	
@@ -864,7 +862,7 @@ public class RESTHelpers {
 		    	List<Space> spacesToDisplay = new LinkedList<Space>();
 		    	
 	    		int userId = SessionUtil.getUserId(request);
-	    		int totalSubspacesInSpace = Spaces.getCountInSpace(id, userId);
+	    		int totalSubspacesInSpace = Spaces.getCountInSpace(id, userId,false);
 	    		
 		    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 		    	spacesToDisplay = Spaces.getSpacesForNextPage(

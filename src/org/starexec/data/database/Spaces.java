@@ -1566,6 +1566,7 @@ public class Spaces {
 	}
 	
 	
+	
 	/**
 	 * Gets the number of Spaces in a given space
 	 * 
@@ -1574,19 +1575,25 @@ public class Spaces {
 	 * @return the number of Spaces
 	 * @author Todd Elvers
 	 */
-	public static int getCountInSpace(int spaceId, int userId) {
+	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
+			if (!hierarchy) {
+				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
+			} else {
+				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdInHierarchy(?, ?, ?)}");
+			}
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			procedure.setInt(3, R.PUBLIC_USER_ID);
 			 results = procedure.executeQuery();
 
 			if (results.next()) {
+				int answer=results.getInt("spaceCount");
+				System.out.println(answer);
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {
@@ -1596,7 +1603,6 @@ public class Spaces {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return 0;
 	}
 	

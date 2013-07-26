@@ -2271,7 +2271,7 @@ public class Jobs {
 	 */
 	
 	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
-		log.debug("Processing stat results for job ="+jobId);
+		log.debug("Processing stat results for job = "+jobId);
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();

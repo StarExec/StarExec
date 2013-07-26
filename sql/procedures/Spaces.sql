@@ -324,6 +324,19 @@ CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
 	BEGIN
 		SELECT child_id AS id FROM set_assoc WHERE space_id=_spaceId;
 	END //
+
+-- Returns the recursive number of subspaces a user can see in a given space
+-- Author: Eric Burns
+
+DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdInHierarchy;
+CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
+	BEGIN
+		SELECT COUNT(*) AS spaceCount
+		FROM closure
+				JOIN user_assoc ON ( (user_assoc.user_id in (_userId, _publicUserId)) AND user_assoc.space_id=descendant) 
+
+		WHERE ancestor=_spaceId AND ancestor!=descendant;
+	END //
 	
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers
