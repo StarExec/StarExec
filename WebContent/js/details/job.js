@@ -651,7 +651,6 @@ function extendDataTableFunctions(){
 
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
-	alert("here");
 	var jobId = getParameterByName('id');
 	if (curSpaceId==undefined) {
 		curSpaceId=spaceId;
