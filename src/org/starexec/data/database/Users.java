@@ -31,10 +31,10 @@ public class Users {
 	protected static boolean associate(Connection con, int userId, int spaceId) throws Exception {
 		CallableStatement procedure= null;
 		try {
-			 procedure = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
+			procedure = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
 			procedure.setInt(1, userId);
 			procedure.setInt(2, spaceId);
-			procedure.setInt(3, spaceId);
+			
 
 			procedure.executeUpdate();						
 			log.info(String.format("User [%d] added to space [%d]", userId, spaceId));	

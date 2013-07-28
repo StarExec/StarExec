@@ -528,7 +528,7 @@ public class RESTHelpers {
 		
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-		totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId);
+		totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId,false,false);
 		if (totalJobs>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them
 			JsonObject ob= new JsonObject();
@@ -904,7 +904,7 @@ public class RESTHelpers {
 		    				id,													// Job id 
 		    				attrMap.get(SPACE_ID)
 		    	);
-	    			totalJobPairsforJob= Jobs.getJobPairCountInJobSpace(id,attrMap.get(SPACE_ID));
+	    			totalJobPairsforJob= Jobs.getJobPairCountInJobSpace(id,attrMap.get(SPACE_ID),false,false);
 	    		} else {
 	    			jobPairsToDisplay = Jobs.getJobPairsForNextPage(
 		    				attrMap.get(STARTING_RECORD),						// Record to start at  

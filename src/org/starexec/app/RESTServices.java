@@ -517,7 +517,7 @@ public class RESTServices {
 	
 	/**
 	 * Returns the next page of solvers in a job
-	 * @param jobID the id of the job to get the next page of solvers for
+	 * @param jobID the id of the job to get the next page of solver stats for
 	 * @author Eric Burns
 	 */
 	@POST
@@ -528,6 +528,9 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		if (Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, true, true)>R.MAXIMUM_JOB_PAIRS) {
+			return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
 		}
 		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);

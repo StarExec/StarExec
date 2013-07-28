@@ -1,0 +1,7 @@
+USE starexec;
+
+ALTER TABLE USER_ASSOC
+DROP FOREIGN KEY user_assoc_ibfk_4;
+
+ALTER TABLE USER_ASSOC
+DROP COLUMN proxy;

@@ -1384,10 +1384,9 @@ public class Spaces {
 			
 			log.debug("Calling AddUserToSpace");
 			// Add the adding user to the space with the maximal permissions
-			 procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?, ?)}");			
+			 procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
 			procAddUser.setInt(1, userId);
-			procAddUser.setInt(2, newSpaceId);
-			procAddUser.setInt(3, newSpaceId);				
+			procAddUser.setInt(2, newSpaceId);			
 			procAddUser.executeUpdate();
 			
 			// Set maximal permissions for the user who added the space	

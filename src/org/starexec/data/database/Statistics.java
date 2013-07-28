@@ -147,6 +147,10 @@ public class Statistics {
 		HashMap <Integer,Configuration> configs=new HashMap<Integer,Configuration>();
 		HashMap<Solver,HashMap<Configuration,List<Double>>> answer=new HashMap<Solver,HashMap<Configuration,List<Double>>>();
 		for (JobPair jp : pairs) {
+			if (jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
+				// we don't want to consider incomplete pairs
+				continue;
+			}
 			Solver s=jp.getSolver();
 			if (!solvers.containsKey(s.getId())) {
 				solvers.put(s.getId(), s);
@@ -260,20 +264,11 @@ public class Statistics {
 			if (configIds.size()==0) {
 				return null;
 			}
-			
-			
-			List<JobPair> prelimPairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true);
+			List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true);
 			for (int x=1;x<configIds.size();x++) {
-				prelimPairs.addAll(Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true));
+				pairs.addAll(Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true));
 			}
 			
-			//TODO: We could eliminate this with some new procedures to get only completed job pairs
-			List<JobPair> pairs=new ArrayList<JobPair>();
-			for (JobPair jp  : prelimPairs) {
-				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
-					pairs.add(jp);
-				}
-			}
 			
 			return makeSpaceOverviewChart(pairs, logX,logY);
 		} catch (Exception e) {

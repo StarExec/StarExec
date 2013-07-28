@@ -905,10 +905,14 @@ public class Jobs {
 	 * Returns the number of job pairs that exist for a given job in a given space
 	 * 
 	 * @param jobId the id of the job to get the number of job pairs for
+	 * @param jobSpaceId The ID of the job space containing the paris to count
+	 * @param Whether to count all job pairs in the hierarchy rooted at the job space with the given id
+	 * @param quitIfExceedsMax Whether to quit counting immediately if the pair count is higher
+	 * than the maximum displayable number of pairs defined in R.java
 	 * @return the number of job pairs for the given job
 	 * @author Eric Burns
 	 */
-	public static int getJobPairCountInJobSpace(int jobId, int jobSpaceId) {
+	public static int getJobPairCountInJobSpace(int jobId, int jobSpaceId, boolean hierarchy, boolean quitIfExceedsMax) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -921,6 +925,22 @@ public class Jobs {
 			int jobPairCount=0;
 			if (results.next()) {
 				jobPairCount = results.getInt("jobPairCount");
+			}
+			
+			
+			
+			if (hierarchy) {
+				//return before getting subspaces at all
+				if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
+					return jobPairCount;
+				}
+				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, false);
+				for (Space s : subspaces) {
+					jobPairCount+=getJobPairCountInJobSpace(jobId,s.getId(),false,true);
+					if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
+						return jobPairCount;
+					}
+				}
 			}
 			
 			return jobPairCount;
@@ -1545,40 +1565,6 @@ public class Jobs {
 		}
 		return null;		
 	}
-
-	/**
-	 * Gets all job pairs for the given job in the given space
-	 * @param jobId The id of the job to get pairs for
-	 * @param spaceId The ID of the space containing the job pairs
-	 * @return A List of JobPairs in the given space associated with the given job
-	 * @author Eric Burns
-	 */
-	//TODO: This is no longer used because we are only getting job pairs in a space by config. 
-	//Do we need this?
-	public static List<JobPair> getJobPairsDetailedInSpace(int jobId, int spaceId) {
-		Connection con = null;	
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		try {			
-			con = Common.getConnection();	
-			
-			log.info("getting detailed pairs for job " + jobId +" in space "+spaceId );
-			
-			 procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,spaceId);
-			results = procedure.executeQuery();
-			return Jobs.getPairsDetailed(jobId,con,results,false);
-		} catch (Exception e) {
-			
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
-
 	/**
 	 * Returns all of the job pairs in a given space, populated with all the fields necessary
 	 * to display in a SolverStats table

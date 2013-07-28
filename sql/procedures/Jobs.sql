@@ -668,7 +668,7 @@ CREATE PROCEDURE GetJobPairsByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, I
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
+DROP PROCEDURE IF EXISTS;
 CREATE PROCEDURE GetJobPairsByJobInJobSpace(In _jobId INT, IN _jobSpaceId INT)
 	BEGIN
 		SELECT *

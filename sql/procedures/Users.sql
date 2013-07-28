@@ -22,7 +22,7 @@ CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), 
 -- Adds an association between a user and a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddUserToSpace;
-CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT, IN _proxy INT)
+CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 	BEGIN		
 		DECLARE _newPermId INT;
 		DECLARE _pid INT;
@@ -31,8 +31,8 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT, IN _proxy INT)
 			SELECT default_permission FROM spaces WHERE id=_spaceId INTO _pid;
 			CALL CopyPermissions(_pid, _newPermId);
 			
-			INSERT INTO user_assoc (user_id, space_id, proxy, permission)
-			VALUES (_userId, _spaceId, _proxy, _newPermId);
+			INSERT INTO user_assoc (user_id, space_id, permission)
+			VALUES (_userId, _spaceId, _newPermId);
 		END IF;
 	END //
 	

@@ -348,18 +348,15 @@ CREATE TABLE website (
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE	
 );
 
--- Which user belongs to which space. Proxy simulates inheritance
--- by saying "I'm a member of this space because I'm in this proxy space"
+-- Which user belongs to which space.
 CREATE TABLE user_assoc (
 	user_id INT NOT NULL,
 	space_id INT NOT NULL,	
-	proxy INT NOT NULL,
 	permission INT,
 	PRIMARY KEY (user_id, space_id, proxy),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL,
-	FOREIGN KEY (proxy) REFERENCES spaces(id) ON DELETE CASCADE
+	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
 -- Which spaces exists within another space

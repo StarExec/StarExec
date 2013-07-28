@@ -87,6 +87,8 @@ function reloadTables(id) {
 		$("#solverChoice1").empty();
 		$("#solverChoice2").empty();
 		$("#spaceOverviewSelections").empty();
+		$("#spaceOverview").attr("src",starexecRoot+"/images/external.png");
+		$("#solverComparison").attr("src",starexecRoot+"/images/external.png");
 		summaryTable.fnProcessingIndicator(true);
 		pairTable.fnProcessingIndicator(false);
 		curSpaceId=id;
@@ -118,6 +120,7 @@ function update() {
 		$("#graphField").hide();
 	} else {
 		$("#graphField").show();
+		$("#spaceOverviewSelections").empty();
 		rows.each(function() {
 			solverName=$(this).find("a:first").attr("title");
 			configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
@@ -163,6 +166,7 @@ function initUI(){
 	$("#dialog-solverComparison").hide();
 	$("#dialog-spaceOverview").hide();
 	$("#errorField").hide();
+	$("#statsErrorField").hide();
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -366,6 +370,7 @@ function initUI(){
 	$("#pairTblField").expandable(false);
 	$("#graphField").expandable(false);
 	$("#errorField").expandable(false);
+	$("#statsErrorField").expandable(false);
 	$("#optionField").expandable(true);
 	$("#detailField").expandable(true);
 	$("#actionField").expandable(true);
@@ -658,6 +663,9 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + jobId+"/solvers/pagination/"+outSpaceId,
 			aoData,
 			function(nextDataTablePage){
+				if (outSpaceId!=curSpaceId) {
+					return;
+				}
 				switch(nextDataTablePage){
 					case 1:
 						showMessage('error', "failed to get the next page of results; please try again", 5000);
@@ -665,13 +673,20 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 					case 2:
 						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
 						break;
+					case 12:
+						$("#solverSummaryField").hide();
+						$("#graphField").hide();
+						$("#statsErrorField").show();
+						break;
 					default:
 						// Replace the current page with the newly received page only if we haven't
 						//changed spaces since this request was sent out
-						if (outSpaceId==curSpaceId) {
-							fnCallback(nextDataTablePage);
-							update(curSpaceId);
-						}
+						$("#solverSummaryField").show();
+						$("#graphField").show();
+						$("#statsErrorField").hide();
+						fnCallback(nextDataTablePage);
+						update(curSpaceId);
+						
 						break;
 				}
 			},  
@@ -690,11 +705,15 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
-	
+	outSpaceId=curSpaceId;
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+curSpaceId,
+			sSource + jobId + "/pairs/pagination/"+outSpaceId,
 			aoData,
 			function(nextDataTablePage){
+				//do nothing if this is no longer the current request
+				if (outSpaceId!=curSpaceId) {
+					return;
+				}
 				switch(nextDataTablePage){
 					case 1:
 						showMessage('error', "failed to get the next page of results; please try again", 5000);
@@ -708,6 +727,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						break;
 					default:
 						// Replace the current page with the newly received page
+						
 						pairTable.fnProcessingIndicator(false);
 						fnCallback(nextDataTablePage);
 						$("#errorField").hide();

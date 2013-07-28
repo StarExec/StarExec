@@ -63,6 +63,10 @@
 	</div>
 	<div id="detailPanel" class="jobDetails">
 			<h3 id="spaceName">${jobspace.name}</h3>
+			<fieldset id="statsErrorField">
+			<legend>solver summary</legend>
+			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
+			</fieldset>
 			<fieldset id="solverSummaryField">
 			<legend>solver summary</legend>
 				<table id="solveTbl" class="shaded">
@@ -85,9 +89,9 @@
 			
 				<fieldset id="graphField">
 			<legend>graphs</legend> 
-			<img id="spaceOverview" src="" width="300" height="300" /> 
+			<img id="spaceOverview" src="/${starexecRoot}/images/emptyGraph.png" width="300" height="300" /> 
 				
-				<img id="solverComparison" width="300" height="300" src="" usemap="#solverComparisonMap" />
+				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/emptyGraph.png" usemap="#solverComparisonMap" />
 				<fieldset id="optionField">
 				<legend>options</legend> 
 					<input type="checkbox" id="logScale"/> <span>log scale</span> 

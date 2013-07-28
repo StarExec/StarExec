@@ -44,8 +44,8 @@ CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 			SELECT default_permission FROM spaces WHERE id=_community INTO _pid;
 			CALL CopyPermissions(_pid, _newPermId);
 			
-			INSERT INTO user_assoc(user_id, space_id, proxy, permission)
-			VALUES(_id, _community, _community, _newPermId);
+			INSERT INTO user_assoc(user_id, space_id, permission)
+			VALUES(_id, _community, _newPermId);
 			
 			-- make the user a 'user' if they are currently 'unauthorized'
 			IF EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id) AND role = 'unauthorized') THEN
