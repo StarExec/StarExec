@@ -108,7 +108,7 @@
 			</fieldset>
 			<fieldset id="errorField">
 				<legend>job pairs</legend>
-				<p>There are too many job pairs in this space hierarchy to display. Please navigate to a subspace with fewer pairs.</p>
+				<p>There are too many job pairs in this space to display. Please navigate to a subspace with fewer pairs.</p>
 			</fieldset>
 			<fieldset id="pairTblField">
 				<legend>job pairs</legend>	

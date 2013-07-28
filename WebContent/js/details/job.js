@@ -82,19 +82,17 @@ function initSpaceExplorer() {
 function reloadTables(id) {
 	//we  only need to update if we've actually selected a new space
 	if (curSpaceId!=id) {
+		curSpaceId=id;
 		summaryTable.fnClearTable();
 		pairTable.fnClearTable();
 		$("#solverChoice1").empty();
 		$("#solverChoice2").empty();
 		$("#spaceOverviewSelections").empty();
-		$("#spaceOverview").attr("src",starexecRoot+"/images/external.png");
-		$("#solverComparison").attr("src",starexecRoot+"/images/external.png");
+		$("#spaceOverview").attr("src",starexecRoot+"/images/emptyGraph.png");
+		$("#solverComparison").attr("src",starexecRoot+"/images/emptyGraph.png");
 		summaryTable.fnProcessingIndicator(true);
-		pairTable.fnProcessingIndicator(false);
-		curSpaceId=id;
-		pairTable.fnDraw();
+		pairTable.fnProcessingIndicator(true);
 		summaryTable.fnReloadAjax(null,null,true,id);
-		
 	}
 
 }
@@ -653,6 +651,7 @@ function extendDataTableFunctions(){
 
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
+	alert("here");
 	var jobId = getParameterByName('id');
 	if (curSpaceId==undefined) {
 		curSpaceId=spaceId;

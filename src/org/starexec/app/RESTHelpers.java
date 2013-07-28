@@ -519,6 +519,13 @@ public class RESTHelpers {
 	}
 	
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
+		int totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId,false,false);
+		if (totalJobs>R.MAXIMUM_JOB_PAIRS) {
+			//there are too many job pairs to display quickly, so just don't query for them
+			JsonObject ob= new JsonObject();
+			ob.addProperty("maxpairs", true);
+			return ob;
+		}
 		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
 		if (null==attrMap) {
 			return null;
@@ -526,15 +533,8 @@ public class RESTHelpers {
 		
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
 		
-		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to send to the client
-		totalJobs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId,false,false);
-		if (totalJobs>R.MAXIMUM_JOB_PAIRS) {
-			//there are too many job pairs to display quickly, so just don't query for them
-			JsonObject ob= new JsonObject();
-			ob.addProperty("maxpairs", true);
-			return ob;
-		}
+		
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
     			attrMap.get(STARTING_RECORD),						// Record to start at  
     			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return

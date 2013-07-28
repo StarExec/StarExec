@@ -184,8 +184,10 @@ public class Statistics {
 	
 	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY) {
 		try {
+			long a= System.currentTimeMillis();
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs);
+			log.debug("processing the pairs for a space overview chart took "+(System.currentTimeMillis()-a));
 			XYSeries d;
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(Solver s : data.keySet()) {
@@ -200,6 +202,8 @@ public class Statistics {
 					
 				}
 			}
+			log.debug("making the datasets for a space overview chart took "+(System.currentTimeMillis()-a));
+
 			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
@@ -231,14 +235,23 @@ public class Statistics {
 			renderer.setSeriesLinesVisible(0, true);
 			plot.setRenderer(renderer);
 			String filename=UUID.randomUUID().toString()+".png";
+			
+			log.debug("handling the axes for a space overview chart took "+(System.currentTimeMillis()-a));
+
+			
+			
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			log.debug("writing the small file for a space overview chart took "+(System.currentTimeMillis()-a));
+
 			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
 			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
 			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
+			log.debug("writing the large file for a space overview chart took "+(System.currentTimeMillis()-a));
+
 			log.debug("Chart created succesfully, returning filepath " );
 			return Util.docRoot("secure/files/" + filename);
 		} catch (IOException e) {
@@ -261,6 +274,7 @@ public class Statistics {
 	
 	public static String makeSpaceOverviewChart(int jobId, int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds) {
 		try {
+			long a = System.currentTimeMillis();
 			if (configIds.size()==0) {
 				return null;
 			}
@@ -268,7 +282,7 @@ public class Statistics {
 			for (int x=1;x<configIds.size();x++) {
 				pairs.addAll(Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true));
 			}
-			
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to get the pairs for making a space overview chart for job id = "+jobId);
 			
 			return makeSpaceOverviewChart(pairs, logX,logY);
 		} catch (Exception e) {

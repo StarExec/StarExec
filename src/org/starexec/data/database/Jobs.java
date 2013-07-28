@@ -916,43 +916,42 @@ public class Jobs {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
+		int jobPairCount=0;
 		try {
 			con = Common.getConnection();
 			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpace(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,jobSpaceId);
 			results = procedure.executeQuery();
-			int jobPairCount=0;
 			if (results.next()) {
 				jobPairCount = results.getInt("jobPairCount");
 			}
 			
-			
-			
-			if (hierarchy) {
-				//return before getting subspaces at all
-				if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
-					return jobPairCount;
-				}
-				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, false);
-				for (Space s : subspaces) {
-					jobPairCount+=getJobPairCountInJobSpace(jobId,s.getId(),false,true);
-					if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
-						return jobPairCount;
-					}
-				}
-			}
-			
-			return jobPairCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			
+			return 0;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-
-		return 0;		
+		
+		if (hierarchy) {
+			//return before getting subspaces at all
+			if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
+				return jobPairCount;
+			}
+			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, false);
+			for (Space s : subspaces) {
+				jobPairCount+=getJobPairCountInJobSpace(jobId,s.getId(),false,true);
+				if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
+					return jobPairCount;
+				}
+			}
+		}
+		
+		return jobPairCount;		
 	}
 	
 	/**
@@ -1625,74 +1624,6 @@ public class Jobs {
 		
 	}
 	
-	//the following code is used to do server-side processing of information for job stats datatables.
-	//Currently, we're only doing client-side sorting, querying, etc. of these tables, but we
-	//might want to do server side processing in the future.
-	
-	/*
-	 * Helper function for sortSolverStats-- compares two SolverStats based on the indexOfColumnSortedBy
-	 * @return true if first<= second, false otherwise.
-	 * @author Eric Burns
-	 
-	
-	
-	private static boolean compareSolverStats(SolverStats first, SolverStats second, int indexOfColumnSortedBy) {
-		switch (indexOfColumnSortedBy) {
-		case 0:
-			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
-		case 1: 
-			return (first.getConfiguration().getName().compareTo(second.getConfiguration().getName())<=0);
-		case 2:
-			return first.getCompleteJobPairs()<=second.getCompleteJobPairs();
-		case 3:
-			return first.getIncompleteJobPairs()<=second.getIncompleteJobPairs();
-		case 4:
-			return first.getIncorrectJobPairs()<=second.getIncorrectJobPairs();
-		case 5:
-			return first.getErrorJobPairs()<=second.getErrorJobPairs();
-		case 6:
-			return first.getTime()<=second.getTime();
-		default:
-			return (first.getSolver().getName().compareTo(second.getSolver().getName())<=0);
-		}
-	}*/
-	
-	/*
-	 * Helper function for GetJobStatsForNextPage-- sorts SolverStats objects based on column and ASC sent from client
-	 * @author Eric Burns
-	 *
-	private static List<SolverStats> sortSolverStats(List<SolverStats> rows, int indexOfSortedColumn, boolean isSortedASC) {
-		if (rows.size()<=1) {
-			return rows;
-		}
-		
-		List<SolverStats> answer=new LinkedList<SolverStats>();
-		answer.add(rows.get(0));
-		for (int index=1;index<rows.size();index++) {
-			boolean inserted=false;
-			for (int index2=0;index2<answer.size();index2++) {
-				if (compareSolverStats(rows.get(index), answer.get(index2), indexOfSortedColumn)) {
-					answer.add(index2, rows.get(index));
-					inserted=true;
-					break;
-				}
-				
-				}
-			if (!inserted) {
-				answer.add(rows.get(index));
-			}
-		}
-		if (!isSortedASC) {
-			List<SolverStats> reversed=new LinkedList<SolverStats>();
-			for (SolverStats js : answer) {
-				reversed.add(0,js);
-			}
-			
-			return reversed;
-		}
-		
-		return answer;
-	}*/
 	
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
