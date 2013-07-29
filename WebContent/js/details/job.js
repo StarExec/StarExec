@@ -81,7 +81,7 @@ function initSpaceExplorer() {
 
 function reloadTables(id) {
 	//we  only need to update if we've actually selected a new space
-	if (curSpaceId!=id) {
+	//if (curSpaceId!=id) {
 		curSpaceId=id;
 		summaryTable.fnClearTable();
 		pairTable.fnClearTable();
@@ -93,7 +93,7 @@ function reloadTables(id) {
 		summaryTable.fnProcessingIndicator(true);
 		pairTable.fnProcessingIndicator(true);
 		summaryTable.fnReloadAjax(null,null,true,id);
-	}
+	//}
 
 }
 
@@ -415,7 +415,6 @@ function initUI(){
 }
 
 function updateSpaceOverview() {
-	
 	var configs = new Array();
 	$("#spaceOverviewSelections option:selected").each(function() {
 		configs.push($(this).attr("value"));
@@ -677,14 +676,11 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 						$("#statsErrorField").show();
 						break;
 					default:
-						// Replace the current page with the newly received page only if we haven't
-						//changed spaces since this request was sent out
+						
 						$("#solverSummaryField").show();
 						$("#graphField").show();
 						$("#statsErrorField").hide();
-						fnCallback(nextDataTablePage);
-						update(curSpaceId);
-						
+						fnCallback(nextDataTablePage);						
 						break;
 				}
 			},  
