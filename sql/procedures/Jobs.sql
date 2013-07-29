@@ -580,6 +580,16 @@ CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 			WHERE pair.job_id=_jobId;
 	END //
 	
+DROP PROCEDURE IF EXISTS GetJobAttrsInJobSpace;
+CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobId INT, IN _jobSpaceId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs AS pair 
+			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
+			WHERE pair.job_id=_jobId AND pair.job_space_id=_jobSpaceId;
+	END //
+	
+	
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran
