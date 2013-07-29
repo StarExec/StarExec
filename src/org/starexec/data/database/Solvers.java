@@ -103,6 +103,15 @@ public class Solvers {
 		return false;
 	}
 	
+	/**
+	 * Given a ResultSet containing solver info, returns a Solver object representing  that info
+	 * @param results The resultset pointed at the row with solver information
+	 * @param prefix If there is an "AS <name>" clause in the SQL query that gave this resultset,
+	 * prefix should be <name>
+	 * @return A Solver object
+	 * @throws SQLException
+	 */
+	
 	protected static Solver resultToSolver(ResultSet results, String prefix) throws SQLException {
 		Solver s=new Solver();
 		if (prefix==null || prefix=="") {
