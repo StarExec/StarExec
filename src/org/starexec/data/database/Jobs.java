@@ -1402,16 +1402,13 @@ public class Jobs {
 			// we don't want to query the database once per job pair to get them. Instead,
 			//we store all the IDs we see and only query once  per node, bench, and config.
 			
-			Hashtable<Integer,Solver> neededSolvers=new Hashtable<Integer,Solver>();
-			Hashtable<Integer,Configuration> neededConfigs=new Hashtable<Integer,Configuration>();
-			Hashtable<Integer,Benchmark> neededBenchmarks=new Hashtable<Integer,Benchmark>();
-			Hashtable <Integer, WorkerNode> neededNodes = new Hashtable<Integer, WorkerNode>();
+			Hashtable<Integer,Solver> discoveredSolvers=new Hashtable<Integer,Solver>();
+			Hashtable<Integer,Configuration> discoveredConfigs=new Hashtable<Integer,Configuration>();
+			Hashtable<Integer,Benchmark> discoveredBenchmarks=new Hashtable<Integer,Benchmark>();
+			Hashtable <Integer, WorkerNode> discoveredNodes = new Hashtable<Integer, WorkerNode>();
 			
-			//store the IDs in the same order as the job pairs are stored in 'returnList'
-			List<Integer> nodeIdList=new ArrayList<Integer>();
-			List<Integer> benchIdList=new ArrayList<Integer>();
-			List<Integer> configIdList=new ArrayList<Integer>();
-			int curNode,curBench,curConfig;
+			
+			int curNode,curBench,curConfig, curSolver;
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
 				
@@ -1430,42 +1427,47 @@ public class Jobs {
 				curNode=results.getInt("node_id");
 				curBench=results.getInt("bench_id");
 				curConfig=results.getInt("config_id");
+				curSolver=results.getInt("config.solver_id");
+				if (!discoveredSolvers.containsKey(curSolver)) {
+					Solver solver= Solvers.resultToSolver(results,"solver");				
+					jp.setSolver(solver);
+					discoveredSolvers.put(curSolver, solver);
+				}
+				jp.setSolver(discoveredSolvers.get(curSolver));
 				
-				
-				neededNodes.put(curNode,new WorkerNode());
-				neededBenchmarks.put(curBench,new Benchmark());
-				neededConfigs.put(curConfig,new Configuration());
-				nodeIdList.add(curNode);
-				benchIdList.add(curBench);
-				configIdList.add(curConfig);
+				if (!discoveredBenchmarks.containsKey(curBench)) {
+					Benchmark b= Benchmarks.resultToBenchmark(results, "bench");
+					jp.setBench(b);
+					discoveredBenchmarks.put(curBench,b);
+				}
+				jp.setBench(discoveredBenchmarks.get(curBench));
+
+				if (!discoveredConfigs.containsKey(curConfig)) {
+					Configuration c=new Configuration();
+					c.setId(results.getInt("config.id"));			
+					c.setName(results.getString("config.name"));			
+					c.setSolverId(results.getInt("config.solver_id"));
+					c.setDescription(results.getString("config.description"));
+					discoveredConfigs.put(curConfig,c);
+				}
+				jp.setConfiguration(discoveredConfigs.get(curConfig));
+				jp.getSolver().addConfiguration(discoveredConfigs.get(curConfig));
+				if (!discoveredNodes.containsKey(curNode)) {
+					WorkerNode node=new WorkerNode();
+					node.setName(results.getString("node.name"));
+					node.setId(results.getInt("node.id"));
+					node.setStatus(results.getString("node.status"));
+					discoveredNodes.put(curNode,node);
+				}
+				jp.setNode(discoveredNodes.get(curNode));
 			}
 			
-			
-			Set<Integer> idSet=neededConfigs.keySet();
-			for (int curId : idSet) {
-				neededConfigs.put(curId, Solvers.getConfiguration(curId));
-				neededSolvers.put(curId, Solvers.getSolverByConfig(curId,false));
-			}
-			
-			idSet=neededNodes.keySet();
-			for (int curId : idSet) {
-				neededNodes.put(curId, Cluster.getNodeDetails(curId));
-			}
-			
-			idSet=neededBenchmarks.keySet();
-			for (int curId : idSet) {
-				neededBenchmarks.put(curId,Benchmarks.get(curId));
-			}
 			log.debug("about to get attributes for job " +jobId );
 			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId);
 			log.debug("just got "+ props.keySet().size() +" out of "+ returnList.size() + " attributes for job " +jobId);
 			//now, set the solvers, benchmarks, etc.
 			for (Integer i =0; i < returnList.size(); i++){
 				JobPair jp = returnList.get(i);
-				jp.setNode(neededNodes.get(nodeIdList.get(i)));
-				jp.setBench(neededBenchmarks.get(benchIdList.get(i)));
-				jp.setSolver(neededSolvers.get(configIdList.get(i)));
-				jp.setConfiguration(neededConfigs.get(configIdList.get(i)));
 				
 				//NOTE: for all new jobs, props should always contain the ID of every job pair
 				// in  the job, regardless of whether it has any attributes. The only reason we need to check whether it doesn't is for

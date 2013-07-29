@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -102,6 +103,33 @@ public class Solvers {
 		return false;
 	}
 	
+	protected static Solver resultToSolver(ResultSet results, String prefix) throws SQLException {
+		Solver s=new Solver();
+		if (prefix==null || prefix=="") {
+			s.setId(results.getInt("id"));
+			s.setUserId(results.getInt("user_id"));
+			s.setName(results.getString("name"));
+			s.setUploadDate(results.getTimestamp("uploaded"));
+			s.setPath(results.getString("path"));
+			s.setDescription(results.getString("description"));
+			s.setDownloadable(results.getBoolean("downloadable"));
+			s.setDiskSize(results.getLong("disk_size"));
+		} else {
+			s.setId(results.getInt(prefix+".id"));
+			s.setUserId(results.getInt(prefix+".user_id"));
+			s.setName(results.getString(prefix+".name"));
+			s.setUploadDate(results.getTimestamp(prefix+".uploaded"));
+			s.setPath(results.getString(prefix+".path"));
+			s.setDescription(results.getString(prefix+".description"));
+			s.setDownloadable(results.getBoolean(prefix+".downloadable"));
+			s.setDiskSize(results.getLong(prefix+".disk_size"));
+		}
+		
+		
+		
+		return s;
+	}
+	
 	/**
 	 * @param con The connection to make the query on
 	 * @param solverId The id of the solver to retrieve
@@ -122,15 +150,7 @@ public class Solvers {
 			procedure.setInt(1, solverId);					
 			results = procedure.executeQuery();
 			if(results.next()){
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setUserId(results.getInt("user_id"));
-				s.setName(results.getString("name"));
-				s.setUploadDate(results.getTimestamp("uploaded"));
-				s.setPath(results.getString("path"));
-				s.setDescription(results.getString("description"));
-				s.setDownloadable(results.getBoolean("downloadable"));
-				s.setDiskSize(results.getLong("disk_size"));
+				Solver s = resultToSolver(results,null);
 				Common.safeClose(results);
 				return s;
 			}

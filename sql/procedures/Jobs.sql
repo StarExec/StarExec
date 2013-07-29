@@ -630,6 +630,7 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 									LEFT JOIN	job_spaces 		AS  jobSpace ON jobSpace.id=job_pairs.job_space_id
 									
 		WHERE job_pairs.job_id=_id
@@ -658,11 +659,15 @@ CREATE PROCEDURE GetJobPairsByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, I
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+						JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
+
 					   JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
--- Retrieves all the info needed for stats for each job pair
--- Author: Eric Burns
+
 
 
 
@@ -685,8 +690,13 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+						JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
+
 					   INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
-					   JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId
 		ORDER BY job_pairs.end_time DESC;
 	END //

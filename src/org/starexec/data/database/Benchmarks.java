@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1155,6 +1156,31 @@ public class Benchmarks {
 		}
 		return null;
 	}
+	
+	
+	protected static Benchmark resultToBenchmark(ResultSet results, String prefix) throws SQLException {
+		Benchmark b = new Benchmark();
+		if (prefix==null || prefix=="") {
+			b.setId(results.getInt("id"));
+			b.setUserId(results.getInt("user_id"));
+			b.setName(results.getString("name"));
+			b.setUploadDate(results.getTimestamp("uploaded"));
+			b.setPath(results.getString("path"));
+			b.setDescription(results.getString("description"));
+			b.setDownloadable(results.getBoolean("downloadable"));
+			b.setDiskSize(results.getLong("disk_size"));
+		} else {
+			b.setId(results.getInt(prefix+".id"));
+			b.setUserId(results.getInt(prefix+".user_id"));
+			b.setName(results.getString(prefix+".name"));
+			b.setUploadDate(results.getTimestamp(prefix+".uploaded"));
+			b.setPath(results.getString(prefix+".path"));
+			b.setDescription(results.getString(prefix+".description"));
+			b.setDownloadable(results.getBoolean(prefix+".downloadable"));
+			b.setDiskSize(results.getLong(prefix+".disk_size"));
+		}
+		return b;
+	}
 
 	/**
 	 * @param con The connection to query with
@@ -1177,15 +1203,7 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 
 			if(results.next()){
-				Benchmark b = new Benchmark();
-				b.setId(results.getInt("bench.id"));
-				b.setUserId(results.getInt("bench.user_id"));
-				b.setName(results.getString("bench.name"));
-				b.setUploadDate(results.getTimestamp("bench.uploaded"));
-				b.setPath(results.getString("bench.path"));
-				b.setDescription(results.getString("bench.description"));
-				b.setDownloadable(results.getBoolean("bench.downloadable"));
-				b.setDiskSize(results.getLong("bench.disk_size"));
+				Benchmark b = resultToBenchmark(results,"bench");
 
 				Processor t = new Processor();
 				t.setId(results.getInt("types.id"));
