@@ -748,7 +748,7 @@ public class Jobs {
 		ResultSet results = null;
 		log.debug("Getting all attributes for job with ID = "+jobId);
 		 try {
-			if (jobSpaceId!=null) {
+			if (jobSpaceId==null) {
 				procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
 				procedure.setInt(1, jobId);
 			} else {
