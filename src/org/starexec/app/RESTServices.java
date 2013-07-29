@@ -515,7 +515,7 @@ public class RESTServices {
 	
 	
 	/**
-	 * Returns the next page of solvers in a job
+	 * Returns the next page of stats for the given job and job space
 	 * @param jobID the id of the job to get the next page of solver stats for
 	 * @author Eric Burns
 	 */

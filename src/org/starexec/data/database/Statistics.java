@@ -278,7 +278,9 @@ public class Statistics {
 			if (configIds.size()==0) {
 				return null;
 			}
+			
 			List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true);
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to get the pairs for a single config for making a space overview chart for job id = "+jobId);
 			for (int x=1;x<configIds.size();x++) {
 				pairs.addAll(Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true));
 			}

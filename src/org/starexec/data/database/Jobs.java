@@ -1500,29 +1500,41 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
+		
+		long a = System.currentTimeMillis();
+		log.debug("beginning getJobPairsDetailedByConfigInJobSpace");
 		Connection con = null;	
 		
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {			
 			con = Common.getConnection();	
-			
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to get a connection = "+jobId);
+
 			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
 			procedure = con.prepareCall("{CALL GetJobPairsByConfigInJobSpace(?, ?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,jobSpaceId);
 			procedure.setInt(3,configId);
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to setup the procedure = "+jobId);
+
 			results = procedure.executeQuery();
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to execute the procedure = "+jobId);
+
 			List<JobPair> pairs = getPairsDetailed(jobId,con,results,false);
-			
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to run the getPairsDetailedFunction = "+jobId);
+
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+				log.debug("it took "+(System.currentTimeMillis()-a) + " time to get subspaces = "+jobId);
+
 				for (Space s : subspaces) {
 					pairs.addAll(getJobPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,false));
 				}
 			}
-			
+			log.debug("it took "+(System.currentTimeMillis()-a) + " time to do the recursion = "+jobId);
+
 			return pairs;
 		}catch (Exception e) {
 			e.printStackTrace();

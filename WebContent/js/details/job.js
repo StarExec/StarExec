@@ -14,6 +14,7 @@ $(document).ready(function(){
 	setInterval(function() {
 		pairTable.fnDraw(false);
 	},10000);
+	summaryTable.fnReloadAjax(null,null,true,curSpaceId);
 });
 
 function createDownloadRequest(item,type,returnIds) {
@@ -81,7 +82,7 @@ function initSpaceExplorer() {
 
 function reloadTables(id) {
 	//we  only need to update if we've actually selected a new space
-	//if (curSpaceId!=id) {
+	if (curSpaceId!=id) {
 		curSpaceId=id;
 		summaryTable.fnClearTable();
 		pairTable.fnClearTable();
@@ -93,7 +94,7 @@ function reloadTables(id) {
 		summaryTable.fnProcessingIndicator(true);
 		pairTable.fnProcessingIndicator(true);
 		summaryTable.fnReloadAjax(null,null,true,id);
-	//}
+	}
 
 }
 
