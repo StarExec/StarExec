@@ -132,7 +132,7 @@ function update() {
 		$("#spaceOverviewSelections").children("option:lt(5)").prop("selected",true);
 		lastValidSelectOption = $("#spaceOverviewSelections").val();
 		updateSpaceOverview();
-		if (summaryTable.fnSettings().fnRecordsTotal()>=1) {
+		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
 			$("#solverComparison").show();
 			$("#solverComparisonOptionField").show();
 			
