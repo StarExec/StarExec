@@ -353,7 +353,7 @@ CREATE TABLE user_assoc (
 	user_id INT NOT NULL,
 	space_id INT NOT NULL,	
 	permission INT,
-	PRIMARY KEY (user_id, space_id, proxy),
+	PRIMARY KEY (user_id, space_id),
 	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL

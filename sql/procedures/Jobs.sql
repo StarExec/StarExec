@@ -389,7 +389,6 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				SELECT 	job_pairs.id, 
 						job_pairs.bench_id,
 						job_pairs.config_id,
-						job_pairs.cpu,
 						job_pairs.job_space_id,
 						config.id,
 						config.name,
@@ -405,7 +404,8 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.description,
 						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
-						cpu
+						cpu,
+						wallclock
 						
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
@@ -448,7 +448,8 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.description,
 						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
-						cpu
+						cpu,
+						wallclock
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
@@ -490,7 +491,8 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.description,
 						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
-						cpu
+						cpu,
+						wallclock
 						
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
@@ -542,7 +544,8 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 						bench.description,
 						jobSpace.name,
 						GetJobPairResult(job_pairs.id) AS result,
-						cpu
+						cpu,
+						wallclock
 				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
@@ -654,7 +657,35 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
+
 	
+-- Retrieves info about job pairs for a given job in a given space with a given configuration
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsShallowWithBenchmarksByConfigInJobSpace;
+CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
+	BEGIN
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config.id, config.name,bench.id,bench.name
+		FROM job_pairs 
+						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+
+		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+	END //
+	
+	
+-- Retrieves info about job pairs for a given job in a given space with a given configuration
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpace;
+CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
+	BEGIN
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config.id, config.name
+		FROM job_pairs 
+						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+	END //	
+
 -- Retrieves info about job pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsByConfigInJobSpace;

@@ -967,7 +967,7 @@ public class Jobs {
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
 				jp.setCpuUsage(results.getDouble("cpu"));
-
+				jp.setWallclockTime(results.getDouble("wallclock"));
 				Benchmark bench = new Benchmark();
 				bench.setId(results.getInt("bench.id"));
 				bench.setName(results.getString("bench.name"));
@@ -1438,6 +1438,85 @@ public class Jobs {
 
 		return null;		
 	}
+	
+	/**
+	 * Gets shallow job pair information for the given job, where all the pairs had benchmarks in the given job_space
+	 * and used the configuration with the given ID. Used to make the space overview chart, so only info needed for
+	 * it is returned
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job_space in question
+	 * @param configId The ID of the configuration in question
+	 * @return A List of JobPair objects
+	 * @author Eric Burns
+	 */
+	
+	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy, boolean includeBenchmarks) {
+		long a=System.currentTimeMillis();
+		Connection con = null;	
+		
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {			
+			con = Common.getConnection();	
+
+			log.info("getting shallow pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
+			//otherwise, just get the completed ones that were completed later than lastSeen
+			if (!includeBenchmarks) {
+				procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpace(?, ?, ?)}");
+
+			} else {
+				procedure = con.prepareCall("{CALL GetJobPairsShallowWithBenchmarksByConfigInJobSpace(?, ?, ?)}");
+
+			}
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			procedure.setInt(3,configId);
+
+			results = procedure.executeQuery();
+			log.debug("executing query took "+(System.currentTimeMillis()-a));
+			List<JobPair> pairs = new ArrayList<JobPair>();
+			while (results.next()) {
+				JobPair jp=new JobPair();
+				Status s=new Status();
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				jp.setId(results.getInt("job_pairs.id"));
+				jp.setWallclockTime(results.getDouble("wallclock"));
+				jp.setCpuUsage(results.getDouble("cpu"));
+				Solver solver=new Solver();
+				solver.setId(results.getInt("solver.id"));
+				solver.setName(results.getString("solver.name"));
+				Configuration c=new Configuration();
+				c.setId(results.getInt("config.id"));
+				c.setName(results.getString("config.name"));
+				solver.addConfiguration(c);
+				jp.setSolver(solver);
+				jp.setConfiguration(c);
+				if (includeBenchmarks) {
+					Benchmark b=new Benchmark();
+					b.setId(results.getInt("bench.id"));
+					b.setName(results.getString("bench.name"));
+				}
+				pairs.add(jp);
+			}
+			log.debug("getPairsDetailed function took "+(System.currentTimeMillis()-a));
+			if (hierarchy) {
+				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+
+				for (Space s : subspaces) {
+					pairs.addAll(getJobPairsShallowByConfigInJobSpace(jobId,s.getId(),configId,false,includeBenchmarks));
+				}
+			}
+			return pairs;
+		}catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
 
 	/**
 	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
@@ -1450,7 +1529,7 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
-		
+		long a=System.currentTimeMillis();
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1466,9 +1545,9 @@ public class Jobs {
 			procedure.setInt(3,configId);
 
 			results = procedure.executeQuery();
-
+			log.debug("executing query took "+(System.currentTimeMillis()-a));
 			List<JobPair> pairs = getPairsDetailed(jobId,con,results,false,jobSpaceId,configId);
-
+			log.debug("getPairsDetailed function took "+(System.currentTimeMillis()-a));
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
@@ -1476,7 +1555,6 @@ public class Jobs {
 					pairs.addAll(getJobPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,false));
 				}
 			}
-
 			return pairs;
 		}catch (Exception e) {
 			e.printStackTrace();

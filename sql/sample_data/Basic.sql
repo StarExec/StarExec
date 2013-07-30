@@ -213,14 +213,14 @@ INSERT INTO closure VALUES (3, 4);
 INSERT INTO closure VALUES (3, 5);
 INSERT INTO closure VALUES (4, 5);
 
-INSERT INTO user_assoc VALUES (1, 3, 3, 6);
-INSERT INTO user_assoc VALUES (1, 5, 5, 6);
-INSERT INTO user_assoc VALUES (2, 2, 2, 8);
-INSERT INTO user_assoc VALUES (3, 2, 2, 9);
-INSERT INTO user_assoc VALUES (4, 3, 3, 10);
-INSERT INTO user_assoc VALUES (5, 6, 6, 11);
-INSERT INTO user_assoc VALUES (1, 6, 6, 6);
-INSERT INTO user_assoc VALUES (6, 3, 3, 12);
+INSERT INTO user_assoc VALUES (1, 3, 6);
+INSERT INTO user_assoc VALUES (1, 5, 6);
+INSERT INTO user_assoc VALUES (2, 2, 8);
+INSERT INTO user_assoc VALUES (3, 2, 9);
+INSERT INTO user_assoc VALUES (4, 3, 10);
+INSERT INTO user_assoc VALUES (5, 6, 11);
+INSERT INTO user_assoc VALUES (1, 6, 6);
+INSERT INTO user_assoc VALUES (6, 3, 12);
 
 /*
 INSERT INTO bench_assoc VALUES (2, 1);

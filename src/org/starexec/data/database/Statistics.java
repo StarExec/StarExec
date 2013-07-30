@@ -24,6 +24,7 @@ import org.jfree.chart.imagemap.StandardURLTagFragmentGenerator;
 import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.SamplingXYLineRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
@@ -183,9 +184,11 @@ public class Statistics {
 	 */
 	
 	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY) {
+		long a=System.currentTimeMillis();
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs);
+			log.debug("processing pairs = " +(System.currentTimeMillis()-a));
 			XYSeries d;
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(Solver s : data.keySet()) {
@@ -200,6 +203,8 @@ public class Statistics {
 					
 				}
 			}
+			log.debug("populating datasets = " +(System.currentTimeMillis()-a));
+
 
 			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
@@ -234,10 +239,12 @@ public class Statistics {
 			String filename=UUID.randomUUID().toString()+".png";
 			
 
-			
+			log.debug("handling axes = " +(System.currentTimeMillis()-a));
+
 			
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			log.debug("saving small = " +(System.currentTimeMillis()-a));
 
 			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
@@ -245,6 +252,7 @@ public class Statistics {
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
 			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
 			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
+			log.debug("saving large = " +(System.currentTimeMillis()-a));
 
 			log.debug("Chart created succesfully, returning filepath " );
 			return Util.docRoot("secure/files/" + filename);
@@ -267,14 +275,16 @@ public class Statistics {
 	 */
 	
 	public static String makeSpaceOverviewChart(int jobId, int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds) {
+		long a=System.currentTimeMillis();
 		try {
 			if (configIds.size()==0) {
 				return null;
 			}
 			
-			List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true);
+			List<JobPair> pairs=Jobs.getJobPairsShallowByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true,false);
+			log.debug("getting all pairs = " +(System.currentTimeMillis()-a));
 			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll(Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true));
+				pairs.addAll(Jobs.getJobPairsShallowByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true,false));
 			}
 			
 			return makeSpaceOverviewChart(pairs, logX,logY);
@@ -322,7 +332,7 @@ public class Statistics {
 				times.get(jp.getBench().getId()).add(jp.getWallclockTime());
 			}
 			for(JobPair jp : pairs2) {
-				
+			
 				//if we haven't seen this benchmark, then it wasn't in pairs1 and
 				//there is no comparison to make on it
 				if (times.containsKey(jp.getBench().getId())) {
@@ -360,7 +370,10 @@ public class Statistics {
 			//double maxX=dataset.getDomainUpperBound(false)*1.1;
 			//double maxY=dataset.getRangeUpperBound(false)*1.1;
 			//Range range=new Range(0,Math.max(maxX, maxY));
-			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+			
+			SamplingXYLineRenderer renderer=new SamplingXYLineRenderer();
+			//XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+			plot.setRenderer(renderer);
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 	        
@@ -414,7 +427,7 @@ public class Statistics {
 				map=ChartUtilities.getImageMap("bigSolverComparisonMap", info,tag,url);
 			}
 			
-			log.debug("Chart created succesfully, returning filepath ");
+			log.debug("solver comparison chart created succesfully, returning filepath ");
 			List<String> answer=new ArrayList<String>();
 			answer.add(Util.docRoot("secure/files/" + filename));
 			answer.add(map);
@@ -439,8 +452,9 @@ public class Statistics {
 	
 	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large) {
 		try {
-			List<JobPair> pairs1=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId, jobSpaceId, configId1,true);
-			List<JobPair> pairs2=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId2,true);
+			List<JobPair> pairs1=Jobs.getJobPairsShallowByConfigInJobSpace(jobId, jobSpaceId, configId1,true,true);
+			List<JobPair> pairs2=Jobs.getJobPairsShallowByConfigInJobSpace(jobId,jobSpaceId,configId2,true,true);
+			log.debug("here I am! "+pairs1.size()+" "+pairs2.size());
 			return makeSolverComparisonChart(pairs1,pairs2, large);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);

@@ -6,7 +6,6 @@ var jobId;
 var lastValidSelectOption;
 $(document).ready(function(){
 	spaceId=$("#spaceId").attr("value");
-	curSpaceId=spaceId;
 	jobId=$("#jobId").attr("value");
 	initUI();
 	initSpaceExplorer();
@@ -14,7 +13,7 @@ $(document).ready(function(){
 	setInterval(function() {
 		pairTable.fnDraw(false);
 	},10000);
-	summaryTable.fnReloadAjax(null,null,true,curSpaceId);
+	reloadTables(spaceId);
 });
 
 function createDownloadRequest(item,type,returnIds) {
@@ -133,7 +132,7 @@ function update() {
 		$("#spaceOverviewSelections").children("option:lt(5)").prop("selected",true);
 		lastValidSelectOption = $("#spaceOverviewSelections").val();
 		updateSpaceOverview();
-		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
+		if (summaryTable.fnSettings().fnRecordsTotal()>=1) {
 			$("#solverComparison").show();
 			$("#solverComparisonOptionField").show();
 			
@@ -656,7 +655,7 @@ function extendDataTableFunctions(){
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
 	if (curSpaceId==undefined) {
-		curSpaceId=spaceId;
+		return;
 	}
 	outSpaceId=curSpaceId;
 	
@@ -703,6 +702,9 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var jobId = getParameterByName('id');
+	if (curSpaceId==undefined) {
+		return;
+	}
 	outSpaceId=curSpaceId;
 	$.post(  
 			sSource + jobId + "/pairs/pagination/"+outSpaceId,
