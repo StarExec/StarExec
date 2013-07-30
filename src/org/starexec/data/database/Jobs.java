@@ -1496,6 +1496,7 @@ public class Jobs {
 					Benchmark b=new Benchmark();
 					b.setId(results.getInt("bench.id"));
 					b.setName(results.getString("bench.name"));
+					jp.setBench(b);
 				}
 				pairs.add(jp);
 			}

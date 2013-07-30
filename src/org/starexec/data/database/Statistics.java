@@ -232,10 +232,16 @@ public class Statistics {
 			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
 			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
 			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
-			
-			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-			renderer.setSeriesLinesVisible(0, true);
-			plot.setRenderer(renderer);
+			if (pairs.size()>10000)  {
+				SamplingXYLineRenderer renderer=new SamplingXYLineRenderer();
+				plot.setRenderer(renderer);
+			} else {
+				XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+				renderer.setSeriesLinesVisible(0, true);
+				plot.setRenderer(renderer);
+
+			}
+				
 			String filename=UUID.randomUUID().toString()+".png";
 			
 
@@ -336,7 +342,11 @@ public class Statistics {
 				//if we haven't seen this benchmark, then it wasn't in pairs1 and
 				//there is no comparison to make on it
 				if (times.containsKey(jp.getBench().getId())) {
-					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+					//if, for some reason, this job included runs of the same bench with the same config,
+					//we only want to use the first one we see.
+					if (times.get(jp.getBench().getId()).size()<2) {
+						times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+					}
 					//points are identified by their series and item number
 					String key=series+":"+item;
 					
@@ -371,9 +381,8 @@ public class Statistics {
 			//double maxY=dataset.getRangeUpperBound(false)*1.1;
 			//Range range=new Range(0,Math.max(maxX, maxY));
 			
-			SamplingXYLineRenderer renderer=new SamplingXYLineRenderer();
-			//XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-			plot.setRenderer(renderer);
+			
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 	        
@@ -454,7 +463,6 @@ public class Statistics {
 		try {
 			List<JobPair> pairs1=Jobs.getJobPairsShallowByConfigInJobSpace(jobId, jobSpaceId, configId1,true,true);
 			List<JobPair> pairs2=Jobs.getJobPairsShallowByConfigInJobSpace(jobId,jobSpaceId,configId2,true,true);
-			log.debug("here I am! "+pairs1.size()+" "+pairs2.size());
 			return makeSolverComparisonChart(pairs1,pairs2, large);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
