@@ -1125,9 +1125,7 @@ public class RESTHelpers {
     		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
     		
     		entry.add(new JsonPrimitive(displayWC + " s"));
-    		entry.add(new JsonPrimitive(jp.getStarexecResult()));
-    		entry.add(new JsonPrimitive(jp.getJobSpaceName()));
-    		
+    		entry.add(new JsonPrimitive(jp.getStarexecResult()));    		
     		dataTablePageEntries.add(entry);
     	}
 	    	JsonObject nextPage=new JsonObject();

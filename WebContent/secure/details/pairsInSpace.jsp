@@ -36,7 +36,7 @@
 	}
 %>
 
-<star:template title="Job Pairs for ${solver.name} in ${space.name}" js="lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Job Pairs for ${solver.name} in ${space.name} hierarchy" js="lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
 	<span style="display:none" id="configId" value="${configId}" > </span>
@@ -51,7 +51,6 @@
 					<th>status</th>
 					<th>time</th>
 					<th>result</th>	
-					<th>space</th>			
 				</tr>		
 			</thead>	
 			<tbody>

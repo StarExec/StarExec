@@ -333,12 +333,9 @@ public class JobPairs {
 	
 	protected static JobPair shallowResultToPair(ResultSet result) throws Exception {
 		JobPair jp = new JobPair();
-
-		jp.setId(result.getInt("id"));
-		jp.setJobId(result.getInt("job_id"));	
+		jp.setId(result.getInt("job_pairs.id"));
 		jp.setWallclockTime(result.getDouble("wallclock"));
 		jp.setCpuUsage(result.getDouble("cpu"));
-		jp.setPath(result.getString("path"));
 		return jp;
 	}
 

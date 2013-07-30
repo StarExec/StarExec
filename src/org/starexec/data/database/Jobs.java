@@ -984,7 +984,6 @@ public class Jobs {
 				config.setDescription(results.getString("config.description"));
 				
 				Status status = new Status();
-				status.setCode(results.getInt("status.code"));
 				status.setStatus(results.getString("status.status"));
 				status.setDescription(results.getString("status.description"));
 
@@ -996,7 +995,6 @@ public class Jobs {
 				jp.setSolver(solver);
 				jp.setStatus(status);
 				jp.setAttributes(attributes);
-				jp.setJobSpaceName(results.getString("jobSpace.name"));
 				jobPairs.add(jp);		
 			}	
 			Common.safeClose(results);
@@ -1032,7 +1030,7 @@ public class Jobs {
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals) {
 		//get all of the pairs first, then carry out sorting and filtering
 		//PERFMORMANCE NOTE: this call takes over 99.5% of the total time this function takes
-		List<JobPair> pairs=Jobs.getJobPairsDetailedByConfigInJobSpace(jobId,jobSpaceId,configId,true);
+		List<JobPair> pairs=Jobs.getJobPairsForTableByConfigInJobSpace(jobId,jobSpaceId,configId,true);
 		totals[0]=pairs.size();
 		List<JobPair> returnList=new ArrayList<JobPair>();
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
@@ -1352,8 +1350,6 @@ public class Jobs {
 			Hashtable<Integer,Configuration> discoveredConfigs=new Hashtable<Integer,Configuration>();
 			Hashtable<Integer,Benchmark> discoveredBenchmarks=new Hashtable<Integer,Benchmark>();
 			Hashtable <Integer, WorkerNode> discoveredNodes = new Hashtable<Integer, WorkerNode>();
-			
-			
 			int curNode,curBench,curConfig, curSolver;
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
@@ -1438,6 +1434,93 @@ public class Jobs {
 
 		return null;		
 	}
+	
+	/**
+	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
+	 * and used the configuration with the given ID
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job_space in question
+	 * @param configId The ID of the configuration in question
+	 * @return A List of JobPair objects
+	 * @author Eric Burns
+	 */
+	
+	public static List<JobPair> getJobPairsForTableByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
+		long a=System.currentTimeMillis();
+		Connection con = null;	
+		
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {			
+			con = Common.getConnection();	
+
+			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
+			//otherwise, just get the completed ones that were completed later than lastSeen
+			procedure = con.prepareCall("{CALL GetJobPairsForTableByConfigInJobSpace(?, ?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			procedure.setInt(3,configId);
+
+			results = procedure.executeQuery();
+			log.debug("executing query took "+(System.currentTimeMillis()-a));
+			List<JobPair> pairs = new ArrayList<JobPair>();
+			
+			while (results.next()) {
+				JobPair jp = new JobPair();
+				jp.setJobId(jobId);
+				jp.setId(results.getInt("job_pairs.id"));
+				jp.setCpuUsage(results.getDouble("cpu"));
+				jp.setWallclockTime(results.getDouble("wallclock"));
+				Benchmark bench = new Benchmark();
+				bench.setId(results.getInt("bench.id"));
+				bench.setName(results.getString("bench.name"));
+				bench.setDescription(results.getString("bench.description"));
+
+				Solver solver = new Solver();
+				solver.setId(results.getInt("solver.id"));
+				solver.setName(results.getString("solver.name"));
+				solver.setDescription(results.getString("solver.description"));
+
+				Configuration config = new Configuration();
+				config.setId(results.getInt("config.id"));
+				config.setName(results.getString("config.name"));
+				config.setDescription(results.getString("config.description"));
+				
+				Status status = new Status();
+				status.setStatus(results.getString("status.status"));
+				status.setDescription(results.getString("status.description"));
+
+				Properties attributes = new Properties();
+				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+
+				solver.addConfiguration(config);
+				jp.setBench(bench);
+				jp.setSolver(solver);
+				jp.setStatus(status);
+				jp.setAttributes(attributes);
+				pairs.add(jp);	
+			}
+			
+			log.debug("getPairsDetailed function took "+(System.currentTimeMillis()-a));
+			if (hierarchy) {
+				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+
+				for (Space s : subspaces) {
+					pairs.addAll(getJobPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,false));
+				}
+			}
+			return pairs;
+		}catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	
 	
 	/**
 	 * Gets shallow job pair information for the given job, where all the pairs had benchmarks in the given job_space
@@ -1588,7 +1671,15 @@ public class Jobs {
 			procedure.setInt(2,jobSpaceId);
 			results = procedure.executeQuery();
 			
-			return processStatResults(results, jobId,con,jobSpaceId,null);
+			List<JobPair> pairs=processStatResults(results, jobId,con,jobSpaceId,null);
+			
+			HashMap<Integer,Properties> attrs=Jobs.getJobAttributes(jobId, jobSpaceId, null);
+			for (JobPair jp : pairs) {
+				if (attrs.containsKey(jp.getId())) {
+					jp.setAttributes(attrs.get(jp.getId()));
+				}
+			}
+			return pairs;
 		} catch (Exception e) {
 			log.error("getPairsDetailedForStatsInSpace says "+e.getMessage(),e);
 			
