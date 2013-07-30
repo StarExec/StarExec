@@ -2029,7 +2029,6 @@ function updateButtonIds(id) {
 	
 	
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
-	$('#generateResultChart').attr('href', starexecRoot+"secure/generateResultChart?sid=" + id);
 	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog

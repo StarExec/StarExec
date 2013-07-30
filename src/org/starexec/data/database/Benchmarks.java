@@ -104,27 +104,7 @@ public class Benchmarks {
 		return false;
 	}
 
-	protected static boolean addBenchAttrTen(Connection con, int benchId, Entry<Object,Object>[] entryArray , int index) throws Exception {
-		CallableStatement procedure=null;
-
-		try {
-			procedure = con.prepareCall("{CALL AddBenchAttrTen(?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?)}");
-
-			for (int i = index; i < index+10; i++)
-			{
-				procedure.setInt((i-index)*3+1, benchId);
-				procedure.setString((i-index)*3+2, (String)entryArray[i].getKey());
-				procedure.setString((i-index)*3+3, (String)entryArray[i].getValue());
-			}
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e) {
-			
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
+	
 
 	/**
 	 * Adds a single benchmark to the database under the given spaceId
@@ -227,7 +207,6 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	@SuppressWarnings("unused")
 	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		if (benchmarks.size()>0){
@@ -254,14 +233,7 @@ public class Benchmarks {
 				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
 				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
-				if (dataStruct != null){
-
-					Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
-
-				} else{
-					log.warn("Problem validating benchmark depedencies for space " + spaceId);
-				}
-
+				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
 				return true;
 			} catch (Exception e){			
 				log.error("Need to roll back - addWithDeps says" + e.getMessage(), e);
@@ -278,25 +250,7 @@ public class Benchmarks {
 		return false;
 	}	
 
-	/**
-	 *   introduces the (presumably validated)dependencies for a list of benchmarks
-	 * @param benchmarks list of benchmarks that (potentially) have dependencies 
-	 * @param dataStruct  datastructure that holds information about the benchmarks' dependencies
-	 * @author Benton McCune
-	 */
-	private static void introduceDependencies(List<Benchmark> benchmarks,
-			DependValidator dataStruct) {
-		HashMap<Integer, ArrayList<Integer>> axiomMap = dataStruct.getAxiomMap();
-		HashMap<Integer, ArrayList<String>> pathMap = dataStruct.getPathMap();
-		Integer benchId;
-		log.info("entering dependency loop for benchmark list of size = " + benchmarks.size());
-		for (int i=0; i< benchmarks.size(); i++){
-			benchId = benchmarks.get(i).getId();
-			log.info("Benchmark " + i +" has id " + benchId + " with " + axiomMap.get(benchId).size() + " axiom ids and " + pathMap.get(benchId).size() + " paths");
-			introduceDependencies(benchId, axiomMap.get(benchId), pathMap.get(benchId));
-		}
-
-	}
+	
 	/**
 	 * introduces the dependencies for a single benchmark
 	 * @param benchId  id of the benchmark
@@ -652,32 +606,6 @@ public class Benchmarks {
 		}
 	}
 
-	// just for testing locally
-	@SuppressWarnings("unused")
-	public static boolean testDepCode(Benchmark bench, int userId){
-		
-		log.debug("Testing Dep Code on " + bench.getName());
-		try {	
-			
-			ArrayList<Benchmark> benches = new ArrayList<Benchmark>();
-			benches.add(bench);
-			DependValidator benValidator = Benchmarks.validateDependencies(benches, 3, true, 1);
-			log.info("Size of axiom Map = " + benValidator.getAxiomMap().size());
-			if (benValidator!= null){
-				log.debug("Validated - now introducing depedencies");
-				Benchmarks.introduceDependencies(benches, benValidator);
-			}
-			else{
-				log.debug("Null validator - nothing else to do");
-			}
-	
-		}catch (Exception e){			
-			log.error(e.getMessage(), e);
-			
-		}
-		return true;
-	}
-
 	/**
 	 * Adds the benchmark dependency to starexec db
 	 * @param primaryBenchId  the bench that is dependent on another bench
@@ -845,7 +773,7 @@ public class Benchmarks {
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 	}
 
-	//
+	
 	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, Integer statusId) throws Exception {		
 		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 
@@ -964,7 +892,13 @@ public class Benchmarks {
 		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
 		return false;
 	}	
-
+	/**
+	 * Returns whether a benchmark with the given ID is present in the database with the 
+	 * "deleted" column set to true
+	 * @param benchId The ID of the benchmark to check
+	 * @return True if the benchmark exists in the database with the "deleted" column set to
+	 * true, and false otherwise
+	 */
 	public static boolean isBenchmarkDeleted(int benchId) {
 		Connection con=null;
 		try {
@@ -977,6 +911,14 @@ public class Benchmarks {
 		}
 		return false;
 	}
+	/**
+	 * Returns whether a benchmark with the given ID is present in the database with the 
+	 * "deleted" column set to true
+	 * @param benchId The ID of the benchmark to check
+	 * @param the open connection to make the SQL call on
+	 * @return True if the benchmark exists in the database with the "deleted" column set to
+	 * true, and false otherwise
+	 */
 
 	protected static boolean isBenchmarkDeleted(Connection con, int benchId) {
 		CallableStatement procedure=null;
@@ -1001,7 +943,7 @@ public class Benchmarks {
 	}
 
 	/**
-	 * Retrieves a benchmark without attributes
+	 * Retrieves a benchmark. Will not return a "deleted" benchmark
 	 * @param benchId The id of the benchmark to retrieve
 	 * @return A benchmark object representing the benchmark with the given ID
 	 * @author Tyler Jensen
@@ -1009,10 +951,22 @@ public class Benchmarks {
 	public static Benchmark get(int benchId, boolean includeAttrs) {
 		return Benchmarks.get(benchId, includeAttrs,false);
 	}
+	/**
+	 * Retrieves a benchmark without attributes. Will not return a "deleted" benchmark
+	 * @param benchId The id of the benchmark to retrieve
+	 * @return A benchmark object representing the benchmark with the given ID
+	 * @author Tyler Jensen
+	 */
 	
 	public static Benchmark get(int benchId) {
 		return Benchmarks.get(benchId,false,false);
 	}
+	/**
+	 * Retrieves a benchmark. If the benchmark is deleted, it will still be returned
+	 * @param benchId The id of the benchmark to retrieve
+	 * @return A benchmark object representing the benchmark with the given ID
+	 * @author Tyler Jensen
+	 */
 
 	public static Benchmark getIncludeDeleted(int benchId, boolean includeAttrs) {
 		return Benchmarks.get(benchId,includeAttrs,true);
@@ -1156,7 +1110,15 @@ public class Benchmarks {
 		}
 		return null;
 	}
-	
+	/**
+	 * Creates a Benchmark object from a SQL resultset
+	 * @param results The resultset pointed at the row containing benchmark data
+	 * @param prefix If the sql procedure used to create "results" used an "AS <name>" clause
+	 * when getting benchmark data (as in SELECT * FROM benchmarks AS bench), then prefix
+	 * should be <name>
+	 * @return A Benchmark object
+	 * @throws SQLException
+	 */
 	
 	protected static Benchmark resultToBenchmark(ResultSet results, String prefix) throws SQLException {
 		Benchmark b = new Benchmark();
@@ -1281,15 +1243,7 @@ public class Benchmarks {
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
-				Benchmark b = new Benchmark();
-				b.setId(results.getInt("bench.id"));
-				b.setName(results.getString("bench.name"));
-				b.setUploadDate(results.getTimestamp("bench.uploaded"));
-				b.setDescription(results.getString("bench.description"));
-				b.setDownloadable(results.getBoolean("bench.downloadable"));	
-				b.setDiskSize(results.getLong("bench.disk_size"));
-				b.setPath(results.getString("bench.path"));
-				b.setUserId(results.getInt("bench.user_id"));
+				Benchmark b = resultToBenchmark(results,"bench"); 
 				Processor t = new Processor();
 				t.setId(results.getInt("types.id"));
 				t.setCommunityId(results.getInt("types.community"));
@@ -1314,137 +1268,6 @@ public class Benchmarks {
 		return null;
 	}
 
-	/**
-	 * Might not use this method anymore
-	 * 
-	 * @param spaceId The id of the space to get benchmarks with minimal info
-	 * @return A list of all benchmarks belonging to the space
-	 * @author Benton McCune
-	 */
-	public static List<Benchmark> getMinBySpace(int spaceId) {
-		Connection con = null;		
-		CallableStatement procedure=null;
-		ResultSet results=null;
-
-		try {
-			con = Common.getConnection();	
-			procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
-			procedure.setInt(1, spaceId);					
-			results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
-			while(results.next()){
-				Benchmark b = new Benchmark();
-				b.setId(results.getInt("bench.id"));
-				b.setName(results.getString("bench.name"));
-
-				benchmarks.add(b);
-			}			
-
-			return benchmarks;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param spaceId The id of the root of the space hierarchy
-	 *  to get benchmarks with minimal info
-	 * @return A list of all benchmarks belonging to the space
-	 * @author Benton McCune
-	 */
-	public static List<Benchmark> getMinForHierarchy(int spaceId, int userId) {
-		Connection con = null;		
-		CallableStatement procedure=null;
-		ResultSet results=null;
-
-		try {
-			con = Common.getConnection();	
-			//Test performance before writing new SQL method
-			procedure = con.prepareCall("{CALL GetHierBenchmarksById(?,?,?)}");
-			procedure.setInt(1, spaceId);	
-			procedure.setInt(2, userId);	
-			procedure.setInt(3, R.PUBLIC_USER_ID);	
-			results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
-			while(results.next()){
-				Benchmark b = new Benchmark();
-				b.setId(results.getInt("bench.id"));
-				b.setName(results.getString("bench.name"));
-
-				benchmarks.add(b);
-			}			
-
-			return benchmarks;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns a list of benchmarks owned by a given user
-	 * 
-	 * @param userId the id of the user who is the owner of the benchmarks we are to retrieve
-	 * @return a list of benchmarks owned by a given user, may be empty
-	 * @author Todd Elvers
-	 */
-	public static List<Benchmark> getByOwner(int userId) {
-		Connection con = null;			
-		CallableStatement procedure=null;
-		ResultSet results=null;
-
-		try {
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
-			procedure.setInt(1, userId);					
-			results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
-
-			while(results.next()){
-				// Build benchmark object
-				Benchmark b = new Benchmark();
-
-				b.setId(results.getInt("id"));
-				b.setName(results.getString("name"));
-				b.setPath(results.getString("path"));
-				b.setUploadDate(results.getTimestamp("uploaded"));
-				b.setDescription(results.getString("description"));
-				b.setDownloadable(results.getBoolean("downloadable"));
-				b.setDiskSize(results.getLong("disk_size"));
-
-				// Add benchmark object to listOfBenchmarks
-				benchmarks.add(b);
-			}			
-
-			log.debug(String.format("%d benchmarks were returned as being owned by user %d.", benchmarks.size(), userId));
-
-			return benchmarks;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
-		return null;
-	}
 
 	/**
 	 * Returns a list of benchmark dependencies that have the input benchmark as the primary benchmark
@@ -1615,9 +1438,7 @@ public class Benchmarks {
 
 				b.setType(t);
 				benchmarks.add(b);			
-			}	
-
-
+			}
 			return benchmarks;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -1661,6 +1482,13 @@ public class Benchmarks {
 
 		return 0;
 	}
+	
+	/**
+	 * Determines whether the benchmark with the given ID is public. It is public if it is in at least
+	 * one public space
+	 * @param benchId The ID of the benchmark in question
+	 * @return True if the benchmark exists and is in a public space, false otherwise.
+	 */
 
 	public static boolean isPublic(int benchId) {
 		Connection con = null;

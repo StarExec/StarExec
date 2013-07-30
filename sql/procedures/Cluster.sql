@@ -43,15 +43,7 @@ CREATE PROCEDURE AddQueue(IN _name VARCHAR(64))
 		VALUES (_name);
 	END //
 	
--- Gets the id, name and status of all nodes in the cluster
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetAllNodes;
-CREATE PROCEDURE GetAllNodes()
-	BEGIN		
-		SELECT id, name, status
-		FROM nodes
-		ORDER BY name;	
-	END //
+
 	
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen

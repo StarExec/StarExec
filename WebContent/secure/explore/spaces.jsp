@@ -140,7 +140,6 @@
 				<li><a class="btnDown" id="downloadXML" href="/${starexecRoot}/secure/download">download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
-				<!--  <li><a class="btnRun" id="generateResultChart" href="/${starexecRoot}/secure/generateResultChart">generate chart</a></li>-->
 				<li><a class="btnRun" id="makePublic">make public</a></li>
 				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>

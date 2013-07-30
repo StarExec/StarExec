@@ -607,7 +607,7 @@ public class Spaces {
 
 	
 	/**
-	 * Get all websites associated with a given user.
+	 * Update t he description of a space
 	 * @param spaceId the id of the space to update
 	 * @param newDesc the new description to update the space with
 	 * @return True if the operation was a success, false otherwise
@@ -976,7 +976,7 @@ public class Spaces {
 	}
 	
 	/**
-	 * Gets the name of a community by Id - helper method to work around permissions for this special case
+	 * Gets the name of a space by Id - helper method to work around permissions for this special case
 	 * @param spaceId the id of the community to get the name of
 	 * @return the name of the community
 	 * @author Todd Elvers
@@ -1162,8 +1162,6 @@ public class Spaces {
 		return false;
 	}
 	
-	
-	//no connection
 	protected static Boolean traverse(Space space, int parentId, int userId, int statusId) throws Exception {
 		// Add the new space to the database and get it's ID		
 		log.info("traversing space without deps for user " + userId);
@@ -1266,7 +1264,12 @@ public class Spaces {
 		
 		return false;
 	}
-	
+	/**
+	 * Creates a new job space with the given name
+	 * @param name The name to be given to the job space
+	 * @return The ID of the newly created job space, or -1 on failure
+	 * @author Eric Burns
+	 */
 	public static int addJobSpace(String name) {
 		Connection con = null;
 		log.debug("adding new job space with name ="+name);

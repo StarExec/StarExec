@@ -167,14 +167,7 @@
   	<url-pattern>/secure/makePublic</url-pattern> 
   </servlet-mapping>
  
-  <servlet>
-  	<servlet-name>GenerateResultChart</servlet-name> 
-  	<servlet-class>org.starexec.servlets.GenerateResultChart</servlet-class> 
-  </servlet>
-  <servlet-mapping>
-  	<servlet-name>GenerateResultChart</servlet-name> 
-  	<url-pattern>/secure/generateResultChart</url-pattern> 
-  </servlet-mapping>
+  
   
   <servlet>
     <servlet-name>JobResults</servlet-name>

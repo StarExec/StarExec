@@ -85,10 +85,13 @@ thead {
 }
 
 #solverChoice1,#solverChoice2 {
-	width:25%;
-	float:right;
-	margin-right:10px;
+	width:90%;
 }
+#solverChoice2 {
+	margin-top:5px;
+}
+
+
 
 #detailPanel #optionField {
 	width:95%;
@@ -106,6 +109,19 @@ p.accent {
 #spaceOverviewSelections {
 overflow-y: scroll;
 overflow-x: scroll;
-width: 50%;
-float:left;
+width: 95%;
+margin-top:5px;
+}
+#logScale {
+	float:left;
+	margin-right:auto;
+	margin-left:auto;
+}
+#detailPanel #spaceOverviewOptionField {
+	float:left;
+	width:300px;	
+}
+#detailPanel #solverComparisonOptionField {
+	float:left;
+	width:290px;	
 }

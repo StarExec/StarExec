@@ -94,16 +94,25 @@
 				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/emptyGraph.png" usemap="#solverComparisonMap" />
 				<fieldset id="optionField">
 				<legend>options</legend> 
-					<input type="checkbox" id="logScale"/> <span>log scale</span> 
-					<select multiple size="5" id="spaceOverviewSelections">
+					<fieldset id="spaceOverviewOptionField">
+						<legend>space overview options</legend>
+						
+						<input type="checkbox" id="logScale"/> <span>use log scale</span>
+						 
+						<select multiple size="5" id="spaceOverviewSelections">
+						</select>
+					</fieldset>
+					<fieldset id="solverComparisonOptionField">
+						<legend>solver comparison options</legend>
+						<select id="solverChoice1">
+						
+						</select>
+						<select id="solverChoice2">
+						</select>
+					</fieldset>
 					
-					</select>
 					
-					<select id="solverChoice1">
 					
-					</select>
-					<select id="solverChoice2">
-					</select>
 				</fieldset>
 			</fieldset>
 			<fieldset id="errorField">

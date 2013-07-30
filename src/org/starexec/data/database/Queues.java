@@ -656,7 +656,7 @@ public class Queues {
 	 * @param id The ID of the queue
 	 * @return A List of JobPairs enqueued in the given queue
 	 */
-
+	//TODO: Can this and getNextPageOfRunningJobPairs be combined?
 	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
 		Connection con = null;		
 		CallableStatement procedure = null;

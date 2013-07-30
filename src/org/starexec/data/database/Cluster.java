@@ -76,41 +76,6 @@ public class Cluster {
 	}
 	
 	/**
-	 * Gets all nodes in the starexec cluster (with no detailed information)
-	 * @return A list of nodes that are in the cluster
-	 * @author Tyler Jensen
-	 */
-	public static List<WorkerNode> getAllNodes() {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetAllNodes}");
-			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-			
-			while(results.next()){
-				WorkerNode n = new WorkerNode();
-				n.setName(results.getString("name"));
-				n.setId(results.getInt("id"));
-				n.setStatus(results.getString("status"));
-				nodes.add(n);
-			}			
-						
-			return nodes;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		return null;
-	}
-	
-	/**
 	 * Gets all nodes in the cluster that belong to the queue
 	 * @param id The id of the queue to get nodes for
 	 * @return A list of nodes that belong to the queue

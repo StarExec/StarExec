@@ -373,11 +373,5 @@ function updateProgress() {
 			$('#btnPrev').fadeIn('fast');
 			$('#btnDone').fadeIn('fast');
 			break;
-		/*case 5:	// selecting benchmarks from the hierarchy - never reached
-			$('#fieldSelectBenchHierarchy').fadeIn('fast');
-			$('#btnNext').fadeOut('fast');
-			$('#btnPrev').fadeIn('fast');
-			$('#btnDone').fadeIn('fast');
-			break;	*/
 	}
 }

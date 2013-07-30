@@ -270,8 +270,11 @@ public class JobPair extends Identifiable {
 	/**
 	 * @return the cpu time usage in seconds
 	 */
+	
+	//TODO: Make sure this is actually correct. There is definitely something wrong with the cpu time, but
+	//it might not be in milliseconds, which is what this assumes
 	public double getCpuUsage() {
-		return cpuUsage;
+		return cpuUsage/1000;
 	}
 
 	/**

@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
@@ -45,9 +44,7 @@ public class JobPairs {
 				}
 			} catch (Exception e) {
 				log.warn("filterPairs says jp with id = "+jp.getId()+" threw a null pointer");
-			}
-			
-				
+			}	
 		}
 		
 		return filteredPairs;
@@ -193,8 +190,6 @@ public class JobPairs {
 		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC);
 		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC);
 		return mergeJobPairs(list1,list2,sortColumn,ASC);
-		
-		
 	}
 	
 	
@@ -286,71 +281,7 @@ public class JobPairs {
 
 		return false;
 	}
-	
-
-	/**
-	 * 
-	 * @param jobPairId the Id of the jobPair
-	 * @return the space that the job pair belongs to
-	 */
-	public static Space getSpace(int jobPairId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSpaceByJobPairId(?)}");
-			procedure.setInt(1, jobPairId);
-			 results = procedure.executeQuery();
-			if (results.next()) {
-				Space s = new Space();
-				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));
-				s.setCreated(results.getTimestamp("created"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				s.setPublic(results.getBoolean("public_access"));
-				return s;
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets the SGEID of the given job pair
-	 * @param jobPairId The ID of the job pair in question
-	 * @return The SGE ID, or -1 on error
-	 */
-
-	public static int getSGEId(int jobPairId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSGEIdByPairId(?)}");
-			procedure.setInt(1, jobPairId);
-			 results = procedure.executeQuery();
-			if (results.next()) {
-				return results.getInt("sge_id");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-	
-	
+		
 	/**
 	 * Helper method to extract information from a query for job pairs
 	 * @param result The resultset that is the results from querying for job pairs

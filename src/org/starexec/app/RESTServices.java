@@ -301,6 +301,7 @@ public class RESTServices {
 	 * @return a string representing all attributes of the node with the given id
 	 * @author Wyatt Kaiser2
 	 */
+	//TODO: Delete? Seem to be no references to this path
 	@GET
 	@Path("/cluster/nodes/{id}/pagination")
 	@Produces("application/json")	
@@ -316,6 +317,7 @@ public class RESTServices {
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Wyatt Kaiser2
 	 */
+	//TODO: Delete? Seem to be no references to this path
 	@GET
 	@Path("/cluster/queues/{id}/pagination")
 	@Produces("application/json")	
@@ -455,6 +457,13 @@ public class RESTServices {
 		return gson.toJson(nextDataTablesPage); 
 	}
 	
+	/**
+	 * Handles a request to get a space overview graph for a job details page
+	 * @param jobId The ID of the job to make the graph for
+	 * @param jobSpaceId The job space the chart is for
+	 * @param request Object containing other request information
+	 * @return A json string containing the path to the newly created png chart
+	 */
 	
 	@POST
 	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview")
@@ -489,6 +498,16 @@ public class RESTServices {
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
+	/**
+	 * Handles a request to get a solver comparison graph for a job details page
+	 * @param jobId The ID of the job to make the graph for
+	 * @param jobSpaceId The job space the chart is for
+	 * @param config1 The ID of the first configuration to handle
+	 * @param config2 The ID of the second configuration to handle
+	 * @param request Object containing other request information
+	 * @return A json string containing the path to the newly created png chart as well as
+	 * an image map linking points to benchmarks
+	 */
 	@POST
 	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}")
 	@Produces("application/json")	
@@ -602,45 +621,6 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
-	
-	/**
-	 * Returns an integer representing the number of primitives of the specified type that exist in a given space
-	 *
-	 * @param spaceId the id of the space to query for primitives from
-	 * @param primType the type of primitive
-	 * @param request the object containing the user's id
-	 * @return an integer representing the number of primitives of the given type in the given space if successful,<br>
-	 * 		-1 if the primitive type could not be determined,<br>
-	 * 		-2 if the user doesn't have permission to view the parent space of the primitive
-	 * @author Todd Elvers
-	 */
-	@POST
-	@Path("/space/{id}/{primType}/count")
-	@Produces("application/json")	
-	public String getPrimitiveCount(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {			
-		int userId = SessionUtil.getUserId(request);
-		int count = -1;
-		
-		// Ensure user can view the space containing the primitive(s)
-		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
-			return gson.toJson(-2);
-		}
-		
-		// Return the number of primitives of the specified type
-		if(primType.startsWith("j")){
-			count = Jobs.getCountInSpace(spaceId);
-		} else if(primType.startsWith("u")){
-			count = Users.getCountInSpace(spaceId);
-		} else if(primType.startsWith("b")){
-			count = Benchmarks.getCountInSpace(spaceId);
-		} else if(primType.startsWith("so")){
-			count = Solvers.getCountInSpace(spaceId);	
-		}  else if(primType.startsWith("sp")){
-			count = Spaces.getCountInSpace(spaceId, SessionUtil.getUserId(request),false);
-		}
-		
-		return gson.toJson(count);
-	}
 	
 	/**
 	 * Gets the permissions a given user has in a given space
@@ -827,15 +807,7 @@ public class RESTServices {
 					SessionUtil.getUser(request).setLastName(newValue);
 				}
 			}
-		} else if (attribute.equals("email")) {
-			//just commenting this out for now, since we don't want users changing their email addresses
-			//if (true == Validator.isValidEmail(newValue)) { 
-			//	success = Users.updateEmail(userId, newValue);
-			//	if (true == success) {
-			//		SessionUtil.getUser(request).setEmail(newValue);
-			//	}
-			//}
-		} else if (attribute.equals("institution")) {
+		}  else if (attribute.equals("institution")) {
 			if (true == Validator.isValidInstitution(newValue)) {
 				success = Users.updateInstitution(userId, newValue);
 				if (true == success) {
@@ -2226,29 +2198,6 @@ public class RESTServices {
 		return Jobs.resume(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
-	/**
-	 * Kills a job given a job's id. The id of the job to kill must
-	 * be included in the path.
-	 * 
-	 * @param id the id of the job to kill
-	 * @return 	0: success,<br>
-	 * 			1: error on the database level,<br>
-	 * 			2: insufficient permissions
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/kill/job/{id}")
-	@Produces("application/json")
-	public String killJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
-		// Permissions check; if user is NOT the owner of the job, deny kill request
-		int userId = SessionUtil.getUserId(request);
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		
-		return Jobs.kill(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}
 
 	/**
 	 * Updates the details of a benchmark. Benchmark id is required in the path.

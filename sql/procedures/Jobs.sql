@@ -654,21 +654,6 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 		WHERE job_pairs.job_id=_id
 		ORDER BY job_pairs.end_time DESC;
 	END //
-
--- Gets job pair information necessary for stats (benchmark information excluded)
--- Author: Eric Burns
-	
-DROP PROCEDURE IF EXISTS GetJobPairsByJobForStats;
-CREATE PROCEDURE GetJobPairsByJobForStats(IN _id INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-					   JOIN configurations AS config ON job_pairs.config_id=config.id
-					   JOIN solvers AS solver ON config.solver_id=solver.id
-		WHERE job_pairs.job_id=_id
-		ORDER BY job_pairs.end_time DESC;
-	END //	
-	
 	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
@@ -719,6 +704,15 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 		ORDER BY job_pairs.end_time DESC;
 	END //
 	
+-- Retrieves basic info about job pairs with a given status
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsByStatus;
+CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _cap INT, IN _statusCode INT)
+	BEGIN 
+		SELECT * FROM job_pairs
+		WHERE job_id=_id AND status_code=_statusCode
+		LIMIT _cap;
+	END //
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;

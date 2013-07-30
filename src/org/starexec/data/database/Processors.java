@@ -290,36 +290,5 @@ public class Processors {
 		
 		return false;
 	}	
-	
-	/**
-	 * Updates the processor path of a processor with the given processor id
-	 * 
-	 * @param processorId the id of the processor to update
-	 * @param newPath the new processor path to update the processor with
-	 * @return True if the operation was a success, false otherwise
-	 * @author Tyler Jensen
-	 */
-	public static boolean updatePath(int processorId, String newPath){
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL UpdateProcessorPath(?, ?, ?)}");
-			procedure.setInt(1, processorId);					
-			procedure.setString(2, newPath);
-			// Also update the disk_size for this processor with the new path's disk size
-			procedure.setLong(3, FileUtils.sizeOf(new File(newPath)));
-			
-			
-			procedure.executeUpdate();			
-			return true;				
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
 		
-		return false;
-	}		
 }

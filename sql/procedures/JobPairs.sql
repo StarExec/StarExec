@@ -4,14 +4,6 @@
 USE starexec;
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
-DROP PROCEDURE IF EXISTS GetSGEIdByPairId;
-CREATE PROCEDURE GetSGEIdByPairId(IN _pairId INT)
-	BEGIN
-		SELECT sge_id
-		FROM job_pairs
-		WHERE id = _pairId;
-	END //
 	
 DROP PROCEDURE IF EXISTS UpdateJobPairStatus;
 CREATE PROCEDURE UpdateJobPairStatus(IN _pairId INT, IN _statusCode INT)
@@ -94,18 +86,6 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
 					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.id=_Id;
-	END //
-	
-	
--- Gets the name of the space for a given job id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetSpaceByJobPairId;
-CREATE PROCEDURE GetSpaceByJobPairId(IN _jobPairId INT)
-	BEGIN
-		SELECT *
-		FROM spaces
-			INNER JOIN job_pairs AS jp ON  spaces.id = jp.space_id
-		WHERE jp.id = _jobPairId;
 	END //
 	
 -- Retrieves all attributes for a job pair 

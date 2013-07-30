@@ -27,34 +27,6 @@ CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val
 		INSERT INTO bench_attributes VALUES (_benchmarkId, _key, _val);
 	END //
 	
--- Adds 10 attributes to a benchmark 
--- Author: Benton McCune
-DROP PROCEDURE IF EXISTS AddBenchAttrTen;
-CREATE PROCEDURE AddBenchAttrTen(IN _benchmarkId1 INT, IN _key1 VARCHAR(128), IN _val1 VARCHAR(128),
-	IN _benchmarkId2 INT, IN _key2 VARCHAR(128), IN _val2 VARCHAR(128),
-	IN _benchmarkId3 INT, IN _key3 VARCHAR(128), IN _val3 VARCHAR(128),
-	IN _benchmarkId4 INT, IN _key4 VARCHAR(128), IN _val4 VARCHAR(128),
-	IN _benchmarkId5 INT, IN _key5 VARCHAR(128), IN _val5 VARCHAR(128),
-	IN _benchmarkId6 INT, IN _key6 VARCHAR(128), IN _val6 VARCHAR(128),
-	IN _benchmarkId7 INT, IN _key7 VARCHAR(128), IN _val7 VARCHAR(128),
-	IN _benchmarkId8 INT, IN _key8 VARCHAR(128), IN _val8 VARCHAR(128),
-	IN _benchmarkId9 INT, IN _key9 VARCHAR(128), IN _val9 VARCHAR(128),
-	IN _benchmarkId10 INT, IN _key10 VARCHAR(128), IN _val10 VARCHAR(128))
-	BEGIN
-		INSERT INTO bench_attributes 
-		VALUES 
-			(_benchmarkId1, _key1, _val1),
-			(_benchmarkId2, _key2, _val2),
-			(_benchmarkId3, _key3, _val3),
-			(_benchmarkId4, _key4, _val4),
-			(_benchmarkId5, _key5, _val5),
-			(_benchmarkId6, _key6, _val6),
-			(_benchmarkId7, _key7, _val7),
-			(_benchmarkId8, _key8, _val8),
-			(_benchmarkId9, _key9, _val9),
-			(_benchmarkId10, _key10, _val10);
-	END //	
-	
 -- Adds a new dependency for a benchmark 
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS AddBenchDependency;
