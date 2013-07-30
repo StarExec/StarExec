@@ -2048,7 +2048,7 @@ public class Jobs {
 			SolverStats curSolver=SolverStats.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
 			curSolver.incrementTotalJobPairs();
-			curSolver.incrementTime(jp.getCpuUsage());
+			curSolver.incrementTime(jp.getWallclockTime());
 			if ( statusCode.error()) {
 			    curSolver.incrementErrorJobPairs();
 			} else if (statusCode.incomplete()) {

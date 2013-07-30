@@ -135,16 +135,15 @@ function update() {
 		updateSpaceOverview();
 		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
 			$("#solverComparison").show();
-			$("#solverChoice1").show();
-			$("#solverChoice2").show();
+			$("#solverComparisonOptionField").show();
 			
 			$("#solverChoice1").children("option:first").prop("selected",true);
 			$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
 			updateSolverComparison();
 		} else {
 			$("#solverComparison").hide();
-			$("#solverChoice1").hide();
-			$("#solverChoice2").hide();
+			$("#solverComparisonOptionField").hide();
+
 		}
 		
 	}
@@ -166,6 +165,10 @@ function initUI(){
 	$("#dialog-spaceOverview").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
+	
+	//for aesthetics, make the heights of the two option fields identical
+	$("#solverComparisonOptionField").height($("#spaceOverviewOptionField").height());
+	
 	$("#jobOutputDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"

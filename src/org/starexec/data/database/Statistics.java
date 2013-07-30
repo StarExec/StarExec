@@ -162,7 +162,7 @@ public class Statistics {
 				configs.put(c.getId(), c);
 				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
 			}
-			configMap.get(configs.get(c.getId())).add(jp.getCpuUsage());
+			configMap.get(configs.get(c.getId())).add(jp.getWallclockTime());
 			
 		}
 		for (HashMap<Configuration,List<Double>> h : answer.values()) {
@@ -319,14 +319,14 @@ public class Statistics {
 			int item=0;
 			for (JobPair jp : pairs1) {
 				times.put(jp.getBench().getId(), new ArrayList<Double>());
-				times.get(jp.getBench().getId()).add(jp.getCpuUsage());
+				times.get(jp.getBench().getId()).add(jp.getWallclockTime());
 			}
 			for(JobPair jp : pairs2) {
 				
 				//if we haven't seen this benchmark, then it wasn't in pairs1 and
 				//there is no comparison to make on it
 				if (times.containsKey(jp.getBench().getId())) {
-					times.get(jp.getBench().getId()).add(jp.getCpuUsage());
+					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
 					//points are identified by their series and item number
 					String key=series+":"+item;
 					

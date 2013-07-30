@@ -109,8 +109,8 @@ public class JobPairs {
 			double db1=0;
 			double db2=0;
 			if (sortIndex==4) {
-				db1=jp1.getCpuUsage();
-				db2=jp2.getCpuUsage();
+				db1=jp1.getWallclockTime();
+				db2=jp2.getWallclockTime();
 			} 
 			//if db1> db2, then db2 should go first
 			if (db1>db2) {
