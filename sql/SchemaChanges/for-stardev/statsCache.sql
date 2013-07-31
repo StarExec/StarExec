@@ -1,6 +1,5 @@
 USE starexec;
-
-CREATE TABLE job_stats (
+CREATE TABLE job_summary_stats (
 	job_id INT NOT NULL,
 	job_space_id INT NOT NULL,
 	config_id INT NOT NULL,
