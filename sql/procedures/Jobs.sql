@@ -580,7 +580,28 @@ CREATE PROCEDURE GetJobAttrsByConfigInJobSpace(IN _jobId INT, IN _jobSpaceId INT
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_id=_jobId AND pair.job_space_id=_jobSpaceId and pair.config_id=_configId;
 	END //
-	
+-- Adds a new job stats record to the database
+-- Author : Eric Burns
+DROP PROCEDURE IF EXISTS AddJobStats;
+CREATE PROCEDURE AddJobStats(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _failed INT, IN _error INT, IN _wallclock DOUBLE)
+	BEGIN
+		INSERT INTO job_stats (job_id, job_space_id, config_id, complete, failed, error, wallclock)
+		VALUES (_jobId, _jobSpaceId, _configId, _complete, _failed, _error, _wallclock);
+	END //	
+
+-- Gets the cached job results for the hierarchy rooted at the given job space
+-- Author : Eric Burns	
+
+DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace;
+CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobId INT, IN _jobSpaceId INT) 
+	BEGIN
+		SELECT *
+		FROM job_stats
+			JOIN configurations AS config ON config.id=job_stats.config_id
+			JOIN solvers AS solver ON solver.id=config.solver_id
+		WHERE job_stats.job_id=_jobId AND job_stats.job_space_id = _jobSpaceId;
+	END //
+
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran

@@ -11,7 +11,6 @@ import com.google.gson.annotations.Expose;
 public class SolverStats extends Identifiable {
 	@Expose private Solver solver=null;
 	@Expose private Configuration configuration=null;
-	@Expose private int totalJobPairs=0;
 	@Expose private int completeJobPairs=0;
 	@Expose private int errorJobPairs=0;
 	@Expose private int incorrectJobPairs=0;
@@ -33,16 +32,12 @@ public class SolverStats extends Identifiable {
 	public double getTime() {
 		return this.time;
 	}
-	public void setTotalJobPairs(int totalJobPairs) {
-		this.totalJobPairs = totalJobPairs;
-	}
+	
 	public int getTotalJobPairs() {
-		return totalJobPairs;
+		return completeJobPairs+errorJobPairs+incorrectJobPairs+incompleteJobPairs;
 	}
 	
-	public void incrementTotalJobPairs() {
-		this.totalJobPairs++;
-	}
+	
 	
 	public void setSolver(Solver solver) {
 		this.solver = solver;

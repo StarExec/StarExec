@@ -358,7 +358,7 @@ public class JobPairs {
 			procedure.setTimestamp(4, pair.getStartTime());
 			procedure.setTimestamp(5, pair.getEndTime());
 			procedure.setInt(6, pair.getExitStatus());
-			procedure.setDouble(7, pair.getCpuUsage());
+			procedure.setDouble(7, pair.getCpuTime());
 			procedure.setDouble(8, pair.getUserTime());
 			procedure.setDouble(9, pair.getSystemTime());
 			procedure.setDouble(10, pair.getIoDataUsage());

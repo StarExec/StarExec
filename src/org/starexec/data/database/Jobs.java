@@ -383,6 +383,125 @@ public class Jobs {
 		return null;
 	}
 	
+	public static List<SolverStats> getJobStatsInJobSpaceHierarchy(int jobId, int jobSpaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			results=procedure.executeQuery();
+			List<SolverStats> stats=new ArrayList<SolverStats>();
+			while (results.next()) {
+				SolverStats s=new SolverStats();
+				s.setCompleteJobPairs(results.getInt("complete"));
+				s.setIncompleteJobPairs(0); //we only store things in the stats table when the job is totally done
+				s.setTime(results.getDouble("wallclock"));
+				s.setErrorJobPairs(results.getInt("error"));
+				s.setIncorrectJobPairs(results.getInt("failed"));
+				Solver solver=new Solver();
+				solver.setName(results.getString("solver.name"));
+				solver.setId(results.getInt("solver.id"));
+				Configuration c=new Configuration();
+				c.setName(results.getString("config.name"));
+				c.setId(results.getInt("config.id"));
+				solver.addConfiguration(c);
+				s.setSolver(solver);
+				s.setConfiguration(c);
+				stats.add(s);
+			}
+			return stats;
+		} catch (Exception e) {
+			log.error("getJobStatsInJobSpaceHierarchy says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	private static boolean saveStats(int jobId, int jobSpaceId, SolverStats stats, Connection con) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			procedure.setInt(3,stats.getConfiguration().getId());
+			procedure.setInt(4,stats.getCompleteJobPairs());
+			procedure.setInt(5,stats.getIncorrectJobPairs());
+			procedure.setInt(6,stats.getErrorJobPairs());
+			procedure.setDouble(7,stats.getTime());
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("saveStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	/**
+	 * Determines whether the job with the given ID is complete
+	 * @param jobId The ID of the job in question 
+	 * @return True if the job is complete, false otherwise (includes the possibility of error)
+	 * @author Eric Burns
+	 */
+	
+	public static boolean isJobComplete(int jobId) {
+		try {
+			HashMap<String,String> overview = Statistics.getJobPairOverview(jobId);
+			if (overview.get("pendingPairs").equals("0")) {
+				return true;
+			} 
+			return false;
+		} catch (Exception e) {
+			log.error("isJobComplete says "+e.getMessage(),e);
+		}
+		return false;
+	}
+	
+	/**
+	 * If the job is not yet complete, does nothing, as we don't want to store stats for incomplete jobs.
+	 * @param jobId The ID of the job we are storing stats for
+	 * @param jobSpaceId The ID of the job space that the stats are rooted at
+	 * @param stats The stats, which should have been compiled already
+	 * @return True if the call was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean saveStats(int jobId, int jobSpaceId,List<SolverStats> stats) {
+		if (!isJobComplete(jobId)) {
+			return false; //don't save stats if the job is not complete
+		}
+		Connection con=null;
+		try {
+			
+			
+			con=Common.getConnection();
+			Common.beginTransaction(con);
+			for (SolverStats s : stats) {
+				if (!saveStats(jobId,jobSpaceId,s,con)) {
+					throw new Exception ("saving stats failed, rolling back connection");
+				}
+			}
+			
+			return true;
+		} catch (Exception e) {
+			log.error("saveStats says "+e.getMessage(),e);
+			Common.doRollback(con);
+
+		} finally {
+			Common.endTransaction(con);
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Gets all the SolverStats objects for a given job in the given space
 	 * @param jobId the job in question
@@ -392,15 +511,25 @@ public class Jobs {
 	 */
 
 	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId) {
+		List<SolverStats> stats=Jobs.getJobStatsInJobSpaceHierarchy(jobId,jobSpaceId);
+		//if the size is greater than 0, then this job is done and its stats have already been
+		//computed and stored
+		if (stats!=null && stats.size()>0) {
+			log.debug("stats already cached in database");
+			return stats;
+		}
+		log.debug("stats not present in database -- compiling stats now");
 		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobId,jobSpaceId);
 		List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
 		for (Space s : subspaces) {
 			pairs.addAll(getJobPairsForStatsInJobSpace(jobId,s.getId()));
 		}
-		List<SolverStats> stats=processPairsToSolverStats(pairs);
-
-		return stats;
+		List<SolverStats> newStats=processPairsToSolverStats(pairs);
+		
+		saveStats(jobId,jobSpaceId,newStats);
+		
+		return newStats;
 	}
 	
 	/**
@@ -2217,7 +2346,6 @@ public class Jobs {
 			//update stats info for entry that current job-pair belongs to
 			SolverStats curSolver=SolverStats.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
-			curSolver.incrementTotalJobPairs();
 			curSolver.incrementTime(jp.getWallclockTime());
 			if ( statusCode.error()) {
 			    curSolver.incrementErrorJobPairs();

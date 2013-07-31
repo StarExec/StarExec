@@ -125,7 +125,7 @@ if [ -z $1 ]; then
 fi
 
 WALLCLOCK_TIME=`awk '/Real time \(s\):/ { print $4 }' $1`
-CPU_USAGE=`awk '/CPU usage/ { print $4 }' $1`
+CPU_TIME=`awk '/CPU time \(s\):/ { print $4 }' $1`
 CPU_USER_TIME=`awk '/CPU user time \(s\):/ { print $5 }' $1`
 SYSTEM_TIME=`awk '/CPU system time \(s\):/ { print $5 }' $1`
 MAX_VIRTUAL_MEMORY=`awk '/Max. virtual memory/ { print $9 }' $1`
@@ -140,7 +140,7 @@ INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $1`
 EXEC_HOST=`hostname`
 
 #log "mysql -u\"$DB_USER\" -p\"$DB_PASS\" -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, \'$EXEC_HOST\', 
-#$CPU_USAGE, $CPU_USER_TIME, $SYSTEM_TIME, 314159, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $PAGE_RECLAIMS, $PAGE_FAULTS, 
+#$CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, 314159, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $PAGE_RECLAIMS, $PAGE_FAULTS, 
 #$BLOCK_INPUT, $BLOCK_OUTPUT, $VOL_CONTEXT_SWITCHES, $INVOL_CONTEXT_SWITCHES)\""
 
 mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_USAGE, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $PAGE_RECLAIMS, $PAGE_FAULTS, $BLOCK_INPUT, $BLOCK_OUTPUT, $VOL_CONTEXT_SWITCHES, $INVOL_CONTEXT_SWITCHES)"
