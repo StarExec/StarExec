@@ -1,5 +1,4 @@
 use starexec;
-drop table job_stats;
 CREATE TABLE job_stats (
 	job_id INT NOT NULL,
 	job_space_id INT NOT NULL,
