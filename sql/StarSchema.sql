@@ -526,7 +526,7 @@ CREATE TABLE job_stats (
 	failed INT NOT NULL,
 	error INT NOT NULL,
 	wallclock DOUBLE,
-	PRIMARY KEY (job_space_id),
+	KEY (job_space_id),
 	KEY (job_id),
 	KEY (config_id)
 );
