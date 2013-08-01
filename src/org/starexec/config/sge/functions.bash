@@ -125,7 +125,8 @@ if [ -z $1 ]; then
 fi
 
 WALLCLOCK_TIME=`awk '/Real time \(s\):/ { print $4 }' $1`
-CPU_TIME=`awk '/CPU time \(s\):/ { print $4 }' $1`
+#CPU_TIME=`awk '/CPU time \(s\):/ { print $4 }' $1`
+CPU_TIME=1
 CPU_USER_TIME=`awk '/CPU user time \(s\):/ { print $5 }' $1`
 SYSTEM_TIME=`awk '/CPU system time \(s\):/ { print $5 }' $1`
 MAX_VIRTUAL_MEMORY=`awk '/Max. virtual memory/ { print $9 }' $1`
