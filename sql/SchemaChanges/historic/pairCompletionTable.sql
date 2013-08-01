@@ -1,5 +1,6 @@
 USE starexec;
 
+
 CREATE TABLE job_pair_completion (
 	pair_id INT NOT NULL,
 	completion_id INT NOT NULL AUTO_INCREMENT,
