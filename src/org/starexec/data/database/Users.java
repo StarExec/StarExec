@@ -776,11 +776,12 @@ public class Users {
 	}
 	
 	/**
-	 * Gets the number of Users in a given space
+	 * Gets the number of Users in a given space that match a given query
 	 * 
 	 * @param spaceId the id of the space to count the Users in
+	 * @param query The query to match the users against
 	 * @return the number of Users
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	public static int getCountInSpace(int spaceId, String query) {
 		Connection con = null;

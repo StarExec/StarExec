@@ -262,8 +262,8 @@ CREATE PROCEDURE GetSolverCountInSpace(IN _spaceId INT)
 					WHERE space_id = _spaceId);
 	END //
 	
--- Returns the number of solvers in a given space
--- Author: Todd Elvers	
+-- Returns the number of solvers in a given space that match a given query
+-- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS GetSolverCountInSpaceWithQuery;
 CREATE PROCEDURE GetSolverCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
@@ -386,8 +386,8 @@ CREATE PROCEDURE GetSolverCountByUser(IN _userId INT)
 		WHERE user_id = _userId AND deleted=false;
 	END //
 	
--- Returns the number of solvers in a given space
--- Author: Todd Elvers	
+-- Returns the number of solvers in a given space that match a given query
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSolverCountByUserWithQuery;
 CREATE PROCEDURE GetSolverCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 	BEGIN

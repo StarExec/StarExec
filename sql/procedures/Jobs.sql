@@ -43,8 +43,8 @@ CREATE PROCEDURE GetJobCountBySpace(IN _spaceId INT)
 					FROM job_assoc
 					WHERE space_id = _spaceId);
 	END //
--- Returns the number of jobs in a given space
--- Author: Todd Elvers	
+-- Returns the number of jobs in a given space that match a given query
+-- Author: Eric burns
 DROP PROCEDURE IF EXISTS GetJobCountBySpaceWithQuery;
 CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
@@ -77,26 +77,7 @@ CREATE PROCEDURE GetJobPairCountByConfigInJobSpace(IN _jobId INT, IN _spaceId IN
 		FROM job_pairs
 		WHERE job_id = _jobId AND job_space_id=_spaceId AND config_id=_configId;
 	END //
-	
--- Returns the number of jobs pairs for a given job
--- Author: Todd Elvers	
-DROP PROCEDURE IF EXISTS GetJobPairCountByConfigInJobSpaceWithQuery;
-CREATE PROCEDURE GetJobPairCountByConfigInJobSpaceWithQuery(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT, IN _query TEXT)
-	BEGIN
-		SELECT COUNT(*) AS jobPairCount
-		FROM job_pairs
-			JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
-			JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-			JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-			JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-		WHERE job_id = _jobId AND job_space_id=_jobSpaceId AND config_id=_configId
-		AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
-				OR		config.name		LIKE	CONCAT('%', _query, '%')
-				OR		solver.name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
-				OR		cpu				LIKE	CONCAT('%', _query, '%'));
-	END //
-	
+		
 -- Returns the number of jobs pairs for a given job
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpace;
@@ -107,8 +88,8 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpace(IN _jobId INT, IN _jobSpaceId IN
 		WHERE job_id = _jobId AND job_space_id=_jobSpaceId;
 	END //
 	
--- Returns the number of jobs pairs for a given job
--- Author: Todd Elvers	
+-- Returns the number of jobs pairs for a given job that match a given query
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpaceWithQuery;
 CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobId INT, IN _jobSpaceId INT, IN _query TEXT)
 	BEGIN
@@ -995,8 +976,8 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 	END //
 	
 	
--- Returns the number of jobs in a given space
--- Author: Todd Elvers	
+-- Returns the number of jobs in a given space that match a given query
+-- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS GetJobCountByUserWithQuery;
 CREATE PROCEDURE GetJobCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 	BEGIN

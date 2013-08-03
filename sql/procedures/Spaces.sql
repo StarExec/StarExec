@@ -351,8 +351,8 @@ CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT, IN _
 							WHERE 	set_assoc.space_id = _spaceId
 							AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId));	
 	END //
--- Returns the number of subspaces in a given space
--- Author: Todd Elvers
+-- Returns the number of subspaces in a given space that match a given query
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery;
 CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId INT, IN _publicUserId INT, IN _query TEXT)
 	BEGIN

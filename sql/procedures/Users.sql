@@ -181,8 +181,8 @@ CREATE PROCEDURE GetUserCountInSpace(IN _spaceId INT)
 						FROM 	user_assoc
 						WHERE 	space_id = _spaceId);
 	END //
--- Returns the number of users in a given space
--- Author: Todd Elvers
+-- Returns the number of users in a given space that match a given query
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetUserCountInSpaceWithQuery;
 CREATE PROCEDURE GetUserCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN

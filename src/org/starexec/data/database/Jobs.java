@@ -646,11 +646,12 @@ public class Jobs {
 	}
 	
 	/**
-	 * Gets the number of Jobs in a given space
+	 * Gets the number of Jobs in a given space that match a given query
 	 * 
 	 * @param spaceId the id of the space to count the Jobs in
+	 * @param query The query to match the jobs against
 	 * @return the number of Jobs
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	public static int getCountInSpace(int spaceId, String query) {
 		Connection con = null;
@@ -942,10 +943,11 @@ public class Jobs {
 	}
 	
 	/**
-	 * Get the total count of the jobs belong to a specific user
+	 * Get the total count of the jobs belong to a specific user that match a specific query
 	 * @param userId Id of the user we are looking for
+	 * @param query The query to match the jobs against
 	 * @return The count of the jobs
-	 * @author Ruoyu Zhang
+	 * @author Eric Burns
 	 */
 	public static int getJobCountByUser(int userId, String query) {
 		Connection con = null;
@@ -1100,9 +1102,7 @@ public class Jobs {
 	 * 
 	 * @param jobId the id of the job to get the number of job pairs for
 	 * @param jobSpaceId The ID of the job space containing the paris to count
-	 * @param Whether to count all job pairs in the hierarchy rooted at the job space with the given id
-	 * @param quitIfExceedsMax Whether to quit counting immediately if the pair count is higher
-	 * than the maximum displayable number of pairs defined in R.java
+	 * @param query The query to match the job pairs against
 	 * @return the number of job pairs for the given job
 	 * @author Eric Burns
 	 */

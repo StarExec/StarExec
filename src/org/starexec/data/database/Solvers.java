@@ -1356,11 +1356,12 @@ public class Solvers {
 	}
 	
 	/**
-	 * Gets the number of Solvers in a given space
+	 * Gets the number of Solvers in a given space that match a given query
 	 * 
 	 * @param spaceId the id of the space to count the Solvers in
+	 * @param query The query to match the solvers against
 	 * @return the number of Solvers
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	public static int getCountInSpace(int spaceId, String query) {
 		Connection con = null;

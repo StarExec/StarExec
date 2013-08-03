@@ -1607,12 +1607,13 @@ public class Spaces {
 	}
 	
 	/**
-	 * Gets the number of Spaces in a given space
+	 * Gets the number of Spaces in a given space that match a given query
 	 * 
 	 * @param spaceId the id of the space to count the Spaces in
 	 * @param userId the id of the user making the request
+	 * @param query The query to match the spaces against
 	 * @return the number of Spaces
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	public static int getCountInSpace(int spaceId, int userId,String query) {
 		Connection con = null;

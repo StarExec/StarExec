@@ -843,6 +843,7 @@ public class RESTHelpers {
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
 			    	} 
 			    	else {
+			    		log.debug("it was necessary to count benchmarks by query");
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getCountInSpace(id,request.getParameter(SEARCH_QUERY)));
 			    	}
 		    		log.debug("counting benchmarks while getting datatables page for "+type.toString()+" took "+(System.currentTimeMillis()-a));

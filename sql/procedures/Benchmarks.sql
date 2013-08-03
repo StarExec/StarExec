@@ -156,8 +156,8 @@ CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
 						WHERE space_id = _spaceId);
 	END //
 
--- Returns the number of benchmarks in a given space
--- Author: Todd Elvers
+-- Returns the number of benchmarks in a given space that match a given query
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpaceWithQuery;
 CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
@@ -544,7 +544,7 @@ CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 		WHERE user_id = _userId AND deleted=false;
 	END //
 -- Returns the number of benchmarks a given user has that match the query
--- Author: Todd Elvers
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetBenchmarkCountByUserWithQuery;
 CREATE PROCEDURE GetBenchmarkCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 	BEGIN

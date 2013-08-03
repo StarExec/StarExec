@@ -1463,6 +1463,8 @@ public class Benchmarks {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
+		log.debug("calling getCountInSpace for benchmarks");
+		long a=System.currentTimeMillis();
 		Connection con = null;
 		CallableStatement procedure=null;
 		ResultSet results = null;
@@ -1470,7 +1472,9 @@ public class Benchmarks {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetBenchmarkCountInSpace(?)}");
 			procedure.setInt(1, spaceId);
+			log.debug("setting up GetBenchmarkCountInSpace procedure took "+(System.currentTimeMillis()-a) );
 			results = procedure.executeQuery();
+			log.debug("executing GetBenchmarkCountInSpace procedure took "+(System.currentTimeMillis()-a) );
 
 			if (results.next()) {
 				return results.getInt("benchCount");
@@ -1487,11 +1491,12 @@ public class Benchmarks {
 	}
 	
 	/**
-	 * Gets the number of Benchmarks in a given space
+	 * Gets the number of Benchmarks in a given space that match a given query
 	 * 
 	 * @param spaceId the id of the space to count the Benchmarks in
+	 * @param query The query to match the spaces on
 	 * @return the number of Benchmarks
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	public static int getCountInSpace(int spaceId, String query) {
 		Connection con = null;
@@ -1751,10 +1756,11 @@ public class Benchmarks {
 	}
 	
 	/**
-	 * Get the total count of the benchmarks belong to a specific user
+	 * Get the total count of the benchmarks belonging to a specific user that match the given query
 	 * @param userId Id of the user we are looking for
+	 * @param query The query to match the benchmarks on
 	 * @return The count of the benchmarks
-	 * @author Wyatt Kaiser
+	 * @author Eric Burns
 	 */
 	public static int getBenchmarkCountByUser(int userId,String query) {
 		Connection con = null;
