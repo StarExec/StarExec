@@ -223,11 +223,9 @@ DROP PROCEDURE IF EXISTS GetSpaceUsersById;
 CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 	BEGIN
 		SELECT DISTINCT *
-		FROM users
-		WHERE id IN
-				(SELECT user_id
-				FROM user_assoc
-				WHERE space_id = _id)
+		FROM user_assoc
+			JOIN users AS users ON users.id=user_assoc.user_id
+		WHERE _id=user_assoc.space_id
 		ORDER BY first_name;
 	END //
 	

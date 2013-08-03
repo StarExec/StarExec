@@ -83,11 +83,11 @@ public class Communities {
 			
 			if(results.next()){
 				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				s.setCreated(results.getTimestamp("created"));	
+				s.setName(results.getString("space.name"));
+				s.setId(results.getInt("space.id"));
+				s.setDescription(results.getString("space.description"));
+				s.setLocked(results.getBoolean("space.locked"));
+				s.setCreated(results.getTimestamp("space.created"));	
 				return s;
 			}			
 		} catch (Exception e){			

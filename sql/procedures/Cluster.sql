@@ -47,13 +47,14 @@ CREATE PROCEDURE AddQueue(IN _name VARCHAR(64))
 	
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen
+-- TODO: What is the order by used for here?
 DROP PROCEDURE IF EXISTS GetNodesForQueue;
 CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 	BEGIN		
-		SELECT id, name, status
-		FROM nodes
-		WHERE id IN
-			(SELECT node_id FROM queue_assoc WHERE queue_id=_id)
+		SELECT node.id, node.name, node.status
+		FROM queue_assoc
+			JOIN nodes AS node ON node.id=queue_assoc.node_id
+		WHERE _id=queue_assoc.queue_id
 		ORDER BY name;	
 	END //
 

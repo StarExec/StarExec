@@ -23,12 +23,9 @@ DROP PROCEDURE IF EXISTS GetCommunityById;
 CREATE PROCEDURE GetCommunityById(IN _id INT)
 	BEGIN
 		SELECT *
-		FROM spaces
-		WHERE id IN
-			(SELECT child_id
-			 FROM set_assoc
-			 WHERE space_id=1
-			 AND child_id = _id);
+		FROM set_assoc
+			JOIN spaces AS space ON spaces.id=set_assoc.child_id
+		WHERE _id=child_id AND space_id=1;
 	END //
 
 -- Removes the association a user has with a given space

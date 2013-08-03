@@ -2395,6 +2395,10 @@ function getTooltipConfig(type, message){
 				onRender: function(){	// Before rendering the tooltip, get the user's permissions for the given space
 					var tooltip = this;
 					var userId = $(this.elements.target).children('td:first').children('input').val();
+					if (userId==undefined) {
+						//means there is no user because the user table is empty
+						return true;
+					}
 					$.post(
 							starexecRoot+'services/space/' + spaceId + '/perm/' + userId,
 							function(theResponse){

@@ -38,10 +38,8 @@ DROP PROCEDURE IF EXISTS GetJobCountBySpace;
 CREATE PROCEDURE GetJobCountBySpace(IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
-		FROM jobs
-		WHERE id IN (SELECT job_id
-					FROM job_assoc
-					WHERE space_id = _spaceId);
+		FROM job_assoc
+		WHERE _spaceId=space_id;
 	END //
 -- Returns the number of jobs in a given space that match a given query
 -- Author: Eric burns
@@ -49,12 +47,11 @@ DROP PROCEDURE IF EXISTS GetJobCountBySpaceWithQuery;
 CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
-		FROM jobs
-		WHERE id IN (SELECT job_id
-					FROM job_assoc
-					WHERE space_id = _spaceId) AND
-				(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'));
+		FROM job_assoc
+			JOIN jobs AS jobs ON jobs.id=job_assoc.job_id
+		WHERE _spaceId=job_assoc.space_id
+		AND (jobs.name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(jobs.id)	LIKE	CONCAT('%', _query, '%'));
 	END //
 
 -- Returns the number of jobs pairs for a given job

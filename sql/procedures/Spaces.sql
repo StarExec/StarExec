@@ -207,10 +207,10 @@ CREATE PROCEDURE GetJobSpaceById(IN _id INT)
 DROP PROCEDURE IF EXISTS GetSpacesByUser;
 CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 	BEGIN
-		SELECT *
-		FROM spaces
-		WHERE id IN 
-			(SELECT space_id FROM user_assoc WHERE user_id = _userId);
+		SELECT space.name,space.id,space.locked,space.description
+		FROM user_assoc
+			JOIN spaces AS space ON space.id=space_id
+		WHERE user_id=_userId;
 	END //
 
 	

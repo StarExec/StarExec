@@ -94,9 +94,9 @@ public class Cluster {
 			
 			while(results.next()){
 				WorkerNode n = new WorkerNode();
-				n.setName(results.getString("name"));
-				n.setId(results.getInt("id"));
-				n.setStatus(results.getString("status"));
+				n.setName(results.getString("node.name"));
+				n.setId(results.getInt("node.id"));
+				n.setStatus(results.getString("node.status"));
 				nodes.add(n);
 			}			
 						

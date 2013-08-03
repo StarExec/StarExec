@@ -957,10 +957,10 @@ public class Spaces {
 			
 			while(results.next()){
 				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));				
+				s.setName(results.getString("space.name"));
+				s.setId(results.getInt("space.id"));
+				s.setDescription(results.getString("space.description"));
+				s.setLocked(results.getBoolean("space.locked"));				
 				spaces.add(s);
 			}					
 			return spaces;
@@ -1052,13 +1052,13 @@ public class Spaces {
 			
 			while(results.next()){
 				User u = new User();
-				u.setId(results.getInt("id"));
-				u.setEmail(results.getString("email"));
-				u.setFirstName(results.getString("first_name"));
-				u.setLastName(results.getString("last_name"));
-				u.setInstitution(results.getString("institution"));
-				u.setCreateDate(results.getTimestamp("created"));				
-				u.setDiskQuota(results.getLong("disk_quota"));
+				u.setId(results.getInt("users.id"));
+				u.setEmail(results.getString("users.email"));
+				u.setFirstName(results.getString("users.first_name"));
+				u.setLastName(results.getString("users.last_name"));
+				u.setInstitution(results.getString("users.institution"));
+				u.setCreateDate(results.getTimestamp("users.created"));				
+				u.setDiskQuota(results.getLong("users.disk_quota"));
 				users.add(u);
 			}			
 						

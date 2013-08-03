@@ -222,11 +222,9 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 DROP PROCEDURE IF EXISTS GetSolverIdByConfigId;
 CREATE PROCEDURE GetSolverIdByConfigId(IN _id INT)
 	BEGIN
-		SELECT id
-		FROM solvers
-		WHERE id IN (SELECT solver_id
-					FROM configurations
-					WHERE id = _id);
+		SELECT solver_id AS id
+		FROM configurations
+		WHERE id=_id;
 	END //
 	
 -- Retrieves the solver with the given id
@@ -256,10 +254,8 @@ DROP PROCEDURE IF EXISTS GetSolverCountInSpace;
 CREATE PROCEDURE GetSolverCountInSpace(IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS solverCount
-		FROM solvers
-		WHERE id IN (SELECT solver_id
-					FROM solver_assoc
-					WHERE space_id = _spaceId);
+		FROM solver_assoc
+		WHERE _spaceId=space_id;
 	END //
 	
 -- Returns the number of solvers in a given space that match a given query
@@ -268,12 +264,11 @@ DROP PROCEDURE IF EXISTS GetSolverCountInSpaceWithQuery;
 CREATE PROCEDURE GetSolverCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
 		SELECT COUNT(*) AS solverCount
-		FROM solvers
-		WHERE id IN (SELECT solver_id
-					FROM solver_assoc
-					WHERE space_id = _spaceId) AND
-				(name 		LIKE	CONCAT('%', _query, '%')
-				OR		description	LIKE 	CONCAT('%', _query, '%'));
+		FROM solver_assoc
+			JOIN solvers AS solvers ON solvers.id=solver_assoc.solver_id
+		WHERE _spaceId=solver_assoc.space_id AND
+				(solvers.name 	LIKE	CONCAT('%', _query, '%')
+				OR		solvers.description	LIKE 	CONCAT('%', _query, '%'));
 	END //
 	
 	
