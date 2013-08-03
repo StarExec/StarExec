@@ -150,10 +150,8 @@ DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpace;
 CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
 	BEGIN
 		SELECT 	COUNT(*) AS benchCount
-		FROM 	benchmarks
-		WHERE 	id	IN (SELECT bench_id
-						FROM bench_assoc
-						WHERE space_id = _spaceId);
+		FROM 	bench_assoc
+		WHERE 	_spaceId=space_id;
 	END //
 
 -- Returns the number of benchmarks in a given space that match a given query
