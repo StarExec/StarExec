@@ -79,6 +79,7 @@
 							<th class="wrongHead">wrong</th>
 							<th class="failedHead">failed</th>
 							<th class="timeHead">time</th>
+							<th class="pairsInSpaceHead">pairs</th>
 						</tr>
 					</thead>
 					<tbody>

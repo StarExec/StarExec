@@ -100,20 +100,7 @@ function reloadTables(id) {
 function update() {
 	
 	summaryTable.fnProcessingIndicator(false);
-	rows = $("#solveTbl tbody tr");
-	rows.each(function() {
-	
-		$(this).click(function() {
-			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			if (typeof(configId!='undefined')) {
-				hrefString=starexecRoot + 'secure/details/pairsInSpace.jsp?id=' +jobId+ '&sid='+ curSpaceId+'&configid='+ configId;		
-				window.location.href=(hrefString);
-			}			
-		});
-		
-		
-	});
-	
+	rows = $("#solveTbl tbody tr");	
 	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
 		$("#graphField").hide();
 	} else {

@@ -21,11 +21,6 @@ fieldset {
 #incompleteHead, #completeHead, #configHead {
 	width: 18%;
 }
-
-#pairTbl {
-	
-}
-
 #explorer.jobDetails {
 	width: 23%;
 }
@@ -51,22 +46,22 @@ thead {
 }
 
 .completeHead {
-	width: 16%;
+	width: 12%;
 }
 
 .incompleteHead, .benchHead{
-	width: 19%
+	width: 18%
 }
 
 .configHead { 
-	width: 23%;
+	width: 21%;
 }
 
 .solverHead, .failedHead, .wrongHead {
-	width: 11%;
+	width: 10%;
 }
-.timeHead {
-	width: 9%;
+.timeHead, .pairsInSpaceHead {
+	width: 10%;
 }
 
 #graphField img {
@@ -74,10 +69,6 @@ thead {
 	border-width:1px;
 	border-color:black;
 	
-}
-
-#solveTbl tbody tr {
-	cursor:pointer;
 }
 
 #pairTbl tbody tr {

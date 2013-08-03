@@ -1445,7 +1445,7 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 	 * @author Eric Burns
 	 */
 	
-	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue,Integer spaceId) {
+	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats, int totalRecords, int totalRecordsAfterQuery, int syncValue,int spaceId, int jobId) {
     	/**
     	 * Generate the HTML for the next DataTable page of entries
     	 */
@@ -1458,11 +1458,8 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
     		sb.append(js.getSolver().getName());
-    		if (spaceId==null) {
-    			sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-    		} else {
-    			sb.append("\" href=\""+Util.docRoot("secure/details/pairsInSpace.jsp?sid="+spaceId +"&id="));
-    		}
+    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		
     		
     		sb.append(js.getSolver().getId());
     		sb.append("\" target=\"_blank\">");
@@ -1482,6 +1479,12 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 		RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
 			
+			sb= new StringBuilder();
+			sb.append("<a href=\"" + Util.docRoot("secure/details/pairsInSpace.jsp?sid="+spaceId+"&configid="+js.getConfiguration().getId()+"&id="+jobId));
+			sb.append("\" target=\" blank\" >");
+			sb.append("view pairs");
+			RESTHelpers.addImg(sb);
+			String pairsInSpaceLink=sb.toString();
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
     		entry.add(new JsonPrimitive(solverLink));
@@ -1491,7 +1494,7 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
     		entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
     		entry.add(new JsonPrimitive(js.getErrorJobPairs()));
     		entry.add(new JsonPrimitive(js.getTime()));
-    		
+    		entry.add(new JsonPrimitive(pairsInSpaceLink));
     		dataTablePageEntries.add(entry);
     	}
     	
