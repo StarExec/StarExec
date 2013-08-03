@@ -262,6 +262,21 @@ CREATE PROCEDURE GetSolverCountInSpace(IN _spaceId INT)
 					WHERE space_id = _spaceId);
 	END //
 	
+-- Returns the number of solvers in a given space
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetSolverCountInSpaceWithQuery;
+CREATE PROCEDURE GetSolverCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS solverCount
+		FROM solvers
+		WHERE id IN (SELECT solver_id
+					FROM solver_assoc
+					WHERE space_id = _spaceId) AND
+				(name 		LIKE	CONCAT('%', _query, '%')
+				OR		description	LIKE 	CONCAT('%', _query, '%'));
+	END //
+	
+	
 	
 -- Retrieves the solvers owned by a given user id
 -- Todd Elvers
@@ -369,6 +384,18 @@ CREATE PROCEDURE GetSolverCountByUser(IN _userId INT)
 		SELECT COUNT(*) AS solverCount
 		FROM solvers
 		WHERE user_id = _userId AND deleted=false;
+	END //
+	
+-- Returns the number of solvers in a given space
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetSolverCountByUserWithQuery;
+CREATE PROCEDURE GetSolverCountByUserWithQuery(IN _userId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS solverCount
+		FROM solvers
+		WHERE user_id=_userId AND deleted=false AND
+				(name 		LIKE	CONCAT('%', _query, '%')
+				OR		description	LIKE 	CONCAT('%', _query, '%'));
 	END //
 	
 	-- Gets the fewest necessary Solvers in order to service a client's

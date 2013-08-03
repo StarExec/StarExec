@@ -645,6 +645,40 @@ public class Jobs {
 		return 0;
 	}
 	
+	/**
+	 * Gets the number of Jobs in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Jobs in
+	 * @return the number of Jobs
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId, String query) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetJobCountBySpaceWithQuery(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setString(2,query);
+			 results = procedure.executeQuery();
+			int jobCount = 0;
+			if (results.next()) {
+				jobCount = results.getInt("jobCount");
+			}
+			Common.safeClose(results);
+			return jobCount;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return 0;
+	}
+	
 	
 	/**
 	 * Retrieves a job from the databas as well as its job pairs and its queue/processor info
@@ -906,6 +940,37 @@ public class Jobs {
 
 		return 0;		
 	}
+	
+	/**
+	 * Get the total count of the jobs belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return The count of the jobs
+	 * @author Ruoyu Zhang
+	 */
+	public static int getJobCountByUser(int userId, String query) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetJobCountByUserWithQuery(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setString(2,query);
+			 results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+
+		return 0;		
+	}
 
 	/**
 	 * Returns the number of job pairs that exist for a given job
@@ -1025,6 +1090,44 @@ public class Jobs {
 					return jobPairCount;
 				}
 			}
+		}
+		
+		return jobPairCount;		
+	}
+	
+	/**
+	 * Returns the number of job pairs that exist for a given job in a given space
+	 * 
+	 * @param jobId the id of the job to get the number of job pairs for
+	 * @param jobSpaceId The ID of the job space containing the paris to count
+	 * @param Whether to count all job pairs in the hierarchy rooted at the job space with the given id
+	 * @param quitIfExceedsMax Whether to quit counting immediately if the pair count is higher
+	 * than the maximum displayable number of pairs defined in R.java
+	 * @return the number of job pairs for the given job
+	 * @author Eric Burns
+	 */
+	public static int getJobPairCountInJobSpace(int jobId, int jobSpaceId, String query) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		int jobPairCount=0;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpaceWithQuery(?, ?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			procedure.setString(3, query);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				jobPairCount = results.getInt("jobPairCount");
+			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
 		}
 		
 		return jobPairCount;		
@@ -1626,6 +1729,7 @@ public class Jobs {
 				jp.setBench(bench);
 				jp.setSolver(solver);
 				jp.setStatus(status);
+				jp.setConfiguration(config);
 				jp.setAttributes(attributes);
 				pairs.add(jp);	
 			}

@@ -181,6 +181,20 @@ CREATE PROCEDURE GetUserCountInSpace(IN _spaceId INT)
 						FROM 	user_assoc
 						WHERE 	space_id = _spaceId);
 	END //
+-- Returns the number of users in a given space
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetUserCountInSpaceWithQuery;
+CREATE PROCEDURE GetUserCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
+	BEGIN
+		SELECT 	COUNT(*) AS userCount
+		FROM 	users
+		WHERE 	id	IN (SELECT	user_id
+						FROM 	user_assoc
+						WHERE 	space_id = _spaceId) AND
+				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				OR		institution							LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%')); 
+	END //
 	
 -- Returns the user record with the given email address
 -- Author: Tyler Jensen

@@ -1406,10 +1406,10 @@ public class Benchmarks {
 		Connection con = null;			
 		CallableStatement procedure=null;
 		ResultSet results=null;
-
+		long a= System.currentTimeMillis();
 		try {
 			con = Common.getConnection();
-
+			
 			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
@@ -1419,8 +1419,9 @@ public class Benchmarks {
 			procedure.setString(6, searchQuery);
 
 			results = procedure.executeQuery();
+			log.debug("executing benchmark pagination query took "+(System.currentTimeMillis()-a));
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
+			
 			while(results.next()){
 				//don't include deleted benchmarks in the results if getDeleted is false
 
@@ -1439,6 +1440,8 @@ public class Benchmarks {
 				b.setType(t);
 				benchmarks.add(b);			
 			}
+			log.debug("processing benchmarks after the query took "+(System.currentTimeMillis()-a));
+
 			return benchmarks;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -1482,6 +1485,39 @@ public class Benchmarks {
 
 		return 0;
 	}
+	
+	/**
+	 * Gets the number of Benchmarks in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Benchmarks in
+	 * @return the number of Benchmarks
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId, String query) {
+		Connection con = null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetBenchmarkCountInSpaceWithQuery(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setString(2, query);
+			results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("benchCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return 0;
+	}
+	
 	
 	/**
 	 * Determines whether the benchmark with the given ID is public. It is public if it is in at least
@@ -1701,7 +1737,38 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 
 			if (results.next()) {
-				return results.getInt("benchmarkCount");
+				return results.getInt("benchCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return 0;		
+	}
+	
+	/**
+	 * Get the total count of the benchmarks belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return The count of the benchmarks
+	 * @author Wyatt Kaiser
+	 */
+	public static int getBenchmarkCountByUser(int userId,String query) {
+		Connection con = null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetBenchmarkCountByUserWithQuery(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setString(2, query);
+			results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("benchCount");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

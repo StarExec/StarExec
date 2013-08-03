@@ -156,6 +156,22 @@ CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
 						WHERE space_id = _spaceId);
 	END //
 
+-- Returns the number of benchmarks in a given space
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpaceWithQuery;
+CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
+	BEGIN
+		SELECT 	COUNT(*) AS benchCount
+		FROM 	benchmarks
+			JOIN	bench_assoc AS assoc ON benchmarks.id = assoc.bench_id	AND assoc.space_id=_spaceId	
+			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+		WHERE 	benchmarks.id	IN (SELECT bench_id
+						FROM bench_assoc
+						WHERE space_id = _spaceId) AND
+				(benchmarks.name LIKE	CONCAT('%', _query, '%')
+				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
+	END //
+	
 -- Gets the fewest necessary Benchmarks in order to service a client's
 -- request for the next page of Benchmarks in their DataTable object.  
 -- This services the DataTable object by supporting filtering by a query, 
@@ -232,7 +248,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				
 				-- Query Filtering
 				WHERE 	(benchmarks.name 									LIKE	CONCAT('%', _query, '%')
-				OR		benchTypeName	LIKE 	CONCAT('%', _query, '%'))
+				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'))
 								
 										
 				-- Exclude benchmarks that aren't in the specified space
@@ -242,7 +258,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN benchmarks.name 
-						WHEN 1 THEN benchTypeName
+						WHEN 1 THEN benchType.name
 					 END) ASC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
@@ -260,18 +276,15 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						JOIN	bench_assoc AS assoc ON benchmarks.id = assoc.bench_id	AND assoc.space_id=_spaceId		
 						JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
 
-
-
-				
 				-- Query Filtering
 				WHERE 	(benchmarks.name 									LIKE	CONCAT('%', _query, '%')
-				OR		benchTypeName	LIKE 	CONCAT('%', _query, '%'))
+				OR		benchTyp.name	LIKE 	CONCAT('%', _query, '%'))
 						
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN benchmarks.name 
-						WHEN 1 THEN benchTypeName
+						WHEN 1 THEN benchTyp.name
 					 END) DESC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
@@ -526,9 +539,21 @@ CREATE PROCEDURE GetUnvalidatedBenchmarks(IN _status_id INT)
 DROP PROCEDURE IF EXISTS GetBenchmarkCountByUser;
 CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 	BEGIN
-		SELECT COUNT(*) AS benchmarkCount
+		SELECT COUNT(*) AS benchCount
 		FROM benchmarks
 		WHERE user_id = _userId AND deleted=false;
+	END //
+-- Returns the number of benchmarks a given user has that match the query
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetBenchmarkCountByUserWithQuery;
+CREATE PROCEDURE GetBenchmarkCountByUserWithQuery(IN _userId INT, IN _query TEXT)
+	BEGIN
+		SELECT 	COUNT(*) AS benchCount
+		FROM 	benchmarks
+			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+		WHERE 	benchmarks.user_id=_userId AND deleted=false AND
+				(benchmarks.name LIKE	CONCAT('%', _query, '%')
+				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
 	END //
 	
 	-- Gets the fewest necessary Benchmarks in order to service a client's

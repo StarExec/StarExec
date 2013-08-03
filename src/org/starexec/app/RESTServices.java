@@ -547,35 +547,17 @@ public class RESTServices {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		if (Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, true, true)>R.MAXIMUM_JOB_PAIRS) {
-			return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
-		}
+		//no restrictions for now, as now that we are caching results we should probably just see how far we can push that
+		//if (Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, true, true)>R.MAXIMUM_JOB_PAIRS) {
+		//	return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
+		//}
 		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,null);
 
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}
-	
-	/**
-	 * Returns the next page of solvers in a job
-	 * @param jobID the id of the job to get the next page of solvers for
-	 * @author Eric Burns
-	 */
-	@POST
-	@Path("/jobs/{id}/pagination/{jobSpaceId}")
-	@Produces("application/json")
-	public String getJobPairsPaginatedInSpace(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		nextDataTablesPage=RESTHelpers.getNextDataTablesPageForJobSummaryInJobSpace(RESTHelpers.Primitive.JOB_PAIR, jobId, request,jobSpaceId);
-		
-		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-		
-	}
+
 	
 	
 	/**

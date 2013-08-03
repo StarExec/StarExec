@@ -101,7 +101,7 @@
 				<tbody>
 					<tr title="the cpu time usage in seconds">
 						<td>cpu usage</td>
-						<td>${pair.cpuUsage}</td>
+						<td>${pair.cpuTime}</td>
 					</tr>
 					<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
 						<td>user time</td>

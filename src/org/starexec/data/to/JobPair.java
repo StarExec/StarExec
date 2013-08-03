@@ -28,7 +28,7 @@ public class JobPair extends Identifiable {
 	private Timestamp endTime = null;	
 	private int exitStatus;
 	private double wallclockTime;
-	private double cpuUsage;
+	private double cpuTime;
 	private double userTime;
 	private double systemTime;
 	private double ioDataUsage;
@@ -272,14 +272,14 @@ public class JobPair extends Identifiable {
 	 */
 	
 	public double getCpuTime() {
-		return cpuUsage;
+		return cpuTime;
 	}
 
 	/**
 	 * @param cpuUsage the cpu usage to set for this pair
 	 */
-	public void setCpuUsage(double cpuUsage) {
-		this.cpuUsage = cpuUsage;
+	public void setCpuUsage(double cpuTime) {
+		this.cpuTime = cpuTime;
 	}
 
 	/**

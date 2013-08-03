@@ -776,6 +776,38 @@ public class Users {
 	}
 	
 	/**
+	 * Gets the number of Users in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Users in
+	 * @return the number of Users
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId, String query) {
+		Connection con = null;
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetUserCountInSpaceWithQuery(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setString(2,query);
+			 results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("userCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+
+		return 0;
+	}
+	
+	/**
 	 * Returns true if a user is already registered with a given e-mail
 	 * @param email - the email of the user to search for
 	 * @return true if user exists; false if no user with that e-mail

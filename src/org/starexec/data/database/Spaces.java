@@ -1607,6 +1607,43 @@ public class Spaces {
 	}
 	
 	/**
+	 * Gets the number of Spaces in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Spaces in
+	 * @param userId the id of the user making the request
+	 * @return the number of Spaces
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId, int userId,String query) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdWithQuery(?, ?, ?, ?)}");
+			
+			procedure.setInt(1, spaceId);
+			procedure.setInt(2, userId);
+			procedure.setInt(3, R.PUBLIC_USER_ID);
+			procedure.setString(4,query);
+			 results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("spaceCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return 0;
+	}
+	
+	
+	/**
 	 * Gets the number of  subspaces of a given job space
 	 * 
 	 * @param jobSpaceId the id of the job space to count the Spaces in

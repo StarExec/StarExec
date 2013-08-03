@@ -1354,6 +1354,38 @@ public class Solvers {
 
 		return 0;
 	}
+	
+	/**
+	 * Gets the number of Solvers in a given space
+	 * 
+	 * @param spaceId the id of the space to count the Solvers in
+	 * @return the number of Solvers
+	 * @author Todd Elvers
+	 */
+	public static int getCountInSpace(int spaceId, String query) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetSolverCountInSpaceWithQuery(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setString(2,query);
+			 results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("solverCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return 0;
+	}
 
 	public static boolean isPublic(int solverId) {
 		Connection con = null;
@@ -1410,6 +1442,37 @@ public class Solvers {
 		return 0;		
 	}
 	
+	
+	/**
+	 * Get the total count of the solvers belong to a specific user
+	 * @param userId Id of the user we are looking for
+	 * @return The count of the solvers
+	 * @author Wyatt Kaiser
+	 */
+	public static int getSolverCountByUser(int userId, String query) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetSolverCountByUserWithQuery(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setString(2,query);
+			 results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("solverCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return 0;		
+	}
 
 	/**
 	 * Finds solver run configurations from a specified bin directory. Run configurations

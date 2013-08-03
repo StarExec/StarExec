@@ -43,6 +43,19 @@ CREATE PROCEDURE GetJobCountBySpace(IN _spaceId INT)
 					FROM job_assoc
 					WHERE space_id = _spaceId);
 	END //
+-- Returns the number of jobs in a given space
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetJobCountBySpaceWithQuery;
+CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS jobCount
+		FROM jobs
+		WHERE id IN (SELECT job_id
+					FROM job_assoc
+					WHERE space_id = _spaceId) AND
+				(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'));
+	END //
 
 -- Returns the number of jobs pairs for a given job
 -- Author: Todd Elvers	
@@ -67,12 +80,50 @@ CREATE PROCEDURE GetJobPairCountByConfigInJobSpace(IN _jobId INT, IN _spaceId IN
 	
 -- Returns the number of jobs pairs for a given job
 -- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetJobPairCountByConfigInJobSpaceWithQuery;
+CREATE PROCEDURE GetJobPairCountByConfigInJobSpaceWithQuery(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS jobPairCount
+		FROM job_pairs
+			JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+			JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+			JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+			JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+		WHERE job_id = _jobId AND job_space_id=_jobSpaceId AND config_id=_configId
+		AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config.name		LIKE	CONCAT('%', _query, '%')
+				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%'));
+	END //
+	
+-- Returns the number of jobs pairs for a given job
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpace;
 CREATE PROCEDURE GetJobPairCountByJobInJobSpace(IN _jobId INT, IN _jobSpaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobPairCount
 		FROM job_pairs
 		WHERE job_id = _jobId AND job_space_id=_jobSpaceId;
+	END //
+	
+-- Returns the number of jobs pairs for a given job
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpaceWithQuery;
+CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobId INT, IN _jobSpaceId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS jobPairCount
+		FROM job_pairs
+			JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+			JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+			JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+			JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+		WHERE job_id = _jobId AND job_space_id=_jobSpaceId
+		AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config.name		LIKE	CONCAT('%', _query, '%')
+				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%'));
 	END //
 	
 -- Gets the fewest necessary Jobs in order to service a client's
@@ -487,7 +538,6 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')
-				OR 		jobSpace.name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
@@ -529,7 +579,6 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config.name		LIKE	CONCAT('%', _query, '%')
 				OR		solver.name		LIKE	CONCAT('%', _query, '%')
-				OR		jobSpace.name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 
@@ -945,6 +994,18 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 		WHERE user_id = _userId and deleted=false;
 	END //
 	
+	
+-- Returns the number of jobs in a given space
+-- Author: Todd Elvers	
+DROP PROCEDURE IF EXISTS GetJobCountByUserWithQuery;
+CREATE PROCEDURE GetJobCountByUserWithQuery(IN _userId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS jobCount
+		FROM jobs
+		WHERE user_id=_userId AND deleted=false AND
+				(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'));
+	END //
 DROP PROCEDURE IF EXISTS GetNameofJobById;
 CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 	BEGIN
