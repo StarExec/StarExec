@@ -91,11 +91,22 @@ public class BatchUtil {
      */	
     public Element generateSpacesXML(Space space, int userId){		
 	log.debug("Generating Space XML for space " + space.getId());
+	//stardev also needs to point to starexec here-- we don't want it to use Util.url
+	Element spacesElement=null;
+	if (!R.STAREXEC_SERVERNAME.contains("stardev")) {
+		spacesElement = doc.createElementNS("https://www.starexec.org/public/batchSpaceSchema.xsd", "tns:Spaces");
+		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
-	Element spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
-	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-	spacesElement.setAttribute("xsi:schemaLocation", 
-				   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
+		spacesElement.setAttribute("xsi:schemaLocation", 
+					   "https://www.starexec.org/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
+	} else {
+		spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
+		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		
+		spacesElement.setAttribute("xsi:schemaLocation", 
+					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
+	}
+	
 		
 	Element rootSpaceElement = generateSpaceXML(space, userId);
 	spacesElement.appendChild(rootSpaceElement);
