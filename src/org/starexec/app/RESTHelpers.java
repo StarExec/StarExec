@@ -685,14 +685,12 @@ public class RESTHelpers {
 	
 	private static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request, int forPage){
 		// Parameter validation
-		long a = System.currentTimeMillis();
 		log.debug("getting datatables page for "+type.toString());
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
 	    	
 	    	return null;
 	    }
-		log.debug("validating attrMap while getting datatables page for "+type.toString()+" took "+(System.currentTimeMillis()-a));
 
     	int currentUserId = SessionUtil.getUserId(request);
     	
@@ -835,7 +833,6 @@ public class RESTHelpers {
 		    				request.getParameter(SEARCH_QUERY),			 		// Search query
 		    				id												// Parent space id 
 					);	
-		    		log.debug("getting benchmarks while getting datatables page for "+type.toString()+" took "+(System.currentTimeMillis()-a));
 
 		    		totalBenchmarks = Benchmarks.getCountInSpace(id);
 		    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
@@ -846,7 +843,6 @@ public class RESTHelpers {
 			    		log.debug("it was necessary to count benchmarks by query");
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getCountInSpace(id,request.getParameter(SEARCH_QUERY)));
 			    	}
-		    		log.debug("counting benchmarks while getting datatables page for "+type.toString()+" took "+(System.currentTimeMillis()-a));
 
 		    	} else {
 		    		benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(
@@ -866,9 +862,6 @@ public class RESTHelpers {
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getBenchmarkCountByUser(id,request.getParameter(SEARCH_QUERY)));
 			    	}
 		    	}
-
-				log.debug("preparing attrMap while getting datatables page for "+type.toString()+" took "+(System.currentTimeMillis()-a));
-
 			    return convertBenchmarksToJsonObject(benchmarksToDisplay,totalBenchmarks,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 		    	
 		    case SPACE:
@@ -1381,7 +1374,6 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 		/**
     	 * Generate the HTML for the next DataTable page of entries
     	 */
-		long a= System.currentTimeMillis();
     	JsonArray dataTablePageEntries = new JsonArray();
     	for(Benchmark bench : benchmarks){
     		StringBuilder sb = new StringBuilder();
@@ -1428,7 +1420,6 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
 	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
 	    nextPage.add("aaData", dataTablePageEntries);
-	    log.debug("converting benchmarks took "+(System.currentTimeMillis()-a));
 	    // Return the next DataTable page
     	return nextPage;
 	}

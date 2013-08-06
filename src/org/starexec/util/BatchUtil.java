@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -283,6 +284,7 @@ public class BatchUtil {
 			Node spaceNode = listOfRootSpaceElements.item(i);
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
+				
 				spaceCreationSuccess = spaceCreationSuccess && createSpaceFromElement(spaceElement, parentSpaceId, userId);
 			}
 		}
@@ -306,31 +308,58 @@ public class BatchUtil {
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
 		space.setPermission(permission);
+		Random rand=new Random();
+		String baseSpaceName=space.getName();
+		
+		//Is appending a random number to the name what we want?
+		//Also, this will hang if there are too many spaces with the given name
+		//seems unrealistic to run into that, but just in case, we'll count attempts
+		int attempt=0;
+		while (Spaces.notUniquePrimitiveName(space.getName(), parentId, 4)) {
+			int appendInt=rand.nextInt();
+			space.setName(baseSpaceName+appendInt);
+			if (attempt>1000) {
+				//give up
+				return false;
+			}
+			attempt++;
+		}
 		Integer spaceId = Spaces.add(space, parentId, userId);
 		
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();
 		NodeList childList = spaceElement.getChildNodes();
+		int id=0;
 		for (int i = 0; i < childList.getLength(); i++){
 			Node childNode = childList.item(i);
-			if (childNode.getNodeType() == Node.ELEMENT_NODE){				
+			
+			if (childNode.getNodeType() == Node.ELEMENT_NODE){	
+				log.debug("found a new element = "+childNode.toString());
 				Element childElement = (Element)childNode;
 				String elementType = childElement.getTagName();
 				if (elementType.equals("Benchmark")){
-					benchmarks.add(Integer.parseInt(childElement.getAttribute("id")));
+					id=Integer.parseInt(childElement.getAttribute("id"));
+					if (!Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), parentId, 2)) {
+						benchmarks.add(id);
+					}
 				}
 				else if (elementType.equals("Solver")){
-					solvers.add(Integer.parseInt(childElement.getAttribute("id")));
+					id=Integer.parseInt(childElement.getAttribute("id"));
+					if (!Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), parentId, 1)) {
+						solvers.add(id);
+					}
 				}
 				else if (elementType.equals("Space")){
 					createSpaceFromElement(childElement, spaceId, userId);
 				}
 				else{
+					
 					log.warn("\"" + elementType + "\" is not a valid element type");
 				}
 			}
 			else{
-				log.warn("Space " + spaceId + " has a node that should be an element, but isn't");
+				//do nothing, as it's probably just whitespace
+				//log.warn("Space " + spaceId + " has a node that should be an element, but isn't");
 			}
 		}
 		if (!benchmarks.isEmpty()){

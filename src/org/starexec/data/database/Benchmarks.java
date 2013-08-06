@@ -1406,7 +1406,6 @@ public class Benchmarks {
 		Connection con = null;			
 		CallableStatement procedure=null;
 		ResultSet results=null;
-		long a= System.currentTimeMillis();
 		try {
 			con = Common.getConnection();
 			
@@ -1419,7 +1418,6 @@ public class Benchmarks {
 			procedure.setString(6, searchQuery);
 
 			results = procedure.executeQuery();
-			log.debug("executing benchmark pagination query took "+(System.currentTimeMillis()-a));
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 			
 			while(results.next()){
@@ -1440,7 +1438,6 @@ public class Benchmarks {
 				b.setType(t);
 				benchmarks.add(b);			
 			}
-			log.debug("processing benchmarks after the query took "+(System.currentTimeMillis()-a));
 
 			return benchmarks;
 		} catch (Exception e){			
@@ -1464,7 +1461,6 @@ public class Benchmarks {
 	 */
 	public static int getCountInSpace(int spaceId) {
 		log.debug("calling getCountInSpace for benchmarks");
-		long a=System.currentTimeMillis();
 		Connection con = null;
 		CallableStatement procedure=null;
 		ResultSet results = null;
@@ -1472,9 +1468,7 @@ public class Benchmarks {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetBenchmarkCountInSpace(?)}");
 			procedure.setInt(1, spaceId);
-			log.debug("setting up GetBenchmarkCountInSpace procedure took "+(System.currentTimeMillis()-a) );
 			results = procedure.executeQuery();
-			log.debug("executing GetBenchmarkCountInSpace procedure took "+(System.currentTimeMillis()-a) );
 
 			if (results.next()) {
 				return results.getInt("benchCount");

@@ -184,11 +184,9 @@ public class Statistics {
 	 */
 	
 	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY) {
-		long a=System.currentTimeMillis();
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs);
-			log.debug("processing pairs = " +(System.currentTimeMillis()-a));
 			XYSeries d;
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(Solver s : data.keySet()) {
@@ -203,7 +201,6 @@ public class Statistics {
 					
 				}
 			}
-			log.debug("populating datasets = " +(System.currentTimeMillis()-a));
 
 
 			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
@@ -245,12 +242,10 @@ public class Statistics {
 			String filename=UUID.randomUUID().toString()+".png";
 			
 
-			log.debug("handling axes = " +(System.currentTimeMillis()-a));
 
 			
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
-			log.debug("saving small = " +(System.currentTimeMillis()-a));
 
 			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
@@ -258,7 +253,6 @@ public class Statistics {
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
 			output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename+"600");
 			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
-			log.debug("saving large = " +(System.currentTimeMillis()-a));
 
 			log.debug("Chart created succesfully, returning filepath " );
 			return Util.docRoot("secure/files/" + filename);
@@ -281,14 +275,12 @@ public class Statistics {
 	 */
 	
 	public static String makeSpaceOverviewChart(int jobId, int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds) {
-		long a=System.currentTimeMillis();
 		try {
 			if (configIds.size()==0) {
 				return null;
 			}
 			
 			List<JobPair> pairs=Jobs.getJobPairsShallowByConfigInJobSpace(jobId, jobSpaceId, configIds.get(0), true,false);
-			log.debug("getting all pairs = " +(System.currentTimeMillis()-a));
 			for (int x=1;x<configIds.size();x++) {
 				pairs.addAll(Jobs.getJobPairsShallowByConfigInJobSpace(jobId, jobSpaceId, configIds.get(x), true,false));
 			}

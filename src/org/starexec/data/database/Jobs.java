@@ -1678,7 +1678,6 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsForTableByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
-		long a=System.currentTimeMillis();
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1694,7 +1693,6 @@ public class Jobs {
 			procedure.setInt(3,configId);
 
 			results = procedure.executeQuery();
-			log.debug("executing query took "+(System.currentTimeMillis()-a));
 			List<JobPair> pairs = new ArrayList<JobPair>();
 			
 			while (results.next()) {
@@ -1734,7 +1732,6 @@ public class Jobs {
 				pairs.add(jp);	
 			}
 			
-			log.debug("getPairsDetailed function took "+(System.currentTimeMillis()-a));
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
@@ -1767,7 +1764,6 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy, boolean includeBenchmarks) {
-		long a=System.currentTimeMillis();
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1789,7 +1785,6 @@ public class Jobs {
 			procedure.setInt(3,configId);
 
 			results = procedure.executeQuery();
-			log.debug("executing query took "+(System.currentTimeMillis()-a));
 			List<JobPair> pairs = new ArrayList<JobPair>();
 			while (results.next()) {
 				JobPair jp=new JobPair();
@@ -1816,7 +1811,6 @@ public class Jobs {
 				}
 				pairs.add(jp);
 			}
-			log.debug("getPairsDetailed function took "+(System.currentTimeMillis()-a));
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
@@ -1846,7 +1840,6 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
-		long a=System.currentTimeMillis();
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1862,9 +1855,7 @@ public class Jobs {
 			procedure.setInt(3,configId);
 
 			results = procedure.executeQuery();
-			log.debug("executing query took "+(System.currentTimeMillis()-a));
 			List<JobPair> pairs = getPairsDetailed(jobId,con,results,false,jobSpaceId,configId);
-			log.debug("getPairsDetailed function took "+(System.currentTimeMillis()-a));
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
