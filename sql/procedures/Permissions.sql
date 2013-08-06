@@ -23,7 +23,7 @@ IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1), OU
 	END //
 	
 -- Returns 1 if the given user can somehow see the given solver, 0 otherwise
--- Author: Tyler Jensen
+-- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS CanViewSolver;
 CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 	BEGIN		
@@ -36,8 +36,7 @@ CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 		 AS verified; 	
 	END //
 
-	-- Returns 1 if the given user can somehow see the given benchmark, 0 otherwise
--- Author: Tyler Jensen
+-- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS CanViewBenchmark;
 CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 	BEGIN		
@@ -50,7 +49,7 @@ CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 	END //
 
 -- Returns 1 if the given user can somehow see the given job, 0 otherwise
--- Author: Tyler Jensen	
+-- Author: Tyler Jensen	+ Eric Burns
 DROP PROCEDURE IF EXISTS CanViewJob;
 CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 	BEGIN		
@@ -59,7 +58,7 @@ CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 			FROM jobs JOIN job_assoc ON jobs.id=job_assoc.job_id      -- Get all jobs and find its association to spaces
 			JOIN user_assoc ON user_assoc.space_id=job_assoc.space_id -- Join on user_assoc to get all the users that belong to those spaces
 			WHERE jobs.id=_jobId AND user_assoc.user_id=_userId)      -- But only count those for the job and user we're looking for
-		> 0, 1, (SELECT COUNT(*) FROM jobs WHERE jobs.id=_jobId AND jobs.user_id=_userId )) AS verified;                                       -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+		> 0, 1, (SELECT COUNT(*) FROM jobs WHERE jobs.id=_jobId AND jobs.user_id=_userId )) AS verified;
 	END //
 
 -- Returns 1 if the given user can somehow see the given space, 0 otherwise

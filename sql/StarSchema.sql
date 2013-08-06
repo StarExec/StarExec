@@ -137,6 +137,7 @@ CREATE TABLE bench_attributes (
 );
 
 -- The record for an individual solver
+-- TODO: Should we be setting user ids to null maybe? Or 0?
 CREATE TABLE solvers (
 	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,

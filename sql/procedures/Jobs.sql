@@ -579,7 +579,7 @@ CREATE PROCEDURE GetNextPageOfJobPairs(IN _startingRecord INT, IN _recordsPerPag
 DROP PROCEDURE IF EXISTS GetJobAttrs;
 CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
-		SELECT pair.id
+		SELECT pair.id, attr.attr_key, attr.attr_value
 		FROM job_pairs AS pair 
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_id=_jobId;
@@ -602,7 +602,7 @@ CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobId INT, IN _jobSpaceId INT)
 DROP PROCEDURE IF EXISTS GetJobAttrsByConfigInJobSpace;
 CREATE PROCEDURE GetJobAttrsByConfigInJobSpace(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT pair.id
+		SELECT pair.id, attr.attr_key, attr.attr_value
 		FROM job_pairs AS pair 
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_id=_jobId AND pair.job_space_id=_jobSpaceId and pair.config_id=_configId;
