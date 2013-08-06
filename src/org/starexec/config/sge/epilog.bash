@@ -29,7 +29,8 @@ whoami
 SANDBOX=1
 
 #TODO: "sandbox" needs to be "sandbox1"
-if [ $SANDBOX=1 ] then
+if [ $SANDBOX -eq 1 ]
+then
 WORKING_DIR='/export/starexec/sandbox'
 else
 WORKING_DIR='/export/starexec/sandbox2'

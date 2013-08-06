@@ -30,7 +30,8 @@
 #TODO: Should be either sandbox1 or sandbox2
 SANDBOX=1
 
-if [ $SANDBOX=1 ] then
+if [ $SANDBOX -eq 1 ]
+then
 WORKING_DIR='/export/starexec/sandbox'
 else
 WORKING_DIR='/export/starexec/sandbox2'
@@ -148,7 +149,8 @@ function verifyWorkspace {
 }
 #TODO: need to change "sandbox" to "sandbox1"
 function sandboxWorkspace {
-	if [[ $WORKING_DIR == *sandbox2* ]] then
+	if [[ $WORKING_DIR == *sandbox2* ]] 
+	then
 	sudo chown -R sandbox2 $WORKING_DIR 
 	else
 	sudo chown -R sandbox $WORKING_DIR
