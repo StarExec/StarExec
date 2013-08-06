@@ -27,7 +27,15 @@
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
+#TODO: Should be either sandbox1 or sandbox2
+SANDBOX=1
+
+if [ $SANDBOX=1 ] then
 WORKING_DIR='/export/starexec/sandbox'
+else
+WORKING_DIR='/export/starexec/sandbox2'
+fi
+
 
 # Path to Olivier Roussel's runSolver
 RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
@@ -138,13 +146,16 @@ function verifyWorkspace {
 
 	return $?
 }
-
+#TODO: need to change "sandbox" to "sandbox1"
 function sandboxWorkspace {
-	sudo chown -R sandbox $WORKING_DIR 
+	if [[ $WORKING_DIR == *sandbox2* ]] then
+	sudo chown -R sandbox2 $WORKING_DIR 
+	else
+	sudo chown -R sandbox $WORKING_DIR
+	fi
 	ls -lR "$WORKING_DIR"
 	return 0
 }
-
 
 # /////////////////////////////////////////////
 # MAIN

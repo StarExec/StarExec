@@ -4,4 +4,4 @@
 source sample_data/Basic.sql;
 source sample_data/Benchmarks.sql;
 source sample_data/JobPairs.sql;
-source sample_data/jobPairSample.sql;
+-- source sample_data/jobPairSample.sql;

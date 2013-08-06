@@ -25,7 +25,15 @@ whoami
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
+#TODO: sandbox1 or 2.
+SANDBOX=1
+
+#TODO: "sandbox" needs to be "sandbox1"
+if [ $SANDBOX=1 ] then
 WORKING_DIR='/export/starexec/sandbox'
+else
+WORKING_DIR='/export/starexec/sandbox2'
+fi
 
 # Path to where the solver will be copied
 LOCAL_SOLVER_DIR="$WORKING_DIR/solver"

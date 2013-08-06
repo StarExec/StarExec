@@ -21,8 +21,12 @@
 		if(b != null) {
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
-			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));
+			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));			
 			Space s = Communities.getDetails(b.getType().getCommunityId());
+			if (s==null) {
+				s=new Space();
+				s.setName("none");
+			}
 			request.setAttribute("com", s);
 			request.setAttribute("depends", deps);
 			request.setAttribute("attributes",attrs);

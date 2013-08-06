@@ -24,7 +24,7 @@ CREATE PROCEDURE GetCommunityById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM set_assoc
-			JOIN spaces AS space ON spaces.id=set_assoc.child_id
+			JOIN spaces AS space ON space.id=set_assoc.child_id
 		WHERE _id=child_id AND space_id=1;
 	END //
 

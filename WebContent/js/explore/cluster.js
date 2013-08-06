@@ -9,8 +9,11 @@ $(document).ready(function(){
 		event.stopPropogation();
 	});
 	$("#details tbody").delegate("tr", "click", function(){
-		var pairId = $(this).find('input').val();
-		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+		if (jobPairTable.fnTotalRecords()>0) {
+			var pairId = $(this).find('input').val();
+			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+		}
+		
 	});
 	
 	// Build left-hand side of page (cluster explorer)
