@@ -101,7 +101,7 @@ public class RESTServices {
 	
 	private static final int ERROR_PRIM_ALREADY_DELETED=11;
 	
-	private static final int ERROR_TOO_MANY_JOB_PAIRS=12;
+	private static final int ERROR_TOO_MANY_JOB_PAIRS=13;
 	private static final int ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=12;
 	
 	/**
@@ -491,6 +491,9 @@ public class RESTServices {
 		}
 		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
 			chartPath=Statistics.makeSpaceOverviewChart(jobId,jobSpaceId,logX,logY,configIds);
+			if (chartPath.equals("big")) {
+				return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
+			}
 		} else {
 			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);
 		}
@@ -522,11 +525,17 @@ public class RESTServices {
 		
 		
 		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large);
+		if (chartPath==null) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		if (chartPath.get(0).equals("big")) {
+			return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
+		}
 		JsonObject json=new JsonObject();
 		json.addProperty("src", chartPath.get(0));
 		json.addProperty("map",chartPath.get(1));
 		
-		return chartPath == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(json);
+		return gson.toJson(json);
 	}
 	
 	

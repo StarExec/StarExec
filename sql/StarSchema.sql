@@ -454,8 +454,7 @@ CREATE TABLE comments (
 );
 
 -- Default settings for a community space.
--- The settings contains post processor, CPU timeout and clock timeout at the moment.
--- Author: Ruoyu Zhang
+-- Author: Ruoyu Zhang + Eric Burns
 
 CREATE TABLE space_default_settings (
     space_id INT,

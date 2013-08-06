@@ -43,9 +43,10 @@ public class R {
     public static int PROCESSOR_NAME_LEN=64;
     public static int PROCESSOR_DESC_LEN=1024;
     
-    // Maximum job pair setting
+    // Maximum job pair settings
     public static int MAXIMUM_JOB_PAIRS=500000;
     public static int MAXIMUM_SOLVER_CONFIG_PAIRS=5;
+    public static int MAXIMUM_DATA_POINTS=10000;
     //Regex patterns
     public static String BOOLEAN_PATTERN="true|false";
     public static String LONG_PATTERN="^\\-?\\d+$";

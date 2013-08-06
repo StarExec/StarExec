@@ -30,10 +30,10 @@ CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 		SELECT IF((				
 			SELECT COUNT(*)
 			FROM solvers JOIN solver_assoc ON solvers.id=solver_assoc.solver_id -- Get all solvers and find its association to spaces
-			JOIN spaces ON solver_assoc.space_id=spaces.id						-- Join on spaces to get all the spaces the solver belongs to
-			JOIN user_assoc ON user_assoc.space_id=spaces.id					-- Join on user_assoc to get all the users that belong to those spaces
+			JOIN user_assoc ON user_assoc.space_id=solver_assoc.space_id					-- Join on user_assoc to get all the users that belong to those spaces
 			WHERE solvers.id=_solverId AND user_assoc.user_id=_userId)			-- But only count those for the solver and user we're looking for
-		> 0, 1, 0) AS verified; 												-- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+		> 0, 1, (SELECT COUNT(*) FROM solvers WHERE solvers.id=_solverId AND solvers.user_id=_userId)) -- If there were more than 0 results, return 1, else check to see if the user owns the solver, and return under the name 'verified'
+		 AS verified; 	
 	END //
 
 	-- Returns 1 if the given user can somehow see the given benchmark, 0 otherwise
@@ -44,10 +44,9 @@ CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 		SELECT IF((
 			SELECT COUNT(*)
 			FROM benchmarks JOIN bench_assoc ON benchmarks.id=bench_assoc.bench_id  -- Get all benchmarks and find its association to spaces
-			JOIN spaces ON bench_assoc.space_id=spaces.id                           -- Join on spaces to get all the spaces the benchmark belongs to
-			JOIN user_assoc ON user_assoc.space_id=spaces.id                        -- Join on user_assoc to get all the users that belong to those spaces
+			JOIN user_assoc ON user_assoc.space_id=bench_assoc.space_id             -- Join on user_assoc to get all the users that belong to those spaces
 			WHERE benchmarks.id=_benchId AND user_assoc.user_id=_userId)            -- But only count those for the benchmark and user we're looking for
-		> 0, 1, 0) AS verified; 												    -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+		> 0, 1, (SELECT COUNT(*) FROM benchmarks WHERE benchmarks.id=_benchId AND benchmarks.user_id=_userId)) AS verified; 												    -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
 	END //
 
 -- Returns 1 if the given user can somehow see the given job, 0 otherwise
@@ -58,10 +57,9 @@ CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 		SELECT IF((
 			SELECT COUNT(*)
 			FROM jobs JOIN job_assoc ON jobs.id=job_assoc.job_id      -- Get all jobs and find its association to spaces
-			JOIN spaces ON job_assoc.space_id=spaces.id               -- Join on spaces to get all the spaces the job belongs to
-			JOIN user_assoc ON user_assoc.space_id=spaces.id          -- Join on user_assoc to get all the users that belong to those spaces
+			JOIN user_assoc ON user_assoc.space_id=job_assoc.space_id -- Join on user_assoc to get all the users that belong to those spaces
 			WHERE jobs.id=_jobId AND user_assoc.user_id=_userId)      -- But only count those for the job and user we're looking for
-		> 0, 1, 0) AS verified;                                       -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+		> 0, 1, (SELECT COUNT(*) FROM jobs WHERE jobs.id=_jobId AND jobs.user_id=_userId )) AS verified;                                       -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
 	END //
 
 -- Returns 1 if the given user can somehow see the given space, 0 otherwise

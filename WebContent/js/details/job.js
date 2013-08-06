@@ -426,6 +426,12 @@ function updateSpaceOverview() {
 					break;
 				case 2:
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+					break;	
+				case 12:
+					showMessage('error',"you have selected too many solver / configuration pairs",5000);
+					break;
+				case 13:
+					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
 					break;
 				default:
 					currentConfigs=new Array();
@@ -467,6 +473,9 @@ function updateSolverComparison(big) {
 					break;
 				case 12:
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
+					break;
+				case 13:
+					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
 					break;
 				default:
 					jsonObject=$.parseJSON(returnCode);
@@ -660,7 +669,8 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 					case 2:
 						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
 						break;
-					case 12:
+					case 13:
+						//not used currently
 						$("#solverSummaryField").hide();
 						$("#graphField").hide();
 						$("#statsErrorField").show();
@@ -708,7 +718,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 					case 2:
 						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
 						break;
-					case 12:
+					case 13:
 						$("#pairTblField").hide();
 						$("#errorField").show();
 						break;
