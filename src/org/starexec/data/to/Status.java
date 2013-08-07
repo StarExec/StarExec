@@ -155,9 +155,4 @@ public class Status {
 	public String toString() {
 		return this.status;
 	}
-	
-	/**
-	 * Status code enums and their corresponding database codes
-	 * @author Tyler Jensen
-	 */
 }

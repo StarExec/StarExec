@@ -760,49 +760,7 @@ public class Jobs {
 		return String.format("%s/%d/%d",R.JOB_OUTPUT_DIR,j.getUserId(),jobId);
 	}
 	
-	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
-	 * @param con The connection to make the query on 
-	 * @param jobId The id of the job to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 */
-	//TODO: Consider combining this and getPendingPairs into a single function that calls getJobPairsByStatus
-	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
-
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		 try {
-			procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByJob(?)}");
-			procedure.setInt(1, jobId);					
-			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-
-			while(results.next()){
-				JobPair jp = Jobs.resultToPair(results);
-				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-				jp.setBench(Benchmarks.get(results.getInt("bench_id")));			 
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-				jp.setGridEngineId(results.getInt("sge_id"));
-				Status s = new Status();
-
-				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
-				returnList.add(jp);
-			}			
-
-			Common.safeClose(results);
-			return returnList;
-		} catch (Exception e) {
-			
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
+	
 
 	/**
 	 * Gets all job pairs that are enqueued (up to limit) for the given job and also populates its used resource TOs 
@@ -825,44 +783,130 @@ public class Jobs {
 
 		return null;		
 	}
+	/**
+	 * Gets attributes for all pairs with completion IDs greater than completionId
+	 * @param con The open connection to make the query on
+	 * @param jobId The ID of the job in question
+	 * @param completionId The completion ID after which the pairs are relevant
+	 * @return A HashMap mapping job pair IDs to attributes
+	 * @author Eric Burns
+	 */
+	
+	protected static HashMap<Integer,Properties> getNewJobAttributes(Connection con, int jobId,Integer completionId) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		log.debug("Getting all attributes for job with ID = "+jobId);
+		 try {
+			procedure=con.prepareCall("{CALL GetNewJobAttrs(?, ?)}");
+			procedure.setInt(1,jobId);
+			procedure.setInt(2,completionId);
+			results = procedure.executeQuery();
+			return processAttrResults(results);
+		} catch (Exception e) {
+			log.error("getNewJobAttrs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	/**
+	 * Gets attributes for all pairs in a given job space
+	 * @param con The open connection to make the query on
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job space containing the pairs
+	 * @return A HashMap mapping job pair IDs to attributes
+	 * @author Eric Burns
+	 */
+	
+	protected static HashMap<Integer,Properties> getJobAttributesInJobSpace(Connection con,int jobId, int jobSpaceId) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		log.debug("Getting all attributes for job with ID = "+jobId);
+		 try {
+				
+			procedure = con.prepareCall("{CALL GetJobAttrsInJobSpace(?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			results = procedure.executeQuery();
+			return processAttrResults(results);
+		} catch (Exception e) {
+			log.error("getJobAttrsInJobSpace says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets attributes for all pairs in a given job space that used a given configuration
+	 * @param con The open connection to make the query on
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job space containing the pairs
+	 * @param configId The ID of the configuration in question
+	 * @return A HashMap mapping job pair IDs to attributes
+	 * @author Eric Burns
+	 */
+	
+	protected static HashMap<Integer,Properties> getJobAttributesByConfigInJobSpace(Connection con, int jobId, int jobSpaceId, int configId) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		log.debug("Getting all attributes for job with ID = "+jobId);
+		 try {
+			procedure = con.prepareCall("{CALL GetJobAttrsByConfigInJobSpace(?, ?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,jobSpaceId);
+			procedure.setInt(3,configId);	
+			
+			results = procedure.executeQuery();
+			return processAttrResults(results);
+		} catch (Exception e) {
+			log.error("getJobAttrsByConfigInJobSpace says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
 	
 	/**
 	 * Gets all the the attributes for every job pair in a job, and returns a HashMap
 	 * mapping pair IDs to their attributes
 	 * @param con The connection to make the query on
 	 * @param The ID of the job to get attributes of
-	 * @param jobSpaceId -- If we're getting job  pairs in a given job  space, this is the id of that space.
-	 * Otherwise, it is null
-	 * @param configId If we're getting job pairs for a given configuration, this is the id of that config.
-	 * Otherwise, it is null. jobSpaceId must not be null if this is to do anything
 	 * @return A HashMap mapping pair IDs to properties. Some values may be null
 	 * @author Eric Burns
 	 */
-	
-	protected static HashMap<Integer,Properties> getJobAttributes(Connection con, int jobId, Integer jobSpaceId, Integer configId) throws Exception {
+	protected static HashMap<Integer,Properties> getJobAttributes(Connection con, int jobId) throws Exception {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		log.debug("Getting all attributes for job with ID = "+jobId);
 		 try {
-			if (jobSpaceId==null) {
-				procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
-				procedure.setInt(1, jobId);
-			} else {
-				if (configId==null) {
-					procedure = con.prepareCall("{CALL GetJobAttrsInJobSpace(?, ?)}");
-					procedure.setInt(1, jobId);
-					procedure.setInt(2,jobSpaceId);
-				} else {
-					procedure = con.prepareCall("{CALL GetJobAttrsByConfigInJobSpace(?, ?, ?)}");
-					procedure.setInt(1, jobId);
-					procedure.setInt(2,jobSpaceId);
-					procedure.setInt(3,configId);
-				}
-				
-			}
-								
-			results = procedure.executeQuery();
 			
+			procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
+			procedure.setInt(1, jobId);
+ 
+			results = procedure.executeQuery();
+			return processAttrResults(results);
+		} catch (Exception e) {
+			log.error("get Job Attrs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	/**
+	 * Given a resultset containing the results of a query for job pair attrs,
+	 * returns a hashmap mapping job pair ids to attributes
+	 * @param results The ResultSet containing the attrs
+	 * @return A mapping from pair ids to Properties
+	 * @author Eric Burns
+	 */
+	private static HashMap<Integer,Properties> processAttrResults(ResultSet results) {
+		try {
 			log.debug("result set obtained");
 			HashMap<Integer,Properties> props=new HashMap<Integer,Properties>();
 			int id;
@@ -879,14 +923,9 @@ public class Jobs {
 
 				}
 			}			
-			Common.safeClose(results);
 			log.debug("returning from attribute function");
-			return props;
 		} catch (Exception e) {
-			log.error("get Job Attrs says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
+			log.error("processAttrResults says "+e.getMessage(),e);
 		}
 		return null;
 	}
@@ -898,12 +937,72 @@ public class Jobs {
 	 * their attributes
 	 * @author Eric Burns
 	 */
-
-	public static HashMap<Integer,Properties> getJobAttributes(int jobId, Integer jobSpaceId, Integer configId) {
+	public static HashMap<Integer,Properties> getJobAttributes(int jobId) {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			return getJobAttributes(con,jobId,jobSpaceId, configId);
+			return getJobAttributes(con,jobId);
+		} catch (Exception e) {
+			log.error("getJobAttributes says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	/**
+	 * Gets all attributes for every job pair associated with the given job completed after "completionId"
+	 * @param jobId The ID of the job in question
+	 * @param completionId The completion ID after which the pairs are relevant
+	 * @return A HashMap mapping integer job-pair IDs to Properties objects representing
+	 * their attributes
+	 * @author Eric Burns
+	 */
+	public static HashMap<Integer,Properties> getNewJobAttributes(int jobId, int completionId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getNewJobAttributes(con,jobId, completionId);
+		} catch (Exception e) {
+			log.error("getJobAttributes says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	/**
+	 * Gets all attributes for every job pair in the given job space
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job space containing the pairs
+	 * @return A HashMap mapping integer job-pair IDs to Properties objects representing
+	 * their attributes
+	 * @author Eric Burns
+	 */
+	public static HashMap<Integer,Properties> getJobAttributesInJobSpace(int jobId, Integer jobSpaceId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getJobAttributesInJobSpace(con,jobId,jobSpaceId);
+		} catch (Exception e) {
+			log.error("getJobAttributes says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	/**
+	 * Gets all attributes for every job pair in the given job space that used the given config
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job space containing the pairs
+	 * @param configId the ID of the configuration in question
+	 * @return A HashMap mapping integer job-pair IDs to Properties objects representing
+	 * their attributes
+	 * @author Eric Burns
+	 */
+	public static HashMap<Integer,Properties> getJobAttributesInJobSpaceByConfig(int jobId, Integer jobSpaceId, Integer configId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getJobAttributesByConfigInJobSpace(con,jobId,jobSpaceId, configId);
 		} catch (Exception e) {
 			log.error("getJobAttributes says "+e.getMessage(),e);
 		} finally {
@@ -1216,6 +1315,7 @@ public class Jobs {
 				config.setDescription(results.getString("config.description"));
 				
 				Status status = new Status();
+				
 				status.setStatus(results.getString("status.status"));
 				status.setDescription(results.getString("status.description"));
 
@@ -1428,7 +1528,17 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
 			results = procedure.executeQuery();
-			return getPairsDetailed(jobId,con,results,true,null,null);
+			List<JobPair> pairs= getPairsDetailed(jobId,con,results,true);
+			HashMap<Integer,Properties> props=Jobs.getNewJobAttributes(con,jobId,since);
+			for (Integer i =0; i < pairs.size(); i++){
+				JobPair jp = pairs.get(i);
+				if (props.containsKey(jp.getId())) {
+					jp.setAttributes(props.get(jp.getId()));
+				} else {
+					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
+				}
+			}
+			return pairs;
 		} catch (Exception e) {
 			
 		} finally {
@@ -1551,7 +1661,17 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
-			return getPairsDetailed(jobId,con,results,false,null,null);
+			List<JobPair> pairs= getPairsDetailed(jobId,con,results,false);
+			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId);
+			for (Integer i =0; i < pairs.size(); i++){
+				JobPair jp = pairs.get(i);
+				if (props.containsKey(jp.getId())) {
+					jp.setAttributes(props.get(jp.getId()));
+				} else {
+					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
+				}
+			}
+			return pairs;
 		} catch (Exception e) {
 			log.error("Get Pairs Detailed says "+e.getMessage(),e);
 		} finally {
@@ -1571,7 +1691,8 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
-	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId, Integer jobSpaceId, Integer configId) {
+	//TODO: Consider removing all the joins and instead just calling the "get" functions
+	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId) {
 		log.debug("starting the getPairsDetailed function");
 		try {			
 			List<JobPair> returnList = new ArrayList<JobPair>();
@@ -1635,28 +1756,6 @@ public class Jobs {
 				}
 				jp.setNode(discoveredNodes.get(curNode));
 			}
-
-			
-			HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId,jobSpaceId,configId);
-
-			log.debug("just got "+ props.keySet().size() +" out of "+ returnList.size() + " attributes for job " +jobId);
-			//now, set the solvers, benchmarks, etc.
-			for (Integer i =0; i < returnList.size(); i++){
-				JobPair jp = returnList.get(i);
-				
-				//NOTE: for all new jobs, props should always contain the ID of every job pair
-				// in  the job, regardless of whether it has any attributes. The only reason we need to check whether it doesn't is for
-				// backwards compatibility-- jobs run before the job_id column was added to the 
-				//attributes table will not work with the getJobAttributes method.
-				if (props.containsKey(jp.getId())) {
-					jp.setAttributes(props.get(jp.getId()));
-				} else {
-					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
-				}
-				
-				
-			}
-
 			log.info("returning "+ returnList.size()+ " detailed pairs for job " + jobId );
 			return returnList;	
 			
@@ -1736,7 +1835,7 @@ public class Jobs {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
 				for (Space s : subspaces) {
-					pairs.addAll(getJobPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,false));
+					pairs.addAll(getJobPairsForTableByConfigInJobSpace(jobId,s.getId(),configId,false));
 				}
 			}
 			return pairs;
@@ -1827,53 +1926,7 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return null;
-	}
-
-	/**
-	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
-	 * and used the configuration with the given ID
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The ID of the job_space in question
-	 * @param configId The ID of the configuration in question
-	 * @return A List of JobPair objects
-	 * @author Eric Burns
-	 */
-	
-	public static List<JobPair> getJobPairsDetailedByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
-		Connection con = null;	
-		
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		try {			
-			con = Common.getConnection();	
-
-			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
-			//otherwise, just get the completed ones that were completed later than lastSeen
-			procedure = con.prepareCall("{CALL GetJobPairsByConfigInJobSpace(?, ?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
-			procedure.setInt(3,configId);
-
-			results = procedure.executeQuery();
-			List<JobPair> pairs = getPairsDetailed(jobId,con,results,false,jobSpaceId,configId);
-			if (hierarchy) {
-				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
-
-				for (Space s : subspaces) {
-					pairs.addAll(getJobPairsDetailedByConfigInJobSpace(jobId,s.getId(),configId,false));
-				}
-			}
-			return pairs;
-		}catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
-	
+	}	
 	
 	/**
 	 * Returns all of the job pairs in a given space, populated with all the fields necessary
@@ -1897,7 +1950,7 @@ public class Jobs {
 			
 			List<JobPair> pairs=processStatResults(results, jobId,con,jobSpaceId,null);
 			
-			HashMap<Integer,Properties> attrs=Jobs.getJobAttributes(jobId, jobSpaceId, null);
+			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobId, jobSpaceId);
 			for (JobPair jp : pairs) {
 				if (attrs.containsKey(jp.getId())) {
 					jp.setAttributes(attrs.get(jp.getId()));
@@ -1932,22 +1985,39 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
 			procedure.setInt(1, jobId);					
 			procedure.setInt(2, R.NUM_JOB_SCRIPTS);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
-
+			//we map ID's to  primitives so we don't need to query the database repeatedly for them
+			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
+			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
+			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
-				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				int nodeId=results.getInt("node_id");
+				if (!nodes.containsKey(nodeId)) {
+					nodes.put(nodeId, Cluster.getNodeDetails(nodeId));
+				}
+				jp.setNode(nodes.get(nodeId));	
 				//we need to check to see if the benchId and configId are null, since they might
 				//have been deleted while the the job is still pending
 				Integer benchId=results.getInt("bench_id");
 				if (benchId!=null) {
-					jp.setBench(Benchmarks.get(benchId));
+					if (!benchmarks.containsKey(benchId)) {
+						benchmarks.put(benchId,Benchmarks.get(benchId));
+					}
+					
+					jp.setBench(benchmarks.get(benchId));
 				}
 				Integer configId=results.getInt("config_id");
 				if (configId!=null) {
-					jp.setSolver(Solvers.getSolverByConfig(configId,false));
-					jp.setConfiguration(Solvers.getConfiguration(configId));
+					if (!configs.containsKey(configId)) {
+						solvers.put(configId, Solvers.getSolverByConfig(configId, false));
+						configs.put(configId, Solvers.getConfiguration(configId));	
+					}
+					jp.setSolver(solvers.get(configId));
+					jp.setConfiguration(configs.get(configId));
+					
 				}
 				
 				Status s = new Status();
@@ -1966,6 +2036,65 @@ public class Jobs {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		} 
+		return null;
+	}
+	
+	/**
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
+	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given queue.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
+
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		 try {
+			procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByJob(?)}");
+			procedure.setInt(1, jobId);					
+			results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+			//we map ID's to  primitives so we don't need to query the database repeatedly for them
+			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
+			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
+			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+			while(results.next()){
+				JobPair jp = JobPairs.resultToPair(results);
+				int nodeId=results.getInt("node_id");
+				if (!nodes.containsKey(nodeId)) {
+					nodes.put(nodeId,Cluster.getNodeDetails(nodeId));
+				}
+				jp.setNode(nodes.get(nodeId));	
+				int benchId=results.getInt("bench_id");
+				if (!benchmarks.containsKey(benchId)) {
+					benchmarks.put(benchId,Benchmarks.get(benchId));
+				}
+				jp.setBench(benchmarks.get(benchId));
+				int configId=results.getInt("configId");
+				if (!configs.containsKey(configId)) {
+					configs.put(configId, Solvers.getConfiguration(configId));
+					solvers.put(configId, Solvers.getSolverByConfig(configId,false));
+				}
+				jp.setSolver(solvers.get(configId));
+				jp.setConfiguration(configs.get(configId));
+				Status s = new Status();
+
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				returnList.add(jp);
+			}			
+
+			Common.safeClose(results);
+			return returnList;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
 		return null;
 	}
 	
@@ -2061,25 +2190,6 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
-		}
-
-		return null;
-	}
-	
-	/** 
-	 * @param code The status code to retrieve the status for
-	 * @return A status object containing information about  the given status code
-	 */
-	public static Status getStatus(int code) throws Exception {
-		Connection con = null;			
-
-		try {
-			con = Common.getConnection();									
-			return Jobs.getStatus(code);
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
 		}
 
 		return null;
@@ -2488,26 +2598,23 @@ public class Jobs {
 		while(results.next()){
 			JobPair jp = JobPairs.shallowResultToPair(results);
 			id=results.getInt("solver.id");
-			if (solvers.containsKey(id)) {
-				jp.setSolver(solvers.get(id));
-			} else {
+			if (!solvers.containsKey(id)) {
 				solve=new Solver();
 				solve.setId(results.getInt("solver.id"));
 				solve.setName(results.getString("solver.name"));
 				solvers.put(id,solve);
-				jp.setSolver(solve);
 			}
+			jp.setSolver(solvers.get(id));
+
 			id=results.getInt("config.id");
-			if (configs.containsKey(id)) {
-				jp.setConfiguration(configs.get(id));
-			} else {
+			if (!configs.containsKey(id)) {
 				config=new Configuration();
 				config.setId(results.getInt("config.id"));
 				config.setName(results.getString("config.name"));
 				configs.put(id, config);
-				jp.setConfiguration(config);
 			}
-			
+			jp.setConfiguration(configs.get(id));
+
 			Status s = new Status();
 			
 			s.setCode(results.getInt("status_code"));
@@ -2518,7 +2625,7 @@ public class Jobs {
 		
 		Common.safeClose(results);
 		
-		HashMap<Integer,Properties> props=Jobs.getJobAttributes(con,jobId, jobSpaceId,configId);
+		HashMap<Integer,Properties> props=Jobs.getJobAttributesByConfigInJobSpace(con,jobId, jobSpaceId,configId);
 		
 		for (Integer i =0; i < returnList.size(); i++){
 			JobPair jp = returnList.get(i);
@@ -2538,44 +2645,6 @@ public class Jobs {
 	}
 	
 	/**
-	 * Helper method to extract information from a query for job pairs
-	 * @param result The resultset that is the results from querying for job pairs
-	 * @return A job pair object populated with data from the result set
-	 */
-	private static JobPair resultToPair(ResultSet result) throws Exception {
-
-		JobPair jp = new JobPair();
-
-		jp.setId(result.getInt("id"));
-		jp.setJobId(result.getInt("job_id"));
-		jp.setGridEngineId(result.getInt("sge_id"));	
-		jp.setCpuTimeout(result.getInt("cpuTimeout"));		
-		jp.setWallclockTimeout(result.getInt("clockTimeout"));
-		jp.setQueueSubmitTime(result.getTimestamp("queuesub_time"));
-		jp.setStartTime(result.getTimestamp("start_time"));
-		jp.setEndTime(result.getTimestamp("end_time"));
-		jp.setExitStatus(result.getInt("exit_status"));
-		jp.setWallclockTime(result.getDouble("wallclock"));
-		jp.setCpuUsage(result.getDouble("cpu"));
-		jp.setUserTime(result.getDouble("user_time"));
-		jp.setSystemTime(result.getDouble("system_time"));
-		jp.setIoDataUsage(result.getDouble("io_data"));
-		jp.setIoDataWait(result.getDouble("io_wait"));
-		jp.setMemoryUsage(result.getDouble("mem_usage"));
-		jp.setMaxVirtualMemory(result.getDouble("max_vmem"));
-		jp.setMaxResidenceSetSize(result.getDouble("max_res_set"));
-		jp.setPageReclaims(result.getDouble("page_reclaims"));
-		jp.setPageFaults(result.getDouble("page_faults"));
-		jp.setBlockInput(result.getDouble("block_input"));
-		jp.setBlockOutput(result.getDouble("block_output"));
-		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
-		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
-		jp.setPath(result.getString("path"));
-		//log.debug("getting job pair from result set for id " + jp.getId());
-		return jp;
-	}
-	
-	/**
 	 * Resumes a paused job, and also sets the paused property to false in the database. 
 	 * @param jobId The ID of the job to resume
 	 * @param con An open database connection
@@ -2586,8 +2655,6 @@ public class Jobs {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			
-			
 			return resume(jobId,con);
 		} catch (Exception e) {
 			
@@ -2598,7 +2665,6 @@ public class Jobs {
 		return false;
 	}
 	
-
 	/**
 	 * Resumes a paused job 
 	 * @param jobId The ID of the paused job
@@ -2610,7 +2676,7 @@ public class Jobs {
 	protected static boolean resume(int jobId, Connection con) {
 		CallableStatement procedure = null;
 		try {
-			 procedure = con.prepareCall("{CALL ResumeJob(?)}");
+			procedure = con.prepareCall("{CALL ResumeJob(?)}");
 			procedure.setInt(1, jobId);		
 			procedure.executeUpdate();	
 
@@ -2623,9 +2689,6 @@ public class Jobs {
 		}
 		return false;
 	}
-	
-	
-
 
 	/**
 	 * This function makes older jobs, which have path info but no job space information
@@ -2675,6 +2738,11 @@ public class Jobs {
 						}
 					}
 				}
+			}
+			//there seem to be some jobs with no pairs somehow, so this just prevents
+			//a red error screen when viewing them
+			if (p.size()==0) {
+				primarySpaceId=Spaces.addJobSpace("job space");
 			}
 			log.debug("setupjobpairs-- done looking at pairs, updating the database");
 			JobPairs.UpdateJobSpaces(p);

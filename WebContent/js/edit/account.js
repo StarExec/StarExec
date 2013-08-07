@@ -57,7 +57,7 @@ function attachFormValidation(){
  */
 function initDataTables(){
 	$('#personal').dataTable( {
-        "sDom": 'rt<"bottom"f><"clear">',
+        "sDom": 'rt<"bottom"><"clear">',
         "aaSorting": [],
         "bPaginate": false,        
         "bSort": true        

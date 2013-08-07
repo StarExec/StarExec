@@ -584,6 +584,17 @@ CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_id=_jobId;
 	END //
+	
+DROP PROCEDURE IF EXISTS GetNewJobAttrs;
+CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
+	BEGIN
+		SELECT pair.id, attr.attr_key, attr.attr_value
+		FROM job_pairs AS pair
+			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
+			INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
+			WHERE pair.job_id=_jobId AND complete.completion_id>_completionId;
+
+	END //
 
 -- Gets attributes for every job pair in a job that resides in the given job space
 -- Author: Eric Burns
@@ -713,22 +724,6 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _id INT, IN _jobSpaceId
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //	
-
--- Retrieves info about job pairs for a given job in a given space with a given configuration
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
-	BEGIN
-		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
-						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-						JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
-
-					   JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
-		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
-	END //
 	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable

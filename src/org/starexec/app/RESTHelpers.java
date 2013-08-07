@@ -1472,7 +1472,7 @@ public static JsonObject convertSolversToJsonObject(List<Solver> solvers, int to
 			
 			sb= new StringBuilder();
 			sb.append("<a href=\"" + Util.docRoot("secure/details/pairsInSpace.jsp?sid="+spaceId+"&configid="+js.getConfiguration().getId()+"&id="+jobId));
-			sb.append("\" target=\" blank\" >");
+			sb.append("\" target=\"_blank\" >");
 			sb.append("view pairs");
 			RESTHelpers.addImg(sb);
 			String pairsInSpaceLink=sb.toString();

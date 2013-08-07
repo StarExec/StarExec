@@ -543,9 +543,9 @@ public class JobPairs {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			 procedure = con.prepareCall("{CALL GetJobPairById(?)}");
+			procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 			procedure.setInt(1, pairId);					
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
