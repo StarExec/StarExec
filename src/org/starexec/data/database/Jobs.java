@@ -1948,7 +1948,7 @@ public class Jobs {
 			procedure.setInt(2,jobSpaceId);
 			results = procedure.executeQuery();
 			
-			List<JobPair> pairs=processStatResults(results, jobId,con,jobSpaceId,null);
+			List<JobPair> pairs=processStatResults(results, jobId,con);
 			
 			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobId, jobSpaceId);
 			for (JobPair jp : pairs) {
@@ -2587,7 +2587,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con, Integer jobSpaceId, Integer configId) throws Exception {
+	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
 		log.debug("Processing stat results for job = "+jobId);
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
@@ -2625,21 +2625,7 @@ public class Jobs {
 		
 		Common.safeClose(results);
 		
-		HashMap<Integer,Properties> props=Jobs.getJobAttributesByConfigInJobSpace(con,jobId, jobSpaceId,configId);
 		
-		for (Integer i =0; i < returnList.size(); i++){
-			JobPair jp = returnList.get(i);
-			//NOTE: for all new jobs, props should always contain the ID of every job pair
-			// that has attributes. The only reason we need to check whether it doesn't is for
-			// backwards compatibility-- jobs run before the job_id column was added to the 
-			//attributes table will not work with the getJobAttributes method.
-			
-			if (props.containsKey(jp.getId())) {
-				jp.setAttributes(props.get(jp.getId()));
-			} else {
-				jp.setAttributes(JobPairs.getAttributes(jp.getId()));
-			}
-		}
 		
 		return returnList;	
 	}
