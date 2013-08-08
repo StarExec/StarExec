@@ -513,7 +513,11 @@ public class RESTHelpers {
 	}
 	
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
+		long a=System.currentTimeMillis();
+		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId,false,false);
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to count the jobs in this job space");
+
 		if (totalJobPairs>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them
 			JsonObject ob= new JsonObject();
@@ -521,6 +525,8 @@ public class RESTHelpers {
 			return ob;
 		}
 		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to validate the attribute map");
+
 		if (null==attrMap) {
 			return null;
 		}
@@ -540,7 +546,8 @@ public class RESTHelpers {
     			jobId,													// Parent space id
     			jobSpaceId	
 		);
-		 
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to get the job pairs to display");
+
 		/**
     	 * Used to display the 'total entries' information at the bottom of the DataTable;
     	 * also indirectly controls whether or not the pagination buttons are toggle-able
@@ -552,6 +559,8 @@ public class RESTHelpers {
     	else {
     		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, request.getParameter(SEARCH_QUERY)));
     	}
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to count the pairs after the query");
+
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
 	}
 	
@@ -685,10 +694,8 @@ public class RESTHelpers {
 	
 	private static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request, int forPage){
 		// Parameter validation
-		log.debug("getting datatables page for "+type.toString());
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
-	    	
 	    	return null;
 	    }
 
@@ -840,7 +847,6 @@ public class RESTHelpers {
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
 			    	} 
 			    	else {
-			    		log.debug("it was necessary to count benchmarks by query");
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getCountInSpace(id,request.getParameter(SEARCH_QUERY)));
 			    	}
 

@@ -383,31 +383,6 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination")
-	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId, @Context HttpServletRequest request) {			
-		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		// Ensure user can view the job they are requesting the pairs from
-		if(false == Permissions.canUserSeeJob(jobId, userId)){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB_PAIR, jobId, request);
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	}
-	
-	/**
-	 * Returns the next page of entries for a job pairs table
-	 *
-	 * @param jobId the id of the job to get the next page of job pairs for
-	 * @param request the object containing the DataTable information
-	 * @return a JSON object representing the next page of job pair entries if successful,<br>
-	 * 		1 if the request fails parameter validation,<br> 
-	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
-	 * @author Todd Elvers
-	 */
-	@POST
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}")
 	@Produces("application/json")	
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
@@ -439,6 +414,7 @@ public class RESTServices {
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}")
 	@Produces("application/json")	
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+		long a=System.currentTimeMillis();
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		
@@ -446,9 +422,10 @@ public class RESTServices {
 		if(false == Permissions.canUserSeeJob(jobId, userId)){
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to see if the user can see the job");
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request);
-
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to get back the data table");
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {

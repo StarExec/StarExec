@@ -495,7 +495,7 @@ public class JobPairs {
 	 */
 	public static Properties getAttributes(int pairId) {
 		Connection con = null;			
-
+		log.debug("Calling JobPairs.getAttributes for an individual pair");
 		try {
 			con = Common.getConnection();		
 			return getAttributes(con, pairId);

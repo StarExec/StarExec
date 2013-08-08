@@ -923,7 +923,6 @@ public class Jobs {
 
 				}
 			}			
-			log.debug("returning from attribute function");
 			return props;
 		} catch (Exception e) {
 			log.error("processAttrResults says "+e.getMessage(),e);
