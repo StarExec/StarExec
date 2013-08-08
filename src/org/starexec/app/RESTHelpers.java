@@ -515,7 +515,7 @@ public class RESTHelpers {
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
 		long a=System.currentTimeMillis();
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
-		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobId,jobSpaceId,false,false);
+		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false,false);
 		log.debug("it took "+(System.currentTimeMillis()-a)+" time to count the jobs in this job space");
 
 		if (totalJobPairs>R.MAXIMUM_JOB_PAIRS) {
@@ -557,7 +557,7 @@ public class RESTHelpers {
     		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
     	} 
     	else {
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, request.getParameter(SEARCH_QUERY)));
+    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY)));
     	}
 		log.debug("it took "+(System.currentTimeMillis()-a)+" time to count the pairs after the query");
 

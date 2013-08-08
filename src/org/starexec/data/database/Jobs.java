@@ -1154,16 +1154,15 @@ public class Jobs {
 	 * @return the number of job pairs for the given job
 	 * @author Eric Burns
 	 */
-	public static int getJobPairCountInJobSpace(int jobId, int jobSpaceId, boolean hierarchy, boolean quitIfExceedsMax) {
+	public static int getJobPairCountInJobSpace(int jobSpaceId, boolean hierarchy, boolean quitIfExceedsMax) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		int jobPairCount=0;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpace(?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
+			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpace(?)}");
+			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			if (results.next()) {
 				jobPairCount = results.getInt("jobPairCount");
@@ -1186,7 +1185,7 @@ public class Jobs {
 			}
 			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, false);
 			for (Space s : subspaces) {
-				jobPairCount+=getJobPairCountInJobSpace(jobId,s.getId(),false,true);
+				jobPairCount+=getJobPairCountInJobSpace(s.getId(),false,true);
 				if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
 					return jobPairCount;
 				}
@@ -1205,17 +1204,16 @@ public class Jobs {
 	 * @return the number of job pairs for the given job
 	 * @author Eric Burns
 	 */
-	public static int getJobPairCountInJobSpace(int jobId, int jobSpaceId, String query) {
+	public static int getJobPairCountInJobSpace(int jobSpaceId, String query) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		int jobPairCount=0;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpaceWithQuery(?, ?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
-			procedure.setString(3, query);
+			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpaceWithQuery(?, ?)}");
+			procedure.setInt(1,jobSpaceId);
+			procedure.setString(2, query);
 			results = procedure.executeQuery();
 			if (results.next()) {
 				jobPairCount = results.getInt("jobPairCount");
@@ -1262,6 +1260,7 @@ public class Jobs {
 	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
+	//TODO: Split this into multiple functions
 	private static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, Integer jobSpaceId, Integer configId, boolean hierarchy) {
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -1269,28 +1268,29 @@ public class Jobs {
 		try {
 			con = Common.getConnection();
 			 	
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfJobPairs(?, ?, ?, ?, ?, ?, ? , ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, jobId);
-			procedure.setString(6, searchQuery);
-			
-			//the spaceId and configId are not null only if we are getting results by config/space
-			if (jobSpaceId!=null) {
-				procedure.setInt(7, jobSpaceId);
+			if (configId==null) {
+				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?, ?)}");
+				procedure.setInt(1, startingRecord);
+				procedure.setInt(2,	recordsPerPage);
+				procedure.setInt(3, indexOfColumnSortedBy);
+				procedure.setBoolean(4, isSortedASC);
+				procedure.setString(5, searchQuery);
+				procedure.setInt(6,jobSpaceId);
+				
 			} else {
-				procedure.setNull(7,java.sql.Types.INTEGER);
-			}
-			if (configId!=null) {
-				procedure.setInt(8,configId);
-			} else {
-				procedure.setNull(8,java.sql.Types.INTEGER);
+				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsByConfigInJobSpace(?, ?, ?, ?, ?, ?, ?)}");
+				procedure.setInt(1, startingRecord);
+				procedure.setInt(2,	recordsPerPage);
+				procedure.setInt(3, indexOfColumnSortedBy);
+				procedure.setBoolean(4, isSortedASC);
+				procedure.setString(5, searchQuery);
+				procedure.setInt(6,jobSpaceId);
+				procedure.setInt(7,configId);
 			}
 			
-			 results = procedure.executeQuery();
+			
+			
+			results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
 			
 			while(results.next()){
