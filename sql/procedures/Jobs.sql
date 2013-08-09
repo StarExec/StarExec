@@ -439,15 +439,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				WHERE 	 job_space_id=_spaceId
 				
 				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench_name
-					 	WHEN 1 THEN solver_name
-					 	WHEN 2 THEN config_name
-					 	WHEN 3 THEN status.status
-					 	WHEN 4 THEN cpu
-					 	WHEN 5 THEN result
-					 END) ASC
+				ORDER BY bench_name ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -473,15 +465,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									
 				WHERE 	job_space_id=_spaceId
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench_name
-					 	WHEN 1 THEN solver_name
-					 	WHEN 2 THEN config_name
-					 	WHEN 3 THEN status.status
-					 	WHEN 4 THEN cpu
-					 	WHEN 5 THEN result
-					 END) DESC
+				ORDER BY bench_name DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 			
@@ -520,15 +504,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench_name
-					 	WHEN 1 THEN solver_name
-					 	WHEN 2 THEN config_name
-					 	WHEN 3 THEN status.status
-					 	WHEN 4 THEN cpu
-					 	WHEN 5 THEN result
-					 END) ASC
+				ORDER BY bench_name ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -560,15 +536,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench_name
-					 	WHEN 1 THEN solver_name
-					 	WHEN 2 THEN config_name
-					 	WHEN 3 THEN status.status
-					 	WHEN 4 THEN cpu
-					 	WHEN 5 THEN result
-					 END) DESC
+				ORDER BY bench_name DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;
