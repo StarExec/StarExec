@@ -441,9 +441,9 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
 					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench.name
-					 	WHEN 1 THEN solver.name
-					 	WHEN 2 THEN config.name
+					 	WHEN 0 THEN bench_name
+					 	WHEN 1 THEN solver_name
+					 	WHEN 2 THEN config_name
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
@@ -475,9 +475,9 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				WHERE 	job_space_id=_spaceId
 				ORDER BY 
 					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench.name
-					 	WHEN 1 THEN solver.name
-					 	WHEN 2 THEN config.name
+					 	WHEN 0 THEN bench_name
+					 	WHEN 1 THEN solver_name
+					 	WHEN 2 THEN config_name
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
@@ -522,9 +522,9 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
 					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench.name
-					 	WHEN 1 THEN solver.name
-					 	WHEN 2 THEN config.name
+					 	WHEN 0 THEN bench_name
+					 	WHEN 1 THEN solver_name
+					 	WHEN 2 THEN config_name
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
@@ -562,9 +562,9 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 
 					 (CASE _colSortedOn
-					 	WHEN 0 THEN bench.name
-					 	WHEN 1 THEN solver.name
-					 	WHEN 2 THEN config.name
+					 	WHEN 0 THEN bench_name
+					 	WHEN 1 THEN solver_name
+					 	WHEN 2 THEN config_name
 					 	WHEN 3 THEN status.status
 					 	WHEN 4 THEN cpu
 					 	WHEN 5 THEN result
@@ -1086,12 +1086,15 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 	END //
 
 -- Adds a new job pair record to the database
--- Author: Tyler Jensen
+-- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS AddJobPair;
 CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId,
+		(select name from solvers inner join configurations as config on config.solver_id=solvers.id where config.id=_configId), 
+		(select name from benchmarks where id=_benchId),
+		(select name from configurations where configurations.id=_configId));
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 

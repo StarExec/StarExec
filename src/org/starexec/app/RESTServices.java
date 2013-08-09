@@ -386,6 +386,7 @@ public class RESTServices {
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}")
 	@Produces("application/json")	
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+		long a= System.currentTimeMillis();
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		
@@ -396,7 +397,8 @@ public class RESTServices {
 		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request);
-		
+		log.debug("it took "+(System.currentTimeMillis()-a)+" time to get all the pairs for this job space and config");
+
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
