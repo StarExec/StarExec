@@ -513,9 +513,9 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and cpu
 				-- don't include the query
-				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
-				OR		config.name		LIKE	CONCAT('%', _query, '%')
-				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
@@ -555,9 +555,9 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 
 				WHERE 	job_space_id=_spaceId
 				
-				AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
-				OR		config.name		LIKE	CONCAT('%', _query, '%')
-				OR		solver.name		LIKE	CONCAT('%', _query, '%')
+				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status.status	LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY 
@@ -1092,9 +1092,9 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN
 	BEGIN
 		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name)
 		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId,
-		(select name from solvers inner join configurations as config on config.solver_id=solvers.id where config.id=_configId), 
-		(select name from benchmarks where id=_benchId),
-		(select name from configurations where configurations.id=_configId));
+		(select solvers.name from solvers inner join configurations as config on config.solver_id=solvers.id where config.id=_configId), 
+		(select benchmarks.name from benchmarks where id=_benchId),
+		(select configurations.name from configurations where configurations.id=_configId));
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
