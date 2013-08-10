@@ -1265,17 +1265,38 @@ public class Jobs {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		if (searchQuery==null) {
+			searchQuery="";
+		}
 		try {
 			con = Common.getConnection();
 			 	
 			if (configId==null) {
-				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?, ?)}");
+				switch (indexOfColumnSortedBy) {
+					case 0:
+						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortBench(?, ?, ?, ?, ?)}");
+						break;
+					case 1:
+						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortSolver(?, ?, ?, ?, ?)}");
+						break;
+					case 2:
+						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortConfig(?, ?, ?, ?, ?)}");
+						break;
+					case 3:
+						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortStatus(?, ?, ?, ?, ?)}");
+						break;
+					case 4:
+						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortTime(?, ?, ?, ?, ?)}");
+						break;
+					case 5:
+						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortResult(?, ?, ?, ?, ?)}");
+						break;
+				}
 				procedure.setInt(1, startingRecord);
 				procedure.setInt(2,	recordsPerPage);
-				procedure.setInt(3, indexOfColumnSortedBy);
-				procedure.setBoolean(4, isSortedASC);
-				procedure.setString(5, searchQuery);
-				procedure.setInt(6,jobSpaceId);
+				procedure.setBoolean(3, isSortedASC);
+				procedure.setString(4, searchQuery);
+				procedure.setInt(5,jobSpaceId);
 				
 			} else {
 				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsByConfigInJobSpace(?, ?, ?, ?, ?, ?, ?)}");
