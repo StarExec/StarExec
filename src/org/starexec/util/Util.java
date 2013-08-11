@@ -457,6 +457,13 @@ public class Util {
     	return docRootUrl + s;
     }
     
+    /**
+     * Given an integer number of bytes, returns a human-readable string
+     * approximating the number of bytes given with the proper units
+     * @param bytes The number of bytes
+     * @return The number of bytes to two decimal places in a useful unit
+     * @author Eric Burns 
+     */
     public static String byteCountToDisplaySize(long bytes) {
     	String[] suffix=new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
     	int suffixIndex=0;

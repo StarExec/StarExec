@@ -1787,6 +1787,8 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsForTableByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
+		long a=System.currentTimeMillis();
+		log.debug("beginning function getJobPairsForTableByConfigInJobSpace");
 		Connection con = null;	
 		
 		ResultSet results=null;
@@ -1802,6 +1804,7 @@ public class Jobs {
 			procedure.setInt(3,configId);
 
 			results = procedure.executeQuery();
+			log.debug("executing query took "+(System.currentTimeMillis()-a));
 			List<JobPair> pairs = new ArrayList<JobPair>();
 			
 			while (results.next()) {
@@ -1840,9 +1843,12 @@ public class Jobs {
 				jp.setAttributes(attributes);
 				pairs.add(jp);	
 			}
+			log.debug("processing pairs took "+(System.currentTimeMillis()-a));
+
 			
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+				log.debug("getting subspaces took "+(System.currentTimeMillis()-a));
 
 				for (Space s : subspaces) {
 					pairs.addAll(getJobPairsForTableByConfigInJobSpace(jobId,s.getId(),configId,false));
