@@ -299,6 +299,10 @@ CREATE TABLE job_pairs (
 	KEY (job_space_id),
 	KEY (config_id),
 	UNIQUE KEY(sge_id),
+	KEY (job_space_id, config_id),
+	KEY (job_space_id, solver_name),
+	KEY (job_space_id, bench_name),
+	KEY (job_space_id, config_name),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,
 	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION

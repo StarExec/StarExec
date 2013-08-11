@@ -1007,3 +1007,4 @@ INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES
 INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 1, 'starexec-expected-result', 'sat');
 INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 2, 'starexec-expected-result', 'sat');
 INSERT IGNORE INTO job_attributes (job_id, pair_id, attr_key, attr_value) VALUES (1, 3, 'starexec-expected-result', 'unsat');
+CALL SetNameColumns();

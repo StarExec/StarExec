@@ -1260,7 +1260,6 @@ public class Jobs {
 	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	//TODO: Split this into multiple functions
 	private static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, Integer jobSpaceId, Integer configId, boolean hierarchy) {
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -1272,31 +1271,16 @@ public class Jobs {
 			con = Common.getConnection();
 			 	
 			if (configId==null) {
-				switch (indexOfColumnSortedBy) {
-					case 0:
-						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortBench(?, ?, ?, ?, ?)}");
-						break;
-					case 1:
-						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortSolver(?, ?, ?, ?, ?)}");
-						break;
-					case 2:
-						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortConfig(?, ?, ?, ?, ?)}");
-						break;
-					case 3:
-						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortStatus(?, ?, ?, ?, ?)}");
-						break;
-					case 4:
-						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortTime(?, ?, ?, ?, ?)}");
-						break;
-					case 5:
-						procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceSortResult(?, ?, ?, ?, ?)}");
-						break;
-				}
+				
+					
+				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?,?)}");
+					
 				procedure.setInt(1, startingRecord);
 				procedure.setInt(2,	recordsPerPage);
 				procedure.setBoolean(3, isSortedASC);
 				procedure.setString(4, searchQuery);
 				procedure.setInt(5,jobSpaceId);
+				procedure.setInt(6,indexOfColumnSortedBy);
 				
 			} else {
 				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsByConfigInJobSpace(?, ?, ?, ?, ?, ?, ?)}");
@@ -1381,15 +1365,19 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals) {
+		long a=System.currentTimeMillis();
 		//get all of the pairs first, then carry out sorting and filtering
 		//PERFMORMANCE NOTE: this call takes over 99.5% of the total time this function takes
 		List<JobPair> pairs=Jobs.getJobPairsForTableByConfigInJobSpace(jobId,jobSpaceId,configId,true);
+		log.debug("getting all the pairs by config in job space took "+(System.currentTimeMillis()-a));
 		totals[0]=pairs.size();
 		List<JobPair> returnList=new ArrayList<JobPair>();
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
 
 		totals[1]=pairs.size();
 		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC);
+		log.debug("sorting pairs took "+(System.currentTimeMillis()-a));
 
 		if (startingRecord>=pairs.size()) {
 			//we'll just return nothing
@@ -1398,6 +1386,7 @@ public class Jobs {
 		} else {
 			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
 		}
+		log.debug("getting the correct subset of pairs took "+(System.currentTimeMillis()-a));
 
 		log.debug("the size of the return list is "+returnList.size());
 		return returnList;

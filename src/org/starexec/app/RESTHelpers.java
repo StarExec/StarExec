@@ -586,6 +586,7 @@ public class RESTHelpers {
     			configId,
     			totals
 		);
+		
 		totalJobs = totals[0];
 		 
 		/**
