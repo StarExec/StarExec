@@ -563,7 +563,7 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _id INT, IN _jobSpaceId
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
+CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
 		SELECT job_pairs.id, 
 				config.id,
@@ -585,7 +585,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _id INT, IN _jobSpaceI
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 
-		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 
 

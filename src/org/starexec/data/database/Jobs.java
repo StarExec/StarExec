@@ -1798,10 +1798,9 @@ public class Jobs {
 
 			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			procedure = con.prepareCall("{CALL GetJobPairsForTableByConfigInJobSpace(?, ?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
-			procedure.setInt(3,configId);
+			procedure = con.prepareCall("{CALL GetJobPairsForTableByConfigInJobSpace(?, ?)}");
+			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2,configId);
 
 			results = procedure.executeQuery();
 			log.debug("executing query took "+(System.currentTimeMillis()-a));
