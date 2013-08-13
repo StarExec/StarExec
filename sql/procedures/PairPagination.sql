@@ -16,25 +16,19 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 	BEGIN
 		IF (_sortColumn = 0) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						bench_id,
+						bench_name,
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 						
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -51,23 +45,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						bench_id,
+						bench_name,
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+				FROM	job_pairs	
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -82,25 +71,19 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=1) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver._name,
+						bench_id,
+						bench_name,
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 						
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -118,24 +101,22 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -149,25 +130,23 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=2) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 						
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -185,24 +164,22 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -216,25 +193,23 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=3) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 						
 				FROM	job_pairs
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -252,24 +227,22 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -283,24 +256,22 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=4) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+				FROM	job_pairs	
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -318,24 +289,22 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -349,25 +318,23 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=5) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 						
 				FROM	job_pairs	
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -385,25 +352,20 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	job_pairs.id, 
-						config.id,
-						config.name,
-						config.description,
-						job_pairs.status_code,
-						solver.id,
-						solver.name,
-						solver.description,
-						bench.id,
-						bench.name,
-						bench.description,
-						GetJobPairResult(job_pairs.id) AS result,
+				SELECT 	id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						GetJobPairResult(id) AS result,
 						cpu,
 						wallclock
 				FROM	job_pairs
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-
 				WHERE 	job_space_id=_spaceId
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')

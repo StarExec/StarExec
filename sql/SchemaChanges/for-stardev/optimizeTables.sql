@@ -1,7 +1,5 @@
 USE Starexec;
 
-CALL SetNameColumns();
-
 OPTIMIZE TABLE  job_pairs;
 OPTIMIZE TABLE  spaces;
 OPTIMIZE TABLE 	solvers;

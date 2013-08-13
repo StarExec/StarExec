@@ -521,11 +521,8 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 DROP PROCEDURE IF EXISTS GetJobPairsShallowWithBenchmarksByConfigInJobSpace;
 CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config_id, config_name,bench._id,bench._name
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver_id, solver_name, config_id, config_name,bench._id,bench._name
 		FROM job_pairs 
-						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 	
@@ -535,10 +532,8 @@ CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _jobSpace
 DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpace;
 CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config_id, config_name
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver_id, solver_name, config_id, config_name
 		FROM job_pairs 
-						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //	
 	
@@ -549,24 +544,13 @@ DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
 CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
 		SELECT job_pairs.id, 
-				config.id,
-				config.name,
-				config.description,
 				job_pairs.status_code,
-				solver.id,
-				solver.name,
-				solver.description,
-				bench.id,
-				bench.name,
-				bench.description,
+				bench_id,
+				bench_name,
 				GetJobPairResult(job_pairs.id) AS result,
 				cpu,
 				wallclock
 		FROM job_pairs 
-						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 
@@ -578,10 +562,8 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
 CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
 	BEGIN
-		SELECT solver.id,solver.name,config.id,config.name,status_code,cpu,wallclock,job_pairs.id
-		FROM job_pairs 				JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,wallclock,job_pairs.id
+		FROM job_pairs 				
 		WHERE job_space_id =_jobSpaceId;
 	END //
 	
@@ -733,10 +715,10 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), IN _solverId INT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName, _solverId);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 

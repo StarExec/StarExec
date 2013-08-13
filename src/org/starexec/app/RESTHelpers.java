@@ -561,7 +561,7 @@ public class RESTHelpers {
     	}
 		log.debug("it took "+(System.currentTimeMillis()-a)+" time to count the pairs after the query");
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true);
 	}
 	
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(int jobId, int jobSpaceId,int configId,HttpServletRequest request) {
@@ -596,7 +596,7 @@ public class RESTHelpers {
     
        attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),false);
 	}
 	
 	
@@ -1028,11 +1028,13 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
+		String solverLink=null;
+		String configLink=null;
 		for(JobPair jp : pairs){
     		StringBuilder sb = new StringBuilder();
 			String hiddenJobPairId;
@@ -1046,7 +1048,6 @@ public class RESTHelpers {
     		// Create the benchmark link and append the hidden input element
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
-    		sb.append(jp.getBench().getDescription());
     		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
     		sb.append(jp.getBench().getId());
     		sb.append("\" target=\"_blank\">");
@@ -1055,27 +1056,28 @@ public class RESTHelpers {
     		sb.append(hiddenJobPairId);
 			String benchLink = sb.toString();
 			
-			// Create the solver link
-    		sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append(jp.getSolver().getDescription());
-    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-    		sb.append(jp.getSolver().getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(jp.getSolver().getName());
-    		RESTHelpers.addImg(sb);
-			String solverLink = sb.toString();
+			if (includeConfigAndSolver) {
+				// Create the solver link
+	    		sb = new StringBuilder();
+	    		sb.append("<a title=\"");
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+	    		sb.append(jp.getSolver().getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(jp.getSolver().getName());
+	    		RESTHelpers.addImg(sb);
+				solverLink = sb.toString();
+				
+				// Create the configuration link
+	    		sb = new StringBuilder();
+	    		sb.append("<a title=\"");
+	    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+	    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
+	    		sb.append("\" target=\"_blank\">");
+	    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
+	    		RESTHelpers.addImg(sb);
+				configLink = sb.toString();
+			}
 			
-			// Create the configuration link
-    		sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append(jp.getSolver().getConfigurations().get(0).getDescription());
-    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
-    		RESTHelpers.addImg(sb);
-			String configLink = sb.toString();
 			
 			// Create the status field
     		sb = new StringBuilder();
@@ -1090,8 +1092,11 @@ public class RESTHelpers {
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
     		entry.add(new JsonPrimitive(benchLink));
-    		entry.add(new JsonPrimitive(solverLink));
-    		entry.add(new JsonPrimitive(configLink));
+    		if (includeConfigAndSolver) {
+    			entry.add(new JsonPrimitive(solverLink));
+        		entry.add(new JsonPrimitive(configLink));
+    		}
+    		
     		entry.add(new JsonPrimitive(status));
     		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
     		

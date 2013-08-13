@@ -21,5 +21,7 @@ ADD INDEX (job_space_id, bench_name);
 ALTER TABLE job_pairs
 ADD COLUMN solver_id INT;
 
+CALL SetNewColumns();
+
 ALTER TABLE job_pairs
-ADD FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE NO ACTION;
+ADD FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL;

@@ -46,8 +46,6 @@
 			<thead>
 				<tr>
 					<th id="benchHead">benchmark</th>
-					<th>solver</th>
-					<th>config</th>
 					<th>status</th>
 					<th>time</th>
 					<th>result</th>	

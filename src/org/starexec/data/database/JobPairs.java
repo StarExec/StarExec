@@ -38,8 +38,7 @@ public class JobPairs {
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
 			try {
-				if (jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
-						jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)) {
+				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)) {
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
@@ -54,6 +53,10 @@ public class JobPairs {
 	 * Compares the solver names of jp1 and jp2 
 	 * @param jp1 The first job pair
 	 * @param jp2 The second job pair
+	 * @param sortIndex the value to sort on
+	 * 0 = benchmark name
+	 * 1 = status name
+	 * 3 = starexec-result attr
 	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
@@ -64,21 +67,12 @@ public class JobPairs {
 			String str1=null;
 			String str2=null;
 			if (sortIndex==1) {
-				str1=jp1.getSolver().getName();
-				str2=jp2.getSolver().getName();
+				str1=jp1.getStatus().getStatus();
+				str2=jp2.getStatus().getStatus();
 			}
-			if (sortIndex==2) {
-				str1=jp1.getConfiguration().getName();
-				str2=jp2.getConfiguration().getName();
-			} else if (sortIndex==3) {
-				str1=jp1.getStatus().getDescription();
-				str2=jp2.getStatus().getDescription();
-			} else if (sortIndex==5) {
+			else if (sortIndex==3) {
 				str1=jp1.getAttributes().getProperty("starexec-result");
 				str2=jp2.getAttributes().getProperty("starexec-result");
-			} else if (sortIndex==6) {
-				str1=jp1.getJobSpaceName();
-				str2=jp2.getJobSpaceName();
 			} else {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
@@ -113,13 +107,11 @@ public class JobPairs {
 			if (sortIndex==4) {
 				db1=jp1.getWallclockTime();
 				db2=jp2.getWallclockTime();
-			} 
+			}
 			//if db1> db2, then db2 should go first
 			if (db1>db2) {
 				answer=1;
 			}
-			
-			
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first
 		}
@@ -138,12 +130,9 @@ public class JobPairs {
 	 * @param list2 The second list to merge
 	 * @param sortColumn The column to sort on. 0 = benchmark name
 	 * 0 = benchmark name
-	 * 1 = solver name
-	 * 2 = config name
-	 * 3 = status name
-	 * 4 = cpu time
-	 * 5 = starexec-result attr
-	 * 6 = job space name
+	 * 1 = status name
+	 * 2 = cpu time
+	 * 3 = starexec-result attr
 	 * any other = solver name
 	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
 	 * @return A single list containing all the elements of lists 1 and 2 in sorted order
@@ -155,7 +144,7 @@ public class JobPairs {
 		int first;
 		List<JobPair> mergedList=new ArrayList<JobPair>();
 		while (list1Index<list1.size() && list2Index<list2.size()) {
-			if (sortColumn!=4) {
+			if (sortColumn!=2) {
 				first=compareJobPairStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
 			} else {
 				first=compareJobPairInts(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
@@ -204,7 +193,7 @@ public class JobPairs {
 	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
@@ -216,12 +205,13 @@ public class JobPairs {
 			procedure.setString(9,pair.getConfiguration().getName());
 			procedure.setString(10,pair.getSolver().getName());
 			procedure.setString(11,pair.getBench().getName());
+			procedure.setInt(12,pair.getSolver().getId());
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(12));
+			pair.setId(procedure.getInt(13));
 
 			return true;
 		} catch (Exception e) {

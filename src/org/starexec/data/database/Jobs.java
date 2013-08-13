@@ -1218,19 +1218,16 @@ public class Jobs {
 				jp.setCpuUsage(results.getDouble("cpu"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
 				Benchmark bench = new Benchmark();
-				bench.setId(results.getInt("bench.id"));
-				bench.setName(results.getString("bench.name"));
-				bench.setDescription(results.getString("bench.description"));
+				bench.setId(results.getInt("bench_id"));
+				bench.setName(results.getString("bench_name"));
 
 				Solver solver = new Solver();
-				solver.setId(results.getInt("solver.id"));
-				solver.setName(results.getString("solver.name"));
-				solver.setDescription(results.getString("solver.description"));
+				solver.setId(results.getInt("solver_id"));
+				solver.setName(results.getString("solver_name"));
 
 				Configuration config = new Configuration();
-				config.setId(results.getInt("config.id"));
-				config.setName(results.getString("config.name"));
-				config.setDescription(results.getString("config.description"));
+				config.setId(results.getInt("config_id"));
+				config.setName(results.getString("config_name"));
 				
 				Status status = new Status();
 				status.setCode(results.getInt("job_pairs.status_code"));
@@ -1703,35 +1700,20 @@ public class Jobs {
 			while (results.next()) {
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
-				jp.setId(results.getInt("job_pairs.id"));
+				jp.setId(results.getInt("id"));
 				jp.setCpuUsage(results.getDouble("cpu"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
 				Benchmark bench = new Benchmark();
-				bench.setId(results.getInt("bench.id"));
-				bench.setName(results.getString("bench.name"));
-				bench.setDescription(results.getString("bench.description"));
-
-				Solver solver = new Solver();
-				solver.setId(results.getInt("solver.id"));
-				solver.setName(results.getString("solver.name"));
-				solver.setDescription(results.getString("solver.description"));
-
-				Configuration config = new Configuration();
-				config.setId(results.getInt("config.id"));
-				config.setName(results.getString("config.name"));
-				config.setDescription(results.getString("config.description"));
+				bench.setId(results.getInt("bench_id"));
+				bench.setName(results.getString("bench_name"));
 				
 				Status status = new Status();
-				status.setCode(results.getInt("job_pairs.status_code"));
+				status.setCode(results.getInt("status_code"));
 
 				Properties attributes = new Properties();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
-
-				solver.addConfiguration(config);
 				jp.setBench(bench);
-				jp.setSolver(solver);
 				jp.setStatus(status);
-				jp.setConfiguration(config);
 				jp.setAttributes(attributes);
 				pairs.add(jp);	
 			}
@@ -1800,8 +1782,8 @@ public class Jobs {
 				jp.setWallclockTime(results.getDouble("wallclock"));
 				jp.setCpuUsage(results.getDouble("cpu"));
 				Solver solver=new Solver();
-				solver.setId(results.getInt("solver.id"));
-				solver.setName(results.getString("solver.name"));
+				solver.setId(results.getInt("solver_id"));
+				solver.setName(results.getString("solver_name"));
 				Configuration c=new Configuration();
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
