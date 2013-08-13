@@ -39,9 +39,9 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr title="${pair.status.description}">
+				<tr title="${pair.status.getDescription()}">
 					<td>status</td>
-					<td>${pair.status}</td>
+					<td>${pair.status.getStatus()}</td>
 				</tr>
 				<tr>
 					<td>benchmark</td>			

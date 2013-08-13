@@ -19,9 +19,9 @@ CREATE PROCEDURE AssociateJob(IN _jobId INT, IN _spaceId INT)
 DROP PROCEDURE IF EXISTS JobInPublicSpace;
 CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 	BEGIN 
-		SELECT COUNT(*) AS spaceCount
-		FROM spaces WHERE (public_access = 1)
-		AND id IN (SELECT space_id FROM job_assoc WHERE job_id = _jobId);
+		SELECT COUNT(*) AS spaceCount FROM job_assoc
+			INNER JOIN spaces ON spaces.id=job_assoc.space_id
+		WHERE job_id=_jobId AND spaces.public_access=1;
 	END //
 	
 -- Adds a new attribute to a job pair 
@@ -92,15 +92,11 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 	BEGIN
 		SELECT COUNT(*) AS jobPairCount
 		FROM job_pairs
-			JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
-			JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
-			JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
-			JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 		WHERE job_space_id=_jobSpaceId
 		AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
-				OR		config.name		LIKE	CONCAT('%', _query, '%')
-				OR		solver.name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
+				OR		status_code		LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'));
 	END //
 	
@@ -131,9 +127,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 				FROM	jobs
 				
 				-- Exclude Jobs that aren't in the specified space
-				WHERE 	id 	IN (SELECT job_id 
-								FROM job_assoc
-								WHERE space_id = _spaceId)
+				INNER JOIN job_assoc AS assoc ON assoc.job_id=jobs.id
+				WHERE assoc.space_id=_spaceId 
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -162,9 +157,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
-				WHERE 	id 	IN (SELECT job_id 
-								FROM job_assoc
-								WHERE space_id = _spaceId)
+				INNER JOIN job_assoc AS assoc ON assoc.job_id=jobs.id
+				WHERE assoc.space_id=_spaceId 
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name
@@ -194,15 +188,15 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetErrorPairs(id) 		AS errorPairs
 				
 				FROM	jobs
+				INNER JOIN job_assoc AS assoc ON assoc.job_id=jobs.id
+
 				
 				-- Exclude Jobs whose name and status don't contain the query string
 				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
 										
 				-- Exclude Jobs that aren't in the specified space
-				AND 	id 		IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
+				AND assoc.space_id=_spaceId 
 										
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -231,11 +225,12 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
+				INNER JOIN job_assoc AS assoc ON assoc.job_id=jobs.id
+
 				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-				AND 	id 		IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
+				AND 	assoc.space_id=_spaceId 
+
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name
@@ -433,25 +428,14 @@ CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 -- Gets attributes for every job pair in a job that resides in the given job space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobAttrsInJobSpace;
-CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobId INT, IN _jobSpaceId INT)
+CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobSpaceId INT)
 	BEGIN
 		SELECT pair.id, attr.attr_key, attr.attr_value
 		FROM job_pairs AS pair 
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
-			WHERE pair.job_id=_jobId AND pair.job_space_id=_jobSpaceId;
+			WHERE pair.job_space_id=_jobSpaceId;
 	END //
 
-	
--- Gets attributes for every pair of a job that is in the given space and used the given config
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobAttrsByConfigInJobSpace;
-CREATE PROCEDURE GetJobAttrsByConfigInJobSpace(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT)
-	BEGIN
-		SELECT pair.id, attr.attr_key, attr.attr_value
-		FROM job_pairs AS pair 
-			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
-			WHERE pair.job_id=_jobId AND pair.job_space_id=_jobSpaceId and pair.config_id=_configId;
-	END //
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
 DROP PROCEDURE IF EXISTS AddJobStats;
@@ -465,13 +449,13 @@ CREATE PROCEDURE AddJobStats(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT
 -- Author : Eric Burns	
 
 DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace;
-CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobId INT, IN _jobSpaceId INT) 
+CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT) 
 	BEGIN
 		SELECT *
 		FROM job_stats
 			JOIN configurations AS config ON config.id=job_stats.config_id
 			JOIN solvers AS solver ON solver.id=config.solver_id
-		WHERE job_stats.job_id=_jobId AND job_stats.job_space_id = _jobSpaceId;
+		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
 
 -- Retrieves simple overall statistics for job pairs belonging to a job
@@ -520,7 +504,7 @@ DROP PROCEDURE IF EXISTS GetJobPairsByJob;
 CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
-		FROM job_pairs 				JOIN    status_codes    AS  status  ON job_pairs.status_code=status.code
+		FROM job_pairs 				
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -535,28 +519,27 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 -- Retrieves info about job pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsShallowWithBenchmarksByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
+CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config.id, config.name,bench.id,bench.name
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config_id, config_name,bench._id,bench._name
 		FROM job_pairs 
 						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 
-		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 	
 	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _id INT, IN _jobSpaceId INT, IN _configId INT)
+CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config.id, config.name
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver.id, solver.name, config_id, config_name
 		FROM job_pairs 
 						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-		WHERE job_pairs.job_id=_id AND job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //	
 	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
@@ -569,8 +552,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 				config.id,
 				config.name,
 				config.description,
-				status.status,
-				status.description,
+				job_pairs.status_code,
 				solver.id,
 				solver.name,
 				solver.description,
@@ -580,7 +562,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 				GetJobPairResult(job_pairs.id) AS result,
 				cpu,
 				wallclock
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		FROM job_pairs 
 						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -594,13 +576,13 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
-CREATE PROCEDURE GetJobPairsByJobInJobSpace(In _jobId INT, IN _jobSpaceId INT)
+CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
 	BEGIN
 		SELECT solver.id,solver.name,config.id,config.name,status_code,cpu,wallclock,job_pairs.id
 		FROM job_pairs 				JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 									JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
-		WHERE job_id=_jobId AND job_space_id =_jobSpaceId;
+		WHERE job_space_id =_jobSpaceId;
 	END //
 	
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
@@ -609,7 +591,7 @@ DROP PROCEDURE IF EXISTS GetNewCompletedJobPairsByJob;
 CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 	BEGIN
 		SELECT *
-		FROM job_pairs JOIN status_codes AS status ON job_pairs.status_code=status.code
+		FROM job_pairs 
 						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -751,13 +733,10 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT, OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), OUT _id INT)
 	BEGIN
 		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId,
-		(select solvers.name from solvers inner join configurations as config on config.solver_id=solvers.id where config.id=_configId), 
-		(select benchmarks.name from benchmarks where id=_benchId),
-		(select configurations.name from configurations where configurations.id=_configId));
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
@@ -832,15 +811,18 @@ CREATE PROCEDURE UpdatePrimarySpace(IN _jobId INT, IN _jobSpaceId INT)
 		SET primary_space=_jobSpaceId
 		WHERE id = _jobId;
 	END //
-	
-DROP PROCEDURE IF EXISTS SetNameColumns;
-CREATE PROCEDURE SetNameColumns() 
+-- Populates the solver_name, config_name, and bench_name columns of all pairs in the 
+-- job_pair table. Should only need to be run once on Starexec and Stardev to get the table
+-- up to date
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetNewColumns;
+CREATE PROCEDURE SetNewColumns() 
 	BEGIN
 		UPDATE job_pairs
 			JOIN benchmarks AS bench ON bench.id=bench_id
 			JOIN configurations AS config ON config.id=config_id
 			JOIN solvers AS solve ON solve.id=config.solver_id
-			SET bench_name=bench.name, solver_name=solve.name, config_name=config.name;
+			SET bench_name=bench.name, solver_name=solve.name, config_name=config.name, job_pairs.solver_id=solve.id;
 	END //
 
 DELIMITER ; -- this should always be at the end of the file

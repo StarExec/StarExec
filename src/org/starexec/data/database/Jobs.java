@@ -390,9 +390,8 @@ public class Jobs {
 		
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
+			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?)}");
+			procedure.setInt(1,jobSpaceId);
 			results=procedure.executeQuery();
 			List<SolverStats> stats=new ArrayList<SolverStats>();
 			while (results.next()) {
@@ -819,15 +818,13 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	protected static HashMap<Integer,Properties> getJobAttributesInJobSpace(Connection con,int jobId, int jobSpaceId) {
+	protected static HashMap<Integer,Properties> getJobAttributesInJobSpace(Connection con,int jobSpaceId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		log.debug("Getting all attributes for job with ID = "+jobId);
 		 try {
 				
-			procedure = con.prepareCall("{CALL GetJobAttrsInJobSpace(?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
+			procedure = con.prepareCall("{CALL GetJobAttrsInJobSpace(?)}");
+			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			return processAttrResults(results);
 		} catch (Exception e) {
@@ -839,36 +836,7 @@ public class Jobs {
 		return null;
 	}
 	
-	/**
-	 * Gets attributes for all pairs in a given job space that used a given configuration
-	 * @param con The open connection to make the query on
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The ID of the job space containing the pairs
-	 * @param configId The ID of the configuration in question
-	 * @return A HashMap mapping job pair IDs to attributes
-	 * @author Eric Burns
-	 */
-	
-	protected static HashMap<Integer,Properties> getJobAttributesByConfigInJobSpace(Connection con, int jobId, int jobSpaceId, int configId) {
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		log.debug("Getting all attributes for job with ID = "+jobId);
-		 try {
-			procedure = con.prepareCall("{CALL GetJobAttrsByConfigInJobSpace(?, ?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
-			procedure.setInt(3,configId);	
-			
-			results = procedure.executeQuery();
-			return processAttrResults(results);
-		} catch (Exception e) {
-			log.error("getJobAttrsByConfigInJobSpace says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
+
 	
 	/**
 	 * Gets all the the attributes for every job pair in a job, and returns a HashMap
@@ -977,11 +945,11 @@ public class Jobs {
 	 * their attributes
 	 * @author Eric Burns
 	 */
-	public static HashMap<Integer,Properties> getJobAttributesInJobSpace(int jobId, Integer jobSpaceId) {
+	public static HashMap<Integer,Properties> getJobAttributesInJobSpace(int jobSpaceId) {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			return getJobAttributesInJobSpace(con,jobId,jobSpaceId);
+			return getJobAttributesInJobSpace(con,jobSpaceId);
 		} catch (Exception e) {
 			log.error("getJobAttributes says "+e.getMessage(),e);
 		} finally {
@@ -989,28 +957,7 @@ public class Jobs {
 		}
 		return null;
 	}
-	/**
-	 * Gets all attributes for every job pair in the given job space that used the given config
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The ID of the job space containing the pairs
-	 * @param configId the ID of the configuration in question
-	 * @return A HashMap mapping integer job-pair IDs to Properties objects representing
-	 * their attributes
-	 * @author Eric Burns
-	 */
-	public static HashMap<Integer,Properties> getJobAttributesInJobSpaceByConfig(int jobId, Integer jobSpaceId, Integer configId) {
-		Connection con=null;
-		try {
-			con=Common.getConnection();
-			return getJobAttributesByConfigInJobSpace(con,jobId,jobSpaceId, configId);
-		} catch (Exception e) {
-			log.error("getJobAttributes says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-		}
-		return null;
-	}
-
+	
 	/**
 	 * Get the total count of the jobs belong to a specific user
 	 * @param userId Id of the user we are looking for
@@ -1229,23 +1176,6 @@ public class Jobs {
 		
 		return jobPairCount;		
 	}
-	
-	/**
-	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object
-	 * @param startingRecord The first record to return
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
-	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
-	 * @param jobId The ID of the job in question
-	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
-	 */
-	
-	public static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId) {
-		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,null,null, false);
-	}
-
-	
 
 	/**
 	 * Gets the minimal number of Job Pairs necessary in order to service the client's
@@ -1260,7 +1190,7 @@ public class Jobs {
 	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	private static List<JobPair> getJobPairsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, Integer jobSpaceId, Integer configId, boolean hierarchy) {
+	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1269,32 +1199,15 @@ public class Jobs {
 		}
 		try {
 			con = Common.getConnection();
-			 	
-			if (configId==null) {
+			procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?,?)}");
 				
-					
-				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?,?)}");
-					
-				procedure.setInt(1, startingRecord);
-				procedure.setInt(2,	recordsPerPage);
-				procedure.setBoolean(3, isSortedASC);
-				procedure.setString(4, searchQuery);
-				procedure.setInt(5,jobSpaceId);
-				procedure.setInt(6,indexOfColumnSortedBy);
-				
-			} else {
-				procedure = con.prepareCall("{CALL GetNextPageOfJobPairsByConfigInJobSpace(?, ?, ?, ?, ?, ?, ?)}");
-				procedure.setInt(1, startingRecord);
-				procedure.setInt(2,	recordsPerPage);
-				procedure.setInt(3, indexOfColumnSortedBy);
-				procedure.setBoolean(4, isSortedASC);
-				procedure.setString(5, searchQuery);
-				procedure.setInt(6,jobSpaceId);
-				procedure.setInt(7,configId);
-			}
-			
-			
-			
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setBoolean(3, isSortedASC);
+			procedure.setString(4, searchQuery);
+			procedure.setInt(5,jobSpaceId);
+			procedure.setInt(6,indexOfColumnSortedBy);
+
 			results = procedure.executeQuery();
 			List<JobPair> jobPairs = new LinkedList<JobPair>();
 			
@@ -1320,9 +1233,8 @@ public class Jobs {
 				config.setDescription(results.getString("config.description"));
 				
 				Status status = new Status();
+				status.setCode(results.getInt("job_pairs.status_code"));
 				
-				status.setStatus(results.getString("status.status"));
-				status.setDescription(results.getString("status.description"));
 
 				Properties attributes = new Properties();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
@@ -1392,23 +1304,6 @@ public class Jobs {
 		return returnList;
 	}
 	
-	/**
-	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
-	 * all the job pairs are in the given space
-	 * @param startingRecord The first record to return
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
-	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
-	 * @param jobId The ID of the job in question
-	 * @param spaceID The space that contains the job pairs
-	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
-	 * @author Eric Burns
-	 */
-	
-	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId) {
-		return getJobPairsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,jobId,jobSpaceId,null,false);
-	}
 	
 	/**
 	 * Get next page of the jobs belong to a specific user
@@ -1718,9 +1613,8 @@ public class Jobs {
 				JobPair jp = JobPairs.resultToPair(results);
 				
 				Status s = new Status();
-				s.setCode(results.getInt("status.code"));
-				s.setStatus(results.getString("status.status"));
-				s.setDescription(results.getString("status.description"));
+				s.setCode(results.getInt("status_code"));
+				
 				jp.setStatus(s);
 				
 				//set the completion ID if it exists-- it only exists if we are getting new job pairs
@@ -1828,8 +1722,7 @@ public class Jobs {
 				config.setDescription(results.getString("config.description"));
 				
 				Status status = new Status();
-				status.setStatus(results.getString("status.status"));
-				status.setDescription(results.getString("status.description"));
+				status.setCode(results.getInt("job_pairs.status_code"));
 
 				Properties attributes = new Properties();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
@@ -1877,26 +1770,24 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy, boolean includeBenchmarks) {
+	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobSpaceId, int configId, boolean hierarchy, boolean includeBenchmarks) {
 		Connection con = null;	
 		
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {			
-			con = Common.getConnection();	
+			con = Common.getConnection();
 
-			log.info("getting shallow pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
 			if (!includeBenchmarks) {
-				procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpace(?, ?, ?)}");
+				procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpace(?, ?)}");
 
 			} else {
-				procedure = con.prepareCall("{CALL GetJobPairsShallowWithBenchmarksByConfigInJobSpace(?, ?, ?)}");
+				procedure = con.prepareCall("{CALL GetJobPairsShallowWithBenchmarksByConfigInJobSpace(?, ?)}");
 
 			}
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
-			procedure.setInt(3,configId);
+			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2,configId);
 
 			results = procedure.executeQuery();
 			List<JobPair> pairs = new ArrayList<JobPair>();
@@ -1912,15 +1803,15 @@ public class Jobs {
 				solver.setId(results.getInt("solver.id"));
 				solver.setName(results.getString("solver.name"));
 				Configuration c=new Configuration();
-				c.setId(results.getInt("config.id"));
-				c.setName(results.getString("config.name"));
+				c.setId(results.getInt("config_id"));
+				c.setName(results.getString("config_name"));
 				solver.addConfiguration(c);
 				jp.setSolver(solver);
 				jp.setConfiguration(c);
 				if (includeBenchmarks) {
 					Benchmark b=new Benchmark();
-					b.setId(results.getInt("bench.id"));
-					b.setName(results.getString("bench.name"));
+					b.setId(results.getInt("bench_id"));
+					b.setName(results.getString("bench_name"));
 					jp.setBench(b);
 				}
 				pairs.add(jp);
@@ -1929,7 +1820,7 @@ public class Jobs {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
 				for (Space s : subspaces) {
-					pairs.addAll(getJobPairsShallowByConfigInJobSpace(jobId,s.getId(),configId,false,includeBenchmarks));
+					pairs.addAll(getJobPairsShallowByConfigInJobSpace(s.getId(),configId,false,includeBenchmarks));
 				}
 			}
 			return pairs;
@@ -1958,14 +1849,13 @@ public class Jobs {
 		log.debug("Getting pairs for job = "+jobId+" in space = "+jobSpaceId);
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?, ?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
+			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?)}");
+			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			
 			List<JobPair> pairs=processStatResults(results, jobId,con);
 			
-			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobId, jobSpaceId);
+			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobSpaceId);
 			for (JobPair jp : pairs) {
 				if (attrs.containsKey(jp.getId())) {
 					jp.setAttributes(attrs.get(jp.getId()));

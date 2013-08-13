@@ -1,4 +1,4 @@
--- This file contains several a highly repetitive procedure used to sort datatables on different columns
+-- This file contains a highly repetitive procedure used to sort datatables on different columns
 -- our old method was to use a order by (CASE) statement to order on different columns, but doing this
 -- prevents SQL from using indexes for sorting for some reason, and as such is very slow. 
 
@@ -10,7 +10,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- request for the next page of JobPairs in their DataTable object.  
 -- This services the DataTable object by supporting filtering by a query, 
 -- ordering results by a column, and sorting results in ASC or DESC order.  
--- Author: Todd Elvers	
+-- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS GetNextPageOfJobPairsInJobSpace;
 CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _recordsPerPage INT, IN _sortASC BOOLEAN, IN _query TEXT, IN _spaceId INT, IN _sortColumn INT)
 	BEGIN
@@ -20,8 +20,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -32,7 +31,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -44,9 +43,8 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
-				
 				-- Order results depending on what column is being sorted on
 				ORDER BY bench_name ASC
 			 
@@ -57,8 +55,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -68,8 +65,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+				FROM	job_pairs	JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 
@@ -78,7 +74,8 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY bench_name DESC
 				LIMIT _startingRecord, _recordsPerPage;
@@ -89,8 +86,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -101,7 +97,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -113,7 +109,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
@@ -126,8 +122,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -137,7 +132,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -147,7 +142,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY solver_name DESC
 				LIMIT _startingRecord, _recordsPerPage;
@@ -158,8 +153,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -170,7 +164,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -182,7 +176,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
@@ -195,8 +189,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -206,7 +199,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -216,7 +209,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY config_name DESC
 				LIMIT _startingRecord, _recordsPerPage;
@@ -227,8 +220,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -239,7 +231,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -251,7 +243,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
@@ -264,8 +256,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -275,7 +266,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -285,7 +276,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY status_code DESC
 				LIMIT _startingRecord, _recordsPerPage;
@@ -296,8 +287,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -308,8 +298,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+				FROM	job_pairs	JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 
@@ -320,7 +309,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
@@ -333,8 +322,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -344,7 +332,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -354,7 +342,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY wallclock DESC
 				LIMIT _startingRecord, _recordsPerPage;
@@ -365,8 +353,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -377,7 +364,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						cpu,
 						wallclock
 						
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs	
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -389,7 +376,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
@@ -402,8 +389,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config.id,
 						config.name,
 						config.description,
-						status.status,
-						status.description,
+						job_pairs.status_code,
 						solver.id,
 						solver.name,
 						solver.description,
@@ -413,7 +399,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						GetJobPairResult(job_pairs.id) AS result,
 						cpu,
 						wallclock
-				FROM	job_pairs	JOIN	status_codes 	AS 	status 	ON	job_pairs.status_code = status.code
+				FROM	job_pairs
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -423,7 +409,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status.status	LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY result DESC
 				LIMIT _startingRecord, _recordsPerPage;

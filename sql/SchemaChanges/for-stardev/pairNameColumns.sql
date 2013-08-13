@@ -16,4 +16,10 @@ ALTER TABLE job_pairs
 ADD INDEX (job_space_id, config_name);
 
 ALTER TABLE job_pairs
-ADD INEX (job_space_id, bench_name);
+ADD INDEX (job_space_id, bench_name);
+
+ALTER TABLE job_pairs
+ADD COLUMN solver_id INT;
+
+ALTER TABLE job_pairs
+ADD FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE NO ACTION;

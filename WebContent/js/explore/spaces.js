@@ -965,7 +965,7 @@ function removeBenchmarks(selectedBenches){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/delete/benchmark",
+						starexecRoot+"services/delete/benchmark/"+spaceId,
 						{selectedIds : selectedBenches},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1127,7 +1127,7 @@ function removeSolvers(selectedSolvers){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/delete/solver",
+						starexecRoot+"services/delete/solver/"+spaceId,
 						{selectedIds : selectedSolvers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1198,7 +1198,7 @@ function removeJobs(selectedJobs){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/delete/job",
+						starexecRoot+"services/delete/job/"+spaceId,
 						{selectedIds : selectedJobs},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);

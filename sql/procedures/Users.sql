@@ -54,12 +54,11 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
 						
-				FROM	users WHERE (id != _publicUserId)
-				
-				-- Exclude Users that aren't in the specified space
-				AND 	id 	IN (SELECT 	user_id
-								FROM	user_assoc
-								WHERE 	space_id = _spaceId)
+				FROM	users 
+				INNER JOIN user_assoc AS assoc ON assoc.user_id=users.id
+
+				WHERE (id != _publicUserId)
+				AND assoc.space_id=_spaceId
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -78,10 +77,11 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users WHERE (id != _publicUserId)
-				AND 	id 	IN (SELECT 	user_id
-								FROM	user_assoc
-								WHERE 	space_id = _spaceId)
+				FROM	users
+				INNER JOIN user_assoc AS assoc ON assoc.user_id=users.id
+				
+				WHERE (id != _publicUserId)
+				AND 	assoc.space_id=_spaceId
 				ORDER BY 
 				(CASE _colSortedOn
 					WHEN 0 THEN full_name
@@ -100,12 +100,13 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
 				
-				FROM	users WHERE (id != _publicUserId)
+				FROM	users 
+				INNER JOIN user_assoc AS assoc ON assoc.user_id=users.id
+				WHERE (id != _publicUserId)
+				
 				
 				-- Exclude Users that aren't in the specified space
-				AND 	id 	IN (SELECT 	user_id
-								FROM	user_assoc
-								WHERE 	space_id = _spaceId)
+				AND 	assoc.space_id=_spaceId
 							
 				-- Exclude Users whose name and description don't contain the query string
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
@@ -129,10 +130,10 @@ CREATE PROCEDURE GetNextPageOfUsers(IN _startingRecord INT, IN _recordsPerPage I
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users WHERE (id != _publicUserId)
-				AND	id 	IN (SELECT 	user_id
-								FROM	user_assoc
-								WHERE 	space_id = _spaceId)
+				FROM	users 
+				INNER JOIN user_assoc AS assoc ON assoc.user_id=users.id
+				WHERE (id != _publicUserId)
+				AND	assoc.space_id=_spaceId
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
 				OR		email								LIKE 	CONCAT('%', _query, '%'))
@@ -176,10 +177,8 @@ DROP PROCEDURE IF EXISTS GetUserCountInSpace;
 CREATE PROCEDURE GetUserCountInSpace(IN _spaceId INT)
 	BEGIN
 		SELECT 	COUNT(*) AS userCount
-		FROM 	users
-		WHERE 	id	IN (SELECT	user_id
-						FROM 	user_assoc
-						WHERE 	space_id = _spaceId);
+		FROM 	user_assoc
+		WHERE 	space_id=_spaceId;
 	END //
 -- Returns the number of users in a given space that match a given query
 -- Author: Eric Burns
@@ -187,13 +186,12 @@ DROP PROCEDURE IF EXISTS GetUserCountInSpaceWithQuery;
 CREATE PROCEDURE GetUserCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
 		SELECT 	COUNT(*) AS userCount
-		FROM 	users
-		WHERE 	id	IN (SELECT	user_id
-						FROM 	user_assoc
-						WHERE 	space_id = _spaceId) AND
-				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
-				OR		institution							LIKE 	CONCAT('%', _query, '%')
-				OR		email								LIKE 	CONCAT('%', _query, '%')); 
+		FROM 	user_assoc
+			JOIN users ON users.id=user_id
+		WHERE 	space_id=_spaceId AND
+				(CONCAT(users.first_name, ' ', users.last_name)	LIKE	CONCAT('%', _query, '%')
+				OR		users.institution							LIKE 	CONCAT('%', _query, '%')
+				OR		users.email								LIKE 	CONCAT('%', _query, '%')); 
 	END //
 	
 -- Returns the user record with the given email address
@@ -224,7 +222,7 @@ CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 	BEGIN
 		SELECT DISTINCT *
 		FROM user_assoc
-			JOIN users AS users ON users.id=user_assoc.user_id
+			JOIN users ON users.id=user_assoc.user_id
 		WHERE _id=user_assoc.space_id
 		ORDER BY first_name;
 	END //

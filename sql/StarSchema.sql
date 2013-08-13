@@ -191,39 +191,6 @@ CREATE TABLE comm_queue (
 	PRIMARY KEY (space_id, queue_id)
 );
 
--- Status codes for jobs
-CREATE TABLE status_codes (
-	code TINYINT NOT NULL,
-	status VARCHAR(64) NOT NULL,
-	description TEXT,
-	PRIMARY KEY(code)
-);
-
--- Job status codes here MUST match the enumerated types in Java
--- If these change, the prolog, epilog and status_codes scripts must be changed on the head node
-INSERT INTO status_codes VALUES (0, 'unknown', 'the job status is not known or has not been set');
-INSERT INTO status_codes VALUES (1, 'pending submission', 'the job has been added to the starexec database but has not been submitted to the grid engine');
-INSERT INTO status_codes VALUES (2, 'enqueued', 'the job has been submitted to the grid engine and is waiting for an available execution host');
-INSERT INTO status_codes VALUES (3, 'preparing', 'the jobs environment on an execution host is being prepared');
-INSERT INTO status_codes VALUES (4, 'running', 'the job is currently being ran on an execution host');
-INSERT INTO status_codes VALUES (5, 'finishing', 'the jobs output is being stored and its environment is being cleaned up');
-INSERT INTO status_codes VALUES (6, 'awaiting results', 'the job has completed execution and is waiting for its runtime statistics and attributes from the grid engine');
-INSERT INTO status_codes VALUES (7, 'complete', 'the job has successfully completed execution and its statistics have been received from the grid engine');
-INSERT INTO status_codes VALUES (8, 'rejected', 'the job was sent to the grid engine for execution but was rejected. this can indicate that there were no available queues or the grid engine is in an unclean state');
-INSERT INTO status_codes VALUES (9, 'submit failed', 'there was an issue submitting your job to the grid engine. this can be caused be unexpected errors raised by the grid engine');
-INSERT INTO status_codes VALUES (10, 'results error', 'the job completed execution but there was a problem accuiring its statistics or attributes from the grid engine');
-INSERT INTO status_codes VALUES (11, 'run script error', 'the job could not be executed because a valid run script was not present');
-INSERT INTO status_codes VALUES (12, 'benchmark error', 'the job could not be executed because the benchmark could not be found');
-INSERT INTO status_codes VALUES (13, 'environment error', 'the job could not be executed because its execution environment could not be properly set up');
-INSERT INTO status_codes VALUES (14, 'timeout (wallclock)', 'the job was terminated because it exceeded its run time limit');
-INSERT INTO status_codes VALUES (15, 'timeout (cpu)', 'the job was terminated because it exceeded its cpu time limit');
-INSERT INTO status_codes VALUES (16, 'file write exceeded', 'the job was terminated because it exceeded its file write limit');
-INSERT INTO status_codes VALUES (17, 'memout', 'the job was terminated because it exceeded its virtual memory limit');
-INSERT INTO status_codes VALUES (18, 'error', 'an unknown error occurred which indicates a problem at any point in the job execution pipeline');
-INSERT INTO status_codes VALUES (19, 'processing results', 'the job results are currently being processed');
-INSERT INTO status_codes VALUES (20, 'paused', 'the job is paused so all job_pairs that were not complete were sent to this status');
-INSERT INTO status_codes VALUES (21, 'killed', 'the job was killed, so all job_pairs that were not complete were sent to this status');
-
 -- All of the jobs within the system, this is the overarching entity
 -- that contains individual job pairs (solver/config -> benchmark)
 CREATE TABLE jobs (
@@ -267,7 +234,8 @@ CREATE TABLE job_pairs (
 	sge_id INT,
 	bench_id INT,
 	bench_name VARCHAR(256),
-	config_id INT,		
+	config_id INT,	
+	solver_id INT,
 	config_name VARCHAR(256),
 	solver_name VARCHAR(256),
 	status_code TINYINT DEFAULT 0,
@@ -303,9 +271,10 @@ CREATE TABLE job_pairs (
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
+	KEY (status_code),
 	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	FOREIGN KEY (status_code) REFERENCES status_codes(code) ON DELETE NO ACTION,
-	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION
+	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION,
+	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion

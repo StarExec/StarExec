@@ -131,11 +131,9 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				
 				FROM	solvers
-				
+				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
 				-- Exclude solvers that aren't in the specified space
-				WHERE 	id 	IN (SELECT	solver_id
-								FROM	solver_assoc
-								WHERE	space_id = _spaceId)
+				WHERE 	assoc.space_id=_spaceId
 								
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -149,9 +147,8 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 			ELSE
 				SELECT 	*
 				FROM	solvers
-				WHERE 	id 	IN (SELECT	solver_id
-								FROM	solver_assoc
-								WHERE	space_id = _spaceId)
+				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				WHERE 	assoc.space_id=_spaceId
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name
@@ -165,15 +162,13 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				FROM 	solvers
-				
+				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
 				-- Exclude solvers whose name and description don't contain the query string
 				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
 				OR		description	LIKE 	CONCAT('%', _query, '%'))
 										
 				-- Exclude solvers that aren't in the specified space
-				AND 	id 	IN (SELECT	solver_id
-								FROM	solver_assoc
-								WHERE	space_id = _spaceId)
+				AND assoc.space_id=_spaceId
 										
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -187,11 +182,10 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 			ELSE
 				SELECT 	*
 				FROM 	solvers
+				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
 				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
 				OR		description			LIKE 	CONCAT('%', _query, '%'))
-				AND 	id 	IN (SELECT	solver_id
-								FROM	solver_assoc
-								WHERE	space_id = _spaceId)
+				AND 	assoc.space_id=_spaceId
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name 

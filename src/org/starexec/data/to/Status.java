@@ -51,56 +51,153 @@ public class Status {
 		}
 		static public StatusCode toStatusCode(int code) {
 		    switch (code) {
-		    case 1:
-			return STATUS_PENDING_SUBMIT;
-		    case 2:
-			return STATUS_ENQUEUED;
-		    case 3:
-			return STATUS_PREPARING;
-		    case 4:
-			return STATUS_RUNNING;
-		    case 5:
-			return STATUS_FINISHING;
-		    case 6:
-			return STATUS_WAIT_RESULTS;
-		    case 7:
-			return STATUS_COMPLETE;
-		    case 8:
-			return ERROR_SGE_REJECT;
-		    case 9:
-			return ERROR_SUBMIT_FAIL;
-		    case 10:
-			return ERROR_RESULTS;
-		    case 11:
-			return ERROR_RUNSCRIPT;
-		    case 12:
-			return ERROR_BENCHMARK;
-		    case 13:
-			return ERROR_ENVIRONMENT;
-		    case 14:
-			return EXCEED_RUNTIME;
-		    case 15:
-			return EXCEED_CPU;
-		    case 16:
-			return EXCEED_FILE_WRITE;
-		    case 17:
-			return EXCEED_MEM;
-		    case 18:
-			return ERROR_GENERAL;
-		    case 19:
-			return STATUS_PROCESSING_RESULTS;
-		    case 20:
-		    return STATUS_PAUSED;
-		    case 21:
-		    return STATUS_KILLED;
+			    case 1:
+				return STATUS_PENDING_SUBMIT;
+			    case 2:
+				return STATUS_ENQUEUED;
+			    case 3:
+				return STATUS_PREPARING;
+			    case 4:
+				return STATUS_RUNNING;
+			    case 5:
+				return STATUS_FINISHING;
+			    case 6:
+				return STATUS_WAIT_RESULTS;
+			    case 7:
+				return STATUS_COMPLETE;
+			    case 8:
+				return ERROR_SGE_REJECT;
+			    case 9:
+				return ERROR_SUBMIT_FAIL;
+			    case 10:
+				return ERROR_RESULTS;
+			    case 11:
+				return ERROR_RUNSCRIPT;
+			    case 12:
+				return ERROR_BENCHMARK;
+			    case 13:
+				return ERROR_ENVIRONMENT;
+			    case 14:
+				return EXCEED_RUNTIME;
+			    case 15:
+				return EXCEED_CPU;
+			    case 16:
+				return EXCEED_FILE_WRITE;
+			    case 17:
+				return EXCEED_MEM;
+			    case 18:
+				return ERROR_GENERAL;
+			    case 19:
+				return STATUS_PROCESSING_RESULTS;
+			    case 20:
+			    return STATUS_PAUSED;
+			    case 21:
+			    return STATUS_KILLED;
 		    }
 		    return STATUS_UNKNOWN;
 		}
 	}
 
+
+	private static String getDescription(int code) {
+		switch (code) {
+		    case 1:
+			return "the job has been added to the starexec database but has not been submitted to the grid engine";
+		    case 2:
+			return "the job has been submitted to the grid engine and is waiting for an available execution host";
+		    case 3:
+			return "the jobs environment on an execution host is being prepared";
+		    case 4:
+			return "the job is currently being ran on an execution host";
+		    case 5:
+			return "the jobs output is being stored and its environment is being cleaned up";
+		    case 6:
+			return "the job has completed execution and is waiting for its runtime statistics and attributes from the grid engine";
+		    case 7:
+			return "the job has successfully completed execution and its statistics have been received from the grid engine";
+		    case 8:
+			return "the job was sent to the grid engine for execution but was rejected. this can indicate that there were no available queues or the grid engine is in an unclean state";
+		    case 9:
+			return "there was an issue submitting your job to the grid engine. this can be caused be unexpected errors raised by the grid engine";
+		    case 10:
+			return "the job completed execution but there was a problem accuiring its statistics or attributes from the grid engine";
+		    case 11:
+			return "the job could not be executed because a valid run script was not present";
+		    case 12:
+			return "the job could not be executed because the benchmark could not be found";
+		    case 13:
+			return "the job could not be executed because its execution environment could not be properly set up";
+		    case 14:
+			return "the job was terminated because it exceeded its run time limit";
+		    case 15:
+			return "the job was terminated because it exceeded its cpu time limit";
+		    case 16:
+			return "the job was terminated because it exceeded its file write limit";
+		    case 17:
+			return "the job was terminated because it exceeded its virtual memory limit";
+		    case 18:
+			return "an unknown error occurred which indicates a problem at any point in the job execution pipeline";
+		    case 19:
+			return "the job results are currently being processed";
+		    case 20:
+		    return "the job is paused so all job_pairs that were not complete were sent to this status";
+		    case 21:
+		    return "the job was killed, so all job_pairs that were not complete were sent to this status";
+	    }
+		return "the job status is not known or has not been set";
+	}
+	private static String getStatus(int code) {
+		switch (code) {
+		    case 1:
+			return "pending submission";
+		    case 2:
+			return "enqueued";
+		    case 3:
+			return "preparing";
+		    case 4:
+			return "running";
+		    case 5:
+			return "finishing";
+		    case 6:
+			return "awaiting results";
+		    case 7:
+			return "complete";
+		    case 8:
+			return "rejected";
+		    case 9:
+			return "submit failed";
+		    case 10:
+			return "results error";
+		    case 11:
+			return "run script error";
+		    case 12:
+			return "benchmark error";
+		    case 13:
+			return "environment error";
+		    case 14:
+			return "timeout (wallclock)";
+		    case 15:
+			return "timeout (cpu)";
+		    case 16:
+			return "file write exceeded";
+		    case 17:
+			return "memout";
+		    case 18:
+			return "error";
+		    case 19:
+			return "processing results";
+		    case 20:
+		    return "paused";
+		    case 21:
+		    return "killed";
+	    }
+		return "unknown";
+	}
+	
+
+
 	@Expose private StatusCode code = StatusCode.STATUS_UNKNOWN;
-	@Expose private String status;
-	@Expose private String description;
+
 	
 	/**
 	 * @return the status code for this status
@@ -127,32 +224,17 @@ public class Status {
 	 * @return the canonical status
 	 */
 	public String getStatus() {
-		return status;
-	}
-	
-	/**
-	 * @param status the status to set
-	 */
-	public void setStatus(String status) {
-		this.status = status;
+		return Status.getStatus(this.code.getVal());
 	}
 	
 	/**
 	 * @return the description of what the status means
 	 */
 	public String getDescription() {
-		return description;
+		return Status.getDescription(this.code.getVal());
 	}
-	
-	/**
-	 * @param description the description to set for this status
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
 	@Override
 	public String toString() {
-		return this.status;
+		return this.getStatus();
 	}
 }

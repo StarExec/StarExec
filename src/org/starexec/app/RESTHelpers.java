@@ -1082,7 +1082,7 @@ public class RESTHelpers {
     		sb.append("<a title=\"");
     		sb.append(jp.getStatus().getDescription());
     		sb.append("\">");
-    		sb.append(jp.getStatus().getStatus());
+    		sb.append(jp.getStatus().getStatus()+" ("+jp.getStatus().getCode().getVal()+")");
     		sb.append("</a>");
 			String status = sb.toString();
 			

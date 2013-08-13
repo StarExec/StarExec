@@ -21,7 +21,7 @@ public class JobPairs {
 	
 	/**
 	 * Filters a list of job pairs against some search query. The query is compared to 
-	 * solver, benchmark, and config names. The job pair is not filtered if the query
+	 * solver, benchmark, and config names, as well as integer status code. The job pair is not filtered if the query
 	 * is a case-insensitive substring of any of those names
 	 * @param pairs The pairs to filter
 	 * @param searchQuery The query
@@ -39,7 +39,7 @@ public class JobPairs {
 		for (JobPair jp : pairs) {
 			try {
 				if (jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
-						jp.getBench().getName().toLowerCase().contains(searchQuery)) {
+						jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)) {
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
@@ -56,6 +56,7 @@ public class JobPairs {
 	 * @param jp2 The second job pair
 	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
+	 * @author Eric Burns
 	 */ 
 	private static int compareJobPairStrings(JobPair jp1, JobPair jp2, int sortIndex, boolean ASC) {
 		int answer=0;
@@ -102,6 +103,7 @@ public class JobPairs {
 	 * @param jp2 The second job pair
 	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
+	 * @author Eric Burns
 	 */ 
 	private static int compareJobPairInts(JobPair jp1, JobPair jp2, int sortIndex, boolean ASC) {
 		int answer=0;
@@ -202,7 +204,7 @@ public class JobPairs {
 	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
@@ -211,12 +213,15 @@ public class JobPairs {
 			procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
 			procedure.setString(7, pair.getPath());
 			procedure.setInt(8,pair.getJobSpaceId());
+			procedure.setString(9,pair.getConfiguration().getName());
+			procedure.setString(10,pair.getSolver().getName());
+			procedure.setString(11,pair.getBench().getName());
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(9, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(9));
+			pair.setId(procedure.getInt(12));
 
 			return true;
 		} catch (Exception e) {
@@ -431,9 +436,8 @@ public class JobPairs {
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 
 				Status s = new Status();
-				s.setCode(results.getInt("status.code"));
-				s.setStatus(results.getString("status.status"));
-				s.setDescription(results.getString("status.description"));
+				s.setCode(results.getInt("status_code"));
+			
 				jp.setStatus(s);
 				log.info("about to close result set for sgeId " + sgeId);
 				Common.safeClose(results);
@@ -556,9 +560,7 @@ public class JobPairs {
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 
 				Status s = new Status();
-				s.setCode(results.getInt("status.code"));
-				s.setStatus(results.getString("status.status"));
-				s.setDescription(results.getString("status.description"));
+				s.setCode(results.getInt("status_code"));
 				jp.setStatus(s);					
 				jp.setJobSpaceName(results.getString("jobSpace.name"));
 				return jp;
