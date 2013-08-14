@@ -202,7 +202,7 @@ public class JobPairs {
 			procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
 			procedure.setString(7, pair.getPath());
 			procedure.setInt(8,pair.getJobSpaceId());
-			procedure.setString(9,pair.getConfiguration().getName());
+			procedure.setString(9,pair.getSolver().getConfigurations().get(0).getName());
 			procedure.setString(10,pair.getSolver().getName());
 			procedure.setString(11,pair.getBench().getName());
 			procedure.setInt(12,pair.getSolver().getId());
