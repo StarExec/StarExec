@@ -1911,12 +1911,14 @@ public class RESTServices {
 		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
+			log.debug("adding id = "+id+" to selectedJobs");
 		}
 		int userId=SessionUtil.getUserId(request);
 		for (int id : selectedJobs) {
 			if (userId!=Jobs.get(id).getUserId()) {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
+			log.debug("the current job ID to remove = "+id);
 			//first kill a job, then delete it. Killing it first ensures no additional job pairs are run
 			//after the deletion
 			boolean success_kill = Jobs.kill(id);

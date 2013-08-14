@@ -309,7 +309,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			File output=new File(getDirectory(jobId));
-			 procedure = con.prepareCall("{CALL DeleteJob(?)}");
+			procedure = con.prepareCall("{CALL DeleteJob(?)}");
 			procedure.setInt(1, jobId);		
 			procedure.executeUpdate();	
 			
@@ -2051,9 +2051,9 @@ public class Jobs {
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetJobById(?)}");
+			procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			if(results.next()){
 				Job j = new Job();
