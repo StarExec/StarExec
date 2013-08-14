@@ -215,7 +215,7 @@ public class JobPairs {
 
 			return true;
 		} catch (Exception e) {
-			
+			log.error("addJobPair says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			
