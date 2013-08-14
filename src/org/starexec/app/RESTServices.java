@@ -1107,7 +1107,7 @@ public class RESTServices {
 	 * @author 	Eric Burns
 	 */
 	@POST
-	@Path("/delete/benchmark/{spaceID}")
+	@Path("/deleteandremove/benchmark/{spaceID}")
 	@Produces("application/json")
 	public String deleteAndRemoveBenchmarks(@Context HttpServletRequest request,@PathParam("spaceID") int spaceId) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
@@ -1727,7 +1727,7 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/delete/solver/{spaceID}")
+	@Path("/deleteandremove/solver/{spaceID}")
 	@Produces("application/json")
 	public String deleteAndRemoveSolvers(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
 		int userIdOfRemover = SessionUtil.getUserId(request);
@@ -1896,7 +1896,7 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/delete/job/{spaceID}")
+	@Path("/deleteandremove/job/{spaceID}")
 	@Produces("application/json")
 	public String deleteAndRemoveJobs(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
