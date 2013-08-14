@@ -76,7 +76,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_name,
 						status_code,
 						solver_id,
-						solver._name,
+						solver_name,
 						bench_id,
 						bench_name,
 						GetJobPairResult(id) AS result,

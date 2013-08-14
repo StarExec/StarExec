@@ -1,10 +1,6 @@
-source assocChanges.sql
-source jobDeleted.sql
-source JobSpaces.sql
-source jobPairSpaceId.sql
-source JobSpaceAssoc.sql
-source jobspaceassoc2.sql
-source killJob.sql
-source PauseChanges.sql
-source primarySpace.sql
-source Status_Code_Changes.sql
+source statsCache.sql
+source removeProxy.sql --TODO: figure out the correct name of that foreign key (proxy key)
+source pairKeys.sql
+source pairNameColumns.sql
+source dropStatusTable.sql
+source optimizeTables.sql --TODO: figure out the correct name of that foreign key (status_code key)

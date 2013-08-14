@@ -142,7 +142,7 @@ CREATE PROCEDURE AddJobStats(IN _jobId INT, IN _jobSpaceId INT, IN _configId INT
 	END //	
 
 -- Gets the cached job results for the hierarchy rooted at the given job space
--- Author : Eric Burns	
+-- Author: Eric Burns	
 
 DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace;
 CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT) 
@@ -217,7 +217,7 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 DROP PROCEDURE IF EXISTS GetJobPairsShallowWithBenchmarksByConfigInJobSpace;
 CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT cpu,wallclock,job_pairs.id, status_code, solver_id, solver_name, config_id, config_name,bench._id,bench._name
+		SELECT cpu,wallclock,job_pairs.id, status_code, solver_id, solver_name, config_id, config_name,bench_id,bench_name
 		FROM job_pairs 
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //

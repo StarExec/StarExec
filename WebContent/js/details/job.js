@@ -125,7 +125,7 @@ function update() {
 			
 			$("#solverChoice1").children("option:first").prop("selected",true);
 			$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
-			updateSolverComparison();
+			updateSolverComparison(false);
 		} else {
 			$("#solverComparison").hide();
 			$("#solverComparisonOptionField").hide();

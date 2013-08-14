@@ -1806,7 +1806,7 @@ public class Jobs {
 			}
 			return pairs;
 		}catch (Exception e) {
-			e.printStackTrace();
+			log.debug("getJobPairsShallowByConfigInJobSpace says " +e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);

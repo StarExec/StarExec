@@ -1,0 +1,10 @@
+source assocChanges.sql
+source jobDeleted.sql
+source JobSpaces.sql
+source jobPairSpaceId.sql
+source JobSpaceAssoc.sql
+source jobspaceassoc2.sql
+source killJob.sql
+source PauseChanges.sql
+source primarySpace.sql
+source Status_Code_Changes.sql
