@@ -16,5 +16,9 @@ source procedures/Users.sql;
 source procedures/Websites.sql;
 source procedures/JobPairs.sql;
 source procedures/Queues.sql;
-source procedures/PairPagination.sql
-source procedures/jobPagination.sql
+source procedures/pagination/PairPagination.sql;
+source procedures/pagination/JobPagination.sql;
+source procedures/pagination/SolverPagination.sql;
+source procedures/pagination/BenchmarkPagination.sql;
+source procedures/pagination/UserPagination.sql;
+source procedures/pagination/SpacePagination.sql;

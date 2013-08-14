@@ -330,4 +330,315 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 			END IF;
 		END IF;
 	END //
+	
+DROP PROCEDURE IF EXISTS GetNextPageOfUserJobs;
+CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+	BEGIN
+		IF _colSortedOn = 0 THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+						
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+											
+				-- Exclude Jobs that aren't in the specified space
+				AND jobs.user_id=_userId AND deleted=false
+											
+				-- Order results depending on what column is being sorted on
+				ORDER BY name ASC
+						 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+				
+	
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	jobs.user_id=_userId AND deleted=false
+				ORDER BY name DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		ELSEIF _colSortedOn = 1 THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+						
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+											
+				-- Exclude Jobs that aren't in the specified space
+				AND jobs.user_id=_userId AND deleted=false
+											
+				-- Order results depending on what column is being sorted on
+				ORDER BY status ASC
+						 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+	
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	jobs.user_id=_userId AND deleted=false 
+				ORDER BY status DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		ELSEIF _colSortedOn = 2 THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+	
+					
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+											
+				-- Exclude Jobs that aren't in the specified space
+				AND jobs.user_id=_userId AND deleted=false
+											
+				-- Order results depending on what column is being sorted on
+				ORDER BY completePairs ASC
+						 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+	
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	jobs.user_id=_userId AND deleted=false
+				ORDER BY completePairs DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		ELSEIF _colSortedOn = 3 THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+	
+					
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+											
+				-- Exclude Jobs that aren't in the specified space
+				AND jobs.user_id=_userId AND deleted=false
+											
+				-- Order results depending on what column is being sorted on
+				ORDER BY pendingPairs ASC
+						 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+	
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	jobs.user_id=_userId AND deleted=false 
+				ORDER BY pendingPairs DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		ELSEIF _colSortedOn=4 THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+	
+					
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+											
+				-- Exclude Jobs that aren't in the specified space
+				AND jobs.user_id=_userId AND deleted=false
+											
+				-- Order results depending on what column is being sorted on
+				ORDER BY errorPairs ASC
+						 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+	
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	jobs.user_id=_userId AND deleted=false
+				ORDER BY errorPairs DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+	
+					
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+											
+				-- Exclude Jobs that aren't in the specified space
+				AND jobs.user_id=_userId AND deleted=false
+											
+				-- Order results depending on what column is being sorted on
+				ORDER BY created ASC
+						 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+	
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	jobs.user_id=_userId AND deleted=false
+				ORDER BY created DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
 DELIMITER ; -- This should always go at the end of the file
