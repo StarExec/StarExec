@@ -14,20 +14,20 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 	BEGIN
 		IF (_colSortedOn=0) THEN
 			IF _sortASC = TRUE THEN
-				SELECT 	id,
-						name,
-						description
+				SELECT 	child_id AS id,
+						spaces.name AS name,
+						spaces.description AS description
 				
-				FROM	spaces
+				FROM	set_assoc
 				-- Exclude Spaces that aren't children of the specified space
 				-- and ensure only Spaces that this user is a member of are returned	
-				INNER JOIN set_assoc ON set_assoc.space_id=spaces.id
+				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId)
 																
 				-- Exclude Spaces whose name and description don't contain the query string
-				AND 	(name			LIKE	CONCAT('%', _query, '%')
-				OR		description		LIKE 	CONCAT('%', _query, '%'))
+				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
+				OR		spaces.description		LIKE 	CONCAT('%', _query, '%'))
 								
 				-- Order results depending on what column is being sorted on
 				ORDER BY name ASC
@@ -35,39 +35,39 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- Shrink the results to only those required for the next page of Spaces
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id,
-						name,
-						description
-				FROM	spaces
+				SELECT 	child_id AS id,
+						spaces.name AS name,
+						spaces.description AS description
+				
+				FROM	set_assoc
 				-- Exclude Spaces that aren't children of the specified space
 				-- and ensure only Spaces that this user is a member of are returned	
-				INNER JOIN set_assoc ON set_assoc.space_id=spaces.id
+				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId
-				
-				AND 	(name			LIKE	CONCAT('%', _query, '%')
-				OR		description		LIKE 	CONCAT('%', _query, '%'))
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId)
+																
+				-- Exclude Spaces whose name and description don't contain the query string
+				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
+				OR		spaces.description		LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY name DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		ELSE
 			IF _sortASC = TRUE THEN
-				SELECT 	id,
-						name,
-						description
+				SELECT 	child_id AS id,
+						spaces.name AS name,
+						spaces.description AS description
 				
-				FROM	spaces
-				
+				FROM	set_assoc
 				-- Exclude Spaces that aren't children of the specified space
 				-- and ensure only Spaces that this user is a member of are returned	
-				INNER JOIN set_assoc ON set_assoc.space_id=spaces.id
+				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId
-				
-								
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId)
+																
 				-- Exclude Spaces whose name and description don't contain the query string
-				AND 	(name			LIKE	CONCAT('%', _query, '%')
-				OR		description		LIKE 	CONCAT('%', _query, '%'))
+				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
+				OR		spaces.description		LIKE 	CONCAT('%', _query, '%'))
 								
 				-- Order results depending on what column is being sorted on
 				ORDER BY description ASC
@@ -75,18 +75,20 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- Shrink the results to only those required for the next page of Spaces
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id,
-						name,
-						description
-				FROM	spaces
+				SELECT 	child_id AS id,
+						spaces.name AS name,
+						spaces.description AS description
+				
+				FROM	set_assoc
 				-- Exclude Spaces that aren't children of the specified space
 				-- and ensure only Spaces that this user is a member of are returned	
-				INNER JOIN set_assoc ON set_assoc.space_id=spaces.id
+				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId
-				
-				AND 	(name			LIKE	CONCAT('%', _query, '%')
-				OR		description		LIKE 	CONCAT('%', _query, '%'))
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR user_assoc.user_id=_publicUserId)
+																
+				-- Exclude Spaces whose name and description don't contain the query string
+				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
+				OR		spaces.description		LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY description DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
