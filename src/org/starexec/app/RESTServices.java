@@ -298,38 +298,6 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a string representing all attributes of the node with the given id
-	 * @author Wyatt Kaiser2
-	 */
-	//TODO: Delete? Seem to be no references to this path
-	@GET
-	@Path("/cluster/nodes/{id}/pagination")
-	@Produces("application/json")	
-	public String getNodeJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {	
-		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("node", id, userId, request);
-
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	}
-	
-	/**
-	 * @return a json string representing all attributes of the queue with the given id
-	 * @author Wyatt Kaiser2
-	 */
-	//TODO: Delete? Seem to be no references to this path
-	@GET
-	@Path("/cluster/queues/{id}/pagination")
-	@Produces("application/json")	
-	public String getQueueJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
-
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	}
-	
-	/**
 	 * @return a json string representing all communities within starexec
 	 * @author Tyler Jensen
 	 */

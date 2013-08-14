@@ -426,26 +426,7 @@ public class RESTHelpers {
 	}
 	
 	
-	/**
-	 * Returns the HTML representing a job pair's status
-	 *
-	 * @param statType 'asc' or 'desc'
-	 * @param numerator a job pair's completePairs, pendingPairs, or errorPairs variable
-	 * @param denominator a job pair's totalPairs variable
-	 * @return HTML representing a job pair's status
-	 * @author Todd Elvers
-	 */
-	public static String getPairStatHtml(String statType, int numerator, int denominator){
-		StringBuilder sb = new StringBuilder();
-		sb.append("<p class=\"stat ");
-		sb.append(statType);
-		sb.append("\">");
-		sb.append(numerator);
-		sb.append("/");
-		sb.append(denominator);
-		sb.append("</p>");
-		return sb.toString();
-	}
+	
 	
     /**
      * Add tag for the image representing a link that will popout.
@@ -476,6 +457,27 @@ public class RESTHelpers {
 		if (percentage){
 			sb.append(" %");
 		}
+		sb.append("</p>");
+		return sb.toString();
+	}
+	
+	/**
+	 * Returns the HTML representing a job pair's status
+	 *
+	 * @param statType 'asc' or 'desc'
+	 * @param numerator a job pair's completePairs, pendingPairs, or errorPairs variable
+	 * @param denominator a job pair's totalPairs variable
+	 * @return HTML representing a job pair's status
+	 * @author Todd Elvers
+	 */
+	public static String getPairStatHtml(String statType, int numerator, int denominator){
+		StringBuilder sb = new StringBuilder();
+		sb.append("<p class=\"stat ");
+		sb.append(statType);
+		sb.append("\">");
+		sb.append(numerator);
+		sb.append("/");
+		sb.append(denominator);
 		sb.append("</p>");
 		return sb.toString();
 	}

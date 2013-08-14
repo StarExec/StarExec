@@ -1381,7 +1381,6 @@ public class Jobs {
 
 				Job j = new Job();
 				j.setId(results.getInt("id"));
-				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));	
 				if (results.getBoolean("deleted")) {
@@ -2484,20 +2483,20 @@ public class Jobs {
 		Configuration config=null;
 		while(results.next()){
 			JobPair jp = JobPairs.shallowResultToPair(results);
-			id=results.getInt("solver.id");
+			id=results.getInt("solver_id");
 			if (!solvers.containsKey(id)) {
 				solve=new Solver();
-				solve.setId(results.getInt("solver.id"));
-				solve.setName(results.getString("solver.name"));
+				solve.setId(id);
+				solve.setName(results.getString("solver_name"));
 				solvers.put(id,solve);
 			}
 			jp.setSolver(solvers.get(id));
 
-			id=results.getInt("config.id");
+			id=results.getInt("config_id");
 			if (!configs.containsKey(id)) {
 				config=new Configuration();
-				config.setId(results.getInt("config.id"));
-				config.setName(results.getString("config.name"));
+				config.setId(id);
+				config.setName(results.getString("config_name"));
 				configs.put(id, config);
 			}
 			jp.setConfiguration(configs.get(id));

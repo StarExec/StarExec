@@ -423,8 +423,6 @@ public class Spaces {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
-
-			
 			for(int jobId : jobIds){
 				
 				procedure.setInt(1, jobId);
@@ -436,7 +434,7 @@ public class Spaces {
 			log.info(jobIds.size() + " job(s) were successfully removed from space " + spaceId);
 			return true;
 		} catch (Exception e) {
-			
+			log.error("removeJobs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
