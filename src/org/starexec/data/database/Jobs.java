@@ -319,7 +319,7 @@ public class Jobs {
 			log.debug("Deletion of job id = " + jobId+ " in directory" +output.getAbsolutePath()+ "was successful");
 			return true;
 		} catch (Exception e) {
-			log.error("Delete Job says "+e.getMessage(),e);
+			log.error("Delete Job with jobId = "+jobId+" says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -756,8 +756,6 @@ public class Jobs {
 	public static String getDirectory(int jobId) {
 		// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/
 		Job j=Jobs.getShallow(jobId);
-		log.debug(j);
-		log.debug(j.getUserId());
 		return String.format("%s/%d/%d",R.JOB_OUTPUT_DIR,j.getUserId(),jobId);
 	}
 	
@@ -2068,10 +2066,9 @@ public class Jobs {
 				j.getQueue().setId(results.getInt("queue_id"));
 				j.getPreProcessor().setId(results.getInt("pre_processor"));
 				j.getPostProcessor().setId(results.getInt("post_processor"));				
-
+				log.debug("getShallow found job, returning it");
 				return j;
 			}		
-			Common.safeClose(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -2079,7 +2076,7 @@ public class Jobs {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
+		log.debug("getShallow could not find job, returning null");
 		return null;
 	}
 	
