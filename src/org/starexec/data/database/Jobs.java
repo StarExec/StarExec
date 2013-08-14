@@ -756,6 +756,8 @@ public class Jobs {
 	public static String getDirectory(int jobId) {
 		// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/
 		Job j=Jobs.getShallow(jobId);
+		log.debug(j);
+		log.debug(j.getUserId());
 		return String.format("%s/%d/%d",R.JOB_OUTPUT_DIR,j.getUserId(),jobId);
 	}
 	
