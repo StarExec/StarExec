@@ -398,7 +398,7 @@ public class Statistics {
 			//xAxis.setRange(range);
 			plot.setDomainAxis(xAxis);
 			LogAxis yAxis=new LogAxis(solver2+" time (s)");
-			
+			yAxis.setRange(xAxis.getRange());
 			//yAxis.setAutoRange(false);
 			//yAxis.setRange(range);
 			

@@ -426,14 +426,13 @@ public class Jobs {
 	private static boolean saveStats(int jobId, int jobSpaceId, SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,jobSpaceId);
-			procedure.setInt(3,stats.getConfiguration().getId());
-			procedure.setInt(4,stats.getCompleteJobPairs());
-			procedure.setInt(5,stats.getIncorrectJobPairs());
-			procedure.setInt(6,stats.getErrorJobPairs());
-			procedure.setDouble(7,stats.getTime());
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?)}");
+			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2,stats.getConfiguration().getId());
+			procedure.setInt(3,stats.getCompleteJobPairs());
+			procedure.setInt(4,stats.getIncorrectJobPairs());
+			procedure.setInt(5,stats.getErrorJobPairs());
+			procedure.setDouble(6,stats.getTime());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
