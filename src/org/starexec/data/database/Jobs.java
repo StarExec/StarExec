@@ -1957,7 +1957,7 @@ public class Jobs {
 					benchmarks.put(benchId,Benchmarks.get(benchId));
 				}
 				jp.setBench(benchmarks.get(benchId));
-				int configId=results.getInt("configId");
+				int configId=results.getInt("config_id");
 				if (!configs.containsKey(configId)) {
 					configs.put(configId, Solvers.getConfiguration(configId));
 					solvers.put(configId, Solvers.getSolverByConfig(configId,false));
