@@ -1162,8 +1162,7 @@ public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecord
 		String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
 		if (Jobs.isJobPaused(job.getId())) {
 			status = "paused";
-		}
-		if (Jobs.isJobKilled(job.getId())) {
+		} else if (Jobs.isJobKilled(job.getId())) {
 			status = "killed";
 		}
 		

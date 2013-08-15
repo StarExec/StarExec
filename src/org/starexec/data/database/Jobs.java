@@ -1440,7 +1440,7 @@ public class Jobs {
 			}
 			return pairs;
 		} catch (Exception e) {
-			
+			log.debug("getNewCompletedPairsDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1591,7 +1591,6 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
-	//TODO: Consider removing all the joins and instead just calling the "get" functions
 	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId) {
 		log.debug("starting the getPairsDetailed function");
 		try {			
@@ -1971,11 +1970,9 @@ public class Jobs {
 				jp.setStatus(s);
 				returnList.add(jp);
 			}			
-
-			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-			
+			log.debug("getEnqueuedPairs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -2196,8 +2193,6 @@ public class Jobs {
 	public static boolean isJobPaused(Connection con, int jobId) throws Exception {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
-		
 		try {
 			 procedure = con.prepareCall("{CALL IsJobPaused(?)}");
 			procedure.setInt(1, jobId);					
@@ -2208,7 +2203,7 @@ public class Jobs {
 			}
 			return paused;
 		} catch (Exception e) {
-			
+			log.error("isJobPaused says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
