@@ -203,7 +203,7 @@ public class Statistics {
 			}
 
 
-			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
+			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview Plot", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
 			
@@ -367,7 +367,7 @@ public class Statistics {
 			}
 			dataset.addSeries(d);
 			
-			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot", "", "", dataset, PlotOrientation.VERTICAL, true, true,false);
+			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",solver1 + "time (s)", solver2 + "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
 			
@@ -375,9 +375,9 @@ public class Statistics {
 			
 			//make both axes identical, and make them span from 0
 			//to 110% of the maximum value
-			//double maxX=dataset.getDomainUpperBound(false)*1.1;
-			//double maxY=dataset.getRangeUpperBound(false)*1.1;
-			//Range range=new Range(0,Math.max(maxX, maxY));
+			double maxX=dataset.getDomainUpperBound(false)*1.1;
+			double maxY=dataset.getRangeUpperBound(false)*1.1;
+			Range range=new Range(0,Math.max(maxX, maxY));
 			
 			
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
@@ -392,17 +392,12 @@ public class Statistics {
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
 			
-			LogAxis xAxis=new LogAxis(solver1+" time (s)");
 			
-			//xAxis.setAutoRange(false);
-			//xAxis.setRange(range);
-			plot.setDomainAxis(xAxis);
-			LogAxis yAxis=new LogAxis(solver2+" time (s)");
-			yAxis.setRange(xAxis.getRange());
-			//yAxis.setAutoRange(false);
-			//yAxis.setRange(range);
+			plot.getDomainAxis().setAutoRange(false);
+			plot.getDomainAxis().setRange(range);
+			plot.getRangeAxis().setAutoRange(false);
+			plot.getRangeAxis().setRange(range);
 			
-			plot.setRangeAxis(yAxis);
 			
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), filename);
@@ -411,10 +406,10 @@ public class Statistics {
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 			if (!large) {
 				//we're displaying the small graph on black, so we want white axes
-				xAxis.setTickLabelPaint(new Color(255,255,255));
-				xAxis.setLabelPaint(new Color(255,255,255));
-				yAxis.setTickLabelPaint(new Color(255,255,255));
-				yAxis.setLabelPaint(new Color(255,255,255));
+				plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
+				plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
+				plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
+				plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
 				ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
 			} else {
 				//the large graph is getting displayed on white, so we need black axes

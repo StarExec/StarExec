@@ -383,7 +383,15 @@ public class Jobs {
 		return null;
 	}
 	
-	public static List<SolverStats> getJobStatsInJobSpaceHierarchy(int jobId, int jobSpaceId) {
+	/**
+	 * Attempts to retrieve cached SolverStats objects from the database. Returns
+	 * an empty list if the stats have not already been cached.
+	 * @param jobSpaceId The ID of the root job space for the stats
+	 * @return A list of the relevant SolverStats objects in this space
+	 * @author Eric Burns
+	 */
+	
+	public static List<SolverStats> getJobStatsInJobSpaceHierarchy(int jobSpaceId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -423,7 +431,18 @@ public class Jobs {
 		return null;
 	}
 	
-	private static boolean saveStats(int jobId, int jobSpaceId, SolverStats stats, Connection con) {
+	/**
+	 * Given a SolverStats object, saves it in the database so that it does not need to be generated again
+	 * This function is currently called only when the job is complete, as we do not want to cache stats
+	 * for incomplete jobs. 
+	 * @param jobSpaceId The ID of the job space that this stats object was accumulated for
+	 * @param stats The stats object to save
+	 * @param con The open connection to make the update on
+	 * @return True if the save was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	private static boolean saveStats(int jobSpaceId, SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?)}");
@@ -451,10 +470,16 @@ public class Jobs {
 	
 	public static boolean isJobComplete(int jobId) {
 		try {
+			//if the job is paused, it is not done yet
+			if (isJobPaused(jobId)) {
+				return false;
+			}
 			HashMap<String,String> overview = Statistics.getJobPairOverview(jobId);
+			//if the job is not paused and no pending pairs remain, it is done
 			if (overview.get("pendingPairs").equals("0")) {
 				return true;
 			} 
+
 			return false;
 		} catch (Exception e) {
 			log.error("isJobComplete says "+e.getMessage(),e);
@@ -477,12 +502,10 @@ public class Jobs {
 		}
 		Connection con=null;
 		try {
-			
-			
 			con=Common.getConnection();
 			Common.beginTransaction(con);
 			for (SolverStats s : stats) {
-				if (!saveStats(jobId,jobSpaceId,s,con)) {
+				if (!saveStats(jobSpaceId,s,con)) {
 					throw new Exception ("saving stats failed, rolling back connection");
 				}
 			}
@@ -501,21 +524,22 @@ public class Jobs {
 	}
 	
 	/**
-	 * Gets all the SolverStats objects for a given job in the given space
+	 * Gets all the SolverStats objects for a given job in the given space hierarchy
 	 * @param jobId the job in question
-	 * @param spaceId The ID of the space in question
+	 * @param spaceId The ID of the root space in question
 	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
 	 * @author Eric Burns
 	 */
 
 	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId) {
-		List<SolverStats> stats=Jobs.getJobStatsInJobSpaceHierarchy(jobId,jobSpaceId);
+		List<SolverStats> stats=Jobs.getJobStatsInJobSpaceHierarchy(jobSpaceId);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
 			log.debug("stats already cached in database");
 			return stats;
 		}
+		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
 		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobId,jobSpaceId);
 		List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
