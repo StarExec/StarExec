@@ -78,7 +78,6 @@ public class Shell {
 				} 
 			}
 		} catch (Exception e) {	
-			e.printStackTrace();
 			System.out.println("Internal error, terminating session");
 			return;
 		}

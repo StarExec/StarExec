@@ -58,31 +58,6 @@ public abstract class JobManager {
 			int qId = q.getId();
 			String qname = q.getName();
 
-			/*
-		List<Job> enqueuedJobs = Queues.getEnqueuedJobs(qId);
-		for (Job j: enqueuedJobs) {
-			/*
-			if (Jobs.isJobPaused(j.getId())) {
-				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-				for (JobPair jp : jobPairsEnqueued) {
-					int sge_id = jp.getGridEngineId();
-					Util.executeCommand("qdel " + sge_id);
-					log.debug("Just executed qdel " + sge_id);
-					JobPairs.UpdateStatus(jp.getId(), 20);
-				}
-			}
-
-			if (Jobs.isJobKilled(j.getId())) {
-				List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-				for (JobPair jp : jobPairsEnqueued) {
-					int sge_id = jp.getGridEngineId();
-					Util.executeCommand("qdel " + sge_id);	
-					log.debug("Just executed qdel " + sge_id);
-					JobPairs.UpdateStatus(jp.getId(), 21);
-				}
-			}
-		}
-			 */
 
 			int queueSize = Queues.getSizeOfQueue(qId);
 

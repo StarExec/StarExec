@@ -19,8 +19,9 @@
 			}
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
-				boolean isPaused = Jobs.isJobPaused(jobId);
-				boolean isKilled = Jobs.isJobKilled(jobId);
+				int pausedOrKilledStatus=Jobs.isJobPausedOrKilled(jobId);
+				boolean isPaused = pausedOrKilledStatus==1;
+				boolean isKilled = pausedOrKilledStatus==2;
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				request.setAttribute("usr",u);

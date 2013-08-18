@@ -1159,11 +1159,14 @@ public static JsonObject convertJobsToJsonObject(List<Job> jobs, int totalRecord
 		sb.append(hiddenJobId);
 		String jobLink = sb.toString();
 		
-		String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
-		if (Jobs.isJobPaused(job.getId())) {
+		String status = "";
+		int  pauseOrKillStatus=Jobs.isJobPausedOrKilled(job.getId());
+		if (pauseOrKillStatus==1) {
 			status = "paused";
-		} else if (Jobs.isJobKilled(job.getId())) {
+		} else if (pauseOrKillStatus==2) {
 			status = "killed";
+		} else {
+			status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
 		}
 		
 		// Create an object, and inject the above HTML, to represent an entry in the DataTable

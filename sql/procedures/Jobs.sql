@@ -323,24 +323,16 @@ CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
 		WHERE deleted=true AND id=_jobId;
 	END //
 
--- Returns true if the job in question has the paused flag set to true	
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS IsJobPaused;
-CREATE PROCEDURE IsJobPaused(IN _jobId INT)
+
+
+-- Returns the paused and deleted columns for a job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS IsJobPausedOrKilled;
+CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 	BEGIN
-		SELECT count(*) AS jobPaused
+		SELECT paused,killed
 		FROM jobs
-		WHERE paused=true AND id=_jobId;
-	END //
-	
--- Returns true if the job in question has the killed flag set to true	
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS IsJobKilled;
-CREATE PROCEDURE IsJobKilled(IN _jobId INT)
-	BEGIN
-		SELECT count(*) AS jobKilled
-		FROM jobs
-		WHERE killed=true AND id=_jobId;
+		WHERE id=_jobId;
 	END //
 
 -- Sets the "deleted" property of a job to true and deletes all its job pairs from the database

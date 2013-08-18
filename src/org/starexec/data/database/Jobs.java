@@ -2153,37 +2153,6 @@ public class Jobs {
 		return false;
 	}
 
-	
-	/**
-	 * Checks whether the given job is set to "killed" in the database
-	 * @param con The open connection to make the call on 
-	 * @param jobId The ID of the job in question
-	 * @return True if the job is killed (i.e. the killed flag is set to true), false otherwise
-	 * @throws Exception 
-	 * @author Wyatt Kaiser
-	 */
-	
-	public static boolean isJobKilled(Connection con, int jobId) throws Exception {
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		 try {
-			procedure = con.prepareCall("{CALL IsJobKilled(?)}");
-			procedure.setInt(1, jobId);					
-			 results = procedure.executeQuery();
-			boolean killed=false;
-			if (results.next()) {
-				killed=results.getBoolean("jobKilled");
-			}
-			return killed;
-		} catch (Exception e) {
-			log.error("isJobKilled says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
-
 	/** 
 	 * Determines whether the job with the given ID exists in the database with the column "killed" set to true
 	 * @param jobId The ID of the job in question
@@ -2192,47 +2161,71 @@ public class Jobs {
 	 */
 	
 	public static boolean isJobKilled(int jobId) {
-		Connection con=null;
-		try {
-			con=Common.getConnection();
-			
-			return isJobKilled(con,jobId);
-		} catch (Exception e) {
-			log.error("isJobKilled says " +e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-		}
-		return false;
+		return isJobPausedOrKilled(jobId)==2;
 	}
 
 	/**
-	 * Checks whether the given job is set to "paused" in the database
-	 * @param con The open connection to make the call on 
+	 * Determines whether the given job is either paused or killed
+	 * @param con The open connection to make the query on 
 	 * @param jobId The ID of the job in question
-	 * @return True if the job is paused (i.e. the paused flag is set to true), false otherwise
-	 * @throws Exception 
-	 * @author Wyatt Kaiser
+	 * @return
+	 * 0 if the job is neither paused nor killed
+	 * 1 if the job is paused
+	 * 2 if the job has been killed
+	 * @author Eric Burns
 	 */
-	
-	public static boolean isJobPaused(Connection con, int jobId) throws Exception {
+	public static int isJobPausedOrKilled(Connection con, int jobId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			 procedure = con.prepareCall("{CALL IsJobPaused(?)}");
+			 procedure = con.prepareCall("{CALL IsJobPausedOrKilled(?)}");
 			procedure.setInt(1, jobId);					
 			 results = procedure.executeQuery();
 			boolean paused=false;
+			boolean killed=false;
 			if (results.next()) {
 				paused=results.getBoolean("jobPaused");
+				if (paused) {
+					return 1;
+				}
+				killed=results.getBoolean("killed");
+				if (killed) {
+					return 2;
+				}
+				
 			}
-			return paused;
+			return 0;
 		} catch (Exception e) {
 			log.error("isJobPaused says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return false;
+		return 0;
+	}
+	
+	/** 
+	 * Determines whether the job with the given ID has either the paused or killed column set to ttrue
+	 * @param jobId The ID of the job in question
+	 * @return
+	 * 0 if the job is neither paused nor killed (or error)
+	 * 1 if the job is paused (i.e. the paused flag is set to true),
+	 * 2 if the job is killed
+	 * @author Eric Burns
+	 */
+	
+	public static int isJobPausedOrKilled(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return isJobPausedOrKilled(con,jobId);
+		} catch (Exception e) {
+			log.error("isJobPausedOrKilled says " +e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return 0;
 	}
 
 	/** 
@@ -2243,17 +2236,7 @@ public class Jobs {
 	 */
 	
 	public static boolean isJobPaused(int jobId) {
-		Connection con=null;
-		try {
-			con=Common.getConnection();
-			
-			return isJobPaused(con,jobId);
-		} catch (Exception e) {
-			log.error("isJobPaused says " +e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-		}
-		return false;
+		return isJobPausedOrKilled(jobId)==1;
 	}
 	
 	/**
