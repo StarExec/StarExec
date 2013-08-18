@@ -69,7 +69,7 @@
 								all benchmarks in ${space.name}</label></td>
 					</tr>
 					<tr id="permRow"
-						title="if starexec expands your archive into spaces, the new spaces will have these default permissions">
+						title="if StarExec expands your archive into spaces, the new spaces will have these default permissions">
 						<td class="label"><p>default</p></td>
 						<td>
 							<table id="tblDefaultPerm">

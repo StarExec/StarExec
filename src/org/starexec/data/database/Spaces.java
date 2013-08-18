@@ -1,10 +1,6 @@
 package org.starexec.data.database;
 
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -17,12 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.starexec.constants.R;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -78,7 +69,7 @@ public class Spaces {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-		
+			log.error("associateJobSpaces says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -302,7 +293,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			
+			log.error("removeBenches says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -369,7 +360,7 @@ public class Spaces {
 			
 			return true;
 		} catch (Exception e) {
-		
+			log.error("removeSolvers says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -738,7 +729,7 @@ public class Spaces {
 			
 			return ids;
 		} catch (Exception e) {
-			
+			log.error("getSubSpaceIds says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -814,7 +805,7 @@ public class Spaces {
 			log.debug("Returning from adding subspaces");
 			return subSpaces;
 		} catch (Exception e) {
-			
+			log.error("getSubSpaces says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -882,7 +873,7 @@ public class Spaces {
 			}
 			
 		} catch (Exception e) {
-			
+			log.error("getParentSpace says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1302,7 +1293,7 @@ public class Spaces {
 			
 			return newSpaceId;
 		} catch (Exception e) {
-		
+			log.error("addJobSpace says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1398,7 +1389,7 @@ public class Spaces {
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
 			return newSpaceId;
 		} catch (Exception e) {
-			
+			log.error("Spaces.add says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procAddUser);
 			Common.safeClose(procSubspace);
@@ -1500,7 +1491,7 @@ public class Spaces {
 			
 			return true;
 		} catch (Exception e) {
-			
+			log.error("updateDetails says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1815,7 +1806,7 @@ public class Spaces {
 				procedure.executeUpdate();			
 			}
 		} catch (Exception e) {
-			
+			log.error("removeUsers says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2040,64 +2031,4 @@ public class Spaces {
 		
 		return true;
 	}
-	
-	/**
-	 * Generate a chart of the execution result of the jobs of a space.
-	 * @param space_id The id of the space we want to generate the result
-	 * @author Ruoyu Zhang
-	 */
-	public static void generateResultChart(int space_id) {
-		List<Job> jobsToDisplay = Jobs.getJobsForNextPage(0, 20, true, 1, "", space_id);
-		
-				DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		for (int i = 0; i < jobsToDisplay.size(); i++) {
-			dataset.setValue(jobsToDisplay.get(i).getLiteJobPairStats().get("totalPairs"), "Score", "Solver" + i);
-        }
-		
-		JFreeChart chart = ChartFactory.createBarChart("Solver Score", "Solver", "Score", dataset, PlotOrientation.VERTICAL, false, true, false);
-
-		try {
-			String fileName = R.PICTURE_PATH + File.separator + "resultCharts" + File.separator + "Pic" + space_id + ".jpg";
-			saveToFile(chart, fileName, 400, 300, 0.75);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-		
-	
-	/**
-	 * Save a JFreeChart object into a jpg file in starexec resource directory.
-	 * @param chart The JFreeChart object containing the chart
-	 * @param aFileName The name of the target file to be generated
-	 * @param width The width of the image
-	 * @param height The height of the image
-	 * @param quality The quality of the target image, 0.75 is high, 0.5 is median, and 0.25 is low
-	 * @throws FileNotFoundException 
-	 * @throws IOException
-	 * @author Ruoyu Zhang
-	 */
-	public static void saveToFile(JFreeChart chart, String fileName, int width, int height, double quality) throws FileNotFoundException, IOException {
-    /*	BufferedImage img = draw( chart, width, height );
-
-    	FileOutputStream fos = new FileOutputStream(fileName);
-    	JPEGImageEncoder encoder2 = JPEGCodec.createJPEGEncoder(fos);
-    	JPEGEncodeParam param2 = encoder2.getDefaultJPEGEncodeParam(img);
-    	param2.setQuality((float) quality, true);
-    	encoder2.encode(img,param2);
-    	fos.close();
-    */
-	}
-
-    protected static BufferedImage draw(JFreeChart chart, int width, int height) {
-    	BufferedImage img = new BufferedImage(width , height, BufferedImage.TYPE_INT_RGB);
-    	Graphics2D g2 = img.createGraphics();
-
-    	chart.draw(g2, new Rectangle2D.Double(0, 0, width, height));
-
-    	g2.dispose();
-    	return img;
-    }
 }

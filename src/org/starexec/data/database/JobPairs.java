@@ -438,7 +438,7 @@ public class JobPairs {
 				log.info("returning null for sgeDetailed, must have have been no results for GetJobPairBySGE with sgeId = " + sgeId);	
 			}
 		} catch (Exception e) {
-			
+			log.error("getSGEPairDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -472,7 +472,7 @@ public class JobPairs {
 			}
 			return prop;
 		} catch (Exception e) {
-			
+			log.error("getAttributes says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -648,7 +648,7 @@ public class JobPairs {
 			procedure.setInt(2, jobSpaceId);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			
+			log.error("updateJobSpaces says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}

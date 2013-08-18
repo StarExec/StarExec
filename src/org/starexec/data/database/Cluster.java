@@ -66,7 +66,7 @@ public class Cluster {
 			
 			return node;
 		} catch (Exception e) {
-		
+			log.error("getNodeDetails says "+e.getMessage(),e);
 		}finally	{
 			Common.safeClose(results);
 			Common.safeClose(procedure);

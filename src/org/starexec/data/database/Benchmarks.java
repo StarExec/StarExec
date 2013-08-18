@@ -96,7 +96,7 @@ public class Benchmarks {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			
+			log.error("addBenchAttr says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			
@@ -918,6 +918,7 @@ public class Benchmarks {
 	 * @param the open connection to make the SQL call on
 	 * @return True if the benchmark exists in the database with the "deleted" column set to
 	 * true, and false otherwise
+	 * @author Eric Burns
 	 */
 
 	protected static boolean isBenchmarkDeleted(Connection con, int benchId) {
@@ -934,7 +935,7 @@ public class Benchmarks {
 			}
 			return deleted;
 		} catch (Exception e) {
-			
+			log.error("isBenchmarkDeleted says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1051,7 +1052,7 @@ public class Benchmarks {
 
 			return prop;
 		} catch (Exception e) {
-			
+			log.error("getAttributes says "+e.getMessage(),e);
 		} finally {
 			 Common.safeClose(procedure);
 			 Common.safeClose(results);
@@ -1103,7 +1104,7 @@ public class Benchmarks {
 			}
 			return sortedMap2;
 		} catch (Exception e) {
-			
+			log.error("getSortedAttributes says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1181,7 +1182,7 @@ public class Benchmarks {
 			}													
 
 		} catch (Exception e) {
-			
+			log.error("Benchmarks.get says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1633,9 +1634,9 @@ public class Benchmarks {
 					bis.close();
 					dis.close();
 				} catch (FileNotFoundException e) {
-					e.printStackTrace();
+					log.error("extractSpacesAndBenchmarks says "+e.getMessage(),e);
 				} catch (IOException e) {
-					e.printStackTrace();
+					log.error("extractSpacesAndBenchmarks says "+e.getMessage(),e);
 				}
 			}
 		}

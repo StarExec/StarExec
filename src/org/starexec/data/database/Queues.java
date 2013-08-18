@@ -137,7 +137,7 @@ public class Queues {
 			}										
 			
 		} catch (Exception e) {
-			
+			log.error("Queue.get says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -594,7 +594,7 @@ public class Queues {
 			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-		
+			log.error("getEnqueuedPairsDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -638,7 +638,7 @@ public class Queues {
 			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-		
+			log.error("getRunningPairsDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);

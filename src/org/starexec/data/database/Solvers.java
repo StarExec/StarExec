@@ -96,7 +96,7 @@ public class Solvers {
 			}
 			return deleted;
 		} catch (Exception e) {
-			
+			log.error("isSolverDeleted says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -164,7 +164,7 @@ public class Solvers {
 				return s;
 			}
 		} catch (Exception e) {
-			
+			log.error("Solvers.get says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -568,7 +568,7 @@ public class Solvers {
 			procedure.executeUpdate();		
 			return true;
 		} catch (Exception e) {
-			
+			log.error("addConfiguration says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -659,7 +659,7 @@ public class Solvers {
 			
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			
+			log.error("updateSolverDiskSize says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -730,7 +730,7 @@ public class Solvers {
 			procedure.executeUpdate();		
 			return true;
 		} catch (Exception e) {
-			
+			log.error("Solvers.associate says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}

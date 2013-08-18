@@ -121,7 +121,7 @@ public class Processors {
 				return t;					
 			}
 		} catch (Exception e) {
-			
+			log.error("Processors.get says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);

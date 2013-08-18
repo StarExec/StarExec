@@ -125,7 +125,7 @@ public class Statistics {
 			
 			return null;
 		} catch (Exception e) {
-			
+			log.error("getJobPairOverview says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);

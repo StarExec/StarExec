@@ -8,7 +8,7 @@
 <%@attribute name="js" %>
 
 <head>
-	<title>${title} - starexec</title>
+	<title>${title} - StarExec</title>
 	<meta charset="utf-8" />
 	<link rel="stylesheet" href="/${starexecRoot}/css/html5.css" />	
 	<link rel="stylesheet" href="/${starexecRoot}/css/jqueryui/jquery-ui-1.8.16.starexec.css" />

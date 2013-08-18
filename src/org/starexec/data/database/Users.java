@@ -40,7 +40,7 @@ public class Users {
 			log.info(String.format("User [%d] added to space [%d]", userId, spaceId));	
 			return true;
 		} catch (Exception e) {
-		
+			log.error("Users.associate says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}

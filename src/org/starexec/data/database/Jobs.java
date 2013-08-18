@@ -152,7 +152,7 @@ public class Jobs {
 			// Update the job's ID so it can be used outside this method
 			job.setId(procedure.getInt(8));
 		} catch (Exception e) {
-			
+			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
  			Common.safeClose(procedure);
  		}
@@ -178,7 +178,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			
+			log.error("addJobAttr says "+e.getMessage(),e);
 		}	finally {
 			Common.safeClose(procedure);
 		}
@@ -237,7 +237,7 @@ public class Jobs {
 
 			return true;
 		} catch (Exception e) {
-		
+			log.error("Jobs.associate says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1464,7 +1464,7 @@ public class Jobs {
 			}
 			return pairs;
 		} catch (Exception e) {
-			log.debug("getNewCompletedPairsDetailed says "+e.getMessage(),e);
+			log.error("getNewCompletedPairsDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1516,7 +1516,7 @@ public class Jobs {
 			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-		
+			log.error("getPairs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1751,7 +1751,7 @@ public class Jobs {
 			}
 			return pairs;
 		}catch (Exception e) {
-			e.printStackTrace();
+			log.error("getJobPairsForTableByConfigInJobSpace says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1828,7 +1828,7 @@ public class Jobs {
 			}
 			return pairs;
 		}catch (Exception e) {
-			log.debug("getJobPairsShallowByConfigInJobSpace says " +e.getMessage(),e);
+			log.error("getJobPairsShallowByConfigInJobSpace says " +e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1939,7 +1939,7 @@ public class Jobs {
 			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-			
+			log.error("getPendingPairsDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1996,7 +1996,7 @@ public class Jobs {
 			}			
 			return returnList;
 		} catch (Exception e) {
-			log.debug("getEnqueuedPairs says "+e.getMessage(),e);
+			log.error("getEnqueuedPairs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -2123,7 +2123,7 @@ public class Jobs {
 			}
 			return deleted;
 		} catch (Exception e) {
-			
+			log.error("isJobDeleted says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -2176,7 +2176,7 @@ public class Jobs {
 			}
 			return killed;
 		} catch (Exception e) {
-			
+			log.error("isJobKilled says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -2312,11 +2312,9 @@ public class Jobs {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			
-			
 			return kill(jobId,con);
 		} catch (Exception e) {
-			
+			log.error("Jobs.kill says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -2370,11 +2368,9 @@ public class Jobs {
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			
-			
 			return pause(jobId,con);
 		} catch (Exception e) {
-			
+			log.error("Jobs.pause says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -2546,7 +2542,7 @@ public class Jobs {
 			con=Common.getConnection();
 			return resume(jobId,con);
 		} catch (Exception e) {
-			
+			log.error("Jobs.resume says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 		}

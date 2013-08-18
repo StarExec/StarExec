@@ -42,7 +42,7 @@ public class Permissions {
 			procDefaultPerm.execute();
 			return procDefaultPerm.getInt(12);
 		} catch (Exception e) {
-		
+			log.error("Permissions.add says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procDefaultPerm);
 		}
@@ -473,7 +473,7 @@ public class Permissions {
 			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
 			return true;
 		} catch (Exception e) {
-			
+			log.error("Permissions.set says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -510,7 +510,7 @@ public class Permissions {
 			log.info(String.format("Permission [%d] successfully updated.", permId));
 			return true;
 		} catch (Exception e) {
-		
+			log.error("updatePermission says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}

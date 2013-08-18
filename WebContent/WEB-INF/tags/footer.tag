@@ -18,7 +18,7 @@
 			<li>|</li>
 			<li><a id="help" href="/${starexecRoot}/public/help.jsp">help</a></li>
 			<li>|</li>
-			<li><a id="starexeccommand" href="/${starexecRoot}/public/starexeccommand.jsp">starexec command</a></li>
+			<li><a id="starexeccommand" href="/${starexecRoot}/public/starexeccommand.jsp">StarExec Command</a></li>
 		</ul>
 	</c:if>
 	<c:if test="${empty user}">
@@ -34,7 +34,7 @@
 			<li>|</li>
 			<li><a id="help" href="/${starexecRoot}/public/help.jsp">help</a></li>
 			<li>|</li>
-			<li><a id="starexeccommand" href="/${starexecRoot}/public/starexeccommand.jsp">starexec command</a></li>
+			<li><a id="starexeccommand" href="/${starexecRoot}/public/starexeccommand.jsp">StarExec Command</a></li>
 		</ul>
 	</c:if>
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy;
