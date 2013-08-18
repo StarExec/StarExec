@@ -2184,7 +2184,7 @@ public class Jobs {
 			boolean paused=false;
 			boolean killed=false;
 			if (results.next()) {
-				paused=results.getBoolean("jobPaused");
+				paused=results.getBoolean("paused");
 				if (paused) {
 					return 1;
 				}
