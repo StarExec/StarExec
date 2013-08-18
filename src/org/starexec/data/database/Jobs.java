@@ -1238,7 +1238,6 @@ public class Jobs {
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
-				jp.setCpuUsage(results.getDouble("cpu"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
 				Benchmark bench = new Benchmark();
 				bench.setId(results.getInt("bench_id"));
@@ -1722,7 +1721,6 @@ public class Jobs {
 				JobPair jp = new JobPair();
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("id"));
-				jp.setCpuUsage(results.getDouble("cpu"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
 				Benchmark bench = new Benchmark();
 				bench.setId(results.getInt("bench_id"));

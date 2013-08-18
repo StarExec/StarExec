@@ -244,7 +244,6 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 				bench_id,
 				bench_name,
 				GetJobPairResult(job_pairs.id) AS result,
-				cpu,
 				wallclock
 		FROM job_pairs 
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
