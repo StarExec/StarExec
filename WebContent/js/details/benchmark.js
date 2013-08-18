@@ -66,7 +66,7 @@ function initComments(bid){
 		var comment = HtmlEncode($("#comment_text").val());
 		
 		if(comment.trim().length == 0) {
-			showMessage('error', 'comments can not be empty', 6000);
+			showMessage('error', 'Comments can not be empty.', 6000);
 			return;
 		}	
 		var data = {comment: comment};
@@ -77,10 +77,10 @@ function initComments(bid){
 			    	if(returnCode == 0) {
 			    		$("#comment_text").val("");
 			    		$.getJSON(starexecRoot+'services/comments/benchmark/' + bid, displayComments).error(function(){
-			    			showMessage('error',"Internal error displaying comments",5000);
+			    			showMessage('error',"Internal error displaying comments.",5000);
 			    		});
 			    	} else {
-			    		showMessage('error', "adding your comment was unsuccessful; please try again", 5000);
+			    		showMessage('error', "Adding your comment was unsuccessful; please try again.", 5000);
 			    		//console.log('error: comment not added. please try again');
 			    	}
 				},
@@ -133,14 +133,14 @@ function displayComments(data) {
 								delCount=delCount+1; 
 								$('#commentField legend').children('span:first-child').text(data.length-delCount);
 							} else if (returnData == 2) {
-								showMessage('error',"deleting comments is restricted to the owner of the benchmark and the comment's owner", 5000);
+								showMessage('error',"Deleting comments is restricted to the owner of the benchmark and the comment's owner.", 5000);
 							} else {
-								showMessage('error', "unable to delete comment at this moment, please try again", 5000);
+								showMessage('error', "Unable to delete comment at this moment, please try again.", 5000);
 							}
 						},
 						"json"
 					).error(function(){
-						showMessage('error',"Internal error deleting comment",5000);
+						showMessage('error',"Internal error deleting comment.",5000);
 				});
 			  },
 			  "cancel": function() {
@@ -154,7 +154,7 @@ function displayComments(data) {
 function getComments(id) {
 	//get comment information for the given benchmark
 	$.getJSON(starexecRoot+'services/comments/benchmark/' + id, displayComments).error(function(){
-		showMessage('error',"Internal error getting comments",5000);
+		showMessage('error',"Internal error getting comments.",5000);
 	});
 }
 /**

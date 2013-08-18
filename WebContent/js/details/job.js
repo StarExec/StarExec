@@ -207,13 +207,13 @@ function initUI(){
 										window.location = starexecRoot+'secure/explore/spaces.jsp';
 										break;
 									case 1:
-										showMessage('error', "job was not deleted; please try again", 5000);
+										showMessage('error', "The job was not deleted; please try again.", 5000);
 										break;
 									case 2:
-										showMessage('error', "only the owner of this job can delete it", 5000);
+										showMessage('error', "Only the owner of this job can delete it.", 5000);
 										break;
 									default:
-										showMessage('error', "invalid parameters", 5000);
+										showMessage('error', "Invalid parameters.", 5000);
 										break;
 								}
 							},
@@ -249,13 +249,13 @@ function initUI(){
 										document.location.reload(true);
 										break;
 									case 1:
-										showMessage('error', "job was not paused; please try again", 5000);
+										showMessage('error', "The job was not paused; please try again.", 5000);
 										break;
 									case 2:
-										showMessage('error', "only the owner of this job can pause it", 5000);
+										showMessage('error', "Only the owner of this job can pause it.", 5000);
 										break;
 									default:
-										showMessage('error', "invalid parameters", 5000);
+										showMessage('error', "Invalid parameters.", 5000);
 										break;
 								}
 							},
@@ -291,13 +291,13 @@ function initUI(){
 										document.location.reload(true);
 										break;
 									case 1:
-										showMessage('error', "job was not resumed; please try again", 5000);
+										showMessage('error', "The job was not resumed; please try again.", 5000);
 										break;
 									case 2:
-										showMessage('error', "only the owner of this job can resume it", 5000);
+										showMessage('error', "Only the owner of this job can resume it.", 5000);
 										break;
 									default:
-										showMessage('error', "invalid parameters", 5000);
+										showMessage('error', "Invalid parameters.", 5000);
 										break;
 								}
 							},

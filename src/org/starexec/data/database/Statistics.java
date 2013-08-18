@@ -331,12 +331,18 @@ public class Statistics {
 			HashMap<String,String> names=new HashMap<String,String>();
 			int series=0;
 			int item=0;
+			//for now, we are not including error pairs in this chart
 			for (JobPair jp : pairs1) {
-				times.put(jp.getBench().getId(), new ArrayList<Double>());
-				times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
+					times.put(jp.getBench().getId(), new ArrayList<Double>());
+					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+				}
+				
 			}
 			for(JobPair jp : pairs2) {
-			
+				if (jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
+					continue;
+				}
 				//if we haven't seen this benchmark, then it wasn't in pairs1 and
 				//there is no comparison to make on it
 				if (times.containsKey(jp.getBench().getId())) {

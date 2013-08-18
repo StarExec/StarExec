@@ -46,16 +46,16 @@ function initButtons(){
 									window.location = starexecRoot+"secure/details/solver.jsp?id=" + $('#solverId').val();
 									break;
 								case 2:
-									showMessage('error', "you do not have sufficient privileges to remove configurations from this solver", 5000);
+									showMessage('error', "You do not have sufficient privileges to remove configurations from this solver.", 5000);
 									break;
 								default:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
+									showMessage('error', "An error occurred while processing your request; please try again.", 5000);
 									break;
 							}
 						},
 						"json"
 					).error(function(){
-						showMessage('error',"Internal error deleting configuration",5000);
+						showMessage('error',"Internal error deleting configuration.",5000);
 					});		
 				},
 				"cancel": function() {

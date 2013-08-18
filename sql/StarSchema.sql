@@ -501,6 +501,6 @@ CREATE TABLE job_stats (
 	failed INT NOT NULL,
 	error INT NOT NULL,
 	wallclock DOUBLE,
-	KEY (job_space_id),
+	FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
 );

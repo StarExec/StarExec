@@ -93,11 +93,11 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 		SELECT COUNT(*) AS jobPairCount
 		FROM job_pairs
 		WHERE job_space_id=_jobSpaceId
-		AND		(bench.name 		LIKE 	CONCAT('%', _query, '%')
+		AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code		LIKE 	CONCAT('%', _query, '%')
-				OR		cpu				LIKE	CONCAT('%', _query, '%'));
+				OR		wallclock				LIKE	CONCAT('%', _query, '%'));
 	END //	
 -- Gets attributes for every pair in a job
 -- Author: Eric Burns

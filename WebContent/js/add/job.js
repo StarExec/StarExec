@@ -148,16 +148,16 @@ function initUI() {
     		return;
     	} else if (progress == 1 && $('#tblSpaceSelection tbody tr.row_selected').length <= 0) { 
     		// Make sure the user has selected a choice for running the space
-    		showMessage('warn', 'you must make a selection to continue', 3000);
+    		showMessage('warn', 'You must make a selection to continue.', 3000);
     		return;
     	}
     	else if (progress == 2 && $('#tblBenchMethodSelection tbody tr.row_selected').length <= 0) { 
         		// Make sure the user has selected a method for selecting benchmarks
-        		showMessage('warn', 'you must make a selection to continue', 3000);
+        		showMessage('warn', 'You must make a selection to continue.', 3000);
         		return;	
     	} else if (progress == 3 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {
     		// Make sure the user selects at least one solver before moving on
-    		showMessage('warn', 'you must have at least one solver for this job', 3000);
+    		showMessage('warn', 'You must have at least one solver for this job.', 3000);
     		return;
     	}
     	
@@ -201,12 +201,12 @@ function initUI() {
     }).click(function(){
     	// Make sure the user has at least one benchmark in the table
     	if ((progress == 4 && $('#tblBenchConfig tbody tr.row_selected').length <= 0)) {
-    		showMessage('warn', 'you must have at least one benchmark for this job', 3000);
+    		showMessage('warn', 'You must have at least one benchmark for this job.', 3000);
     		return false;
     	}
     	 if (progress == 3 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {
      		// Make sure the user selects at least one solver before moving on
-     		showMessage('warn', 'you must have at least one solver for this job', 3000);
+     		showMessage('warn', 'You must have at least one solver for this job.', 3000);
      		return false;
     	 }
  		createDialog("Creating your job, please wait. This will take some time for large jobs.");
