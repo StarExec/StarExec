@@ -206,7 +206,7 @@ function processWebsiteData(jsonData) {
 	
 	// Injects the clickable delete button that's always present
 	$.each(jsonData, function(i, site) {
-		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src=starexecRoot+"images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
+		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
 }
 
@@ -218,22 +218,36 @@ function attachWebsiteMonitor(){
 	$("#websites").delegate(".delWebsite", "click", function(){
 		var id = $(this).attr('id');
 		var parent = $(this).parent().parent();
-		var answer = confirm("are you sure you want to delete this website?");
-		if (true == answer) {
-			$.post(
-					starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
-					function(returnData){
-						if (returnData == 0) {
-							parent.remove();
-						} else {
-							showMessage('error', "the website was not deleted due to an error; please try again", 5000);
-						}
-					},
-					"json"
-			).error(function(){
-				showMessage('error',"Internal error updating websites",5000);
-			});
-		}
+		$('#dialog-confirm-delete-txt').text('Are you sure you want to delete this website?');
+		
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-confirm-delete').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
+							function(returnData){
+								if (returnData == 0) {
+									parent.remove();
+								} else {
+									showMessage('error', "the website was not deleted due to an error; please try again", 5000);
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error updating websites",5000);
+					});
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+
 	});
 	
 	// Handles adding a new website

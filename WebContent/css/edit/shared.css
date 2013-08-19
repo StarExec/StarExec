@@ -42,11 +42,11 @@ table tr td:first-child {
 }
 
 input[type="text"], textarea {
-	width: 200px; 
+	width: 90%; 
 }
 
 select {
-	width: 210px;
+	width: 90%;
 }
 
 textarea#description.error{

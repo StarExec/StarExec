@@ -130,7 +130,7 @@ public class GetPicture extends HttpServlet{
 			java.io.OutputStream os = response.getOutputStream();
 			FileUtils.copyFile(file, os);
 		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
+			log.warn("picture with path "+file.getPath()+"could not be found");
 		}
 	}
 	
