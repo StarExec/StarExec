@@ -1532,9 +1532,8 @@ public class Benchmarks {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL IsBenchPublic(?,?)}");
+			procedure = con.prepareCall("{CALL IsBenchPublic(?)}");
 			procedure.setInt(1, benchId);
-			procedure.setInt(2, R.PUBLIC_USER_ID);
 			results = procedure.executeQuery();
 
 			if (results.next()) {

@@ -35,7 +35,7 @@ CREATE PROCEDURE GetPublicSolversByCommunity(IN _commId INT, IN _pubUserId INT)
 	BEGIN
 		SELECT DISTINCT * from solvers where deleted=false and id in 
 		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
-		(SELECT id from spaces where (IsPublic(id,_pubUserId) = 1) AND id in (select descendant from closure where ancestor = _commId)));
+		(SELECT id from spaces where IsPublic(id) AND id in (select descendant from closure where ancestor = _commId)));
 	END //
 	
 	
@@ -203,12 +203,12 @@ CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 -- Returns the number of public spaces a solver is in
 -- Benton McCune
 DROP PROCEDURE IF EXISTS IsSolverPublic;
-CREATE PROCEDURE IsSolverPublic(IN _solverId INT, IN _publicUserId INT)
+CREATE PROCEDURE IsSolverPublic(IN _solverId INT)
 	BEGIN
 		SELECT count(*) as solverPublic
 		FROM solver_assoc
 		WHERE solver_id = _solverId
-		AND (IsPublic(space_id,_publicUserId) = 1);
+		AND IsPublic(space_id);
 	END //
 	
 DROP PROCEDURE IF EXISTS IsSolverDeleted;

@@ -1394,9 +1394,8 @@ public class Solvers {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL IsSolverPublic(?,?)}");
+			 procedure = con.prepareCall("{CALL IsSolverPublic(?)}");
 			procedure.setInt(1, solverId);
-			procedure.setInt(2, R.PUBLIC_USER_ID);
 			 results = procedure.executeQuery();
 
 			if (results.next()) {

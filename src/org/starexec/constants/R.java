@@ -44,7 +44,7 @@ public class R {
     public static int PROCESSOR_DESC_LEN=1024;
     
     // Maximum job pair settings
-    public static int MAXIMUM_JOB_PAIRS=500000;
+    public static int MAXIMUM_JOB_PAIRS=Integer.MAX_VALUE; // no restriction for now
     public static int MAXIMUM_SOLVER_CONFIG_PAIRS=5;
     public static int MAXIMUM_DATA_POINTS=10000;
     //Regex patterns

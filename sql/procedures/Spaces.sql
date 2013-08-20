@@ -397,16 +397,29 @@ CREATE PROCEDURE GetCommunityOfSpace(IN _id INT)
 		SELECT min(ancestor) AS community FROM closure WHERE descendant=_id AND ancestor != 1;
 	END //
 
--- Querry if a space is a public space
--- Author: Ruoyu Zhang, edited by Benton McCune
+-- Query if a space is a public space
+-- Author: Ruoyu Zhang, edited by Benton McCune + Eric Burns
 DROP PROCEDURE IF EXISTS IsPublicSpace;
-CREATE PROCEDURE IsPublicSpace(IN _spaceId INT, IN _publicUserId INT)
+CREATE PROCEDURE IsPublicSpace(IN _spaceId INT)
 	BEGIN		
-		SELECT count(*) 
-		FROM user_assoc
-		WHERE space_id = _spaceId AND user_id = _publicUserId;
+		SELECT public_access 
+		FROM spaces
+		WHERE id = _spaceId;
 	END //
 
+-- Determines whether a hierarchy is public, meaning every space rooted at the given one 
+-- (including the given one) is public
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS IsPublicHierarchy;
+CREATE PROCEDURE IsPublicHierarchy(IN _spaceId INT)
+	BEGIN
+		SELECT IF((
+		SELECT COUNT(*) FROM closure
+			JOIN spaces AS space ON space.id=descendant
+		WHERE ancestor=_spaceId AND space.public_access=FALSE) =0 ,1,0) AS public;
+
+	END //
+	
 -- Change a space to a public space or a private one
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS setPublicSpace;

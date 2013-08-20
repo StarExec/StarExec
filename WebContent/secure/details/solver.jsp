@@ -10,7 +10,6 @@
 
 		Solver s = null;
 		if(Permissions.canUserSeeSolver(solverId, userId)) {
-			System.out.println("Permission to see the solver with id = " +solverId+ "was granted");
 			s = Solvers.get(solverId);
 		}
 		

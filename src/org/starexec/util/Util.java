@@ -145,7 +145,7 @@ public class Util {
         Random r = new Random();
         
         // Random temp password length between 6-20 characters
-        int newPassLength = r.nextInt((20-6)+1) + 6;
+        int newPassLength = r.nextInt(15) + 6;
         int set = 0;
         String[] charSets = {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "0123456789", "`~!@#$%^&*()_+-="};
         StringBuffer sb = new StringBuffer();

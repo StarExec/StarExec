@@ -1859,9 +1859,8 @@ public class Spaces {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL IsPublicSpace(?,?)}");
+			 procedure = con.prepareCall("{CALL IsPublicSpace(?)}");
 			procedure.setInt(1, spaceId);	
-			procedure.setInt(2, R.PUBLIC_USER_ID);
 			 results = procedure.executeQuery();
 		
 			if(results.first()) {
@@ -1886,41 +1885,39 @@ public class Spaces {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		
-		if (Permissions.get(usrId, spaceId) == null){
+		Permission perm=Permissions.get(usrId, spaceId);
+		//must be a leader to make a space public
+		if (perm == null || !perm.isLeader()){
 			return false;
 		}
-		else if (!Permissions.get(usrId, spaceId).isLeader()) {
-			return false;
-		}
-		if (pbc && !hierarchy){
-			Users.associate(R.PUBLIC_USER_ID, spaceId);//adds public user to space;
-			Permission publicPermission = new Permission(false);
-			Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
-		}
-		if(!hierarchy){
-		    Connection con = null;	
-		    CallableStatement procedure = null;
-			try {
-				con = Common.getConnection();
-				if(!pbc){
-					List<Integer> userIds = new LinkedList<Integer>();
-					userIds.add(R.PUBLIC_USER_ID);
-					Spaces.removeUsers(con, userIds, spaceId);
-				}
-				 procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
-				procedure.setInt(1, spaceId);
-				procedure.setBoolean(2, pbc);
-				procedure.executeUpdate();
-			} catch (Exception e){			
-				log.error(e.getMessage(), e);		
-			} finally {
-				Common.safeClose(con);
-				Common.safeClose(procedure);
+
+		Connection con = null;	
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			//either add remove the public user, depending on the current operation
+			if (pbc){
+				Users.associate(con,R.PUBLIC_USER_ID, spaceId);//adds public user to space;
+				Permission publicPermission = new Permission(false);
+				Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
+			} else {
+				List<Integer> userIds = new LinkedList<Integer>();
+				userIds.add(R.PUBLIC_USER_ID);
+				Spaces.removeUsers(con,userIds, spaceId);
 			}
-		} else {//is hierarchy, call recursively
+			procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setBoolean(2, pbc);
+			procedure.executeUpdate();
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		 if(hierarchy) {//is hierarchy, call recursively
+			
 			List<Space> subSpaces = Spaces.getSubSpaces(spaceId, usrId, true);
-			subSpaces.add(Spaces.get(spaceId));
 			for (Space space : subSpaces) {
 				try {				
 					setPublicSpace(space.getId(), usrId, pbc, false);

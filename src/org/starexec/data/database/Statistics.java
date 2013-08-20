@@ -139,6 +139,7 @@ public class Statistics {
 	 * @param pairs
 	 * @return A HashMap for which solvers map to another HashMap mapping configurations to a sorted list of doubles
 	 * representing the CPU usage of every completed, correct job pair produced by that solver/configuration pair
+	 * @author Eric Burns
 	 */
 	
 	private static HashMap<Solver,HashMap<Configuration,List<Double>>> processJobPairData(List<JobPair> pairs) {
@@ -212,11 +213,9 @@ public class Statistics {
 				LogAxis xAxis=new LogAxis("# solved");
 				plot.setDomainAxis(xAxis);
 			}
-			
-			//TODO: Figure out how to make setting a manual range work with the log axis
+			//logarithmic axes and manually-set ranges seem to be incompatible
 			if (logY) {
 				LogAxis yAxis=new LogAxis("time (s)");
-				
 				plot.setRangeAxis(yAxis);
 				
 			} else {

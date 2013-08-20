@@ -167,15 +167,15 @@ CREATE FUNCTION GetWallClock(start_time TIMESTAMP, end_time TIMESTAMP)
 
 --  Tells you whether a space is public or not
 --  returns the number of times public_user is in the space (should be 0 or 1)	
---  Author: Benton McCune
+--  Author: Benton McCune + Eric Burns
 DROP FUNCTION IF EXISTS IsPublic;
-CREATE FUNCTION IsPublic(_spaceId int, _pubUserId int)
-	RETURNS INT
+CREATE FUNCTION IsPublic(_spaceId int)
+	RETURNS BOOLEAN
 	BEGIN
-		DECLARE isPublic INT;
-	  		select count(*) INTO isPublic 
-	  		from user_assoc 
-	  		where space_id = _spaceId and user_id = _pubUserId;
+		DECLARE isPublic BOOLEAN;
+	  		select public_access INTO isPublic 
+	  		from spaces
+	  		where id = _spaceId;
 	  	RETURN isPublic;	
 	END //
 	

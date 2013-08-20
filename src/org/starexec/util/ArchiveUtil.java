@@ -32,22 +32,32 @@ import org.starexec.constants.R;
 public class ArchiveUtil {
 	private static final Logger log = Logger.getLogger(ArchiveUtil.class);
 
-	
-	public static long getArchiveSize(String fileName) {
-		if (fileName.endsWith(".zip")){
+	/**
+	 * Gets the uncompressed size of an archive
+	 * @param filePath The path to the file to get the size of 
+	 * @return The size of the uncompressed archive, in bytes
+	 * @author Eric Burns
+	 */
+	public static long getArchiveSize(String filePath) {
+		if (filePath.endsWith(".zip")){
 			
-			return getZipSize(fileName);
-		} else if (fileName.endsWith(".tar")) {
-			return getTarSize(fileName);
-		} else if (fileName.endsWith(".tgz") || fileName.endsWith(".tar.gz")) {
-			return getTarGzSize(fileName);
+			return getZipSize(filePath);
+		} else if (filePath.endsWith(".tar")) {
+			return getTarSize(filePath);
+		} else if (filePath.endsWith(".tgz") || filePath.endsWith(".tar.gz")) {
+			return getTarGzSize(filePath);
 		} else {
-			log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
+			log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", filePath));
 			return-1;
 		}
 		
 	}
-
+	/**
+	 * Gets the uncompressed size of a zip archive
+	 * @param filePath The path to the file to get the size of 
+	 * @return The size of the uncompressed zip archive, in bytes
+	 * @author Eric Burns
+	 */
 	private static long getZipSize(String fileName) {
 		try {
 			long answer=0;
@@ -63,7 +73,12 @@ public class ArchiveUtil {
 			return -1;
 		}
 	}
-
+	/**
+	 * Gets the uncompressed size of a tar archive
+	 * @param filePath The path to the file to get the size of 
+	 * @return The size of the uncompressed tar archive, in bytes
+	 * @author Eric Burns
+	 */
 	private static long getTarSize(String fileName) {
 		try {
 			InputStream is = new FileInputStream(fileName);
@@ -85,7 +100,14 @@ public class ArchiveUtil {
 			return -1;
 		}
 	}
-
+	/**
+	 * Gets the APPROXIMATE uncompressed size of a tarGz archive. The actual value returned
+	 * is the size of the TAR file, which will be slightly larger than the size of the completely 
+	 * unarchived file.
+	 * @param filePath The path to the file to get the size of 
+	 * @return The size of the uncompressed TAR file, in bytes
+	 * @author Eric Burns
+	 */
 	//Returns the size of the TAR file and not the size of the un-archived files within
 	private static long getTarGzSize(String fileName) {
 		try {
@@ -268,13 +290,7 @@ public class ArchiveUtil {
 				//String mode = Integer.toOctalString(entry.getMode());
 				//log.info("The mode for " + entry.getName() + " is " + mode);
 				File fileToCreate = new File(destination, entry.getName());
-				/*Boolean shouldBeExecutable = mode.contains("1")||mode.contains("3")||mode.contains("5")||mode.contains("7");
-				if (shouldBeExecutable){
-					fileToCreate.setExecutable(true, false);		
-				}
-				log.info(fileToCreate.getName() + " is executable = " + fileToCreate.canExecute());	
-				 */
-				// Get the dir the file b eints to
+
 				File dir = new File(fileToCreate.getParent());
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
@@ -655,6 +671,13 @@ public class ArchiveUtil {
 			fOut.close();
 		}	
 	}
+	
+	/**
+	 * Creates a TarGz archive containing all the files in the given list
+	 * @param files The files to archive
+	 * @param destination The destination of the archive
+	 * @throws Exception
+	 */
 	
 	public static void createTarGz(List<File> files, File destination) throws Exception {
 		createTarGz(files,destination,"");
