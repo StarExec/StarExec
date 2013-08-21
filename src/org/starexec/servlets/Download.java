@@ -516,7 +516,7 @@ public class Download extends HttpServlet {
 				sb.append(pair.getStarexecResult());
 			}
 			else {
-				sb.append(",-");
+				sb.append(",-,-");
 			}
 			if (attrNames != null) {
 				// print out attributes for this job pair
