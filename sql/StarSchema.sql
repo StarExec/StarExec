@@ -493,7 +493,8 @@ CREATE TABLE job_space_assoc (
 	FOREIGN KEY (space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
-
+-- Stores a cache of stats for a particular job space
+-- Author: Eric Burns
 CREATE TABLE job_stats (
 	job_space_id INT NOT NULL,
 	config_id INT NOT NULL,
@@ -503,4 +504,12 @@ CREATE TABLE job_stats (
 	wallclock DOUBLE,
 	FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
+);
+
+-- Associates space IDs with the cache of their downloads, with multiple possibilities(maybe do solvers, benchmarks, solvers+benchmarks?)
+CREATE TABLE space_cache (
+	space_id INT NOT NULL,
+	path TEXT NOT NULL,
+	UNIQUE KEY (space_id),
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
 );

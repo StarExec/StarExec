@@ -94,6 +94,15 @@ CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
 		
 	END //	
 	
+-- Gets the IDs of all the spaces associated with the given solver
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetAssociatedSpaceIdsBySolver;
+CREATE PROCEDURE GetAssociatedSpaceIdsBySolver(IN _solverId INT) 
+	BEGIN
+		SELECT space_id
+		FROM solver_assoc
+		WHERE solver_id=_solverId;
+	END //
 	
 -- Retrieves the configurations with the given id
 -- Author: Tyler Jensen

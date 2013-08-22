@@ -65,6 +65,7 @@ public class Benchmarks {
 			}			
 
 			Common.endTransaction(con);
+			Spaces.invalidateCache(spaceId);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -128,6 +129,7 @@ public class Benchmarks {
 				if(benchId>=0){
 					//Common.endTransaction(con);
 					log.debug("bench successfully added");
+					
 					return benchId;
 				} else {
 					//will throw exception in calling method
@@ -140,6 +142,7 @@ public class Benchmarks {
 
 			} finally {
 				Common.safeClose(con);
+				Spaces.invalidateCache(spaceId);
 			}
 		} else {
 			log.debug("Add called on invalid benchmark, no additions will be made to the database");
@@ -972,6 +975,35 @@ public class Benchmarks {
 	public static Benchmark getIncludeDeleted(int benchId, boolean includeAttrs) {
 		return Benchmarks.get(benchId,includeAttrs,true);
 	}
+	/**
+	 * Gets the IDs of every space that is associated with the given benchmark
+	 * @param benchId The benchmark in question
+	 * @return A list of space IDs that are associated with this benchmark
+	 * @author Eric Burns
+	 */
+	public static List<Integer> getAssociatedSpaceIds(int benchId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetAssociatedSpaceIdsByBenchmark(?)}");
+			procedure.setInt(1,benchId);
+			results = procedure.executeQuery();
+			List<Integer> ids=new ArrayList<Integer>();
+			while (results.next()) {
+				ids.add(results.getInt("space_id"));
+			}
+			return ids;
+		} catch (Exception e) {
+			log.error("Benchmarks.getAssociatedSpaceIds says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
 
 	/**
 	 * @param benchId The id of the benchmark to retrieve
@@ -1315,6 +1347,19 @@ public class Benchmarks {
 		log.debug(String.format("Getting the dependencies of benchmark %d failed.", benchmarkId));
 		return null;
 	}
+	
+	public static boolean invalidateAssociatedSpaces(int benchId) {
+		try {
+			List<Integer> spaceIds=Benchmarks.getAssociatedSpaceIds(benchId);
+			for (int spaceId : spaceIds) {
+				Spaces.invalidateCache(spaceId);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error("Benchmarks.invalidateAssociatedSpaces says "+e.getMessage(),e);
+		}
+		return false;
+	}
 
 	/**
 	 * Updates the details of a benchmark
@@ -1340,6 +1385,8 @@ public class Benchmarks {
 
 			procedure.executeUpdate();					
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
+			//invalidate the cache of every space associated with this benchmark
+			Benchmarks.invalidateAssociatedSpaces(id);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1435,7 +1482,6 @@ public class Benchmarks {
 				Processor t = new Processor();
 				t.setDescription(results.getString("benchTypeDescription"));
 				t.setName(results.getString("benchTypeName"));
-
 				b.setType(t);
 				benchmarks.add(b);			
 			}

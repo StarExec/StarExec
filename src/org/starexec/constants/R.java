@@ -46,7 +46,7 @@ public class R {
     // Maximum job pair settings
     public static int MAXIMUM_JOB_PAIRS=Integer.MAX_VALUE; // no restriction for now
     public static int MAXIMUM_SOLVER_CONFIG_PAIRS=5;
-    public static int MAXIMUM_DATA_POINTS=10000;
+    public static int MAXIMUM_DATA_POINTS=30000;
     //Regex patterns
     public static String BOOLEAN_PATTERN="true|false";
     public static String LONG_PATTERN="^\\-?\\d+$";

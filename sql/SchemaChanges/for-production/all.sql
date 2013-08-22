@@ -1,6 +1,6 @@
 source statsCache.sql
-source removeProxy.sql --TODO: figure out the correct name of that foreign key (proxy key)
+source removeProxy.sql 
 source pairKeys.sql
 source pairNameColumns.sql
 source dropStatusTable.sql
-source optimizeTables.sql --TODO: figure out the correct name of that foreign key (status_code key)
+source optimizeTables.sql 

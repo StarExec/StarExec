@@ -421,19 +421,20 @@ function updateSpaceOverview() {
 				
 				switch (returnCode) {
 				
-				case 1:
+				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
 					break;
-				case 2:
+				case "2":
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
 					break;	
-				case 12:
+				case "12":
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
 					break;
-				case 13:
+				case "13":
 					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
 					break;
 				default:
+					
 					currentConfigs=new Array();
 					$("#spaceOverviewSelections option:selected").each(function() {
 						currentConfigs.push($(this).attr("value"));
@@ -465,16 +466,16 @@ function updateSolverComparison(big) {
 				
 				switch (returnCode) {
 				
-				case 1:
+				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
 					break;
-				case 2:
+				case "2":
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job",5000);
 					break;
-				case 12:
+				case "12":
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
 					break;
-				case 13:
+				case "13":
 					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
 					break;
 				default:

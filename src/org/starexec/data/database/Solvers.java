@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
 import org.starexec.util.Util;
 
 /**
@@ -288,8 +290,31 @@ public class Solvers {
 		}
 		return -1;
 	}
-	
-	
+	/**
+	 * Gets a list of all the unique solvers in the space hierarchy rooted
+	 * at the given space.
+	 * @param spaceId The root space of the hierarchy in question
+	 * @return A list of all the solvers associated with any space in the current hierarchy.
+	 * Duplicates are filtered out by solver id
+	 * @author Eric Burns
+	 */
+	public static List<Solver> getBySpaceHierarchy(int spaceId, int userId) {
+		List<Solver> solvers=new ArrayList<Solver>();
+		solvers.addAll(Solvers.getBySpace(spaceId));
+		List<Space> spaceIds=Spaces.getSubSpaces(spaceId, userId, true);
+		for (Space s: spaceIds) {
+			solvers.addAll(Solvers.getBySpace(s.getId()));
+		}
+		List<Solver> filteredSolvers=new ArrayList<Solver>();
+		HashSet<Integer> ids=new HashSet<Integer>();
+		for (Solver solve : solvers) {
+			if (!ids.contains(solve.getId())) {
+				ids.add(solve.getId());
+				filteredSolvers.add(solve);
+			}
+		}
+		return filteredSolvers;
+	}
 	/**
 	 * @param spaceId The id of the space to get solvers for
 	 * @return A list of all solvers belonging directly to the space
@@ -431,6 +456,54 @@ public class Solvers {
 		return null;
 	}
 	
+	/**
+	 * Gets the IDs of every space that is associated with the given solver
+	 * @param solverId The solver in question
+	 * @return A list of space IDs that are associated with this solver
+	 * @author Eric Burns
+	 */
+	public static List<Integer> getAssociatedSpaceIds(int solverId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetAssociatedSpaceIdsBySolver(?)}");
+			procedure.setInt(1,solverId);
+			results = procedure.executeQuery();
+			List<Integer> ids=new ArrayList<Integer>();
+			while (results.next()) {
+				ids.add(results.getInt("space_id"));
+			}
+			return ids;
+		} catch (Exception e) {
+			log.error("Solvers.getAssociatedSpaceIds says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	/**
+	 * Invalidates the cache of every space associated with this solver
+	 * @param solverId  The ID of the solver in question
+	 * @return True if the invalidation was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean invalidateAssociatedSpaces(int solverId) {
+		try {
+			List<Integer> spaceIds=Solvers.getAssociatedSpaceIds(solverId);
+			for (int spaceId : spaceIds) {
+				Spaces.invalidateCache(spaceId);
+			}
+			return true;
+		} catch (Exception e) {
+			log.debug("invalidateAssociatedSpaces says "+e.getMessage(),e);
+		} 
+		return false;
+		
+	}
 	
 	/**
 	 * Updates the details of a solver
@@ -454,6 +527,7 @@ public class Solvers {
 			
 			procedure.executeUpdate();						
 			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
+			Solvers.invalidateAssociatedSpaces(id);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -565,7 +639,8 @@ public class Solvers {
 			procedure.setString(2, c.getName());
 			procedure.setString(3, c.getDescription());
 			
-			procedure.executeUpdate();		
+			procedure.executeUpdate();
+			Solvers.invalidateAssociatedSpaces(c.getSolverId());
 			return true;
 		} catch (Exception e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
@@ -600,8 +675,11 @@ public class Solvers {
 			
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
-			
+			//invalidate the cache of any spaces with this solver
+			Solvers.invalidateAssociatedSpaces(c.getSolverId());
+
 			// Return the id of the newly created configuration
+			
 			return newConfigId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -700,7 +778,7 @@ public class Solvers {
 				c.setSolverId(solverId);
 				addConfiguration(con, c);
 			}
-			
+			Spaces.invalidateCache(spaceId);
 			return solverId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -728,6 +806,7 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
+			Spaces.invalidateCache(spaceId);
 			return true;
 		} catch (Exception e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
@@ -1201,12 +1280,14 @@ public class Solvers {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
+			int solverId=Solvers.getSolverByConfig(configId, false).getId();
 			con = Common.getConnection();
 			 procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");	
 			procedure.setInt(1, configId);
 			procedure.executeUpdate();
 			
 			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
+			Solvers.invalidateAssociatedSpaces(solverId);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

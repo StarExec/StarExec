@@ -110,6 +110,15 @@ CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
 			END IF;
 		END IF;
 	END //	
+-- Gets the IDs of all the spaces associated with the given benchmark
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetAssociatedSpaceIdsByBenchmark;
+CREATE PROCEDURE GetAssociatedSpaceIdsByBenchmark(IN _benchId INT) 
+	BEGIN
+		SELECT space_id
+		FROM bench_assoc
+		WHERE bench_id=_benchId;
+	END //
 	
 -- Retrieves the benchmark with the given id
 -- Author: Tyler Jensen

@@ -497,4 +497,26 @@ BEGIN
 	END IF;
 END //
 
+DROP PROCEDURE IF EXISTS GetSpaceCache;
+CREATE PROCEDURE GetSpaceCache(IN _spaceId INT)
+	BEGIN
+		SELECT path FROM space_cache WHERE space_id=_spaceId;
+	END //
+
+-- Adds a new cache entry for space downloads
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS AddSpaceCache;
+CREATE PROCEDURE AddSpaceCache(IN _spaceId INT, IN _path TEXT)
+	BEGIN
+		INSERT IGNORE INTO space_cache (space_id, path) VALUES (_spaceId, _path);
+	END //
+	
+-- Removes a cache entry for a particular space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS InvalidateSpaceCache;
+CREATE PROCEDURE InvalidateSpaceCache(IN _spaceId INT) 
+	BEGIN
+		DELETE FROM space_cache WHERE space_id=_spaceId;
+	END //
+
 DELIMITER ; -- This should always be at the end of this file

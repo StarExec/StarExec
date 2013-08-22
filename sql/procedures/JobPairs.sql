@@ -122,6 +122,5 @@ CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
 		SET sge_id=_sgeId
 		WHERE id=_jobPairId;
 	END //
-	
 
 DELIMITER ; -- this should always be at the end of the file

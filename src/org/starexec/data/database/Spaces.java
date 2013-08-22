@@ -76,6 +76,119 @@ public class Spaces {
 		return false;
 	}
 	
+	
+	
+	/**
+	 * Invalidates the cache for the given space by removing its entry in the 
+	 * space_cache table. If there is no entry in the table, this does nothing
+	 * @param spaceId The ID of the space which is having its cache invalidated
+	 * @param con The open connection to make the call on
+	 * @return True if the call was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	private static boolean invalidateCache(int spaceId, Connection con) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL InvalidateSpaceCache(?)}");
+			procedure.setInt(1,spaceId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.debug("invalidateCache says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	
+	/**
+	 * Invalidates the cache for the hierarchy at the given space ID.
+	 * Also invalidates the cache of every ancestor of this space
+	 * @param spaceId The ID of the space which is having its cache invalidated
+	 * @return True if the invalidation was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean invalidateCache(int spaceId) {
+		log.debug("invalidating cache for space = "+spaceId);
+		if (spaceId==1) {
+			return true; //once we're at the root, we're done
+		}
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			boolean success=invalidateCache(spaceId,con);
+			if (!success) {
+				return false;
+			}
+			invalidateCache(Spaces.getParentSpace(spaceId));
+		} catch (Exception e) {
+			log.debug("invalidateCache says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Returns the relative path to a cached space directory
+	 * @param spaceId The ID of the space to retrieve the cached path for
+	 * @return The String path on success, null if there is no path or if there was an error
+	 * @author Eric Burns
+	 */
+	
+	public static String getCache(int spaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetSpaceCache(?)}");
+			procedure.setInt(1,spaceId);
+			results= procedure.executeQuery();
+			if (results.next()) {
+				return results.getString("path");
+			}
+		} catch (Exception e) {
+			log.debug("Spaces.setCache says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Adds a new entry into the space_cache table containing the path to a cached 
+	 * space archive
+	 * @param spaceId The ID of the space being cached
+	 * @param path The relative filepath to the file (not containing R.DOWNLOAD_FILE_DIR)
+	 * @return True if the update was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean setCache(int spaceId, String path) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL AddSpaceCache(?,?)}");
+			procedure.setInt(1,spaceId);
+			procedure.setString(2,path);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.debug("Spaces.setCache says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 	/**
 	 * Gets a space with minimal information (only details about the space itself)
 	 * @param spaceId The id of the space to get information for
@@ -251,7 +364,7 @@ public class Spaces {
 			
 			// Commit changes to database
 			Common.endTransaction(con);
-			
+			Spaces.invalidateCache(spaceId);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -319,7 +432,7 @@ public class Spaces {
 			Common.beginTransaction(con);
 			Spaces.removeSolvers(solverIds, spaceId, con);
 			Common.endTransaction(con);
-			
+			Spaces.invalidateCache(spaceId);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -1322,7 +1435,6 @@ public class Spaces {
 			int newSpaceId = Spaces.add(con, s, parentId, userId);
 
 			Common.endTransaction(con);			
-			
 			return newSpaceId;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1387,6 +1499,7 @@ public class Spaces {
 			//Do we necessarily want to end the transaction here?  I don't think we do.
 			//Common.endTransaction(con);
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
+			Spaces.invalidateCache(parentId);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("Spaces.add says "+e.getMessage(),e);
@@ -1453,6 +1566,7 @@ public class Spaces {
 			}
 			
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
+			Spaces.invalidateCache(s.getId());
 			return success;		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1832,6 +1946,7 @@ public class Spaces {
 			
 			for (int spaceId : subspaceIds) {
 				Spaces.removeSolvers(solverIds, spaceId, con);
+				Spaces.invalidateCache(spaceId);
 			}
 			
 			Common.endTransaction(con);
@@ -1845,6 +1960,34 @@ public class Spaces {
 		}
 		
 		return false;
+	}
+	/**
+	 * Determines whether this entire space hierarchy, including the given root space, is public
+	 * @param spaceId The ID of the root space of the hierarchy
+	 * @return True if the full hierarchy of spaces rooted at the given space is public, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean isPublicHierarchy(int spaceId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL IsPublicHierarchy(?)}");
+			procedure.setInt(1, spaceId);	
+			results = procedure.executeQuery();
+		
+			if(results.first()) {
+				return results.getBoolean("public");
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;	
 	}
 
 	/**
@@ -1909,6 +2052,9 @@ public class Spaces {
 			procedure.setInt(1, spaceId);
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
+			if (!pbc) {
+				Spaces.invalidateCache(spaceId);
+			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

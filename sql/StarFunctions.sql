@@ -6,36 +6,6 @@ USE starexec;
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
--- Returns a benchmark type's description for a given benchmark id
--- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetBenchmarkTypeDescription;
-CREATE FUNCTION GetBenchmarkTypeDescription(_benchTypeId INT)
-	RETURNS TEXT
-	BEGIN
-		DECLARE benchTypeDescription TEXT;
-		
-		SELECT description INTO benchTypeDescription 
-		FROM processors 
-		WHERE id = _benchTypeId;
-		
-		RETURN benchTypeDescription;
-	END //
-	
--- Returns a benchmark type's name for a given benchmark id
--- Author: Todd Elvers 
-DROP FUNCTION IF EXISTS GetBenchmarkTypeName;
-CREATE FUNCTION GetBenchmarkTypeName(_benchTypeId INT)
-	RETURNS VARCHAR(64)
-	BEGIN
-		DECLARE benchTypeName VARCHAR(64);
-		
-		SELECT name INTO benchTypeName 
-		FROM processors 
-		WHERE id = _benchTypeId;
-		
-		RETURN benchTypeName;
-	END //
 	
 -- Gets the number of completed job pairs for a given job id
 -- Author: Todd Elvers

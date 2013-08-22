@@ -6,6 +6,10 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,13 +68,11 @@ public class Download extends HttpServlet {
 		String fileName = null;
 
 		try {
-
 			if (false == validateRequest(request)) {
 				log.debug("Bad download Request");
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
 				return;
 			}
-
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
 				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, false);
@@ -146,8 +148,9 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
+				//TODO: keep doing a direct download, or switch to indirect?
 				//response.addHeader("Content-Disposition", "attachment; filename=test.zip");
-				response.sendRedirect(Util.docRoot("secure/files/" + fileName));
+				response.sendRedirect(Util.docRoot(R.DOWNLOAD_FILE_DIR+"/" + fileName));
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
 			}									
@@ -658,19 +661,40 @@ public class Download extends HttpServlet {
 		// If we can see this space AND the space is downloadable...
 
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
-			Queue<String> descriptions = new LinkedList<String>();
-
+			//TODO: Probably want to have some sort of "get cached " option so people with other filetypes can do
+			//this easily
+			//first, if we are getting a zip file, check to see if the file is in the cache
+			if (format.contains("zip") && includeBenchmarks && includeSolvers && hierarchy) {
+				String cachedFileName=Spaces.getCache(space.getId());
+				//if the entry was in the cache, make sure the file actually exists
+				if (cachedFileName!=null) {
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+					//it might have been cleared if it has been there too long, so make sure that hasn't happened
+					if (cachedFile.exists()) {
+						//it's there, so give back the name
+						log.debug("returning a cached file!");
+						return cachedFileName;
+					} else {
+						Spaces.invalidateCache(space.getId());
+					}
+				}
+			}
+			
 			String baseFileName=space.getName();
 			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
 			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
-			descriptions.add(space.getDescription());
 			
-			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy);
+			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
 			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
 			if(tempDir.exists()){
 				tempDir.delete();
+			}
+			
+			//we are only caching zipped files for now
+			if (format.contains("zip")  && Spaces.isPublicHierarchy(space.getId()) && includeBenchmarks && includeSolvers && hierarchy) {
+				Spaces.setCache(space.getId(), fileName);
 			}
 			return fileName;
 		}
@@ -689,10 +713,13 @@ public class Download extends HttpServlet {
 	 * @param includeBenchmarks -- Whether to include benchmarks in the directory
 	 * @param  includeSolvers Whether to include solvers in the directory
 	 * @param recursive Whether to include subspaces or not
+	 * @param solverPath The path to the directory containing solvers, where they are stored in a folder
+	 * with the name <solverName><solverId>. If null, the solvers are not stored anywhere. Used to create
+	 * links to solvers and prevent downloading them repeatedly. 
 	 * @throws IOException
-	 * @author Ruoyu Zhang
+	 * @author Ruoyu Zhang + Eric Burns
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive) throws IOException {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive, String solverPath) throws IOException {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			File tempDir = new File(dest);
@@ -712,14 +739,41 @@ public class Download extends HttpServlet {
 			}
 			
 			if (includeSolvers) {
-				List<Solver> solverList=Solvers.getBySpace(space.getId());
+				List<Solver> solverList=null;
+				//if we're getting a full hierarchy and the solver path is
+				//not yet set, we want to store all solvers now and then link them later
+				if (solverPath==null && recursive) {
+					solverList=Solvers.getBySpaceHierarchy(space.getId(), uid);
+				} else{
+					solverList=Solvers.getBySpace(space.getId());
+				}
+					
+					
 				File solverDir=new File(tempDir,"solvers");
 				solverDir.mkdirs();
-				for (Solver s : solverList) {
-					if (s.isDownloadable() || s.getUserId()==uid) {
-						FileUtils.copyDirectoryToDirectory(new File(s.getPath()),solverDir);
+				if (solverPath==null) {
+					
+					for (Solver s : solverList) {
+						if (s.isDownloadable() || s.getUserId()==uid) {
+							String solverDirectoryName=(new File(s.getPath())).getName();
+							FileUtils.copyDirectoryToDirectory(new File(s.getPath()),solverDir);
+							//give solver directory a better name-- ID is included to ensure uniqueness
+							(new File(solverDir,solverDirectoryName)).renameTo(new File(solverDir,s.getName()+s.getId()));
+						}
 					}
+					solverPath=solverDir.getAbsolutePath();
+				} else {
+					for (Solver s : solverList) {
+						
+						
+						File existingSolver=new File(solverPath,s.getName()+s.getId());
+						File linkDir=new File(solverDir,s.getName()+s.getId());
+						//not working currently, for now, just don't put solvers in the individual spaces
+						//Files.createSymbolicLink(Paths.get(linkDir.getAbsolutePath()), Paths.get(existingSolver.getAbsolutePath()));
+					}
+					
 				}
+				
 			}
 			//write the description of the current space to a file
 			File description = new File(tempDir + File.separator + R.DESC_PATH);
@@ -743,7 +797,7 @@ public class Download extends HttpServlet {
 
 			for(Space s: subspaceList){
 				String subDir = dest + File.separator + s.getName();
-				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,includeSolvers,recursive);
+				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,includeSolvers,recursive,solverPath);
 			}
 
 			return;

@@ -29,7 +29,7 @@ import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for jobs (NOT grid engine job execution, see JobManager for that)
- * @author Tyler Jensencv
+ * @author Tyler Jensen
  */
 
 public class Jobs {
@@ -97,12 +97,14 @@ public class Jobs {
 			Jobs.associate(con, job.getId(), spaceId);
 			
 			log.debug("adding job pairs");
+			
 			for(JobPair pair : job) {
+				
 				pair.setJobId(job.getId());
 				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
 				JobPairs.addJobPair(con, pair);
 			}
-
+			
 			Common.endTransaction(con);
 			log.debug("job added successfully");
 			return true;
