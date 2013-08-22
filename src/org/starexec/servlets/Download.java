@@ -6,10 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -766,8 +762,8 @@ public class Download extends HttpServlet {
 					for (Solver s : solverList) {
 						
 						
-						File existingSolver=new File(solverPath,s.getName()+s.getId());
-						File linkDir=new File(solverDir,s.getName()+s.getId());
+						//File existingSolver=new File(solverPath,s.getName()+s.getId());
+						//File linkDir=new File(solverDir,s.getName()+s.getId());
 						//not working currently, for now, just don't put solvers in the individual spaces
 						//Files.createSymbolicLink(Paths.get(linkDir.getAbsolutePath()), Paths.get(existingSolver.getAbsolutePath()));
 					}
