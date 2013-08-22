@@ -196,7 +196,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 				AND assoc.space_id=_spaceId 
 											
 				-- Order results depending on what column is being sorted on
-				ORDER BY pendingPairs ASC
+				ORDER BY totalPairs ASC
 						 
 				-- Shrink the results to only those required for the next page of Jobs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -219,7 +219,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
 				AND 	assoc.space_id=_spaceId 
-				ORDER BY pendingPairs DESC
+				ORDER BY totalPairs DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		ELSEIF _colSortedOn=4 THEN
