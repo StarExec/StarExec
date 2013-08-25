@@ -28,7 +28,7 @@ CREATE TABLE user_roles (
 	email  VARCHAR(64) NOT NULL,
 	role VARCHAR(24) NOT NULL,
 	PRIMARY KEY (email, role),
-	FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
+	CONSTRAINT user_roles_email FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
 );
 
 -- A history record of all logins to the system
@@ -39,7 +39,7 @@ CREATE TABLE logins (
 	ip_address VARCHAR(15) DEFAULT "0.0.0.0",
 	browser_agent TEXT,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+	CONSTRAINT logins_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
 
 -- A convienience table, this contains a specific set of
@@ -76,7 +76,7 @@ CREATE TABLE spaces (
 	default_permission INT,
 	public_access BOOLEAN DEFAULT 0,
 	PRIMARY KEY (id),
-	FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
+	CONSTRAINT spaces_default_permission FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
 -- The set of all associations between each node and it's descendants
@@ -85,8 +85,8 @@ CREATE TABLE closure (
 	ancestor INT NOT NULL,
 	descendant INT NOT NULL,
 	UNIQUE KEY (ancestor, descendant),
-	FOREIGN KEY (ancestor) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (descendant) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT closure_ancestor FOREIGN KEY (ancestor) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT closure_descendant FOREIGN KEY (descendant) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- The root space
@@ -104,7 +104,7 @@ CREATE TABLE processors (
 	processor_type TINYINT DEFAULT 0,
 	disk_size BIGINT NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- The default 'no type' benchmark processor
@@ -124,8 +124,8 @@ CREATE TABLE benchmarks (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
+	CONSTRAINT benchmarks_user_iddas FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT benchmarks_bench_type FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
 );
 
 -- All attributes for each benchmark
@@ -133,7 +133,7 @@ CREATE TABLE bench_attributes (
 	bench_id INT NOT NULL,
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
-	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
+	CONSTRAINT bench_attributes_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 -- The record for an individual solver
@@ -149,7 +149,7 @@ CREATE TABLE solvers (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),	
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
 
 -- All the SGE node queues on the system
@@ -180,8 +180,8 @@ CREATE TABLE queue_assoc (
 	queue_id INT NOT NULL, 	
 	node_id INT NOT NULL,	
 	PRIMARY KEY (queue_id, node_id),
-	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
-	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
+	CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
+	CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
 );
 
 -- Association between exclusive queues and spaces (initially only communities)
@@ -207,10 +207,10 @@ CREATE TABLE jobs (
 	killed BOOLEAN DEFAULT FALSE,
 	primary_space INT,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,
-	FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
-	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL
+	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,
+	CONSTRAINT jobs_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	CONSTRAINT jobs_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL
 );
 
 -- All the configurations that belong to a solver. A solver
@@ -223,7 +223,7 @@ CREATE TABLE configurations (
 	name VARCHAR(128) NOT NULL,
 	description TEXT,
 	PRIMARY KEY (id),
-	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
+	CONSTRAINT configurations_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
 
 -- Table which contains specific information about a job pair
@@ -264,17 +264,15 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	PRIMARY KEY(id),
-	KEY (job_space_id),
-	KEY (config_id),
 	UNIQUE KEY(sge_id),
 	KEY (job_space_id, config_id),
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
-	KEY (status_code),
-	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION,
-	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL
+	KEY (job_id, status_code), 
+	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
+	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index
+	CONSTRAINT job_pairs_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL -- not used as an index
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
@@ -282,7 +280,7 @@ CREATE TABLE job_pair_completion (
 	pair_id INT NOT NULL,
 	completion_id INT NOT NULL AUTO_INCREMENT,
 	PRIMARY KEY (completion_id),
-	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
+	CONSTRAINT job_pair_completion_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
 
 -- All attributes for each job pair
@@ -293,7 +291,7 @@ CREATE TABLE job_attributes (
 	job_id INT NOT NULL,
         PRIMARY KEY (pair_id, attr_key) ,
         KEY (job_id),
-	FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
+	CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
 
 -- The table that keeps track of verification codes that should
@@ -305,7 +303,7 @@ CREATE TABLE verify (
 	PRIMARY KEY (user_id, code),
 	UNIQUE KEY (user_id),
 	UNIQUE KEY (code),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	CONSTRAINT verify_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Websites which are associated with either a space, solver or user.
@@ -320,9 +318,9 @@ CREATE TABLE website (
 	url TEXT NOT NULL,
 	name VARCHAR(64),
 	PRIMARY KEY (id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE	
+	CONSTRAINT website_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT website_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE,
+	CONSTRAINT website_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE	
 );
 
 -- Which user belongs to which space.
@@ -331,9 +329,9 @@ CREATE TABLE user_assoc (
 	space_id INT NOT NULL,	
 	permission INT,
 	PRIMARY KEY (user_id, space_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL
+	CONSTRAINT user_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT user_assoc_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	CONSTRAINT user_assoc_permission FOREIGN KEY (permission) REFERENCES permissions(id) ON DELETE SET NULL
 );
 
 -- Which spaces exists within another space
@@ -341,8 +339,8 @@ CREATE TABLE set_assoc (
 	space_id INT NOT NULL, 
 	child_id INT NOT NULL,
 	PRIMARY KEY (space_id, child_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (child_id) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT set_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT set_assoc_child_id FOREIGN KEY (child_id) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- Which benchmarks belong to which spaces
@@ -350,8 +348,8 @@ CREATE TABLE bench_assoc (
 	space_id INT NOT NULL, 
 	bench_id INT NOT NULL,
 	PRIMARY KEY (space_id, bench_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
+	CONSTRAINT bench_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT bench_assoc_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 -- Which jobs belong to which spaces
@@ -359,8 +357,8 @@ CREATE TABLE job_assoc (
 	space_id INT NOT NULL, 
 	job_id INT NOT NULL,
 	PRIMARY KEY (space_id, job_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+	CONSTRAINT job_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT job_assoc_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 -- Which solvers belong to which spaces
@@ -368,8 +366,8 @@ CREATE TABLE solver_assoc (
 	space_id INT NOT NULL,
 	solver_id INT NOT NULL,
 	PRIMARY KEY (space_id, solver_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
+	CONSTRAINT solver_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT solver_assoc_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
 
 -- Pending requests to join a community
@@ -382,8 +380,8 @@ CREATE TABLE community_requests (
 	created TIMESTAMP NOT NULL,	
 	PRIMARY KEY (user_id, community),
 	UNIQUE KEY (code),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT community_requests_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	CONSTRAINT community_requests_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 -- Pending requests to reset a user's password
@@ -395,7 +393,7 @@ CREATE TABLE pass_reset_request (
 	PRIMARY KEY (user_id, code),
 	UNIQUE KEY (user_id),
 	UNIQUE KEY (code),
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	CONSTRAINT pass_reset_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Benchmark dependencies - e.g. a benchmark may reference other benchmarks such as axioms
@@ -406,8 +404,8 @@ CREATE TABLE bench_dependency (
 	secondary_bench_id INT NOT NULL,
 	include_path TEXT not NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (primary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
-	FOREIGN KEY (secondary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
+	CONSTRAINT bench_dependency_primary_bench_id FOREIGN KEY (primary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
+	CONSTRAINT bench_dependency_secondary_bench_id FOREIGN KEY (secondary_bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 -- Comments which are associated with either a space, a solver, or a benchmark.
@@ -424,10 +422,10 @@ CREATE TABLE comments (
 	cmt_date TIMESTAMP NOT NULL,
 	cmt TEXT NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (benchmark_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE	
+	CONSTRAINT comments_benchmark_id FOREIGN KEY (benchmark_id) REFERENCES benchmarks(id) ON DELETE CASCADE,
+	CONSTRAINT comments_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	CONSTRAINT comments_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT comments_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE	
 );
 
 -- Default settings for a community space.
@@ -441,9 +439,9 @@ CREATE TABLE space_default_settings (
 	dependencies_enabled BOOLEAN DEFAULT FALSE,
 	default_benchmark INT DEFAULT NULL,
 	PRIMARY KEY (space_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
-	FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL
+	CONSTRAINT space_default_settings_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT space_default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	CONSTRAINT space_default_settings_default_benchmark FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL
 );
 
 -- For Status Updates on a Benchmark upload
@@ -490,8 +488,8 @@ CREATE TABLE job_spaces (
 CREATE TABLE job_space_assoc (
 	space_id INT NOT NULL,
 	child_id INT NOT NULL,
-	FOREIGN KEY (space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
-	FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
+	CONSTRAINT job_space_assoc_space_id FOREIGN KEY (space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
+	CONSTRAINT job_space_assoc_child_id FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
 -- Stores a cache of stats for a particular job space
 -- Author: Eric Burns
@@ -502,7 +500,7 @@ CREATE TABLE job_stats (
 	failed INT NOT NULL,
 	error INT NOT NULL,
 	wallclock DOUBLE,
-	FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
+	CONSTRAINT job_stats_job_space_id FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
 );
 
@@ -511,5 +509,5 @@ CREATE TABLE space_cache (
 	space_id INT NOT NULL,
 	path TEXT NOT NULL,
 	UNIQUE KEY (space_id),
-	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT space_cache_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
 );

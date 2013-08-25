@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.sql.CallableStatement;
@@ -77,6 +78,7 @@ public class Jobs {
 	 * @return True if the operation was successful, false otherwise.
 	 */
 	public static boolean add(Job job, int spaceId) {
+		long a=System.currentTimeMillis();
 		Connection con = null;
 		PreparedStatement procedure=null;
 		try {
@@ -134,13 +136,15 @@ public class Jobs {
 			dir.mkdirs();
 			File jobPairFile=new File(R.JOBPAIR_INPUT_DIR,UUID.randomUUID().toString());
 			jobPairFile.createNewFile();
-			FileWriter writer=new FileWriter(jobPairFile);
+			BufferedWriter writer=new BufferedWriter(new FileWriter(jobPairFile));
+			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to the pair loop");
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
 				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
-				writer.write(getPairString(pair));
-				//JobPairs.addJobPair(con, pair);
+				//writer.write(getPairString(pair));
+				JobPairs.addJobPair(con, pair);
 			}
+			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to execute the pair loop");
 			writer.flush();
 			writer.close();
 			procedure=con.prepareStatement("LOAD DATA INFILE ? INTO TABLE JOB_PAIRS " +
@@ -148,9 +152,11 @@ public class Jobs {
 					"(job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id);");
 			procedure.setString(1, jobPairFile.getAbsolutePath());
 			procedure.executeUpdate();
+			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to execute the update");
 			jobPairFile.delete();
 			Common.endTransaction(con);
 			log.debug("job added successfully");
+			
 			return true;
 		} catch(Exception e) {
 			log.error("add says " + e.getMessage(), e);
@@ -1085,39 +1091,6 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-		}
-
-		return 0;		
-	}
-
-	/**
-	 * Returns the number of job pairs that exist for a given job
-	 * 
-	 * @param jobId the id of the job to get the number of job pairs for
-	 * @return the number of job pairs for the given job
-	 * @author Todd Elvers
-	 */
-	public static int getJobPairCount(int jobId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByJob(?)}");
-			procedure.setInt(1, jobId);
-			 results = procedure.executeQuery();
-			int jobPairCount=0;
-			if (results.next()) {
-				jobPairCount = results.getInt("jobPairCount");
-			}
-			Common.safeClose(results);
-			return jobPairCount;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
 
 		return 0;		

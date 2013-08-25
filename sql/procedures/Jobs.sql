@@ -54,16 +54,6 @@ CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 				OR		GetJobStatus(jobs.id)	LIKE	CONCAT('%', _query, '%'));
 	END //
 
--- Returns the number of jobs pairs for a given job
--- Author: Todd Elvers	
-DROP PROCEDURE IF EXISTS GetJobPairCountByJob;
-CREATE PROCEDURE GetJobPairCountByJob(IN _jobId INT)
-	BEGIN
-		SELECT COUNT(*) AS jobPairCount
-		FROM job_pairs
-		WHERE job_id = _jobId;
-	END //
-
 	
 -- Returns the number of jobs pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
@@ -110,6 +100,8 @@ CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 			WHERE pair.job_id=_jobId;
 	END //
 	
+-- Gets the attributes for every job pair of a job completed after the given completion id
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetNewJobAttrs;
 CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 	BEGIN

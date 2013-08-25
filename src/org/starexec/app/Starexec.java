@@ -145,7 +145,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("clearDownloadsTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1);
-				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 5);
+				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR).getAbsolutePath(), 5);
 			}
 		};	
 		
@@ -156,6 +156,7 @@ public class Starexec implements ServletContextListener {
 			    log.info("clearJobLogTask (periodic)");
 				Util.clearOldFiles(R.JOB_LOG_DIR, 3);
 				Util.clearOldFiles(R.JOB_INBOX_DIR,3);
+				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1);
 			}
 			};
 		
