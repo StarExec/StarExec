@@ -1,14 +1,17 @@
 package org.starexec.data.database;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -34,7 +37,37 @@ import org.starexec.util.Util;
 
 public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
-
+	private static final String sqlDelimiter = ",";
+	private static String getPairString(JobPair pair) {
+		StringBuilder sb=new StringBuilder();
+		sb.append(pair.getJobId());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getBench().getId());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getSolver().getConfigurations().get(0).getId());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getStatus().getCode().getVal());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getCpuTimeout());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getWallclockTimeout());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getPath());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getJobSpaceId());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getSolver().getName());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getBench().getName());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getSolver().getConfigurations().get(0).getName());
+		sb.append(sqlDelimiter);
+		sb.append(pair.getSolver().getId());
+		sb.append(sqlDelimiter);
+		sb.append("\n");
+		return sb.toString();
+	}
+	
 	/**
 	 * Adds a new job to the database. NOTE: This only records the job in the 
 	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
@@ -45,7 +78,7 @@ public class Jobs {
 	 */
 	public static boolean add(Job job, int spaceId) {
 		Connection con = null;
-		
+		PreparedStatement procedure=null;
 		try {
 			HashMap<Integer,String> idsToNames=new HashMap<Integer,String>();
 			
@@ -97,14 +130,25 @@ public class Jobs {
 			Jobs.associate(con, job.getId(), spaceId);
 			
 			log.debug("adding job pairs");
-			
+			File dir=new File(R.JOBPAIR_INPUT_DIR);
+			dir.mkdirs();
+			File jobPairFile=new File(R.JOBPAIR_INPUT_DIR,UUID.randomUUID().toString());
+			jobPairFile.createNewFile();
+			FileWriter writer=new FileWriter(jobPairFile);
 			for(JobPair pair : job) {
-				
 				pair.setJobId(job.getId());
 				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
-				JobPairs.addJobPair(con, pair);
+				writer.write(getPairString(pair));
+				//JobPairs.addJobPair(con, pair);
 			}
-			
+			writer.flush();
+			writer.close();
+			procedure=con.prepareStatement("LOAD DATA INFILE ? INTO TABLE JOB_PAIRS " +
+					" FIELDS TERMINATED BY ',' " +
+					"(job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id);");
+			procedure.setString(1, jobPairFile.getAbsolutePath());
+			procedure.executeUpdate();
+			jobPairFile.delete();
 			Common.endTransaction(con);
 			log.debug("job added successfully");
 			return true;
@@ -114,6 +158,7 @@ public class Jobs {
 			
 		} finally {			
 			Common.safeClose(con);	
+			Common.safeClose(procedure);
 		}
 
 		return false;

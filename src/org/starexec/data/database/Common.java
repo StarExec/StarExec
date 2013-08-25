@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -181,6 +182,26 @@ public class Common {
 		try {
 			if(c != null && !c.isClosed()) {
 				c.close();
+				
+				connectionsClosed++;
+				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
+			}
+		} catch (Exception e){
+			// Do nothing
+			log.error("Safe Close says " + e.getMessage(),e);
+		}
+
+	}
+	
+	/**
+	 * Method which safely closes a prepared Statement
+	 * and doesn't raise any errors
+	 * @param p the prepared statement to close
+	 */
+	protected static synchronized void safeClose(PreparedStatement p) {
+		try {
+			if(p != null && !p.isClosed()) {
+				p.close();
 				
 				connectionsClosed++;
 				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
