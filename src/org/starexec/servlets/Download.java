@@ -146,7 +146,13 @@ public class Download extends HttpServlet {
 				}
 				//TODO: keep doing a direct download, or switch to indirect?
 				//response.addHeader("Content-Disposition", "attachment; filename=test.zip");
-				response.sendRedirect(Util.docRoot(R.DOWNLOAD_FILE_DIR+"/" + fileName));
+				if (fileName.contains(Util.docRoot(R.CACHED_FILE_DIR))) {
+					log.debug("here I am sending back a cached file from my new folder!");
+					response.sendRedirect(fileName);
+				} else {
+					response.sendRedirect(Util.docRoot(R.DOWNLOAD_FILE_DIR+"/" + fileName));
+
+				}
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
 			}									
@@ -229,7 +235,7 @@ public class Download extends HttpServlet {
 	}
 
 
-	/*
+	/**
 	 * Handles requests for downloading post processors for a given community
 	 * @return the filename of the created archive
 	 * @author Eric Burns
@@ -669,7 +675,8 @@ public class Download extends HttpServlet {
 					if (cachedFile.exists()) {
 						//it's there, so give back the name
 						log.debug("returning a cached file!");
-						return cachedFileName;
+						
+						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
 					} else {
 						Spaces.invalidateCache(space.getId());
 					}
@@ -691,6 +698,7 @@ public class Download extends HttpServlet {
 			//we are only caching zipped files for now
 			if (format.contains("zip")  && Spaces.isPublicHierarchy(space.getId()) && includeBenchmarks && includeSolvers && hierarchy) {
 				Spaces.setCache(space.getId(), fileName);
+				FileUtils.copyFileToDirectory(uniqueDir, new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR+File.separator));
 			}
 			return fileName;
 		}

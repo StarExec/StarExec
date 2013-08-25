@@ -109,25 +109,23 @@ CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 
 	
 -- Returns all spaces belonging to the space with the given id.
--- Author: Tyler Jensen & Benton McCune
+-- Author: Tyler Jensen & Benton McCune & Eric Burns
 DROP PROCEDURE IF EXISTS GetSubSpacesById;
-CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
+CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
-			SELECT *
+			SELECT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM spaces
 			WHERE id = 
 				(SELECT MIN(id)
 				FROM spaces);
 		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
-			SELECT *
-			FROM spaces
-			WHERE id IN
-				(SELECT child_id 
-				 FROM set_assoc 
-					JOIN closure ON set_assoc.child_id=closure.ancestor 
-					JOIN user_assoc ON ( (user_assoc.user_id in (_userId, _publicUserId)) AND user_assoc.space_id=closure.descendant) 
-					WHERE set_assoc.space_id=_spaceId)
+			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id 
+			FROM set_assoc 
+				JOIN closure ON set_assoc.child_id=closure.ancestor 
+				JOIN  spaces ON spaces.id=set_assoc.child_id
+				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
+				WHERE set_assoc.space_id=_spaceId
 			ORDER BY name;
 		END IF;
 	END //
@@ -497,6 +495,8 @@ BEGIN
 	END IF;
 END //
 
+-- Returns the path to the cached file for the given space
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSpaceCache;
 CREATE PROCEDURE GetSpaceCache(IN _spaceId INT)
 	BEGIN

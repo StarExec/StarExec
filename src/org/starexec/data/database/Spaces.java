@@ -76,6 +76,28 @@ public class Spaces {
 		return false;
 	}
 	
+	/**
+	 * Deletes the cached file for downloading the given space. If no such file exists,
+	 * does nothing
+	 * @param spaceId The ID of the space in question
+	 * @return True on success (file was deleted or does not exist), false on error
+	 * @author Eric Burns
+	 */
+	public static boolean deleteCache(int spaceId) {
+		try {
+			String filePath=Spaces.getCache(spaceId);
+			if (filePath!=null) {
+				File cacheFile=new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), filePath);
+				if (cacheFile.exists()) {
+					cacheFile.delete();
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			log.debug("deleteCache says "+e.getMessage());
+		} 
+		return false;
+	}
 	
 	
 	/**
@@ -122,7 +144,8 @@ public class Spaces {
 			if (!success) {
 				return false;
 			}
-			invalidateCache(Spaces.getParentSpace(spaceId));
+			Spaces.deleteCache(spaceId);
+			return Spaces.invalidateCache(Spaces.getParentSpace(spaceId));
 		} catch (Exception e) {
 			log.debug("invalidateCache says "+e.getMessage(),e);
 		} finally {
@@ -889,10 +912,9 @@ public class Spaces {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			 procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			procedure.setInt(3, R.PUBLIC_USER_ID);
 			 results = procedure.executeQuery();
 			List<Space> subSpaces = new LinkedList<Space>();
 			

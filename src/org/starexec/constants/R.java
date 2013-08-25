@@ -89,6 +89,7 @@ public class R {
     public static String NODE_OUTPUT_DIR = null;							// The path to the directory on the local node where output should be placed by the user in order to be saved by starexec
     public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
     public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
+    public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading
     public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
     public static String PICTURE_PATH = null;								// Where the pictures are located
     public static String BATCH_SPACE_XML_DIR = null;                        // Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
