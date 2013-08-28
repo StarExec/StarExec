@@ -125,7 +125,7 @@ public class Cache {
 		ResultSet results=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetSpaceCache(?, ?, ?)}");
+			procedure=con.prepareCall("{CALL GetCachePath(?, ?, ?)}");
 			procedure.setInt(1,id);
 			procedure.setInt(2,type.getVal());
 			procedure.setTimestamp(3, new Timestamp(System.currentTimeMillis()));

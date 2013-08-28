@@ -9,7 +9,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Returns the path to the cached file for the given space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetCachePath;
-CREATE PROCEDURE GetSpaceCache(IN _id INT, IN _cacheType INT, IN _time TIMESTAMP)
+CREATE PROCEDURE GetCachePath(IN _id INT, IN _cacheType INT, IN _time TIMESTAMP)
 	BEGIN
 		UPDATE file_cache SET last_access = _time WHERE space_id=_id AND cache_type=_cacheType;
 		SELECT path FROM file_cache WHERE space_id=_id AND cache_type=_cacheType;
