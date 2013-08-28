@@ -18,7 +18,7 @@ CREATE PROCEDURE GetCachePath(IN _id INT, IN _cacheType INT, IN _time TIMESTAMP)
 -- Adds a new cache entry
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS AddCachePath;
-CREATE PROCEDURE AddSpaceCache(IN _id INT, IN _cacheType INT, IN _path TEXT)
+CREATE PROCEDURE AddCachePath(IN _id INT, IN _cacheType INT, IN _path TEXT)
 	BEGIN
 		INSERT IGNORE INTO file_cache (space_id, cache_type, path) VALUES (_id,cache_type, _path);
 	END //
@@ -40,7 +40,7 @@ CREATE PROCEDURE DeleteOldCachePaths(IN _time TIMESTAMP)
 -- Removes a cache entry 
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS InvalidateCache;
-CREATE PROCEDURE InvalidateSpaceCache(IN _id INT, IN _cacheType INT) 
+CREATE PROCEDURE InvalidateCache(IN _id INT, IN _cacheType INT) 
 	BEGIN
 		DELETE FROM file_cache WHERE space_id=_id AND cache_type=_cacheType;
 	END //

@@ -52,7 +52,7 @@ public class Cache {
 	private static boolean invalidateCache(int id, CacheType type, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL InvalidateSpaceCache(?, ?)}");
+			procedure=con.prepareCall("{CALL InvalidateCache(?, ?)}");
 			procedure.setInt(1,id);
 			procedure.setInt(2,type.getVal());
 			procedure.executeUpdate();
@@ -217,7 +217,7 @@ public class Cache {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL AddSpaceCache(?,?,?)}");
+			procedure=con.prepareCall("{CALL AddCachePath(?,?,?)}");
 			procedure.setInt(1,id);
 			procedure.setInt(2,type.getVal());
 			procedure.setString(3,path);
