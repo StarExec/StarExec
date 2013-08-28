@@ -17,6 +17,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -485,25 +486,7 @@ public class Solvers {
 		}
 		return null;
 	}
-	/**
-	 * Invalidates the cache of every space associated with this solver
-	 * @param solverId  The ID of the solver in question
-	 * @return True if the invalidation was successful, false otherwise
-	 * @author Eric Burns
-	 */
-	public static boolean invalidateAssociatedSpaces(int solverId) {
-		try {
-			List<Integer> spaceIds=Solvers.getAssociatedSpaceIds(solverId);
-			for (int spaceId : spaceIds) {
-				Spaces.invalidateCache(spaceId);
-			}
-			return true;
-		} catch (Exception e) {
-			log.debug("invalidateAssociatedSpaces says "+e.getMessage(),e);
-		} 
-		return false;
-		
-	}
+	
 	
 	/**
 	 * Updates the details of a solver
@@ -527,7 +510,8 @@ public class Solvers {
 			
 			procedure.executeUpdate();						
 			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
-			Solvers.invalidateAssociatedSpaces(id);
+			Cache.invalidateSpacesAssociatedWithSolver(id);
+			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -595,6 +579,8 @@ public class Solvers {
 		File solverToDelete = null;
 		CallableStatement procedure = null;
 		try {
+			Cache.invalidateSpacesAssociatedWithSolver(id);
+			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
 			con = Common.getConnection();
 			
 			 procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
@@ -640,7 +626,7 @@ public class Solvers {
 			procedure.setString(3, c.getDescription());
 			
 			procedure.executeUpdate();
-			Solvers.invalidateAssociatedSpaces(c.getSolverId());
+			
 			return true;
 		} catch (Exception e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
@@ -676,7 +662,8 @@ public class Solvers {
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
 			//invalidate the cache of any spaces with this solver
-			Solvers.invalidateAssociatedSpaces(c.getSolverId());
+			Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
+			Cache.invalidateCache(c.getSolverId(), CacheType.CACHE_SOLVER);
 
 			// Return the id of the newly created configuration
 			
@@ -778,7 +765,7 @@ public class Solvers {
 				c.setSolverId(solverId);
 				addConfiguration(con, c);
 			}
-			Spaces.invalidateCache(spaceId);
+			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
 			return solverId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -806,7 +793,7 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
-			Spaces.invalidateCache(spaceId);
+			Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
@@ -1287,7 +1274,8 @@ public class Solvers {
 			procedure.executeUpdate();
 			
 			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
-			Solvers.invalidateAssociatedSpaces(solverId);
+			Cache.invalidateSpacesAssociatedWithSolver(solverId);
+			Cache.invalidateCache(solverId, CacheType.CACHE_SOLVER);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

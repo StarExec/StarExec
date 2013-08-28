@@ -123,7 +123,7 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id 
 			FROM set_assoc 
 				JOIN closure ON set_assoc.child_id=closure.ancestor 
-				JOIN  spaces ON spaces.id=set_assoc.child_id
+				JOIN spaces ON spaces.id=set_assoc.child_id
 				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
 				WHERE set_assoc.space_id=_spaceId
 			ORDER BY name;
@@ -494,29 +494,5 @@ BEGIN
 		END IF;
 	END IF;
 END //
-
--- Returns the path to the cached file for the given space
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSpaceCache;
-CREATE PROCEDURE GetSpaceCache(IN _spaceId INT)
-	BEGIN
-		SELECT path FROM space_cache WHERE space_id=_spaceId;
-	END //
-
--- Adds a new cache entry for space downloads
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS AddSpaceCache;
-CREATE PROCEDURE AddSpaceCache(IN _spaceId INT, IN _path TEXT)
-	BEGIN
-		INSERT IGNORE INTO space_cache (space_id, path) VALUES (_spaceId, _path);
-	END //
-	
--- Removes a cache entry for a particular space
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS InvalidateSpaceCache;
-CREATE PROCEDURE InvalidateSpaceCache(IN _spaceId INT) 
-	BEGIN
-		DELETE FROM space_cache WHERE space_id=_spaceId;
-	END //
 
 DELIMITER ; -- This should always be at the end of this file

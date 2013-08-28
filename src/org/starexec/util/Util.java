@@ -33,6 +33,7 @@ import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Cache;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
@@ -392,6 +393,29 @@ public class Util {
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
+	}
+	/** Deletes all the cached files that have not been accessed in the given amount of days
+	 * @daysSinceLastAccess The number of days a file should have gone without being accessed to delete
+	 * @author Eric Burns
+	 */
+	public static void clearOldCachedFiles(int daysSinceLastAccess) {
+		log.debug("calling clearOldCachedFiles (periodic");
+		try {
+			
+			List<String> paths=Cache.getOldPaths(daysSinceLastAccess);
+			//first, remove the files on disk
+			for (String path : paths) {
+				File file=new File(path);
+				if (file.exists()) {
+					file.delete();
+				}
+			}
+			//now that the files are gone on disk, remove the entries in the database
+			Cache.deleteOldPaths(daysSinceLastAccess);
+		} catch (Exception e) {
+			log.error("clearOldCachedFiles says "+e.getMessage(),e);
+		}
+		
 	}
 	
 	

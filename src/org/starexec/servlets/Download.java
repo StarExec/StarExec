@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cache;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -32,6 +33,7 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
@@ -71,19 +73,19 @@ public class Download extends HttpServlet {
 			}
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, false);
+				fileName = handleSolver(s, u.getId(), ".zip", response, false);
 			} else if (request.getParameter("type").equals("reupload")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSolver(s, u.getId(), u.getArchiveType(), response, true);
+				fileName = handleSolver(s, u.getId(), ".zip", response, true);
 			} else if (request.getParameter("type").equals("bench")) {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleBenchmark(b, u.getId(), u.getArchiveType(), response);
+				fileName = handleBenchmark(b, u.getId(), ".zip", response);
 			} else if (request.getParameter("type").equals("jp_output")) {
 				JobPair jp = JobPairs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
-				fileName = handlePairOutput(jp, u.getId(), u.getArchiveType(), response);				
+				fileName = handlePairOutput(jp, u.getId(), ".zip", response);				
 			} else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSpaceXML(space, u.getId(), u.getArchiveType(), response);	
+				fileName = handleSpaceXML(space, u.getId(), ".zip", response);	
 			} else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
@@ -97,7 +99,7 @@ public class Download extends HttpServlet {
 					since=Integer.parseInt(lastSeen);
 				}
 
-				fileName = handleJob(jobId, u.getId(), u.getArchiveType(), response, since,ids);
+				fileName = handleJob(jobId, u.getId(), ".zip", response, since,ids);
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
 				String lastSeen=request.getParameter("since");
@@ -105,7 +107,7 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				fileName = handleJobOutputs(job, u.getId(), u.getArchiveType(), response,since);
+				fileName = handleJobOutputs(job, u.getId(), ".zip", response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
@@ -120,9 +122,9 @@ public class Download extends HttpServlet {
 				}
 				
 				if(request.getParameter("hierarchy").equals("false")){
-					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,false,includeBenchmarks,includeSolvers);
+					fileName = handleSpace(space, u.getId(), ".zip", response,false,includeBenchmarks,includeSolvers);
 				} else {
-					fileName = handleSpace(space, u.getId(), u.getArchiveType(), response,true,includeBenchmarks,includeSolvers);
+					fileName = handleSpace(space, u.getId(), ".zip", response,true,includeBenchmarks,includeSolvers);
 				}
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
@@ -131,7 +133,7 @@ public class Download extends HttpServlet {
 				} else {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
 				}
-				fileName=handleProc(proc,u.getId(),u.getArchiveType(),Integer.parseInt(request.getParameter("id")) , response);
+				fileName=handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
 			}
 			// Redirect based on success/failure
 			if(fileName != null) {
@@ -178,6 +180,24 @@ public class Download extends HttpServlet {
 		// If we can see this solver AND the solver is downloadable...
 
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
+			
+			if (!reupload) {
+				String cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
+				//if the entry was in the cache, make sure the file actually exists
+				if (cachedFileName!=null) {
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+					//it might have been cleared if it has been there too long, so make sure that hasn't happened
+					if (cachedFile.exists()) {
+						//it's there, so give back the name
+						log.debug("returning a cached file!");
+						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+					} else {
+						log.warn("a cached file did not exist when it should have!");
+						Cache.invalidateCache(s.getId(),CacheType.CACHE_SOLVER);
+					}
+				}
+			}
+			
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
 			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
@@ -194,7 +214,9 @@ public class Download extends HttpServlet {
 			copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
 
 			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseName, reupload);
-
+			if (!reupload) {
+				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,fileName);
+			}
 			//We return the fileName so the browser can redirect straight to it
 			return fileName;
 		}
@@ -271,13 +293,27 @@ public class Download extends HttpServlet {
 	private static String handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
 		// If we can see this benchmark AND the benchmark is downloadable...
 		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
+			String cachedFileName=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
+			//if the entry was in the cache, make sure the file actually exists
+			if (cachedFileName!=null) {
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+				//it might have been cleared if it has been there too long, so make sure that hasn't happened
+				if (cachedFile.exists()) {
+					//it's there, so give back the name
+					log.debug("returning a cached file!");
+					return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+				} else {
+					log.warn("a cached file did not exist when it should have!");
+					Cache.invalidateCache(b.getId(),CacheType.CACHE_BENCHMARK);
+				}
+			}
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = b.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format, false);
-
+			Cache.setCache(b.getId(),CacheType.CACHE_BENCHMARK,fileName);
 			return fileName;
 		}
 		else {
@@ -309,6 +345,23 @@ public class Download extends HttpServlet {
 
 		// If we can see this Space
 		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
+			
+				String cachedFileName=null;
+				cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
+				//if the entry was in the cache, make sure the file actually exists
+				if (cachedFileName!=null) {
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+					//it might have been cleared if it has been there too long, so make sure that hasn't happened
+					if (cachedFile.exists()) {
+						//it's there, so give back the name
+						log.debug("returning a cached file!");
+						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+					} else {
+						log.warn("a cached file did not exist when it should have!");
+						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE_XML);
+					}
+				}
+			
 			log.debug("Permission to download XML granted");			
 			BatchUtil butil = new BatchUtil();
 			File file = null;
@@ -331,7 +384,9 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 
 			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false);
-
+			if (Spaces.isPublicHierarchy(space.getId())) {
+				Cache.setCache(space.getId(), CacheType.CACHE_SPACE_XML, fileName);
+			}
 			return fileName;
 		}
 		else {
@@ -390,6 +445,20 @@ public class Download extends HttpServlet {
 	private static String handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws IOException {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		if (Permissions.canUserSeeJob(jobId, userId)) {
+			if (returnIds) {
+				String cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+				//it might have been cleared if it has been there too long, so make sure that hasn't happened
+				if (cachedFile.exists()) {
+					//it's there, so give back the name
+					log.debug("returning a cached file!");
+					return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+				} else {
+					log.warn("a cached file did not exist when it should have!");
+					Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
+				}
+			}
+			
 			Job job;
 			if (since==null) {
 				job = Jobs.getDetailed(jobId);
@@ -421,7 +490,9 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			String jobFile = CreateJobCSV(job, returnIds);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
-
+			if (returnIds) {
+				Cache.setCache(jobId, CacheType.CACHE_JOB_CSV, fileName);
+			}
 			return fileName;
 		}
 		else {
@@ -562,6 +633,25 @@ public class Download extends HttpServlet {
 
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {
+			
+			String cachedFileName=null;
+			
+			cachedFileName=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+			//if the entry was in the cache, make sure the file actually exists
+			if (cachedFileName!=null) {
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+				//it might have been cleared if it has been there too long, so make sure that hasn't happened
+				if (cachedFile.exists()) {
+					//it's there, so give back the name
+					log.debug("returning a cached file!");
+					return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+				} else {
+					log.warn("a cached file did not exist when it should have!");
+					Cache.invalidateCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+				}
+			}
+			
+			
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
@@ -622,8 +712,10 @@ public class Download extends HttpServlet {
 
 				}
 			}
+			//we only cache the full results, not partial
 			if (since!=null) {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
+				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT, fileName);
 			} else {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
 			}
@@ -666,8 +758,14 @@ public class Download extends HttpServlet {
 			//TODO: Probably want to have some sort of "get cached " option so people with other filetypes can do
 			//this easily
 			//first, if we are getting a zip file, check to see if the file is in the cache
-			if (format.contains("zip") && includeBenchmarks && includeSolvers && hierarchy) {
-				String cachedFileName=Spaces.getCache(space.getId());
+			if (includeBenchmarks && includeSolvers) {
+				String cachedFileName=null;
+				if (hierarchy) {
+					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
+
+				} else {
+					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
+				}
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFileName!=null) {
 					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
@@ -675,10 +773,10 @@ public class Download extends HttpServlet {
 					if (cachedFile.exists()) {
 						//it's there, so give back the name
 						log.debug("returning a cached file!");
-						
 						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
 					} else {
-						Spaces.invalidateCache(space.getId());
+						log.warn("a cached file did not exist when it should have!");
+						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE);
 					}
 				}
 			}
@@ -696,8 +794,13 @@ public class Download extends HttpServlet {
 			}
 			
 			//we are only caching zipped files for now
-			if (format.contains("zip")  && Spaces.isPublicHierarchy(space.getId()) && includeBenchmarks && includeSolvers && hierarchy) {
-				Spaces.setCache(space.getId(), fileName);
+			if (Spaces.isPublicHierarchy(space.getId()) && includeBenchmarks && includeSolvers) {
+				if (hierarchy) {
+					Cache.setCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY, fileName);
+				} else {
+					Cache.setCache(space.getId(),CacheType.CACHE_SPACE, fileName);
+				}
+				
 				FileUtils.copyFileToDirectory(uniqueDir, new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR+File.separator));
 			}
 			return fileName;

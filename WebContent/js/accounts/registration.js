@@ -112,9 +112,6 @@ function attachFormValidation(){
 				required 	: true,
 				equalTo 	: "#password"
 			},
-			pat:{
-				required	: true
-			},
 			cm: {
 				required	: true
 			},
@@ -152,9 +149,7 @@ function attachFormValidation(){
 				required 	: "please provide a password",
 				equalTo 	: "passwords don't match"
 			},
-			pat: {
-				required	: "select an archive type"
-			},
+			
 			em : {
 				required 	: "enter a valid email address",
 				email 		: "invalid email format"

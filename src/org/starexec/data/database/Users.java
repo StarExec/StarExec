@@ -161,7 +161,6 @@ public class Users {
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));
 				u.setRole(results.getString("role"));
-				u.setArchiveType(results.getString("pref_archive_type"));	
 				u.setDiskQuota(results.getLong("disk_quota"));
 				return u;
 			}			
@@ -197,23 +196,22 @@ public class Users {
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			
-			 procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL AddUser(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
 			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
-			procedure.setString(7, user.getArchiveType());
 			
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();			
 			
 			// Extract id from OUT parameter
-			user.setId(procedure.getInt(8));
+			user.setId(procedure.getInt(7));
 			
 			boolean successfulRegistration = false;
 			
@@ -309,7 +307,6 @@ public class Users {
 				u.setInstitution(results.getString("institution"));
 				u.setCreateDate(results.getTimestamp("created"));
 				u.setRole(results.getString("role"));
-				u.setArchiveType(results.getString("pref_archive_type"));				
 				u.setDiskQuota(results.getLong("disk_quota"));
 				return u;
 			}			
@@ -624,36 +621,6 @@ public class Users {
 		
 		return false;
 	}
-	
-	/**
-	 * Updates the preferred archive type of the user, between
-	 * .zip, .tar, and .tar.gz
-	 * @param userId The id of the user to update
-	 * @param newValue One of the three supported archive types (.zip, .tar, and .tar.gz)
-	 * @return true iff the update is successful
-	 */
-	public static boolean updateArchiveType(int userId, String newValue) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL UpdateArchiveType(?, ?)}");
-			procedure.setInt(1, userId);					
-			procedure.setString(2, newValue);
-			
-			procedure.executeUpdate();			
-			log.info(String.format("User [%d] updated preferred archive type to [%s]", userId, newValue));
-			return true;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-	
 	
 	/**
 	 * Checks if a given user is a member of a particular space

@@ -2,7 +2,6 @@ $(document).ready(function(){
 	initUI();
 	attachFormValidation();
 	attachPasswordMonitor();
-	attachArchiveTypeMonitor();
 	attachWebsiteMonitor();
 	refreshUserWebsites();
 });
@@ -101,30 +100,6 @@ function initUI(){
 	});
 }
 
-
-
-/**
- * Monitors the client's "preferred archive type" and updates the server if the
- * client changes it
- */
-function attachArchiveTypeMonitor(){
-	$("#selectArchive").change(function() {
-		var value = $("#selectArchive").val();
-		$.post(  
-				starexecRoot+"services/edit/user/archivetype/" + value,
-			    function(returnCode){  			        
-			    	if(returnCode == '0') {
-			    		showMessage('success', "preferred archive type successfully updated", 5000);
-			    	} else {
-			    		showMessage('error', "preferred archive type not changed; please try again", 5000);
-			    	}
-			     },  
-			     "json"  
-		).error(function(){
-			showMessage('error',"Internal error updating preferred archive type",5000);
-		});
-	});
-}
 
 /**
  * Monitors the client's "websites" and updates the server if the client adds/deletes any

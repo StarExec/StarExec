@@ -779,17 +779,7 @@ public class RESTServices {
 					SessionUtil.getUser(request).setInstitution(newValue);
 				}
 			}
-		} else if (attribute.equals("archivetype")) {
-			//REST doesn't like if newValue starts with a "." but we need that in our archive type
-			newValue = "." + newValue;
-			if (true == Validator.isValidArchiveType(newValue)) {
-				success = Users.updateArchiveType(userId, newValue);
-				if (true == success) {
-					SessionUtil.getUser(request).setArchiveType(newValue);
-				}
-			}
 		}
-		
 		// Passed validation AND Database update successful
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}

@@ -9,10 +9,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Makes their role "unauthorized"
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS AddUser;
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, IN _archiveType VARCHAR(8), OUT _id INT)
+CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, OUT _id INT)
 	BEGIN		
-		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota, pref_archive_type)
-		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota, _archiveType);
+		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota)
+		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota);
 		SELECT LAST_INSERT_ID() INTO _id;
 		
 		INSERT INTO user_roles(email, role)
@@ -115,16 +115,6 @@ CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 	END //
 	
 	
--- Updates the preferred archive type of the user with the given user
--- id to the given archive type.
--- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdateArchiveType;
-CREATE PROCEDURE UpdateArchiveType(IN _id INT, IN _archiveType VARCHAR(8))
-	BEGIN
-		UPDATE users
-		SET pref_archive_type = _archiveType
-		WHERE users.id = id;
-	END //
 
 	
 -- Updates the email address of the user with the given user id to the

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
+import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
@@ -65,7 +66,7 @@ public class Benchmarks {
 			}			
 
 			Common.endTransaction(con);
-			Spaces.invalidateCache(spaceId);
+			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -142,7 +143,7 @@ public class Benchmarks {
 
 			} finally {
 				Common.safeClose(con);
-				Spaces.invalidateCache(spaceId);
+				Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
 			}
 		} else {
 			log.debug("Add called on invalid benchmark, no additions will be made to the database");
@@ -866,8 +867,10 @@ public class Benchmarks {
 		Connection con = null;			
 		File benchToDelete = null;
 		CallableStatement procedure=null;
-
+		
 		try {
+			Cache.invalidateSpacesAssociatedWithBench(id);
+			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
@@ -884,7 +887,8 @@ public class Benchmarks {
 				log.debug(String.format("Directory [%s] was deleted because it was empty.", benchToDelete.getParentFile().getAbsolutePath()));
 			}
 
-			log.debug(String.format("Deletion of benchmark [id=%d] in directory [%s] was successful.", id, benchToDelete.getAbsolutePath()));					
+			log.debug(String.format("Deletion of benchmark [id=%d] in directory [%s] was successful.", id, benchToDelete.getAbsolutePath()));		
+		
 			return true;
 		} catch (Exception e){		
 			log.error(e.getMessage(), e);		
@@ -1348,18 +1352,6 @@ public class Benchmarks {
 		return null;
 	}
 	
-	public static boolean invalidateAssociatedSpaces(int benchId) {
-		try {
-			List<Integer> spaceIds=Benchmarks.getAssociatedSpaceIds(benchId);
-			for (int spaceId : spaceIds) {
-				Spaces.invalidateCache(spaceId);
-			}
-			return true;
-		} catch (Exception e) {
-			log.error("Benchmarks.invalidateAssociatedSpaces says "+e.getMessage(),e);
-		}
-		return false;
-	}
 
 	/**
 	 * Updates the details of a benchmark
@@ -1386,7 +1378,8 @@ public class Benchmarks {
 			procedure.executeUpdate();					
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
 			//invalidate the cache of every space associated with this benchmark
-			Benchmarks.invalidateAssociatedSpaces(id);
+			Cache.invalidateSpacesAssociatedWithBench(id);
+			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

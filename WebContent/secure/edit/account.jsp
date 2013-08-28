@@ -124,30 +124,6 @@
 			</table>
 		</form>
 	</fieldset>
-	<fieldset>
-		<legend>misc.</legend>
-		<table id="misc">
-			<thead>
-				<tr>
-					<th>attribute</th>
-					<th>value</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>preferred archive type</td>
-					<td>
-						<select id="selectArchive">
-							<option value="zip"<c:if test="${user.archiveType == '.zip'}"> selected="selected"</c:if>>.zip</option>
-							<option value="tar"<c:if test="${user.archiveType == '.tar'}"> selected="selected"</c:if>>.tar</option>
-							<option value="tar.gz"<c:if test="${user.archiveType == '.tar.gz'}"> selected="selected"</c:if>>.tar.gz</option>
-							<option value="tgz"<c:if test="${user.archiveType == '.tgz'}"> selected="selected"</c:if>>.tgz</option>
-						</select>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</fieldset>
 	<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>

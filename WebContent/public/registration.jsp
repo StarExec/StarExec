@@ -57,18 +57,6 @@
 					<td class="label">confirm password</td>
 					<td><input id="confirm_password" type="password" name="confirm_password"/></td>
 				</tr>
-				<tr>
-					<td class="label">preferred archive type</td>
-					<td>
-						<select id="archiveType" name="pat">
-							<option> </option>
-							<option value=".tar">.tar</option>
-							<option value=".tar.gz">.tar.gz</option>
-							<option value=".tgz">.tgz</option>
-							<option value=".zip">.zip</option>
-						</select>
-					</td>
-			</tr>
 			</tbody>
 		</table>		
 	</fieldset>	

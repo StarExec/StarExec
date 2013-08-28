@@ -151,7 +151,7 @@ public class Jobs {
 					" FIELDS TERMINATED BY ',' " +
 					"(job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id);");
 			procedure.setString(1, jobPairFile.getAbsolutePath());
-			procedure.executeUpdate();
+			//procedure.executeUpdate();
 			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to execute the update");
 			jobPairFile.delete();
 			Common.endTransaction(con);

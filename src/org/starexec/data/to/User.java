@@ -23,7 +23,6 @@ public class User extends Identifiable {
 	private Timestamp createDate;	
 	private transient String password;		
 	private List<Website> websites;
-	private String archiveType;
 	private long diskQuota;
 	
 	/**
@@ -183,19 +182,6 @@ public class User extends Identifiable {
 		this.websites.add(website);
 	}
 	
-	/**
-	 * @return The preferred archive type of the user
-	 */
-	public String getArchiveType() {
-		return archiveType;
-	}
-	
-	/**
-	 * @param archiveType The new preferred archive type
-	 */
-	public void setArchiveType(String archiveType) {
-		this.archiveType = archiveType;
-	}
 	@Override
 	public String toString() {
 		return this.getFullName();

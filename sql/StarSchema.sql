@@ -16,7 +16,6 @@ CREATE TABLE users (
 	institution VARCHAR(64) NOT NULL,
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
-	pref_archive_type VARCHAR(8) NOT NULL DEFAULT ".zip",
 	disk_quota BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY (email)
@@ -448,8 +447,8 @@ CREATE TABLE space_default_settings (
 -- Author: Benton McCune
 CREATE TABLE benchmark_uploads (
 	id INT NOT NULL AUTO_INCREMENT, 
-    space_id INT REFERENCES spaces(id) ON DELETE CASCADE,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    space_id INT NOT NULL,
+    user_id INT NOT NULL,
     upload_time TIMESTAMP NOT NULL,
     file_upload_complete BOOLEAN DEFAULT 0,
     file_extraction_complete BOOLEAN DEFAULT 0,
@@ -462,7 +461,9 @@ CREATE TABLE benchmark_uploads (
     completed_benchmarks INT DEFAULT 0,
     completed_spaces INT DEFAULT 0,
     error_message VARCHAR(512) DEFAULT "no error",
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+	CONSTRAINT benchmark_uploads_space_id FOREIGN KEY REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT benchmark_uploads_user_id FOREIGN KEY REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- For benchmarks that fail validation
@@ -504,10 +505,12 @@ CREATE TABLE job_stats (
 	KEY (config_id)
 );
 
--- Associates space IDs with the cache of their downloads, with multiple possibilities(maybe do solvers, benchmarks, solvers+benchmarks?)
-CREATE TABLE space_cache (
-	space_id INT NOT NULL,
+-- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
+-- solver, benchmark, job, etc
+CREATE TABLE file_cache (
+	id INT NOT NULL,
 	path TEXT NOT NULL,
-	UNIQUE KEY (space_id),
-	CONSTRAINT space_cache_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
+	cache_type INT NOT NULL,
+	last_access TIMESTAMP NOT NULL
+	UNIQUE KEY (id,cache_type)
 );
