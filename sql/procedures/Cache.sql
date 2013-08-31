@@ -35,7 +35,7 @@ CREATE PROCEDURE GetOldCachePaths(IN _time TIMESTAMP)
 DROP PROCEDURE IF EXISTS DeleteOldCachePaths;
 CREATE PROCEDURE DeleteOldCachePaths(IN _time TIMESTAMP)
 	BEGIN
-		DELETE FROM file_cache WHERE last_acces<_time;
+		DELETE FROM file_cache WHERE last_access<_time;
 	END //
 -- Removes a cache entry 
 -- Author: Eric Burns

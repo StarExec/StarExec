@@ -454,8 +454,12 @@ public class Download extends HttpServlet {
 	private static File handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws IOException {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		if (Permissions.canUserSeeJob(jobId, userId)) {
+			String cachedFileName = null;
 			if (returnIds) {
-				String cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
+				cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
+			} else {
+				cachedFileName=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
+			}
 				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
 				if (cachedFile.exists()) {
@@ -466,7 +470,7 @@ public class Download extends HttpServlet {
 					log.warn("a cached file did not exist when it should have!");
 					Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
 				}
-			}
+			
 			
 			Job job;
 			if (since==null) {
@@ -724,9 +728,9 @@ public class Download extends HttpServlet {
 			//we only cache the full results, not partial
 			if (since!=null) {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
-				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 			} else {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
+				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 			}
 
 			//if there are no pending pairs, the job is done
