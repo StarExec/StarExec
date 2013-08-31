@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cache;
@@ -63,8 +64,8 @@ public class Download extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		User u = SessionUtil.getUser(request);
-		String fileName = null;
-
+		File archive = null;
+		String shortName=null;
 		try {
 			if (false == validateRequest(request)) {
 				log.debug("Bad download Request");
@@ -73,19 +74,24 @@ public class Download extends HttpServlet {
 			}
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSolver(s, u.getId(), ".zip", response, false);
+				shortName=s.getName();
+				archive = handleSolver(s, u.getId(), ".zip", response, false);
 			} else if (request.getParameter("type").equals("reupload")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSolver(s, u.getId(), ".zip", response, true);
+				shortName=s.getName();
+				archive = handleSolver(s, u.getId(), ".zip", response, true);
 			} else if (request.getParameter("type").equals("bench")) {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleBenchmark(b, u.getId(), ".zip", response);
+				shortName=b.getName();
+				archive = handleBenchmark(b, u.getId(), ".zip", response);
 			} else if (request.getParameter("type").equals("jp_output")) {
 				JobPair jp = JobPairs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
-				fileName = handlePairOutput(jp, u.getId(), ".zip", response);				
+				shortName="Pair"+jp.getId();
+				archive = handlePairOutput(jp, u.getId(), ".zip", response);				
 			} else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
-				fileName = handleSpaceXML(space, u.getId(), ".zip", response);	
+				shortName=space.getName()+"_XML";
+				archive = handleSpaceXML(space, u.getId(), ".zip", response);	
 			} else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
@@ -98,8 +104,8 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-
-				fileName = handleJob(jobId, u.getId(), ".zip", response, since,ids);
+				shortName="Job"+jobId+"_CSV";
+				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
 				String lastSeen=request.getParameter("since");
@@ -107,7 +113,8 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				fileName = handleJobOutputs(job, u.getId(), ".zip", response,since);
+				shortName="Job"+job.getId()+"_Output";
+				archive = handleJobOutputs(job, u.getId(), ".zip", response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
@@ -120,23 +127,25 @@ public class Download extends HttpServlet {
 				if (Util.paramExists("includebenchmarks", request)) {
 					includeBenchmarks=Boolean.parseBoolean(request.getParameter("includebenchmarks"));
 				}
-				
+				shortName=space.getName();
 				if(request.getParameter("hierarchy").equals("false")){
-					fileName = handleSpace(space, u.getId(), ".zip", response,false,includeBenchmarks,includeSolvers);
+					archive = handleSpace(space, u.getId(), ".zip", response,false,includeBenchmarks,includeSolvers);
 				} else {
-					fileName = handleSpace(space, u.getId(), ".zip", response,true,includeBenchmarks,includeSolvers);
+					shortName=shortName+"_Hierarchy";
+					archive = handleSpace(space, u.getId(), ".zip", response,true,includeBenchmarks,includeSolvers);
 				}
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
+				shortName="Processor";
 				if (request.getParameter("procClass").equals("post")) {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.POST);
 				} else {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
 				}
-				fileName=handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
+				archive=handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
 			}
 			// Redirect based on success/failure
-			if(fileName != null) {
+			if(archive != null) {
 				Object check=request.getParameter("token");
 
 				//token is used to tell the client when the file has arrived
@@ -146,15 +155,14 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
-				//TODO: keep doing a direct download, or switch to indirect?
-				//response.addHeader("Content-Disposition", "attachment; filename=test.zip");
-				if (fileName.contains(Util.docRoot(R.CACHED_FILE_DIR))) {
-					log.debug("here I am sending back a cached file from my new folder!");
-					response.sendRedirect(fileName);
-				} else {
-					response.sendRedirect(Util.docRoot(R.DOWNLOAD_FILE_DIR+"/" + fileName));
-
-				}
+				FileInputStream stream=new FileInputStream(archive);
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName);
+				long size=IOUtils.copyLarge(stream, response.getOutputStream());
+				response.addHeader("Content-Length",String.valueOf(size));	
+				response.getOutputStream().close();
+				stream.close();
+				log.debug("ready to send back file "+shortName+".zip");
+				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
 			}									
@@ -170,10 +178,10 @@ public class Download extends HttpServlet {
 	 * @param s the solver to be downloaded
 	 * @param userId the id of the user making the download request
 	 * @param format the user's preferred archive type
-	 * @return the filename of the created archive
+	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	private static String handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
+	private static File handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
 		String description = s.getDescription();
 		String baseName = s.getName();
@@ -185,12 +193,13 @@ public class Download extends HttpServlet {
 				String cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+					
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
 					if (cachedFile.exists()) {
 						//it's there, so give back the name
 						log.debug("returning a cached file!");
-						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+						return cachedFile;
 					} else {
 						log.warn("a cached file did not exist when it should have!");
 						Cache.invalidateCache(s.getId(),CacheType.CACHE_SOLVER);
@@ -210,15 +219,14 @@ public class Download extends HttpServlet {
 
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
 			tempDir.mkdirs();
-
 			copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
 
 			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseName, reupload);
 			if (!reupload) {
-				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,fileName);
+				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,uniqueDir,fileName);
 			}
 			//We return the fileName so the browser can redirect straight to it
-			return fileName;
+			return uniqueDir;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
@@ -259,16 +267,16 @@ public class Download extends HttpServlet {
 
 	/**
 	 * Handles requests for downloading post processors for a given community
-	 * @return the filename of the created archive
+	 * @return a file representing the archive to send back to the client
 	 * @author Eric Burns
 	 */
 
-	private static String handleProc(List<Processor> procs, int userId, String format, int spaceId, HttpServletResponse response) throws IOException {
+	private static File handleProc(List<Processor> procs, int userId, String format, int spaceId, HttpServletResponse response) throws IOException {
 
 		if (Permissions.canUserSeeSpace(spaceId, userId)) {
 
 			String fileName="Community "+String.valueOf(spaceId)+"Procs" + "_("+UUID.randomUUID().toString()+")" +format;
-			File uniqueDir=new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			File uniqueDir=new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			List<File> files=new LinkedList<File>();
 			for (Processor x : procs) {
@@ -276,7 +284,7 @@ public class Download extends HttpServlet {
 			}
 			ArchiveUtil.createArchive(files, uniqueDir, format);
 
-			return fileName;
+			return uniqueDir;
 		}
 		return null;
 	}
@@ -287,21 +295,21 @@ public class Download extends HttpServlet {
 	 * @param b the benchmark to be downloaded
 	 * @param userId the id of the user making the download request
 	 * @param format the user's preferred archive type
-	 * @return the filename of the created archive
+	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark
 	 */
-	private static String handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
+	private static File handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
 		// If we can see this benchmark AND the benchmark is downloadable...
 		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
 			String cachedFileName=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
 			//if the entry was in the cache, make sure the file actually exists
 			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
 				if (cachedFile.exists()) {
 					//it's there, so give back the name
 					log.debug("returning a cached file!");
-					return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+					return cachedFile;
 				} else {
 					log.warn("a cached file did not exist when it should have!");
 					Cache.invalidateCache(b.getId(),CacheType.CACHE_BENCHMARK);
@@ -313,8 +321,8 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format, false);
-			Cache.setCache(b.getId(),CacheType.CACHE_BENCHMARK,fileName);
-			return fileName;
+			Cache.setCache(b.getId(),CacheType.CACHE_BENCHMARK,uniqueDir,fileName);
+			return uniqueDir;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
@@ -329,12 +337,12 @@ public class Download extends HttpServlet {
 	 * @param space the space to be downloaded
 	 * @param userId the id of the user making the download request
 	 * @param format the user's preferred archive type
-	 * @return the filename of the created archive
+	 * @return a file representing the archive to send back to the client
 	 * @author Benton McCune
 	 * @throws Exception 
 	 */
 
-	private static String handleSpaceXML(Space space, int userId, String format, HttpServletResponse response) throws Exception {
+	private static File handleSpaceXML(Space space, int userId, String format, HttpServletResponse response) throws Exception {
 		log.debug("Space XML download called");
 		Queue<String> descriptions=new LinkedList<String>();
 		descriptions.add(space.getDescription());
@@ -350,12 +358,12 @@ public class Download extends HttpServlet {
 				cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
 					if (cachedFile.exists()) {
 						//it's there, so give back the name
 						log.debug("returning a cached file!");
-						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+						return cachedFile;
 					} else {
 						log.warn("a cached file did not exist when it should have!");
 						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE_XML);
@@ -385,9 +393,10 @@ public class Download extends HttpServlet {
 
 			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false);
 			if (Spaces.isPublicHierarchy(space.getId())) {
-				Cache.setCache(space.getId(), CacheType.CACHE_SPACE_XML, fileName);
+				log.debug("storing space hierarchy in the cache");
+				Cache.setCache(space.getId(), CacheType.CACHE_SPACE_XML,uniqueDir, fileName);
 			}
-			return fileName;
+			return uniqueDir;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
@@ -402,10 +411,10 @@ public class Download extends HttpServlet {
 	 * @param jp the job pair whose output is to be downloaded
 	 * @param userId the id of the user making the download request
 	 * @param format the user's preferred archive type
-	 * @return the filename of the created archive
+	 * @return a file representing the archive to send back to the client
 	 * @author Tyler Jensen
 	 */
-	private static String handlePairOutput(JobPair jp, int userId, String format, HttpServletResponse response) throws IOException {    	
+	private static File handlePairOutput(JobPair jp, int userId, String format, HttpServletResponse response) throws IOException {    	
 		Job j = Jobs.getShallow(jp.getJobId());
 
 		// If the user can actually see the job the pair is apart of
@@ -422,7 +431,7 @@ public class Download extends HttpServlet {
 			log.info("The download output path is " + outputPath);
 			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
 
-			return fileName;
+			return uniqueDir;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
@@ -438,21 +447,21 @@ public class Download extends HttpServlet {
 	 * @param userId the Id of the user who sends the request for the file.
 	 * @param format the user's preferred archive type.
 	 * @param response the servlet response sent back.
-	 * @return the filename of the created archive.
+	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static String handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws IOException {    	
+	private static File handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws IOException {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			if (returnIds) {
 				String cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
 				if (cachedFile.exists()) {
 					//it's there, so give back the name
 					log.debug("returning a cached file!");
-					return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+					return cachedFile;
 				} else {
 					log.warn("a cached file did not exist when it should have!");
 					Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
@@ -491,9 +500,9 @@ public class Download extends HttpServlet {
 			String jobFile = CreateJobCSV(job, returnIds);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
 			if (returnIds) {
-				Cache.setCache(jobId, CacheType.CACHE_JOB_CSV, fileName);
+				Cache.setCache(jobId, CacheType.CACHE_JOB_CSV,uniqueDir, fileName);
 			}
-			return fileName;
+			return uniqueDir;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
@@ -625,11 +634,11 @@ public class Download extends HttpServlet {
 	 * @param userId The user the job belongs to
 	 * @param format The compress format for the user to download
 	 * @param response The servlet response sent back
-	 * @return the filename of the created archive
+	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static String handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
+	private static File handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
 
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {
@@ -639,12 +648,12 @@ public class Download extends HttpServlet {
 			cachedFileName=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
 			//if the entry was in the cache, make sure the file actually exists
 			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
 				if (cachedFile.exists()) {
 					//it's there, so give back the name
 					log.debug("returning a cached file!");
-					return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+					return cachedFile;
 				} else {
 					log.warn("a cached file did not exist when it should have!");
 					Cache.invalidateCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
@@ -715,7 +724,7 @@ public class Download extends HttpServlet {
 			//we only cache the full results, not partial
 			if (since!=null) {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
-				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT, fileName);
+				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 			} else {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
 			}
@@ -728,7 +737,7 @@ public class Download extends HttpServlet {
 			} catch (Exception e) {
 				log.error(e);
 			}
-			return fileName;
+			return uniqueDir;
 		}
 
 		else {
@@ -747,33 +756,30 @@ public class Download extends HttpServlet {
 	 * @param response The servlet response sent back
 	 * @param includeBenchmarks Whether to include benchmarks in the directory
 	 * @param includeSolvers Whether to include solvers in the directory
-	 * @return Name of the generated file
+	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
 	 * @author Ruoyu Zhang + Eric Burns
 	 */
-	private String handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws IOException {
+	private File handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws IOException {
 		// If we can see this space AND the space is downloadable...
 
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
-			//TODO: Probably want to have some sort of "get cached " option so people with other filetypes can do
-			//this easily
-			//first, if we are getting a zip file, check to see if the file is in the cache
+			//we are only caching hierarchies with benchmarks + solvers so far
 			if (includeBenchmarks && includeSolvers) {
 				String cachedFileName=null;
 				if (hierarchy) {
 					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
-
 				} else {
 					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
 				}
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), cachedFileName);
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
 					if (cachedFile.exists()) {
 						//it's there, so give back the name
 						log.debug("returning a cached file!");
-						return Util.docRoot(R.CACHED_FILE_DIR)+"/"+cachedFileName;
+						return cachedFile;
 					} else {
 						log.warn("a cached file did not exist when it should have!");
 						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE);
@@ -793,17 +799,14 @@ public class Download extends HttpServlet {
 				tempDir.delete();
 			}
 			
-			//we are only caching zipped files for now
 			if (Spaces.isPublicHierarchy(space.getId()) && includeBenchmarks && includeSolvers) {
 				if (hierarchy) {
-					Cache.setCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY, fileName);
+					Cache.setCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY,uniqueDir, fileName);
 				} else {
-					Cache.setCache(space.getId(),CacheType.CACHE_SPACE, fileName);
+					Cache.setCache(space.getId(),CacheType.CACHE_SPACE,uniqueDir, fileName);
 				}
-				
-				FileUtils.copyFileToDirectory(uniqueDir, new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR+File.separator));
 			}
-			return fileName;
+			return uniqueDir;
 		}
 		else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
@@ -871,8 +874,6 @@ public class Download extends HttpServlet {
 					solverPath=solverDir.getAbsolutePath();
 				} else {
 					for (Solver s : solverList) {
-						
-						
 						//File existingSolver=new File(solverPath,s.getName()+s.getId());
 						//File linkDir=new File(solverDir,s.getName()+s.getId());
 						//not working currently, for now, just don't put solvers in the individual spaces

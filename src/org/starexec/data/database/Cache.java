@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.CacheType;
@@ -51,6 +52,7 @@ public class Cache {
 	 */
 	private static boolean invalidateCache(int id, CacheType type, Connection con) {
 		CallableStatement procedure=null;
+		
 		try {
 			procedure=con.prepareCall("{CALL InvalidateCache(?, ?)}");
 			procedure.setInt(1,id);
@@ -124,6 +126,7 @@ public class Cache {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
+			log.debug("calling getCache for type = "+type.toString()+" "+type.getVal());
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetCachePath(?, ?, ?)}");
 			procedure.setInt(1,id);
@@ -131,6 +134,7 @@ public class Cache {
 			procedure.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 			results= procedure.executeQuery();
 			if (results.next()) {
+				log.debug("THE PATH OF THE CACHE IS "+results.getString("path"));
 				return results.getString("path");
 			}
 		} catch (Exception e) {
@@ -207,21 +211,25 @@ public class Cache {
 	 * space archive
 	 * @param id The ID of the primitive in question
 	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
-	 * @param path The relative filepath to the file (not containing R.DOWNLOAD_FILE_DIR)
+	 * @param archive The archive that is being cached, which needs to be copied to R.CACHED_FILE_DIR
+	 * @param destName The destination name of the file
 	 * @return True if the update was successful, false otherwise
 	 * @author Eric Burns
 	 */
 	
-	public static boolean setCache(int id, CacheType type, String path) {
+	public static boolean setCache(int id, CacheType type, File archive, String destName) {
+		log.debug("adding entry to cache type = "+type.toString());
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL AddCachePath(?,?,?)}");
+			procedure=con.prepareCall("{CALL AddCachePath(?,?,?,?)}");
 			procedure.setInt(1,id);
 			procedure.setInt(2,type.getVal());
-			procedure.setString(3,path);
+			procedure.setString(3,destName);
+			procedure.setTimestamp(4,new Timestamp(System.currentTimeMillis()));
 			procedure.executeUpdate();
+			FileUtils.copyFileToDirectory(archive, new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR+File.separator));
 			return true;
 		} catch (Exception e) {
 			log.debug("Spaces.setCache says "+e.getMessage(),e);

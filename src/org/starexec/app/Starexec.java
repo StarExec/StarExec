@@ -146,7 +146,9 @@ public class Starexec implements ServletContextListener {
 			    log.info("clearDownloadsTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1);
 				Util.clearOldCachedFiles(14);
-				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR).getAbsolutePath(), 5);
+				//even though we're clearing unused cache files, they still might build up for a variety
+				//of reasons. To stay robust, we should probably still clear out very old ones
+				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR).getAbsolutePath(), 60);
 			}
 		};	
 		
@@ -159,8 +161,12 @@ public class Starexec implements ServletContextListener {
 				Util.clearOldFiles(R.JOB_INBOX_DIR,3);
 				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1);
 			}
-			};
-		
+		};
+		//created directories expected by the system to exist
+		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
+		downloadDir.mkdirs();
+		File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
+		cacheDir.mkdirs();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	

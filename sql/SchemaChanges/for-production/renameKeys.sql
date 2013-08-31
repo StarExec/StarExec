@@ -49,7 +49,9 @@ ALTER TABLE job_space_assoc DROP FOREIGN KEY job_space_assoc_ibfk_3;
 ALTER TABLE job_space_assoc DROP FOREIGN KEY job_space_assoc_ibfk_4;
 ALTER TABLE job_stats DROP FOREIGN KEY job_stats_ibfk_1;
 
-
+ALTER TABLE queue_assoc ENGINE = InnoDB;
+ALTER TABLE queue_assoc CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
+ALTER TABLE queue_assoc CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
 ALTER TABLE user_roles ADD CONSTRAINT user_roles_email FOREIGN KEY REFERENCES users(email) ON DELETE CASCADE; 
 ALTER TABLE logins ADD CONSTRAINT logins_user_id FOREIGN KEY REFERENCES users(id) ON DELETE NO ACTION; 
 ALTER TABLE spaces ADD CONSTRAINT spaces_default_permission FOREIGN KEY REFERENCES permissions(id) ON DELETE SET NULL; 

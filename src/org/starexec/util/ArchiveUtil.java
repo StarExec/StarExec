@@ -388,7 +388,7 @@ public class ArchiveUtil {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	public static void createZip(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
-		log.debug("creating zip, path = " + path + ", dest = " + destination);
+		//log.debug("creating zip, path = " + path + ", dest = " + destination);
 
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
@@ -402,7 +402,6 @@ public class ArchiveUtil {
 			addFileToZip(zOut, path, "",baseName, removeTopLevel, 0);
 		} finally {
 			zOut.finish();
-
 			zOut.close();
 			bOut.close();
 			fOut.close();
@@ -425,7 +424,7 @@ public class ArchiveUtil {
 	 * @author Eric Burns
 	 */
 	public static void createZip(List<File> paths, File destination, String baseName) throws Exception {
-		log.debug("creating zip, of multiple files, dest = " + destination);
+		//log.debug("creating zip, of multiple files, dest = " + destination);
 		FileOutputStream fOut=null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -463,10 +462,10 @@ public class ArchiveUtil {
 		if (removeTopLevel && (base.equals("\\"))) {
 			base = "";
 		}
-		log.debug("Base = " + base);
+		//log.debug("Base = " + base);
 		if (baseName.equals("")) {
 			entryName = base + path.getName();
-			log.debug("ENTRY NAME = " + entryName);
+			//log.debug("ENTRY NAME = " + entryName);
 		} else {
 			entryName=base+baseName;
 		}
@@ -490,12 +489,12 @@ public class ArchiveUtil {
 		File[] children = path.listFiles();
 
 		if (children!=null) {
-			log.debug("Number of files = " + children.length);
+			//log.debug("Number of files = " + children.length);
 			for (File child : children) {
 				addChildToZip(zOut, child, entryName, removeTopLevel);
 			}
 		} else {
-			log.debug("Number of files = " + 1);
+			//log.debug("Number of files = " + 1);
 		}
 		children = null;
 	}

@@ -1522,16 +1522,14 @@ public class Spaces {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfSpaces(?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfSpaces(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, spaceId);
 			procedure.setInt(6, userId);
-			procedure.setString(7, searchQuery);
-			procedure.setInt(8, R.PUBLIC_USER_ID);
-			
+			procedure.setString(7, searchQuery);			
 			 results = procedure.executeQuery();
 			List<Space> spaces = new LinkedList<Space>();
 			

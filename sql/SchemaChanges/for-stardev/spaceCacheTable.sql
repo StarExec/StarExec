@@ -9,6 +9,6 @@ CREATE TABLE file_cache (
 	id INT NOT NULL,
 	path TEXT NOT NULL,
 	cache_type INT NOT NULL,
-	last_access TIMESTAMP NOT NULL
-	UNIQUE KEY (id,cache_type)
+	last_access TIMESTAMP NOT NULL,
+	PRIMARY KEY (id,cache_type)
 );

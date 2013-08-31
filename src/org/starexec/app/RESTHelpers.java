@@ -706,8 +706,6 @@ public class RESTHelpers {
     	
 	    switch(type){
 		    case JOB:
-		    	long a=System.currentTimeMillis();
-		    	log.debug("timing the retrieval of the next page of jobs for space id = "+id);
 	    		List<Job> jobsToDisplay = new LinkedList<Job>();
 	    		
 	    		int totalJobs;
@@ -721,9 +719,9 @@ public class RESTHelpers {
 		    				request.getParameter(SEARCH_QUERY), 				// Search query
 		    				id													// Parent space id 
 					);
-	    			log.debug("getting back the data to display took "+(System.currentTimeMillis()-a)+" time");
+	    			//log.debug("getting back the data to display took "+(System.currentTimeMillis()-a)+" time");
 	    			totalJobs = Jobs.getCountInSpace(id);
-	    			log.debug("couting the data took "+(System.currentTimeMillis()-a)+" time");
+	    			//log.debug("couting the data took "+(System.currentTimeMillis()-a)+" time");
 
 	    			if(attrMap.get(SEARCH_QUERY) == EMPTY){
 			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
@@ -753,7 +751,7 @@ public class RESTHelpers {
 		    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	
 			   JsonObject answer= convertJobsToJsonObject(jobsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),forPage);
-   			   log.debug("creating the jsonObject took "+(System.currentTimeMillis()-a)+" time");
+   			   //log.debug("creating the jsonObject took "+(System.currentTimeMillis()-a)+" time");
    			   return answer;
 		    	
 		    case USER:

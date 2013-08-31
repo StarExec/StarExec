@@ -11,16 +11,16 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 DROP PROCEDURE IF EXISTS GetCachePath;
 CREATE PROCEDURE GetCachePath(IN _id INT, IN _cacheType INT, IN _time TIMESTAMP)
 	BEGIN
-		UPDATE file_cache SET last_access = _time WHERE space_id=_id AND cache_type=_cacheType;
-		SELECT path FROM file_cache WHERE space_id=_id AND cache_type=_cacheType;
+		UPDATE file_cache SET last_access = _time WHERE id=_id AND cache_type=_cacheType;
+		SELECT path FROM file_cache WHERE id=_id AND cache_type=_cacheType;
 	END //
 
 -- Adds a new cache entry
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS AddCachePath;
-CREATE PROCEDURE AddCachePath(IN _id INT, IN _cacheType INT, IN _path TEXT)
+CREATE PROCEDURE AddCachePath(IN _id INT, IN _cacheType INT, IN _path TEXT, IN _time TIMESTAMP)
 	BEGIN
-		INSERT IGNORE INTO file_cache (space_id, cache_type, path) VALUES (_id,cache_type, _path);
+		INSERT IGNORE INTO file_cache (id, cache_type, path, last_access) VALUES (_id,_cacheType, _path, _time);
 	END //
 	
 -- Get all entries in the cache that have not been accessed since before _time
@@ -42,7 +42,7 @@ CREATE PROCEDURE DeleteOldCachePaths(IN _time TIMESTAMP)
 DROP PROCEDURE IF EXISTS InvalidateCache;
 CREATE PROCEDURE InvalidateCache(IN _id INT, IN _cacheType INT) 
 	BEGIN
-		DELETE FROM file_cache WHERE space_id=_id AND cache_type=_cacheType;
+		DELETE FROM file_cache WHERE id=_id AND cache_type=_cacheType;
 	END //
 
 DELIMITER ; -- This should always be at the end of this file
