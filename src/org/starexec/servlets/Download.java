@@ -156,7 +156,7 @@ public class Download extends HttpServlet {
 					response.addCookie(newCookie);
 				}
 				FileInputStream stream=new FileInputStream(archive);
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName);
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				long size=IOUtils.copyLarge(stream, response.getOutputStream());
 				response.addHeader("Content-Length",String.valueOf(size));	
 				response.getOutputStream().close();
