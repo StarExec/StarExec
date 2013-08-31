@@ -460,6 +460,7 @@ public class Download extends HttpServlet {
 			} else {
 				cachedFileName=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
 			}
+			if (cachedFileName!= null) {
 				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
 				if (cachedFile.exists()) {
@@ -470,6 +471,8 @@ public class Download extends HttpServlet {
 					log.warn("a cached file did not exist when it should have!");
 					Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
 				}
+			}
+			
 			
 			
 			Job job;
