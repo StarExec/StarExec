@@ -90,14 +90,7 @@
     <servlet-name>InvalidPath</servlet-name>
     <servlet-class>org.starexec.servlets.InvalidPath</servlet-class>
   </servlet>
-  <servlet-mapping>
-    <servlet-name>InvalidPath</servlet-name>
-    <url-pattern>/secure/files/*</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>InvalidPath</servlet-name>
-    <url-pattern>/secure/cache/*</url-pattern>
-  </servlet-mapping>
+
 
   <servlet>
     <servlet-name>ProcessorManager</servlet-name>

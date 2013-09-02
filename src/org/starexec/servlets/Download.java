@@ -155,13 +155,15 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
-				FileInputStream stream=new FileInputStream(archive);
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				long size=IOUtils.copyLarge(stream, response.getOutputStream());
-				response.addHeader("Content-Length",String.valueOf(size));	
-				response.getOutputStream().close();
-				stream.close();
+				//FileInputStream stream=new FileInputStream(archive);
+				//response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				//long size=IOUtils.copyLarge(stream, response.getOutputStream());
+				//response.addHeader("Content-Length",String.valueOf(size));	
+				//response.getOutputStream().close();
+				
+				//stream.close();
 				log.debug("ready to send back file "+shortName+".zip");
+				response.sendRedirect(Util.docRoot("secure/files/" + archive.getName()));
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
