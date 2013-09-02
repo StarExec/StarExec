@@ -24,7 +24,7 @@ public class Cache {
 	 * @return True on success (file was deleted or does not exist), false on error
 	 * @author Eric Burns
 	 */
-	private static boolean deleteCache(int id, CacheType type) {
+	private static boolean deleteCacheFile(int id, CacheType type) {
 		try {
 			String filePath=Cache.getCache(id, type);
 			if (filePath!=null) {
@@ -82,7 +82,7 @@ public class Cache {
 	public static boolean invalidateCache(int id, CacheType type) {
 		log.debug("invalidating cache for id = "+id+" type = "+type.toString());
 		Connection con=null;
-		Cache.deleteCache(id, type);
+		Cache.deleteCacheFile(id, type);
 		try {
 			con=Common.getConnection();
 			boolean success=invalidateCache(id,type,con);
@@ -207,8 +207,7 @@ public class Cache {
 	}
 	
 	/**
-	 * Adds a new entry into the file_cache table containing the path to a cached 
-	 * space archive
+	 * Adds a new entry into the file_cache table, and also copies the given file to the cache directory
 	 * @param id The ID of the primitive in question
 	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
 	 * @param archive The archive that is being cached, which needs to be copied to R.CACHED_FILE_DIR

@@ -512,6 +512,7 @@ public class Solvers {
 			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
 			Cache.invalidateSpacesAssociatedWithSolver(id);
 			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateCache(id, CacheType.CACHE_SOLVER_REUPLOAD);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -581,6 +582,7 @@ public class Solvers {
 		try {
 			Cache.invalidateSpacesAssociatedWithSolver(id);
 			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
 			con = Common.getConnection();
 			
 			 procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
@@ -1276,6 +1278,7 @@ public class Solvers {
 			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
 			Cache.invalidateSpacesAssociatedWithSolver(solverId);
 			Cache.invalidateCache(solverId, CacheType.CACHE_SOLVER);
+			Cache.invalidateCache(solverId,CacheType.CACHE_SOLVER_REUPLOAD);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

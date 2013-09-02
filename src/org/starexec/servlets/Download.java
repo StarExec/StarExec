@@ -188,9 +188,13 @@ public class Download extends HttpServlet {
 		// If we can see this solver AND the solver is downloadable...
 
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
-			
-			if (!reupload) {
-				String cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
+				String cachedFileName=null;
+				if(!reupload) {
+					cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
+				} else {
+					cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD);
+				}
+				
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFileName!=null) {
 					
@@ -205,7 +209,7 @@ public class Download extends HttpServlet {
 						Cache.invalidateCache(s.getId(),CacheType.CACHE_SOLVER);
 					}
 				}
-			}
+			
 			
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it, and the directory it will be placed in
@@ -224,6 +228,8 @@ public class Download extends HttpServlet {
 			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseName, reupload);
 			if (!reupload) {
 				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,uniqueDir,fileName);
+			} else {
+				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD,uniqueDir,fileName);
 			}
 			//We return the fileName so the browser can redirect straight to it
 			return uniqueDir;
@@ -419,6 +425,26 @@ public class Download extends HttpServlet {
 
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {
+			
+			String cachedFileName=null;
+			
+			cachedFileName=Cache.getCache(jp.getId(),CacheType.CACHE_JOB_PAIR);
+			
+			//if the entry was in the cache, make sure the file actually exists
+			if (cachedFileName!=null) {
+				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+				//it might have been cleared if it has been there too long, so make sure that hasn't happened
+				if (cachedFile.exists()) {
+					//it's there, so give back the name
+					log.debug("returning a cached file!");
+					return cachedFile;
+				} else {
+					log.warn("a cached file did not exist when it should have!");
+					Cache.invalidateCache(jp.getId(),CacheType.CACHE_SPACE);
+				}
+			}
+			
+			
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
@@ -430,7 +456,7 @@ public class Download extends HttpServlet {
 			String outputPath = String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName());  
 			log.info("The download output path is " + outputPath);
 			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
-
+			Cache.setCache(jp.getId(), CacheType.CACHE_JOB_PAIR, uniqueDir, fileName);
 			return uniqueDir;
 		}
 		else {

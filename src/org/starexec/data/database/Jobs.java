@@ -20,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -326,6 +327,20 @@ public class Jobs {
 
 		return false;
 	}
+	/**
+	 * Invalidates every type of cache related to this job (useful when deleting a job)
+	 * Includes job output, job CSV with and without IDs, and pair output
+	 * @param jobId The ID of the job for which to delete all associated cache entreis
+	 */
+	public static void invalidateJobRelatedCaches(int jobId) {
+		Cache.invalidateCache(jobId, CacheType.CACHE_JOB_OUTPUT);
+		Cache.invalidateCache(jobId, CacheType.CACHE_JOB_CSV);
+		Cache.invalidateCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
+		List<JobPair> pairs = Jobs.getPairs(jobId);
+		for (JobPair pair : pairs) {
+			Cache.invalidateCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
+		}
+	}
 	
 	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
@@ -338,6 +353,8 @@ public class Jobs {
 	public static boolean delete(int jobId) {
 		Connection con=null;
 		try {
+			Jobs.invalidateJobRelatedCaches(jobId);
+			
 			con=Common.getConnection();
 			return delete(jobId,con);
 		} catch (Exception e) {

@@ -8,7 +8,9 @@ public enum CacheType {
 		CACHE_JOB_OUTPUT(4),
 		CACHE_JOB_CSV(5),
 		CACHE_SPACE_XML(6),
-		CACHE_JOB_CSV_NO_IDS(7);
+		CACHE_JOB_CSV_NO_IDS(7),
+		CACHE_SOLVER_REUPLOAD(8),
+		CACHE_JOB_PAIR(9);
 		private int val;
 		
 		private CacheType(int val) {
