@@ -155,15 +155,14 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
-				//FileInputStream stream=new FileInputStream(archive);
-				//response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				//long size=IOUtils.copyLarge(stream, response.getOutputStream());
-				//response.addHeader("Content-Length",String.valueOf(size));	
-				//response.getOutputStream().close();
+				FileInputStream stream=new FileInputStream(archive);
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				long size=IOUtils.copyLarge(stream, response.getOutputStream());
+				response.addHeader("Content-Length",String.valueOf(size));	
+				response.getOutputStream().close();
 				
-				//stream.close();
+				stream.close();
 				log.debug("ready to send back file "+shortName+".zip");
-				response.sendRedirect(Util.docRoot("secure/files/" + archive.getName()));
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
@@ -422,6 +421,8 @@ public class Download extends HttpServlet {
 	 * @return a file representing the archive to send back to the client
 	 * @author Tyler Jensen
 	 */
+	
+	//TODO: Create new functions for only getting back shallow information about the pairs instead of deep info.
 	private static File handlePairOutput(JobPair jp, int userId, String format, HttpServletResponse response) throws IOException {    	
 		Job j = Jobs.getShallow(jp.getJobId());
 
@@ -453,9 +454,7 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 
-			// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/{pair id}
-			//String outputPath = String.format("%s/%d/%d/%d", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getId());
-			String outputPath = String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName());  
+			String outputPath = JobPairs.getFilePath(jp.getId());  
 			log.info("The download output path is " + outputPath);
 			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
 			Cache.setCache(jp.getId(), CacheType.CACHE_JOB_PAIR, uniqueDir, fileName);
@@ -500,9 +499,7 @@ public class Download extends HttpServlet {
 					Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
 				}
 			}
-			
-			
-			
+
 			Job job;
 			if (since==null) {
 				job = Jobs.getDetailed(jobId);
@@ -525,8 +522,6 @@ public class Download extends HttpServlet {
 				} catch (Exception e) {
 					log.error(e);
 				}
-
-
 			}
 
 			String fileName = UUID.randomUUID().toString() + format;
@@ -567,7 +562,7 @@ public class Download extends HttpServlet {
 
 		List<JobPair> pairs = job.getJobPairs();
 		Iterator<JobPair> itr = pairs.iterator();
-
+		
 		/* generate the table header */
 		sb.delete(0, sb.length());
 		if (!returnIds) {
@@ -598,8 +593,9 @@ public class Download extends HttpServlet {
 			}
 		}
 		sb.append("\r\n");
-
+		
 		while(itr.hasNext()) {
+			log.debug("I FOUND A PAIR GUYZ!\n\n\n\n");
 			JobPair pair = itr.next();
 			if (returnIds) {
 				sb.append(pair.getId());
@@ -702,10 +698,16 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 
 			uniqueDir.createNewFile();
+			
 
+			File file;
+			File dir;
+			
 			//if we only want the new job pairs
 			List<JobPair> pairs;
 			if (since!=null) {
+				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
+				tempDir.mkdir();
 				log.debug("Getting incremental job output results");
 				pairs=Jobs.getNewCompletedPairsDetailed(j.getId(), since);
 				log.debug("Found "+ pairs.size()  + " new pairs");
@@ -716,51 +718,43 @@ public class Download extends HttpServlet {
 					}
 				}
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
-			} else {
-				pairs=Jobs.getPairsDetailed(j.getId());
-			}
-			File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
-			tempDir.mkdir();
+				for (JobPair jp : pairs) {
+					file=new File(JobPairs.getFilePath(jp));
 
-			File file;
-			File dir;
-			for (JobPair jp : pairs) {
-				file=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, j.getUserId(), j.getId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
+					log.debug("Searching for pair output at" + file.getAbsolutePath());
+					if (file.exists()) {
+						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
 
-				log.debug("Searching for pair output at" + file.getAbsolutePath());
-				if (file.exists()) {
-					log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
+						//store in the old format becaues the pair has no path
+						if (jp.getPath()==null) {
+							dir=new File(tempDir,jp.getSolver().getName());
+							dir.mkdir();
+							dir=new File(dir,jp.getConfiguration().getName());
+							dir.mkdir();
+						} else {
+							String path=jp.getPath();
 
-					//store in the old format becaues the pair has no path
-					if (jp.getPath()==null) {
-						dir=new File(tempDir,jp.getSolver().getName());
-						dir.mkdir();
-						dir=new File(dir,jp.getConfiguration().getName());
-						dir.mkdir();
-					} else {
-						String path=jp.getPath();
-
-						String [] spaces=path.split("/");
-						dir=new File(tempDir,spaces[0]);
-						dir.mkdir();
-						for (int index=1;index<spaces.length;index++) {
-							dir=new File(dir,spaces[index]);
+							String [] spaces=path.split("/");
+							dir=new File(tempDir,spaces[0]);
+							dir.mkdir();
+							for (int index=1;index<spaces.length;index++) {
+								dir=new File(dir,spaces[index]);
+								dir.mkdir();
+							}
+							dir=new File(dir,jp.getSolver().getName());
+							dir.mkdir();
+							dir=new File(dir,jp.getConfiguration().getName());
 							dir.mkdir();
 						}
-						dir=new File(dir,jp.getSolver().getName());
-						dir.mkdir();
-						dir=new File(dir,jp.getConfiguration().getName());
-						dir.mkdir();
-					}
-					FileUtils.copyFileToDirectory(file,dir);
+						FileUtils.copyFileToDirectory(file,dir);
 
+					}
 				}
-			}
-			//we only cache the full results, not partial
-			if (since!=null) {
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
 			} else {
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
+				String test=Jobs.getDirectory(j.getId());
+				log.debug("this is the filepath we have "+test);
+				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
 				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 			}
 

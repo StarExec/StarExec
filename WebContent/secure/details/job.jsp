@@ -102,7 +102,9 @@
 						<input type="checkbox" id="logScale"/> <span>use log scale</span>
 						 
 						<select multiple size="5" id="spaceOverviewSelections">
+						
 						</select>
+						<button id="spaceOverviewUpdate" type="button">Update</button>
 					</fieldset>
 					<fieldset id="solverComparisonOptionField">
 						<legend>solver comparison options</legend>
@@ -111,6 +113,7 @@
 						</select>
 						<select id="solverChoice2">
 						</select>
+						<button id="solverComparisonUpdate" type="button">Update</button>
 					</fieldset>
 					
 					

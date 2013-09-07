@@ -1,15 +1,20 @@
 package org.starexec.data.database;
 
+import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
@@ -222,6 +227,165 @@ public class JobPairs {
 		}
 		return false;
 	}
+	
+	/**
+	 * Gets the path to the output file  for this pair. Requires that the 
+	 * jobId, path, solver name, config name, and bench names be populated
+	 * @param pair The pair to get the filepath for
+	 * @return The string path, or null on failure
+	 * @author Eric Burns
+	 */
+	
+	public static String getFilePath(JobPair pair) {
+		File file=new File(Jobs.getDirectory(pair.getJobId()));
+		String[] pathSpaces=pair.getPath().split("/");
+		for (String space : pathSpaces) {
+			file=new File(file,space);
+		}
+		file=new File(file,pair.getSolver().getName());
+		file=new File(file,pair.getConfiguration().getName());
+		file=new File(file,pair.getBench().getName());
+		return file.getAbsolutePath();
+	}
+	/**
+	 * Gets the path to the output file  for this pair.
+	 * @param pairId The id of the pair to get the filepath for
+	 * @return The string path, or null on failure
+	 * @author Eric Burns
+	 */
+	
+	public static String getFilePath(int pairId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL getJobPairFilePathInfo(?)}");
+			procedure.setInt(1,pairId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				JobPair pair=new JobPair();
+				Solver s= new Solver();
+				s.setName(results.getString("solver_name"));
+				Benchmark b=new Benchmark();
+				b.setName(results.getString("bench_name"));
+				Configuration c=new Configuration();
+				c.setName(results.getString("config_name"));
+				pair.setJobId(results.getInt("job_id"));
+				pair.setPath(results.getString("path"));
+				pair.setSolver(s);
+				pair.setBench(b);
+				pair.setConfiguration(c);
+				return getFilePath(pair);
+			}
+		} catch (Exception e) {
+			log.debug("getFilePath says "+e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * This is a helper function for transferOutputFilesToNewDirectory. It should 
+	 * not be used for anything else
+	 * @return A list of job pairs with the necessary fields popoulated
+	 * @author Eric Burns
+	 */
+	
+	private static List<JobPair> getAllPairsForMovingOutputFiles() {
+		Connection con=null;
+		ResultSet results=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetAllPairsShallow()}");
+			results=procedure.executeQuery();
+			List<JobPair> pairs = new ArrayList<JobPair>();
+			while (results.next()) {
+				JobPair pair=new JobPair();
+				pair.setPath(results.getString("path"));
+				pair.setJobId(results.getInt("job_id"));
+				Solver s=new Solver();
+				s.setName(results.getString("solver_name"));
+				Configuration c=new Configuration();
+				c.setName(results.getString("config_name"));
+				Benchmark b=new Benchmark();
+				b.setName(results.getString("bench_name"));
+				
+				pair.setId(results.getInt("user_id"));
+				pair.setSolver(s);
+				pair.setConfiguration(c);
+				pair.setBench(b);
+				pairs.add(pair);
+			}
+			return pairs;
+		} catch (Exception e) {
+			log.debug("getAllPairsShallow says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	/**
+	 * One-time only function for transferring legacy job pairs from their old file locations
+	 * to new file locations
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean transferOutputFilesToNewDirectory() {
+		try {
+			List<JobPair> pairs = getAllPairsForMovingOutputFiles();
+			log.debug("we found this many pairs "+pairs.size()+"\n\n\n\n");
+			
+			File oldPairFile = null;
+			File newFileDir=null;
+			String path=null;
+			for (JobPair jp : pairs) {
+				log.debug("now working on pair "+jp.getId());
+				File tempDir=new File(new File(R.STAREXEC_ROOT,R.NEW_JOB_OUTPUT_DIR),String.valueOf(jp.getJobId()));
+
+				oldPairFile=new File(String.format("%s/%s/%d/%d/%s___%s/%s",R.STAREXEC_ROOT, R.JOB_OUTPUT_DIR, jp.getId(), jp.getJobId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
+				if (!oldPairFile.exists()) {
+					log.debug(oldPairFile.getAbsolutePath());
+					continue;
+				}
+				log.debug("Searching for pair output at" + oldPairFile.getAbsolutePath());
+				if (oldPairFile.exists()) {
+					path=jp.getPath();
+					//if the pair has no  path for some reason, just assign a generic one
+					if (path==null) {
+						path="job space";
+					}
+					
+
+					String [] spaces=path.split("/");
+					newFileDir=new File(tempDir,spaces[0]);
+					newFileDir.mkdir();
+					for (int index=1;index<spaces.length;index++) {
+						newFileDir=new File(newFileDir,spaces[index]);
+					}
+					newFileDir=new File(newFileDir,jp.getSolver().getName());
+					newFileDir.mkdirs();
+					newFileDir=new File(newFileDir,jp.getConfiguration().getName());
+					newFileDir.mkdirs();				
+					FileUtils.copyFileToDirectory(oldPairFile,newFileDir);
+
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			log.debug("transferOutputFilesToNewDirectory says "+e.getMessage(),e);
+		}
+		return false;
+		
+	}
+	
 	/**
 	 * @param pairId the id of the pair to update the status of
 	 * @param statusCode the status code to set for the pair

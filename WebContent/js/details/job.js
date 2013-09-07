@@ -160,6 +160,16 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	$("#spaceOverviewUpdate").button({
+		icons: {
+			primary: "ui-icon-arrowrefresh-1-e"
+		}
+	})
+	$("#solverComparisonUpdate").button({
+		icons: {
+			primary: "ui-icon-arrowrefresh-1-e"
+		}
+	})
 	$("#jobDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -362,31 +372,24 @@ function initUI(){
 	$("#optionField").expandable(true);
 	$("#detailField").expandable(true);
 	$("#actionField").expandable(true);
-	$("#logScale").change(function() {
-		updateSpaceOverview();
-	});
+	
 	
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
-	
+	$("spaceOverviewUpdate").click(function() {
+	  	updateSpaceOverview();
+	});
+	$("solverComparisonUpdate").click(function() {
+		updateSolverComparison(false);
+	});
 	$("#spaceOverviewSelections").change(function() {
 	        if ($(this).val().length > 5) {
 	          showMessage('error',"You may only choose a maximum of 5 solver / configuration pairs to display at one time",5000);
 	          $(this).val(lastValidSelectOption);
 	        } else {
 	        	lastValidSelectOption = $(this).val();
-	        	//don't update if nothing is selected, as there would be nothing to display
-	  			if ($("#spaceOverviewSelections").children("option:selected").size()>0) {
-	  				updateSpaceOverview();
-	  			}
+	        	
 	        }
 	      
-	});
-	
-	$("#solverChoice1").change(function() {
-		updateSolverComparison(false);
-	});
-	$("#solverChoice2").change(function() {
-		updateSolverComparison(false);
 	});
 	$("#solverComparison").click(function() {
 		$('#dialog-solverComparison').dialog({

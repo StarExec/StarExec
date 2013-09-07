@@ -86,6 +86,7 @@ public class R {
     public static String NODE_WORKING_DIR = null;							// The directory on the local nodes where they can use for scratch space (read/write)
     public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node
     public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
+    public static String NEW_JOB_OUTPUT_DIR= null;
     public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from SGE scripts when job runs)
     public static String NODE_OUTPUT_DIR = null;							// The path to the directory on the local node where output should be placed by the user in order to be saved by starexec
     public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
@@ -94,7 +95,8 @@ public class R {
     public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
     public static String PICTURE_PATH = null;								// Where the pictures are located
     public static String BATCH_SPACE_XML_DIR = null;                        // Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
-	
+  
+	public static String JOBGRAPH_FILE_DIR = null;
     //Public user info
     public static int PUBLIC_USER_ID = 0;							//user id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_SPACE_ID = 0;                           //space id to use when writing benchmarks, submitting jobs without login

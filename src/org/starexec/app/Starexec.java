@@ -13,6 +13,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
+import org.starexec.data.database.JobPairs;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
@@ -71,7 +72,6 @@ public class Starexec implements ServletContextListener {
 										
 		log = Logger.getLogger(Starexec.class);
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
-
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 		
@@ -167,6 +167,9 @@ public class Starexec implements ServletContextListener {
 		downloadDir.mkdirs();
 		File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
 		cacheDir.mkdirs();
+		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
+		graphDir.mkdirs();
+		JobPairs.transferOutputFilesToNewDirectory();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	

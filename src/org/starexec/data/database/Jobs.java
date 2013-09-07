@@ -79,7 +79,6 @@ public class Jobs {
 	 * @return True if the operation was successful, false otherwise.
 	 */
 	public static boolean add(Job job, int spaceId) {
-		long a=System.currentTimeMillis();
 		Connection con = null;
 		PreparedStatement procedure=null;
 		try {
@@ -138,14 +137,12 @@ public class Jobs {
 			File jobPairFile=new File(R.JOBPAIR_INPUT_DIR,UUID.randomUUID().toString());
 			jobPairFile.createNewFile();
 			BufferedWriter writer=new BufferedWriter(new FileWriter(jobPairFile));
-			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to the pair loop");
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
 				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
 				//writer.write(getPairString(pair));
 				JobPairs.addJobPair(con, pair);
 			}
-			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to execute the pair loop");
 			writer.flush();
 			writer.close();
 			procedure=con.prepareStatement("LOAD DATA INFILE ? INTO TABLE JOB_PAIRS " +
@@ -153,7 +150,6 @@ public class Jobs {
 					"(job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id);");
 			procedure.setString(1, jobPairFile.getAbsolutePath());
 			//procedure.executeUpdate();
-			log.debug("it took "+(System.currentTimeMillis()-a)+" time to get to execute the update");
 			jobPairFile.delete();
 			Common.endTransaction(con);
 			log.debug("job added successfully");
@@ -847,9 +843,9 @@ public class Jobs {
 	 */
 	
 	public static String getDirectory(int jobId) {
-		// The job's output is expected to be in JOB_OUTPUT_DIR/{owner's ID}/{job id}/
-		Job j=Jobs.getShallow(jobId);
-		return String.format("%s/%d/%d",R.JOB_OUTPUT_DIR,j.getUserId(),jobId);
+		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
+		File file=new File(new File(R.STAREXEC_ROOT,R.NEW_JOB_OUTPUT_DIR),String.valueOf(jobId));
+		return file.getAbsolutePath();
 	}
 	
 	
@@ -1509,19 +1505,6 @@ public class Jobs {
 		return null;
 	}
 	
-	/**
-	 * Gets the details of the job with the given ID, including all job pair information
-	 * for job pairs that were completed after "since"
-	 * @param jobId The ID of the job in question
-	 * @param since The completion ID after which to get job pair information
-	 * @return A job object with all fields populated
-	 * @author Eric Burns
-	 */
-	
-	
-	public static Job getNewDetailed(int jobId, int since) {
-		return getDetailed(jobId,since);
-	}
 	
 	/**
 	 * Gets all job pairs for the given job non-recursively 
@@ -1570,31 +1553,13 @@ public class Jobs {
 	 */
 	public static List<JobPair> getPairs (int jobId) {
 		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
 		try {			
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetJobPairsByJob(?)}");
-			procedure.setInt(1, jobId);					
-			 results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-
-			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				jp.getNode().setId(results.getInt("node_id"));
-				jp.getStatus().setCode(results.getInt("status_code"));
-				jp.getBench().setId(results.getInt("bench_id"));
-				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
-				returnList.add(jp);
-			}			
-			Common.safeClose(results);	
-			return returnList;
+			con = Common.getConnection();			
+			return getPairs(con,jobId);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
 
 		return null;		

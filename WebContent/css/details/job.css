@@ -111,8 +111,21 @@ margin-top:5px;
 #detailPanel #spaceOverviewOptionField {
 	float:left;
 	width:290px;	
+	/* text-align:center;*/
 }
 #detailPanel #solverComparisonOptionField {
 	float:left;
 	width:290px;	
+	/* text-align:center;*/  /*needs to be determined whether we want everything centered*/
+}
+
+#detailPanel #spaceOverviewUpdate {
+	margin-top:10px;
+	margin-right:auto;
+	margin-left:auto;	
+}
+#detailPanel #solverComparisonUpdate {
+	margin-top:10px;
+	margin-right:auto;
+	margin-left:auto;	
 }

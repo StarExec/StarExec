@@ -296,7 +296,8 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$SOLVER_NAME$$", pair.getSolver().getName());
 		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
-		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());		
+		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
+		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{
