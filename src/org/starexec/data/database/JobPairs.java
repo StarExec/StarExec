@@ -348,9 +348,9 @@ public class JobPairs {
 			String path=null;
 			for (JobPair jp : pairs) {
 				log.debug("now working on pair "+jp.getId());
-				File tempDir=new File(new File(R.STAREXEC_ROOT,R.NEW_JOB_OUTPUT_DIR),String.valueOf(jp.getJobId()));
+				File tempDir=new File(new File(R.NEW_JOB_OUTPUT_DIR),String.valueOf(jp.getJobId()));
 
-				oldPairFile=new File(String.format("%s/%s/%d/%d/%s___%s/%s",R.STAREXEC_ROOT, R.JOB_OUTPUT_DIR, jp.getId(), jp.getJobId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
+				oldPairFile=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, jp.getId(), jp.getJobId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
 				if (!oldPairFile.exists()) {
 					log.debug(oldPairFile.getAbsolutePath());
 					continue;

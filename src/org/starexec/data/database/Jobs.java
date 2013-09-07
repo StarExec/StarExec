@@ -844,7 +844,7 @@ public class Jobs {
 	
 	public static String getDirectory(int jobId) {
 		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file=new File(new File(R.STAREXEC_ROOT,R.NEW_JOB_OUTPUT_DIR),String.valueOf(jobId));
+		File file=new File(R.NEW_JOB_OUTPUT_DIR,String.valueOf(jobId));
 		return file.getAbsolutePath();
 	}
 	
