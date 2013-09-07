@@ -356,28 +356,27 @@ public class JobPairs {
 					continue;
 				}
 				log.debug("Searching for pair output at" + oldPairFile.getAbsolutePath());
-				if (oldPairFile.exists()) {
-					path=jp.getPath();
-					//if the pair has no  path for some reason, just assign a generic one
-					if (path==null) {
-						path="job space";
-					}
-					
-
-					String [] spaces=path.split("/");
-					newFileDir=new File(tempDir,spaces[0]);
-					newFileDir.mkdir();
-					for (int index=1;index<spaces.length;index++) {
-						newFileDir=new File(newFileDir,spaces[index]);
-					}
-					newFileDir=new File(newFileDir,jp.getSolver().getName());
-					newFileDir.mkdirs();
-					newFileDir=new File(newFileDir,jp.getConfiguration().getName());
-					newFileDir.mkdirs();				
-					FileUtils.copyFileToDirectory(oldPairFile,newFileDir);
-
+				
+				path=jp.getPath();
+				//if the pair has no  path for some reason, just assign a generic one
+				if (path==null) {
+					path="job space";
 				}
+				
+				String [] spaces=path.split("/");
+				newFileDir=new File(tempDir,spaces[0]);
+				newFileDir.mkdir();
+				for (int index=1;index<spaces.length;index++) {
+					newFileDir=new File(newFileDir,spaces[index]);
+				}
+				newFileDir=new File(newFileDir,jp.getSolver().getName());
+				newFileDir.mkdirs();
+				newFileDir=new File(newFileDir,jp.getConfiguration().getName());
+				newFileDir.mkdirs();				
+				FileUtils.copyFileToDirectory(oldPairFile,newFileDir);
+
 			}
+			
 			return true;
 		} catch (Exception e) {
 			log.debug("transferOutputFilesToNewDirectory says "+e.getMessage(),e);

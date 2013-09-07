@@ -8,7 +8,7 @@ whoami
 # Tyler Jensen
 #
 # MODIFIED:    
-# 08/07/2013
+# 09/06/2013
 #
 # DESCRIPTION:
 # This is the script that gets executed when
@@ -46,7 +46,7 @@ LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 JOB_IN_DIR="$SHARED_DIR/jobin"
 
 # Path to the job output directory
-JOB_OUT_DIR="$SHARED_DIR/jobout"
+JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
 WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
 
@@ -56,12 +56,7 @@ WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
 
 function copyOutput {
 	log "creating storage directory on master host"
-
-	# Copy this job's output to /JOBOUT/USERID/STAREXEC JOB ID/PAIR ID	
-	#UNIQUE_OUT_DIR="$JOB_OUT_DIR/$USER_ID/$JOB_STAR_ID/$PAIR_ID"
-	#createDir "$UNIQUE_OUT_DIR"
 	
-	#log "second output dir"
 	RZ_OUT_DIR="$JOB_OUT_DIR/$JOB_STAR_ID/$SPACE_PATH/$SOLVER_NAME"
         #log "solver name = $SOLVER_NAME"
 	APPEND="___$CONFIG_NAME"
