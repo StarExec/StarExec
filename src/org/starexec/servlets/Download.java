@@ -147,7 +147,7 @@ public class Download extends HttpServlet {
 			// Redirect based on success/failure
 			if(archive != null) {
 				Object check=request.getParameter("token");
-
+				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 				//token is used to tell the client when the file has arrived
 				if (check!=null) {
 					String token=check.toString();
