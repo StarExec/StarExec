@@ -217,6 +217,18 @@ public class Cache {
 	 */
 	
 	public static boolean setCache(int id, CacheType type, File archive, String destName) {
+		if (type==CacheType.CACHE_JOB_CSV || type==CacheType.CACHE_JOB_CSV_NO_IDS || type==CacheType.CACHE_JOB_OUTPUT ||
+				type== CacheType.CACHE_JOB_PAIR) {
+			int jobId;
+			if (type==CacheType.CACHE_JOB_PAIR) {
+				jobId=JobPairs.getPairDetailed(id).getJobId();
+			} else {
+				jobId=id;
+			}
+			if (!Jobs.isJobComplete(jobId)) {
+				return true; // there were no errors, but we don't want to cache job related things before the job is complete
+			}
+		}
 		log.debug("adding entry to cache type = "+type.toString());
 		Connection con=null;
 		CallableStatement procedure=null;
