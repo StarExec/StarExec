@@ -157,9 +157,10 @@ public class Download extends HttpServlet {
 				}
 				FileInputStream stream=new FileInputStream(archive);
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				long size=IOUtils.copyLarge(stream, response.getOutputStream());
-				response.addHeader("Content-Length",String.valueOf(size));
+				long size=FileUtils.sizeOf(archive);
 				log.debug("the size of the file being returned is "+size);
+				response.addHeader("Content-Length",String.valueOf(size));
+				IOUtils.copyLarge(stream, response.getOutputStream());
 				response.getOutputStream().close();
 				
 				stream.close();
