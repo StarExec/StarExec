@@ -164,7 +164,6 @@ public class Download extends HttpServlet {
 				response.getOutputStream().close();
 				
 				stream.close();
-				log.debug("ready to send back file "+shortName+".zip");
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	

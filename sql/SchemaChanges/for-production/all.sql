@@ -1,6 +1,5 @@
-source statsCache.sql
-source removeProxy.sql 
-source pairKeys.sql
-source pairNameColumns.sql
-source dropStatusTable.sql
-source optimizeTables.sql 
+source renameKeys.sql
+source dropArchiveType.sql 
+source dropUnnecessaryKeys.sql
+source spaceCacheTable.sql
+
