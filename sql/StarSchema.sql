@@ -462,8 +462,8 @@ CREATE TABLE benchmark_uploads (
     completed_spaces INT DEFAULT 0,
     error_message VARCHAR(512) DEFAULT "no error",
 	PRIMARY KEY (id),
-	CONSTRAINT benchmark_uploads_space_id FOREIGN KEY REFERENCES spaces(id) ON DELETE CASCADE,
-	CONSTRAINT benchmark_uploads_user_id FOREIGN KEY REFERENCES users(id) ON DELETE CASCADE
+	CONSTRAINT benchmark_uploads_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT benchmark_uploads_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- For benchmarks that fail validation

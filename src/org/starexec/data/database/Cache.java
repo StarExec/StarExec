@@ -207,7 +207,9 @@ public class Cache {
 	}
 	
 	/**
-	 * Adds a new entry into the file_cache table, and also copies the given file to the cache directory
+	 * Adds a new entry into the file_cache table, and also copies the given file to the cache directory.
+	 * Invalid cache requests (for example, requests to cache results for an incomplete job or a space hierarchy
+	 * including public spaces) do nothing.
 	 * @param id The ID of the primitive in question
 	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
 	 * @param archive The archive that is being cached, which needs to be copied to R.CACHED_FILE_DIR
@@ -227,6 +229,12 @@ public class Cache {
 			}
 			if (!Jobs.isJobComplete(jobId)) {
 				return true; // there were no errors, but we don't want to cache job related things before the job is complete
+			}
+		}
+		if (type==CacheType.CACHE_SPACE_HIERARCHY || type==CacheType.CACHE_SPACE_XML) {
+			if (!Spaces.isPublicHierarchy(id)) {
+				log.debug("space hierarchy is not public, so no caching was done");
+				return true; //don't cache anything for hierarchies that are not entirely public
 			}
 		}
 		log.debug("adding entry to cache type = "+type.toString());

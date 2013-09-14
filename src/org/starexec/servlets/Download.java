@@ -158,7 +158,8 @@ public class Download extends HttpServlet {
 				FileInputStream stream=new FileInputStream(archive);
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				long size=IOUtils.copyLarge(stream, response.getOutputStream());
-				response.addHeader("Content-Length",String.valueOf(size));	
+				response.addHeader("Content-Length",String.valueOf(size));
+				log.debug("the size of the file being returned is "+size);
 				response.getOutputStream().close();
 				
 				stream.close();
@@ -828,7 +829,7 @@ public class Download extends HttpServlet {
 				tempDir.delete();
 			}
 			
-			if (Spaces.isPublicHierarchy(space.getId()) && includeBenchmarks && includeSolvers) {
+			if (includeBenchmarks && includeSolvers) {
 				if (hierarchy) {
 					Cache.setCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY,uniqueDir, fileName);
 				} else {
