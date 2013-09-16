@@ -1255,7 +1255,11 @@ public static JsonObject convertUsersToJsonObject(List<User> users, int totalRec
     	JsonObject nextPage=new JsonObject();
     	 // Build the actual JSON response object and populated it with the created data
 	    nextPage.addProperty(SYNC_VALUE, syncValue);
-	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    if(totalRecords < 0) {
+	    	nextPage.addProperty(TOTAL_RECORDS, 0); // accounts for when there are no users except for public user (-1 result)
+	    } else {
+	    	nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    }
 	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
 	    nextPage.add("aaData", dataTablePageEntries);
 	    
