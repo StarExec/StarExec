@@ -1,14 +1,12 @@
 USE starexec;
 
-DROP TABLE queue_assoc;
-
 CREATE TABLE queue_assoc (
 	queue_id INT NOT NULL, 	
 	node_id INT NOT NULL,	
 	PRIMARY KEY (queue_id, node_id),
-	CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
-	CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
-);
+--	CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
+--	CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
+) engine=myisam;
 
 
 ALTER TABLE user_roles ADD CONSTRAINT user_roles_email FOREIGN KEY (email) REFERENCES users(email)  ON DELETE CASCADE; 
