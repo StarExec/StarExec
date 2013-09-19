@@ -1,59 +1,16 @@
 USE starexec;
 
-ALTER TABLE user_roles DROP FOREIGN KEY user_roles_ibfk_1;
-ALTER TABLE logins DROP FOREIGN KEY logins_ibfk_1;
-ALTER TABLE spaces DROP FOREIGN KEY spaces_ibfk_1;
-ALTER TABLE closure DROP FOREIGN KEY closure_ibfk_1;
-ALTER TABLE closure DROP FOREIGN KEY closure_ibfk_2;
-ALTER TABLE processors DROP FOREIGN KEY processors_ibfk_1;
-ALTER TABLE benchmarks DROP FOREIGN KEY benchmarks_ibfk_1;
-ALTER TABLE benchmarks DROP FOREIGN KEY benchmarks_ibfk_3;
-ALTER TABLE bench_attributes DROP FOREIGN KEY bench_attributes_ibfk_1;
-ALTER TABLE solvers DROP FOREIGN KEY solvers_ibfk_1;
-ALTER TABLE jobs DROP FOREIGN KEY jobs_ibfk_1;
-ALTER TABLE jobs DROP FOREIGN KEY jobs_ibfk_2;
-ALTER TABLE jobs DROP FOREIGN KEY jobs_ibfk_3;
-ALTER TABLE jobs DROP FOREIGN KEY jobs_ibfk_4;
-ALTER TABLE configurations DROP FOREIGN KEY configurations_ibfk_1;
-ALTER TABLE job_pairs DROP FOREIGN KEY job_pairs_ibfk_1;
-ALTER TABLE job_pairs DROP FOREIGN KEY job_pairs_ibfk_5;
-ALTER TABLE job_pairs DROP FOREIGN KEY job_pairs_ibfk_6;
-ALTER TABLE job_pair_completion DROP FOREIGN KEY job_pair_completion_ibfk_1;
-ALTER TABLE job_attributes DROP FOREIGN KEY job_attributes_ibfk_1;
-ALTER TABLE verify DROP FOREIGN KEY verify_ibfk_1;
-ALTER TABLE website DROP FOREIGN KEY website_ibfk_1;
-ALTER TABLE website DROP FOREIGN KEY website_ibfk_2;
-ALTER TABLE website DROP FOREIGN KEY website_ibfk_3;
-ALTER TABLE user_assoc DROP FOREIGN KEY user_assoc_ibfk_1;
-ALTER TABLE user_assoc DROP FOREIGN KEY user_assoc_ibfk_2;
-ALTER TABLE user_assoc DROP FOREIGN KEY user_assoc_ibfk_3;
-ALTER TABLE set_assoc DROP FOREIGN KEY set_assoc_ibfk_1;
-ALTER TABLE set_assoc DROP FOREIGN KEY set_assoc_ibfk_2;
-ALTER TABLE bench_assoc DROP FOREIGN KEY bench_assoc_ibfk_1;
-ALTER TABLE bench_assoc DROP FOREIGN KEY bench_assoc_ibfk_2;
-ALTER TABLE job_assoc DROP FOREIGN KEY job_assoc_ibfk_1;
-ALTER TABLE job_assoc DROP FOREIGN KEY job_assoc_ibfk_2;
-ALTER TABLE solver_assoc DROP FOREIGN KEY solver_assoc_ibfk_1;
-ALTER TABLE solver_assoc DROP FOREIGN KEY solver_assoc_ibfk_2;
-ALTER TABLE community_requests DROP FOREIGN KEY community_requests_ibfk_1;
-ALTER TABLE community_requests DROP FOREIGN KEY community_requests_ibfk_2;
-ALTER TABLE pass_reset_request DROP FOREIGN KEY pass_reset_request_ibfk_1;
-ALTER TABLE bench_dependency DROP FOREIGN KEY bench_dependency_ibfk_1;
-ALTER TABLE bench_dependency DROP FOREIGN KEY bench_dependency_ibfk_2;
-ALTER TABLE comments DROP FOREIGN KEY comments_ibfk_1;
-ALTER TABLE comments DROP FOREIGN KEY comments_ibfk_2;
-ALTER TABLE comments DROP FOREIGN KEY comments_ibfk_3;
-ALTER TABLE comments DROP FOREIGN KEY comments_ibfk_4;
-ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_ibfk_1;
-ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_ibfk_4;
-ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_ibfk_5;
-ALTER TABLE job_space_assoc DROP FOREIGN KEY job_space_assoc_ibfk_3;
-ALTER TABLE job_space_assoc DROP FOREIGN KEY job_space_assoc_ibfk_4;
-ALTER TABLE job_stats DROP FOREIGN KEY job_stats_ibfk_1;
+DROP TABLE queue_assoc;
 
-ALTER TABLE queue_assoc ENGINE = InnoDB;
-ALTER TABLE queue_assoc CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
-ALTER TABLE queue_assoc CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
+CREATE TABLE queue_assoc (
+	queue_id INT NOT NULL, 	
+	node_id INT NOT NULL,	
+	PRIMARY KEY (queue_id, node_id),
+	CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
+	CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
+);
+
+
 ALTER TABLE user_roles ADD CONSTRAINT user_roles_email FOREIGN KEY (email) REFERENCES users(email)  ON DELETE CASCADE; 
 ALTER TABLE logins ADD CONSTRAINT logins_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION; 
 ALTER TABLE spaces ADD CONSTRAINT spaces_default_permission FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL; 
