@@ -52,6 +52,8 @@ public class JobPair extends Identifiable {
 		this.solver = new Solver();
 		this.bench = new Benchmark();
 		this.status = new Status();		
+		this.configuration=new Configuration();
+		this.attributes=new Properties();
 	}
 	
 	/**

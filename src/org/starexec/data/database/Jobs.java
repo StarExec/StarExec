@@ -1272,30 +1272,26 @@ public class Jobs {
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
-				Benchmark bench = new Benchmark();
+				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));
 				bench.setName(results.getString("bench_name"));
 
-				Solver solver = new Solver();
+				Solver solver = jp.getSolver();
 				solver.setId(results.getInt("solver_id"));
 				solver.setName(results.getString("solver_name"));
 
-				Configuration config = new Configuration();
+				Configuration config = jp.getConfiguration();
 				config.setId(results.getInt("config_id"));
 				config.setName(results.getString("config_name"));
 				
-				Status status = new Status();
+				Status status = jp.getStatus();
 				status.setCode(results.getInt("job_pairs.status_code"));
 				
 
-				Properties attributes = new Properties();
+				Properties attributes = jp.getAttributes();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
 
 				solver.addConfiguration(config);
-				jp.setBench(bench);
-				jp.setSolver(solver);
-				jp.setStatus(status);
-				jp.setAttributes(attributes);
 				jobPairs.add(jp);		
 			}	
 			Common.safeClose(results);
@@ -1459,7 +1455,41 @@ public class Jobs {
 		return null;
 	}
 	
-	
+	public static List<JobPair> getNewCompletedPairsShallow(int jobId, int since) {
+		Connection con = null;	
+		
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {			
+			con = Common.getConnection();	
+			
+			log.info("getting detailed pairs for job " + jobId );
+			//otherwise, just get the completed ones that were completed later than lastSeen
+			 procedure = con.prepareCall("{CALL GetJobPairFilePathInfo(?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,since);
+			results = procedure.executeQuery();
+			List<JobPair> pairs=new ArrayList<JobPair>();	
+			while (results.next()) {
+				JobPair pair=new JobPair();
+				pair.setJobId(jobId);
+				pair.setPath(results.getString("path"));
+				pair.getSolver().setName(results.getString("solver_name"));
+				pair.getConfiguration().setName(results.getString("config_name"));
+				pair.getBench().setName(results.getString("bench_name"));
+				pair.setCompletionId(results.getInt("completion_id"));
+				pairs.add(pair);
+			}
+			return pairs;
+		} catch (Exception e) {
+			log.error("getNewCompletedPairsDetailed says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
 
 	/**
 	 * Gets all job pairs for the given job that have been completed after a given point and also
@@ -1724,18 +1754,15 @@ public class Jobs {
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("id"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
-				Benchmark bench = new Benchmark();
+				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));
 				bench.setName(results.getString("bench_name"));
 				
-				Status status = new Status();
+				Status status = jp.getStatus();
 				status.setCode(results.getInt("status_code"));
 
-				Properties attributes = new Properties();
+				Properties attributes = jp.getAttributes();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
-				jp.setBench(bench);
-				jp.setStatus(status);
-				jp.setAttributes(attributes);
 				pairs.add(jp);	
 			}
 			log.debug("processing pairs took "+(System.currentTimeMillis()-a));
@@ -1796,26 +1823,22 @@ public class Jobs {
 			List<JobPair> pairs = new ArrayList<JobPair>();
 			while (results.next()) {
 				JobPair jp=new JobPair();
-				Status s=new Status();
+				Status s=jp.getStatus();
 				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
 				jp.setId(results.getInt("job_pairs.id"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
 				jp.setCpuUsage(results.getDouble("cpu"));
-				Solver solver=new Solver();
+				Solver solver=jp.getSolver();
 				solver.setId(results.getInt("solver_id"));
 				solver.setName(results.getString("solver_name"));
-				Configuration c=new Configuration();
+				Configuration c=jp.getConfiguration();
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
 				solver.addConfiguration(c);
-				jp.setSolver(solver);
-				jp.setConfiguration(c);
 				if (includeBenchmarks) {
-					Benchmark b=new Benchmark();
+					Benchmark b=jp.getBench();
 					b.setId(results.getInt("bench_id"));
 					b.setName(results.getString("bench_name"));
-					jp.setBench(b);
 				}
 				pairs.add(jp);
 			}

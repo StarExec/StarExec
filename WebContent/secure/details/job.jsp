@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -10,6 +10,7 @@
 		
 		Job j=null;
 		if(Permissions.canUserSeeJob(jobId,userId)) {
+			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			j=Jobs.get(jobId);
 			int jobSpaceId=j.getPrimarySpace();
 			//this means it's an old job and we should run the backwards-compatibility routine
@@ -30,6 +31,7 @@
 				request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 				request.setAttribute("isPaused", isPaused);
 				request.setAttribute("isKilled", isKilled);
+				request.setAttribute("postProcs", ListOfPostProcessors);
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -218,6 +220,13 @@
 							</c:if>
 						</c:if>
 					</c:if>
+					<c:if test="${pairStats.pendingPairs == 0}">
+						<c:if test="${j.userId == userId}">
+							<c:if test="${not isPaused and not isKilled}">
+								<li><button type="button" id="postProcess">run new postprocessor</button></li>
+							</c:if>
+						</c:if>
+					</c:if>
 					<c:if test="${j.userId == userId}">
 						<c:if test="${isPaused}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
@@ -239,6 +248,16 @@
 				<div id="dialog-solverComparison" title="solver comparison chart">
 					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>
 					<map id="bigSolverComparisonMap"></map>
+				</div>
+				<div id="dialog-postProcess" title="run new postprocessor">
+					<p><span id="dialog-postProcess-txt"></span></p><br/>
+					
+					<p><select id="postProcessorSelection">
+						<c:forEach var="proc" items="${postProcs}">
+							<option value="${proc.id}">${proc.name} (${proc.id})</option>
+						</c:forEach>
+					</select></p>
+					
 				</div>
 				<div id="dialog-spaceOverview" title="space overview chart">
 					<img src="" id="bigSpaceOverview"/>

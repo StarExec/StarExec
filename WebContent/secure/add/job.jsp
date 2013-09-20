@@ -7,17 +7,17 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
-		request.setAttribute("space", Spaces.get(spaceId));
-		request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
-		request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
-		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
-		List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
-		
+
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if(!p.canAddJob()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
+			request.setAttribute("space", Spaces.get(spaceId));
+			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
+			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
+			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
+			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
 			request.setAttribute("queues", Queues.getUserQueues(userId));
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));

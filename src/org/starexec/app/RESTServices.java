@@ -913,6 +913,24 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Post-processes an already-complete job with a new post processor
+	 * 
+	 * @return a json string containing '0' if the deletion was successful, else
+	 *         a json string containing '1' if there was a failure, '2' for
+	 *         insufficient permissions
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/postprocess/job/{jobId}/{procId}")
+	@Produces("application/json")
+	public String postProcessJob(@PathParam("jobId") int jid, @PathParam("procId") int pid, @Context HttpServletRequest request) {
+		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
+		
+		return "done!";
+		
+	}
+	
+	/**
 	 * Removes a benchmark type from a given space
 	 * 
 	 * @return a json string containing '0' if the deletion was successful, else

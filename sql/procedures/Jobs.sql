@@ -485,5 +485,14 @@ CREATE PROCEDURE SetNewColumns()
 			JOIN solvers AS solve ON solve.id=config.solver_id
 			SET bench_name=bench.name, solver_name=solve.name, config_name=config.name, job_pairs.solver_id=solve.id;
 	END //
-
+	
+-- Gets back only the fields of a job pair that are necessary to determine where it is stored on disk
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfoByJob;
+CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID INT)
+	BEGIN
+		SELECT path,solver_name,config_name,bench_name, complete.completion_id FROM job_pairs
+			JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
+		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId;
+	END //
 DELIMITER ; -- this should always be at the end of the file

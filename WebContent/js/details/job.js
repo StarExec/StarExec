@@ -149,6 +149,7 @@ function initUI(){
 	$("#dialog-return-ids").hide();
 	$("#dialog-solverComparison").hide();
 	$("#dialog-spaceOverview").hide();
+	$("#dialog-postProcess").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
 	
@@ -160,11 +161,16 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	$("#postProcess").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+	});
 	$("#spaceOverviewUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
 		}
-	})
+	});
 	$("#solverComparisonUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
@@ -187,6 +193,7 @@ function initUI(){
 			secondary: "ui-icon-pause"
 		}
 	});
+	
 	
 	$('#resumeJob').button({
 		icons: {
@@ -238,6 +245,45 @@ function initUI(){
 		});
 	});
 	
+	$("#postProcess").click(function(){
+		$('#dialog-postProcess-txt').text('Please select a post-processor to use for this job.');
+		
+		$('#dialog-postProcess').dialog({
+			modal: true,
+			width: 380,
+			height: 200,
+			buttons: {
+				'OK': function() {
+					$('#dialog-postProcess').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val(),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										break;
+									case 1:
+										showMessage('error', "Internal error running new post processor.", 5000);
+										break;
+									case 2:
+										showMessage('error', "Only the owner of this job can post-process its results.", 5000);
+										break;
+									default:
+										showMessage('error', "Invalid parameters.", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	
 	$("#pauseJob").click(function(){
 		$('#dialog-confirm-pause-txt').text('are you sure you want to pause this job?');
 		
@@ -255,7 +301,6 @@ function initUI(){
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
-										//window.location = starexecRoot+'secure/details/job.jsp?id=' +  getParametByName("id");
 										document.location.reload(true);
 										break;
 									case 1:
@@ -297,7 +342,6 @@ function initUI(){
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
-										//window.location = starexecRoot+'secure/details/job.jsp?id=' +  getParametByName("id");
 										document.location.reload(true);
 										break;
 									case 1:
