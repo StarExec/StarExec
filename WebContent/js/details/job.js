@@ -375,10 +375,10 @@ function initUI(){
 	
 	
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
-	$("spaceOverviewUpdate").click(function() {
+	$("#spaceOverviewUpdate").click(function() {
 	  	updateSpaceOverview();
 	});
-	$("solverComparisonUpdate").click(function() {
+	$("#solverComparisonUpdate").click(function() {
 		updateSolverComparison(false);
 	});
 	$("#spaceOverviewSelections").change(function() {
