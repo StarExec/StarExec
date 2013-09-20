@@ -242,9 +242,9 @@ public class JobPairs {
 		for (String space : pathSpaces) {
 			file=new File(file,space);
 		}
-		file=new File(file,pair.getSolver().getName());
-		file=new File(file,pair.getConfiguration().getName());
+		file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
 		file=new File(file,pair.getBench().getName());
+		log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
 		return file.getAbsolutePath();
 	}
 	/**
