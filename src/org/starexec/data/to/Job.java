@@ -139,9 +139,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	    while(itr.hasNext()) {
 	    	JobPair pair = itr.next();
 	    	Properties props = pair.getAttributes();
-	    	if (props==null) {
-	    		continue;
-	    	}
+	    	
 	    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
 	    		attrs.addAll(props.stringPropertyNames());
 	    		

@@ -550,7 +550,7 @@ public class Download extends HttpServlet {
 		log.debug("CreateJobCSV called with returnIds set to "+returnIds);
 		StringBuilder sb = new StringBuilder();
 		sb.delete(0, sb.length());
-		sb.append(R.JOB_OUTPUT_DIR);
+		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
 		sb.append(job.getUserId());
 		sb.append("_");

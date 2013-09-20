@@ -452,7 +452,7 @@ public class GridEngineUtil {
 
     		if(processor != null) {
     			log.info("got post processor " + processor.getId() + " for job " + job.getId() +", sgeId = " +sgeId);
-    			File stdOut = GridEngineUtil.getStdOutFile(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName());
+    			File stdOut = GridEngineUtil.getStdOutFile(pair.getId());
     			log.info("about to run processor "+ processor.getId() + " on stdOut file for job " + job.getId() +", sgeId = " +sgeId);
     			// Run the processor on the std out file
     			String command = processor.getFilePath() + stdOut.getAbsolutePath();
@@ -600,34 +600,34 @@ public class GridEngineUtil {
      * @param pair The pair to get output for
      * @return All console output from a job pair run for the given pair
      */
-    public static String getStdOut(Job job, JobPair pair, int limit) {
+    public static String getStdOut(JobPair pair, int limit) {
     	pair = JobPairs.getPairDetailed(pair.getId());
-    	return GridEngineUtil.getStdOut(job.getUserId(), job.getId(), pair.getSolver().getName(), pair.getConfiguration().getName(), pair.getBench().getName(), limit);
+    	return GridEngineUtil.getStdOut(pair.getId(),limit);
     }
 
     /**
      * Finds the standard output of a job pair and returns it as a string. Null
      * is returned if the output doesn't exist or cannot be found
-     * @param userId The id of the user that submitted the job
      * @param jobId The id of the job the pair is apart of
      * @param pairId The pair to get output for
      * @param limit The maximum number of lines to return
+     * @param path The path to the job pair file
      * @return All console output from a job pair run for the given pair
      */
-    public static String getStdOut(int userId, int jobId, String solver_name, String config_name, String bench_name, int limit) {		
-    	File stdoutFile = GridEngineUtil.getStdOutFile(userId, jobId, solver_name, config_name, bench_name);		
+    public static String getStdOut(int pairId,int limit) {		
+    	File stdoutFile = GridEngineUtil.getStdOutFile(pairId);		
     	return Util.readFileLimited(stdoutFile, limit);
     }
 
     /**
      * Finds the standard output of a job pair and returns its file.
-     * @param userId The id of the user that submitted the job
      * @param jobId The id of the job the pair is apart of
      * @param pairId The pair to get output for
+     * @param path The space path to the job pair file
      * @return All console output from a job pair run for the given pair
      */
-    public static File getStdOutFile(int userId, int jobId, String solver_name, String config_name, String bench_name) {			
-    	String stdoutPath = String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, userId, jobId, solver_name, config_name, bench_name);
+    public static File getStdOutFile(int pairId) {	
+    	String stdoutPath=JobPairs.getFilePath(pairId);
     	log.info("The stdoutPath is: " + stdoutPath);
 
     	return (new File(stdoutPath));	

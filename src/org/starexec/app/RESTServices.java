@@ -263,7 +263,7 @@ public class RESTServices {
 		if(jp != null) {			
 			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 				Job j = Jobs.getShallow(jp.getJobId());			
-				String stdout = GridEngineUtil.getStdOut(j, jp, limit);
+				String stdout = GridEngineUtil.getStdOut(jp, limit);
 				
 				if(!Util.isNullOrEmpty(stdout)) {
 					return stdout;
