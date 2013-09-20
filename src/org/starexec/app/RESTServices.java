@@ -1,6 +1,10 @@
 package org.starexec.app;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +30,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
@@ -38,6 +43,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
@@ -45,6 +51,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
+import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -54,6 +61,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -81,6 +89,7 @@ public class RESTServices {
 	private static final int ERROR_PASSWORDS_NOT_EQUAL=3;
 	private static final int ERROR_CANT_EDIT_LEADER_PERMS=3;
 	private static final int ERROR_CANT_PROMOTE_SELF=3;
+	private static final int ERROR_CANT_PROMOTE_LEADER=3;
 	
 	private static final int ERROR_NOT_IN_SPACE=4;
 	private static final int ERROR_CANT_REMOVE_LEADER=4;
@@ -145,8 +154,21 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
-		
+		log.debug("parentId = " + parentId);
+		log.debug("userId = " + userId);
+		log.debug("test = " + Spaces.getSubSpaces(parentId, userId, false));
 		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false),userId));
+	}
+	
+	/**
+	 * @return a json string representing all the spaces that a certain user is a member of
+	 * @author Wyatt Kaiser
+	 */
+	@GET
+	@Path("/space/userAssoc/{userId}")
+	@Produces("application/json")	
+	public String getSpacesForUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {	
+		return gson.toJson(RESTHelpers.toCommunityList((Spaces.GetSpacesByUser(userId))));
 	}
 	
 	/**
@@ -193,8 +215,12 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues")
 	@Produces("application/json")	
-	public String getAllQueues(@QueryParam("id") int id) {		
-		if(id <= 0) {
+	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {	
+		int userId = SessionUtil.getUserId(request);
+		User u = Users.get(userId);
+		if(id <= 0 && u.getRole().equals("admin")) {
+			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllAdmin()));
+		} else if (id <= 0) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAll()));
 		} else {
 			return gson.toJson(RESTHelpers.toNodeList(Queues.getNodes(id)));
@@ -317,6 +343,28 @@ public class RESTServices {
 		
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
+	
+	/**
+	 * @return a json string representing permissions within a particular space for a user
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/permissions/details/{id}/{spaceId}")
+	@Produces("application/json")	
+	public String getPermissionDetails(@PathParam("id") int userid, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		User requester = SessionUtil.getUser(request);
+		Permission perm = Permissions.get(userid, spaceId);
+		Space space = Spaces.get(spaceId);
+		Integer parentId = Spaces.getParentSpace(spaceId);
+		boolean isCommunity = false;
+		if (parentId == 1) {
+			isCommunity = true;
+		}
+		User user = Users.get(userid);
+		
+		return gson.toJson(new RESTHelpers.PermissionDetails(perm,space,user,requester, isCommunity));
+		
+	}
 	
 	/**
 	 * @return a json string representing all the subspaces of the space with
@@ -539,6 +587,39 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL)
+	 * @param primType the type of primitive
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of entries if successful,<br>
+	 * 		1 if the request fails parameter validation, <br>
+	 * @author Wyatt kaiser
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/{primType}/pagination/")
+	@Produces("application/json")
+	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		if (primType.startsWith("u")) {
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.USER, request);
+		}
+		if (primType.startsWith("j")) {
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.JOB, request);
+		}
+		if (primType.startsWith("n")) {
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.NODE, request);
+		}
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+	
+	
+	/**
 	 * Returns the next page of entries in a given DataTable
 	 *
 	 * @param spaceId the id of the space to query for primitives from
@@ -595,9 +676,22 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUserSpacePermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if(p != null && (p.isLeader() || SessionUtil.getUserId(request) == userId)) {
+		User user = SessionUtil.getUser(request);
+		List<Space> communities = Communities.getAll();
+		for (Space s : communities) {
+			if (spaceId == s.getId()) {
+				if (user.getRole().equals("admin")) {
+					return gson.toJson(Permissions.get(userId, spaceId));
+				} else {
+					return gson.toJson(1);
+				}
+			}
+		}
+		
+		if(p != null && (SessionUtil.getUserId(request) == userId || p.isLeader() )) {
 			return gson.toJson(Permissions.get(userId, spaceId));
 		}
+		
 		
 		return null;
 	}	
@@ -1619,6 +1713,7 @@ public class RESTServices {
 	@Path("/remove/user/{spaceId}")
 	@Produces("application/json")
 	public String removeUsersFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		log.debug("removing user from space");
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -1626,9 +1721,28 @@ public class RESTServices {
 		
 		// Get the id of the user who initiated the removal
 		int userIdOfRemover = SessionUtil.getUserId(request);
+		User u = Users.get(userIdOfRemover);
 		
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
+		Permission perm = new Permission();
+		if (u.getRole().equals("admin")) {
+			log.debug("Returning admin user permissions");
+			perm.setAddBenchmark(true);
+			perm.setAddSolver(true);
+			perm.setAddSpace(true);
+			perm.setAddUser(true);
+			perm.setAddJob(true);
+			perm.setRemoveBench(true);
+			perm.setRemoveSolver(true);
+			perm.setRemoveSpace(true);
+			perm.setRemoveUser(true);
+			perm.setRemoveJob(true);
+			perm.setLeader(true);
+			perm.setId(userIdOfRemover);
+			
+		} else {
+			// Permissions check; ensures user is the leader of the community
+			perm = SessionUtil.getPermission(request, spaceId);
+		}
 		if(perm == null || !perm.canRemoveUser()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
@@ -1636,18 +1750,21 @@ public class RESTServices {
 		// Extract the String user id's and convert them to Integer
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
-		// Validate the list of users to remove by:
-		// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
-		// 2 - Ensuring other leaders of the space aren't in the list of users to remove
-		for(int userId : selectedUsers){
-			if(userId == userIdOfRemover){
-				return gson.toJson(ERROR_CANT_REMOVE_SELF);
-			}
-			perm = Permissions.get(userId, spaceId);
-			if(perm.isLeader()){
-				return gson.toJson(ERROR_CANT_REMOVE_LEADER);
+		if (!u.getRole().equals("admin")) {
+			// Validate the list of users to remove by:
+			// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
+			// 2 - Ensuring other leaders of the space aren't in the list of users to remove
+			for(int userId : selectedUsers){
+				if(userId == userIdOfRemover){
+					return gson.toJson(ERROR_CANT_REMOVE_SELF);
+				}
+				perm = Permissions.get(userId, spaceId);
+				if(perm.isLeader()){
+					return gson.toJson(ERROR_CANT_REMOVE_LEADER);
+				}
 			}
 		}
+
 		
 		// If array of users to remove is valid, attempt to remove them from the space
 		
@@ -2445,8 +2562,9 @@ public class RESTServices {
 	@Path("/space/{spaceId}/edit/perm/{userId}")
 	@Produces("application/json")
 	public String editUserPermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
-		
 		// Ensure the user attempting to edit permissions is a leader
+		int currentUserId = SessionUtil.getUserId(request);
+		User currentUser = Users.get(currentUserId);
 		Permission perm = SessionUtil.getPermission(request, spaceId);
 		if(perm == null || !perm.isLeader()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
@@ -2454,7 +2572,7 @@ public class RESTServices {
 		
 		// Ensure the user to edit the permissions of isn't themselves a leader
 		perm = Permissions.get(userId, spaceId);
-		if(perm.isLeader()){
+		if(perm.isLeader() && !currentUser.getRole().equals("admin") ){
 			return gson.toJson(ERROR_CANT_EDIT_LEADER_PERMS);
 		}		
 		
@@ -2695,7 +2813,7 @@ public class RESTServices {
 	 *         1: Selected userId list is empty.
 	 *         2: User making this request is not a leader
 	 *         3: If one is promoting himself
-	 * @author Ruoyu Zhang
+	 * @author Ruoyu Zhang and Wyatt Kaiser
 	 */
 	@POST
 	@Path("/makeLeader/{spaceId}")
@@ -2709,12 +2827,12 @@ public class RESTServices {
 		
 		// Get the id of the user who initiated the promotion
 		int userIdOfPromotion = SessionUtil.getUserId(request);
-		
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		User user = Users.get(userIdOfPromotion);
+		// Permissions check; ensure the user an admin
+		if (!user.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
+		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		
 		// Extract the String user id's and convert them to Integer
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
@@ -2725,6 +2843,10 @@ public class RESTServices {
 		for(int userId : selectedUsers){
 			if(userId == userIdOfPromotion){
 				return gson.toJson(ERROR_CANT_PROMOTE_SELF);
+			}
+			
+			if	(Permissions.get(userId, spaceId).isLeader()) {
+				return gson.toJson(ERROR_CANT_PROMOTE_LEADER);
 			}
 			
 			Permission p = new Permission();
@@ -2742,6 +2864,48 @@ public class RESTServices {
 			
 			Permissions.set(userId, spaceId, p);
 		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Demotes a user from a leader to only a member in a community
+	 * @param spaceId The Id of the community  
+	 * @return 0: Success.
+	 *         1: Selected userId list is empty.
+	 *         2: User making this request is not a leader
+	 *         3: If one is demoting himself
+	 * @author Ruoyu Zhang and Wyatt Kaiser
+	 */
+	@POST
+	@Path("/demoteLeader/{spaceId}/{userId}")
+	@Produces("application/json")
+	public String demoteLeader(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {		
+				
+		// Permissions check; ensures user is the leader of the community
+		Permission perm = SessionUtil.getPermission(request, spaceId);	
+		log.debug("perm = " + perm);
+		if(perm == null) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		}
+		
+		
+		Permission p = new Permission();
+		p.setAddBenchmark(true);
+		p.setAddJob(true);
+		p.setAddSolver(true);
+		p.setAddSpace(true);
+		p.setAddUser(true);
+		p.setRemoveBench(true);
+		p.setRemoveJob(true);
+		p.setRemoveSolver(true);
+		p.setRemoveSpace(true);
+		p.setRemoveUser(true);
+		p.setLeader(false);
+		
+		log.debug(userId);
+		log.debug(spaceId);
+		
+		Permissions.set(userId, spaceId, p);
 		return gson.toJson(0);
 	}
 	
@@ -2961,4 +3125,259 @@ public class RESTServices {
 		else
 			return gson.toJson(0);
 	}
+	
+	/**
+	 * Returns the next page of entries in a given DataTable
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of entries if successful,<br>
+	 * 		1 if the request fails parameter validation, <br>
+	 * @author Wyatt kaiser
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/queues/pending/pagination/")
+	@Produces("application/json")
+	public String getAllPendingQueueReservations(@Context HttpServletRequest request) throws Exception {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingQueueReservations(request);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+	
+	/**
+	 * Returns the next page of entries in a given DataTable
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of entries if successful,<br>
+	 * 		1 if the request fails parameter validation, <br>
+	 * @author Wyatt kaiser
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/queues/reserved/pagination/")
+	@Produces("application/json")
+	public String getAllQueueReservations(@Context HttpServletRequest request) throws Exception {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForQueueReservations(request);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+	
+	
+	/**
+	 * Handles a queue request by either approving it or declining it
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the success/failure of the handled request
+	 * @author Wyatt Kaiser
+	 * @throws Exception
+	 */
+	/*
+	@POST
+	@Path("/queue/request/")
+	@Produces("application/json")
+	public String handleQueueRequest(@Context HttpServletRequest request) throws Exception {
+		String code = request.getParameter("code");
+		QueueRequest queueRequest = Requests.getQueueRequest(code);
+		
+		String approved = request.getParameter("approved");
+		
+		if(approved.equals("true")){
+			// Add them to the community & remove the request from the database
+			boolean success = Requests.approveQueueReservation(queueRequest);
+			
+			if(success) {
+				
+				// Notify user they've been approved	
+				Mail.sendReservationResults(queueRequest, true);
+				
+				log.info(String.format("User [%s] has finished the approval process.", Users.get(queueRequest.getUserId()).getFullName()));
+			return gson.toJson(0);
+			} else {
+				return gson.toJson(1);
+			}
+		} else {
+			// Remove their entry from INVITES
+			boolean success = Requests.declineQueueReservation(queueRequest);
+			
+			if (success) {
+				// Notify user they've been declined
+				Mail.sendReservationResults(queueRequest, false);
+				log.info(String.format("User [%s] has been declined queue reservation.", Users.get(queueRequest.getUserId()).getFullName(), Queues.get(queueRequest.getQueueId()).getName()));
+				return gson.toJson(2);	
+			} else {
+				return gson.toJson(3);
+			}
+			
+		}
+	}
+	*/
+	
+	
+	/**
+	 * Cancels a queue reservation 
+	 * @param spaceId the id of the space the reservation was for
+	 * @param queueId the id of the queue the reservation was for
+	 * @param request the object containing the dataTable information
+	 * @return a JSON object representing the success/failure of the cancellation
+	 * @author Wyatt Kaiser
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/cancel/queueReservation/{spaceId}/{queueId}")
+	@Produces("application/json")
+	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
+		boolean success = Requests.cancelQueueReservation(queueId);
+		if (success) {
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(1);
+		}
+	}
+	
+	
+	/**
+	 * Returns the next page of entries in a given DataTable
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of entries if successful,<br>
+	 * 		1 if the request fails parameter validation, <br>
+	 * @author Wyatt kaiser
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/community/pending/requests/")
+	@Produces("application/json")
+	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) throws Exception {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequests(request);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+	
+	/**
+	 * Handles the removal of a queue by the administrator
+	 * @param queueId the id of th queue to remove
+	 * @ throws Exception
+	 */
+	@POST
+	@Path("/remove/queue/{id}")
+	@Produces("application/json")
+	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		boolean success = Queues.remove(queueId);
+		Requests.cancelQueueReservation(queueId);
+		if (success) {
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(ERROR_DATABASE);
+		}
+	}
+	
+	@POST
+	@Path("/restart/starexec")
+	@Produces("application/json")
+	public void restartStarExec(@Context HttpServletRequest request) throws Exception {
+		log.debug("restarting...");
+		Util.executeCommand("sudo /sbin/service tomcat7 restart");
+		log.debug("restarted");
+	}
+	
+	@POST
+	@Path("/cancel/request/{code}")
+	@Produces("application/json")
+	public String cancelQueueRequest(@PathParam("code") String code, @Context HttpServletRequest request) throws IOException {
+		int userId = SessionUtil.getUserId(request);
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		QueueRequest queueRequest = Requests.getQueueRequest(code);
+
+		
+		boolean success = Requests.declineQueueReservation(queueRequest);
+		
+		if (success) {
+			// Notify user they've been declined
+			Mail.sendReservationResults(queueRequest, false);
+			log.info(String.format("User [%s] has been declined queue reservation.", Users.get(queueRequest.getUserId()).getFullName()));
+			return gson.toJson(0);	
+		} else {
+			return gson.toJson(3);
+		}
+		
+	}
+	
+	@POST
+	@Path("/cluster/move/node/{nodeId}/{queueId}")
+	@Produces("application/json")
+	public String moveNodeToQueue(@PathParam("nodeId") int nodeId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) {
+		{
+		//Check to see if node is related to queue reservation 
+			// do this by checking node_reserved table --> the code will give you the queue_reservation (from queue_reserved)
+			
+			// If it is -->
+				// delete from node_reserved table & update queue_reserved table (will probably need an e-mail to let user know -- maybe (or just say subject to change when first accept))
+				{
+				// Check to see if queue that node was dropped into is a reserved queue
+					// do this by checking comm_queue table
+					
+					// If it is -->
+						// insert into node_reserved with correct dates and queue_reserved_code
+		
+				}
+		}
+		
+		return gson.toJson(0);
+	}
+	
+	@POST
+	@Path("/nodes/dates/pagination")
+	@Produces("application/json")
+	public String nodeSchedule(@Context HttpServletRequest request) {
+		//Get todays date
+		Date today = new Date();
+
+		//Get the latest date that a node is reserved for
+		Date latest = Cluster.getLatestNodeDate();
+		
+		//Get all the dates between these two dates
+	    List<Date> dates = new ArrayList<Date>();
+	    Calendar calendar = new GregorianCalendar();
+	    calendar.setTime(today);
+	    while (calendar.getTime().before(latest))
+	    {
+	        Date result = calendar.getTime();
+	        dates.add(result);
+	        calendar.add(Calendar.DATE, 1);
+	    }
+	    
+	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForManageNodes(dates, request);
+	    log.debug(nextDataTablesPage);
+	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	    
+		}
 }

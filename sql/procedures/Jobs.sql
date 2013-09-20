@@ -89,6 +89,460 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 				OR		status_code		LIKE 	CONCAT('%', _query, '%')
 				OR		wallclock				LIKE	CONCAT('%', _query, '%'));
 	END //	
+	
+-- Gets the fewest necessary Jobs in order to service a client's
+-- request for the next page of Jobs in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.  
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNextPageOfRunningJobsAdmin;
+CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of Jobs without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF _sortASC = TRUE THEN
+				SELECT DISTINCT
+						jobs.id, 
+						jobs.name, 
+						jobs.user_id, 
+						jobs.created, 
+						jobs.description, 
+						jobs.deleted,
+						jobs.primary_space,
+						GetJobStatus(jobs.id)		AS status,
+						GetTotalPairs(jobs.id) 		AS totalPairs,
+						GetCompletePairs(jobs.id) 	AS completePairs,
+						GetPendingPairs(jobs.id) 	AS pendingPairs,
+						GetErrorPairs(jobs.id) 		AS errorPairs
+				
+				FROM	jobs
+				JOIN    job_pairs ON jobs.id = job_pairs.job_id
+				WHERE 	job_pairs.status_code < 7
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	DISTINCT
+						jobs.id, 
+						jobs.name, 
+						jobs.user_id, 
+						jobs.created, 
+						jobs.description, 
+						jobs.deleted,
+						jobs.primary_space,
+						GetJobStatus(jobs.id)		AS status,
+						GetTotalPairs(jobs.id) 		AS totalPairs,
+						GetCompletePairs(jobs.id) 	AS completePairs,
+						GetPendingPairs(jobs.id) 	AS pendingPairs,
+						GetErrorPairs(jobs.id) 		AS errorPairs
+				
+				FROM	jobs
+				JOIN    job_pairs ON jobs.id = job_pairs.job_id
+				WHERE 	job_pairs.status_code < 7				
+				
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Jobs contain _query
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	DISTINCT
+						jobs.id, 
+						jobs.name, 
+						jobs.user_id, 
+						jobs.created, 
+						jobs.description, 
+						jobs.deleted,
+						jobs.primary_space,
+						GetJobStatus(jobs.id)		AS status,
+						GetTotalPairs(jobs.id) 		AS totalPairs,
+						GetCompletePairs(jobs.id) 	AS completePairs,
+						GetPendingPairs(jobs.id) 	AS pendingPairs,
+						GetErrorPairs(jobs.id) 		AS errorPairs
+				
+				FROM	jobs
+				JOIN    job_pairs ON jobs.id = job_pairs.job_id
+				WHERE 	job_pairs.status_code < 7
+				AND
+				
+				-- Exclude Jobs whose name and status don't contain the query string
+						(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+										
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC
+					 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT DISTINCT
+						jobs.id, 
+						jobs.name, 
+						jobs.user_id, 
+						jobs.created, 
+						jobs.description, 
+						jobs.deleted,
+						jobs.primary_space,
+						GetJobStatus(jobs.id)		AS status,
+						GetTotalPairs(jobs.id) 		AS totalPairs,
+						GetCompletePairs(jobs.id) 	AS completePairs,
+						GetPendingPairs(jobs.id) 	AS pendingPairs,
+						GetErrorPairs(jobs.id) 		AS errorPairs
+				FROM	jobs
+				JOIN    job_pairs ON jobs.id = job_pairs.job_id
+				WHERE 	job_pairs.status_code < 7 
+				AND
+					 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+
+	
+-- Gets the fewest necessary Jobs in order to service a client's
+-- request for the next page of Jobs in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.  
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS GetNextPageOfJobs;
+CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of Jobs without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+				
+				-- Exclude Jobs that aren't in the specified space
+				WHERE 	id 	IN (SELECT job_id 
+								FROM job_assoc
+								WHERE space_id = _spaceId)
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+				WHERE 	id 	IN (SELECT job_id 
+								FROM job_assoc
+								WHERE space_id = _spaceId)
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Jobs contain _query
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs
+				
+				-- Exclude Jobs whose name and status don't contain the query string
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+										
+				-- Exclude Jobs that aren't in the specified space
+				AND 	id 		IN (SELECT job_id 
+									FROM job_assoc
+									WHERE space_id = _spaceId)
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC
+					 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs
+				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+				AND 	id 		IN (SELECT job_id 
+									FROM job_assoc
+									WHERE space_id = _spaceId)
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+
+
+	
+	
+	-- Gets the fewest necessary Jobs in order to service a client's
+-- request for the next page of Jobs in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.
+-- Gets jobs across all spaces for one user.  
+-- Author: Ben and Ruoyu
+DROP PROCEDURE IF EXISTS GetNextPageOfUserJobs;
+CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+	BEGIN
+		-- If _query is empty, get next page of Jobs without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs 
+				
+				WHERE user_id = _userId
+				
+				AND deleted=false
+				
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC
+			 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs 
+				
+				WHERE user_id = _userId
+				
+				AND deleted=false
+
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		-- Otherwise, ensure the target Jobs contain _query
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				
+				FROM	jobs 
+				
+				WHERE user_id = _userId
+				
+				AND deleted=false
+				
+				-- Exclude Jobs whose name and status don't contain the query string
+				AND 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+										
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) ASC	 
+				-- Shrink the results to only those required for the next page of Jobs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						name, 
+						user_id, 
+						created, 
+						description, 
+						deleted,
+						primary_space,
+						GetJobStatus(id)		AS status,
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
+				FROM	jobs 
+				WHERE user_id = _userId
+				
+				AND deleted=false
+				
+				AND 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
+
+				ORDER BY 
+					 (CASE _colSortedOn
+					 	WHEN 0 THEN name
+					 	WHEN 1 THEN status
+					 	WHEN 2 THEN completePairs
+					 	WHEN 3 THEN pendingPairs
+					 	WHEN 4 THEN errorPairs
+						ELSE created
+					 END) DESC
+				
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+	
+	
+	
+
+	
 -- Gets attributes for every pair in a job
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobAttrs;
@@ -304,6 +758,17 @@ CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 		ORDER BY sge_id ASC;
 	END //
 	
+-- Retrieves basic info about running job pairs for the given job id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetRunningJobPairsByJob;
+CREATE PROCEDURE GetRunningJobPairsByJob(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+		WHERE (job_id = _id AND status_code = 4)
+		ORDER BY sge_id ASC;
+	END //
+	
 -- Returns true if the job in question has the deleted flag set as true
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS IsJobDeleted;
@@ -432,6 +897,15 @@ CREATE PROCEDURE GetUserJobsById(IN _userId INT)
 		FROM jobs
 		WHERE user_id=_userId and deleted=false
 		ORDER BY created DESC;
+	END //
+	
+-- Returns the number of jobs in the entire system
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetJobCount;
+CREATE PROCEDURE GetJobCount()
+	BEGIN
+		SELECT COUNT(*) as jobCount
+		FROM jobs;
 	END //
 
 -- Get the total count of the jobs belong to a specific user

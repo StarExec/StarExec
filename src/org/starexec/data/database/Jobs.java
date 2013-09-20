@@ -28,6 +28,7 @@ import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.User;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Util;
@@ -871,6 +872,29 @@ public class Jobs {
 
 		return null;		
 	}
+	
+	
+	/**
+	 * Gets all job pairs that are running for the given job 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that are running.
+	 * @author Wyatt Kaiser
+	 */
+	public static List<JobPair> getRunningPairs(int jobId) {
+		Connection con = null;			
+
+		try {			
+			con = Common.getConnection();		
+			return Jobs.getRunningPairs(con, jobId);
+		} catch (Exception e){			
+			log.error("getRunningPairsDetailed for queue " + jobId + " says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
+	
 	/**
 	 * Gets attributes for all pairs with completion IDs greater than completionId
 	 * @param con The open connection to make the query on
@@ -2027,6 +2051,67 @@ public class Jobs {
 		return null;
 	}
 	
+	
+	/**
+	 * Gets all job pairs that are  running for the given job
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author Wyatt Kaiser
+	 */
+	protected static List<JobPair> getRunningPairs(Connection con, int jobId) throws Exception {	
+
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		 try {
+			procedure = con.prepareCall("{CALL GetRunningJobPairsByJob(?)}");
+			procedure.setInt(1, jobId);					
+			results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+			//we map ID's to  primitives so we don't need to query the database repeatedly for them
+			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
+			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
+			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+			while(results.next()){
+				JobPair jp = JobPairs.resultToPair(results);
+				int nodeId=results.getInt("node_id");
+				if (!nodes.containsKey(nodeId)) {
+					nodes.put(nodeId,Cluster.getNodeDetails(nodeId));
+				}
+				jp.setNode(nodes.get(nodeId));	
+				int benchId=results.getInt("bench_id");
+				if (!benchmarks.containsKey(benchId)) {
+					benchmarks.put(benchId,Benchmarks.get(benchId));
+				}
+				jp.setBench(benchmarks.get(benchId));
+				int configId=results.getInt("configId");
+				if (!configs.containsKey(configId)) {
+					configs.put(configId, Solvers.getConfiguration(configId));
+					solvers.put(configId, Solvers.getSolverByConfig(configId,false));
+				}
+				jp.setSolver(solvers.get(configId));
+				jp.setConfiguration(configs.get(configId));
+				Status s = new Status();
+
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				returnList.add(jp);
+			}			
+
+			Common.safeClose(results);
+			return returnList;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	
+	
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
@@ -2409,6 +2494,14 @@ public class Jobs {
 				log.debug("Just executed qdel " + sge_id);
 				JobPairs.UpdateStatus(jp.getId(), 20);
 			}
+			//Get the running job pairs and remove them
+			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
+			for (JobPair jp: jobPairsRunning) {
+				int sge_id = jp.getGridEngineId();
+				Util.executeCommand("qdel " + sge_id);
+				log.debug("Just executed qdel " + sge_id);
+				JobPairs.UpdateStatus(jp.getId(), 20);
+			}
 			log.debug("Deletion of paused job pairs from queue was succesful");
 			return true;
 		} catch (Exception e) {
@@ -2675,5 +2768,107 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+	
+	/**
+	 * Gets the number of Jobs in the whole system
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static int getJobCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetJobCount()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
+
+
+	/**Gets the minimal number of Jobs necessary in order to service the client's 
+	 * request for the next page of Users in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Jobs from
+	 * @param recordesPerpage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)	 
+	 * 
+	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
+	 * @author Wyatt Kaiser
+	 **/
+	public static List<Job> getJobsForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobsAdmin(?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setString(5, searchQuery);
+			results = procedure.executeQuery();
+			
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+
+				// Grab the relevant job pair statistics; this prevents a secondary set of queries
+				// to the database in RESTHelpers.java
+				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
+				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
+				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
+				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
+				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
+
+				Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
+				liteJobPairStats.put("completionPercentage", completionPercentage);
+
+				Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
+				liteJobPairStats.put("errorPercentage", errorPercentage);
+
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setPrimarySpace(results.getInt("primary_space"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));	
+				if (results.getBoolean("deleted")) {
+					j.setName(j.getName()+" (deleted)");
+				}
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));
+				j.setLiteJobPairStats(liteJobPairStats);
+				jobs.add(j);	
+				
+							
+			}	
+			
+			return jobs;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
 	}
 }
