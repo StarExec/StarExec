@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 
@@ -180,6 +181,43 @@ public class Processors {
 				processors.add(bt);
 			}
 			
+			return processors;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return null;
+	}	
+	
+	/**	 
+	 * Gets all processors that a user can see because they share a community
+	 * @param userId-- the user to retrieve post processors for
+	 * @param type The type of processors to get
+	 * @return A list of all unique processors of the given type that the user can see
+	 * @author Eric Burns
+	 */
+	public static List<Processor> getByUser(int communityId, ProcessorType type) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();					
+			 procedure = con.prepareCall("{CALL GetProcessorsByUser(?, ?)}");
+			procedure.setInt(1, communityId);
+			procedure.setInt(2, type.getVal());
+			 results = procedure.executeQuery();
+			List<Processor> processors = new LinkedList<Processor>();
+			
+			while(results.next()){							
+				Processor t = new Processor();
+				t.setId(results.getInt("id"));
+				t.setName(results.getString("name"));
+				processors.add(t);						
+			}				
 			return processors;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

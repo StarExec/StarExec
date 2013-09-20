@@ -423,12 +423,9 @@ public class Download extends HttpServlet {
 	 * @author Tyler Jensen
 	 */
 	
-	//TODO: Create new functions for only getting back shallow information about the pairs instead of deep info.
 	private static File handlePairOutput(JobPair jp, int userId, String format, HttpServletResponse response) throws IOException {    	
-		Job j = Jobs.getShallow(jp.getJobId());
-
 		// If the user can actually see the job the pair is apart of
-		if (Permissions.canUserSeeJob(j.getId(), userId)) {
+		if (Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			
 			String cachedFileName=null;
 			
@@ -553,7 +550,7 @@ public class Download extends HttpServlet {
 		log.debug("CreateJobCSV called with returnIds set to "+returnIds);
 		StringBuilder sb = new StringBuilder();
 		sb.delete(0, sb.length());
-		sb.append(R.JOB_OUTPUT_DIR);
+		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
 		sb.append(job.getUserId());
 		sb.append("_");
@@ -710,7 +707,7 @@ public class Download extends HttpServlet {
 				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
 				tempDir.mkdir();
 				log.debug("Getting incremental job output results");
-				pairs=Jobs.getNewCompletedPairsDetailed(j.getId(), since);
+				pairs=Jobs.getNewCompletedPairsShallow(j.getId(), since);
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
 				for (JobPair x : pairs) {

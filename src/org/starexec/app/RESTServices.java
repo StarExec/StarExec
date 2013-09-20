@@ -263,7 +263,7 @@ public class RESTServices {
 		if(jp != null) {			
 			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 				Job j = Jobs.getShallow(jp.getJobId());			
-				String stdout = GridEngineUtil.getStdOut(j, jp, limit);
+				String stdout = GridEngineUtil.getStdOut(jp, limit);
 				
 				if(!Util.isNullOrEmpty(stdout)) {
 					return stdout;
@@ -910,6 +910,24 @@ public class RESTServices {
 		
 		// Perform the update and return information according to success/failure
 		return Spaces.updateDetails(userId, s) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Post-processes an already-complete job with a new post processor
+	 * 
+	 * @return a json string containing '0' if the deletion was successful, else
+	 *         a json string containing '1' if there was a failure, '2' for
+	 *         insufficient permissions
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/postprocess/job/{jobId}/{procId}")
+	@Produces("application/json")
+	public String postProcessJob(@PathParam("jobId") int jid, @PathParam("procId") int pid, @Context HttpServletRequest request) {
+		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
+		
+		return "done!";
+		
 	}
 	
 	/**

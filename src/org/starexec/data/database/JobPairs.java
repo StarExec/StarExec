@@ -242,9 +242,9 @@ public class JobPairs {
 		for (String space : pathSpaces) {
 			file=new File(file,space);
 		}
-		file=new File(file,pair.getSolver().getName());
-		file=new File(file,pair.getConfiguration().getName());
+		file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
 		file=new File(file,pair.getBench().getName());
+		log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
 		return file.getAbsolutePath();
 	}
 	/**
@@ -265,17 +265,14 @@ public class JobPairs {
 			results=procedure.executeQuery();
 			if (results.next()) {
 				JobPair pair=new JobPair();
-				Solver s= new Solver();
+				Solver s= pair.getSolver();
 				s.setName(results.getString("solver_name"));
-				Benchmark b=new Benchmark();
+				Benchmark b=pair.getBench();
 				b.setName(results.getString("bench_name"));
-				Configuration c=new Configuration();
+				Configuration c=pair.getConfiguration();
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
-				pair.setSolver(s);
-				pair.setBench(b);
-				pair.setConfiguration(c);
 				return getFilePath(pair);
 			}
 		} catch (Exception e) {
@@ -308,17 +305,14 @@ public class JobPairs {
 				JobPair pair=new JobPair();
 				pair.setPath(results.getString("path"));
 				pair.setJobId(results.getInt("job_id"));
-				Solver s=new Solver();
+				Solver s=pair.getSolver();
 				s.setName(results.getString("solver_name"));
-				Configuration c=new Configuration();
+				Configuration c=pair.getConfiguration();
 				c.setName(results.getString("config_name"));
-				Benchmark b=new Benchmark();
+				Benchmark b=pair.getBench();
 				b.setName(results.getString("bench_name"));
 				
 				pair.setId(results.getInt("user_id"));
-				pair.setSolver(s);
-				pair.setConfiguration(c);
-				pair.setBench(b);
 				pairs.add(pair);
 			}
 			return pairs;
