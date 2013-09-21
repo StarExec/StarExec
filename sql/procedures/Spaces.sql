@@ -130,6 +130,27 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 		END IF;
 	END //
 	
+-- Returns all the spaces belonging to the space (doesn't require user to be in user_assoc)
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetSubSpacesAdmin;
+CREATE PROCEDURE GETSubSpacesAdmin(IN _spaceId INT)
+	BEGIN
+		IF _spaceId <= 0 THEN -- If we get an invalid ID, return the root space (the space with the minimum ID)
+			SELECT spaces.name, spaces.description,spaces.locked,spaces.id
+			FROM spaces
+			WHERE id =
+				(SELECT MIN(id)
+				FROM spaces);
+		ELSE 
+			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id
+			FROM set_assoc
+				JOIN closure ON set_assoc.child_id=closure.ancestor
+				JOIN spaces ON spaces.id=set_assoc.child_id
+				WHERE set_assoc.space_id=_spaceId
+			ORDER BY name;
+		END IF;
+	END //
+
 -- Returns the parent space of a given space ID
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetParentSpaceById;

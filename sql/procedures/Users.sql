@@ -36,6 +36,103 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 		END IF;
 	END //
 		
+	
+-- Gets the fewest necessary Users in order to service a client's
+-- request for the next page of Users in their DataTable object.  
+-- This services the DataTable object by supporting filtering by a query, 
+-- ordering results by a column, and sorting results in ASC or DESC order.  
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNextPageOfUsersAdmin;
+CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT, IN _publicUserId INT)
+	BEGIN
+		-- If _query is empty, get next page of Users without filtering for _query
+		IF (_query = '' OR _query = NULL) THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	id,
+						institution,
+						email,
+						first_name,
+						last_name,
+						CONCAT(first_name, ' ', last_name) AS full_name
+						
+				FROM	users WHERE (id != _publicUserId)
+
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+				(CASE _colSortedOn
+					WHEN 0 THEN full_name
+					WHEN 1 THEN institution
+					WHEN 2 THEN email
+				END) ASC
+				
+				-- Shrink the results to only those required for the next page of Users
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id,
+						institution,
+						email,
+						first_name,
+						last_name,
+						CONCAT(first_name, ' ', last_name) AS full_name
+				FROM	users WHERE (id != _publicUserId)
+				ORDER BY 
+				(CASE _colSortedOn
+					WHEN 0 THEN full_name
+					WHEN 1 THEN institution
+					WHEN 2 THEN email
+				END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		-- Otherwise, ensure the target Users contain _query
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	id,
+						institution,
+						email,
+						first_name,
+						last_name,
+						CONCAT(first_name, ' ', last_name) AS full_name
+				
+				FROM	users WHERE (id != _publicUserId)
+							
+				-- Exclude Users whose name and description don't contain the query string
+				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				OR		institution							LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%'))
+								
+				-- Order results depending on what column is being sorted on
+				ORDER BY 
+				(CASE _colSortedOn
+					WHEN 0 THEN full_name
+					WHEN 1 THEN institution
+					WHEN 2 THEN email
+				END) ASC
+					 
+				-- Shrink the results to only those required for the next page of Users
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id,
+						institution,
+						email,
+						first_name,
+						last_name,
+						CONCAT(first_name, ' ', last_name) AS full_name
+				FROM	users WHERE (id != _publicUserId)
+				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				OR		institution							LIKE 	CONCAT('%', _query, '%')
+				OR		email								LIKE 	CONCAT('%', _query, '%'))
+				ORDER BY 
+				(CASE _colSortedOn
+					WHEN 0 THEN full_name
+					WHEN 1 THEN institution
+					WHEN 2 THEN email
+				END) DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+		END IF;
+	END //
+	
+	
 -- Returns the (hashed) password of the user with the given user id
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS GetPasswordById;
@@ -56,6 +153,15 @@ CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 		FROM users NATURAL JOIN user_roles
 		WHERE users.id = _id 
 		AND user_roles.role = 'unauthorized';
+	END //
+	
+-- Returns the number of users in the entire system
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetUserCount;
+CREATE PROCEDURE GetUserCount()
+	BEGIN
+		SELECT COUNT(*) as userCount
+		FROM users;
 	END //
 	
 -- Returns the number of users in a given space
@@ -236,6 +342,15 @@ CREATE PROCEDURE GetNameofUserByJob(IN _jobId INT)
 		FROM users
 			INNER JOIN jobs AS owner ON users.id = owner.user_id
 		WHERE owner.id = _jobId;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetAdmins;
+CREATE PROCEDURE GetAdmins()
+	BEGIN
+		SELECT *
+		FROM users
+			INNER JOIN user_roles AS roles ON users.email = roles.email
+		WHERE roles.role = "admin";
 	END //
 
 

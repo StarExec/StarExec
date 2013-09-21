@@ -60,7 +60,6 @@ public class Users {
 		try {
 			con = Common.getConnection();		
 			Users.associate(con, userId, spaceId);
-			
 			return true;			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -652,6 +651,60 @@ public class Users {
 		return false;
 	}
 	
+	/**Gets the minimal number of Users necessary in order to service the client's 
+	 * request for the next page of Users in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Users from
+	 * @param recordesPerpage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)	 
+	 * 
+	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
+	 * @author Wyatt Kaiser
+	 **/
+	public static List<User> getUsersForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setString(5, searchQuery);
+			procedure.setInt(6, R.PUBLIC_USER_ID);
+			results = procedure.executeQuery();
+			List<User> users = new LinkedList<User>();
+			
+			while(results.next()){
+				User u = new User();
+				u.setId(results.getInt("id"));
+				u.setInstitution(results.getString("institution"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setEmail(results.getString("email"));
+				
+				//Prevents public user from appearing in table.
+				users.add(u);
+				
+							
+			}	
+			
+			return users;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
 	
 
 	/**
@@ -711,6 +764,33 @@ public class Users {
 		return null;
 	}
 	
+	/**
+	 * Gets the number of Users in the whole system
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static int getCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetUserCount()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("userCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
 	/**
 	 * Gets the number of Users in a given space
 	 * 
@@ -831,6 +911,37 @@ public class Users {
 				u.setEmail(results.getString("email"));
 				return u;
 			}
+				
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
+	public static List<User> getAdmins() {
+		Connection con = null;
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAdmins()}");
+			results = procedure.executeQuery();
+			
+			List<User> admins =  new LinkedList<User>();
+			while (results.next()) {
+				User u = new User();
+				u.setId(results.getInt("id"));
+				u.setInstitution(results.getString("institution"));
+				u.setFirstName(results.getString("first_name"));
+				u.setLastName(results.getString("last_name"));
+				u.setEmail(results.getString("email"));
+				admins.add(u);
+			}
+			return admins;
 				
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

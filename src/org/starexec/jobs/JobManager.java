@@ -52,11 +52,11 @@ public abstract class JobManager {
 		session = _session;
 	}
 
-	public synchronized static boolean checkPendingJobs(){
-		List<Queue> queues = Queues.getAll();
-		for (Queue q : queues) {
-			int qId = q.getId();
-			String qname = q.getName();
+    public synchronized static boolean checkPendingJobs(){
+	List<Queue> queues = Queues.getAll();
+	for (Queue q : queues) {
+	    int qId = q.getId();
+	    String qname = q.getName();
 
 
 			int queueSize = Queues.getSizeOfQueue(qId);

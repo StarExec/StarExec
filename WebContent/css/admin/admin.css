@@ -1,0 +1,79 @@
+#explorerAction {
+	float:left;
+	width: auto;
+	min-height: auto;
+	height: auto;
+	position: left;
+	bottom: 0px; 
+}
+
+#trashcan {
+	width: 50px;
+	height: 50px;
+	background: transparent;
+	text-align: left;
+	float:right;
+	position:relative;
+	left:10px;
+}
+
+#trashcan:hover {
+	background-color: #008d03;
+	border-radius:2px;
+}
+
+#trashcan.hover {
+	background-color: #008d03;
+	border-radius:2px;
+}
+
+#trashcan .ui-icon {
+	margin-top: -8px;
+	margin-right: 10px;
+}
+
+.dragClone {
+	max-width: 200px;
+	overflow: hidden;	
+	position: fixed;
+	background-color: #fff;
+	color: #111;
+	z-index: 999;
+	text-align: center;	
+	padding: 14px;
+	border-radius: 3px;
+	box-shadow: 4px 4px 5px #111;
+	opacity: 0.8;
+}
+
+.dragClone span {
+	float: left;
+	margin-right: 5px;
+}
+
+#content fieldset {
+	width: 600px;
+	margin: 50px auto 50px auto;	
+}
+
+.contentTbl {
+	width: 100%;
+}
+
+.contentTbl tr th {
+	padding: 10px;
+}
+
+.contentTbl tr td {
+	padding: 10px;
+	vertical-align: middle;
+}
+
+.contentTbl input[type="text"], 
+.contentTbl textarea {
+	width: 200px;
+}
+
+button {
+	float: right;
+}

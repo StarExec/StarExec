@@ -3,6 +3,13 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
+		int userId = SessionUtil.getUserId(request);
+		boolean admin = false;
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			admin = true;
+		}
+		request.setAttribute("isAdmin", admin);
 		request.setAttribute("communityNameLen", R.COMMUNITY_NAME_LEN);
 		request.setAttribute("communityDescLen", R.COMMUNITY_DESC_LEN);
 		request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
@@ -75,7 +82,44 @@
 		</table>
 		<span class="caption">(click the current value of an attribute to edit it)</span>
 	</fieldset>
-	<fieldset>
+	
+
+	
+	<c:if test="${isAdmin}">
+		<fieldset id="leaderField">
+			<legend class="expd"><span>0</span> leaders</legend>
+			
+			<table id="leaders">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>institution</th>
+						<th style="width:270px;">email</th>
+						<th>remove</th>
+						<th>demote</th>
+					</tr>
+				</thead>			
+			</table>
+		</fieldset>
+		<fieldset id="memberField">
+			<legend class="expd"><span>0</span> members</legend>
+			
+			<table id="Members">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>institution</th>
+						<th style="width:270px;">email</th>
+						<th>remove</th>
+						<th>promote</th>
+					</tr>
+				</thead>			
+			</table>
+
+		</fieldset>
+	</c:if>
+		
+	<fieldset id= "websiteField">
 		<legend>associated websites</legend>
 		<table id="websiteTable" class="shaded"></table>
 		<span id="toggleWebsite" class="caption">+ add new</span>
@@ -85,7 +129,7 @@
 			<button id="addWebsite">add</button>
 		</div>
 	</fieldset>
-	<fieldset>
+	<fieldset id= "benchmarkField">
 		<legend>benchmark types</legend>
 			<table id="benchTypeTbl" class="shaded">
 				<thead>
@@ -129,7 +173,7 @@
 			</table>
 		</form>
 	</fieldset>
-	<fieldset>
+	<fieldset id="settingsField">
 	<legend class="expd"><span></span>default settings</legend>
 	<table id="settings" class ="shaded">
 		<thead>
@@ -223,7 +267,7 @@
 			</table>
 		</form>
 	</fieldset>-->
-	<fieldset>
+	<fieldset id="processorField">
 		<legend>post processors</legend>
 			<table id="postProcessorTbl" class="shaded">
 				<thead>

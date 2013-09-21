@@ -59,8 +59,6 @@ $(document).ready(function(){
 	$('.expd').parent().expandable(true);
 	
 	// Hide all buttons initially
-	$("#removeUser").fadeOut('fast');
-	$("#makeLeader").fadeOut('fast');
 	$("#joinComm").fadeOut('fast');
 	$("#leaveComm").fadeOut('fast');
 	$("#editComm").fadeOut('fast');
@@ -69,83 +67,6 @@ $(document).ready(function(){
 	
 	
 	
-	// Handles the removal of user(s) from a space
-	$("#removeUser").click(function(){
-		var selectedUsers = getSelectedRows(memberTable);
-		$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected user(s) from ' + commName + '?');
-		
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(  
-						starexecRoot+"services/remove/user/" + id,
-						{selectedIds : selectedUsers},
-						function(returnCode) {
-							switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
-									updateTable(memberTable);
-									$("#removeUser").fadeOut("fast");
-									showMessage('success', "user(s) removed succesfully", 5000);
-									break;
-								case 1:
-									showMessage('error', "an error occurred while processing your request; please try again", 5000);
-								case 2:
-									showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
-									break;
-								case 3:
-									showMessage('error', "you can not remove yourself from this space in that way, " +
-											"instead use the 'leave' button to leave this community", 5000);
-									break;
-								case 4:
-									showMessage('error', "you can not remove other leaders of this space", 5000);
-									break;
-							}
-						},
-						"json"
-					).error(function(){
-						showMessage('error',"Internal error removing user",5000);
-					});
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}		
-		});				
-	});	
-	
-	$('#makeLeader').click(function(){
-		var selectedUsers = getSelectedRows(memberTable);
-		
-		$.post(  
-				starexecRoot+"services/makeLeader/" + id ,
-				{selectedIds : selectedUsers},
-				function(returnCode) {
-					switch (returnCode) {
-						case 0:
-							$("#makeLeader").fadeOut("fast");
-							showMessage('success',"user(s) promoted successfully",5000);
-							break;
-						case 1:
-							showMessage('error', "an error occurred while processing your request; please try again", 5000);
-						case 2:
-							showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
-							break;
-						case 3:
-							showMessage('error', "you are already a leader", 5000);
-							break;
-					}
-				},
-				"json"
-			).error(function(){
-				showMessage('error',"Internal error making user a leader",5000);
-			});
-    });
 	
 	$('#joinComm').button({
 		icons: {
@@ -161,16 +82,7 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-pencil"
     }});
-	
-	$('#removeUser').button({
-		icons: {
-			secondary: "ui-icon-minus"
-    }});
-	
-	$('#makeLeader').button({
-		icons: {
-			secondary: "ui-icon-star"
-    }});
+
 	
 	$('#downloadPostProcessors').button({
 		icons: {
@@ -252,7 +164,7 @@ function populateDetails(jsonData) {
 	$.each(jsonData.leaders, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';				
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';	
 		leaderTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 
@@ -300,12 +212,6 @@ function checkPermissions(perms) {
 	
 	if(perms.isLeader) {
 		$('#editComm').fadeIn('fast');
-		$("#members").delegate("tr", "click", function(){
-			updateButton(memberTable, $("#removeUser"));
-		});
-		$("#members").delegate("tr", "click", function(){
-			updateButton(memberTable, $("#makeLeader"));
-		});
 	} else {
 		$('#editComm').fadeOut('fast');
 	}

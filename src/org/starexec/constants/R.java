@@ -15,7 +15,7 @@ public class R {
      * Any fields set here will be treated as defaults
      */
 	
-    public R() throws Exception{
+	public R() throws Exception{
 	throw new Exception("Cannot instantiate class because it is static.");
     }
 	
@@ -42,6 +42,7 @@ public class R {
     public static int URL_LEN=128;
     public static int PROCESSOR_NAME_LEN=64;
     public static int PROCESSOR_DESC_LEN=1024;
+    public static int QUEUE_NAME_LEN=64;
     
     // Maximum job pair settings
     public static int MAXIMUM_JOB_PAIRS=Integer.MAX_VALUE; // no restriction for now
@@ -94,12 +95,16 @@ public class R {
     public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading
     public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
     public static String PICTURE_PATH = null;								// Where the pictures are located
-    public static String BATCH_SPACE_XML_DIR = null;                        // Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
+    public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
   
 	public static String JOBGRAPH_FILE_DIR = null;
+    //Admin user info
+    public static int ADMIN_USER_ID = 9;									//user id to use when administrator
+    public static String ADMIN_USER_PASSWORD = "admin";			
+    
     //Public user info
-    public static int PUBLIC_USER_ID = 0;							//user id to use when writing benchmarks, submitting jobs without login
-    public static int PUBLIC_SPACE_ID = 0;                           //space id to use when writing benchmarks, submitting jobs without login
+    public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
+    public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_CPU_LIMIT = 30;
     public static int PUBLIC_CLOCK_TIMEOUT = 30;
     public static String PUBLIC_USER_EMAIL = "public";
@@ -122,6 +127,7 @@ public class R {
     public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
     public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
+    public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
     public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
     public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 	"this is your personal space";

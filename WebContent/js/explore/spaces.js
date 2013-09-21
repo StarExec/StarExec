@@ -874,7 +874,7 @@ function initSpaceExplorer(){
 			"ajax" : { 
 				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
 				"data" : function (n) {
-					return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
+					return { id : n.attr ? n.attr("id") : -1 }; 	// What the default space id should be
 				} 
 			} 
 		}, 
@@ -1961,6 +1961,7 @@ function checkPermissions(perms, id) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
 		$('#editSpace').fadeIn('fast');
+		$('#reserveQueue').fadeIn('fast');
 
 		handlePublicButton(id);
 	} else {
@@ -1969,6 +1970,7 @@ function checkPermissions(perms, id) {
 		$('#editSpace').fadeOut('fast');
 		$('#makePublic').fadeOut('fast');
 		$('#makePrivate').fadeOut('fast');
+		$('#reserveQueue').fadeOut('fast');
 	}	
 
 	if(perms.addSpace) {		
@@ -2016,6 +2018,7 @@ function updateButtonIds(id) {
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
 	$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
+	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	
 	
 	
@@ -2113,7 +2116,7 @@ function updateTable(dataTable){
  * @param perms The set of permissions to display in a table
  * @returns A jQuery object that is the table to display in the UI for the given permissions
  */
-function getPermTable(tooltip, perms, type) {	
+function getPermTable(tooltip, perms, type, isCommunity) {	
 	var permWrap = $('<div>');	// A wrapper for the table and leader info
 	var table = $('<table class="tooltipTable">');	// The table where the permissions are displayed
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
@@ -2150,14 +2153,15 @@ function getPermTable(tooltip, perms, type) {
 
 	// HTML to add to the wrapper to indicate someone is a leader
 	var leaderDiv = '<div class="leaderWrap"><span class="ui-icon ui-icon-star"></span><h2 class="leaderTitle">leader</h2></div>';
-
+	
 	if(perms.isLeader) {
 		// If this person is a leader, add the leader div to the wrapper
 		$(permWrap).append(leaderDiv);
 	} 
 	// If they're not a leader but the caller has specified to display the 'leader' button...
-	else if (type == 'leader') {		
+	else if (type == 'admin' || (type == 'leader' && isCommunity == false)) {		
 		// Create a button to make the user a leader
+		
 		var leadBtn = $('<span class="leaderBtn">make leader</span>').button({
 			icons: {
 				secondary: "ui-icon-star"
@@ -2178,6 +2182,7 @@ function getPermTable(tooltip, perms, type) {
 
 		// Add the leader button to the wrapper
 		$(permWrap).append(leadBtn);
+		
 	}
 	// Shrink the space tooltip size if its for a non-leader
 	else if (type == 'space'){
@@ -2395,12 +2400,8 @@ function getTooltipConfig(type, message){
 				onRender: function(){	// Before rendering the tooltip, get the user's permissions for the given space
 					var tooltip = this;
 					var userId = $(this.elements.target).children('td:first').children('input').val();
-					if (userId==undefined) {
-						//means there is no user because the user table is empty
-						return true;
-					}
-					$.post(
-							starexecRoot+'services/space/' + spaceId + '/perm/' + userId,
+					$.get(
+							starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
 							function(theResponse){
 								log('AJAX response for permission tooltip received');
 								if(1 == theResponse){
@@ -2408,7 +2409,11 @@ function getTooltipConfig(type, message){
 								} else {
 									// Replace current content (current = loader.gif)		
 									tooltip.updateContent(" ", true);
-									tooltip.updateContent(getPermTable(tooltip, theResponse, 'leader'), true);										
+									if (theResponse.requester.role == "admin") {
+										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'admin', theResponse.isCommunity), true);
+									} else {
+										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'leader', theResponse.isCommunity), true);
+									}
 								}
 								return true;
 							}
@@ -2424,11 +2429,15 @@ function getTooltipConfig(type, message){
 						tooltip.updateTitle('<center><a>permissions</a></center>');
 						var userId = $(this.elements.target).children('td:first').children('input').val();
 						$.post(
-								starexecRoot+'services/space/' + spaceId + '/perm/' + userId,
+								starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
 								function(theResponse){
 									log('AJAX response for permission tooltip received');
 									tooltip.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
-									tooltip.updateContent(getPermTable(tooltip, theResponse, 'leader'), true);  
+									if (theResponse.requester.role == "admin") {
+										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'admin'), true);
+									} else {
+										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'leader'), true);
+									}
 									tooltip.updateTitle('<center><a>permissions</a></center>');	
 									tooltip.hide();
 									return true;

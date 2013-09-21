@@ -65,12 +65,12 @@ CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS CanViewSpace;
 CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
-	BEGIN		
-		SELECT IF((
-			SELECT COUNT(*)
-			FROM user_assoc 
-			WHERE space_id=_spaceId AND user_id=_userId)	-- Directly find how many times the user belongs to a space
-		> 0, 1, 0) AS verified;                             -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+	BEGIN
+			SELECT IF(
+				(SELECT COUNT(*)
+				FROM user_assoc 
+				WHERE space_id=_spaceId AND user_id=_userId)	-- Directly find how many times the user belongs to a space
+			> 0, 1, 0) AS verified;                             -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
 	END //
 	
 -- Returns 1 if the given user can somehow see the given upload status, 0 otherwise
@@ -169,6 +169,17 @@ IN _removeUser BOOLEAN, IN _removeJob BOOLEAN)
 			remove_job    = _removeJob,
 			remove_space  = _removeSpace
 		WHERE id = _id;
+	END //
+	
+
+-- Sets a user's permissions for a given space
+-- Author: Todd Elvers
+DROP PROCEDURE IF EXISTS SetUserPermissions2;
+CREATE PROCEDURE SetUserPermissions2(IN _userId INT, IN _spaceId INT,IN _permissionId INT)
+	BEGIN
+		UPDATE user_assoc	
+		SET	permission	= _permissionId
+		WHERE user_id = _userId && space_id = _spaceId;
 	END //
 
 

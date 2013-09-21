@@ -2,7 +2,9 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -177,6 +180,43 @@ public class Cluster {
 	}
 	
 	/**
+	 * Takes in a node name and a hashmap representing an attribute for the node and its value. This method
+	 * will add a column to the database for the attribute if it does not exist. If it does exist, the attribute
+	 * for the given node is updated with the current value. If the given node does not exist, it is added to the database,
+	 * or else all of its attributes are updated.
+	 * @param name The name of the worker node to update/add
+	 * @param attributes A list of key/value attributes to add/update for the node
+	 * @return True if the operation was a success, false otherwise.
+	 * @author Tyler Jensen
+	 */
+	public static void updateNodeDate(int nodeId, int queueId, Date start, Date end, String queueCode) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL UpdateNodeDate(?, ?, ?, ?, ?)}");
+			procedure.setInt(1, nodeId);
+			procedure.setInt(2, queueId);
+			procedure.setDate(3, start);
+			procedure.setDate(4, end);
+			procedure.setString(5, queueCode);
+			procedure.executeUpdate();	
+					
+
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		log.debug(String.format("Node [%s] successfuly updated.", nodeId));
+	}
+	
+	
+	/**
 	 * Updates the status of ALL worker nodes with the given status
 	 * @param status The status to set for all nodes
 	 * @return True if the operation was a success, false otherwise.
@@ -222,5 +262,158 @@ public class Cluster {
 		
 		log.debug(String.format("Status for node [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
+	}
+	
+	
+	/**
+	 * retrieves all the nodes that are not reserved for a certain time
+	 * @param name the name of the node to set the status for
+	 * @param status the status to set for the node
+	 * @return True if the operation was a success, false otherwise.
+	 */
+	public static List<WorkerNode> getUnReservedNodes(Date start, Date end) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();
+			ResultSet results=null;
+
+			log.debug("start = " + start);
+			procedure = con.prepareCall("{CALL GetUnReservedNodes(?, ?)}");
+			procedure.setDate(1, start);	
+			procedure.setDate(2, end);
+			results = procedure.executeQuery();	
+			
+			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			
+			while(results.next()){
+				WorkerNode n = new WorkerNode();
+				n.setName(results.getString("name"));
+				n.setId(results.getInt("id"));
+				n.setStatus(results.getString("status"));
+				nodes.add(n);
+			}			
+						
+			return nodes;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+
+
+	public static void associateNodes(int queueId, List<Integer> nodeIds) {
+		log.debug("Calling AssociateQueue");
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {		
+			con = Common.getConnection();
+			// Adds the nodes as associated with the queue
+			for (int nodeId : nodeIds) {
+				CallableStatement associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
+				associateQueue.setInt(1, queueId);
+				associateQueue.setInt(2, nodeId);
+				associateQueue.executeUpdate();
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+	}
+
+
+	public static int getNodeCount() {
+		log.debug("Calling GetNodeCount");
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {		
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetNodeCount()}");
+			ResultSet results = procedure.executeQuery();	
+			
+			
+			while(results.next()){
+				return results.getInt("nodeCount");
+			}						
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}	
+		return 0;
+	}
+
+
+	public static List<WorkerNode> getNodesForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String SearchQuery) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfNodesAdmin(?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setString(5, SearchQuery);
+			results = procedure.executeQuery();
+			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			
+			while(results.next()){
+				WorkerNode n = new WorkerNode();
+				n.setId(results.getInt("id"));
+				n.setName(results.getString("name"));
+				n.setStatus(results.getString("status"));
+				nodes.add(n);
+				
+							
+			}	
+			
+			return nodes;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
+	public static java.util.Date getLatestNodeDate() {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetLatestNodeDate()}");
+			results = procedure.executeQuery();
+			Date latest = null;
+			while(results.next()){
+				latest = results.getDate("MAX(end_date)");
+			}	
+			
+			java.util.Date newDate = new Date(latest.getTime());
+			return newDate;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
 	}
 }

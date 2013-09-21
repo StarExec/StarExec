@@ -776,11 +776,18 @@ public class Spaces {
 	protected static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive, Connection con) throws Exception{
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {
-			 procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
+		
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
+			procedure.setInt(1, spaceId);
+		} else {
+			procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
+		}
+		try {
+			results = procedure.executeQuery();
 			List<Space> subSpaces = new LinkedList<Space>();
 			
 			while(results.next()){
@@ -803,6 +810,7 @@ public class Spaces {
 				subSpaces.addAll(additionalSubspaces);
 			}
 			log.debug("Returning from adding subspaces");
+			log.info(subSpaces);
 			return subSpaces;
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
@@ -1569,6 +1577,12 @@ public class Spaces {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userId, false);
+			return subspaces.size();
+		}
+		
 		try {
 			con = Common.getConnection();
 			if (!hierarchy) {

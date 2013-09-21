@@ -27,6 +27,15 @@ CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VAR
 		END IF;
 	END //
 	
+-- Adds a request to reserve a queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS AddQueueReservation;
+CREATE PROCEDURE AddQueueReservation(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _startDate DATE, IN _endDate DATE, IN _code VARCHAR(36), IN _message VARCHAR(300), IN _nodeCount INT)
+	BEGIN
+		INSERT INTO queue_request(user_id, space_id, queue_name, start_date, end_date, node_count, code, message, created)
+		VALUES (_userId, _spaceId, _queueName, _startDate, _endDate, _nodeCount, _code, _message, SYSDATE());
+	END //
+	
 -- Adds a user to USER_ASSOC, deletes their entry in INVITES, and makes their
 -- role 'user' if not so already
 -- Author: Todd Elvers & Skylar Stark
@@ -104,6 +113,17 @@ CREATE PROCEDURE GetCommunityRequestByCode(IN _code VARCHAR(36))
 		FROM community_requests
 		WHERE code = _code;
 	END //
+	
+	
+-- Returns the queue request associated with the given activation code
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueueRequestByCode;
+CREATE PROCEDURE GetQueueRequestByCode(IN _code VARCHAR(36))
+	BEGIN
+		SELECT *
+		FROM queue_request
+		WHERE code = _code;
+	END //
 
 -- Looks for an activation code, and if successful, removes it from VERIFY,
 -- then adds an entry to USER_ROLES
@@ -134,6 +154,131 @@ CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id INT)
 		WHERE code = _code;
 	END //
 	
+	
+-- Approves the resrvation of a queue by deleting it from the queue_request table
+-- and then inserting into queue_reserved table as well as association in comm_queue table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS approveQueueReservation;
+CREATE PROCEDURE approveQueueReservation(IN _code VARCHAR(36), IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE, IN _newCode VARCHAR(36))
+	BEGIN
+		DELETE FROM queue_request 
+		WHERE code = _code;
+		
+		INSERT INTO queue_reserved VALUES(_spaceId, _queueId, _nodeCount, _startDate, _endDate, _newCode);
+		
+		INSERT INTO comm_queue
+		VALUES (_spaceId, _queueId);
+	END //
+	
+-- Declines the resrvation of a queue by deleting it from the queue_request table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS declineQueueReservation;
+CREATE PROCEDURE declineQueueReservation(IN _code VARCHAR(36))
+	BEGIN
+		DELETE FROM queue_request 
+		WHERE code = _code;
+	END //
+	
+	
+-- Gets the number of queue reservations waiting approval
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueueRequestCount;
+CREATE PROCEDURE GetQueueRequestCount()
+	BEGIN
+		SELECT count(*) AS requestCount
+		FROM queue_request;
+	END //
+	
+-- Gets the number of community requests waiting approval
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetCommunityRequestCount;
+CREATE PROCEDURE GetCommunityRequestCount()
+	BEGIN
+		SELECT count(*) AS requestCount
+		FROM community_requests;
+	END //
+	
+-- Gets the next page of data table for queue reservation requests
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNextPageOfPendingQueueRequests;
+CREATE PROCEDURE GetNextPageOfPendingQueueRequests(IN _startingRecord INT, IN _recordsPerPage INT)
+	BEGIN
+		SELECT 	user_id, 
+				space_id, 
+				queue_name,
+				node_count,
+				start_date,
+				end_date,
+				code,
+				message,
+				created
+		FROM	queue_request
+		ORDER BY 
+			created
+		 ASC
+	 
+		-- Shrink the results to only those required for the next page
+		LIMIT _startingRecord, _recordsPerPage;
+	END //
+	
+-- Gets the number of queue reservations
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueueReservationCount;
+CREATE PROCEDURE GetQueueReservationCount()
+	BEGIN
+		SELECT count(*) AS reservationCount
+		FROM comm_queue;
+	END //
+	
+-- Gets the next page of data table for queue reservations
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNextPageOfQueueReservations;
+CREATE PROCEDURE GetNextPageOfQueueReservations(IN _startingRecord INT, IN _recordsPerPage INT)
+	BEGIN
+		SELECT 	*
+		FROM	queue_reserved
+	 
+		-- Shrink the results to only those required for the next page
+		LIMIT _startingRecord, _recordsPerPage;
+	END //
+	
+-- Deletes a queue reservation by removing it from comm_queue table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS CancelQueueReservation;
+CREATE PROCEDURE CancelQueueReservation(IN _queueId INT)
+	BEGIN
+		DELETE FROM comm_queue
+		WHERE queue_id = _queueId;
+		
+		DELETE FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
 
+-- Gets the next page of data table for community requests
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNextPageOfPendingCommunityRequests;
+CREATE PROCEDURE GetNextPageOfPendingCommunityRequests(IN _startingRecord INT, IN _recordsPerPage INT)
+	BEGIN
+		SELECT 	user_id, 
+				community, 
+				code,
+				message,
+				created
+		FROM	community_requests
+		ORDER BY 
+			created
+		 ASC
+	 
+		-- Shrink the results to only those required for the next page
+		LIMIT _startingRecord, _recordsPerPage;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetQueueReservedCode;
+CREATE PROCEDURE GetQueueReservedCode(IN _queueId INT)
+	BEGIN
+		SELECT code
+		FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

@@ -52,10 +52,16 @@ function initClusterExplorer() {
 				"max_children" : -2,					
 				"valid_children" : [ "queue" ],
 				"types" : {						
-					"queue" : {
+					"active_queue" : {
 						"valid_children" : [ "enabled_node", "disabled_node" ],
 						"icon" : {
-							"image" : starexecRoot+"images/jstree/cogs.png"
+							"image" : starexecRoot+"images/jstree/on.png"
+						}
+					},
+					"inactive_queue" : {
+						"valid_children" : [ "enabled_node", "disabled_node" ],
+						"icon" : {
+							"image" : starexecRoot+"images/jstree/off.png"
 						}
 					},
 					"enabled_node" : {
@@ -143,7 +149,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 function getDetails(id, type) {
 	var url = '';
 	qid=id;
-	if(type == 'queue') {
+	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
 		window['type'] = 'queues';
 	} else if(type == 'enabled_node' || type == 'disabled_node') {

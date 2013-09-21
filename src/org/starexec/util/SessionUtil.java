@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 
@@ -87,6 +88,7 @@ public class SessionUtil {
 	 */
 	public static Permission getPermission(HttpSession session, int spaceId) {
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
+		int userId = SessionUtil.getUserId(session);
 		log.debug("get Permission for space " + spaceId);
 		// If the cache doesn't contain the requested permission...
 		if(!cache.containsKey(spaceId)) {
@@ -103,6 +105,25 @@ public class SessionUtil {
 			log.debug("Returning public users permissions");
 			return Permissions.get(R.PUBLIC_USER_ID, spaceId);
 		}
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			log.debug("Returning admin user permissions");
+			Permission p = new Permission();
+			p.setAddBenchmark(true);
+			p.setAddSolver(true);
+			p.setAddSpace(true);
+			p.setAddUser(true);
+			p.setAddJob(true);
+			p.setRemoveBench(true);
+			p.setRemoveSolver(true);
+			p.setRemoveSpace(true);
+			p.setRemoveUser(true);
+			p.setRemoveJob(true);
+			p.setLeader(true);
+			p.setId(userId);
+			return p;
+		}
+		
 		// Return null if the cache couldn't add it and space is private, or it doesn't exist
 		return null;
 	}

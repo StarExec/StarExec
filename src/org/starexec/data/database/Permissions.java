@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 
 /**
  * Handles all database interaction for permissions
@@ -61,6 +63,10 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
 		try {
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
@@ -101,6 +107,10 @@ public class Permissions {
 		if (Solvers.isPublic(solverId)){
 			return true;
 		}
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
 
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -137,7 +147,11 @@ public class Permissions {
 	public static boolean canUserSeeBench(int benchId, int userId) {
 		if (Benchmarks.isPublic(benchId)){
 			return true;
-		}		
+		}	
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
 
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -175,6 +189,10 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
 		try {
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
@@ -214,6 +232,10 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeJob(int jobId, int userId){		
 		if (Jobs.isPublic(jobId)){
+			return true;
+		}
+		User user = Users.get(userId);
+		if (user.getRole().equals("admin")) {
 			return true;
 		}
 		Connection con = null;			
@@ -256,6 +278,10 @@ public class Permissions {
 		if (Spaces.isPublicSpace(spaceId)){
 			return true;
 		}
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -292,6 +318,10 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
 		try {
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewStatus(?, ?)}");
@@ -453,22 +483,13 @@ public class Permissions {
 	 */
 	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) throws Exception {				
 		CallableStatement procedure = null;
+		int permissionId = add(newPerm, con);
 		
 		try {
-			 procedure = con.prepareCall("{CALL SetUserPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL SetUserPermissions2(?, ?, ?)}");
 			procedure.setInt(1, userId);					
 			procedure.setInt(2, spaceId);
-			procedure.setBoolean(3, newPerm.canAddSolver());
-			procedure.setBoolean(4, newPerm.canAddBenchmark());
-			procedure.setBoolean(5, newPerm.canAddUser());
-			procedure.setBoolean(6, newPerm.canAddSpace());
-			procedure.setBoolean(7, newPerm.canAddJob());
-			procedure.setBoolean(8, newPerm.canRemoveSolver());
-			procedure.setBoolean(9, newPerm.canRemoveBench());
-			procedure.setBoolean(10, newPerm.canRemoveSpace());
-			procedure.setBoolean(11, newPerm.canRemoveUser());
-			procedure.setBoolean(12, newPerm.canRemoveJob());
-			procedure.setBoolean(13, newPerm.isLeader());
+			procedure.setInt(3, permissionId);
 
 			procedure.executeUpdate();
 			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));

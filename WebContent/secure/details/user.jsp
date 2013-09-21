@@ -44,7 +44,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared">
+<star:template title="${t_user.fullName}" js="details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/spaces, details/shared">
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>				

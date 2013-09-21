@@ -1,12 +1,157 @@
 var defaultPPId = 0;
+var leaderTable;
+
 
 $(document).ready(function(){
+	var id = $('#comId').val();
+	
+	leaderTable = $('#leaders').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
+	memberTable = $('#Members').dataTable( {
+        "sDom": 'rt<"bottom"flpi><"clear">'
+    });
+	
+
+	
+	$.get(  
+			starexecRoot+"services/communities/details/" + id,  
+			function(data){  			
+				populateDetails(data);			
+			},  
+			"json"
+		).error(function(){
+			showMessage('error',"Internal error getting community details",5000);
+		});
 	
 	refreshSpaceWebsites();
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
 });
+
+function populateDetails(jsonData) {
+	var id = $('#comId').val();
+
+	
+	// Populate leaders table
+	$('#leaderField legend').children('span:first-child').text(jsonData.leaders.length);
+	leaderTable.fnClearTable();	
+	$.each(jsonData.leaders, function(i, user) {
+		var fullName = user.firstName + ' ' + user.lastName;
+		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
+		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ')" value="X"/>';
+		var demoteUser = '<input type="button" onclick="demoteUser(' + user.id + ', ' + id + ')" value="Demote"/>';
+		
+		leaderTable.fnAddData([userLink, user.institution, emailLink, deleteUser, demoteUser]);
+
+	});
+	
+	// Populate members table
+	$('#memberField legend').children('span:first-child').text(jsonData.space.users.length);
+	//memberTable.fnClearTable();	
+	$.each(jsonData.space.users, function(i, user) {
+		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
+		var fullName = user.firstName + ' ' + user.lastName;
+		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>' + hiddenUserId;
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>';		
+		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ', ' + id + ')" value="X"/>';
+		var promoteUser = '<input type="button" onclick="promoteUser(' + user.id + ', ' + id + ')" value="Promote"/>';
+		
+		memberTable.fnAddData([userLink, user.institution, emailLink, deleteUser, promoteUser]);
+		
+	});
+}
+
+function removeUser(userid, id) {
+	var idArray = new Array();
+	idArray.push(userid);
+	$.post(  
+			starexecRoot+"services/remove/user/" + id,
+			{selectedIds : idArray},
+			function(returnCode) {
+				switch (returnCode) {
+					case 0:
+						// Remove the rows from the page and update the table size in the legend
+						//updateTable(memberTable);
+						//$("#removeUser").fadeOut("fast");
+						showMessage('success', "user(s) removed succesfully", 5000);
+						break;
+					case 1:
+						showMessage('error', "an error occurred while processing your request; please try again", 5000);
+					case 2:
+						showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
+						break;
+					case 3:
+						showMessage('error', "you can not remove yourself from this space in that way, " +
+								"instead use the 'leave' button to leave this community", 5000);
+						break;
+					case 4:
+						showMessage('error', "you can not remove other leaders of this space", 5000);
+						break;
+				}
+			},
+			"json"
+		).error(function(){
+			showMessage('error',"Internal error removing user",5000);
+		});
+	setTimeout(function(){document.location.reload(true);}, 1000);
+}
+
+function promoteUser(userid, id) {
+	var idArray = new Array();
+	idArray.push(userid);		
+	$.post(  
+			starexecRoot+"services/makeLeader/" + id ,
+			{selectedIds : idArray},
+			function(returnCode) {
+				switch (returnCode) {
+					case 0:
+						showMessage('success',"user(s) promoted successfully",5000);
+						setTimeout(function(){document.location.reload(true);}, 1000);
+						break;
+					case 1:
+						showMessage('error', "an error occurred while processing your request; please try again", 5000);
+					case 2:
+						showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
+						break;
+					case 3:
+						showMessage('error', "member is already a leader", 5000);
+						break;
+				}
+			},
+			"json"
+		).error(function(){
+			showMessage('error',"Internal error making user a leader",5000);
+		});
+	
+}
+
+function demoteUser(userId, id) {		
+	$.post(  
+			starexecRoot+"services/demoteLeader/" + id + "/" + userId ,
+			function(returnCode) {
+				switch (returnCode) {
+					case 0:
+						showMessage('success',"user(s) demoted successfully",5000);
+						setTimeout(function(){document.location.reload(true);}, 1000);
+						break;
+					case 1:
+						showMessage('error', "an error occurred while processing your request; please try again", 5000);
+					case 2:
+						showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
+						break;
+					case 3:
+						showMessage('error', "member is already not a leader", 5000);
+						break;
+				}
+			},
+			"json"
+		).error(function(){
+			showMessage('error',"Internal error demoting user from leader",5000);
+		});
+}
 
 /**
  * Monitors the solver's "websites" and updates the server if the client adds/deletes any
@@ -77,7 +222,7 @@ function initUI(){
 	editable("CpuTimeout");
 	editable("ClockTimeout");
 	
-	// Add toggles for the "add new" buttons and hide them by default
+	// Add toggles for the "add new" buttons and hide them by default	
 	$('#toggleWebsite').click(function() {
 		$('#newWebsite').slideToggle('fast');
 		togglePlusMinus(this);
@@ -119,7 +264,12 @@ function initUI(){
 	$('#newPreProcessTbl').hide();
 	$('#dialog-confirm-delete').hide();
 	
-	$('fieldset:not(:first)').expandable(true);
+	$('#leaderField').expandable(false);
+	$('#memberField').expandable(false);
+	$('#websiteField').expandable(true);
+	$('#benchmarkField').expandable(true);
+	$('#settingsField').expandable(true);
+	$('#processorField').expandable(true);
 	
 	$('#addType').button({
 		icons: {

@@ -111,7 +111,7 @@ public class Validator {
      * @return true iff name isn't null, is between 1 and SPACE_NAME_LEN characters and
      * contains only letters, numbers and dashes
      */
-    public static boolean isValidPrimName(String name){    	
+    public static boolean isValidPrimName(String name){   
     	return patternPrimName.matcher(name).matches();    	
     }
     

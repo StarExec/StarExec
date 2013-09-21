@@ -52,8 +52,6 @@
 				<li><a id="joinComm" href="#">join</a></li>
 				<li><a id="leaveComm">leave</a></li>
 				<li><a id="editComm" href="#">edit</a></li>							
-				<li><a id="removeUser">remove user</a></li>
-				<li><a id="makeLeader">make leader</a></li>
 				<li><a id="downloadPostProcessors">download postprocessors</a></li>
 				<li><a id="downloadBenchProcessors">download benchmark processors</a></li>
 			</ul>

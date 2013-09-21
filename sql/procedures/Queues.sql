@@ -2,6 +2,35 @@ USE starexec;
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
+-- Adds a new queue given a name
+-- Author: Tyler Jensen
+DROP PROCEDURE IF EXISTS AddQueue;
+CREATE PROCEDURE AddQueue(IN _name VARCHAR(128), OUT id INT)
+	BEGIN		
+		INSERT INTO queues (name, status)
+		VALUES (_name, "INACTIVE");
+		SELECT LAST_INSERT_ID() INTO id;
+	END //
+	
+-- Remove a queue given its id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS RemoveQueue;
+CREATE PROCEDURE RemoveQueue(IN _queueId INT)
+	BEGIN
+		DELETE FROM queues
+		WHERE id = _queueId;
+	END //
+
+-- Retrieves the id of a queue given its name
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetIdByName;
+CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(126))
+	BEGIN
+		SELECT id
+		FROM queues
+		WHERE name = _queueName;
+	END //
+
 -- Retrieves all jobs with pending job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
 DROP PROCEDURE IF EXISTS GetPendingJobs;
@@ -56,6 +85,16 @@ CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
 		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
 		ORDER BY sge_id ASC
 		LIMIT _cap;
+	END //	
+	
+-- Gets the number of nodes associated with a queue on a given date
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNodeCountOnDate;
+CREATE PROCEDURE GetNodeCountOnDate(IN _queueId INT, IN _date DATE)
+	BEGIN
+		SELECT node_count AS count
+		FROM node_reserved
+		WHERE queue_id = _queueID AND _date BETWEEN start_date AND end_date;
 	END //	
 	
 DELIMITER ; -- This should always be at the end of this file

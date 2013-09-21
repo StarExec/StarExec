@@ -11,11 +11,11 @@
 				<li class="round">
 					<a href="#">admin</a>  
 			        <ul class="subnav round">  
-			            <li class="round"><a href="#">users</a></li>  
-			            <li class="round"><a href="#">cluster</a></li>
-			            <li class="round"><a href="#">jobs</a></li>
-			            <li class="round"><a href="#">communities</a></li>  
-			            <li class="round"><a href="#">other</a></li>
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/user.jsp">users</a></li>  
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/cluster.jsp">cluster</a></li>
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/job.jsp">jobs</a></li>
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/community.jsp">communities</a></li>  
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/starexec.jsp">Starexec</a></li>
 			        </ul>  
 				</li>
 				</c:if>

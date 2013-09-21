@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,8 +13,11 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -39,6 +43,34 @@ public class Queues {
 			 procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
 			procedure.setString(1, queueName);
 			procedure.setString(2, nodeName);
+			
+			procedure.executeUpdate();						
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Associates a queue and a worker node to indicate the node belongs to the queue.
+	 * If the association already exists, any errors are ignored.
+	 * @param queueName The FULL name of the owning queue
+	 * @param nodeName The FULL name of the worker node that belongs to the queue
+	 * @return True if the operation was a success, false otherwise. 
+	 */
+	public static boolean associate(int queueId, int nodeId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL AssociateQueueById(?, ?)}");
+			procedure.setInt(1, queueId);
+			procedure.setInt(2, nodeId);
 			
 			procedure.executeUpdate();						
 			return true;
@@ -113,7 +145,8 @@ public class Queues {
 	 * @param qid The id of the queue to retrieve
 	 * @return a queue object representing the queue to retrieve
 	 */
-	protected static Queue get(Connection con, int qid) throws Exception {		
+	protected static Queue get(Connection con, int qid) throws Exception {	
+		log.debug("starting get");
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		
@@ -185,6 +218,37 @@ public class Queues {
 		return null;
 	}
 	
+	public static List<Queue> getUnreservedQueues(int userId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetUnreservedQueues(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			List<Queue> queues = new LinkedList<Queue>();
+			
+			while(results.next()){
+				Queue q = new Queue();
+				q.setName(results.getString("name"));
+				q.setId(results.getInt("id"));	
+				q.setStatus(results.getString("status"));
+				queues.add(q);
+			}			
+						
+			return queues;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Gets all queues in the starexec cluster (with no detailed information)
 	 * @param userId return the queues accessible by the given user, or all queues if the userId is 0
@@ -196,10 +260,14 @@ public class Queues {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
-			if (userId == 0) 
+			con = Common.getConnection();
+			if (userId == 0) {
+				//only gets the queues that have status "ACTIVE"
 			    procedure = con.prepareCall("{CALL GetAllQueues}");
-			else {
+			} else if (userId == 1) {
+				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
+			} else {
+
 			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
 			    procedure.setInt(1, userId);
 			}
@@ -234,6 +302,15 @@ public class Queues {
 	 */
 	public static List<Queue> getAll() {
 	    return getQueues(0);
+	}
+	
+	/**
+	 * Gets all queues in the starexec cluster (Including Inactive queues)
+	 * @return A list of queues 
+	 * @author Wyatt Kaiser
+	 */
+	public static List<Queue> getAllAdmin() {
+	    return getQueues(1);
 	}
 	
 	/**
@@ -783,4 +860,207 @@ public class Queues {
 			return null;
 		}
 	}
+
+	public static int getIdByName(String queueName) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetIdByName(?)}");
+			procedure.setString(1, queueName);
+			
+			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getInt("id");
+			}			
+
+			return -1;			
+			
+		} catch (Exception e){			
+			log.error("getIdByName says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+			return -1;				
+	}
+
+	/**
+	 * Adds a new queue to the system.
+	 * @param queueName The name of the queue to add
+	 * @return The ID of the newly inserted queue, -1 if the operation failed
+	 * @author Wyatt Kaiser
+	 */
+	public static int add(String queueName, List<Integer> nodeIds) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+						
+			Common.beginTransaction(con);	
+
+			// Add queue is a multi-step process, so we need to use a transaction
+			int newQueueId = Queues.add(con, queueName, nodeIds);
+
+			Common.endTransaction(con);			
+			
+			return newQueueId;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.doRollback(con);			
+			Common.safeClose(con);
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * Adds a new queue to the system. This action adds the queue, 
+	 * and adds a new association to the queue for the given list of nodes
+	 * This is a multi-step process, use transactions to ensure it completes as
+	 * an atomic unit.
+	 * @param con The connection to perform the operation on
+	 * @param queueName The name of the queue to add
+	 * @param nodeIds list of node ids to set associations for
+	 * @return The ID of the newly inserted space, -1 if the operation failed
+	 * @author Tyler Jensen
+	 */
+	protected static int add(Connection con, String queueName, List<Integer> nodeIds) throws Exception {			
+		log.debug("preparing to call sql procedures to add queue");
+		CallableStatement addQueue = null;
+		CallableStatement associateQueue = null;
+		try {
+			
+			//Add the queue first
+			log.debug("Calling AddQueue");
+			addQueue = con.prepareCall("{CALL AddQueue(?, ?)}");	
+			addQueue.setString(1, queueName);
+			addQueue.registerOutParameter(2, java.sql.Types.INTEGER);
+			addQueue.executeUpdate();
+			int newQueueId = addQueue.getInt(2);
+			
+			/*
+			log.debug("Calling AssociateQueue");
+			// Adds the nodes as associated with the queue
+			for (int nodeId : nodeIds) {
+				 associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
+				associateQueue.setInt(1, newQueueId);
+				associateQueue.setInt(2, nodeId);
+				associateQueue.executeUpdate();
+			}
+			*/
+
+			log.info(String.format("New queue with name [%s] was successfully created", queueName));
+			return newQueueId;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(addQueue);
+			Common.safeClose(associateQueue);
+		}
+		return -1;
+	}
+
+	public static boolean remove(int queueId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();
+						
+			Common.beginTransaction(con);	
+			
+			// Add queue is a multi-step process, so we need to use a transaction
+			boolean success = Queues.remove(con, queueId);
+
+			Common.endTransaction(con);		
+						
+			return success;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.doRollback(con);			
+			Common.safeClose(con);
+		}
+		return false;
+	}
+
+	private static boolean remove(Connection con, int queueId) {
+		CallableStatement removeQueue = null;
+		CallableStatement associateQueue = null;
+		CallableStatement cancelReservation = null;
+		try {
+			
+			List<WorkerNode> nodeIds = Cluster.getNodesForQueue(queueId);			
+			//cancel reservation
+			log.debug("Calling CancelReservation");
+			cancelReservation = con.prepareCall("{CALL CancelQueueReservation(?)}");
+			cancelReservation.setInt(1, queueId);
+			cancelReservation.executeUpdate();
+			
+			//Associate the nodes back to the default queue
+			for (WorkerNode node : nodeIds) {
+
+				log.debug("Calling AssociateQueue");
+				associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
+				associateQueue.setInt(1, 1);
+				associateQueue.setInt(2, node.getId());
+				associateQueue.executeUpdate();
+			}
+			
+			//Remove the queue
+			log.debug("Calling RemoveQueue");
+			removeQueue = con.prepareCall("{CALL RemoveQueue(?)}");	
+			removeQueue.setInt(1, queueId);
+			removeQueue.executeUpdate();
+
+			log.info(String.format("Queue [%s] was successfully deleted", Queues.get(queueId)));
+			return true;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(removeQueue);
+			Common.safeClose(associateQueue);
+			Common.safeClose(cancelReservation);
+		}
+		return false;
+	}
+
+	public static int getNodeCountOnDate(int queueId, java.util.Date date) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
+			procedure.setInt(1, queueId);
+			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+			procedure.setDate(2, sqlDate);
+			
+			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getInt("count");
+			}			
+
+			return 0;			
+			
+		} catch (Exception e){			
+			log.error("GetNodeCountOnDate says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return 0;
+	}
+
+
 }

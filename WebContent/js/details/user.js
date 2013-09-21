@@ -1,5 +1,6 @@
 var jobTable;
 $(document).ready(function(){
+	
 	// Hide loading images by default
 	$('legend img').hide();
 	$("fieldset:not(:first)").expandable(true);
@@ -132,12 +133,29 @@ function updateFieldsetCount(tableName, value){
 	}
 }
 
+/**
+ * Colorize the job statistics in the jobTable
+ */
 function colorizeJobStatistics(){
 	// Colorize the statistics in the job table for completed pairs
 	$("#jobs p.asc").heatcolor(
 			function() {
 				// Return the floating point value of the stat
-				return eval($(this).text());
+				var value = $(this).text();
+				return eval(value.slice(0, -1));				
+			},
+			{ 
+				maxval: 100,
+				minval: 0,
+				colorStyle: 'greentored',
+				lightness: 0 
+			}
+	);
+	//colorize the unchanging totals
+	$("#jobs p.static").heatcolor(
+			function() {
+				// Return the floating point value of the stat
+				return eval(1);				
 			},
 			{ 
 				maxval: 1,
@@ -146,18 +164,21 @@ function colorizeJobStatistics(){
 				lightness: 0 
 			}
 	);
-	
 	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
 	$("#jobs p.desc").heatcolor(
 			function() {
-				return eval($(this).text());
+				var value = $(this).text();
+				return eval(value.slice(0, -1));	
 			},
 			{ 
-				maxval: 1,
+				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
 				reverseOrder: true,
 				lightness: 0 
 			}
 	);
+
+
+
 }

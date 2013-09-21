@@ -2,6 +2,8 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -10,8 +12,11 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
 import org.starexec.servlets.PasswordReset;
 
@@ -22,6 +27,7 @@ public class Mail {
 	private static final Logger log = Logger.getLogger(Mail.class);
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
 	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
+	public static final String ADMIN_RESPONSE = "admin";
 	
 	/**
 	 * Sends an e-mail from the configured SMTP server
@@ -186,5 +192,83 @@ public class Mail {
 		Mail.mail(email, "STAREXEC - Password reset", new String[] { newUser.getEmail() });
 		
 		log.info(String.format("Password reset email sent to user [%s].", newUser.getFullName()));
-    }	
+    }
+    
+    
+    
+    
+    /**
+     * Sends an acceptance email to the admin for a queue reservation 
+     * for a specific queue for a specific space
+     * they can approve/decline the user's request 
+     * 
+     * @param user_id the id of the user trying to reserve a queue
+     * @param queue_id the id of the queue trying to be reserved
+     * @param space_id the id of the space to reserve the queue for
+     * @throws IOException if queueRequest_email cannot be found
+     * @author Todd Elvers
+     */
+    public static void sendQueueRequest(QueueRequest queueRequest) throws IOException{    	
+    	User user = Users.get(queueRequest.getUserId());
+    	
+    	// Figure out the email addresses of the leaders of the space
+    	List<User> admins = Users.getAdmins();
+    	//List<User> leaders = Spaces.getLeaders(comReq.getCommunityId());
+    	String[] adminEmails = new String[admins.size()];
+    	
+    	for(int i = 0; i < admins.size(); i++) {
+    		adminEmails[i] = admins.get(i).getEmail();
+    	}
+    	
+    	// Configure pre-built message
+		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reserveQueue_email.txt"));
+		email = email.replace("$$USER$$", user.getFullName());
+		email = email.replace("$$EMAIL$$", user.getEmail());
+		email = email.replace("$$QUEUENAME$$", queueRequest.getQueueName());
+		email = email.replace("$$SPACENAME$$", Spaces.get(queueRequest.getSpaceId()).getName());
+		// Send email
+		Mail.mail(email, "STAREXEC - Request to reserve queue " + queueRequest.getQueueName(), adminEmails);
+
+		log.info(String.format("Acceptance email sent to admins to approve/decline %s's request", user.getFullName()));
+    }
+
+	public static void sendReservationResults(QueueRequest req, boolean wasApproved) throws IOException {
+		User user = Users.get(req.getUserId());
+		if(wasApproved){
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+			Date start = req.getStartDate();
+			Date end = req.getEndDate();
+			String start1 = sdf.format(start);
+			String end1 = sdf.format(end);
+			
+    		// Configure pre-built message
+    		String email;
+    		email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/approvedQueue_email.txt"));
+    		email = email.replace("$$USER$$", user.getFullName());
+    		email = email.replace("$$QUEUENAME$$", req.getQueueName());
+    		email = email.replace("$$SPACE$$", Spaces.getName(req.getSpaceId()));
+    		email = email.replace("$$NODECOUNT$$", String.valueOf(req.getNodeCount()));
+    		email = email.replace("$$STARTDATE$$", start1);
+    		email = email.replace("$$ENDDATE$$", end1);
+    		
+    		// Send email
+    		Mail.mail(email, "STAREXEC - Approved queue reservation for queue " + req.getQueueName(), new String[] { user.getEmail() });
+    		
+    		log.info(String.format("Notification email sent to user [%s] - their request to reserve queue %s for space %s was approved", user.getFullName(), req.getQueueName(), Spaces.getName(req.getSpaceId())));
+    	} else {
+    		// Configure pre-built message
+    		String email;
+			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/declinedQueue_email.txt"));    			    		
+    		email = email.replace("$$USER$$", user.getFullName());
+    		email = email.replace("$$QUEUENAME$$", req.getQueueName());
+    		
+    		// Send email
+    		Mail.mail(email, "STAREXEC - Declined to reserve queue " + req.getQueueName(), new String[] { user.getEmail() });
+    		
+    		log.info(String.format("Notification email sent to user [%s] - their request to  reserve queue %s for space %s was declined", user.getFullName(), req.getQueueName(), Spaces.getName(req.getSpaceId())));
+    	}
+		
+	}
+    
+    
 }
