@@ -12,8 +12,8 @@ CREATE TABLE queue_request (
 	created TIMESTAMP NOT NULL,	
 	PRIMARY KEY (user_id, space_id, queue_name, start_date),
 	UNIQUE KEY (code),
-	CONSTRAINT queue_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 CREATE TABLE queue_reserved (
@@ -25,7 +25,7 @@ CREATE TABLE queue_reserved (
 	code VARCHAR(36) NOT NULL,
 	PRIMARY KEY (space_id, queue_id, start_date, end_date),
 	UNIQUE KEY (code),
-	CONSTRAINT queue_reserved_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
+	FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
 CREATE TABLE node_reserved (
@@ -34,5 +34,5 @@ CREATE TABLE node_reserved (
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
 	PRIMARY KEY (queue_id),
-	CONSTRAINT node_reserved_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
+	FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
 );
