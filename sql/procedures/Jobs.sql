@@ -969,4 +969,14 @@ CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID 
 			JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId;
 	END //
+
+-- Sets all the pairs of a given job to the given status
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS SetPairsToStatus;
+CREATE PROCEDURE SetPairsToStatus(IN _jobId INT, In _statusCode INT)
+	BEGIN
+		UPDATE job_pairs
+		SET status_code = _statusCode
+		WHERE job_id = _jobId;
+	END //
 DELIMITER ; -- this should always be at the end of the file

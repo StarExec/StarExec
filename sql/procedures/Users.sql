@@ -335,6 +335,7 @@ CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 		AND   space_id = _spaceId;
 	END // 
 	
+-- Gets the user that owns the given job
 DROP PROCEDURE IF EXISTS GetNameofUserByJob;
 CREATE PROCEDURE GetNameofUserByJob(IN _jobId INT)
 	BEGIN
@@ -353,6 +354,14 @@ CREATE PROCEDURE GetAdmins()
 		WHERE roles.role = "admin";
 	END //
 
-
+-- Checks to see whether the given user is a member of the given community
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS IsMemberOfCommunity;
+CREATE PROCEDURE IsMemberOfCommunity(IN _userId INT, IN communityId INT)
+	BEGIN
+		SELECT COUNT(*) AS spaceCount FROM closure 
+			JOIN user_assoc AS assoc ON assoc.space_id=descendant
+		WHERE assoc.user_id=_userId AND ancestor=communityId;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

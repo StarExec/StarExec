@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="space explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces, common/comments">			
+<star:template title="space explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<div id="explorer">
 		<h3>spaces</h3>
 		 
@@ -106,30 +106,7 @@
 				</thead>			
 			</table>
 		</fieldset>		
-<!--  THIS NEEDS TO REMAIN COMMENTED OUT.		
-		<fieldset id="resultField">
-			<legend class="expd" id="resultExpd"><span>0</span> result</legend>
-			<table id="results">
-				<thead>
-					<tr>
-						<th style="width:150px;">name</th>
-						<th>score</th>
-						<th>runtime</th>
-					</tr>
-				</thead>			
-			</table>			
-		</fieldset>		
-	
-		<fieldset id="resultChart">
-		<table id="chartTable">
-			<tr>
-				<td id="chart">
-					<img id="chartPicture"><br>
-				</td>
-			</tr>
-		</table>
-		</fieldset>	
-	-->	
+
 		<fieldset id="actions">
 			<legend>actions</legend>
 			<ul id="actionList">
@@ -147,31 +124,7 @@
 				
 			</ul>
 		</fieldset>	
-		
-<!-- 	Comments feature not yet polished, commenting-out for now
-	
-		<div id="commentDiv">		
-		<fieldset id="commentField">
-		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
-			<table id="comments">
-			<thead>
-				<tr>
-					<th style="width:20%;">user</th>
-					<th style="width:20%;">time</th>
-					<th>comment</th>					
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>			
-		<span id="toggleComment" class="caption"><span>+</span> add new</span>
-		<div id="new_comment">
-			<textarea id="comment_text"></textarea>  
-			<button id="addComment">add</button>
-		</div>
-		</fieldset>	
-		</div>	
- -->	
+
 	</div>	
 	
 	<div id="dialog-confirm-copy" title="confirm copy">

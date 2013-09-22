@@ -170,7 +170,7 @@ public class ConfigUtil {
 				Node currentPropNode = classNodeChildren.item(j);
 				
 				if(!currentPropNode.getNodeName().equals(NODE_PROP)){
-					// If we're not looking at property node (most likely a comment) skip
+					// If we're not looking at property node skip
 					continue;
 				}
 				

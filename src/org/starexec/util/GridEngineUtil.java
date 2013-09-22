@@ -374,12 +374,8 @@ public class GridEngineUtil {
 							final int safeId = id;
 							log.debug("Processing job pair " + safeId);
 
-							// Execute the processing for this id on a thread from the pool
-							//threadPool.execute(new Runnable() {					
-							//	@Override
-							//	public void run() {
+							
 							log.info("Processing pair " + safeId + " on thread " + Thread.currentThread().getName());
-							//Jobs.setSGEPairStatus(safeId, StatusCode.STATUS_PROCESSING_RESULTS.getVal());
 							// Process statistics and attributes
 							boolean success = GridEngineUtil.processStatistics(safeId);
 							//boolean success = true;
@@ -390,8 +386,7 @@ public class GridEngineUtil {
 							JobPairs.setSGEPairStatus(safeId, (success) ? StatusCode.STATUS_COMPLETE.getVal() : StatusCode.ERROR_RESULTS.getVal());
 
 							log.info("Processing complete for pair " + safeId + " on thread " + Thread.currentThread().getName());
-							//	}
-							//});
+							
 							numLeft--;
 						}
 						else{

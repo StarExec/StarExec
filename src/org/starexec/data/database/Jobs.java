@@ -2871,4 +2871,54 @@ public class Jobs {
 		
 		return null;
 	}
+	
+	/**
+	 * Sets all the pairs associated with the given job to the given status code
+	 * @param jobId The ID of the job in question
+	 * @param statusCode The status code to set all the pairs to
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	private static boolean setPairStatusByJob(int jobId, int statusCode) {
+		log.debug("setting pairs to status "+statusCode);
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetPairsToStatus(?,?)}");
+			procedure.setInt(1,jobId);
+			procedure.setInt(2,statusCode);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("setPairStatusByJob says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Runs the given post processor on the pair output of the already-finished job
+	 * @param jobId The ID of the the job to process
+	 * @param processorId The ID of the post-processor to use
+	 * @return True if the operation was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	//TODO: Obviously, we need to actually do stuff here
+	public static boolean runPostProcessor(int jobId, int processorId) {
+		
+		try {
+			setPairStatusByJob(jobId,StatusCode.STATUS_PROCESSING.getVal());
+		} catch (Exception e) {
+			log.error("runPostProcessor says "+e.getMessage(),e);
+		} finally {
+			
+		}
+		
+		return false;
+	}
 }

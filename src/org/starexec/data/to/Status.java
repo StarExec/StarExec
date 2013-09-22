@@ -29,7 +29,8 @@ public class Status {
 		ERROR_GENERAL(18),
 		STATUS_PROCESSING_RESULTS(19),
 		STATUS_PAUSED(20),
-		STATUS_KILLED(21);
+		STATUS_KILLED(21),
+		STATUS_PROCESSING(22);
 		
 		private int val;
 		
@@ -93,6 +94,8 @@ public class Status {
 			    return STATUS_PAUSED;
 			    case 21:
 			    return STATUS_KILLED;
+			    case 22:
+			    return STATUS_PROCESSING;
 		    }
 		    return STATUS_UNKNOWN;
 		}
@@ -143,6 +146,8 @@ public class Status {
 		    return "the job is paused so all job_pairs that were not complete were sent to this status";
 		    case 21:
 		    return "the job was killed, so all job_pairs that were not complete were sent to this status";
+		    case 22:
+		    return "this job is being processed by a new post-processor, and this pair is awaiting processing";
 	    }
 		return "the job status is not known or has not been set";
 	}
@@ -190,6 +195,8 @@ public class Status {
 		    return "paused";
 		    case 21:
 		    return "killed";
+		    case 22:
+		    return "awaiting processing";
 	    }
 		return "unknown";
 	}

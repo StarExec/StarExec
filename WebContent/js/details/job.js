@@ -268,6 +268,9 @@ function initUI(){
 									case 2:
 										showMessage('error', "Only the owner of this job can post-process its results.", 5000);
 										break;
+									case 3:
+										showMessage('error',"Only complete jobs can be processed with a new post-processor",5000);
+										break;
 									default:
 										showMessage('error', "Invalid parameters.", 5000);
 										break;

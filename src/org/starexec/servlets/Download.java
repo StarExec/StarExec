@@ -750,8 +750,7 @@ public class Download extends HttpServlet {
 				}
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
 			} else {
-				String test=Jobs.getDirectory(j.getId());
-				log.debug("this is the filepath we have "+test);
+				
 				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
 				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 			}

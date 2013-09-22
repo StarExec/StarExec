@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Comments;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
@@ -76,14 +75,13 @@ public class RESTServices {
 	private static final int ERROR_INVALID_WEBSITE_TYPE=1;
 	private static final int ERROR_EDIT_VAL_ABSENT=1;
 	private static final int ERROR_IDS_NOT_GIVEN=1;
-	private static final int ERROR_INVALID_COMMENT_TYPE=1;
 	private static final int ERROR_SPACE_ALREADY_PUBLIC=1;
 	private static final int ERROR_SPACE_ALREADY_PRIVATE=1;
 	
 	private static final int ERROR_INVALID_PERMISSIONS=2;
 	private static final int ERROR_INVALID_PASSWORD=2;
 	
-	
+	private static final int ERROR_JOB_INCOMPLETE=3;
 	private static final int ERROR_INVALID_PARAMS=3;
 	private static final int ERROR_CANT_REMOVE_FROM_SUBSPACE=3;
 	private static final int ERROR_PASSWORDS_NOT_EQUAL=3;
@@ -1018,9 +1016,23 @@ public class RESTServices {
 	@Path("/postprocess/job/{jobId}/{procId}")
 	@Produces("application/json")
 	public String postProcessJob(@PathParam("jobId") int jid, @PathParam("procId") int pid, @Context HttpServletRequest request) {
+		
+		int userId=SessionUtil.getUserId(request);
+		Job job=Jobs.get(jid);
+		if (job.getUserId()!=userId) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		Processor p=Processors.get(pid);
+		if (!Users.isMemberOfCommunity(userId, p.getCommunityId())) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		if (!Jobs.isJobComplete(jid)) {
+			return gson.toJson(ERROR_JOB_INCOMPLETE);
+		}
+		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
-		return "done!";
+		return Jobs.runPostProcessor(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		
 	}
 	
@@ -2697,113 +2709,8 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
-	/**
-	 * Retrieves the associated comments of a given benchmark, space, or solver.
-	 * The type and its id is included in the POST path
-	 * @return a json string representing all the comments associated with
-	 * the current benchmark/space/solver
-	 * @author Vivek Sardeshmukh
-	 */
-	@GET
-	@Path("/comments/{type}/{id}")
-	@Produces("application/json")
-	public String getComments(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		if(type.startsWith("b")){
-			if(Permissions.canUserSeeBench(id, userId)){
-				return gson.toJson(Comments.getAll(id, Comments.CommentType.BENCHMARK));
-			}
-		} else if(type.startsWith("sp")){
-			if(Permissions.canUserSeeSpace(id, userId)) {
-				return gson.toJson(Comments.getAll(id, Comments.CommentType.SPACE));
-			}
-		} else if (type.startsWith("so")) {
-			if(Permissions.canUserSeeSolver(id, userId)){
-				return gson.toJson(Comments.getAll(id, Comments.CommentType.SOLVER));
-			}
-		}
-		return gson.toJson(ERROR_INVALID_COMMENT_TYPE);
-	}
 	
-	/**
-	 * Adds a comment to the database. This is dynamic to allow adding a
-	 * comment associated with a space, solver, or benchmark. The type of comment is given
-	 * in the path
-	 * 
-	 * @return a json string containing '0' if the add was successful, '1' otherwise
-	 * @author Vivek Sardeshmukh 
-	 */
-	@POST
-	@Path("/comments/add/{type}/{id}")
-	@Produces("application/json")
-	public String addComment(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
-		boolean success = false;
-		int userId = SessionUtil.getUserId(request);
-		if (type.startsWith("b")) {
-			if(Permissions.canUserSeeBench(id, userId)){
-				String cmt = request.getParameter("comment");			
-				success = Comments.add(id, userId, cmt, Comments.CommentType.BENCHMARK);
-			}
-		} else if (type.startsWith("sp")) {
-			if(Permissions.canUserSeeSpace(id, userId)) {
-				String cmt = request.getParameter("comment");			
-				success = Comments.add(id, userId, cmt, Comments.CommentType.SPACE);
-			}
-		} else if (type.startsWith("so")) {
-			if(Permissions.canUserSeeSolver(id, userId)){
-				String cmt = request.getParameter("comment");			
-				success = Comments.add(id, userId, cmt, Comments.CommentType.SOLVER);	
-			}	
-		}
-		
-		// Passed validation AND Database update successful	
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}
 
-	/**
-	 * Deletes a comment from either a benchmark, solver, or a space 
-	 *
-	 * @param type the type the delete is for, can be  'benchmark', or 'space', 'solver'
-	 * @param id the id of the entity (benchmark, space, or solver) from which we want to remove a comment
-	 * @param userId user id of corresponding comment 
-	 * @param commentId the id of the comment to remove
-	 * @return 0 iff the comment was successfully deleted for a space, 2 if the user lacks permissions,
-	 * and 1 otherwise
-	 * @author Vivek Sardeshmukh
-	 */
-	@POST
-	@Path("/comments/delete/{type}/{id}/{userId}/{commentId}")
-	@Produces("application/json")
-	public String deleteComment(@PathParam("type") String type, @PathParam("id") int id, @PathParam("userId") int userId, @PathParam("commentId") int commentId, @Context HttpServletRequest request) {
-		int uid = SessionUtil.getUserId(request); 
-		if (type.startsWith("b")) {
-			Benchmark b = Benchmarks.get(id);
-			// Ensure user is either the owner of the comment or the benchmark
-			 if (uid!=userId && uid!=b.getUserId()) {
-				 return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			 }
-			 return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		} 
-		 else if (type.startsWith("sp")) {
-			//Permissions check; ensures the user deleting the comment is a leader or owner of the comment
-			Permission perm = SessionUtil.getPermission(request, id);		
-			if((perm == null || !perm.isLeader()) && uid!=userId ) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-			}
-			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		} 
-		 else if (type.startsWith("so")) {
-			Solver s = Solvers.get(id);
-			// Ensure user is either the owner of the comment or the solver
-			if (s.getUserId() != uid && userId != uid) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
-			return Comments.delete(commentId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-			
-		}
-		
-		return gson.toJson(ERROR_INVALID_COMMENT_TYPE);
-	}
 	
 	/**
 	 * Make a list of users the leaders of a space

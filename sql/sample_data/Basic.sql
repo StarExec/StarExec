@@ -275,6 +275,4 @@ INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path
 INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (5, 6, "C://Whatever");
 INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (3, 2, "C://Whatever");
 
-INSERT INTO comments(space_id, user_id, cmt, cmt_date) VALUES(3, 1, "this is sample comment", SYSDATE()); 
-
 INSERT INTO queues(name, status) VALUES ("queue1", "ACTIVE");

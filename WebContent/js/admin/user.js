@@ -88,12 +88,9 @@ function initDraggable(table) {
 		$(row).data("id", $(row).children('td:first-child').children('input').val());
 		$(row).data("type", $(row).children('td:first-child').children('input').attr('prim'));
 
-		// if it is comment then do not display the first field
-		if($(row).data('type') !== undefined && $(row).data('type')[0] == 'c'){
-			$(row).data("name","this comment");
-		}else{
-			$(row).data("name", $(row).children('td:first-child').children('a').text());
-		}
+		
+		$(row).data("name", $(row).children('td:first-child').children('a').text());
+		
 	});
 
 	// Make the trash can in the explorer list be a droppable target

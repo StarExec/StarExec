@@ -50,7 +50,7 @@
 	}
 %>
 
-<star:template title="${bench.name}" js="lib/jquery.cookie, common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/comments, common/table">				
+<star:template title="${bench.name}" js="lib/jquery.cookie, common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table">				
 	<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	<fieldset>
 		<legend>details</legend>
@@ -169,32 +169,7 @@
 			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
 		</fieldset>			
 	</c:if> 
-	
-<!-- 	Comments feature not yet polished, commenting-out for now
-	<fieldset id="commentField">
-		<legend class="expd" id="commentExpd"><span>0</span> comments </legend>
-			<table id="comments">
-			<thead>
-				<tr>
-					<th style="width:20%;">user</th>
-					<th>time</th>
-					<th style="width:44%;">comment</th>	
-					<th style="width:11%;">action</th>				
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>			
-		<span id="toggleComment" class="caption"><span>+</span>add new</span>
-		<div id="new_comment">
-			<textarea id="comment_text" cols="60"></textarea>  
-			<button id="addComment">add</button>
-		</div>
-	</fieldset>	
-	<div id="dialog-confirm-delete" title="confirm delete">
-		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
-	</div>				
--->
+
 	<fieldset id="actions">
 		<legend>actions</legend>
 	

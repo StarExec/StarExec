@@ -4,7 +4,6 @@
 source procedures/Benchmarks.sql;
 source procedures/Cluster.sql;
 source procedures/Communities.sql;
-source procedures/Comments.sql;
 source procedures/Jobs.sql;
 source procedures/Misc.sql;
 source procedures/Permissions.sql;
