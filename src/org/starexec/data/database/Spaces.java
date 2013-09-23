@@ -498,6 +498,7 @@ public class Spaces {
 				procedure.setInt(1, subspaceId);
 				procedure.setInt(2, parentSpaceId);
 				procedure.executeUpdate();		
+				Cache.invalidateCache(subspaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);

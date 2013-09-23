@@ -2171,8 +2171,6 @@ public class RESTServices {
 		Set<Job> jobs=new HashSet<Job>();
 		int userId=SessionUtil.getUserId(request);
 		if (deleteAllAllowed) {
-			
-			
 			for (int sid : selectedSubspaces) {
 				solvers.addAll(Solvers.getBySpace(sid));
 				benchmarks.addAll(Benchmarks.getBySpace(sid));

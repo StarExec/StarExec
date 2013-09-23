@@ -750,36 +750,19 @@ public class Connection {
 				}
 			}
 			
-			//The server should redirect to the file we want, so wait for it to do that and 
-			//find the new URL
-			String nextURL=null;
+			boolean fileFound=false;
 			for (Header x : response.getAllHeaders()) {
-				if (x.getName().equals("Location")) {
-					nextURL=x.getValue();
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound=true;
 					break;
 				}
 			}
-			response.getEntity().getContent().close();
 			
-			//we weren't redirected
-			if (nextURL==null) {
+			if (!fileFound) {
 				return R.ERROR_ARCHIVE_NOT_FOUND;
 			}
-
-			//URLEncoder does not work for some reason, so encode the new URL manually. Spaces
-			//Are not allowed.
-			nextURL=nextURL.replace(" ", "%20");
 			
-			//Next, ask for the file
-			HttpGet fileGet=new HttpGet(nextURL);
-			fileGet=(HttpGet) setHeaders(fileGet);
 			
-			response=client.execute(fileGet);
-			setSessionIDIfExists(response.getAllHeaders());
-			if (response.getStatusLine().getStatusCode()!=200) {
-				response.getEntity().getContent().close();
-				return R.ERROR_SERVER;
-			}
 
 			//copy file from the HTTPResponse to an output stream
 			File out=new File(location);
@@ -791,7 +774,7 @@ public class Connection {
 			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
-			//only after we've successfully saved the file should we update the maxixmum completion index,
+			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
 			if (urlParams.containsKey(R.FORMPARAM_SINCE) && lastSeen>=0) {
 				if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
@@ -1032,14 +1015,7 @@ public class Connection {
 		if (valid<0) {
 			return valid;
 		}
-		String newVal=commandParams.get(R.PARAM_VAL);
-		//StarExec doesn't want to see '.' in incoming requests
-		if (setting.equals("archivetype")) {
-			if (newVal.startsWith(".")) {
-				newVal=newVal.substring(1);
-			}
-		}
-		
+		String newVal=commandParams.get(R.PARAM_VAL);		
 		try {	
 			HttpPost post=new HttpPost(baseURL+R.URL_USERSETTING+setting+"/"+newVal);
 			post=(HttpPost) setHeaders(post);
