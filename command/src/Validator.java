@@ -670,16 +670,13 @@ public class Validator {
 			return R.ERROR_MISSING_PARAM;
 		}
 		String newVal=commandParams.get(R.PARAM_VAL);
-		if (setting.equals("archivetype")) {
-			if (newVal.startsWith(".")) {
-				newVal=newVal.substring(1);
-			}
-			
-			if (!Validator.validArchiveType(newVal)) {
-				
-				return R.ERROR_BAD_ARCHIVETYPE;
-			}
-		}else if (newVal.equals("firstname")|| newVal.equals("lastname")) {
+
+		if (newVal==null) {
+			missingParam=R.PARAM_VAL;
+			return R.ERROR_MISSING_PARAM;
+		}
+		
+		if (newVal.equals("firstname")|| newVal.equals("lastname")) {
 			if(!isValidPrimName(newVal)){
 				return R.ERROR_BAD_NAME;
 			}
@@ -687,11 +684,6 @@ public class Validator {
 			if (!isValidInstitution(newVal)) {
 				return R.ERROR_BAD_INSTITUTION;
 			}
-		}
-		
-		if (newVal==null) {
-			missingParam=R.PARAM_VAL;
-			return R.ERROR_MISSING_PARAM;
 		}
 		
 		findUnnecessaryParams(allowedSetUserSettingParams,commandParams);

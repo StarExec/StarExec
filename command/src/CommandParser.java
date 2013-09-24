@@ -267,7 +267,6 @@ public class CommandParser {
 	 * Prints primitives to standard output in a human-readable format
 	 * @param prims A HashMap mapping integer IDs to string names
 	 */
-	//TODO: Consider refactoring this back into shell
 	private static void printPrimitives(HashMap<Integer,String> prims) {
 		for (int id : prims.keySet()) {
 			System.out.print("id=");
