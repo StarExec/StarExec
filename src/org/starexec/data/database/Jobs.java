@@ -884,7 +884,8 @@ public class Jobs {
 		Connection con = null;			
 
 		try {			
-			con = Common.getConnection();		
+			con = Common.getConnection();	
+			log.debug(Jobs.getRunningPairs(con,jobId));
 			return Jobs.getRunningPairs(con, jobId);
 		} catch (Exception e){			
 			log.error("getRunningPairsDetailed for queue " + jobId + " says " + e.getMessage(), e);		
@@ -2496,13 +2497,16 @@ public class Jobs {
 			}
 			//Get the running job pairs and remove them
 			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
-			for (JobPair jp: jobPairsRunning) {
-				log.debug("running: jp = " + jp);
-				int sge_id = jp.getGridEngineId();
-				log.debug("running: sge_id = " + sge_id);
-				//Util.executeCommand("qdel " + sge_id);
-				log.debug("running: Just executed qdel " + sge_id);
-				JobPairs.UpdateStatus(jp.getId(), 20);
+			if (jobPairsRunning != null) {
+				log.debug("jobPairsRunning is not null");
+				for (JobPair jp: jobPairsRunning) {
+					log.debug("running: jp = " + jp);
+					int sge_id = jp.getGridEngineId();
+					log.debug("running: sge_id = " + sge_id);
+					//Util.executeCommand("qdel " + sge_id);
+					log.debug("running: Just executed qdel " + sge_id);
+					JobPairs.UpdateStatus(jp.getId(), 20);
+				}
 			}
 			log.debug("Deletion of paused job pairs from queue was succesful");
 			return true;
