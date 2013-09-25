@@ -2070,8 +2070,8 @@ public class Jobs {
 			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 			//we map ID's to  primitives so we don't need to query the database repeatedly for them
-			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
-			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+			//HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
+			//HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
 			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
 			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
 			
@@ -2086,7 +2086,7 @@ public class Jobs {
 				if (!benchmarks.containsKey(benchId)) {
 					benchmarks.put(benchId,Benchmarks.get(benchId));
 				}
-				jp.setBench(benchmarks.get(benchId));
+				/*jp.setBench(benchmarks.get(benchId));
 				int configId=results.getInt("configId");
 				if (!configs.containsKey(configId)) {
 					configs.put(configId, Solvers.getConfiguration(configId));
@@ -2094,6 +2094,8 @@ public class Jobs {
 				}
 				jp.setSolver(solvers.get(configId));
 				jp.setConfiguration(configs.get(configId));
+				*/
+				
 				Status s = new Status();
 
 				s.setCode(results.getInt("status_code"));
@@ -2504,7 +2506,7 @@ public class Jobs {
 					log.debug("running: jp = " + jp);
 					int sge_id = jp.getGridEngineId();
 					log.debug("running: sge_id = " + sge_id);
-					//Util.executeCommand("qdel " + sge_id);
+					Util.executeCommand("qdel " + sge_id);
 					log.debug("running: Just executed qdel " + sge_id);
 					JobPairs.UpdateStatus(jp.getId(), 20);
 				}
