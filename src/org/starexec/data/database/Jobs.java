@@ -2491,7 +2491,7 @@ public class Jobs {
 			for (JobPair jp : jobPairsEnqueued) {
 				int sge_id = jp.getGridEngineId();
 				Util.executeCommand("qdel " + sge_id);
-				log.debug("Just executed qdel " + sge_id);
+				log.debug("enqueued: Just executed qdel " + sge_id);
 				JobPairs.UpdateStatus(jp.getId(), 20);
 			}
 			//Get the running job pairs and remove them
@@ -2499,7 +2499,7 @@ public class Jobs {
 			for (JobPair jp: jobPairsRunning) {
 				int sge_id = jp.getGridEngineId();
 				Util.executeCommand("qdel " + sge_id);
-				log.debug("Just executed qdel " + sge_id);
+				log.debug("running: Just executed qdel " + sge_id);
 				JobPairs.UpdateStatus(jp.getId(), 20);
 			}
 			log.debug("Deletion of paused job pairs from queue was succesful");
