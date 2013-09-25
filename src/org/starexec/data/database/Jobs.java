@@ -2497,6 +2497,7 @@ public class Jobs {
 			//Get the running job pairs and remove them
 			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 			for (JobPair jp: jobPairsRunning) {
+				log.debug("running: jp = " + jp);
 				int sge_id = jp.getGridEngineId();
 				log.debug("running: sge_id = " + sge_id);
 				//Util.executeCommand("qdel " + sge_id);
