@@ -2498,7 +2498,8 @@ public class Jobs {
 			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 			for (JobPair jp: jobPairsRunning) {
 				int sge_id = jp.getGridEngineId();
-				Util.executeCommand("qdel " + sge_id);
+				log.debug("running: sge_id = " + sge_id);
+				//Util.executeCommand("qdel " + sge_id);
 				log.debug("running: Just executed qdel " + sge_id);
 				JobPairs.UpdateStatus(jp.getId(), 20);
 			}
