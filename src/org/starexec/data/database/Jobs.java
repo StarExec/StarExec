@@ -2074,6 +2074,7 @@ public class Jobs {
 			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
 			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
 			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+			
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
 				int nodeId=results.getInt("node_id");
@@ -2103,7 +2104,7 @@ public class Jobs {
 			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-			
+			log.error("getRunningPairs says " + e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
