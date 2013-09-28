@@ -69,7 +69,7 @@ CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 	BEGIN
 		SELECT *
 		FROM benchmarks AS bench
-		WHERE deleted=false and bench.id IN
+		WHERE deleted=false AND recycled=false and bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
@@ -89,26 +89,17 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 
 -- Deletes a benchmark given that benchmark's id
 -- Author: Todd Elvers	+ Eric Burns
-DROP PROCEDURE IF EXISTS DeleteBenchmarkById;
-CREATE PROCEDURE DeleteBenchmarkById(IN _benchmarkId INT, OUT _path TEXT)
+DROP PROCEDURE IF EXISTS SetBenchmarkToDeletedById;
+CREATE PROCEDURE SetBenchmarkToDeletedById(IN _benchmarkId INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM benchmarks WHERE id = _benchmarkId;
 		UPDATE benchmarks
 		SET deleted=true
 		WHERE id = _benchmarkId;
 		UPDATE benchmarks
-		SET path=""
-		WHERE id = _benchmarkId;
-		UPDATE benchmarks
 		SET disk_size=0
 		WHERE id = _benchmarkId;
-		-- if the benchmark is associated with no spaces or job pairs, we can delete it from the database
-		IF ((SELECT COUNT(*) FROM bench_assoc WHERE bench_id=_benchmarkId)=0) THEN
-			IF ((SELECT COUNT(*) FROM job_pairs WHERE bench_id=_benchmarkId)=0) THEN			
-				DELETE FROM benchmarks
-				WHERE id=_benchmarkId;
-			END IF;
-		END IF;
+
 	END //	
 -- Gets the IDs of all the spaces associated with the given benchmark
 -- Author: Eric Burns
@@ -129,7 +120,7 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 		FROM benchmarks AS bench
 			LEFT OUTER JOIN processors AS types
 			ON bench.bench_type=types.id
-		WHERE bench.id = _id and deleted=false;
+		WHERE bench.id = _id and deleted=false AND recycled=false;
 	END //
 	
 -- Retrieves the benchmark with the given id
@@ -186,7 +177,7 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 		FROM benchmarks AS bench
 			LEFT OUTER JOIN processors AS types
 			ON bench.bench_type=types.id
-		WHERE bench.deleted=false and bench.id IN
+		WHERE bench.deleted=false AND recycled=false and bench.id IN
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
@@ -222,16 +213,7 @@ CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT)
 			WHERE space_id = _spaceId
 			AND bench_id = _benchId;
 		END IF;
-		-- Ensure the solver isn't being used in any other space
-		IF NOT EXISTS(SELECT * FROM bench_assoc WHERE bench_id =_benchId) THEN
-			-- if the solver has been deleted already, remove it from the database
-			IF NOT EXISTS(SELECT * FROM benchmarks WHERE _benchId=id AND deleted=false) THEN
-				IF ((SELECT COUNT(*) FROM job_pairs WHERE bench_id=_benchmarkId)=0) THEN
-					DELETE FROM benchmarks
-					WHERE id=_benchId;
-				END IF;
-			END IF;
-		END IF;
+		
 	END //
 	
 	
@@ -402,7 +384,7 @@ CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS benchCount
 		FROM benchmarks
-		WHERE user_id = _userId AND deleted=false;
+		WHERE user_id = _userId AND deleted=false AND recycled=false;
 	END //
 -- Returns the number of benchmarks a given user has that match the query
 -- Author: Eric Burns
@@ -412,10 +394,73 @@ CREATE PROCEDURE GetBenchmarkCountByUserWithQuery(IN _userId INT, IN _query TEXT
 		SELECT 	COUNT(*) AS benchCount
 		FROM 	benchmarks
 			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
-		WHERE 	benchmarks.user_id=_userId AND deleted=false AND
+		WHERE 	benchmarks.user_id=_userId AND deleted=false AND recycled=false AND
 				(benchmarks.name LIKE	CONCAT('%', _query, '%')
 				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
 	END //
 
+-- Sets the recycled attribute to the given value for the given solver
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS SetBenchmarkRecycledValue;
+CREATE PROCEDURE SetBenchmarkRecycledValue(IN _benchId INT, IN _recycled BOOLEAN)
+	BEGIN
+		UPDATE benchmarks
+		SET recycled=_recycled
+		WHERE id=_benchId;
+	END //
+
+-- Checks to see whether the "recycled" flag is set for the given benchmark
+-- Author: Eric BUrns
+DROP PROCEDURE IF EXISTS IsBenchmarkRecycled;
+CREATE PROCEDURE IsBenchmarkRecycled(IN _benchId INT)
+	BEGIN
+		SELECT recycled FROM benchmarks
+		WHERE id=_benchId;
+	END //
 	
+-- Counts how many recycled benchmarks a user has that match the given query
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetRecycledBenchmarkCountByUser;
+CREATE PROCEDURE GetRecycledBenchmarkCountByUser(IN _userId INT, IN _query TEXT)
+	BEGIN
+		SELECT 	COUNT(*) AS benchCount
+		FROM 	benchmarks
+			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+		WHERE 	benchmarks.recycled=true AND benchmarks.user_id=_userId AND
+				(benchmarks.name LIKE	CONCAT('%', _query, '%')
+				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
+	END //
+	
+-- Gets the path to every recycled benchmark a user has
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetRecycledBenchmarkPaths;
+CREATE PROCEDURE GetRecycledBenchmarkPaths(IN _userId INT)
+	BEGIN
+		SELECT path FROM benchmarks
+		WHERE recycled=true AND user_id=_userId;
+	END //
+
+-- Removes all recycled benchmarks a user has in the database
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted;
+CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT) 
+	BEGIN
+		UPDATE benchmarks
+		SET deleted=true
+		WHERE user_id = _userId;
+		UPDATE benchmarks
+		SET disk_size=0
+		WHERE user_id = _userId;
+	END //
+	
+-- Restores all recycled benchmarks a user has
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RestoreRecycledBenchmarks;
+CREATE PROCEDURE RestoreRecycledBenchmarks(IN _userId INT) 
+	BEGIN
+		UPDATE benchmarks
+		SET recycled=0
+		WHERE user_id=_userId;
+	END //
+
 DELIMITER ; -- This should always be at the end of this file

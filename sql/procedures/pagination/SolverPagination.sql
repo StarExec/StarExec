@@ -75,12 +75,12 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 -- Gets solvers across all spaces for one user.  
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetNextPageOfUserSolvers;
-CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT, IN _recycled BOOLEAN)
 	BEGIN
 		IF (_colSortedOn = 0) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	*
-				FROM	solvers where user_id = _userId and deleted=false
+				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				-- Exclude Solvers whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
@@ -93,7 +93,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			ELSE
 				SELECT 	*
 						
-				FROM	solvers where user_id = _userId and deleted=false
+				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		description			LIKE 	CONCAT('%', _query, '%'))
@@ -106,7 +106,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				
-				FROM	solvers where user_id = _userId and deleted=false
+				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				-- Exclude Solvers whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
@@ -119,7 +119,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			ELSE
 				SELECT 	*
 						
-				FROM	solvers where user_id = _userId and deleted=false
+				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		description			LIKE 	CONCAT('%', _query, '%'))

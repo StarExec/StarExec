@@ -23,7 +23,7 @@ CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadab
 DROP PROCEDURE IF EXISTS GetPublicSolvers;
 CREATE PROCEDURE GetPublicSolvers()
 	BEGIN
-		SELECT DISTINCT * from solvers where deleted=false AND id in 
+		SELECT DISTINCT * from solvers where deleted=false AND recycled=false AND id in 
 		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
 		(SELECT id from spaces where public_access=1));
 	END //
@@ -33,7 +33,7 @@ CREATE PROCEDURE GetPublicSolvers()
 DROP PROCEDURE IF EXISTS GetPublicSolversByCommunity;
 CREATE PROCEDURE GetPublicSolversByCommunity(IN _commId INT, IN _pubUserId INT)
 	BEGIN
-		SELECT DISTINCT * from solvers where deleted=false and id in 
+		SELECT DISTINCT * from solvers where deleted=false AND recycled=false AND id in 
 		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
 		(SELECT id from spaces where IsPublic(id) AND id in (select descendant from closure where ancestor = _commId)));
 	END //
@@ -71,27 +71,16 @@ CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 	
 -- Deletes a solver given that solver's id
 -- Author: Todd Elvers + Eric Burns
-DROP PROCEDURE IF EXISTS DeleteSolverById;
-CREATE PROCEDURE DeleteSolverById(IN _solverId INT, OUT _path TEXT)
+DROP PROCEDURE IF EXISTS SetSolverToDeletedById;
+CREATE PROCEDURE SetSolverToDeletedById(IN _solverId INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM solvers WHERE id = _solverId;
 		UPDATE solvers
 		SET deleted=true
 		WHERE id = _solverId;
 		UPDATE solvers
-		SET path=""
-		WHERE id = _solverId;
-		UPDATE solvers
 		SET disk_size=0
-		WHERE id = _solverId;
-		-- if the solver is associated with no spaces, we can delete it from the database
-		IF ((SELECT COUNT(*) FROM solver_assoc WHERE solver_id=_solverId)=0) THEN
-			IF ((SELECT COUNT(*) FROM job_pairs WHERE solver_id=_solverId)=0) THEN
-				DELETE FROM solvers
-				WHERE id=_solverId;
-			END IF;
-		END IF;
-		
+		WHERE id = _solverId;		
 	END //	
 	
 -- Gets the IDs of all the spaces associated with the given solver
@@ -136,7 +125,7 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE deleted=false AND id IN
+		WHERE deleted=false AND recycled=false AND id IN
 				(SELECT solver_id
 				FROM solver_assoc
 				WHERE space_id = _id)
@@ -160,7 +149,7 @@ CREATE PROCEDURE GetSolverById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE id = _id and deleted=false;
+		WHERE id = _id and deleted=false AND recycled=false;
 	END //
 	
 -- Retrieves the solver with the given id
@@ -206,7 +195,7 @@ CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE user_id = _userId and deleted=false;
+		WHERE user_id = _userId and deleted=false AND recycled=false;
 	END //
 
 -- Returns the number of public spaces a solver is in
@@ -237,21 +226,7 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 			WHERE solver_id = _solverId
 			AND space_id = _spaceId;
 		END IF;
-		
-		-- Ensure the solver isn't being used in any other space
-		IF NOT EXISTS(SELECT * FROM solver_assoc WHERE solver_id =_solverId) THEN
-			-- if the solver has been deleted already, remove it from the database
-			
-			IF NOT EXISTS(SELECT * FROM solvers WHERE _solverId=id AND deleted=false) THEN
-				IF ((SELECT COUNT(*) FROM job_pairs JOIN configurations AS config WHERE config.id=config_id AND config.solver_id=_solverId)=0) THEN
-					DELETE FROM solvers
-					WHERE id=_solverId;
-				END IF;
-			END IF;
-		END IF;
 	END // 
-	
-
 
 -- Updates the disk_size attribute of a given solver
 -- Author: Todd Elvers
@@ -304,7 +279,7 @@ CREATE PROCEDURE GetSolverCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS solverCount
 		FROM solvers
-		WHERE user_id = _userId AND deleted=false;
+		WHERE user_id = _userId AND deleted=false AND recycled=false;
 	END //
 	
 -- Returns the number of solvers in a given space that match a given query
@@ -314,10 +289,71 @@ CREATE PROCEDURE GetSolverCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT COUNT(*) AS solverCount
 		FROM solvers
-		WHERE user_id=_userId AND deleted=false AND
+		WHERE user_id=_userId AND deleted=false AND recycled=false AND
 				(name 		LIKE	CONCAT('%', _query, '%')
 				OR		description	LIKE 	CONCAT('%', _query, '%'));
 	END //
 
+-- Sets the recycled attribute to the given value for the given solver
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetSolverRecycledValue;
+CREATE PROCEDURE SetSolverRecycledValue(IN _solverId INT, IN _recycled BOOLEAN)
+	BEGIN
+		UPDATE solvers
+		SET recycled=_recycled
+		WHERE id=_solverId;
+	END //
+	
+-- Checks to see whether the "recycled" flag is set for the given benchmark
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS IsSolverRecycled;
+CREATE PROCEDURE IsSolverRecycled(IN _solverId INT)
+	BEGIN
+		SELECT recycled FROM solvers
+		WHERE id=_solverId;
+	END //
+	
+-- Returns the number of solvers in a given space that match a given query
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS GetRecycledSolverCountByUser;
+CREATE PROCEDURE GetRecycledSolverCountByUser(IN _userId INT, IN _query TEXT)
+	BEGIN
+		SELECT COUNT(*) AS solverCount
+		FROM solvers
+		WHERE solvers.user_id=_userId AND recycled=true AND
+				(solvers.name 	LIKE	CONCAT('%', _query, '%')
+				OR		solvers.description	LIKE 	CONCAT('%', _query, '%'));
+	END //
+	
+-- Gets the path to every recycled solver a user has
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetRecycledSolverPaths;
+CREATE PROCEDURE GetRecycledSolverPaths(IN _userId INT)
+	BEGIN
+		SELECT path FROM solvers
+		WHERE recycled=true AND user_id=_userId;
+	END //
 
+-- Sets all the solvers the user has in the database to "deleted"
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetRecycledSolversToDeleted;
+CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT) 
+	BEGIN
+		UPDATE solvers
+		SET deleted=true
+		WHERE user_id = _userId;
+		UPDATE solvers
+		SET disk_size=0
+		WHERE user_id = _userId;
+	END //
+	
+-- Restores all recycled solvers a user has in the database
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RestoreRecycledSolvers;
+CREATE PROCEDURE RestoreRecycledSolvers(IN _userId INT) 
+	BEGIN
+		UPDATE solvers
+		SET recycled=0
+		WHERE user_id=_userId;
+	END //
 DELIMITER ; -- This should always be at the end of this file

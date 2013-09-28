@@ -897,13 +897,13 @@ function removeBenchmarks(selectedBenches){
 					showMessage('error',"Internal error removing benchmarks",5000);
 				});		
 			},
-			'delete permanently': function() {
+			'move to recycle bin': function() {
 				log('user confirmed benchmark deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/deleteandremove/benchmark/"+spaceId,
+						starexecRoot+"services/recycleandremove/benchmark/"+spaceId,
 						{selectedIds : selectedBenches},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1059,13 +1059,13 @@ function removeSolvers(selectedSolvers){
 					showMessage('error',"Internal error removing solvers",5000);
 				});
 			},
-			'delete permanently': function() {
+			'move to recycle bin': function() {
 				log('user confirmed solver deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/deleteandremove/solver/"+spaceId,
+						starexecRoot+"services/recycleandremove/solver/"+spaceId,
 						{selectedIds : selectedSolvers, hierarchy : true},
 						function(returnCode) {
 							log('AJAX response received with code ' + returnCode);
@@ -1129,7 +1129,7 @@ function removeJobs(selectedJobs){
 					showMessage('error',"Internal error removing jobs",5000);
 				});
 			},
-			'delete permanently': function() {
+			'move to recycle bin': function() {
 				jobTable.fnProcessingIndicator();
 				log('user confirmed job deletion');
 				// If the user actually confirms, close the dialog right away
@@ -1209,37 +1209,7 @@ function quickRemove(selectedSubspaces){
 		height: 400,
 		width: 400,
 		buttons: {
-			'delete primitives and remove subspace(s)': function() {
-				//spaceTable.fnProcessingIndicator();
-				log('user confirmed subspace deletion');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
-
-				$.post(  
-						starexecRoot+"services/quickRemove/subspace/" + spaceId,
-						{selectedIds : selectedSubspaces},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(spaceTable);
-								initSpaceExplorer();
-								removeSubspaces(selectedSubspaces,true);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"subspace");
-							}
-							//jobTable.fnProcessingIndicator(false);
-						},
-						"json"
-				).error(function(){
-					log('quick remove subspace error');
-					window.location.reload(true);
-				});
-			},
 			"remove subspace(s) only" : function() {
-				//spaceTable.fnProcessingIndicator();
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
@@ -1259,7 +1229,6 @@ function quickRemove(selectedSubspaces){
 							default:
 								processRemoveErrorCode(returnCode,"subspace");
 							}
-							//jobTable.fnProcessingIndicator(false);
 						},
 						"json"
 				).error(function(){
@@ -1267,6 +1236,34 @@ function quickRemove(selectedSubspaces){
 					window.location.reload(true);
 				});
 			},
+			'remove subspace(s) and send all primitives to recycle bin': function() {
+				log('user confirmed subspace deletion');
+				// If the user actually confirms, close the dialog right away
+				$('#dialog-confirm-delete').dialog('close');
+
+				$.post(  
+						starexecRoot+"services/quickRemove/subspace/" + spaceId,
+						{selectedIds : selectedSubspaces},
+						function(returnCode) {
+							log('AJAX response received with code ' + returnCode);
+							switch (returnCode) {
+							case 0:
+								// Remove the rows from the page and update the table size in the legend
+								updateTable(spaceTable);
+								initSpaceExplorer();
+								removeSubspaces(selectedSubspaces,true);
+								break;
+							default:
+								processRemoveErrorCode(returnCode,"subspace");
+							}
+						},
+						"json"
+				).error(function(){
+					log('quick remove subspace error');
+					window.location.reload(true);
+				});
+			},
+			
 			"cancel": function() {
 				log('user canceled subspace deletion');
 				$(this).dialog("close");

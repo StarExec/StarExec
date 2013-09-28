@@ -561,9 +561,125 @@ public class Solvers {
 			
 			log.error("copySolver says "+e.getMessage());
 			return -1;
+		}	
+	}
+	
+	/**
+	 * Sets the "recycled" flag in the database to true. Indicates the user has moved the 
+	 * solver to the recycle bin, from which in can be deleted
+	 * @param id the id of the solver to recycled
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean recycle(int id) {
+		return setRecycledState(id,true);
+	}
+	
+	/**
+	 * Sets the "recycled" flag in the database to false. Indicates the user has removed
+	 * the solver from the recycle bin
+	 * @param id the id of the solver to be removed from the recycle bin
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean restore(int id) {
+		return setRecycledState(id,false);
+	}
+	
+	/**
+	 * Sets the "recycled" flag in the database to the given value. 
+	 * @param id the id of the solver to recycled or restored
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean setRecycledState(int id, boolean state){
+		Connection con = null;			
+		CallableStatement procedure=null;
+		
+		try {
+			Cache.invalidateSpacesAssociatedWithSolver(id);
+			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL SetSolverRecycledValue(?, ?)}");
+			procedure.setInt(1, id);
+			procedure.setBoolean(2,state);
+			procedure.executeUpdate();		
+			return true;
+		} catch (Exception e){		
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
-		
-		
+		return false;
+	}	
+	
+	
+	/**
+	 * Deletes all solvers a user has from disk and sets their "deleted" flag
+	 * to true. Solvers should NOT be deleted from the database, as they 
+	 * still may be associated with spaces
+	 * @param userId The userId in question
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean setRecycledSolversToDeleted(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL GetRecycledSolverPaths(?)");
+			procedure.setInt(1,userId);
+			results=procedure.executeQuery();
+			
+			while (results.next()) {
+				Util.safeDeleteDirectory(results.getString("path")); //TODO: What should we do in case of error?
+			}
+			Common.safeClose(procedure);
+			procedure=con.prepareCall("CALL SetRecycledSolversToDeleted(?)");
+			procedure.setInt(1, userId);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("setRecycledSolversToDeleted says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Restores all solvers a user has that have been recycled to normal
+	 * @param userId The userId in question
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean restoreRecycledSolvers(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+
+			Common.safeClose(procedure);
+			procedure=con.prepareCall("CALL RestoreRecycledSolvers(?)");
+			procedure.setInt(1, userId);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("restoreRecycledSolvers says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 	
 	
@@ -585,13 +701,14 @@ public class Solvers {
 			Cache.invalidateCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
 			con = Common.getConnection();
 			
-			 procedure = con.prepareCall("{CALL DeleteSolverById(?, ?)}");
+			 procedure = con.prepareCall("{CALL SetSolverToDeletedById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 			
 			// Delete solver file from disk, and the parent directory if it's empty
 			solverToDelete = new File(procedure.getString(2));
+			
 			if(solverToDelete.delete()){
 				log.debug(String.format("Solver file [%s] was successfully deleted from disk at [%s].", solverToDelete.getName(), solverToDelete.getAbsolutePath()));
 			}
@@ -1318,9 +1435,136 @@ public class Solvers {
 	
 	
 	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
-		String procedureName="GetNextPageOfSolvers";
-		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,procedureName);
+		Connection con = null;			
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfSolvers(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, spaceId);
+			procedure.setString(6, searchQuery);
+				
+			 results = procedure.executeQuery();
+			List<Solver> solvers = new LinkedList<Solver>();
+			
+			// Only get the necessary information to display this solver
+			// in a row in a DataTable object, nothing more.
+			while(results.next()){
+				Solver s = new Solver();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));	
+				if (results.getBoolean("deleted")) {
+					s.setName(s.getName()+" (deleted)");
+				} else if (results.getBoolean("recycled")) {
+					s.setName(s.getName()+" (recycled)");
+				}
+				s.setDescription(results.getString("description"));
+				solvers.add(s);	
+			}	
+			
+			return solvers;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return null;
 	}
+	
+	public static int getRecycledSolverCountByUser(int userId) {
+		return getRecycledSolverCountByUser(userId,"");
+	}
+	/**
+	 * Gets the number of recycled solvers a user has that match the given query
+	 * @param userId The ID of the user in question
+	 * @param query The string query to match on
+	 * @return The number of solvers, or -1 on failure
+	 * @author Eric Burns
+	 */
+	
+	public static int getRecycledSolverCountByUser(int userId,String query) {
+		Connection con=null;
+		ResultSet results=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL GetRecycledSolverCountByUser(?,?)");
+			procedure.setInt(1, userId);
+			procedure.setString(2, query);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("solverCount");
+			}
+		} catch (Exception e) {
+			log.error("getRecycledSolverCountByUser says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return -1;
+	}
+	
+	/**
+	 * Returns whether a solver with the given ID is present in the database with the 
+	 * "recycled" column set to true
+	 * @param solverId The ID of the solver to check
+	 * @return True if the solver exists in the database with the "recycled" column set to
+	 * true, and false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean isSolverRecycled(int solverId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return isSolverRecycled(con,solverId);
+		} catch (Exception e) {
+			log.error("isSolverRecycled says " +e.getMessage(),e );
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	/**
+	 * Returns whether a solver with the given ID is present in the database with the 
+	 * "recycled" column set to true
+	 * @param solverId The ID of the solver to check
+	 * @param the open connection to make the SQL call on
+	 * @return True if the solver exists in the database with the "recycled" column set to
+	 * true, and false otherwise
+	 * @author Eric Burns
+	 */
+
+	protected static boolean isSolverRecycled(Connection con, int solverId) {
+		CallableStatement procedure=null;
+		ResultSet results=null;
+
+		try {
+			procedure = con.prepareCall("{CALL IsSolverRecycled(?)}");
+			procedure.setInt(1, solverId);					
+			results = procedure.executeQuery();
+			boolean deleted=false;
+			if (results.next()) {
+				deleted=results.getBoolean("recycled");
+			}
+			return deleted;
+		} catch (Exception e) {
+			log.error("isSolverRecycled says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * Get next page of the solvers belong to a specific user
@@ -1333,40 +1577,21 @@ public class Solvers {
 	 * @return a list of Solvers belong to the user
 	 * @author Wyatt Kaiser + Eric Burns
 	 */
-	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		String procedureName="GetNextPageOfUserSolvers";
-		return getSolversForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,procedureName);
-	}
-	
-	/**
-	 * Gets the minimal number of Solvers necessary in order to service the client's
-	 * request for the next page of Solvers in their DataTables object
-	 * 
-	 * @param startingRecord the record to start getting the next page of Solvers from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param id the id of the space or user to get the solvers for
-	 * @param getDeleted whether to return solvers tagged as "deleted"
-	 * @param procedureName The name of the SQL procedure to call. Should be either "GetNextPageOfUserSolvers" or "GetNextPageOfSolvers"
-	 * @return a list of 10, 25, 50, or 100 Solvers containing the minimal amount of data necessary
-	 * @author Todd Elvers
-	 */
-	private static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String procedureName) {
+	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
 		Connection con = null;			
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfUserSolvers(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, id);
+			procedure.setInt(5, userId);
 			procedure.setString(6, searchQuery);
+			procedure.setBoolean(7, recycled);
 				
 			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
@@ -1395,6 +1620,7 @@ public class Solvers {
 		
 		return null;
 	}
+	
 	
 	/**
 	 * Gets the number of Solvers in a given space

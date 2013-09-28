@@ -148,10 +148,13 @@
 					</tr>
 				</thead>			
 			</table>
-		</fieldset>	
+		</fieldset>
+		
+			
 		<fieldset id="actionField">
 		<legend>actions</legend>
 			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp">edit</a>
+			<a id="recycleBinButton" href="/${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
 	</c:if>
 </star:template>

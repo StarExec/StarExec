@@ -1123,6 +1123,82 @@ public class RESTServices {
 	}
 	
 	
+	/**
+	 * Restores all recycled benchmarks a user has
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: database level error,<br>
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/restorerecycled/benchmarks")
+	@Produces("application/json")
+	public String restoreRecycledBenchmarks(@Context HttpServletRequest request) {
+		
+		int userId=SessionUtil.getUserId(request);
+		if (!Benchmarks.restoreRecycledBenchmarks(userId)) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Restores all recycled solvers a user has
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: database level error,<br>
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/restorerecycled/solvers")
+	@Produces("application/json")
+	public String restoreRecycledSolvers(@Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		if (!Solvers.restoreRecycledSolvers(userId)) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(0);
+	}
+	
+	
+	/**
+	 * Deletes all recycled benchmarks a user has
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: database level error,<br>
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/deleterecycled/benchmarks")
+	@Produces("application/json")
+	public String setRecycledBenchmarksToDeleted(@Context HttpServletRequest request) {
+		
+		int userId=SessionUtil.getUserId(request);
+		if (!Benchmarks.setRecycledBenchmarksToDeleted(userId)) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Deletes all recycled solvers a user has
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: database level error,<br>
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/deleterecycled/solvers")
+	@Produces("application/json")
+	public String setRecycledSolversToDeleted(@Context HttpServletRequest request) {
+		
+		int userId=SessionUtil.getUserId(request);
+		if (!Solvers.setRecycledSolversToDeleted(userId)) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(0);
+	}
 	
 	/**
 	 * Handles an update request for a processor
@@ -1243,9 +1319,9 @@ public class RESTServices {
 	 * @author 	Eric Burns
 	 */
 	@POST
-	@Path("/deleteandremove/benchmark/{spaceID}")
+	@Path("/recycleandremove/benchmark/{spaceID}")
 	@Produces("application/json")
-	public String deleteAndRemoveBenchmarks(@Context HttpServletRequest request,@PathParam("spaceID") int spaceId) {
+	public String recycleAndRemoveBenchmarks(@Context HttpServletRequest request,@PathParam("spaceID") int spaceId) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -1265,7 +1341,7 @@ public class RESTServices {
 			if(userId!=Benchmarks.get(id).getUserId()) {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 			}
-			boolean success=Benchmarks.delete(id);
+			boolean success=Benchmarks.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
@@ -1283,9 +1359,9 @@ public class RESTServices {
 	 * @author 	Eric Burns
 	 */
 	@POST
-	@Path("/delete/benchmark")
+	@Path("/recycle/benchmark")
 	@Produces("application/json")
-	public String deleteBenchmarks(@Context HttpServletRequest request) {
+	public String recycleBenchmarks(@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -1302,7 +1378,7 @@ public class RESTServices {
 			if(userId!=Benchmarks.get(id).getUserId()) {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 			}
-			boolean success=Benchmarks.delete(id);
+			boolean success=Benchmarks.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
@@ -1886,9 +1962,9 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/deleteandremove/solver/{spaceID}")
+	@Path("/recycleandremove/solver/{spaceID}")
 	@Produces("application/json")
-	public String deleteAndRemoveSolvers(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
+	public String recycleAndRemoveSolvers(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
 		int userIdOfRemover = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
@@ -1909,7 +1985,7 @@ public class RESTServices {
 			if (userIdOfRemover!=Solvers.get(id).getUserId()) {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
-			boolean success=Solvers.delete(id);
+			boolean success=Solvers.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
@@ -1927,9 +2003,9 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/delete/solver")
+	@Path("/recycle/solver")
 	@Produces("application/json")
-	public String deleteSolvers(@Context HttpServletRequest request) {
+	public String recycleSolvers(@Context HttpServletRequest request) {
 		int userIdOfRemover = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
@@ -1948,7 +2024,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
 			
-			boolean success=Solvers.delete(id);
+			boolean success=Solvers.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
@@ -2158,11 +2234,11 @@ public class RESTServices {
 		if(null == perm || !perm.isLeader()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
 		}
-		boolean deleteAllAllowed=false;
+		boolean recycleAllAllowed=false;
 		if (Util.paramExists("deletePrims", request)) {
 			if (Boolean.parseBoolean(request.getParameter("deletePrims"))) {
 				log.debug("Request to delete all solvers, benchmarks, and jobs in a hierarchy received");
-				deleteAllAllowed=true;
+				recycleAllAllowed=true;
 			}
 			
 		}
@@ -2170,7 +2246,7 @@ public class RESTServices {
 		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
 		Set<Job> jobs=new HashSet<Job>();
 		int userId=SessionUtil.getUserId(request);
-		if (deleteAllAllowed) {
+		if (recycleAllAllowed) {
 			for (int sid : selectedSubspaces) {
 				solvers.addAll(Solvers.getBySpace(sid));
 				benchmarks.addAll(Benchmarks.getBySpace(sid));
@@ -2180,12 +2256,12 @@ public class RESTServices {
 		// Remove the subspaces from the space
 		boolean deletionFailed=false;
 		if (Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request))) {
-			if (deleteAllAllowed) {
+			if (recycleAllAllowed) {
 				log.debug("Space removed successfully, deleting primitives");
 				for (Solver s : solvers) {
 					if (s.getUserId()==userId) {
-						if (!Solvers.delete(s.getId())) {
-							log.error("Failed to delete solver with id = "+s.getId());
+						if (!Solvers.recycle(s.getId())) {
+							log.error("Failed to recycle solver with id = "+s.getId());
 							deletionFailed=true;
 						}
 					}
@@ -2193,8 +2269,8 @@ public class RESTServices {
 				
 				for (Benchmark b : benchmarks) {
 					if (b.getUserId()==userId) {
-						if (!Benchmarks.delete(b.getId())) {
-							log.error("Failed to delete benchmark with id = "+b.getId());
+						if (!Benchmarks.recycle(b.getId())) {
+							log.error("Failed to recycle benchmark with id = "+b.getId());
 							deletionFailed=true;
 						}
 					}
@@ -2330,9 +2406,9 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/delete/solver/{id}")
+	@Path("/recycle/solver/{id}")
 	@Produces("application/json")
-	public String deleteSolver(@PathParam("id") int solverId, @Context HttpServletRequest request) {
+	public String recycleSolver(@PathParam("id") int solverId, @Context HttpServletRequest request) {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		int userId = SessionUtil.getUserId(request);
@@ -2341,7 +2417,7 @@ public class RESTServices {
 			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
-		return Solvers.delete(solverId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Solvers.recycle(solverId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -2430,9 +2506,9 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/delete/benchmark/{id}")
+	@Path("/recycle/benchmark/{id}")
 	@Produces("application/json")
-	public String deleteBenchmark(@PathParam("id") int benchId, @Context HttpServletRequest request) {
+	public String recycleBenchmark(@PathParam("id") int benchId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
 		int userId = SessionUtil.getUserId(request);		
 		Benchmark bench = Benchmarks.get(benchId);
@@ -2441,7 +2517,7 @@ public class RESTServices {
 		}
 		
 		// Delete the benchmark from the database
-		return Benchmarks.delete(benchId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Benchmarks.recycle(benchId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -2923,7 +2999,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -2946,7 +3022,7 @@ public class RESTServices {
 		}
 		// Query for the next page of solver pairs and return them to the user
 		log.debug(usrId);
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -2968,7 +3044,52 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of solver pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request,false);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	
+	/**
+	 * Get the paginated result of the solvers belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of solvers if successful
+	 * 		   1: The get solver procedure fails.
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/users/{id}/rsolvers/pagination/")
+	@Produces("application/json")	
+	public String getUsrRecycledSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,true);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	/**
+	 * Get the paginated result of the benchmarks belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of benchmarks if successful
+	 * 		   1: The get benchmark procedure fails.
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/users/{id}/rbenchmarks/pagination")
+	@Produces("application/json")	
+	public String getUsrRecycledBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		if (usrId!=SessionUtil.getUserId(request)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request, true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}

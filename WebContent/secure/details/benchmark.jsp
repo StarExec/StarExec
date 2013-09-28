@@ -38,6 +38,8 @@
 		} else {
 			if (Benchmarks.isBenchmarkDeleted(benchId)) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been deleted. You likely want to remove it from your spaces");
+			} else if (Benchmarks.isBenchmarkRecycled(benchId))  {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the recycle bin by its owner.");
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");	
 			}

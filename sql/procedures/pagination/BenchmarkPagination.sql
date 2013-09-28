@@ -16,6 +16,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.name AS name,
 						benchmarks.description AS description,
 						deleted,
+						recycled,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -43,6 +44,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.name AS name,
 						benchmarks.description AS description,
 						deleted,
+						recycled,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -67,6 +69,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.name AS name,
 						benchmarks.description AS description,
 						deleted,
+						recycled,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -94,6 +97,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.name AS name,
 						benchmarks.description AS description,
 						deleted,
+						recycled,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -124,7 +128,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 -- TODO: Make this look like the space version, assuming that one works correctly
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetNextPageOfUserBenchmarks;
-CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT, IN _recycled BOOLEAN)
 	BEGIN
 		IF (_colSortedOn = 0 ) THEN
 			IF _sortASC = TRUE THEN
@@ -138,7 +142,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						
 				FROM	benchmarks
 				LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
-				where user_id = _userId and deleted=false
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				-- Exclude benchmarks whose name doesn't contain the query string
 				AND 	(benchmarks.name				LIKE	CONCAT('%', _query, '%'))										
@@ -159,7 +163,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 				FROM	benchmarks 
 				LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
 				
-				where user_id = _userId and deleted=false
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				AND 	(benchmarks.name				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY benchmarks.name DESC
@@ -178,7 +182,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						
 				FROM	benchmarks
 				LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
-				where user_id = _userId and deleted=false
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				-- Exclude benchmarks whose name doesn't contain the query string
 				AND 	(benchmarks.name				LIKE	CONCAT('%', _query, '%'))										
@@ -198,7 +202,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						
 				FROM	benchmarks
 				LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
-				where user_id = _userId and deleted=false
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				AND 	(benchmarks.name				LIKE	CONCAT('%', _query, '%'))
 				ORDER BY benchTypeName DESC

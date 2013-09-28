@@ -742,14 +742,12 @@ public class RESTHelpers {
 	 * @author Todd Elvers
 	 */
 
-	protected static JsonObject getNextDataTablesPageForSpaceExplorer(
-			Primitive type, int id, HttpServletRequest request) {
-		return getNextDataTablesPage(type, id, request, PAGE_SPACE_EXPLORER);
+	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
+		return getNextDataTablesPage(type, id, request, PAGE_SPACE_EXPLORER,false);
 	}
 
-	protected static JsonObject getNextDataTablesPageForUserDetails(
-			Primitive type, int id, HttpServletRequest request) {
-		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS);
+	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
+		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
 	}
 	
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
@@ -1095,7 +1093,7 @@ public class RESTHelpers {
 	 * @author Todd Elvers
 	 */
 
-	private static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request, int forPage) {
+	private static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request, int forPage,boolean recycled) {
 		// Parameter validation
 	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
 	    if(null == attrMap){
@@ -1199,7 +1197,7 @@ public class RESTHelpers {
 	    case SOLVER:
     		List<Solver> solversToDisplay = new LinkedList<Solver>();
     		
-    		int totalSolvers;
+    		int totalSolvers=0;
     		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
     		if (forPage==PAGE_SPACE_EXPLORER) {
     			solversToDisplay = Solvers.getSolversForNextPage(
@@ -1224,16 +1222,28 @@ public class RESTHelpers {
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id
+	    				id,
+	    				recycled											//whether to get recycled solvers
 	    		);
-    			totalSolvers =  Solvers.getSolverCountByUser(id);
+    			if (!recycled) {
+    				totalSolvers =  Solvers.getSolverCountByUser(id);
+    			} else {
+    				totalSolvers=Solvers.getRecycledSolverCountByUser(id);
+    			}
+    			
     			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolvers);
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Solvers.getSolverCountByUser(id,request.getParameter(SEARCH_QUERY)));
+		    		if (!recycled) {
+		    			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Solvers.getSolverCountByUser(id,request.getParameter(SEARCH_QUERY)));
+		    		} else {
+		    			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Solvers.getRecycledSolverCountByUser(id,request.getParameter(SEARCH_QUERY)));
+		    		}
+		    		
+		    		
 		    	}
     		}
 
@@ -1244,7 +1254,7 @@ public class RESTHelpers {
 	    case BENCHMARK:
 	    	
 	    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-	    	int totalBenchmarks;
+	    	int totalBenchmarks=0;
 	    	
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 	    	if (forPage==PAGE_SPACE_EXPLORER) {
@@ -1273,15 +1283,25 @@ public class RESTHelpers {
 	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
 	    				request.getParameter(SEARCH_QUERY),			 		// Search query
-	    				id												// Parent space id 
+	    				id,												// Parent space id 
+	    				recycled
 				);
-	    		totalBenchmarks = Benchmarks.getBenchmarkCountByUser(id);
+	    		if (!recycled) {
+	    			totalBenchmarks = Benchmarks.getBenchmarkCountByUser(id);
+	    		} else {
+	    			totalBenchmarks=Benchmarks.getRecycledBenchmarkCountByUser(id);
+	    		}
+	    		
 	    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
 		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
 		    	} 
 		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getBenchmarkCountByUser(id,request.getParameter(SEARCH_QUERY)));
+		    		if (!recycled) {
+			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getBenchmarkCountByUser(id,request.getParameter(SEARCH_QUERY)));
+		    		} else {
+			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getBenchmarkCountByUser(id,request.getParameter(SEARCH_QUERY)));
+		    		}
 		    	}
 	    	}
 		    return convertBenchmarksToJsonObject(benchmarksToDisplay,totalBenchmarks,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));

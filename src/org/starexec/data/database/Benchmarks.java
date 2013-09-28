@@ -79,6 +79,72 @@ public class Benchmarks {
 		return false;
 	}
 
+	
+	/**
+	 * Deletes all benchmarks that this user has in their recycle bin from both the 
+	 * database and from disk
+	 * @param userId The userId in question
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean setRecycledBenchmarksToDeleted(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL GetRecycledBenchmarkPaths(?)");
+			procedure.setInt(1,userId);
+			results=procedure.executeQuery();
+			
+			while (results.next()) {
+				Util.safeDeleteDirectory(results.getString("path")); //TODO: What should we do in case of error?
+			}
+			Common.safeClose(procedure);
+			procedure=con.prepareCall("CALL SetRecycledBenchmarksToDeleted(?)");
+			procedure.setInt(1, userId);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
+	
+
+	/**
+	 * Restores all solvers a user has that have been recycled to normal
+	 * @param userId The userId in question
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean restoreRecycledBenchmarks(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+
+			Common.safeClose(procedure);
+			procedure=con.prepareCall("CALL RestoreRecycledBenchmarks(?)");
+			procedure.setInt(1, userId);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("restoreRecycledBenchmarks says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+
 	/**
 	 * Adds a new attribute to a benchmark
 	 * @param con The connection to make the insertion on
@@ -853,9 +919,59 @@ public class Benchmarks {
 			log.error("copyBenchmark says "+e.getMessage());
 			return -1;
 		}
-
-
 	}
+	
+	/**
+	 * Sets the "recycled" flag in the database to true. Indicates the user has moved the 
+	 * benchmark to the recycle bin, from which in can be deleted
+	 * @param id the id of the benchmark to recycled
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean recycle(int id) {
+		return setRecycledState(id,true);
+	}
+	
+	/**
+	 * Sets the "recycled" flag in the database to false. Indicates the user has removed
+	 * the benchmark from the recycle bin
+	 * @param id the id of the benchmark to be removed from the recycle bin
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean restore(int id) {
+		return setRecycledState(id,false);
+	}
+	
+	/**
+	 * Sets the "recycled" flag in the database to the given value. 
+	 * @param id the id of the benchmark to recycled
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean setRecycledState(int id, boolean state){
+		Connection con = null;			
+		CallableStatement procedure=null;
+		
+		try {
+			Cache.invalidateSpacesAssociatedWithBench(id);
+			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL SetBenchmarkRecycledValue(?, ?)}");
+			procedure.setInt(1, id);
+			procedure.setBoolean(2,state);
+			procedure.executeUpdate();		
+			return true;
+		} catch (Exception e){		
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}	
 
 	/**
 	 * Deletes a benchmark from the database (cascading deletes handle all dependencies)
@@ -873,7 +989,7 @@ public class Benchmarks {
 			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 
-			procedure = con.prepareCall("{CALL DeleteBenchmarkById(?, ?)}");
+			procedure = con.prepareCall("{CALL SetBenchmarkToDeletedById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
@@ -899,12 +1015,75 @@ public class Benchmarks {
 		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
 		return false;
 	}	
+	
+	/**
+	 * Returns whether a benchmark with the given ID is present in the database with the 
+	 * "recycled" column set to true
+	 * @param benchId The ID of the benchmark to check
+	 * @return True if the benchmark exists in the database with the "recycled" column set to
+	 * true, and false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean isBenchmarkRecycled(int benchId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return isBenchmarkRecycled(con,benchId);
+		} catch (Exception e) {
+			log.error("isBenchmarkRecycled says " +e.getMessage(),e );
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	/**
+	 * Returns whether a benchmark with the given ID is present in the database with the 
+	 * "recycled" column set to true
+	 * @param benchId The ID of the benchmark to check
+	 * @param the open connection to make the SQL call on
+	 * @return True if the benchmark exists in the database with the "recycled" column set to
+	 * true, and false otherwise
+	 * @author Eric Burns
+	 */
+
+	protected static boolean isBenchmarkRecycled(Connection con, int benchId) {
+		CallableStatement procedure=null;
+		ResultSet results=null;
+
+		try {
+			procedure = con.prepareCall("{CALL IsBenchmarkRecycled(?)}");
+			procedure.setInt(1, benchId);					
+			results = procedure.executeQuery();
+			boolean deleted=false;
+			if (results.next()) {
+				deleted=results.getBoolean("recycled");
+			}
+			return deleted;
+		} catch (Exception e) {
+			log.error("isBenchmarkRecycled says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * Returns whether a benchmark with the given ID is present in the database with the 
 	 * "deleted" column set to true
 	 * @param benchId The ID of the benchmark to check
 	 * @return True if the benchmark exists in the database with the "deleted" column set to
 	 * true, and false otherwise
+	 * @author Eric Burns
 	 */
 	public static boolean isBenchmarkDeleted(int benchId) {
 		Connection con=null;
@@ -1402,6 +1581,42 @@ public class Benchmarks {
 		File file = new File(b.getPath());
 		return Util.readFileLimited(file, limit);
 	}
+	
+	public static int getRecycledBenchmarkCountByUser(int userId) {
+		return getRecycledBenchmarkCountByUser(userId,"");
+	}
+	/**
+	 * Gets the number of recycled benchmarks a user has that match the given query
+	 * @param userId The ID of the user in question
+	 * @param query The string query to match on
+	 * @return The number of benchmarks, or -1 on failure
+	 * @author Eric Burns
+	 */
+	
+	public static int getRecycledBenchmarkCountByUser(int userId,String query) {
+		Connection con=null;
+		ResultSet results=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL GetRecycledBenchmarkCountByUser(?,?)");
+			procedure.setInt(1, userId);
+			procedure.setString(2, query);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("benchCount");
+			}
+		} catch (Exception e) {
+			log.error("getRecycledBenchmarkCountByUser says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return -1;
+	}
+	
+	
 
 	/**
 	 * Retrieves the contents of a benchmark file from disk as a string
@@ -1413,7 +1628,54 @@ public class Benchmarks {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
 	}
 	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
-		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,spaceId,"GetNextPageOfBenchmarks");
+		log.debug("imma come here and populate da benchmarks");
+		Connection con = null;			
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfBenchmarks(?, ?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setInt(5, spaceId);
+			procedure.setString(6, searchQuery);
+
+			results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			
+			while(results.next()){
+				Benchmark b = new Benchmark();
+				b.setId(results.getInt("id"));
+				b.setName(results.getString("name"));
+				if (results.getBoolean("deleted")) {
+					b.setName(b.getName()+" (deleted)");
+				} else if (results.getBoolean("recycled")) {
+					log.debug("I am here with a recycled benchmark!");
+					b.setName(b.getName()+" (recycled)");
+				}
+				b.setDescription(results.getString("description"));
+
+				Processor t = new Processor();
+				t.setDescription(results.getString("benchTypeDescription"));
+				t.setName(results.getString("benchTypeName"));
+				b.setType(t);
+				benchmarks.add(b);			
+			}
+
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return null;
+		
 	}
 	/**
 	 * Get next page of the benchmarks belong to a specific user
@@ -1423,41 +1685,26 @@ public class Benchmarks {
 	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
 	 * @param searchQuery the search query provided by the client
 	 * @param userId Id of the user we are looking for
+	 * @param recycled Whether to get recycled or non-recycled benchmarks
 	 * @return a list of benchmarks belong to the user
 	 * @author Wyatt Kaiser
 	 */
-	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		return getBenchmarksForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,userId,"GetNextPageOfUserBenchmarks");
-	}
-
-	/**
-	 * Gets the minimal number of Benchmarks necessary in order to service the client's
-	 * request for the next page of Benchmarks in their DataTables object
-	 * 
-	 * @param startingRecord the record to start getting the next page of Benchmarks from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param id the id of the space to get the Benchmarks from
-	 * @return a list of 10, 25, 50, or 100 Benchmarks containing the minimal amount of data necessary
-	 * @author Todd Elvers
-	 */
-	private static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int id, String procedureName) {
+	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
 		Connection con = null;			
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfUserBenchmarks(?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, id);
+			procedure.setInt(5, userId);
 			procedure.setString(6, searchQuery);
-
+			procedure.setBoolean(7, recycled); 
+			
 			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 			
@@ -1491,6 +1738,7 @@ public class Benchmarks {
 		return null;
 	}
 
+	
 
 	/**
 	 * Gets the number of Benchmarks in a given space

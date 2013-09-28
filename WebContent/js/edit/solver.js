@@ -106,7 +106,7 @@ function attachButtonActions(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/delete/solver/" + getParameterByName("id"),
+							starexecRoot+"services/recycle/solver/" + getParameterByName("id"),
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
@@ -229,7 +229,7 @@ function attachWebsiteMonitor(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
+							starexecRoot+"services/websites/recycle/solver/" + getParameterByName("id") + "/" + id,
 							function(returnData){
 								if (returnData == 0) {
 									parent.remove();

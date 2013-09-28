@@ -500,5 +500,20 @@ public class Util {
     	
     	return df.format(b) +" "+suffix[suffixIndex];
     }
+    /**
+     * Attempts to delete the directory specified the given path without
+     * throwing any errors
+     * @param path The path to the directory to delete
+     * @return True on success, false otherwise
+     */
+    public static boolean safeDeleteDirectory(String path) {
+    	try {
+    		File file=new File(path);
+    		FileUtils.deleteDirectory(file);
+    	} catch (Exception e) {
+    		log.error("safeDeleteDirectory says "+e.getMessage(),e);
+    	}
+    	return false;
+    }
 
 }

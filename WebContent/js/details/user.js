@@ -15,6 +15,12 @@ $(document).ready(function(){
 			secondary: "ui-icon-pencil"
 	}});
 	
+	$("#recycleBinButton").button({
+		icons: {
+			secondary: "ui-icon-pencil"
+		}
+	})
+	
 	$('img').click(function(event){
 		PopUp($(this).attr('enlarge'));
 	});
@@ -53,7 +59,6 @@ $(document).ready(function(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });
-    
 	
 });
 
@@ -130,6 +135,7 @@ function updateFieldsetCount(tableName, value){
 	case 'b':
 		$('#benchExpd').children('span:first-child').text(value);
 		break;
+		
 	}
 }
 

@@ -122,6 +122,7 @@ CREATE TABLE benchmarks (
 	downloadable BOOLEAN DEFAULT 1,
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
+	recycled BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
 	CONSTRAINT benchmarks_user_iddas FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	CONSTRAINT benchmarks_bench_type FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
@@ -147,6 +148,7 @@ CREATE TABLE solvers (
 	downloadable BOOLEAN DEFAULT 0,
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
+	recycled BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),	
 	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
