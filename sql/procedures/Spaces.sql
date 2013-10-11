@@ -508,12 +508,6 @@ BEGIN
 	DELETE FROM job_assoc
 	WHERE job_id = _jobId
 	AND space_id = _spaceId;
-	IF ((SELECT COUNT(*) FROM job_assoc WHERE job_id=_jobId)=0) THEN
-		IF NOT EXISTS(SELECT * FROM jobs WHERE deleted=false AND id=_jobId) THEN
-			DELETE FROM jobs 
-			WHERE id=_jobId;
-		END IF;
-	END IF;
 END //
 
 DELIMITER ; -- This should always be at the end of this file

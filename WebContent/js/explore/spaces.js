@@ -124,9 +124,6 @@ function initButtonUI() {
 		icons: {
 			secondary: "ui-icon-trash"
 		}});
-	$('#trashcan').hide();
-
-
 
 	$('.resetButton').button({
 		icons: {
@@ -223,8 +220,7 @@ function initDraggable(table) {
 		distance: 20,										// Only trigger a drag when the distanced dragged is > 20 pixels
 		scroll: true,										// Scroll with the page as the item is dragged if needed
 		helper: getDragClone,								// The method that returns the 'cloned' element that is dragged
-		start: onDragStart,									// Method called when the dragging begins
-		stop: onDragStop									// Method called when the dragging ends
+		start: onDragStart									// Method called when the dragging begins
 	});
 	
 
@@ -245,7 +241,9 @@ function initDraggable(table) {
 		hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
-	
+	$("#trashcan").click(function(){
+		window.location.href=starexecRoot+"secure/details/recycleBin.jsp";
+	});
 
 	log($(table).attr('id') + ' table initialized as draggable');
 }
@@ -281,16 +279,6 @@ function onDragStart(event, ui) {
         
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
-
-	$('#trashcan').show();
-}
-
-/**
- * Called when there is no longer anything being dragged
- */
-function onDragStop(event, ui) {
-	log('drag stopped');
-	$('#trashcan').hide();
 }
 
 /**
@@ -329,22 +317,35 @@ function onTrashDrop(event, ui){
 }
 
 /**
- * Shows an error message given an error code returned by any of the delete requests
+ * Shows an error message given an error code returned by any of the recycle requests
  * @param errorCode An integer error code
  * @param prim The type of the primitive that was being deleted when the error was triggered 
  * (solver, user, benchmark, etc.)
  * @author Eric Burns
  */
 
-function processDeleteErrorCode(errorCode,prim) {
-	switch (errorCode) {
+function processRecycleErrorCode(errorCode,prim) {
+	
+	if (prim!="job"){
+		switch (errorCode) {
+		case 1: 
+			showMessage('error', "an error occurred while processing your request; please try again", 5000);
+			break;
+		case 2:
+			showMessage('error', "only the owner of a " +prim+ " can delete it", 5000);
+			break;
+		}
+	} else {
+		switch (errorCode) {
 	case 1: 
 		showMessage('error', "an error occurred while processing your request; please try again", 5000);
 		break;
 	case 2:
-		showMessage('error', "only the owner of a " +prim+ " can delete it", 5000);
+		showMessage('error', "only the owner of a " +prim+ " can recycle it", 5000);
 		break;
 	}
+	}
+	
 }
 
 /**
@@ -866,14 +867,14 @@ function initSpaceExplorer(){
  * @author Todd Elvers
  */
 function removeBenchmarks(selectedBenches){
-	$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to delete them permanently?');
+	$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to send them to the recycle bin?');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		height: 220,
 		buttons: {
-			'remove benchmark': function() {
+			'remove from space': function() {
 				log('user confirmed benchmark removal');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
@@ -898,7 +899,6 @@ function removeBenchmarks(selectedBenches){
 				});		
 			},
 			'move to recycle bin': function() {
-				log('user confirmed benchmark deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
@@ -913,7 +913,7 @@ function removeBenchmarks(selectedBenches){
 								updateTable(benchTable);
 								break;
 							default:
-								processDeleteErrorCode(returnCode,"benchmark");
+								processRecycleErrorCode(returnCode,"benchmark");
 							} 
 						},
 						"json"
@@ -1003,7 +1003,7 @@ function removeUsers(selectedUsers){
  * @author Todd Elvers & Skylar Stark
  */
 function removeSolvers(selectedSolvers){
-	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to delete them permanently?');
+	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to move them to the recycle bin?');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
@@ -1060,7 +1060,6 @@ function removeSolvers(selectedSolvers){
 				});
 			},
 			'move to recycle bin': function() {
-				log('user confirmed solver deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
 
@@ -1075,7 +1074,7 @@ function removeSolvers(selectedSolvers){
 								updateTable(solverTable);
 								break;
 							default:
-								processDeleteErrorCode(returnCode,"solver");
+								processRecycleErrorCode(returnCode,"solver");
 							}
 						},
 						"json"
@@ -1084,7 +1083,6 @@ function removeSolvers(selectedSolvers){
 				});
 			},
 			"cancel": function() {
-				log('user canceled solver deletion');
 				$(this).dialog("close");
 			}
 		}		
@@ -1129,7 +1127,7 @@ function removeJobs(selectedJobs){
 					showMessage('error',"Internal error removing jobs",5000);
 				});
 			},
-			'move to recycle bin': function() {
+			'delete permanently': function() {
 				jobTable.fnProcessingIndicator();
 				log('user confirmed job deletion');
 				// If the user actually confirms, close the dialog right away
@@ -1146,7 +1144,7 @@ function removeJobs(selectedJobs){
 								updateTable(jobTable);
 								break;
 							default:
-								processDeleteErrorCode(returnCode,"job");
+								processRecycleErrorCode(returnCode,"job");
 							}
 							jobTable.fnProcessingIndicator(false);
 						},
@@ -1202,7 +1200,7 @@ function removeSubspaces(selectedSubspaces,deletePrims){
  * @author Ben McCune
  */
 function quickRemove(selectedSubspaces){
-	$('#dialog-confirm-delete-txt').text('Do you want to delete the solvers, benchmarks, and jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?');
+	$('#dialog-confirm-delete-txt').text('Do you want to recycle the solvers and benchmarks, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?');
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
@@ -1236,7 +1234,7 @@ function quickRemove(selectedSubspaces){
 					window.location.reload(true);
 				});
 			},
-			'remove subspace(s) and send all primitives to recycle bin': function() {
+			'remove subspace(s), and recycle primitives': function() {
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');

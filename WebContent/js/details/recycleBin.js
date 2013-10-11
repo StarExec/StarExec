@@ -1,17 +1,59 @@
 var solverTable;
-var jobTable;
+var benchTable;
 $(document).ready(function(){
 	$("fieldset").expandable(false);
-
+	$("#dialog-confirm-delete").hide();
+	$("#dialog-confirm-restore").hide();
 	$('#clearSolvers').button({
 		icons: {
-			secondary: "ui-icon-pencil"
+			secondary: "ui-icon-trash"
 	}});
 	
 	$('#clearBenchmarks').button({
 		icons: {
-			secondary: "ui-icon-pencil"
+			secondary: "ui-icon-trash"
 	}});
+	
+	$("#deleteSelectedBenchmarks").button({
+		icons: {
+			secondary: "ui-icon-trash"
+		}
+	});
+	
+	$("#deleteSelectedSolvers").button({
+		icons: {
+			secondary: "ui-icon-trash"
+		}
+	});
+	
+	$("#restoreSelectedBenchmarks").button({
+		icons: {
+			secondary: "ui-icon-refresh"
+		}
+	});
+	
+	$("#restoreSelectedSolvers").button({
+		icons: {
+			secondary: "ui-icon-refresh"
+		}
+	});
+	
+	$("#deleteSelectedSolvers").click(function() {
+		deleteSelected("solver");
+	});
+	
+	$("#deleteSelectedBenchmarks").click(function() {
+		deleteSelected("benchmark");
+	});
+	
+	$("#restoreSelectedSolvers").click(function() {
+		restoreSelected("solver");
+	});
+	
+	$("#restoreSelectedBenchmarks").click(function() {
+		restoreSelected("benchmark");
+	});
+	
 	
 	$('#restoreSolvers').button({
 		icons: {
@@ -24,87 +66,19 @@ $(document).ready(function(){
 	}});
 	
 	$('#clearBenchmarks').click(function(){
-		createDialog("Clearing your recycled benchmarks, please wait. This will take some time for large numbers of benchmarks.");
-		$.post(  
-				starexecRoot +"services/deleterecycled/benchmarks",
-				function(nextDataTablePage){
-					destroyDialog();
-					switch(nextDataTablePage){
-						case 1:
-							showMessage('error', "Internal error deleting benchmarks", 5000);
-							break;
-						default:
-							benchTable.fnDraw(false);
-	 						break;
-					}
-				},  
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error removing benchmarks",5000);
-		});
+		deleteAll("benchmark");
 	});
 	
 	$('#clearSolvers').click(function(){
-		createDialog("Clearing your recycled solvers, please wait. This will take some time for large numbers of solvers.");
-		$.post(  
-				starexecRoot +"services/deleterecycled/solvers",
-				function(nextDataTablePage){
-					destroyDialog();
-					switch(nextDataTablePage){
-						case 1:
-							showMessage('error', "Internal error deleting solvers", 5000);
-							break;
-						default:
-							solverTable.fnDraw(false);
-	 						break;
-					}
-				},  
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error removing solvers",5000);
-		});
+		deleteAll("solver");
 	});
 	
 	$('#restoreSolvers').click(function(){
-		createDialog("Restoring your recycled solvers, please wait. This will take some time for large numbers of solvers.");
-		$.post(  
-				starexecRoot +"services/restorerecycled/solvers",
-				function(nextDataTablePage){
-					destroyDialog();
-					switch(nextDataTablePage){
-						case 1:
-							showMessage('error', "Internal error restoring solvers", 5000);
-							break;
-						default:
-							solverTable.fnDraw(false);
-	 						break;
-					}
-				},  
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error removing solvers",5000);
-		});
+		restoreAll("solver");
 	});
 	
 	$('#restoreBenchmarks').click(function(){
-		createDialog("Restoring your recycled benchmarks, please wait. This will take some time for large numbers of benchmarks.");
-		$.post(  
-				starexecRoot +"services/restorerecycled/benchmarks",
-				function(nextDataTablePage){
-					destroyDialog();
-					switch(nextDataTablePage){
-						case 1:
-							showMessage('error', "Internal error restoring benchmarks", 5000);
-							break;
-						default:
-							benchmarkTable.fnDraw(false);
-	 						break;
-					}
-				},  
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error removing benchmarks",5000);
-		});
+		restoreAll("benchmark");
 	});
 	
 
@@ -130,6 +104,12 @@ $(document).ready(function(){
         "fnServerData"	: fnRecycledPaginationHandler
     });
 	
+	$("#rbenchmarks").delegate("tr","mousedown", function(){
+		$(this).toggleClass("row_selected");
+	});
+	$("#rsolvers").delegate("tr","mousedown", function(){
+		$(this).toggleClass("row_selected");
+	});
 	
 	
 });
@@ -166,6 +146,163 @@ function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
 }
 
 
+function deleteAll(prim) {
+	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the ' +prim +'(s) from the recycle bin? After deletion, they can not be recovered');
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'delete permanently': function() {
+				$("#dialog-confirm-delete").dialog("close");
+				createDialog("Clearing your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
+				$.post(  
+						starexecRoot +"services/deleterecycled/"+prim+"s",
+						function(nextDataTablePage){
+							destroyDialog();
+							switch(nextDataTablePage){
+								case 1:
+									showMessage('error', "Internal error deleting "+prim+"s", 5000);
+									break;
+								default:
+									solverTable.fnDraw(false);
+									benchTable.fnDra(false);
+			 						break;
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error deleting "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});		
+}
+
+function restoreAll(prim) {
+	$('#dialog-confirm-restore-txt').text('Are you sure you want to restore all the ' +prim +'(s) from the recycle bin?');
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-restore').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'delete permanently': function() {
+				$("#dialog-confirm-restore").dialog("close");
+				createDialog("Restoring your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
+				$.post(  
+						starexecRoot +"services/restorerecycled/"+prim+"s",
+						function(nextDataTablePage){
+							destroyDialog();
+							switch(nextDataTablePage){
+								case 1:
+									showMessage('error', "Internal error restoring "+prim+"s", 5000);
+									break;
+								default:
+									solverTable.fnDraw(false);
+									benchTable.fnDraw(false);
+			 						break;
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error restoring "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});		
+}
+
+function deleteSelected(prim) {
+	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected ' +prim +'(s) from the recycle bin? After deletion, they can not be recovered');
+	if (prim=="solver") {
+		table=solverTable;
+	} else {
+		table=benchTable;
+	}
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'delete permanently': function() {
+				$("#dialog-confirm-delete").dialog("close");
+				createDialog("Clearing your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
+				$.post(  
+						starexecRoot +"services/delete/"+prim, 
+						{selectedIds : getSelectedRows(table)},
+						function(nextDataTablePage){
+							destroyDialog();
+							switch(nextDataTablePage){
+								case 1:
+									showMessage('error', "Internal error deleting "+prim+"s", 5000);
+									break;
+								default:
+									solverTable.fnDraw(false);
+									benchTable.fnDraw(false);
+			 						break;
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error deleting "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
+function restoreSelected(prim) {
+	$('#dialog-confirm-restore-txt').text('Are you sure you want to restore all the selected ' +prim +'(s) from the recycle bin?');
+	if (prim=="solver") {
+		table=solverTable;
+	} else {
+		table=benchTable;
+	}
+	// Display the confirmation dialog
+	$('#dialog-confirm-restore').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'restore': function() {
+				$("#dialog-confirm-restore").dialog("close");
+				createDialog("Restoring your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
+				$.post(  
+						starexecRoot +"services/restore/"+prim, 
+						{selectedIds : getSelectedRows(table)},
+						function(nextDataTablePage){
+							destroyDialog();
+							switch(nextDataTablePage){
+								case 1:
+									showMessage('error', "Internal error deleting "+prim+"s", 5000);
+									break;
+								default:
+									solverTable.fnDraw(false);
+									benchTable.fnDraw(false);
+			 						break;
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error deleting "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
 
 /**
  * Helper function for fnPaginationHandler; since the proper fieldset to update
@@ -187,4 +324,19 @@ function updateFieldsetCount(tableName, value){
 	}
 }
 
-
+/**
+ * For a given dataTable, this extracts the id's of the rows that have been
+ * selected by the user
+ * 
+ * @param dataTable the particular dataTable to extract the id's from
+ * @returns {Array} list of id values for the selected rows
+ * @author Todd Elvers
+ */
+function getSelectedRows(dataTable){
+	var idArray = new Array();
+	var rows = $(dataTable).children('tbody').children('tr.row_selected');
+	$.each(rows, function(i, row) {
+		idArray.push($(this).children('td:first').children('input').val());
+	});
+	return idArray;
+}

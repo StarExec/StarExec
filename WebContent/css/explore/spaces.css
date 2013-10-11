@@ -93,6 +93,8 @@
 	float:right;
 	position:relative;
 	left:60px;
+	border: 1px dashed #008d03;
+	border-radius:2px;
 }
 
 #trashcan:hover {

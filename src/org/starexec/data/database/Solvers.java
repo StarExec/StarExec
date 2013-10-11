@@ -693,7 +693,6 @@ public class Solvers {
 	public static boolean delete(int id){
 		log.debug("Solvers.delete() called on solver with id = "+id);
 		Connection con = null;			
-		File solverToDelete = null;
 		CallableStatement procedure = null;
 		try {
 			Cache.invalidateSpacesAssociatedWithSolver(id);
@@ -707,16 +706,9 @@ public class Solvers {
 			procedure.executeUpdate();
 			
 			// Delete solver file from disk, and the parent directory if it's empty
-			solverToDelete = new File(procedure.getString(2));
+			Util.safeDeleteDirectory(procedure.getString(2));
 			
-			if(solverToDelete.delete()){
-				log.debug(String.format("Solver file [%s] was successfully deleted from disk at [%s].", solverToDelete.getName(), solverToDelete.getAbsolutePath()));
-			}
-			if(solverToDelete.getParentFile().delete()){
-				log.debug(String.format("Directory [%s] was deleted because it was empty.", solverToDelete.getParentFile().getAbsolutePath()));
-			}
 			
-			log.debug(String.format("Deletion of solver [id=%d] in directory [%s] was successful.", id, solverToDelete.getAbsolutePath()));
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1814,6 +1806,27 @@ public class Solvers {
 			}
 		}
 		return true;
+	}
+	/**
+	 * Removes all solver database entries where the solver has been deleted
+	 * AND has been orphaned
+	 * @return True on success, false on error
+	 */
+	public static boolean cleanOrphanedDeletedSolvers() {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedSolvers()}");
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("cleanOrphanedDeletedSolvers says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 	
 }

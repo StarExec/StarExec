@@ -4,7 +4,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
-import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 
 

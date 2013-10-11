@@ -979,4 +979,14 @@ CREATE PROCEDURE SetPairsToStatus(IN _jobId INT, In _statusCode INT)
 		SET status_code = _statusCode
 		WHERE job_id = _jobId;
 	END //
+	
+-- Removes all jobs in the database that are deleted and also orphaned. Runs periodically.
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedJobs;
+CREATE PROCEDURE RemoveDeletedOrphanedJobs()
+	BEGIN
+		DELETE jobs FROM jobs
+			LEFT JOIN job_assoc ON solver_assoc.solver_id=solvers.id
+		WHERE deleted=true AND job_assoc.space_id IS NULL;
+	END //
 DELIMITER ; -- this should always be at the end of the file

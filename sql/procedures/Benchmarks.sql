@@ -123,9 +123,9 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 		WHERE bench.id = _id and deleted=false AND recycled=false;
 	END //
 	
--- Retrieves the benchmark with the given id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeleted;
+-- Retrieves the benchmark with the given id, including deleted benchmarks
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeletedAndRecycled;
 CREATE PROCEDURE GetBenchmarkByIdIncludeDeleted(IN _id INT)
 	BEGIN
 		SELECT *
@@ -399,7 +399,7 @@ CREATE PROCEDURE GetBenchmarkCountByUserWithQuery(IN _userId INT, IN _query TEXT
 				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
 	END //
 
--- Sets the recycled attribute to the given value for the given solver
+-- Sets the recycled attribute to the given value for the given benchmark
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS SetBenchmarkRecycledValue;
 CREATE PROCEDURE SetBenchmarkRecycledValue(IN _benchId INT, IN _recycled BOOLEAN)
@@ -446,11 +446,8 @@ DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted;
 CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT) 
 	BEGIN
 		UPDATE benchmarks
-		SET deleted=true
-		WHERE user_id = _userId;
-		UPDATE benchmarks
-		SET disk_size=0
-		WHERE user_id = _userId;
+		SET deleted=true, disk_size=0
+		WHERE user_id = _userId AND recycled=true;
 	END //
 	
 -- Restores all recycled benchmarks a user has
@@ -463,4 +460,26 @@ CREATE PROCEDURE RestoreRecycledBenchmarks(IN _userId INT)
 		WHERE user_id=_userId;
 	END //
 
+-- Removes all benchmarks in the database that are deleted and also orphaned. Runs periodically.
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedBenchmarks;
+CREATE PROCEDURE RemoveDeletedOrphanedBenchmarks()
+	BEGIN
+		DELETE benchmarks FROM benchmarks
+			LEFT JOIN job_pairs ON job_pairs.bench_id = benchmarks.id
+			LEFT JOIN bench_assoc ON bench_assoc.bench_id=benchmarks.id
+		WHERE deleted=true AND bench_assoc.space_id IS NULL AND job_pairs.id IS NULL;
+	END //
+
+-- Sets teh recycled flag for a single benchmark back to false
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RestoreBenchmark;
+CREATE PROCEDURE RestoreBenchmark(IN _benchId INT)
+	BEGIN
+		UPDATE benchmarks
+		SET recycled=false
+		WHERE _benchId=id;
+	END //
+	
+	
 DELIMITER ; -- This should always be at the end of this file

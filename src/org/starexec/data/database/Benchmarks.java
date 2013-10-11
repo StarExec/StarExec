@@ -98,7 +98,7 @@ public class Benchmarks {
 			results=procedure.executeQuery();
 			
 			while (results.next()) {
-				Util.safeDeleteDirectory(results.getString("path")); //TODO: What should we do in case of error?
+				Util.safeDeleteDirectory(results.getString("path")); 
 			}
 			Common.safeClose(procedure);
 			procedure=con.prepareCall("CALL SetRecycledBenchmarksToDeleted(?)");
@@ -118,7 +118,7 @@ public class Benchmarks {
 	
 
 	/**
-	 * Restores all solvers a user has that have been recycled to normal
+	 * Restores all benchmarks a user has that have been recycled to normal
 	 * @param userId The userId in question
 	 * @return True on success, false otherwise
 	 * @author Eric Burns
@@ -921,6 +921,9 @@ public class Benchmarks {
 		}
 	}
 	
+	
+	
+	
 	/**
 	 * Sets the "recycled" flag in the database to true. Indicates the user has moved the 
 	 * benchmark to the recycle bin, from which in can be deleted
@@ -981,7 +984,6 @@ public class Benchmarks {
 	 */
 	public static boolean delete(int id){
 		Connection con = null;			
-		File benchToDelete = null;
 		CallableStatement procedure=null;
 		
 		try {
@@ -994,17 +996,7 @@ public class Benchmarks {
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 
-			// Delete benchmark file from disk, and the parent directory if it's empty
-			benchToDelete = new File(procedure.getString(2));
-			if(benchToDelete.delete()){
-				log.debug(String.format("Benchmark file [%s] was successfully deleted from disk at [%s].", benchToDelete.getName(), benchToDelete.getAbsolutePath()));
-			}
-			if(benchToDelete.getParentFile().delete()){
-				log.debug(String.format("Directory [%s] was deleted because it was empty.", benchToDelete.getParentFile().getAbsolutePath()));
-			}
-
-			log.debug(String.format("Deletion of benchmark [id=%d] in directory [%s] was successful.", id, benchToDelete.getAbsolutePath()));		
-		
+			Util.safeDeleteDirectory(procedure.getString(2));		
 			return true;
 		} catch (Exception e){		
 			log.error(e.getMessage(), e);		
@@ -1155,7 +1147,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 
-	public static Benchmark getIncludeDeleted(int benchId, boolean includeAttrs) {
+	public static Benchmark getIncludeDeletedAndRecycled(int benchId, boolean includeAttrs) {
 		return Benchmarks.get(benchId,includeAttrs,true);
 	}
 	/**
@@ -1359,6 +1351,8 @@ public class Benchmarks {
 		}
 		return b;
 	}
+	
+	
 
 	/**
 	 * @param con The connection to query with
@@ -1628,7 +1622,6 @@ public class Benchmarks {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
 	}
 	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
-		log.debug("imma come here and populate da benchmarks");
 		Connection con = null;			
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -2066,6 +2059,28 @@ public class Benchmarks {
 		}
 
 		return 0;		
+	}
+	
+	/**
+	 * Removes all benchmark database entries where the benchmark has been deleted
+	 * AND has been orphaned
+	 * @return True on success, false on error
+	 */
+	public static boolean cleanOrphanedDeletedBenchmarks() {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedBenchmarks()}");
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("cleanOrphanedDeletedBenchmarks says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 
 }

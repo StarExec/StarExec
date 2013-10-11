@@ -1351,9 +1351,9 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Deletes a list of benchmarks
+	 * Recycles a list of benchmarks
 	 * 
-	 * @return	0: if the benchmark was successfully removed from the space,<br> 
+	 * @return	0: if the benchmarks were successfully recycled,<br> 
 	 * 			1: if there was a failure at the database level,<br>
 	 * 			2: insufficient permissions
 	 * @author 	Eric Burns
@@ -1383,6 +1383,80 @@ public class RESTServices {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Deletes a list of benchmarks
+	 * 
+	 * @return	0: if the benchmark was successfully removed from the space,<br> 
+	 * 			1: if there was a failure at the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author 	Eric Burns
+	 */
+	@POST
+	@Path("/delete/benchmark")
+	@Produces("application/json")
+	public String deleteBenchmarks(@Context HttpServletRequest request) {
+		try {
+			// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+			if(null == request.getParameterValues("selectedIds[]")){
+				return gson.toJson(ERROR_IDS_NOT_GIVEN);
+			}
+			
+			// Extract the String bench id's and convert them to Integer
+			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+			for(String id : request.getParameterValues("selectedIds[]")){
+				selectedBenches.add(Integer.parseInt(id));
+			}
+			int userId=SessionUtil.getUserId(request);
+			for (int id : selectedBenches) {
+				
+				if(userId!=Benchmarks.getIncludeDeletedAndRecycled(id,false).getUserId()) {
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+				}
+				boolean success=Benchmarks.delete(id);
+				if (!success) {
+					return gson.toJson(ERROR_DATABASE);
+				}
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return gson.toJson(0);
+	}
+	
+	
+	@POST
+	@Path("/restore/benchmark")
+	@Produces("application/json")
+	public String restoreBenchmarks(@Context HttpServletRequest request) {
+		try {
+			// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+			if(null == request.getParameterValues("selectedIds[]")){
+				return gson.toJson(ERROR_IDS_NOT_GIVEN);
+			}	
+			// Extract the String bench id's and convert them to Integer
+			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+			for(String id : request.getParameterValues("selectedIds[]")){
+				selectedBenches.add(Integer.parseInt(id));
+			}
+			int userId=SessionUtil.getUserId(request);
+			for (int id : selectedBenches) {
+				
+				if(userId!=Benchmarks.getIncludeDeletedAndRecycled(id,false).getUserId()) {
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+				}
+				boolean success=Benchmarks.restore(id);
+				if (!success) {
+					return gson.toJson(ERROR_DATABASE);
+				}
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
 		return gson.toJson(0);
 	}
 	
@@ -2003,6 +2077,82 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
+	@Path("/restore/solver")
+	@Produces("application/json")
+	public String restoreSolvers(@Context HttpServletRequest request) {
+		int userIdOfRemover = SessionUtil.getUserId(request);
+		
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedIds[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		// Extract the String solver id's and convert them to Integer
+		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		for(String id : request.getParameterValues("selectedIds[]")){
+			selectedSolvers.add(Integer.parseInt(id));
+		}
+		
+		for (int id : selectedSolvers) {
+			if (userIdOfRemover!=Solvers.getIncludeDeleted(id).getUserId()) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
+			
+			boolean success=Solvers.restore(id);
+			if (!success) {
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Deletes a list of solvers
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/delete/solver")
+	@Produces("application/json")
+	public String deleteSolvers(@Context HttpServletRequest request) {
+		int userIdOfRemover = SessionUtil.getUserId(request);
+		
+		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+		if(null == request.getParameterValues("selectedIds[]")){
+			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		// Extract the String solver id's and convert them to Integer
+		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		for(String id : request.getParameterValues("selectedIds[]")){
+			selectedSolvers.add(Integer.parseInt(id));
+		}
+		
+		for (int id : selectedSolvers) {
+			if (userIdOfRemover!=Solvers.getIncludeDeleted(id).getUserId()) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
+			
+			boolean success=Solvers.delete(id);
+			if (!success) {
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+		return gson.toJson(0);
+	}
+	
+	/**
+	 * Recycles a list of solvers
+	 * 
+	 * @return 	0: success,<br>
+	 * 			1: invalid parameters or database level error,<br>
+	 * 			2: insufficient permissions
+	 * @author Eric Burns
+	 */
+	@POST
 	@Path("/recycle/solver")
 	@Produces("application/json")
 	public String recycleSolvers(@Context HttpServletRequest request) {
@@ -2244,13 +2394,11 @@ public class RESTServices {
 		}
 		Set<Solver> solvers=new HashSet<Solver>();
 		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
-		Set<Job> jobs=new HashSet<Job>();
 		int userId=SessionUtil.getUserId(request);
 		if (recycleAllAllowed) {
 			for (int sid : selectedSubspaces) {
 				solvers.addAll(Solvers.getBySpace(sid));
 				benchmarks.addAll(Benchmarks.getBySpace(sid));
-				jobs.addAll(Jobs.getBySpace(sid));
 			}
 		}
 		// Remove the subspaces from the space
@@ -2276,14 +2424,6 @@ public class RESTServices {
 					}
 				}
 				
-				for (Job j : jobs) {
-					if (j.getUserId()==userId) {
-						if (!Jobs.delete(j.getId())) {
-							log.error("Failed to delete job with id = "+j.getId());
-							deletionFailed=true;
-						}
-					}
-				}
 			}
 			if (!deletionFailed) {
 				return gson.toJson(0);
@@ -2813,7 +2953,6 @@ public class RESTServices {
 		if (!user.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		
 		// Extract the String user id's and convert them to Integer
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));

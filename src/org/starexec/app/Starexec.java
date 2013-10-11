@@ -12,8 +12,10 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.JobPairs;
+import org.starexec.data.database.Solvers;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
@@ -162,6 +164,18 @@ public class Starexec implements ServletContextListener {
 				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1);
 			}
 		};
+		/**
+		 * Removes solvers and benchmarks from the database that are both orphaned (unaffiliated
+		 * with any spaces or job pairs) AND have already been deleted on disk.
+		 */
+		final Runnable cleanDatabaseTask = new RobustRunnable("cleanDatabaseTask") {
+			@Override
+			protected void dorun() {
+				log.info("cleanDatabaseTask (periodic");
+				Solvers.cleanOrphanedDeletedSolvers();
+				Benchmarks.cleanOrphanedDeletedBenchmarks();
+			}
+		};
 		//created directories expected by the system to exist
 		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
@@ -177,6 +191,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
+		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 
 		}
 	

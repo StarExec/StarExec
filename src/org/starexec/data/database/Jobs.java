@@ -28,7 +28,6 @@ import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
-import org.starexec.data.to.User;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Util;
@@ -2928,6 +2927,28 @@ public class Jobs {
 			
 		}
 		
+		return false;
+	}
+	
+	/**
+	 * Removes all job database entries where the job has been deleted
+	 * AND has been orphaned
+	 * @return True on success, false on error
+	 */
+	public static boolean cleanOrphanedDeletedJobs() {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedJobs()}");
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("cleanOrphanedDeletedJobs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
 		return false;
 	}
 }

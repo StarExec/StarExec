@@ -304,7 +304,7 @@ CREATE PROCEDURE SetSolverRecycledValue(IN _solverId INT, IN _recycled BOOLEAN)
 		WHERE id=_solverId;
 	END //
 	
--- Checks to see whether the "recycled" flag is set for the given benchmark
+-- Checks to see whether the "recycled" flag is set for the given solver
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS IsSolverRecycled;
 CREATE PROCEDURE IsSolverRecycled(IN _solverId INT)
@@ -340,11 +340,8 @@ DROP PROCEDURE IF EXISTS SetRecycledSolversToDeleted;
 CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT) 
 	BEGIN
 		UPDATE solvers
-		SET deleted=true
-		WHERE user_id = _userId;
-		UPDATE solvers
-		SET disk_size=0
-		WHERE user_id = _userId;
+		SET deleted=true, disk_size=0
+		WHERE user_id = _userId AND recycled=true;
 	END //
 	
 -- Restores all recycled solvers a user has in the database
@@ -356,4 +353,25 @@ CREATE PROCEDURE RestoreRecycledSolvers(IN _userId INT)
 		SET recycled=0
 		WHERE user_id=_userId;
 	END //
+-- Removes all solvers in the database that are deleted and also orphaned. Runs periodically.
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedSolvers;
+CREATE PROCEDURE RemoveDeletedOrphanedSolvers()
+	BEGIN
+		DELETE solvers FROM solvers
+			LEFT JOIN job_pairs ON job_pairs.solver_id = solvers.id
+			LEFT JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
+		WHERE deleted=true AND solver_assoc.space_id IS NULL AND job_pairs.id IS NULL;
+	END //
+	
+-- Sets teh recycled flag for a single solver back to false
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RestoreSolver;
+CREATE PROCEDURE RestoreSolver(IN _solverId INT)
+	BEGIN
+		UPDATE solvers
+		SET recycled=false
+		WHERE _solverId=id;
+	END //
+	
 DELIMITER ; -- This should always be at the end of this file

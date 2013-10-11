@@ -11,7 +11,7 @@
 	
 	<div id="detailPanel">				
 		<h3 id="spaceName"></h3>
-		<a id="trashcan"></a>
+		<a id="trashcan" class="active"></a>
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>
 		<fieldset id="jobField">

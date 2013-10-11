@@ -24,6 +24,8 @@
 					</tr>
 				</thead>
 			</table>
+			<button type="button" id="deleteSelectedSolvers">Delete</button>
+			<button type="button" id="restoreSelectedSolvers">Restore</button>
 		</fieldset>
 		<fieldset id="recycledBenchField">
 			<legend class="expd" id="recycledBenchExpd"><span>0</span> recycled benchmarks</legend>
@@ -35,6 +37,9 @@
 					</tr>
 				</thead>		
 			</table>
+			<button type="button" id="deleteSelectedBenchmarks">Delete</button>
+			<button type="button" id="restoreSelectedBenchmarks">Restore</button>
+			
 		</fieldset>	
 			
 		<fieldset id="actionField">
@@ -44,5 +49,10 @@
 			<button type="button" id="restoreBenchmarks">restore all benchmarks</button>
 			<button type="button" id="restoreSolvers">restore all solvers</button>
 		</fieldset>
-	
+	<div id="dialog-confirm-delete" title="confirm delete">
+		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>
+	<div id="dialog-confirm-restore" title="confirm restore">
+		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restore-txt"></span></p>
+	</div>
 </star:template>
