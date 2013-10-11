@@ -105,7 +105,7 @@
 					</tr>						
 				</tbody>			
 			</table>	
-			<button type="button" id="delete">delete</button>
+			<button type="button" id="delete">recycle</button>
 			<button type="button" id="update">update</button>
 		</fieldset>
 		<div id="dialog-confirm-delete" title="confirm delete">
