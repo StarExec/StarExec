@@ -2802,6 +2802,33 @@ public class Jobs {
 		return 0;
 	}
 
+	/**
+	 * Gets the number of Running Jobs in the whole system
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static int getRunningJobCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetRunningJobCount()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
 
 	/**Gets the minimal number of Jobs necessary in order to service the client's 
 	 * request for the next page of Users in their DataTables object

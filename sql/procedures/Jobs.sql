@@ -907,6 +907,17 @@ CREATE PROCEDURE GetJobCount()
 		SELECT COUNT(*) as jobCount
 		FROM jobs;
 	END //
+	
+-- Returns the number of running jobs in the entire system
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetRunningJobCount;
+CREATE PROCEDURE GetRunningJobCount()
+	BEGIN
+		SELECT COUNT(distinct jobs.id) as jobCount
+		FROM jobs
+		JOIN    job_pairs ON jobs.id = job_pairs.job_id
+		WHERE 	job_pairs.status_code < 7;
+	END //
 
 -- Get the total count of the jobs belong to a specific user
 -- Author: Ruoyu Zhang
