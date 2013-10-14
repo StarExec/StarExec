@@ -24,6 +24,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.QueueRequest;
+import org.starexec.data.to.User;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
@@ -41,8 +42,8 @@ public class CreateQueue extends HttpServlet {
 	private static final Logger log = Logger.getLogger(AddSpace.class);	
 
 	// Request attributes
-	private static final String name = "name";
-	private static final String nodes = "node";
+	private static final String queueName = "queueName";
+	private static final String nodeCount = "nodecount";
 
 	private static final String code = "code";
 	private static final String userId = "userId";
@@ -60,80 +61,55 @@ public class CreateQueue extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		// Make sure the request is valid
-		if(!isValid(request)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The create queue request was malformed");
-			return;
-		}
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		String queueCode = request.getParameter(code);
-
-		  
-		// Make the space to be added and set it's basic information
-		String queueName = request.getParameter(name);
-		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
-
-		int newQueueId = Queues.add(queueName, nodeIds);
-		log.debug("queueCode = " + queueCode);
-
-		if (queueCode != "") {
-			log.debug("This is an approval of a queue_request");
-			int queueUserId = Integer.parseInt((String)request.getParameter(userId));
-			int queueSpaceId = Integer.parseInt((String)request.getParameter(spaceId));
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-			String start_date = request.getParameter(start);
-			String end_date = request.getParameter(end);
+		QueueRequest req = Requests.getQueueRequest(queueCode);
+		
+		String queue_name = req.getQueueName();
+		int node_count = req.getNodeCount();
+		int queueUserId = req.getUserId();
+		int queueSpaceId = req.getSpaceId();
+		Date start = req.getStartDate();
+		Date end = req.getEndDate();
+	
+		
+		
+		
+		//Add the queue, reserve the nodes, and approve the reservation
+		int newQueueId = Queues.add(queue_name);
+		log.debug(newQueueId);
+		Cluster.reserveNodes(newQueueId, node_count, start, end);
+		boolean approved = Requests.approveQueueReservation(req, newQueueId);
+		
+		
+		User u = Users.get(queueUserId);
+		if(approved && !u.getRole().equals("admin")) {
+			// Notify user they've been approved	
+			Mail.sendReservationResults(req, true);
+			log.info(String.format("User [%s] has finished the approval process.", Users.get(req.getUserId()).getFullName()));
 			
-			Date start = null;
-			Date end = null;
-			try {
-				start = new Date(sdf.parse(start_date).getTime());
-				end = new Date(sdf.parse(end_date).getTime());
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+		} else if (approved && u.getRole().equals("admin")) {
+			log.info(String.format("Admin has finished the add queue process."));
 			
-			
-			// create a recurring task to check whether or not the start_date is today and then 
-			// will finish the queue process by associating the nodes with the queue
-		    final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
-			Runnable checkDate = createRunnable(start, nodeIds, newQueueId);
-			taskScheduler.scheduleAtFixedRate(checkDate, 0, R.CREATE_QUEUE_PERIOD, TimeUnit.MINUTES);
-			log.debug("successfully created a recurring task");
-
-			
-
-			
-			QueueRequest req = new QueueRequest();
-			req.setCode(queueCode);
-			req.setQueueName(queueName);
-			req.setSpaceId(queueSpaceId);
-			req.setUserId(queueUserId);
-			req.setNodeCount(nodeIds.size());
-			req.setStartDate(start);
-			req.setEndDate(end);
-			boolean approved = Requests.approveQueueReservation(req, newQueueId);
-			if(approved) {
-				
-				// Notify user they've been approved	
-				Mail.sendReservationResults(req, true);
-				
-				log.info(String.format("User [%s] has finished the approval process.", Users.get(req.getUserId()).getFullName()));
-			} else {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error approving the queue reservation");
-			}
-			
-			for (int nodeId : nodeIds) {
-				String reservedQueueCode = Requests.getQueueReservedCode(newQueueId);
-				Cluster.updateNodeDate(nodeId, newQueueId, start, end, reservedQueueCode);
-				log.debug("Successfully updated Node reservation dates");
-			}
 		} else {
-			//if this was a simple createQueue (not a reservation approval), immediately associate the nodes to the queue and set status to "ACTIVE"
-			Cluster.associateNodes(newQueueId, nodeIds);
-			Queues.setStatus(Queues.get(newQueueId).getName(), "ACTIVE");
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error approving the queue reservation");
 		}
-			
+		
+		/*
+		// create a recurring task to check whether or not the start_date is today and then 
+		// will finish the queue process by associating the nodes with the queue
+	    final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
+		Runnable checkDate = createRunnable(start, nodeIds, newQueueId);
+		taskScheduler.scheduleAtFixedRate(checkDate, 0, R.CREATE_QUEUE_PERIOD, TimeUnit.MINUTES);
+		log.debug("successfully created a recurring task");
+
+		
+		for (int nodeId : nodeIds) {
+			String reservedQueueCode = Requests.getQueueReservedCode(newQueueId);
+			Cluster.updateNodeDate(nodeId, newQueueId, start, end, reservedQueueCode);
+			log.debug("Successfully updated Node reservation dates");
+		}
+			*/
 		if (newQueueId <= 0) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
 		} else {
@@ -143,6 +119,7 @@ public class CreateQueue extends HttpServlet {
 		}		
 	}
 	
+	/*
 	private Runnable createRunnable(final Date start_date, final List<Integer> nodeIds, final int queueId) {
 		
 		Runnable aRunnable = new Runnable() {
@@ -154,6 +131,7 @@ public class CreateQueue extends HttpServlet {
 		return aRunnable;
 	}
 	
+	
 	private void associateNodes(Date start_date, List<Integer> nodeIds, int queueId) {
 		java.util.Date today = new java.util.Date();
 		SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
@@ -163,28 +141,7 @@ public class CreateQueue extends HttpServlet {
 			Queues.setStatus(Queues.get(queueId).getName(), "ACTIVE");
 		}
 	}
+	
+	*/
 
-	/**
-	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
-	 * and content length requirements to ensure it is not malicious.
-	 * @param spaceRequest The request to validate
-	 * @return True if the request is ok to act on, false otherwise
-	 */
-	private boolean isValid(HttpServletRequest queueRequest) {
-		try {
-			
-			// Ensure the queue name is valid (alphanumeric < SPACE_NAME_LEN chars)
-			if(!Validator.isValidPrimName((String)queueRequest.getParameter(name))) {
-				return false;
-			}
-			
-			// Passed all checks, return true
-			return true;
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
-		}
-		
-		// Return false control flow is broken and ends up here
-		return false;
-	}
 }

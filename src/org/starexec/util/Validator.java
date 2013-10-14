@@ -24,6 +24,7 @@ public class Validator {
 	private static Pattern patternPrimDesc;
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
+	private static Pattern patternDate;
 	
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	
@@ -42,6 +43,7 @@ public class Validator {
 	    	patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 	    	patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
+	    	patternDate = Pattern.compile(R.DATE_PATTERN);
 	    	log.debug("Validator patterns successfully compiled");
     	}
     }
@@ -154,6 +156,15 @@ public class Validator {
      */
     public static boolean isValidInteger(String s) {
     	return patternInteger.matcher(s).matches();
+    }
+    
+    /**
+     * Validates a string to ensure it can be treated as a date
+     * @param s The string to validate as a date
+     * @return True if the string is in the date format, false otherwise
+     */
+    public static boolean isValidDate(String s) {
+    	return patternDate.matcher(s).matches();
     }
     
     /**

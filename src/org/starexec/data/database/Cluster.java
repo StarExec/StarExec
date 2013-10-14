@@ -4,6 +4,9 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,14 +195,27 @@ public class Cluster {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
+			
 
-			procedure = con.prepareCall("{CALL UpdateNodeDate(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, nodeId);
-			procedure.setInt(2, queueId);
-			procedure.setDate(3, start);
-			procedure.setDate(4, end);
-			procedure.setString(5, queueCode);
-			procedure.executeUpdate();	
+			List<Date> dates = new ArrayList<Date>();
+		    Calendar calendar = new GregorianCalendar();
+		    calendar.setTime(start);
+		    while (calendar.getTime().before(end))
+		    {
+		        Date result = (Date) calendar.getTime();
+		        dates.add(result);
+		        calendar.add(Calendar.DATE, 1);
+		    }
+
+		    for (Date day : dates) {
+		    	procedure = con.prepareCall("{CALL UpdateNodeDate(?, ?, ?, ?)}");
+				procedure.setInt(1, nodeId);
+				procedure.setInt(2, queueId);
+				procedure.setDate(3, day);
+				procedure.setString(4, queueCode);
+				procedure.executeUpdate();
+		    }
+				
 					
 
 		} catch (Exception e){			
@@ -399,10 +415,19 @@ public class Cluster {
 			results = procedure.executeQuery();
 			Date latest = null;
 			while(results.next()){
-				latest = results.getDate("MAX(end_date)");
+				latest = results.getDate("MAX(reserve_date)");
 			}	
-			
-			java.util.Date newDate = new Date(latest.getTime());
+		
+			log.debug("latest = " + latest);
+			java.util.Date newDate = null;
+			if (latest == null) {
+				java.util.Calendar cal = java.util.Calendar.getInstance();
+				java.util.Date utilDate = cal.getTime();
+				java.sql.Date sqlDate = new Date(utilDate.getTime());
+				newDate = new Date(sqlDate.getTime());
+			} else {
+				newDate = new Date(latest.getTime());
+			}
 			return newDate;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -414,4 +439,59 @@ public class Cluster {
 		
 		return null;
 	}
+
+	public static Boolean updateNodeCount(int nodeCount, int queueId, java.util.Date date) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+
+			
+			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?)}");
+			procedure.setInt(1, nodeCount);
+			procedure.setInt(2, queueId);
+			procedure.setDate(3, sqlDate);
+			procedure.executeUpdate();
+
+			log.debug("successfully updated NodeCount for queue " + queueId);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+
+
+	public static Boolean reserveNodes(int queue_id, int node_count, Date start, Date end) {
+			
+		//Get all the dates between these two dates
+	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
+	    Calendar calendar = new GregorianCalendar();
+	    calendar.setTime(start);
+	    while (calendar.getTime().before(end))
+	    {
+	        java.util.Date result = calendar.getTime();
+	        dates.add(result);
+	        calendar.add(Calendar.DATE, 1);
+	    }
+	    java.util.Date latestResult = calendar.getTime();
+	    dates.add(latestResult);
+		
+		for (java.util.Date utilDate : dates) {
+		    Boolean result = updateNodeCount(node_count, queue_id, utilDate);
+		    if (!result) {
+		    	return false;
+		    }
+		}
+		return true;
+	}
+
 }

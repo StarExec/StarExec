@@ -69,16 +69,6 @@ $(document).ready(function(){
 	
 	initDataTables();
 	
-	/*
-	 setInterval(function() {
-		 requests.fnDraw(false);
-	 }, 1000);
-	 
-	 setInterval(function() {
-		 reserved.fnDraw(false);
-	 }, 1000);
-	 */
-	
 });
 
 function initUI(id){
@@ -261,7 +251,8 @@ function cancelReservation(spaceId, queueId) {
 			switch (returnCode) {
 				case 0:
 					showMessage('success', "the queue reservation was successfuly cancelled", 5000);
-					setTimeout(function(){document.location.reload(true);}, 1000);
+					//setTimeout(function(){document.location.reload(true);}, 1000);
+					setTimeout(function() {location.reload(true);}, 1000);
 					break;
 				case 1:
 					showMessage('error', "the queue was not successfuclly cancelled", 5000);

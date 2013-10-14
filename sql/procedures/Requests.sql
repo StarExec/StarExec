@@ -280,5 +280,64 @@ CREATE PROCEDURE GetQueueReservedCode(IN _queueId INT)
 		FROM queue_reserved
 		WHERE queue_id = _queueId;
 	END //
+	
+-- Updates the queue name of a queue_request
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdateQueueName;
+CREATE PROCEDURE UpdateQueueName(IN _code VARCHAR(36), IN _newName VARCHAR(64))
+	BEGIN
+		UPDATE queue_request
+		SET queue_name = _newName
+		WHERE code = _code;
+	END //
+	
+-- Updates the node count of a queue_request
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdateNodeCount;
+CREATE PROCEDURE UpdateNodeCount(IN _code VARCHAR(36), IN _nodeCount INT)
+	BEGIN
+		UPDATE queue_request
+		SET node_count = _nodeCount
+		WHERE code = _code;
+	END //
+	
+-- Updates the start date of a queue_request
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdateStartDate;
+CREATE PROCEDURE UpdateStartDate(IN _code VARCHAR(36), IN _startDate DATE)
+	BEGIN
+		UPDATE queue_request
+		SET start_date = _startDate
+		WHERE code = _code;
+	END //
+	
+-- Updates the end date of a queue_request
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdateEndDate;
+CREATE PROCEDURE UpdateEndDate(IN _code VARCHAR(36), IN _endDate DATE)
+	BEGIN
+		UPDATE queue_request
+		SET end_date = _endDate
+		WHERE code = _code;
+	END //
+	
+-- Get All the queue reservations
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetAllQueueReservations;
+CREATE PROCEDURE GetAllQueueReservations(IN _queueId INT)
+	BEGIN
+		SELECT *
+		FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
+	
+-- Adds an entry into reservation_history table
+-- Author: Wyatt Kaiser	
+DROP PROCEDURE IF EXISTS AddReservationToHistory;
+CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE)
+	BEGIN
+		INSERT INTO reservation_history
+		VALUES (_spaceId, _queueId, _nodeCount, _startDate, _endDate);
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

@@ -974,6 +974,40 @@ public class Spaces {
 	}
 	
 	/**
+	 * Gets all spaces
+	 * @return A list of all spaces
+	 * @author Wyatt Kaiser
+	 */
+	public static List<Space> GetAllSpaces() {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL GetAllSpaces()}");
+			results = procedure.executeQuery();
+			List<Space> spaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getInt("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));				
+				spaces.add(s);
+			}					
+			return spaces;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	/**
 	 * Gets the name of a space by Id - helper method to work around permissions for this special case
 	 * @param spaceId the id of the community to get the name of
 	 * @return the name of the community
@@ -2073,5 +2107,35 @@ public class Spaces {
 		}
 		
 		return true;
+	}
+
+
+	public static int getIdByName(String spaceName) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetIdBySpaceName(?)}");
+			procedure.setString(1, spaceName);
+			
+			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getInt("id");
+			}			
+
+			return -1;			
+			
+		} catch (Exception e){			
+			log.error("getIdBySpaceName says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+			return -1;				
 	}
 }

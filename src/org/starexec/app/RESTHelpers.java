@@ -642,7 +642,7 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
-	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.util.Date> dates, HttpServletRequest request) {
+	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.util.Date> dates, HttpServletRequest request) {		
 		JsonArray dataTablePageEntries = new JsonArray();
 		int total_node_count = Cluster.getNodeCount();
 
@@ -652,9 +652,8 @@ public class RESTHelpers {
 			String date1 = sdf.format(date);
 			
 	    	JsonArray entry = new JsonArray();
-	    	log.debug("date1 = " + date1);
 			entry.add(new JsonPrimitive(date1));
-			List<Queue> queues = Queues.getAll();
+			List<Queue> queues = Queues.getAllAdmin();
 			int total = 0;
 			
 			//Get the total number of nodes that have been reserved
@@ -680,28 +679,94 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(node_count));
 			}
 			
-			//Put the total_node_count at the end
-			entry.add(new JsonPrimitive(total_node_count));
-			
+			//Put the "total" at the end
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive (total)); // conflict #
+			} else {
+				entry.add(new JsonPrimitive(total_node_count)); //default total #
+			}
 			//Mark if conflicted
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive("CONFLICT"));
 			} else {
 				entry.add(new JsonPrimitive("clear"));
 			}
-			log.debug("entry = " + entry);
 			dataTablePageEntries.add(entry);
 		}
     	JsonObject nextPage=new JsonObject();
-   	 	// Build the actual JSON response object and populated it with the created data
-	    //nextPage.addProperty(SYNC_VALUE, syncValue);
-	    //nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-	    //nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+
 	    nextPage.add("aaData", dataTablePageEntries);
 
+	   	return nextPage;
+	}
+	
+	
+	protected static JsonObject getNextdataTablesPageForApproveQueueRequest(List<java.util.Date> dates, QueueRequest req, HttpServletRequest request) {
+		JsonArray dataTablePageEntries = new JsonArray();
+		int total_node_count = Cluster.getNodeCount();
+		Date reqStartDate = req.getStartDate();
+		Date reqEndDate = req.getEndDate();
 
-		    
-		    // Return the next DataTable page
+		for (java.util.Date date : dates ) {
+			
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+			String date1 = sdf.format(date);
+			
+	    	JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(date1));
+			List<Queue> queues = Queues.getAllAdmin();
+			int total = 0;
+			
+			//Get the total number of nodes that have been reserved
+			for (Queue q : queues) {
+				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				total = total + node_count;
+			}
+			//if date is between the requested dates
+			int reqNodeCount = req.getNodeCount();
+			if (!date.before(reqStartDate) && !date.after(reqEndDate)) {
+				total = total + reqNodeCount;
+			} 
+			
+			//set the number for the default queue to be all leftovers
+			int leftover_nodes = total_node_count - total;
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive(0));
+			} else {
+				entry.add(new JsonPrimitive(total_node_count - total));
+			}
+			
+			//Get the numbers for each respective queue
+			for (Queue q : queues) {
+				if (q.getId() == 1) {
+					continue;
+				}
+				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				entry.add(new JsonPrimitive(node_count));
+			}
+			//if date is between the requested dates
+			if (!date.before(reqStartDate) && !date.after(reqEndDate)) {
+				entry.add(new JsonPrimitive (reqNodeCount));
+			} else {
+				entry.add(new JsonPrimitive (0));
+			}
+			//Put the "total" at the end
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive (total)); // conflict #
+			} else {
+				entry.add(new JsonPrimitive(total_node_count)); //default total #
+			}
+			//Mark if conflicted
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive("CONFLICT"));
+			} else {
+				entry.add(new JsonPrimitive("clear"));
+			}
+			dataTablePageEntries.add(entry);
+		}
+    	JsonObject nextPage=new JsonObject();
+	    nextPage.add("aaData", dataTablePageEntries);
+
 	   	return nextPage;
 	}
 	
@@ -2276,7 +2341,7 @@ public class RESTHelpers {
 				String userLink = sb.toString();
 				
 				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"location.href='" + Util.docRoot("") + "secure/add/queue.jsp?code=" + req.getCode() + "'\" value=\"Y/N\"/>");
+				sb.append("<input type=\"button\" onclick=\"location.href='" + Util.docRoot("") + "secure/admin/queue.jsp?code=" + req.getCode() + "'\" value=\"Y/N\"/>");
 				String approveButton = sb.toString();
 				log.debug(approveButton);
 

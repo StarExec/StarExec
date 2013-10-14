@@ -8,7 +8,7 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
-		List<Queue> queues = Queues.getAll();
+		List<Queue> queues = Queues.getAllAdmin();
 		
 		if (!u.getRole().equals("admin")) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
@@ -23,7 +23,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/nodes, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/nodes, lib/jquery-ui-1.8.16.custom.min, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
 	<style>
 		.statusConflict { color: red; }
 		.statusClear {color : green; }
@@ -33,7 +33,6 @@
 		<h3>queues</h3>
 		<ul id="exploreList"></ul>
 	</div>
-	<div class="edit" id="div_1">Edit Me</div>
 	<div id="detailPanel">
 	<fieldset  id="nodeField">
 		<legend class="expd" id="nodeExpd">nodes</legend>

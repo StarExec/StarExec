@@ -1,12 +1,5 @@
 $(document).ready(function() {
 	attachFormValidation();
-	var i;
-	$(function(){
-	    var $select = $(".numList");
-	    for (i=1;i<=100;i++){
-	        $select.append($('<option></option>').val(i).html(i));
-	    }
-	});
 	
 	$('#btnSubmit').button({
 		icons: {
@@ -33,13 +26,25 @@ function attachFormValidation() {
 			    if (!/Invalid|NaN/.test(new Date(Date.parse(value)))) {
 			        return new Date(Date.parse(value)) > new Date(Date.parse($(params).val()));
 			    }
-			    alert(Date.parse(value));
 			    return isNaN(value) && isNaN($(params).val()) 
 			        || (Number(value) > Number($(params).val())); 
 			},'Must be greater than {0}.');
 	
+	$.validator.addMethod(
+			"greaterThanToday", 
+			function(value, element, params) {
+				var today = new Date();
+			    if (!/Invalid|NaN/.test(new Date())) {
+			        return today < new Date(Date.parse(value));
+			    }
+			    alert(today);
+			    return isNaN(value) && isNaN(value) 
+			        || (Number(value) > Number(value)); 
+			},'Must be greater than {0}.');
+	
 	
 	// Set up form validation
+	var today = new Date();
 	$("#addForm").validate({
 		rules: {
 			name: {
@@ -60,6 +65,7 @@ function attachFormValidation() {
 			},
 			start: {
 				required: true,
+				greaterThanToday: today,
 				regex:  "[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]"
 			},
 			end: {
@@ -82,11 +88,12 @@ function attachFormValidation() {
 				regex	 : "invalid character(s)"
 			},
 			node: {
-				required: "enter a node name",
+				required: "enter a node count",
 				regex: "invalid character(s)"
 			},
 			start: {
 				required: "enter a start date",
+				greaterThanToday: "must be greater than today",
 				regex: "invalid format - ex. mm/dd/yyyy"
 			},
 			end: {

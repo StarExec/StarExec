@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
@@ -29,6 +30,7 @@ public class ReserveQueue extends HttpServlet {
 	private static final Logger log = Logger.getLogger(ReserveQueue.class);	
 	
 	// Param strings for processing
+	private static final String spaceName = "spaceName";
 	private static final String name = "name";
 	private static final String msg = "msg";
 	private static final String sid = "sid";
@@ -46,21 +48,38 @@ public class ReserveQueue extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		QueueRequest queueRequest = constructQueueRequest(request);
+		String message = request.getParameter(msg);
+
+		// if this is an addQueue request initiated by the administrator,
+		// addQueue is set to true, false otherwise [this is determined by if
+		// the message is null or not (addQueue doesn't have message associated with it)
+		boolean addQueue = false;
+		if (message == null) {
+			addQueue = true;
+		}
 		
+		if(queueRequest == null && addQueue == true){
+		    response.sendRedirect(Util.docRoot("secure/add/queue.jsp?result=requestNotSent"));
+			return;
+		}
 		if(queueRequest == null){
 		    response.sendRedirect(Util.docRoot("secure/reserve/queue.jsp?result=requestNotSent"));
 			return;
 		}
 		
 		boolean added = Requests.addQueueRequest(queueRequest);
-		if(added){
+		
+		if(added && addQueue == false){
 			// Send the invite to the admins of the community 
 			Mail.sendQueueRequest(queueRequest);
-			//Mail.sendCommunityRequest(user, comRequest);
 			response.sendRedirect(Util.docRoot("secure/reserve/queue.jsp?sid=" + queueRequest.getSpaceId() + "&result=requestSent"));
-		} else {
+		} else if (added & addQueue == true) { 
+			response.sendRedirect(Util.docRoot("secure/admin/queue.jsp?code=" + queueRequest.getCode()));
+		} else if (!added && addQueue == false) {
 			// There was a problem
 		    response.sendRedirect(Util.docRoot("secure/reserve/queue.jsp?sid=" + queueRequest.getSpaceId() + "&result=requestNotSent"));
+		} else {
+			response.sendRedirect(Util.docRoot("secure/add/queue.jsp?result=requestNotSent"));
 		}
 	}
 	
@@ -76,7 +95,18 @@ public class ReserveQueue extends HttpServlet {
 			String queue_Name = request.getParameter(name);
 			String message = request.getParameter(msg);
 			int user_id = SessionUtil.getUserId(request);
-			int space_id = Integer.parseInt((String)request.getParameter(sid));
+			int space_id;
+			if (message == null) {
+				String space_Name = request.getParameter(spaceName);
+				space_id = Spaces.getIdByName(space_Name);
+				
+				log.debug("1.) message = " + message + " , space_Name = " + space_Name + ", space_id = " + space_id);
+			} else {
+				space_id = Integer.parseInt((String)request.getParameter(sid));
+				log.debug("2.) message = " + message + " , space_id = " + space_id);
+
+			}
+			log.debug("space_id = " + space_id);
 			int node_count = Integer.parseInt((String)request.getParameter(node));
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String start_date = request.getParameter(start);

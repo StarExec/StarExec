@@ -94,7 +94,7 @@ CREATE PROCEDURE GetNodeCountOnDate(IN _queueId INT, IN _date DATE)
 	BEGIN
 		SELECT node_count AS count
 		FROM node_reserved
-		WHERE queue_id = _queueID AND _date BETWEEN start_date AND end_date;
+		WHERE queue_id = _queueID AND _date = reserve_date;
 	END //	
 	
 DELIMITER ; -- This should always be at the end of this file

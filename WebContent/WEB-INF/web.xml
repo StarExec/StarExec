@@ -69,6 +69,15 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>UpdateData</servlet-name>
+    <servlet-class>org.starexec.servlets.UpdateData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UpdateData</servlet-name>
+    <url-pattern>/secure/update/nodeCount</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>Verify</servlet-name>
     <servlet-class>org.starexec.servlets.Verify</servlet-class>
   </servlet>

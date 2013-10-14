@@ -2,7 +2,11 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -416,6 +420,13 @@ public class Requests {
 	protected static boolean addQueueRequest(Connection con, QueueRequest req ) {
 		CallableStatement procedure = null;
 		try {		
+			//Check if msg is null (if it is --> admin is adding a queue)
+			String message = req.getMessage();
+			if (message == null) {
+				message = "[admin added queueRequest]";
+			}
+			
+			
 			// Add a new entry to the community_request table
 			 procedure = con.prepareCall("{CALL AddQueueReservation(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, req.getUserId());
@@ -424,7 +435,7 @@ public class Requests {
 			procedure.setDate(4, req.getStartDate());
 			procedure.setDate(5, req.getEndDate());
 			procedure.setString(6, req.getCode());
-			procedure.setString(7, req.getMessage());
+			procedure.setString(7, message);
 			procedure.setInt(8, req.getNodeCount());
 
 			procedure.executeUpdate();		
@@ -736,4 +747,203 @@ public class Requests {
 		
 		return null;		
 	}
+	
+	/**
+	 * Updates the queueName of a request in the database with the 
+	 * given queue_request code
+	 * 
+	 * @param code the queue_request code of the request we want to update
+	 * @param newValue what the queuename will be updated to
+	 * @return true iff the update succeeds on exactly one entry
+	 * @author Wyatt Kaiser
+	 */
+	public static boolean updateQueueName(String code, String newValue){
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL UpdateQueueName(?, ?)}");
+			procedure.setString(1, code);					
+			procedure.setString(2, newValue);
+			
+			procedure.executeUpdate();			
+			log.info(String.format("queueRequest updated queue name to [%s]", newValue));
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+
+	public static boolean updateNodeCount(String code, String newValue) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		int node_count = Integer.parseInt(newValue);
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL UpdateNodeCount(?, ?)}");
+			procedure.setString(1, code);	
+			procedure.setInt(2, node_count);
+			
+			procedure.executeUpdate();			
+			log.info(String.format("queueRequest updated nodeCount to [%s]", newValue));
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+
+	public static boolean updateStartDate(String code, String newValue) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		
+		
+		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	    Date startDate = null;
+		try {
+			java.util.Date startDateJava = format.parse(newValue);
+			startDate = new Date(startDateJava.getTime());
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+			return false;
+		}
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL UpdateStartDate(?, ?)}");
+			procedure.setString(1, code);	
+			procedure.setDate(2, startDate);
+			
+			procedure.executeUpdate();			
+			log.info(String.format("queueRequest updated startDate to [%s]", newValue));
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+	
+	
+	public static boolean updateEndDate(String code, String newValue) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+
+		/*
+		String month = newValue.substring(0,2);
+		String day = newValue.substring(2, 4);
+		String year = newValue.substring(4, 8);
+
+		newValue = month + "/" + day + "/" + year;
+		*/
+		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	    Date endDate = null;
+		try {
+			java.util.Date endDateJava = format.parse(newValue);
+			endDate = new Date(endDateJava.getTime());
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+			return false;
+		}
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL UpdateEndDate(?, ?)}");
+			procedure.setString(1, code);	
+			procedure.setDate(2, endDate);
+			
+			procedure.executeUpdate();			
+			log.info(String.format("queueRequest updated endDate to [%s]", newValue));
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+
+	public static List<QueueRequest> getAllQueueReservations() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results;
+		
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllQueueReservations()}");
+			results = procedure.executeQuery();
+			
+			List<QueueRequest> reservations = new LinkedList<QueueRequest>();
+			while (results.next()) {
+				QueueRequest req = new QueueRequest();
+				req.setSpaceId(results.getInt("space_id"));
+				
+				int queue_id = results.getInt("queue_id");
+				Queue q = Queues.get(queue_id);
+				
+				req.setQueueName(q.getName());
+				req.setNodeCount(results.getInt("node_count"));
+				req.setStartDate(results.getDate("start_date"));
+				req.setEndDate(results.getDate("end_date"));
+				
+				reservations.add(req);
+
+			}
+			
+			return reservations;
+		} catch (Exception e) {
+			log.error("GetAllQueueReservations says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
+	public static void DeleteReservation(QueueRequest req) {
+		Connection con = null;
+		CallableStatement procedureAddHistory = null;
+		CallableStatement procedureDelete = null;
+
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			String queueName = req.getQueueName();
+			int queueId = Queues.getIdByName(queueName);
+
+			procedureAddHistory = con.prepareCall("{CALL AddReservationToHistory(?,?,?,?,?)}");
+			procedureAddHistory.setInt(1, req.getSpaceId());
+			procedureAddHistory.setInt(2, queueId);
+			procedureAddHistory.setInt(3, req.getNodeCount());
+			procedureAddHistory.setDate(4, req.getStartDate());
+			procedureAddHistory.setDate(5, req.getEndDate());
+			procedureAddHistory.executeUpdate();
+			
+			procedureDelete = con.prepareCall("{CALL RemoveQueue(?)}");
+			procedureDelete.setInt(1, queueId);
+			procedureDelete.executeUpdate();
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedureAddHistory);
+			Common.safeClose(procedureDelete);
+		}
+	}
+
 }

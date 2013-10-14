@@ -106,6 +106,15 @@ CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 			JOIN spaces AS space ON space.id=space_id
 		WHERE user_id=_userId;
 	END //
+	
+-- Gets all the spaces
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetAllSpaces;
+CREATE PROCEDURE GetAllSpaces()
+	BEGIN
+		SELECT name, id, locked, description
+		FROM spaces;
+	END //
 
 	
 -- Returns all spaces belonging to the space with the given id.
@@ -508,6 +517,16 @@ BEGIN
 	DELETE FROM job_assoc
 	WHERE job_id = _jobId
 	AND space_id = _spaceId;
+END //
+
+-- Get the id of a space given its name
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetIdBySpaceName;
+CREATE PROCEDURE GetIdBySpaceName(IN _spaceName varchar(128))
+BEGIN
+	SELECT id
+	FROM spaces
+	WHERE name = _spaceName;
 END //
 
 DELIMITER ; -- This should always be at the end of this file

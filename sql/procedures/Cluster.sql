@@ -90,7 +90,7 @@ CREATE PROCEDURE GetAllQueuesAdmin()
 	BEGIN		
 		SELECT id, name, status
 		FROM queues
-		ORDER BY name;	
+		ORDER BY id;	
 	END //
 	
 -- Gets the id, name and status of all queues in the cluster that are active and the user can use
@@ -164,10 +164,10 @@ CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64),
 	END // 
 	
 DROP PROCEDURE IF EXISTS UpdateNodeDate;
-CREATE PROCEDURE UpdateNodeDate(IN _nodeId INT, IN _queueId INT, IN _startDate DATE, IN _endDate DATE, IN _queueCode VARCHAR(36))
+CREATE PROCEDURE UpdateNodeDate(IN _nodeId INT, IN _queueId INT, IN _date DATE, IN _queueCode VARCHAR(36))
 	BEGIN
 		INSERT INTO node_reserved
-		VALUES (_nodeId, _queueId, _startDate, _endDate, _queueCode);
+		VALUES (_nodeId, _queueId, _date, _queueCode);
 	END //
 	
 -- Updates a queues's attribute (assuming the column already exists)
@@ -237,7 +237,7 @@ CREATE PROCEDURE GetUnReservedNodes(IN _start DATE, IN _end DATE)
 		FROM nodes
 			LEFT JOIN node_reserved
 				ON nodes.id = node_reserved.node_id
-				WHERE ( ((_start not between start_date and end_date) AND (_end not between start_date and end_date)) OR (start_date is NULL));
+				WHERE ( (reserve_date NOT BETWEEN _start AND _end) OR (start_date is NULL));
 	END //
 
 DROP PROCEDURE IF EXISTS GetNodeCount;
@@ -254,8 +254,17 @@ CREATE PROCEDURE GetNodeCount()
 DROP PROCEDURE IF EXISTS GetLatestNodeDate;
 CREATE PROCEDURE GetLatestNodeDate()
 	BEGIN
-		SELECT MAX(end_date)
+		SELECT MAX(reserve_date)
 		FROM node_reserved;
+	END //
+	
+DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
+CREATE PROCEDURE UpdateReservedNodeCount(IN _nodeCount INT, IN _queueId INT, IN _date DATE)
+	BEGIN
+		INSERT INTO node_reserved
+		VALUES (_nodeCount, _queueId, _date)
+		ON DUPLICATE KEY UPDATE
+		node_count=_nodeCount;
 	END //
 	
 	

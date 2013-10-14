@@ -403,6 +403,8 @@ CREATE TABLE queue_request (
 	CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
+-- Reserved queues. includes future reservations and current reservations
+-- Author: Wyatt Kaiser
 CREATE TABLE queue_reserved (
 	space_id INT NOT NULL,
 	queue_id INT NOT NULL,
@@ -415,15 +417,26 @@ CREATE TABLE queue_reserved (
 	CONSTRAINT queue_reserved_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
+-- The number of nodes that are reserved on certain date for a certain queue
+-- Author: Wyatt Kaiser
 CREATE TABLE node_reserved (
 	node_count INT NOT NULL,
 	queue_id INT NOT NULL,
-	start_date DATE NOT NULL,
-	end_date DATE NOT NULL,
-	PRIMARY KEY (queue_id),
+	reserve_date DATE NOT NULL,
+	PRIMARY KEY (queue_id,reserve_date),
 	CONSTRAINT node_reserved_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
 );
 
+-- The history of queue_reservations (i.e. reservations that happened in the past)
+-- Author: Wyatt Kaiser
+CREATE TABLE reservation_history (
+	space_id INT NOT NULL,
+	queue_id INT NOT NULL,
+	node_count INT NOT NULL,
+	start_date DATE NOT NULL,
+	end_date DATE NOT NULL,
+	PRIMARY KEY (queue_Id, start_date)
+);
 
 -- Pending requests to reset a user's password
 -- Author: Todd Elvers

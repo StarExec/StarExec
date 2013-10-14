@@ -892,7 +892,7 @@ public class Queues {
 	 * @return The ID of the newly inserted queue, -1 if the operation failed
 	 * @author Wyatt Kaiser
 	 */
-	public static int add(String queueName, List<Integer> nodeIds) {
+	public static int add(String queueName) {
 		Connection con = null;			
 		
 		try {
@@ -901,7 +901,7 @@ public class Queues {
 			Common.beginTransaction(con);	
 
 			// Add queue is a multi-step process, so we need to use a transaction
-			int newQueueId = Queues.add(con, queueName, nodeIds);
+			int newQueueId = Queues.add(con, queueName);
 
 			Common.endTransaction(con);			
 			
@@ -927,7 +927,7 @@ public class Queues {
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, String queueName, List<Integer> nodeIds) throws Exception {			
+	protected static int add(Connection con, String queueName) throws Exception {			
 		log.debug("preparing to call sql procedures to add queue");
 		CallableStatement addQueue = null;
 		CallableStatement associateQueue = null;
@@ -935,23 +935,13 @@ public class Queues {
 			
 			//Add the queue first
 			log.debug("Calling AddQueue");
+			log.debug("queueName = " + queueName);
 			addQueue = con.prepareCall("{CALL AddQueue(?, ?)}");	
 			addQueue.setString(1, queueName);
 			addQueue.registerOutParameter(2, java.sql.Types.INTEGER);
 			addQueue.executeUpdate();
 			int newQueueId = addQueue.getInt(2);
 			
-			/*
-			log.debug("Calling AssociateQueue");
-			// Adds the nodes as associated with the queue
-			for (int nodeId : nodeIds) {
-				 associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
-				associateQueue.setInt(1, newQueueId);
-				associateQueue.setInt(2, nodeId);
-				associateQueue.executeUpdate();
-			}
-			*/
-
 			log.info(String.format("New queue with name [%s] was successfully created", queueName));
 			return newQueueId;
 		} catch (Exception e) {
@@ -1057,6 +1047,31 @@ public class Queues {
 		}
 		return 0;
 	}
-
+/*
+	public static String getNameById(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetNameById(?)}");
+			procedure.setInt(1, queue_id);
+			results = procedure.executeQuery();
+			
+			while (results.next()){
+				return results.getString("name");
+			}
+			
+		} catch (Exception e){
+			log.error("GetNameById says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+		
+	}
+*/
 
 }

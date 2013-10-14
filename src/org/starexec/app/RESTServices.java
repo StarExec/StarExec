@@ -1,6 +1,8 @@
 package org.starexec.app;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -10,7 +12,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -3528,6 +3534,7 @@ public class RESTServices {
 
 		//Get the latest date that a node is reserved for
 		Date latest = Cluster.getLatestNodeDate();
+		log.debug("latest = " + latest);
 		
 		//Get all the dates between these two dates
 	    List<Date> dates = new ArrayList<Date>();
@@ -3539,10 +3546,160 @@ public class RESTServices {
 	        dates.add(result);
 	        calendar.add(Calendar.DATE, 1);
 	    }
+	    Date latestResult = calendar.getTime();
+	    dates.add(latestResult);
 	    
 	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForManageNodes(dates, request);
-	    log.debug(nextDataTablesPage);
 	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	    
 		}
+	
+	@POST
+	@Path("/nodes/dates/reservation/{code}/pagination")
+	@Produces("application/json")
+	public String nodeScheduleReservation(@PathParam("code") String code, @Context HttpServletRequest request) {
+		
+		//Get todays date
+		QueueRequest req = Requests.getQueueRequest(code);
+		Date today = new Date();
+
+		//Get the latest date that a node is reserved/requested for
+		Date latest1 = Cluster.getLatestNodeDate();
+		Date latest2 = req.getEndDate();
+		Date latest = null;
+		if (latest1.after(latest2)) {
+			latest = latest1;
+		} else {
+			latest = latest2;
+		}
+		
+		//Get all the dates between these two dates
+	    List<Date> dates = new ArrayList<Date>();
+	    Calendar calendar = new GregorianCalendar();
+	    calendar.setTime(today);
+	    while (calendar.getTime().before(latest))
+	    {
+	        Date result = calendar.getTime();
+	        dates.add(result);
+	        calendar.add(Calendar.DATE, 1);
+	    }
+	    Date latestResult = calendar.getTime();
+	    dates.add(latestResult);
+	    
+	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForApproveQueueRequest(dates, req, request);
+	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	    
+		}
+	
+	
+	/** 
+	 * Updates information in the database using a POST. Attribute and
+	 * new value are included in the path. First validates that the new value
+	 * is legal, then updates the database and session information accordingly.
+	 * 
+	 * @return a json string containing '0' if the update was successful, else 
+	 * a json string containing '1'
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/edit/request/{code}/{attr}/{val}")
+	@Produces("application/json")
+	public String editQueueRequest(@PathParam("code") String code, @PathParam("attr") String attribute, @PathParam("val") String newValue, @Context HttpServletRequest request) {	
+		int userId = SessionUtil.getUserId(request);
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		boolean success = false;
+		
+		
+		// Go through all the cases, depending on what attribute we are changing.
+		// First, validate that it is in legal form. Then, try to update the database.
+		// Finally, update the current session data
+		if (attribute.equals("queuename")) {
+			if (true == Validator.isValidPrimName(newValue)) {
+				log.debug("validated name");
+				success = Requests.updateQueueName(code, newValue);
+			}
+		} else if (attribute.equals("nodecount")) {
+			if (true == Validator.isValidInteger(newValue)) {
+				log.debug("validated count");
+				success = Requests.updateNodeCount(code, newValue);
+			}
+		} else if (attribute.equals("startdate")) {
+			String month = newValue.substring(0,2);
+			String day = newValue.substring(2, 4);
+			String year = newValue.substring(4, 8);
+
+			log.debug("month = " + month);
+			log.debug("day = " + day);
+			log.debug("year = " + year);
+			newValue = month + "/" + day + "/" + year;
+			if (true == Validator.isValidDate(newValue)) {
+				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+			    Date startDate = null;
+				try {
+					java.util.Date endDateJava = format.parse(newValue);
+					startDate = new Date(endDateJava.getTime());
+				} catch (ParseException e1) {
+					e1.printStackTrace();
+				}
+				Date today = new Date();
+				if(today.compareTo(startDate) <= 0) {
+					success = Requests.updateStartDate(code, newValue);
+				} else {
+					return gson.toJson(1);
+				}
+			}
+		} else if (attribute.equals("enddate")) {
+			String month = newValue.substring(0,2);
+			String day = newValue.substring(2, 4);
+			String year = newValue.substring(4, 8);
+			
+
+			newValue = month + "/" + day + "/" + year;
+			if (true == Validator.isValidDate(newValue)) {
+				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+			    Date endDate = null;
+				try {
+					java.util.Date endDateJava = format.parse(newValue);
+					endDate = new Date(endDateJava.getTime());
+				} catch (ParseException e1) {
+					e1.printStackTrace();
+				}
+				QueueRequest req = Requests.getQueueRequest(code);
+				Date startDate = req.getStartDate();
+				
+				if (startDate.compareTo(endDate) < 0 ) {
+					success = Requests.updateEndDate(code, newValue);
+				} else {
+					return gson.toJson(2);
+				}
+			}
+		}
+		// Passed validation AND Database update successful
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/** 
+	 * Adds a queue_request to the database
+	 * 
+	 * @return a json string containing '0' if the update was successful, else 
+	 * a json string containing '1'
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/add/queueRequest/{queueName}/{nodeCount}/{startDate}/{endDate}")
+	@Produces("application/json")
+	public String addQueueRequest(@PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {	
+		int userId = SessionUtil.getUserId(request);
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		return gson.toJson(0);
+	}
+	
 }
