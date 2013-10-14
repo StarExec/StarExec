@@ -126,7 +126,7 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 -- Retrieves the benchmark with the given id, including deleted benchmarks
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeletedAndRecycled;
-CREATE PROCEDURE GetBenchmarkByIdIncludeDeleted(IN _id INT)
+CREATE PROCEDURE GetBenchmarkByIdIncludeDeletedAndRecycled(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM benchmarks AS bench
