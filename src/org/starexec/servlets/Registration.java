@@ -37,7 +37,6 @@ public class Registration extends HttpServlet {
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
 	public static String USER_MESSAGE = "msg";
-	public static String USER_ARCHIVE_TYPE = "pat";
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -133,8 +132,7 @@ public class Registration extends HttpServlet {
 	    	   !Util.paramExists(Registration.USER_PASSWORD, request) ||
 	    	   !Util.paramExists(Registration.USER_INSTITUTION, request) ||
 	    	   !Util.paramExists(Registration.USER_COMMUNITY, request) ||
-	    	   !Util.paramExists(Registration.USER_MESSAGE, request) ||
-	    	   !Util.paramExists(Registration.USER_ARCHIVE_TYPE, request)) {
+	    	   !Util.paramExists(Registration.USER_MESSAGE, request)) {
 	    		log.debug("Registration missing parameter");
 	    		return false;
 	    	}    	    	   
@@ -147,8 +145,7 @@ public class Registration extends HttpServlet {
 					|| !Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME)) 
 					|| !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))
 					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))
-					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))
-					|| !Validator.isValidArchiveType((String)request.getParameter(Registration.USER_ARCHIVE_TYPE))) {
+					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
 	    		log.debug("Registration has invalid parameter");
 				return false;
 			}
