@@ -135,6 +135,7 @@ public class Registration extends HttpServlet {
 	    	   !Util.paramExists(Registration.USER_COMMUNITY, request) ||
 	    	   !Util.paramExists(Registration.USER_MESSAGE, request) ||
 	    	   !Util.paramExists(Registration.USER_ARCHIVE_TYPE, request)) {
+	    		log.debug("Registration missing parameter");
 	    		return false;
 	    	}    	    	   
 		    
@@ -148,6 +149,7 @@ public class Registration extends HttpServlet {
 					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))
 					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))
 					|| !Validator.isValidArchiveType((String)request.getParameter(Registration.USER_ARCHIVE_TYPE))) {
+	    		log.debug("Registration has invalid parameter");
 				return false;
 			}
 	    	
