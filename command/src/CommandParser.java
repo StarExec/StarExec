@@ -31,9 +31,7 @@ public class CommandParser {
 		try {
 			int serverStatus=0;
 			
-			if (c.equals(R.COMMAND_SETARCHIVETYPE)) {
-				serverStatus=con.setUserSetting("archivetype",commandParams);
-			} else if(c.equals(R.COMMAND_SETFIRSTNAME)) {
+			if(c.equals(R.COMMAND_SETFIRSTNAME)) {
 				serverStatus=con.setUserSetting("firstname",commandParams);
 			} else if (c.equals(R.COMMAND_SETLASTNAME)) {
 				serverStatus=con.setUserSetting("lastname",commandParams);

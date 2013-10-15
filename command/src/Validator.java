@@ -691,23 +691,6 @@ public class Validator {
 	}
 	
 	/**
-	 * Checks to see if the String type represents a valid archive type on Starexec
-	 * @param type Should be zip, tar, tar.gz, or tgz
-	 * @return True if valid, false otherwise
-	 * @author Eric Burns
-	 */
-	
-	public static boolean validArchiveType(String type) {
-		type=type.toLowerCase();
-		for (String x : VALID_ARCHIVETYPES) {
-			if (type.equals(x)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
 	 * Returns true if the user has specified all the required parameters and false otherwise. If false,
 	 * set one missing parameter in the missingParam field.
 	 * @param params The required parameters

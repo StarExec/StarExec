@@ -186,7 +186,7 @@ Download Commands
 -----------------
 
 Every download command retrieves an archive from the server and saves it in a specified location. 
-Downloaded archives will be in the format specified in the user's default settings on StarExec.
+Downloaded archives will be in the .zip format.
 Most of them expect two parameters. "id", and "out", a If a file already exists at the path specified 
 by "out," the parameter "ow" should be included. "ow" requires no value. An example download command is...
 
@@ -264,11 +264,6 @@ These commands are used to change user settings for the current user. The first 
 commands expect one parameter of the form "val={newval}", where "newval" will be the new value of 
 the selected setting. The last two commands expect the parameter "id," where "id" is a space ID, and 
 also accept the optional parameter "hier".
-
---setarchivetype -Given a val of zip, tar, tar.gz, or tgz, sets the default archive type for the user
-REQUIRED: "val"
-OPTIONAL: None
-EXAMPLE: 'setarchivetype val=zip'
 
 --setfirstname -Sets the user's first name
 REQUIRED: "val"
