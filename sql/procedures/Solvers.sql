@@ -350,7 +350,7 @@ DROP PROCEDURE IF EXISTS GetRecycledSolverIds;
 CREATE PROCEDURE GetRecycledSolverIds(IN _userId INT) 
 	BEGIN
 		SELECT id FROM solvers
-		WHERE user_id=_userId where recycled=true;
+		WHERE user_id=_userId AND recycled=true;
 	END //
 -- Removes all solvers in the database that are deleted and also orphaned. Runs periodically.
 -- Author: Eric Burns
