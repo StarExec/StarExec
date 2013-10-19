@@ -319,8 +319,7 @@ public class Solvers {
 	
 	
 	/**
-	 * Deletes a solver from the database (cascading deletes handle all dependencies)
-	 * 
+	 * Deletes a solver from the database (cascading deletes handle all dependencies) 
 	 * @param id the id of the solver to delete
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
@@ -342,7 +341,10 @@ public class Solvers {
 			
 			// Delete solver file from disk, and the parent directory if it's empty
 			Util.safeDeleteDirectory(procedure.getString(2));
-			
+			File file=new File(procedure.getString(2));
+			if (file.getParentFile().exists()) {
+				file.getParentFile().delete();
+			}
 			
 			return true;
 		} catch (Exception e){			

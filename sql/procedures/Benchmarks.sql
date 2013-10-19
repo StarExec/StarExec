@@ -426,7 +426,7 @@ CREATE PROCEDURE GetRecycledBenchmarkCountByUser(IN _userId INT, IN _query TEXT)
 		SELECT 	COUNT(*) AS benchCount
 		FROM 	benchmarks
 			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
-		WHERE 	benchmarks.recycled=true AND benchmarks.user_id=_userId AND
+		WHERE 	benchmarks.recycled=true AND benchmarks.user_id=_userId AND deleted=false AND
 				(benchmarks.name LIKE	CONCAT('%', _query, '%')
 				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
 	END //

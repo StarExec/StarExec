@@ -320,7 +320,7 @@ CREATE PROCEDURE GetRecycledSolverCountByUser(IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT COUNT(*) AS solverCount
 		FROM solvers
-		WHERE solvers.user_id=_userId AND recycled=true AND
+		WHERE solvers.user_id=_userId AND recycled=true AND deleted=false AND
 				(solvers.name 	LIKE	CONCAT('%', _query, '%')
 				OR		solvers.description	LIKE 	CONCAT('%', _query, '%'));
 	END //
