@@ -505,11 +505,11 @@ public class Util {
      * throwing any errors
      * @param path The path to the directory to delete
      * @return True on success, false otherwise
+     * @author Eric Burns
      */
     public static boolean safeDeleteDirectory(String path) {
     	try {
-    		File file=new File(path);
-    		FileUtils.deleteDirectory(file);
+    		FileUtils.deleteDirectory(new File(path));
     	} catch (Exception e) {
     		log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}

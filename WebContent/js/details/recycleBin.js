@@ -39,19 +39,27 @@ $(document).ready(function(){
 	});
 	
 	$("#deleteSelectedSolvers").click(function() {
+		if ($(this).prop("enabled")) {
 		deleteSelected("solver");
+		}
 	});
 	
 	$("#deleteSelectedBenchmarks").click(function() {
+		if ($(this).prop("enabled")) {
 		deleteSelected("benchmark");
+		}
 	});
 	
 	$("#restoreSelectedSolvers").click(function() {
+		if ($(this).prop("enabled")) {
 		restoreSelected("solver");
+		}
 	});
 	
 	$("#restoreSelectedBenchmarks").click(function() {
+		if ($(this).prop("enabled")) {
 		restoreSelected("benchmark");
+		}
 	});
 	
 	
@@ -66,19 +74,27 @@ $(document).ready(function(){
 	}});
 	
 	$('#clearBenchmarks').click(function(){
-		deleteAll("benchmark");
+			deleteAll("benchmark");
+		
 	});
 	
 	$('#clearSolvers').click(function(){
-		deleteAll("solver");
+			deleteAll("solver");
+		
+		
 	});
 	
 	$('#restoreSolvers').click(function(){
-		restoreAll("solver");
+			restoreAll("solver");
+		
+		
 	});
 	
 	$('#restoreBenchmarks').click(function(){
-		restoreAll("benchmark");
+		
+			restoreAll("benchmark");
+		
+		
 	});
 	
 
@@ -106,14 +122,36 @@ $(document).ready(function(){
 	
 	$("#rbenchmarks").delegate("tr","mousedown", function(){
 		$(this).toggleClass("row_selected");
+		handleClassChange();
 	});
 	$("#rsolvers").delegate("tr","mousedown", function(){
 		$(this).toggleClass("row_selected");
+		handleClassChange();
 	});
 	
+	$("#deleteSelectedSolvers").prop("enabled",false);
+	$("#restoreSelectedSolvers").prop("enabled",false);
+	$("#deleteSelectedBenchmarks").prop("enabled",false);
+	$("#restoreSelectedBenchmarks").prop("enabled",false);
 	
 });
 
+function handleClassChange() {
+	if ($("#rbenchmarks tr.row_selected").length>0) {
+		$("#deleteSelectedBenchmarks").prop("enabled",true);
+		$("#restoreSelectedBenchmarks").prop("enabled",true);
+	}   else {
+		$("#deleteSelectedBenchmarks").prop("enabled",false);
+		$("#restoreSelectedBenchmarks").prop("enabled",false);
+	}
+	if ($("#rsolvers tr.row_selected").length>0) {
+		$("#deleteSelectedSolvers").prop("enabled",true);
+		$("#restoreSelectedSolvers").prop("enabled",true);
+	} else {
+		$("#deleteSelectedSolvers").prop("enabled",false);
+		$("#restoreSelectedSolvers").prop("enabled",false);
+	}
+}
 
 function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
 	
@@ -168,6 +206,7 @@ function deleteAll(prim) {
 								default:
 									solverTable.fnDraw(false);
 									benchTable.fnDra(false);
+									handleClassChange();
 			 						break;
 							}
 						},  
@@ -205,6 +244,7 @@ function restoreAll(prim) {
 								default:
 									solverTable.fnDraw(false);
 									benchTable.fnDraw(false);
+									handleClassChange();
 			 						break;
 							}
 						},  
@@ -247,6 +287,7 @@ function deleteSelected(prim) {
 								default:
 									solverTable.fnDraw(false);
 									benchTable.fnDraw(false);
+									handleClassChange();
 			 						break;
 							}
 						},  
@@ -289,6 +330,7 @@ function restoreSelected(prim) {
 								default:
 									solverTable.fnDraw(false);
 									benchTable.fnDraw(false);
+									handleClassChange();
 			 						break;
 							}
 						},  

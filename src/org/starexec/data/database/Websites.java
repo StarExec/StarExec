@@ -13,8 +13,8 @@ import org.starexec.data.to.Website;
  * Handles all database interaction for user-defined websites
  */
 public class Websites {
-	private static final Logger log = Logger.getLogger(Websites.class);
-	public static enum WebsiteType { USER, SOLVER, SPACE };
+	public static enum WebsiteType { USER, SOLVER, SPACE }
+	private static final Logger log = Logger.getLogger(Websites.class);;
 	
 	/**
 	 * Adds a new website associated with the specified entity
@@ -62,6 +62,51 @@ public class Websites {
 		
 		return false;
 	}
+	
+	/**
+	 * Deletes the website associated with the given website ID.
+	 * @param websiteId the ID of the website to delete
+	 * @param entityId the ID of the entity that the website belongs to (user, solver, space)
+	 * @param webType the type of entity the website belongs to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean delete(int websiteId, int entityId, WebsiteType webType) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();		
+			 procedure = null;			
+			
+			switch(webType) {
+				case USER:
+					procedure = con.prepareCall("{CALL DeleteUserWebsite(?, ?)}");
+					break;
+				case SPACE:
+					procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?, ?)}");
+					break;
+				case SOLVER:
+					procedure = con.prepareCall("{CALL DeleteSolverWebsite(?, ?)}");
+					break;
+				default:
+					throw new Exception("Unhandled value for WebsiteType");
+			}
+			
+			procedure.setInt(1, websiteId);
+			procedure.setInt(2, entityId);
+			
+			procedure.executeUpdate();					
+			log.info(String.format("Website [%d] deleted from entity [%d]", websiteId, entityId));
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}	
 	
 	/**
 	 * Returns a list of websites associated with the given entity based on its type
@@ -116,50 +161,5 @@ public class Websites {
 		}
 		
 		return null;
-	}	
-	
-	/**
-	 * Deletes the website associated with the given website ID.
-	 * @param websiteId the ID of the website to delete
-	 * @param entityId the ID of the entity that the website belongs to (user, solver, space)
-	 * @param webType the type of entity the website belongs to
-	 * @return True if the operation was a success, false otherwise
-	 * @author Tyler Jensen
-	 */
-	public static boolean delete(int websiteId, int entityId, WebsiteType webType) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();		
-			 procedure = null;			
-			
-			switch(webType) {
-				case USER:
-					procedure = con.prepareCall("{CALL DeleteUserWebsite(?, ?)}");
-					break;
-				case SPACE:
-					procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?, ?)}");
-					break;
-				case SOLVER:
-					procedure = con.prepareCall("{CALL DeleteSolverWebsite(?, ?)}");
-					break;
-				default:
-					throw new Exception("Unhandled value for WebsiteType");
-			}
-			
-			procedure.setInt(1, websiteId);
-			procedure.setInt(2, entityId);
-			
-			procedure.executeUpdate();					
-			log.info(String.format("Website [%d] deleted from entity [%d]", websiteId, entityId));
-			return true;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
 	}	
 }

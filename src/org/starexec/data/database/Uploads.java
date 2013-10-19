@@ -15,6 +15,38 @@ public class Uploads {
 	private static final Logger log = Logger.getLogger(Uploads.class);
 
 	/**
+	 * Adds failed benchmark name to db
+	 * @param statusId - id of status object being changed
+	 * @return true if successful, false if not
+	 */
+	public static Boolean addFailedBenchmark(Integer statusId, String name){
+		Connection con = null;	
+		CallableStatement procedure = null;
+		if (name.length() > 512){
+			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + name.length());
+		}
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			 procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.setString(2,name);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error("addFailedBenchmark says " + e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+	
+	/**
 	 * Creates object representing the current status of a user's upload of benchmarks
 	 * @param spaceId - the id of the parent space that benchmarks are being uploaded to
 	 * @param userId - id of the user uploading benchmarks
@@ -46,20 +78,20 @@ public class Uploads {
 			Common.safeClose(procedure);
 		}
 	}
-	
 	/**
-	 * Informs the database that the archive file has been uploaded and is in the file system.
-	 * @param statusId - id of uploadStatus object
+	 * Indicates that the entire benchmark upload process is complete.  This is triggered
+	 * even if the upload failed for some reason.
+	 * @param statusId
 	 * @return true if successful, false if not
 	 */
-	public static Boolean fileUploadComplete(Integer statusId){
+	public static Boolean everythingComplete(Integer statusId){
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			procedure = con.prepareCall("{CALL FileUploadComplete(?)}");
+			 procedure = con.prepareCall("{CALL EverythingComplete(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -101,20 +133,20 @@ public class Uploads {
 			Common.safeClose(procedure);
 		}
 	}
+	
 	/**
-	 * Indicates that the entire benchmark upload process is complete.  This is triggered
-	 * even if the upload failed for some reason.
-	 * @param statusId
+	 * Informs the database that the archive file has been uploaded and is in the file system.
+	 * @param statusId - id of uploadStatus object
 	 * @return true if successful, false if not
 	 */
-	public static Boolean everythingComplete(Integer statusId){
+	public static Boolean fileUploadComplete(Integer statusId){
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			 procedure = con.prepareCall("{CALL EverythingComplete(?)}");
+			procedure = con.prepareCall("{CALL FileUploadComplete(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -175,7 +207,6 @@ public class Uploads {
 		
 		return null;
 	}
-	
 	/**
 	 * Gets the upload status object when given its id
 	 * @param statusId The id of the status to get information for
@@ -206,20 +237,104 @@ public class Uploads {
 		
 		return null;
 	}
+	
 	/**
-	 * Indicates that benchmark and space java objects have been created for the entire space hierarchy.  
-	 * This is called when the benchmarks are being validated and entered into the database.
-	 * @param statusId
+	 * Adds 1 to the count of completed benchmarks when a benchmark is finished and added to the db.
+	 * @param statusId - id of status object being incremented
 	 * @return true if successful, false if not
 	 */
-	public static Boolean processingBegun(Integer statusId){
+	public static Boolean incrementCompletedBenchmarks(Integer statusId){
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			 procedure = con.prepareCall("{CALL processingBegun(?)}");
+			 procedure = con.prepareCall("{CALL IncrementCompletedBenchmarks(?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+	/**
+	 * Adds 1 to the count of completed spaces when a space is finished and added to the db.
+	 * @param statusId - id of status object being incremented
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementCompletedSpaces(Integer statusId){
+		Connection con = null;			
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			 procedure = con.prepareCall("{CALL IncrementCompletedSpaces(?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+	
+	/**
+	 * Adds 1 to the count of failed benchmarks when a benchmark fails validation.
+	 * @param statusId - id of status object being incremented
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementFailedBenchmarks(Integer statusId){
+		Connection con = null;			
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			 procedure = con.prepareCall("{CALL IncrementFailedBenchmarks(?)}");
+		
+			procedure.setInt(1, statusId);
+			procedure.executeUpdate();			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+	
+	/**
+	 *  Adds 1 to the count of total benchmarks when a file is encountered in the creation of space
+	 * java objects.
+	 * @param statusId - id of status object being incremented
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementTotalBenchmarks(Integer statusId){
+		Connection con = null;			
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+				
+			procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -249,34 +364,6 @@ public class Uploads {
 			Common.beginTransaction(con);
 				
 			 procedure = con.prepareCall("{CALL IncrementTotalSpaces(?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	/**
-	 *  Adds 1 to the count of total benchmarks when a file is encountered in the creation of space
-	 * java objects.
-	 * @param statusId - id of status object being incremented
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementTotalBenchmarks(Integer statusId){
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
-				
-			procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -322,74 +409,19 @@ public class Uploads {
 	}
 	
 	/**
-	 * Adds 1 to the count of completed spaces when a space is finished and added to the db.
-	 * @param statusId - id of status object being incremented
+	 * Indicates that benchmark and space java objects have been created for the entire space hierarchy.  
+	 * This is called when the benchmarks are being validated and entered into the database.
+	 * @param statusId
 	 * @return true if successful, false if not
 	 */
-	public static Boolean incrementCompletedSpaces(Integer statusId){
+	public static Boolean processingBegun(Integer statusId){
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
 				
-			 procedure = con.prepareCall("{CALL IncrementCompletedSpaces(?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	/**
-	 * Adds 1 to the count of completed benchmarks when a benchmark is finished and added to the db.
-	 * @param statusId - id of status object being incremented
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementCompletedBenchmarks(Integer statusId){
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
-				
-			 procedure = con.prepareCall("{CALL IncrementCompletedBenchmarks(?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	/**
-	 * Adds 1 to the count of failed benchmarks when a benchmark fails validation.
-	 * @param statusId - id of status object being incremented
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementFailedBenchmarks(Integer statusId){
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
-				
-			 procedure = con.prepareCall("{CALL IncrementFailedBenchmarks(?)}");
+			 procedure = con.prepareCall("{CALL processingBegun(?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.executeUpdate();			
@@ -429,38 +461,6 @@ public class Uploads {
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	/**
-	 * Adds failed benchmark name to db
-	 * @param statusId - id of status object being changed
-	 * @return true if successful, false if not
-	 */
-	public static Boolean addFailedBenchmark(Integer statusId, String name){
-		Connection con = null;	
-		CallableStatement procedure = null;
-		if (name.length() > 512){
-			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + name.length());
-		}
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
-				
-			 procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.setString(2,name);
-			procedure.executeUpdate();			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error("addFailedBenchmark says " + e.getMessage(), e);	
 			Common.doRollback(con);
 			return false;
 		} finally {

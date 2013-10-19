@@ -51,91 +51,6 @@ public class Permissions {
 	}	
 
 	/**
-	 * Checks to see if the user has access to the given solvers in some way. More specifically,
-	 * this checks if the user belongs to all the spaces the solvers belong to.
-	 * @param solverIds The solvers to check if the user can see
-	 * @param userId The user that is requesting to view the given solvers	
-	 * @return True if the user can somehow see the solvers, false otherwise
-	 * @author Tyler Jensen
-	 */
-	public static boolean canUserSeeSolvers(List<Integer> solverIds, int userId) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
-			return true;
-		}
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
-
-			for(int id : solverIds) {				
-				procedure.setInt(1, id);					
-				procedure.setInt(2, userId);
-				results = procedure.executeQuery();
-
-				if(results.first()) {
-					if(false == results.getBoolean(1)) {
-						return false;
-					}
-				}
-			}
-
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return false;		
-	}
-
-	/**
-	 * Checks to see if the user has access to the solver in some way. More specifically,
-	 * this checks if the user belongs to any space the solver belongs to.
-	 * @param solverId The solver to check if the user can see
-	 * @param userId The user that is requesting to view the given solver	
-	 * @return True if the user can somehow see the solver, false otherwise
-	 * @author Tyler Jensen
-	 */
-	public static boolean canUserSeeSolver(int solverId, int userId) {
-		if (Solvers.isPublic(solverId)){
-			return true;
-		}
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
-			return true;
-		}
-
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
-			procedure.setInt(1, solverId);					
-			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
-
-			if(results.first()) {
-				return results.getBoolean(1);
-			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return false;		
-	}
-
-	/**
 	 * Checks to see if the user has access to the benchmark in some way. More specifically,
 	 * this checks if the user belongs to any space the benchmark belongs to.
 	 * @param benchId The benchmark to check if the user can see
@@ -262,6 +177,91 @@ public class Permissions {
 	}
 
 	/**
+	 * Checks to see if the user has access to the solver in some way. More specifically,
+	 * this checks if the user belongs to any space the solver belongs to.
+	 * @param solverId The solver to check if the user can see
+	 * @param userId The user that is requesting to view the given solver	
+	 * @return True if the user can somehow see the solver, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean canUserSeeSolver(int solverId, int userId) {
+		if (Solvers.isPublic(solverId)){
+			return true;
+		}
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
+
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
+			procedure.setInt(1, solverId);					
+			procedure.setInt(2, userId);
+			 results = procedure.executeQuery();
+
+			if(results.first()) {
+				return results.getBoolean(1);
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return false;		
+	}
+
+	/**
+	 * Checks to see if the user has access to the given solvers in some way. More specifically,
+	 * this checks if the user belongs to all the spaces the solvers belong to.
+	 * @param solverIds The solvers to check if the user can see
+	 * @param userId The user that is requesting to view the given solvers	
+	 * @return True if the user can somehow see the solvers, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean canUserSeeSolvers(List<Integer> solverIds, int userId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return true;
+		}
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
+
+			for(int id : solverIds) {				
+				procedure.setInt(1, id);					
+				procedure.setInt(2, userId);
+				results = procedure.executeQuery();
+
+				if(results.first()) {
+					if(false == results.getBoolean(1)) {
+						return false;
+					}
+				}
+			}
+
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return false;		
+	}
+
+	/**
 	 * Checks to see if the user belongs to the given space.
 	 * @param spaceId The space to check if the user can see
 	 * @param userId The user that is requesting to view the given space
@@ -342,6 +342,39 @@ public class Permissions {
 		return false;		
 	}
 
+	public static Boolean checkSpaceHierRemovalPerms(List<Integer> subSpaceIds,
+			int parentSpaceId, int userId) {
+		log.debug("checking permissions for quick removal");
+		if(Permissions.get(userId, parentSpaceId).canRemoveSpace() == false){
+			return false;
+		}
+		for (Integer subSpaceId:subSpaceIds){
+			if (Permissions.canUserSeeSpace(subSpaceId, userId) == false){
+				return false;
+			}		
+			if (!Spaces.isLeaf(subSpaceId)){	
+				if ( Permissions.get(userId, subSpaceId).canRemoveSpace() == false){
+					return false;
+				}
+			}
+			//check all descendants of each subspace
+			List<Space> subSpaces = Spaces.getSubSpaces(subSpaceId, userId, true);
+			for (Space descendant:subSpaces){
+				if (Permissions.canUserSeeSpace(descendant.getId(), userId) == false){
+					return false;
+				}		
+				if (!Spaces.isLeaf(subSpaceId)){	
+					if ( Permissions.get(userId, descendant.getId()).canRemoveSpace() == false){
+						return false;
+					}
+				}
+			}
+		}
+		log.debug("Permission to remove Spaces granted!");
+		return true;
+
+	}
+
 	/**
 	 * Retrieves the user's maximum set of permissions in a space.
 	 * @param userId The user to get permissions for	
@@ -395,6 +428,7 @@ public class Permissions {
 		return null;		
 	}
 
+
 	/**
 	 * Retrieves the default permissions applied to a user when they are added to a space
 	 * @param spaceId The id of the space to get the default user's permission
@@ -438,7 +472,6 @@ public class Permissions {
 
 		return null;		
 	}
-
 
 	/**
 	 * Sets the permissions of a given user in a given space
@@ -536,38 +569,5 @@ public class Permissions {
 			Common.safeClose(procedure);
 		}
 		return false;
-	}
-
-	public static Boolean checkSpaceHierRemovalPerms(List<Integer> subSpaceIds,
-			int parentSpaceId, int userId) {
-		log.debug("checking permissions for quick removal");
-		if(Permissions.get(userId, parentSpaceId).canRemoveSpace() == false){
-			return false;
-		}
-		for (Integer subSpaceId:subSpaceIds){
-			if (Permissions.canUserSeeSpace(subSpaceId, userId) == false){
-				return false;
-			}		
-			if (!Spaces.isLeaf(subSpaceId)){	
-				if ( Permissions.get(userId, subSpaceId).canRemoveSpace() == false){
-					return false;
-				}
-			}
-			//check all descendants of each subspace
-			List<Space> subSpaces = Spaces.getSubSpaces(subSpaceId, userId, true);
-			for (Space descendant:subSpaces){
-				if (Permissions.canUserSeeSpace(descendant.getId(), userId) == false){
-					return false;
-				}		
-				if (!Spaces.isLeaf(subSpaceId)){	
-					if ( Permissions.get(userId, descendant.getId()).canRemoveSpace() == false){
-						return false;
-					}
-				}
-			}
-		}
-		log.debug("Permission to remove Spaces granted!");
-		return true;
-
 	}
 }

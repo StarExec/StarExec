@@ -42,34 +42,98 @@ public class Cache {
 	
 	
 	/**
-	 * Invalidates the cache for the given space by removing its entry in the 
-	 * file_cache table. If there is no entry in the table, this does nothing
-	 * @param id The ID of the primitive in question
-	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
-	 * @param con The open connection to make the call on
-	 * @return True if the call was successful, false otherwise
+	 * Deletes all the paths to cached items that have not been accesed in the past 
+	 * <daysSinceLastAccess> days
+	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
+	 * @return True if the operation was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	private static boolean invalidateCache(int id, CacheType type, Connection con) {
+	public static boolean deleteOldPaths(int daysSinceLastAccess) {
+		Connection con=null;
 		CallableStatement procedure=null;
-		
 		try {
-			procedure=con.prepareCall("{CALL InvalidateCache(?, ?)}");
-			procedure.setInt(1,id);
-			procedure.setInt(2,type.getVal());
-			procedure.executeUpdate();
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL DeleteOldCachePaths(?)}");
+			//get current time minus the number of days to get the time before which files are considered "old"
+			procedure.setTimestamp(1, new Timestamp(System.currentTimeMillis()-(TimeUnit.MILLISECONDS.convert(daysSinceLastAccess, TimeUnit.DAYS))));
+			procedure.executeQuery();
 			return true;
 		} catch (Exception e) {
-			log.debug("invalidateCache says "+e.getMessage(),e);
+			log.debug("getOldPaths says "+e.getMessage(),e);
 		} finally {
+			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
-		
 		return false;
 	}
 	
 	
+	
+	/**
+	 * Returns the relative path to a cached space directory
+	 * @param id The ID of the primitive in question
+	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
+	 * @return The String path on success, null if there is no path or if there was an error
+	 * @author Eric Burns
+	 */
+	
+	public static String getCache(int id, CacheType type) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			log.debug("calling getCache for type = "+type.toString()+" "+type.getVal());
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetCachePath(?, ?, ?)}");
+			procedure.setInt(1,id);
+			procedure.setInt(2,type.getVal());
+			procedure.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+			results= procedure.executeQuery();
+			if (results.next()) {
+				log.debug("THE PATH OF THE CACHE IS "+results.getString("path"));
+				return results.getString("path");
+			}
+		} catch (Exception e) {
+			log.debug("Spaces.setCache says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets all the paths to cached items that have not been accesed in the past 
+	 * <daysSinceLastAccess> days
+	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
+	 * @return A list of strings, each string representing a path relative to R.CACHED_FILE_DIR
+	 * @author Eric Burns
+	 */
+	public static List<String> getOldPaths(int daysSinceLastAccess) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetOldCachePaths(?)}");
+			//get current time minus the number of days to get the time before which files are considered "old"
+			procedure.setTimestamp(1, new Timestamp(System.currentTimeMillis()-(TimeUnit.MILLISECONDS.convert(daysSinceLastAccess, TimeUnit.DAYS))));
+			results=procedure.executeQuery();
+			List<String> paths=new ArrayList<String>();
+			while (results.next()) {
+				paths.add(results.getString("path"));
+			}
+			return paths;
+		} catch (Exception e) {
+			log.debug("getOldPaths says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
 	
 	/**
 	 * Invalidates the cache for the hierarchy at the given space ID. Also deletes the cached files on disk 
@@ -113,97 +177,72 @@ public class Cache {
 		return false;
 	}
 	
+	
 	/**
-	 * Returns the relative path to a cached space directory
+	 * Invalidates the cache for the given space by removing its entry in the 
+	 * file_cache table. If there is no entry in the table, this does nothing
 	 * @param id The ID of the primitive in question
 	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
-	 * @return The String path on success, null if there is no path or if there was an error
+	 * @param con The open connection to make the call on
+	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	
-	public static String getCache(int id, CacheType type) {
-		Connection con=null;
+	private static boolean invalidateCache(int id, CacheType type, Connection con) {
 		CallableStatement procedure=null;
-		ResultSet results=null;
+		
 		try {
-			log.debug("calling getCache for type = "+type.toString()+" "+type.getVal());
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetCachePath(?, ?, ?)}");
+			procedure=con.prepareCall("{CALL InvalidateCache(?, ?)}");
 			procedure.setInt(1,id);
 			procedure.setInt(2,type.getVal());
-			procedure.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-			results= procedure.executeQuery();
-			if (results.next()) {
-				log.debug("THE PATH OF THE CACHE IS "+results.getString("path"));
-				return results.getString("path");
-			}
+			procedure.executeUpdate();
+			return true;
 		} catch (Exception e) {
-			log.debug("Spaces.setCache says "+e.getMessage(),e);
+			log.debug("invalidateCache says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
-		return null;
+		
+		
+		return false;
 	}
 	
 	/**
-	 * Deletes all the paths to cached items that have not been accesed in the past 
-	 * <daysSinceLastAccess> days
-	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
-	 * @return True if the operation was successful, false otherwise
+	 * Invalidates the cache of every space associated with this benchmark
+	 * @param benchId The benchmark id in question
+	 * @return true on success, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean deleteOldPaths(int daysSinceLastAccess) {
-		Connection con=null;
-		CallableStatement procedure=null;
+	public static boolean invalidateSpacesAssociatedWithBench(int benchId) {
 		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL DeleteOldCachePaths(?)}");
-			//get current time minus the number of days to get the time before which files are considered "old"
-			procedure.setTimestamp(1, new Timestamp(System.currentTimeMillis()-(TimeUnit.MILLISECONDS.convert(daysSinceLastAccess, TimeUnit.DAYS))));
-			procedure.executeQuery();
+			List<Integer> spaceIds=Benchmarks.getAssociatedSpaceIds(benchId);
+			for (int spaceId : spaceIds) {
+				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+			}
 			return true;
 		} catch (Exception e) {
-			log.debug("getOldPaths says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
+			log.error("Benchmarks.invalidateAssociatedSpaces says "+e.getMessage(),e);
 		}
 		return false;
 	}
 	
-	
 	/**
-	 * Gets all the paths to cached items that have not been accesed in the past 
-	 * <daysSinceLastAccess> days
-	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
-	 * @return A list of strings, each string representing a path relative to R.CACHED_FILE_DIR
+	 * Invalidates the cache of every space associated with this solver
+	 * @param solverId  The ID of the solver in question
+	 * @return True if the invalidation was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static List<String> getOldPaths(int daysSinceLastAccess) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
+	public static boolean invalidateSpacesAssociatedWithSolver(int solverId) {
 		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetOldCachePaths(?)}");
-			//get current time minus the number of days to get the time before which files are considered "old"
-			procedure.setTimestamp(1, new Timestamp(System.currentTimeMillis()-(TimeUnit.MILLISECONDS.convert(daysSinceLastAccess, TimeUnit.DAYS))));
-			results=procedure.executeQuery();
-			List<String> paths=new ArrayList<String>();
-			while (results.next()) {
-				paths.add(results.getString("path"));
+			List<Integer> spaceIds=Solvers.getAssociatedSpaceIds(solverId);
+			for (int spaceId : spaceIds) {
+				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
 			}
-			return paths;
+			return true;
 		} catch (Exception e) {
-			log.debug("getOldPaths says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
+			log.debug("invalidateAssociatedSpaces says "+e.getMessage(),e);
+		} 
+		return false;
+		
 	}
 	
 	/**
@@ -257,45 +296,6 @@ public class Cache {
 			Common.safeClose(procedure);
 		}
 		return false;
-	}
-	
-	/**
-	 * Invalidates the cache of every space associated with this benchmark
-	 * @param benchId The benchmark id in question
-	 * @return true on success, false otherwise
-	 * @author Eric Burns
-	 */
-	public static boolean invalidateSpacesAssociatedWithBench(int benchId) {
-		try {
-			List<Integer> spaceIds=Benchmarks.getAssociatedSpaceIds(benchId);
-			for (int spaceId : spaceIds) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
-			}
-			return true;
-		} catch (Exception e) {
-			log.error("Benchmarks.invalidateAssociatedSpaces says "+e.getMessage(),e);
-		}
-		return false;
-	}
-	
-	/**
-	 * Invalidates the cache of every space associated with this solver
-	 * @param solverId  The ID of the solver in question
-	 * @return True if the invalidation was successful, false otherwise
-	 * @author Eric Burns
-	 */
-	public static boolean invalidateSpacesAssociatedWithSolver(int solverId) {
-		try {
-			List<Integer> spaceIds=Solvers.getAssociatedSpaceIds(solverId);
-			for (int spaceId : spaceIds) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
-			}
-			return true;
-		} catch (Exception e) {
-			log.debug("invalidateAssociatedSpaces says "+e.getMessage(),e);
-		} 
-		return false;
-		
 	}
 	
 }

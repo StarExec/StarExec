@@ -26,6 +26,104 @@ public class Common {
 	
 	
 	/**
+	 * Creates a new historical record in the logins table which keeps track of all user logins.
+	 * @param userId The user that has logged in
+	 * @param ipAddress The IP address the user logged in from
+	 * @param browser The browser/agent information about the browser the user logged in with
+	 */
+	public static void addLoginRecord(int userId, String ipAddress, String browser) {
+		Connection con = null;	
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setString(2, ipAddress);
+			procedure.setString(3, browser);			
+			procedure.executeUpdate();		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}				
+	}
+	
+	/**
+	 * Begins a transaction by turning off auto-commit
+	 */
+	protected static void beginTransaction(Connection con){
+		try {
+			con.setAutoCommit(false);
+		} catch (Exception e) {
+			// Ignore any errors
+		}
+	}
+	
+	/**
+	 * Rolls back any actions not committed to the database
+	 */
+	protected static void doRollback(Connection con){
+		try {
+			con.rollback();
+			con.setAutoCommit(true);
+			log.warn("Database transaction rollback.");
+		} catch (Exception e) {
+			// Ignore any errors
+		}
+	}
+	
+	/**
+	 * Turns on auto-commit
+	 */
+	protected static void enableAutoCommit(Connection con){
+		try {
+			con.setAutoCommit(true);
+		} catch (Exception e) {
+			// Ignore any errors
+		}
+	}							
+	
+	/**
+	 * Ends a transaction by committing any changes and re-enabling auto-commit
+	 */
+	protected static void endTransaction(Connection con){
+		try {
+			con.commit();
+			enableAutoCommit(con);
+		} catch (Exception e) {
+			Common.doRollback(con);
+		}
+	}	
+	
+	/**
+	 * @return a new connection to the database from the connection pool
+	 * @author Tyler Jensen
+	 */
+	protected synchronized static Connection getConnection() throws SQLException {	
+		connectionsOpened++;
+		//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
+		return dataPool.getConnection();
+	}
+	
+	/**
+	 * Gets information on the data pool.  Used to track down connection leak.
+	 * Returns true if not nearing max active connections
+	 */
+	public static Boolean getDataPoolData(){
+		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");
+		if (dataPool.getWaitCount()>0){
+		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
+		}
+		if (dataPool.getActive() > .5*R.MYSQL_POOL_MAX_SIZE){
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+	
+	/**
 	 * Configures and sets up the Tomcat JDBC connection pool. This method can only be called once in the
 	 * lifetime of the application.
 	 * @author Tyler Jensen
@@ -75,102 +173,15 @@ public class Common {
 		}
 	}
 	
-	/**
-	 * Gets information on the data pool.  Used to track down connection leak.
-	 * Returns true if not nearing max active connections
-	 */
-	public static Boolean getDataPoolData(){
-		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");
-		if (dataPool.getWaitCount()>0){
-		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
-		}
-		if (dataPool.getActive() > .5*R.MYSQL_POOL_MAX_SIZE){
-			return false;
-		}
-		else{
-			return true;
-		}
-	}
-	
-	/**
-	 * @return a new connection to the database from the connection pool
-	 * @author Tyler Jensen
-	 */
-	protected synchronized static Connection getConnection() throws SQLException {	
-		connectionsOpened++;
-		//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
-		return dataPool.getConnection();
-	}							
-	
-	/**
-	 * Creates a new historical record in the logins table which keeps track of all user logins.
-	 * @param userId The user that has logged in
-	 * @param ipAddress The IP address the user logged in from
-	 * @param browser The browser/agent information about the browser the user logged in with
-	 */
-	public static void addLoginRecord(int userId, String ipAddress, String browser) {
-		Connection con = null;	
-		CallableStatement procedure= null;
+	protected static void safeClose(CallableStatement statement) {
 		try {
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
-			procedure.setInt(1, userId);
-			procedure.setString(2, ipAddress);
-			procedure.setString(3, browser);			
-			procedure.executeUpdate();		
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}				
-	}	
-	
-	/**
-	 * Begins a transaction by turning off auto-commit
-	 */
-	protected static void beginTransaction(Connection con){
-		try {
-			con.setAutoCommit(false);
+			if (statement!=null) {
+				statement.close();
+			}
+		
 		} catch (Exception e) {
-			// Ignore any errors
-		}
-	}
-	
-	/**
-	 * Ends a transaction by committing any changes and re-enabling auto-commit
-	 */
-	protected static void endTransaction(Connection con){
-		try {
-			con.commit();
-			enableAutoCommit(con);
-		} catch (Exception e) {
-			Common.doRollback(con);
-		}
-	}
-	
-	/**
-	 * Turns on auto-commit
-	 */
-	protected static void enableAutoCommit(Connection con){
-		try {
-			con.setAutoCommit(true);
-		} catch (Exception e) {
-			// Ignore any errors
-		}
-	}
-	
-	/**
-	 * Rolls back any actions not committed to the database
-	 */
-	protected static void doRollback(Connection con){
-		try {
-			con.rollback();
-			con.setAutoCommit(true);
-			log.warn("Database transaction rollback.");
-		} catch (Exception e) {
-			// Ignore any errors
-		}
+			log.error("safeClose statement says "+e.getMessage(),e);
+		}	
 	}
 	
 	/**
@@ -211,17 +222,6 @@ public class Common {
 			log.error("Safe Close says " + e.getMessage(),e);
 		}
 
-	}
-	
-	protected static void safeClose(CallableStatement statement) {
-		try {
-			if (statement!=null) {
-				statement.close();
-			}
-		
-		} catch (Exception e) {
-			log.error("safeClose statement says "+e.getMessage(),e);
-		}	
 	}
 	
 	/**

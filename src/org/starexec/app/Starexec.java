@@ -15,6 +15,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.JobPairs;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
@@ -174,6 +175,7 @@ public class Starexec implements ServletContextListener {
 				log.info("cleanDatabaseTask (periodic");
 				Solvers.cleanOrphanedDeletedSolvers();
 				Benchmarks.cleanOrphanedDeletedBenchmarks();
+				Jobs.cleanOrphanedDeletedJobs();
 			}
 		};
 		//created directories expected by the system to exist

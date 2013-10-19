@@ -65,109 +65,6 @@ public class Communities {
 	}
 	
 	/**
-	 * Gets a space with minimal information (only details about the space itself)
-	 * @param spaceId The id of the space to get information for
-	 * @param userId The id of the user requesting the space (used for permissions check)
-	 * @return A space object consisting of shallow information about the space
-	 * @author Tyler Jensen
-	 */
-	public static Space getDetails(int id) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {			
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetCommunityById(?)}");
-			procedure.setInt(1, id);					
-			results = procedure.executeQuery();		
-			
-			if(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("space.name"));
-				s.setId(results.getInt("space.id"));
-				s.setDescription(results.getString("space.description"));
-				s.setLocked(results.getBoolean("space.locked"));
-				s.setCreated(results.getTimestamp("space.created"));	
-				return s;
-			}			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Removes a user's association to a given space, thereby leaving that space
-	 * @param userId the id of the user to remove from the space
-	 * @param commId the id of the space to remove the user from
-	 * @return true iff the user was successfully removed from the community referenced by 'commId',
-	 * false otherwise
-	 * @author Todd Elvers
-	 */
-	public static boolean leave(int userId, int commId) {
-		if (userId==R.PUBLIC_USER_ID){
-			return false;
-		}
-		
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
-			procedure.setInt(1, userId);
-			procedure.setInt(2, commId);
-			
-			procedure.executeUpdate();			
-			log.debug(String.format("User [id=%d] successfully left community [id=%d].", userId, commId));
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
-		return false;
-	}
-
-	
-	/**
-	 * Checks to see if the space with the given space ID is a community or not
-	 * (the space is a child of the root space)
-	 * 
-	 * @param spaceId the ID of the space to check
-	 * @return true iff the space is a community
-	 * @author Skylar Stark
-	 */
-	public static boolean isCommunity(int spaceId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL IsCommunity(?)}");
-			procedure.setInt(1, spaceId);
-
-			ResultSet result = procedure.executeQuery();
-
-			return result.next();
-
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-
-		return false;
-	}
-	
-	/**
 	 * Get the default setting of the community given by the id.
 	 * 
 	 * @param id the space id of the community
@@ -219,6 +116,109 @@ public class Communities {
 		}
 		
 		return listOfDefaultSettings;
+	}
+	
+	/**
+	 * Gets a space with minimal information (only details about the space itself)
+	 * @param spaceId The id of the space to get information for
+	 * @param userId The id of the user requesting the space (used for permissions check)
+	 * @return A space object consisting of shallow information about the space
+	 * @author Tyler Jensen
+	 */
+	public static Space getDetails(int id) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {			
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL GetCommunityById(?)}");
+			procedure.setInt(1, id);					
+			results = procedure.executeQuery();		
+			
+			if(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("space.name"));
+				s.setId(results.getInt("space.id"));
+				s.setDescription(results.getString("space.description"));
+				s.setLocked(results.getBoolean("space.locked"));
+				s.setCreated(results.getTimestamp("space.created"));	
+				return s;
+			}			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+
+	
+	/**
+	 * Checks to see if the space with the given space ID is a community or not
+	 * (the space is a child of the root space)
+	 * 
+	 * @param spaceId the ID of the space to check
+	 * @return true iff the space is a community
+	 * @author Skylar Stark
+	 */
+	public static boolean isCommunity(int spaceId) {
+		Connection con = null;
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL IsCommunity(?)}");
+			procedure.setInt(1, spaceId);
+
+			ResultSet result = procedure.executeQuery();
+
+			return result.next();
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+
+		return false;
+	}
+	
+	/**
+	 * Removes a user's association to a given space, thereby leaving that space
+	 * @param userId the id of the user to remove from the space
+	 * @param commId the id of the space to remove the user from
+	 * @return true iff the user was successfully removed from the community referenced by 'commId',
+	 * false otherwise
+	 * @author Todd Elvers
+	 */
+	public static boolean leave(int userId, int commId) {
+		if (userId==R.PUBLIC_USER_ID){
+			return false;
+		}
+		
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, commId);
+			
+			procedure.executeUpdate();			
+			log.debug(String.format("User [id=%d] successfully left community [id=%d].", userId, commId));
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
+		return false;
 	}
 	
 	/**
