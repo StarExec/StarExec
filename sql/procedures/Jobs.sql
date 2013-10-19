@@ -802,11 +802,6 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 		WHERE id = _jobId;
 		DELETE FROM job_pairs
 		WHERE job_id=_jobId;
-		-- if the benchmark is associated with no spaces, we can delete it from the database
-		IF ((SELECT COUNT(*) FROM job_assoc WHERE job_id=_jobId)=0) THEN
-			DELETE FROM jobs
-			WHERE id=_jobId;
-		END IF;
 	END //
 	
 -- Sets the "paused" property of a job to true
@@ -997,7 +992,7 @@ DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedJobs;
 CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 	BEGIN
 		DELETE jobs FROM jobs
-			LEFT JOIN job_assoc ON solver_assoc.solver_id=solvers.id
+			LEFT JOIN job_assoc ON job_assoc.job_id=jobs.id
 		WHERE deleted=true AND job_assoc.space_id IS NULL;
 	END //
 DELIMITER ; -- this should always be at the end of the file

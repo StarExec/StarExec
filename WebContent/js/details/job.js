@@ -175,7 +175,7 @@ function initUI(){
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
 		}
-	})
+	});
 	$("#jobDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -200,10 +200,7 @@ function initUI(){
 			secondary: "ui-icon-play"
 		}
 	});
-	
-	
-	$('#dialog-confirm-delete-txt').text('are you sure you want to delete this benchmark?');
-	
+		
 	$("#deleteJob").click(function(){
 		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
 		

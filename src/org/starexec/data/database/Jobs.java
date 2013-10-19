@@ -351,15 +351,12 @@ public class Jobs {
 	protected static boolean delete(int jobId, Connection con) {
 		CallableStatement procedure = null;
 		try {
-			File output=new File(getDirectory(jobId));
 			procedure = con.prepareCall("{CALL DeleteJob(?)}");
 			procedure.setInt(1, jobId);		
 			procedure.executeUpdate();	
 			
-			if (output.exists()) {
-				FileUtils.deleteDirectory(output);
-			}
-			log.debug("Deletion of job id = " + jobId+ " in directory" +output.getAbsolutePath()+ "was successful");
+			Util.safeDeleteDirectory(getDirectory(jobId));
+			
 			return true;
 		} catch (Exception e) {
 			log.error("Delete Job with jobId = "+jobId+" says "+e.getMessage(),e);

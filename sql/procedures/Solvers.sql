@@ -344,14 +344,13 @@ CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT)
 		WHERE user_id = _userId AND recycled=true;
 	END //
 	
--- Restores all recycled solvers a user has in the database
+-- Gets all recycled solver ids a user has in the database
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RestoreRecycledSolvers;
-CREATE PROCEDURE RestoreRecycledSolvers(IN _userId INT) 
+DROP PROCEDURE IF EXISTS GetRecycledSolverIds;
+CREATE PROCEDURE GetRecycledSolverIds(IN _userId INT) 
 	BEGIN
-		UPDATE solvers
-		SET recycled=0
-		WHERE user_id=_userId;
+		SELECT id FROM solvers
+		WHERE user_id=_userId where recycled=true;
 	END //
 -- Removes all solvers in the database that are deleted and also orphaned. Runs periodically.
 -- Author: Eric Burns

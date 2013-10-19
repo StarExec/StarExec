@@ -450,14 +450,13 @@ CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT)
 		WHERE user_id = _userId AND recycled=true;
 	END //
 	
--- Restores all recycled benchmarks a user has
+-- Gets all recycled benchmark ids a user has
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RestoreRecycledBenchmarks;
-CREATE PROCEDURE RestoreRecycledBenchmarks(IN _userId INT) 
+DROP PROCEDURE IF EXISTS GetRecycledBenchmarkIds;
+CREATE PROCEDURE GetRecycledBenchmarkIds(IN _userId INT) 
 	BEGIN
-		UPDATE benchmarks
-		SET recycled=0
-		WHERE user_id=_userId;
+		SELECT id from benchmarks
+		WHERE user_id=_userId AND recycled=true;
 	END //
 
 -- Removes all benchmarks in the database that are deleted and also orphaned. Runs periodically.
@@ -471,7 +470,7 @@ CREATE PROCEDURE RemoveDeletedOrphanedBenchmarks()
 		WHERE deleted=true AND bench_assoc.space_id IS NULL AND job_pairs.id IS NULL;
 	END //
 
--- Sets teh recycled flag for a single benchmark back to false
+-- Sets the recycled flag for a single benchmark back to false
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RestoreBenchmark;
 CREATE PROCEDURE RestoreBenchmark(IN _benchId INT)

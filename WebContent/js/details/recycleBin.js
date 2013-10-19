@@ -39,27 +39,19 @@ $(document).ready(function(){
 	});
 	
 	$("#deleteSelectedSolvers").click(function() {
-		if ($(this).prop("enabled")) {
 		deleteSelected("solver");
-		}
 	});
 	
 	$("#deleteSelectedBenchmarks").click(function() {
-		if ($(this).prop("enabled")) {
 		deleteSelected("benchmark");
-		}
 	});
 	
 	$("#restoreSelectedSolvers").click(function() {
-		if ($(this).prop("enabled")) {
 		restoreSelected("solver");
-		}
 	});
 	
 	$("#restoreSelectedBenchmarks").click(function() {
-		if ($(this).prop("enabled")) {
 		restoreSelected("benchmark");
-		}
 	});
 	
 	
@@ -128,28 +120,25 @@ $(document).ready(function(){
 		$(this).toggleClass("row_selected");
 		handleClassChange();
 	});
-	
-	$("#deleteSelectedSolvers").prop("enabled",false);
-	$("#restoreSelectedSolvers").prop("enabled",false);
-	$("#deleteSelectedBenchmarks").prop("enabled",false);
-	$("#restoreSelectedBenchmarks").prop("enabled",false);
+	handleClassChange();
 	
 });
 
 function handleClassChange() {
 	if ($("#rbenchmarks tr.row_selected").length>0) {
-		$("#deleteSelectedBenchmarks").prop("enabled",true);
-		$("#restoreSelectedBenchmarks").prop("enabled",true);
+		$("#deleteSelectedBenchmarks").show();
+		$("#restoreSelectedBenchmarks").show();
 	}   else {
-		$("#deleteSelectedBenchmarks").prop("enabled",false);
-		$("#restoreSelectedBenchmarks").prop("enabled",false);
+		
+		$("#deleteSelectedBenchmarks").hide();
+		$("#restoreSelectedBenchmarks").hide();
 	}
 	if ($("#rsolvers tr.row_selected").length>0) {
-		$("#deleteSelectedSolvers").prop("enabled",true);
-		$("#restoreSelectedSolvers").prop("enabled",true);
+		$("#deleteSelectedSolvers").show();
+		$("#restoreSelectedSolvers").show();
 	} else {
-		$("#deleteSelectedSolvers").prop("enabled",false);
-		$("#restoreSelectedSolvers").prop("enabled",false);
+		$("#deleteSelectedSolvers").hide();
+		$("#restoreSelectedSolvers").hide();
 	}
 }
 

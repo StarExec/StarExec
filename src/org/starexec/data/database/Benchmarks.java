@@ -597,6 +597,7 @@ public class Benchmarks {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
+			log.debug("Attempting to remove all orphaned, deleted benchmarks");
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedBenchmarks()}");
 			procedure.executeUpdate();
@@ -1821,23 +1822,29 @@ public class Benchmarks {
 	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
+	//TODO: Change this to getting all the IDs and calling restore on them one by one
 	public static boolean restoreRecycledBenchmarks(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
+		ResultSet results=null;
 		try {
 			con=Common.getConnection();
 
 			Common.safeClose(procedure);
-			procedure=con.prepareCall("CALL RestoreRecycledBenchmarks(?)");
+			procedure=con.prepareCall("CALL GetRecycledBenchmarkIds(?)");
 			procedure.setInt(1, userId);
-			procedure.executeUpdate();
-			
+			results=procedure.executeQuery();
+		
+			while (results.next()) {
+				Benchmarks.restore(results.getInt("id"));
+			}
 			return true;
 		} catch (Exception e) {
 			log.error("restoreRecycledBenchmarks says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}

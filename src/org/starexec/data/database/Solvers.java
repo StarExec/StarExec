@@ -1505,20 +1505,24 @@ public class Solvers {
 	public static boolean restoreRecycledSolvers(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
+		ResultSet results=null;
 		try {
 			con=Common.getConnection();
 
 			Common.safeClose(procedure);
-			procedure=con.prepareCall("CALL RestoreRecycledSolvers(?)");
+			procedure=con.prepareCall("CALL GetRecycledSolverIds(?)");
 			procedure.setInt(1, userId);
-			procedure.executeUpdate();
-			
+			results=procedure.executeQuery();
+			while (results.next()) {
+				Solvers.restore(results.getInt("id"));
+			}
 			return true;
 		} catch (Exception e) {
 			log.error("restoreRecycledSolvers says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}

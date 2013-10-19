@@ -178,6 +178,10 @@ public class Starexec implements ServletContextListener {
 				Jobs.cleanOrphanedDeletedJobs();
 			}
 		};
+		Solvers.cleanOrphanedDeletedSolvers();
+		System.out.println("HERHEEHEJKLERLKHSALKFADSLKJFDSA");
+		Benchmarks.cleanOrphanedDeletedBenchmarks();
+		Jobs.cleanOrphanedDeletedJobs();
 		//created directories expected by the system to exist
 		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
@@ -185,7 +189,6 @@ public class Starexec implements ServletContextListener {
 		cacheDir.mkdirs();
 		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
 		graphDir.mkdirs();
-		JobPairs.transferOutputFilesToNewDirectory();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
