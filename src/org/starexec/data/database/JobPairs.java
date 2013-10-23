@@ -21,7 +21,7 @@ import org.starexec.util.Util;
 
 
 public class JobPairs {
-	private static final Logger log = Logger.getLogger(Jobs.class);
+	private static final Logger log = Logger.getLogger(JobPairs.class);
 	
 	
 	/**

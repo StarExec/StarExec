@@ -96,6 +96,7 @@
 		<property key="STAREXEC_DATA_DIR" value="/home/astump/starexec_astump_data" />
                 <property key="JOB_INBOX_DIR" value="/home/astump/starexec_astump_data/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/jobout" />     
+		<property key="NEW_JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/joboutput"/>	
                 <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/jobout/logs" />
                 <property key="PICTURE_PATH" value="/home/astump/starexec_astump_data/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/astump/starexec_astump_data/batchSpace/uploads" />           

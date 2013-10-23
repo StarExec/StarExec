@@ -1013,10 +1013,8 @@ public class RESTServices {
 	/**
 	 * Post-processes an already-complete job with a new post processor
 	 * 
-	 * @return a json string containing '0' if the deletion was successful, else
-	 *         a json string containing '1' if there was a failure, '2' for
-	 *         insufficient permissions
-	 * @author Todd Elvers
+	 * @return a json string with result status (0 for success, otherwise 1)
+	 * @author Eric Burns
 	 */
 	@POST
 	@Path("/postprocess/job/{jobId}/{procId}")

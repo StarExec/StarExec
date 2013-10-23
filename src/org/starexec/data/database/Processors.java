@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 
@@ -41,7 +42,7 @@ public class Processors {
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
 			
-			int procId = procedure.getInt(6);	
+			int procId = procedure.getInt(7);	
 			
 			return procId;			
 		} catch (Exception e){			
@@ -192,6 +193,7 @@ public class Processors {
 		return null;
 	}	
 	
+	
 	/**	 
 	 * @param communityId The id of the community to retrieve all processors for
 	 * @param type The type of processors to get for the community
@@ -270,7 +272,7 @@ public class Processors {
 		
 		return null;
 	}	
-	
+
 	/**
 	 * Updates the description of a processor with the given processor id
 	 * @param processorId the id of the processor to update

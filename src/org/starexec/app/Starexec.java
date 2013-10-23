@@ -189,6 +189,7 @@ public class Starexec implements ServletContextListener {
 		cacheDir.mkdirs();
 		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
 		graphDir.mkdirs();
+
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	

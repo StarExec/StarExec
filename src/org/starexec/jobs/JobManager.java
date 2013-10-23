@@ -202,6 +202,9 @@ public abstract class JobManager {
 						// Write the script that will run this individual pair				
 						String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
 
+						// do this first, before we submit to grid engine, to avoid race conditions
+						JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+
 						// Submit to the grid engine
 						int sgeId = JobManager.submitScript(scriptPath, pair);
 
@@ -209,10 +212,11 @@ public abstract class JobManager {
 						if(sgeId >= 0) {											
 							log.info("Submission of pair "+pair.getId() + " successful.");
 							JobPairs.updateGridEngineId(pair.getId(), sgeId);
-							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 						}
-						else
+						else {
 							log.warn("Error submitting pair "+pair.getId() + " to SGE.");
+							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
+						}
 						count++;
 					} catch(Exception e) {
 						log.error("submitJobs() received exception " + e.getMessage(), e);

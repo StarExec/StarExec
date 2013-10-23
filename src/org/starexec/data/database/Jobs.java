@@ -1545,7 +1545,7 @@ public class Jobs {
 		return null;
 	}
 	
-	
+    
 	/**
 	 * Attempts to retrieve cached SolverStats objects from the database. Returns
 	 * an empty list if the stats have not already been cached.
@@ -1938,7 +1938,7 @@ public class Jobs {
 	}
 	
 	
-	
+		
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
