@@ -997,13 +997,10 @@ public class Queues {
 			// All or nothing!
 			Common.beginTransaction(con);
 			
-			 procAddQueue = con.prepareCall("{CALL AddQueue(?)}");
+			add(con,name);
 			 procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
 			 procUpdateAttr = con.prepareCall("{CALL UpdateQueueAttr(?, ?, ?)}");	
 			
-			// First, add the node (MySQL will ignore this if it already exists)
-			procAddQueue.setString(1, name);
-			procAddQueue.executeUpdate();
 			
 			// For each attribute for the queue...
 			for(Entry<String, String> keyVal : attributes.entrySet()) {				
@@ -1033,7 +1030,6 @@ public class Queues {
 			Common.safeClose(con);
 			Common.safeClose(procUpdateAttr);
 			Common.safeClose(procAddCol);
-			Common.safeClose(procAddQueue);
 		}
 		
 		log.debug(String.format("Queue [%s] failed to be updated.", name));
