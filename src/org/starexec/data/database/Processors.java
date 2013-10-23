@@ -42,7 +42,7 @@ public class Processors {
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
 			
-			int procId = procedure.getInt(6);	
+			int procId = procedure.getInt(7);	
 			
 			return procId;			
 		} catch (Exception e){			
