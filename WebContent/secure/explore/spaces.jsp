@@ -21,9 +21,9 @@
 					<tr>
 						<th>name</th>
 						<th>status</th>
-						<th>solved</th>
-						<th>total</th>
-						<th>failed</th>
+						<th><span title="Job pairs that ran successfully">completed</span></th>
+						<th><span title="The total number of job pairs in this job">total</span></th>
+						<th><span title="Job pairs for which there was a timeout, mem-out, or internal error">failed</span></th>
 						<th>time</th>
 					</tr>
 				</thead>			

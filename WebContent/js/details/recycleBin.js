@@ -126,16 +126,21 @@ $(document).ready(function(){
 
 function handleClassChange() {
 	if ($("#rbenchmarks tr.row_selected").length>0) {
-		$("#deleteSelectedBenchmarks").show();
-		$("#restoreSelectedBenchmarks").show();
-	}   else {
+		//if (benchTable.fnTotalRecords()>0) {
+			$("#deleteSelectedBenchmarks").show();
+			$("#restoreSelectedBenchmarks").show();
+		//}
 		
+	}   else {
 		$("#deleteSelectedBenchmarks").hide();
 		$("#restoreSelectedBenchmarks").hide();
 	}
 	if ($("#rsolvers tr.row_selected").length>0) {
-		$("#deleteSelectedSolvers").show();
-		$("#restoreSelectedSolvers").show();
+		//if (solverTable.fnTotalRecords()>0) {
+			$("#deleteSelectedSolvers").show();
+			$("#restoreSelectedSolvers").show();
+		//}
+		
 	} else {
 		$("#deleteSelectedSolvers").hide();
 		$("#restoreSelectedSolvers").hide();
@@ -219,7 +224,7 @@ function restoreAll(prim) {
 		modal: true,
 		height: 220,
 		buttons: {
-			'delete permanently': function() {
+			'restore': function() {
 				$("#dialog-confirm-restore").dialog("close");
 				createDialog("Restoring your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
 				$.post(  
@@ -314,7 +319,7 @@ function restoreSelected(prim) {
 							destroyDialog();
 							switch(nextDataTablePage){
 								case 1:
-									showMessage('error', "Internal error deleting "+prim+"s", 5000);
+									showMessage('error', "Internal error restoring "+prim+"s", 5000);
 									break;
 								default:
 									solverTable.fnDraw(false);
@@ -325,7 +330,7 @@ function restoreSelected(prim) {
 						},  
 						"json"
 				).error(function(){
-					showMessage('error',"Internal error deleting "+prim+"s",5000);
+					showMessage('error',"Internal error restoring "+prim+"s",5000);
 				});	
 			},
 			"cancel": function() {

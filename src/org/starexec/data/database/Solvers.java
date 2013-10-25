@@ -334,7 +334,7 @@ public class Solvers {
 			Cache.invalidateCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
 			con = Common.getConnection();
 			
-			 procedure = con.prepareCall("{CALL SetSolverToDeletedById(?, ?)}");
+			procedure = con.prepareCall("{CALL SetSolverToDeletedById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();

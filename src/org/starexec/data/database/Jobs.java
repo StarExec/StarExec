@@ -1570,8 +1570,9 @@ public class Jobs {
 				s.setCompleteJobPairs(results.getInt("complete"));
 				s.setIncompleteJobPairs(0); //we only store things in the stats table when the job is totally done
 				s.setTime(results.getDouble("wallclock"));
-				s.setErrorJobPairs(results.getInt("error"));
-				s.setIncorrectJobPairs(results.getInt("failed"));
+				s.setFailedJobPairs(results.getInt("failed"));
+				s.setIncorrectJobPairs(results.getInt("incorrect"));
+				s.setCorrectJobPairs(results.getInt("correct"));
 				Solver solver=new Solver();
 				solver.setName(results.getString("solver.name"));
 				solver.setId(results.getInt("solver.id"));
@@ -2637,16 +2638,20 @@ public class Jobs {
 			StatusCode statusCode=jp.getStatus().getCode();
 			curSolver.incrementTime(jp.getWallclockTime());
 			if ( statusCode.error()) {
-			    curSolver.incrementErrorJobPairs();
+			    curSolver.incrementFailedJobPairs();
 			} else if (statusCode.incomplete()) {
 			    curSolver.incrementIncompleteJobPairs();
 			} else if (statusCode.complete()) {
 			    curSolver.incrementCompleteJobPairs();
 			    if (jp.getAttributes()!=null) {
 			    	Properties attrs = jp.getAttributes();
+			    	//if the attributes don't have an expected result, we don't know whether the pair
+			    	//was correct or incorrect
 			    	if (attrs.contains(R.STAREXEC_RESULT) && attrs.contains(R.EXPECTED_RESULT)) {
 			    		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
 			    			curSolver.incrementIncorrectJobPairs();
+			    		} else {
+			    			curSolver.incrementCorrectJobPairs();
 			    		}
 			    	}
 			    }
@@ -2830,13 +2835,14 @@ public class Jobs {
 	private static boolean saveStats(int jobSpaceId, SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?)}");
 			procedure.setInt(1,jobSpaceId);
 			procedure.setInt(2,stats.getConfiguration().getId());
 			procedure.setInt(3,stats.getCompleteJobPairs());
-			procedure.setInt(4,stats.getIncorrectJobPairs());
-			procedure.setInt(5,stats.getErrorJobPairs());
-			procedure.setDouble(6,stats.getTime());
+			procedure.setInt(4,stats.getCorrectJobPairs());
+			procedure.setInt(5,stats.getIncorrectJobPairs());
+			procedure.setInt(6,stats.getFailedJobPairs());
+			procedure.setDouble(7,stats.getTime());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {

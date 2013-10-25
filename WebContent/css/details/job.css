@@ -45,16 +45,17 @@ thead {
 	width:inherit;
 }
 
-.completeHead {
-	width: 12%;
+.completeHead, .correctHead {
+	width: 11%;
 }
 
-.incompleteHead, .benchHead{
+.incompleteHead {
 	width: 18%
 }
 
+
 .configHead { 
-	width: 21%;
+	width: 10%;
 }
 
 .solverHead, .failedHead, .wrongHead {
@@ -62,6 +63,10 @@ thead {
 }
 .timeHead, .pairsInSpaceHead {
 	width: 10%;
+}
+
+.benchHead{
+	width: 18%
 }
 
 #graphField img {

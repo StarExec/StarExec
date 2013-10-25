@@ -12,7 +12,8 @@ public class SolverStats extends Identifiable {
 	@Expose private Solver solver=null;
 	@Expose private Configuration configuration=null;
 	@Expose private int completeJobPairs=0;
-	@Expose private int errorJobPairs=0;
+	@Expose private int failedJobPairs=0;
+	@Expose private int correctJobPairs=0;
 	@Expose private int incorrectJobPairs=0;
 	@Expose private int incompleteJobPairs=0;
 	@Expose private double time=0;
@@ -34,7 +35,7 @@ public class SolverStats extends Identifiable {
 	}
 	
 	public int getTotalJobPairs() {
-		return completeJobPairs+errorJobPairs+incorrectJobPairs+incompleteJobPairs;
+		return completeJobPairs+failedJobPairs+incorrectJobPairs+incompleteJobPairs;
 	}
 	
 	
@@ -58,12 +59,23 @@ public class SolverStats extends Identifiable {
 	public void setIncorrectJobPairs(int incorrectJobPairs) {
 		this.incorrectJobPairs = incorrectJobPairs;
 	}
+	public void setCorrectJobPairs(int correctJobPairs) {
+		this.correctJobPairs = correctJobPairs;
+	}
 	public int getIncorrectJobPairs() {
 		return incorrectJobPairs;
 	}
 	
 	public void incrementIncorrectJobPairs() {
 		incorrectJobPairs++;
+	}
+	
+	public void incrementCorrectJobPairs() {
+		correctJobPairs++;
+	}
+	
+	public int getCorrectJobPairs() {
+		return correctJobPairs;
 	}
 
 	public void setIncompleteJobPairs(int incompleteJobPairs) {
@@ -90,16 +102,16 @@ public class SolverStats extends Identifiable {
 	}
 
 
-	public void setErrorJobPairs(int errorJobPairs) {
-		this.errorJobPairs = errorJobPairs;
+	public void setFailedJobPairs(int failedJobPairs) {
+		this.failedJobPairs = failedJobPairs;
 	}
 
 
-	public int getErrorJobPairs() {
-		return errorJobPairs;
+	public int getFailedJobPairs() {
+		return failedJobPairs;
 	}
 	
-	public void incrementErrorJobPairs() {
-		errorJobPairs++;
+	public void incrementFailedJobPairs() {
+		failedJobPairs++;
 	}
 }

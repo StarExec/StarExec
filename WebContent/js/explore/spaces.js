@@ -332,17 +332,17 @@ function processRecycleErrorCode(errorCode,prim) {
 			showMessage('error', "an error occurred while processing your request; please try again", 5000);
 			break;
 		case 2:
-			showMessage('error', "only the owner of a " +prim+ " can delete it", 5000);
+			showMessage('error', "only the owner of a " +prim+ " can recycle it", 5000);
 			break;
 		}
 	} else {
 		switch (errorCode) {
-	case 1: 
-		showMessage('error', "an error occurred while processing your request; please try again", 5000);
-		break;
-	case 2:
-		showMessage('error', "only the owner of a " +prim+ " can recycle it", 5000);
-		break;
+		case 1: 
+			showMessage('error', "an error occurred while processing your request; please try again", 5000);
+			break;
+		case 2:
+			showMessage('error', "only the owner of a " +prim+ " can delete it", 5000);
+			break;
 	}
 	}
 	

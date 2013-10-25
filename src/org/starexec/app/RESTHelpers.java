@@ -2114,8 +2114,9 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(configLink));
 			entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
 			entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+			entry.add(new JsonPrimitive(js.getCorrectJobPairs()));
 			entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
-			entry.add(new JsonPrimitive(js.getErrorJobPairs()));
+			entry.add(new JsonPrimitive(js.getFailedJobPairs()));
 			entry.add(new JsonPrimitive(js.getTime()));
 			entry.add(new JsonPrimitive(pairsInSpaceLink));
 			dataTablePageEntries.add(entry);

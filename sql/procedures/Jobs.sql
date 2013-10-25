@@ -581,10 +581,10 @@ CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobSpaceId INT)
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
 DROP PROCEDURE IF EXISTS AddJobStats;
-CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _failed INT, IN _error INT, IN _wallclock DOUBLE)
+CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _wallclock DOUBLE)
 	BEGIN
-		INSERT INTO job_stats (job_space_id, config_id, complete, failed, error, wallclock)
-		VALUES (_jobSpaceId, _configId, _complete, _failed, _error, _wallclock);
+		INSERT INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, wallclock)
+		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _wallclock);
 	END //	
 
 -- Gets the cached job results for the hierarchy rooted at the given job space

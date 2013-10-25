@@ -178,10 +178,6 @@ public class Starexec implements ServletContextListener {
 				Jobs.cleanOrphanedDeletedJobs();
 			}
 		};
-		Solvers.cleanOrphanedDeletedSolvers();
-		System.out.println("HERHEEHEJKLERLKHSALKFADSLKJFDSA");
-		Benchmarks.cleanOrphanedDeletedBenchmarks();
-		Jobs.cleanOrphanedDeletedJobs();
 		//created directories expected by the system to exist
 		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
