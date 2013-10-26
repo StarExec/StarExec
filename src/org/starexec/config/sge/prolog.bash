@@ -45,10 +45,10 @@ RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
 LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
 #path to where cached solvers are stored
-SOLVER_CACHE_PATH = /export/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID
+SOLVER_CACHE_PATH="/export/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 
 #whether we were able to find a cached solver
-SOLVER_CACHED = 0;
+SOLVER_CACHED=0
 
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
