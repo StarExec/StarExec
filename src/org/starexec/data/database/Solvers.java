@@ -1062,6 +1062,7 @@ public class Solvers {
 		if (s==null) {
 			return null;
 		}
+		s.setMostRecentUpdate(Solvers.getMostRecentTimestamp(s.getId()));
 		s.addConfiguration(c);
 		return s;
 	}
@@ -1847,7 +1848,14 @@ public class Solvers {
 			procedure.setInt(1,solverId);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				return results.getTimestamp("recent").toString();
+				
+				Timestamp t = (results.getTimestamp("recent"));
+				//timestamp doesn't like SQL's default string of zeroes, so if that is present
+				//we get a null value
+				if (t==null) {
+					return "0000-00-00";
+				}
+				return t.toString();
 			}
 		} catch (Exception e) {
 			log.error("getMostRecentTimestamp says "+e.getMessage(),e);

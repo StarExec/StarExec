@@ -297,7 +297,7 @@ public abstract class JobManager {
 		// General pair configuration
 		jobScript = jobScript.replace("$$SOLVER_PATH$$", pair.getSolver().getPath());
 		jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getSolver().getId()));
-		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", Solvers.getMostRecentTimestamp(pair.getSolver().getId()));
+		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getSolver().getMostRecentUpdate());
 		jobScript = jobScript.replace("$$SOLVER_NAME$$", pair.getSolver().getName());
 		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());

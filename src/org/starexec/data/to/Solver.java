@@ -19,6 +19,7 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	@Expose	private String name;
 	@Expose private String description = "no description";
 	private Timestamp uploadDate;	
+	private String mostRecentUpdateString;
 	private transient String path;
 	private boolean isDownloadable;	
 	private List<Configuration> configurations;
@@ -152,5 +153,13 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	 */
 	public long getDiskSize(){
 		return diskSize;
+	}
+
+	public void setMostRecentUpdate(String mostRecentUpdate) {
+		this.mostRecentUpdateString = mostRecentUpdate;
+	}
+
+	public String getMostRecentUpdate() {
+		return mostRecentUpdateString;
 	}
 }

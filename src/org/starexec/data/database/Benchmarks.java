@@ -1334,7 +1334,6 @@ public class Benchmarks {
 				if (results.getBoolean("deleted")) {
 					b.setName(b.getName()+" (deleted)");
 				} else if (results.getBoolean("recycled")) {
-					log.debug("I am here with a recycled benchmark!");
 					b.setName(b.getName()+" (recycled)");
 				}
 				b.setDescription(results.getString("description"));
