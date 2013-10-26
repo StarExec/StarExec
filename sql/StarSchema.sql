@@ -223,6 +223,7 @@ CREATE TABLE configurations (
 	solver_id INT,
 	name VARCHAR(128) NOT NULL,
 	description TEXT,
+	updated TIMESTAMP NOT NULL,
 	PRIMARY KEY (id),
 	CONSTRAINT configurations_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
 );

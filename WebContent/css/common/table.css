@@ -103,6 +103,9 @@ select {
 
 table {
 	table-layout:fixed;
+	width:100%;
+	max-width:100%;
+	overflow-x:scroll;
 	word-wrap:break-word;
 }
 

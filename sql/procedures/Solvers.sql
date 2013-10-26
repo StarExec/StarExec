@@ -50,10 +50,10 @@ CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 -- Adds a run configuration to the specified solver
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddConfiguration;
-CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(128), IN _description TEXT, OUT configId INT)
+CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(128), IN _description TEXT, IN _time TIMESTAMP, OUT configId INT)
 	BEGIN
-		INSERT INTO configurations (solver_id, name, description)
-		VALUES (_solverId, _name, _description);
+		INSERT INTO configurations (solver_id, name, description, updated)
+		VALUES (_solverId, _name, _description, _time);
 		
 		SELECT LAST_INSERT_ID() INTO configId;
 	END //
@@ -251,11 +251,12 @@ CREATE PROCEDURE GetSolverAssoc(IN _solverId INT)
 -- Updates the details associated with a given configuration
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateConfigurationDetails;
-CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(128), IN _description TEXT)
+CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(128), IN _description TEXT, IN _time TIMESTAMP)
 	BEGIN
 		UPDATE configurations
 		SET name = _name,
-		description = _description
+		description = _description,
+		updated = _time
 		WHERE id = _configId;
 	END //
 	
@@ -371,6 +372,17 @@ CREATE PROCEDURE RestoreSolver(IN _solverId INT)
 		UPDATE solvers
 		SET recycled=false
 		WHERE _solverId=id;
+	END //
+
+-- Gets the timestamp of the configuration that was most recently added or updated
+-- on this solver
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetMaxConfigTimestamp
+CREATE PROCEDURE GetMaxConfigTimestamp(IN _solverId)
+	BEGIN
+		SELECT MAX(updated) AS recent
+		FROM configurations
+		WHERE configurations.solver_id=_solverId;
 	END //
 	
 DELIMITER ; -- This should always be at the end of this file

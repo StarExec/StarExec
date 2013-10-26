@@ -5,6 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,23 +86,23 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	protected static boolean addConfiguration(Connection con, Configuration c) throws Exception {
+	protected static int addConfiguration(Connection con, Configuration c) throws Exception {
 		CallableStatement procedure = null;
 		try {
-			procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?, ?)}");
 			procedure.setInt(1, c.getSolverId());
 			procedure.setString(2, c.getName());
 			procedure.setString(3, c.getDescription());
-			
+			procedure.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+			procedure.registerOutParameter(5, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			
-			return true;
+			return procedure.getInt(5);
 		} catch (Exception e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
+		return -1;
 	}
 	/**
 	 * Adds a configuration entry in the database for a particular solver 
@@ -118,21 +119,15 @@ public class Solvers {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?)}");
-			procedure.setInt(1, s.getId());
-			procedure.setString(2, c.getName());
-			procedure.setString(3, c.getDescription());
+			c.setSolverId(s.getId());
 			
-			procedure.executeUpdate();		
-			int newConfigId = procedure.getInt(4);
+			int newConfigId = addConfiguration(con,c);
 			
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
 			//invalidate the cache of any spaces with this solver
 			Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
 			Cache.invalidateCache(c.getSolverId(), CacheType.CACHE_SOLVER);
-
-			// Return the id of the newly created configuration
 			
 			return newConfigId;						
 		} catch (Exception e){			
@@ -1667,10 +1662,11 @@ public class Solvers {
 				
 				// If the physical configuration file was successfully renamed, update the database too
 				con = Common.getConnection();
-				 procedure = con.prepareCall("{CALL UpdateConfigurationDetails(?, ?, ?)}");
+				 procedure = con.prepareCall("{CALL UpdateConfigurationDetails(?, ?, ?, ?)}");
 				procedure.setInt(1, configId);
 				procedure.setString(2, name);
 				procedure.setString(3, description);
+				procedure.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
 				procedure.executeUpdate();
 				
 				log.info(String.format("Configuration [%s] has been successfully updated.", name));
@@ -1833,6 +1829,34 @@ public class Solvers {
 		}
 		log.warn(String.format("Configuration's parent solver '%s' has failed to have its disk size updated.", solver.getName()));
 		return false;
+	}
+	/**
+	 * Gets the timestamp of the configuration associated with this solver
+	 * that was added or updated the most recently
+	 * @param solverId The ID of the solver in question
+	 * @return The timestamp as a string, or null on failure
+	 * @author Eric Burns
+	 */
+	public static String getMostRecentTimestamp(int solverId) {
+		Connection  con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetMaxConfigTimestamp(?)}");
+			procedure.setInt(1,solverId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getTimestamp("recent").toString();
+			}
+		} catch (Exception e) {
+			log.error("getMostRecentTimestamp says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
 	}
 	
 }
