@@ -377,8 +377,8 @@ CREATE PROCEDURE RestoreSolver(IN _solverId INT)
 -- Gets the timestamp of the configuration that was most recently added or updated
 -- on this solver
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetMaxConfigTimestamp
-CREATE PROCEDURE GetMaxConfigTimestamp(IN _solverId)
+DROP PROCEDURE IF EXISTS GetMaxConfigTimestamp;
+CREATE PROCEDURE GetMaxConfigTimestamp(IN _solverId INT)
 	BEGIN
 		SELECT MAX(updated) AS recent
 		FROM configurations
