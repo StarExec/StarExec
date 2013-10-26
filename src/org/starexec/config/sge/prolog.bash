@@ -108,6 +108,7 @@ return $?
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
 function checkCache {
 	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		log "solver exists in cache at $SOLVER_CACHE_PATH"
   		SOLVER_PATH = $SOLVER_CACHE_PATH
   		SOLVER_CACHED= 1 	
 	fi
@@ -118,7 +119,8 @@ function copyDependencies {
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
 	if [ $SOLVER_CACHED -eq 0 ]; then
 		#store solver in a cache
-	cp -r "#LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+		log "storing solver in cache at $SOLVER_CACHE_PATH"
+		cp -r "#LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
 	fi
 	
 	log "solver copy complete"
