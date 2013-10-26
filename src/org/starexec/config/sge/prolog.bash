@@ -109,9 +109,7 @@ return $?
 function checkCache {
 	if [ -d "$cacheLocation" ]; then
   		SOLVER_PATH = $cacheLocation
-  		SOLVER_CACHED= 1
-  	else
-  	
+  		SOLVER_CACHED= 1 	
 	fi
 }
 
