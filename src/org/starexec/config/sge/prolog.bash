@@ -107,8 +107,8 @@ return $?
 
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
 function checkCache {
-	if [ -d "$cacheLocation" ]; then
-  		SOLVER_PATH = $cacheLocation
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+  		SOLVER_PATH = $SOLVER_CACHE_PATH
   		SOLVER_CACHED= 1 	
 	fi
 }
