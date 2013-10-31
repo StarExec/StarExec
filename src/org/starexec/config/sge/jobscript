@@ -51,12 +51,26 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 #TODO: This will need to be set to either 1 or 2 depending on what sandbox we're using
 SANDBOX=1;
 
-log "Running the solver with the following command:"
+#path to where cached solvers are stored
+SOLVER_CACHE_PATH="/export/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 
+#will see if a solver is cached and change the SOLVER_PATH to the cache if so
+function checkCache {
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		log "solver exists in cache at $SOLVER_CACHE_PATH"
+  		SOLVER_PATH=$SOLVER_CACHE_PATH
+  	else
+  		#store solver in a cache
+		log "storing solver in cache at $SOLVER_CACHE_PATH"
+		mkdir -p $SOLVER_CACHE_PATH
+		cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+	fi	
+}
 
 #todo make "sandbox" = "sandbox1"
 if [ $SANDBOX -eq 1 ]
 then
+	checkCache
 	cd /export/starexec/sandbox/solver/bin
 	NODE_SOLVER_PATH=/export/starexec/sandbox/solver/bin/starexec_run_${CONFIG_NAME}
 	NODE_BENCH_PATH=/export/starexec/sandbox/benchmark/${BENCH_PATH##*/}
@@ -66,6 +80,7 @@ then
 	
 elif [ $SANDBOX -eq 2 ]
 then
+	checkCache
 	cd /export/starexec/sandbox2/solver/bin
 	NODE_SOLVER_PATH=/export/starexec/sandbox2/solver/bin/starexec_run_${CONFIG_NAME}
 	NODE_BENCH_PATH=/export/starexec/sandbox2/benchmark/${BENCH_PATH##*/}

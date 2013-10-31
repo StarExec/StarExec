@@ -44,12 +44,6 @@ RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
 # Path to where the solver will be copied
 LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
-#path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
-
-#whether we were able to find a cached solver
-SOLVER_CACHED=0
-
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
@@ -104,27 +98,9 @@ return $?
 }
 
 
-
-#will see if a solver is cached and change the SOLVER_PATH to the cache if so
-function checkCache {
-	if [ -d "$SOLVER_CACHE_PATH" ]; then
-		log "solver exists in cache at $SOLVER_CACHE_PATH"
-  		SOLVER_PATH=$SOLVER_CACHE_PATH
-  		SOLVER_CACHED=1 
-  		log "found solver in cache at $SOLVER_PATH"	
-	fi
-}
-
 function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
-	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
-	if [ $SOLVER_CACHED -eq 0 ]; then
-		#store solver in a cache
-		log "storing solver in cache at $SOLVER_CACHE_PATH"
-		mkdir -p $SOLVER_CACHE_PATH
-		cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
-	fi
-	
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
 	log "solver copy complete"
 
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL\
@@ -207,7 +183,6 @@ sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
 cleanWorkspace
 fillDependArrays
-checkCache
 copyDependencies
 verifyWorkspace
 sandboxWorkspace
