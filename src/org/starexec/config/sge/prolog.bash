@@ -30,6 +30,15 @@
 #TODO: Should be either sandbox1 or sandbox2
 SANDBOX=1
 
+#path to where cached solvers are stored
+SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+
+#whether the solver was found in the cache
+SOLVER_CACHED=0
+
+
+
+
 if [ $SANDBOX -eq 1 ]
 then
 WORKING_DIR='/export/starexec/sandbox'
@@ -97,12 +106,25 @@ fi
 return $?
 }
 
+#will see if a solver is cached and change the SOLVER_PATH to the cache if so
+function checkCache {
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		log "solver exists in cache at $SOLVER_CACHE_PATH"
+  		SOLVER_PATH=$SOLVER_CACHE_PATH	
+  		SOLVER_CACHED=1
+	fi	
+}
 
 function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
 	log "solver copy complete"
-
+	if [ #SOLVER_CACHED -eq 0]; then
+		#store solver in a cache
+		log "storing solver in cache at $SOLVER_CACHE_PATH"
+		mkdir -p $SOLVER_CACHE_PATH
+		cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+	fi
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL\
 _SOLVER_DIR)"
         chmod -R gu+rwx $LOCAL_SOLVER_DIR
@@ -183,6 +205,7 @@ sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
 cleanWorkspace
 fillDependArrays
+checkCache
 copyDependencies
 verifyWorkspace
 sandboxWorkspace
