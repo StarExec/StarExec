@@ -29,7 +29,6 @@ function initUI(){
 	// Remove all unselected rows from the DOM before submitting
 	$('#processBenchForm').submit(function() {
 		$('#processorSelectionTable tbody').children('tr').not('.row_selected').find('input').remove();
-		alert($("#processorSelectionTable tbody").find("input").length);
 		createDialog("Processing your benchmarks, please wait. This will take some time for large numbers of benchmarks.");
 	  	return true;
 	});

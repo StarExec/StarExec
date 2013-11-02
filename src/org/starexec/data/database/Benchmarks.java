@@ -2186,16 +2186,18 @@ public class Benchmarks {
 				
 				Properties attrs=b.getAttributes();
 				for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+					log.debug("adding attr "+((String)keyVal.getKey())+" with value "+((String)keyVal.getValue()) +" to bench with id ="+b.getId());
 					Benchmarks.addBenchAttr(con, b.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
 				}	
 			}
 			if (hierarchy) {
 				List<Space> spaces=Spaces.getSubSpaces(spaceId, userId, true);
 				for (Space s : spaces) {
+					
 					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs);
 				}
 			}
-			
+			return true;
 		} catch (Exception e) {
 			log.error("process says "+e.getMessage(),e);
 		} finally {
