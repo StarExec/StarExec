@@ -119,7 +119,7 @@ function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
 	log "solver copy complete"
-	if [ #SOLVER_CACHED -eq 0]; then
+	if [ $SOLVER_CACHED -eq 0 ]; then
 		#store solver in a cache
 		log "storing solver in cache at $SOLVER_CACHE_PATH"
 		mkdir -p $SOLVER_CACHE_PATH
