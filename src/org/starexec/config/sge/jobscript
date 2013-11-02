@@ -52,7 +52,7 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 SANDBOX=1;
 
 #path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
 function checkCache {
@@ -63,7 +63,7 @@ function checkCache {
   		#store solver in a cache
 		log "storing solver in cache at $SOLVER_CACHE_PATH"
 		mkdir -p $SOLVER_CACHE_PATH
-		cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+		cp -r "$SOLVER_PATH"/* "$SOLVER_CACHE_PATH"
 	fi	
 }
 

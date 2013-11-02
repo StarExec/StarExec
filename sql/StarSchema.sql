@@ -133,6 +133,7 @@ CREATE TABLE bench_attributes (
 	bench_id INT NOT NULL,
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
+	PRIMARY KEY (bench_id, attr_key),
 	CONSTRAINT bench_attributes_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 

@@ -121,7 +121,7 @@
 				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
 				<li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>
-				
+				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
 		</fieldset>	
 
@@ -139,6 +139,7 @@
 		<input type="radio" name="downloadOption" id="downloadBenchmarks"/> benchmarks only<br>
 		<input type="radio" name="downloadOption" id="downloadBoth" checked="checked"/> solvers + benchmarks<br></p>
 	</div>
+	
 	
 	
 </star:template>

@@ -243,14 +243,14 @@ public class Processors {
 	 * @return A list of all unique processors of the given type that the user can see
 	 * @author Eric Burns
 	 */
-	public static List<Processor> getByUser(int communityId, ProcessorType type) {
+	public static List<Processor> getByUser(int userId, ProcessorType type) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();					
 			 procedure = con.prepareCall("{CALL GetProcessorsByUser(?, ?)}");
-			procedure.setInt(1, communityId);
+			procedure.setInt(1, userId);
 			procedure.setInt(2, type.getVal());
 			 results = procedure.executeQuery();
 			List<Processor> processors = new LinkedList<Processor>();

@@ -163,7 +163,7 @@ tr.even {
 }
 
 tbody tr.row_selected {
-	background-color: #dc6f04;
+	background-color: #dc6f04 !important;
 }
 
 .dataTables_scroll {

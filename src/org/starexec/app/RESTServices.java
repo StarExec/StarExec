@@ -379,6 +379,7 @@ public class RESTServices {
 	@Path("/space/{id}")
 	@Produces("application/json")	
 	public String getSpaceDetails(@PathParam("id") int spaceId, @Context HttpServletRequest request) {			
+		System.out.println("here");
 		int userId = SessionUtil.getUserId(request);
 		
 		Space s = null;
@@ -827,9 +828,6 @@ public class RESTServices {
 		//boolean success=Users.setDiskQuota(userId, newQuota);
 		
 		//return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		
-		
-		
 	}
 
 	/** 
@@ -1037,7 +1035,6 @@ public class RESTServices {
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
 		return Jobs.runPostProcessor(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		
 	}
 	
 	/**

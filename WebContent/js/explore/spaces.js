@@ -165,7 +165,7 @@ function initButtonUI() {
 			}
 		});
 	});
-
+	
 	$("#makePrivate").click(function(){
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy-txt').text('do you want to make the single space private or the hierarchy?');
@@ -1867,7 +1867,7 @@ function updateButtonIds(id) {
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
 	$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
 	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
-	
+	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 	
 	$("#downloadXML").unbind("click");

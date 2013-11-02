@@ -49,6 +49,14 @@
   	<servlet-name>ReserveQueue</servlet-name>
   	<url-pattern>/secure/reserve/queue</url-pattern>
   </servlet-mapping>
+  <servlet>
+  	<servlet-name>ProcessBenchmarks</servlet-name>
+  	<servlet-class>org.starexec.servlets.BenchmarkProcessor</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>ProcessBenchmarks</servlet-name>
+  	<url-pattern>/secure/process/benchmarks</url-pattern>
+  </servlet-mapping>
   
   <servlet>
   	<servlet-name>CreateQueue</servlet-name>

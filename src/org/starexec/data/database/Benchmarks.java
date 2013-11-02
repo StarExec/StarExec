@@ -523,6 +523,53 @@ public class Benchmarks {
 
 		return false;
 	}	
+	
+	/**
+	 * Given a set of benchmarks and a processor, this method runs each benchmark through
+	 * the processor and adds a hashmap of attributes to the benchmark that are given from
+	 * the processor.
+	 * @param benchmarks The set of benchmarks to get attributes for
+	 * @param p The processor to run each benchmark on
+	 */
+	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
+		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
+		int count = benchmarks.size();
+		// For each benchmark in the list to process...
+		for(Benchmark b : benchmarks) {
+			BufferedReader reader = null;
+
+			try {
+				// Run the processor on the benchmark file
+				log.info("executing - " + p.getFilePath() + " \"" + b.getPath() + "\"");
+				String [] procCmd = new String[2];
+				procCmd[0] = p.getFilePath();
+				procCmd[1] = b.getPath();
+				reader = Util.executeCommand(procCmd,null);
+				if (reader == null){
+					log.error("Reader is null!");
+				}
+				// Load results into a properties file
+				Properties prop = new Properties();
+				if (reader != null){
+					prop.load(reader);							
+					reader.close();
+				}
+				// Attach the attributes to the benchmark
+				b.setAttributes(prop);
+				count--;			
+				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
+			} catch (Exception e) {
+				log.warn(e.getMessage(), e);
+				return false;
+			} finally {
+				if(reader != null) {
+					try { reader.close(); } catch(Exception e) {log.error(e);}
+				}
+
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Given a set of benchmarks and a processor, this method runs each benchmark through
@@ -2090,6 +2137,72 @@ public class Benchmarks {
 		benchDepLists.setPaths(pathList);
 		benchDepLists.setFoundDependencies(foundDependencies);
 		return benchDepLists;
+	}
+	/**
+	 * Gets rid of all the attributes a benchmark currently has in the database
+	 * @param benchId The ID of the benchmark in question
+	 * @param con The connection to make the call on 
+	 * @return True on success, false on error
+	 * @author Eric Burns
+	 */
+	
+	public static boolean clearAttributes(int benchId, Connection con) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL ClearBenchAttributes(?)}");
+			procedure.setInt(1, benchId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("clearAttributes says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Runs the given benchmark processor on all benchmarks in the given space (hierarchy)
+	 * @param spaceId The ID of the relevant space
+	 * @param p The benchmark processor to use
+	 * @param hierarchy True if we want to run on the hierarchy, false otherwise
+	 * @return True on success, false on error
+	 * @author Eric Burns
+	 */
+	public static boolean process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
+			Benchmarks.attachBenchAttrs(benchmarks, p);
+			for (Benchmark b : benchmarks) {
+				//only work on the benchmarks the given user owns
+				if (b.getUserId()!=userId) {
+					continue;
+				}
+				if (clearOldAttrs) {
+					Benchmarks.clearAttributes(b.getId(),con);
+				}
+				
+				Properties attrs=b.getAttributes();
+				for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+					Benchmarks.addBenchAttr(con, b.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
+				}	
+			}
+			if (hierarchy) {
+				List<Space> spaces=Spaces.getSubSpaces(spaceId, userId, true);
+				for (Space s : spaces) {
+					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs);
+				}
+			}
+			
+		} catch (Exception e) {
+			log.error("process says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
 	}
 
 }

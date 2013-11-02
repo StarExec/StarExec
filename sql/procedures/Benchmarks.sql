@@ -24,7 +24,7 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _download
 DROP PROCEDURE IF EXISTS AddBenchAttr;
 CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
-		INSERT INTO bench_attributes VALUES (_benchmarkId, _key, _val);
+		REPLACE INTO bench_attributes VALUES (_benchmarkId, _key, _val);
 	END //
 	
 -- Adds a new dependency for a benchmark 
@@ -479,6 +479,13 @@ CREATE PROCEDURE RestoreBenchmark(IN _benchId INT)
 		SET recycled=false
 		WHERE _benchId=id;
 	END //
-	
+-- Gets rid of all the current attributes a benchmark has
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS ClearBenchAttributes;
+CREATE PROCEDURE ClearBenchAttributes(IN _benchId INT)
+	BEGIN
+		DELETE FROM bench_attributes
+		WHERE _benchId=bench_id;
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file
