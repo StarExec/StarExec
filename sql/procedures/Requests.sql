@@ -29,12 +29,20 @@ CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VAR
 	
 -- Adds a request to reserve a queue
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS AddQueueReservation;
-CREATE PROCEDURE AddQueueReservation(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _startDate DATE, IN _endDate DATE, IN _code VARCHAR(36), IN _message VARCHAR(300), IN _nodeCount INT)
+DROP PROCEDURE IF EXISTS AddQueueRequest;
+CREATE PROCEDURE AddQueueRequest(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _reserveDate DATE, IN _code VARCHAR(36), IN _message VARCHAR(300), IN _nodeCount INT)
 	BEGIN
-		INSERT INTO queue_request(user_id, space_id, queue_name, start_date, end_date, node_count, code, message, created)
-		VALUES (_userId, _spaceId, _queueName, _startDate, _endDate, _nodeCount, _code, _message, SYSDATE());
+		INSERT INTO queue_request(user_id, space_id, queue_name, reserve_date, node_count, message, code, created)
+		VALUES (_userId, _spaceId, _queueName, _reserveDate, _nodeCount, _message, _code, SYSDATE());
 	END //
+	
+DROP PROCEDURE IF EXISTS UpdateQueueRequest;
+CREATE PROCEDURE UpdateQueueRequest(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _reserveDate DATE, IN _code VARCHAR(36), IN _message VARCHAR(300), IN _nodeCount INT, IN _created TIMESTAMP)
+	BEGIN
+		INSERT INTO queue_request(user_id, space_id, queue_name, reserve_date, node_count, message, code, created)
+		VALUES (_userId, _spaceId, _queueName, _reserveDate, _nodeCount, _message, _code, _created);
+	END //
+
 	
 -- Adds a user to USER_ASSOC, deletes their entry in INVITES, and makes their
 -- role 'user' if not so already
@@ -120,9 +128,10 @@ CREATE PROCEDURE GetCommunityRequestByCode(IN _code VARCHAR(36))
 DROP PROCEDURE IF EXISTS GetQueueRequestByCode;
 CREATE PROCEDURE GetQueueRequestByCode(IN _code VARCHAR(36))
 	BEGIN
-		SELECT *
+		SELECT user_id, space_id, queue_name, MAX(node_count), MIN(reserve_date), MAX(reserve_date), message, code, created
 		FROM queue_request
-		WHERE code = _code;
+		WHERE code = _code
+		GROUP BY user_id, space_id, queue_name;
 	END //
 
 -- Looks for an activation code, and if successful, removes it from VERIFY,
@@ -156,24 +165,22 @@ CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id INT)
 	
 	
 -- Approves the resrvation of a queue by deleting it from the queue_request table
--- and then inserting into queue_reserved table as well as association in comm_queue table
+-- and then inserting into comm_queue table
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS approveQueueReservation;
-CREATE PROCEDURE approveQueueReservation(IN _code VARCHAR(36), IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE, IN _newCode VARCHAR(36))
+DROP PROCEDURE IF EXISTS ApproveQueueReservation;
+CREATE PROCEDURE ApproveQueueReservation(IN _code VARCHAR(36), IN _spaceId INT, IN _queueId INT)
 	BEGIN
 		DELETE FROM queue_request 
 		WHERE code = _code;
-		
-		INSERT INTO queue_reserved VALUES(_spaceId, _queueId, _nodeCount, _startDate, _endDate, _newCode);
-		
+				
 		INSERT INTO comm_queue
 		VALUES (_spaceId, _queueId);
 	END //
 	
 -- Declines the resrvation of a queue by deleting it from the queue_request table
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS declineQueueReservation;
-CREATE PROCEDURE declineQueueReservation(IN _code VARCHAR(36))
+DROP PROCEDURE IF EXISTS DeclineQueueReservation;
+CREATE PROCEDURE DeclineQueueReservation(IN _code VARCHAR(36))
 	BEGIN
 		DELETE FROM queue_request 
 		WHERE code = _code;
@@ -185,7 +192,7 @@ CREATE PROCEDURE declineQueueReservation(IN _code VARCHAR(36))
 DROP PROCEDURE IF EXISTS GetQueueRequestCount;
 CREATE PROCEDURE GetQueueRequestCount()
 	BEGIN
-		SELECT count(*) AS requestCount
+		SELECT DISTINCT count(DISTINCT user_id, space_id, queue_name) AS requestCount
 		FROM queue_request;
 	END //
 	
@@ -206,13 +213,14 @@ CREATE PROCEDURE GetNextPageOfPendingQueueRequests(IN _startingRecord INT, IN _r
 		SELECT 	user_id, 
 				space_id, 
 				queue_name,
-				node_count,
-				start_date,
-				end_date,
-				code,
+				MAX(node_count),
+				MIN(reserve_date),
+				MAX(reserve_date),
 				message,
+				code,
 				created
 		FROM	queue_request
+		GROUP BY user_id, space_id, queue_name
 		ORDER BY 
 			created
 		 ASC
@@ -235,8 +243,9 @@ CREATE PROCEDURE GetQueueReservationCount()
 DROP PROCEDURE IF EXISTS GetNextPageOfQueueReservations;
 CREATE PROCEDURE GetNextPageOfQueueReservations(IN _startingRecord INT, IN _recordsPerPage INT)
 	BEGIN
-		SELECT 	*
+		SELECT 	space_id, queue_id, node_count, MIN(reserve_date), MAX(reserve_date)
 		FROM	queue_reserved
+		GROUP BY space_id, queue_id
 	 
 		-- Shrink the results to only those required for the next page
 		LIMIT _startingRecord, _recordsPerPage;
@@ -273,14 +282,6 @@ CREATE PROCEDURE GetNextPageOfPendingCommunityRequests(IN _startingRecord INT, I
 		LIMIT _startingRecord, _recordsPerPage;
 	END //
 	
-DROP PROCEDURE IF EXISTS GetQueueReservedCode;
-CREATE PROCEDURE GetQueueReservedCode(IN _queueId INT)
-	BEGIN
-		SELECT code
-		FROM queue_reserved
-		WHERE queue_id = _queueId;
-	END //
-	
 -- Updates the queue name of a queue_request
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS UpdateQueueName;
@@ -291,7 +292,7 @@ CREATE PROCEDURE UpdateQueueName(IN _code VARCHAR(36), IN _newName VARCHAR(64))
 		WHERE code = _code;
 	END //
 	
--- Updates the node count of a queue_request
+-- Updates the maximum node count for a queue_request
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS UpdateNodeCount;
 CREATE PROCEDURE UpdateNodeCount(IN _code VARCHAR(36), IN _nodeCount INT)
@@ -301,34 +302,59 @@ CREATE PROCEDURE UpdateNodeCount(IN _code VARCHAR(36), IN _nodeCount INT)
 		WHERE code = _code;
 	END //
 	
+	
 -- Updates the start date of a queue_request
+-- This is called when the new start date is later than the old one
+-- Hence we need to remove entries from the queue_request table
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS UpdateStartDate;
-CREATE PROCEDURE UpdateStartDate(IN _code VARCHAR(36), IN _startDate DATE)
+DROP PROCEDURE IF EXISTS UpdateStartDateToLaterDate;
+CREATE PROCEDURE UpdateStartDateToLaterDate(IN _code VARCHAR(36), IN _startDate DATE)
 	BEGIN
-		UPDATE queue_request
-		SET start_date = _startDate
-		WHERE code = _code;
+		DELETE FROM queue_request
+		WHERE reserve_date < _startDate AND code = _code;
+	END //
+	
+-- Updates the start date of a queue_request
+-- This is called when the new start date is earlier than the old one
+-- Hence we need to add entries to the queue_request table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdateStartDateToEarlierDate;
+CREATE PROCEDURE UpdateStartDateToEarlierDate(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _nodeCount INT, IN _reserveDate DATE, IN _message TEXT, IN _code VARCHAR(36), IN _created TIMESTAMP )
+	BEGIN
+		INSERT INTO queue_request
+		VALUES (_userId, _spaceId, _queueName, _nodeCount, _reserveDate, _message, _code, _created);
 	END //
 	
 -- Updates the end date of a queue_request
+-- This is called when the new end date is later than the old one
+-- Hence we need to add entries to queue_request table
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS UpdateEndDate;
-CREATE PROCEDURE UpdateEndDate(IN _code VARCHAR(36), IN _endDate DATE)
+DROP PROCEDURE IF EXISTS UpdateEndDateToLaterDate;
+CREATE PROCEDURE UpdateEndDateToLaterDate(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _nodeCount INT, IN _reserveDate DATE, IN _message TEXT, IN _code VARCHAR(36), IN _created TIMESTAMP )
 	BEGIN
-		UPDATE queue_request
-		SET end_date = _endDate
-		WHERE code = _code;
+		INSERT INTO queue_request
+		VALUES (_userId, _spaceId, _queueName, _nodeCount, _reserveDate, _message, _code, _created);
+	END //
+	
+-- Updates the end date of a queue_request
+-- This is called when the new end date is earlier than the old one
+-- Hence we need to remove entries from the queue_request table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS UpdateEndDateToEarlierDate;
+CREATE PROCEDURE UpdateEndDateToEarlierDate(IN _code VARCHAR(36), IN _startDate DATE)
+	BEGIN
+		DELETE FROM queue_request
+		WHERE reserve_date > _startDate AND code = _code;
 	END //
 	
 -- Get All the queue reservations
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetAllQueueReservations;
-CREATE PROCEDURE GetAllQueueReservations(IN _queueId INT)
+CREATE PROCEDURE GetAllQueueReservations()
 	BEGIN
-		SELECT *
+		SELECT space_id, queue_id, MIN(node_count), MAX(node_count), MIN(reserve_date), MAX(reserve_date)
 		FROM queue_reserved
-		WHERE queue_id = _queueId;
+		GROUP BY space_id, queue_id;
 	END //
 	
 -- Adds an entry into reservation_history table
@@ -339,5 +365,36 @@ CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueId INT, IN _n
 		INSERT INTO reservation_history
 		VALUES (_spaceId, _queueId, _nodeCount, _startDate, _endDate);
 	END //
+	
+-- Returns the nodeCount for a particular queue request on a particular date
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetRequestNodeCountOnDate;
+CREATE PROCEDURE GetRequestNodeCountOnDate(IN _queuename VARCHAR(64), IN _reserveDate DATE)
+	BEGIN
+		SELECT node_count AS count
+		FROM queue_request
+		WHERE queue_name = _queuename AND reserve_date = _reserveDate;
+	END //
 
+-- Returns the the space_ID associated with a given queue_id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueueReservationSpaceId;
+CREATE PROCEDURE GetQueueReservationSpaceId ( IN _queueId INT) 
+	BEGIN
+		SELECT DISTINCT space_id
+		FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
+	
+-- Returns the the space_id associated with a given queue_name
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueueRequestSpaceId;
+CREATE PROCEDURE GetQueueRequestSpaceId ( IN _queueName VARCHAR(64)) 
+	BEGIN
+		SELECT DISTINCT space_id
+		FROM queue_request
+		WHERE queue_name = _queueName;
+	END //
+	
+	
 DELIMITER ; -- This should always be at the end of this file

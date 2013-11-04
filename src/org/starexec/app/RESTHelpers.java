@@ -659,6 +659,10 @@ public class RESTHelpers {
 			//Get the total number of nodes that have been reserved
 			for (Queue q : queues) {
 				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+				if (temp_nodeCount != -1) {
+					node_count = temp_nodeCount;
+				}
 				total = total + node_count;
 			}
 			
@@ -676,6 +680,10 @@ public class RESTHelpers {
 					continue;
 				}
 				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+				if (temp_nodeCount != -1) {
+					node_count = temp_nodeCount;
+				}
 				entry.add(new JsonPrimitive(node_count));
 			}
 			
@@ -707,7 +715,9 @@ public class RESTHelpers {
 		Date reqStartDate = req.getStartDate();
 		Date reqEndDate = req.getEndDate();
 
-		for (java.util.Date date : dates ) {
+		for (java.util.Date d : dates ) {
+
+			Date date = new Date(d.getTime());
 			
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String date1 = sdf.format(date);
@@ -720,11 +730,19 @@ public class RESTHelpers {
 			//Get the total number of nodes that have been reserved
 			for (Queue q : queues) {
 				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+				if (temp_nodeCount != -1) {
+					node_count = temp_nodeCount;
+				}
 				total = total + node_count;
 			}
 			//if date is between the requested dates
-			int reqNodeCount = req.getNodeCount();
-			if (!date.before(reqStartDate) && !date.after(reqEndDate)) {
+			int reqNodeCount = Requests.GetNodeCountOnDate(req.getQueueName(), d);
+			int temp_reqNodeCount = Cluster.getTempNodeCountOnDate(req.getQueueName(), d);
+			if (temp_reqNodeCount != -1) {
+				reqNodeCount = temp_reqNodeCount;
+			}
+			if (!date.before(reqStartDate) && ( !date.after(reqEndDate) || date.toString().equals(reqEndDate.toString()) )) {
 				total = total + reqNodeCount;
 			} 
 			
@@ -742,10 +760,14 @@ public class RESTHelpers {
 					continue;
 				}
 				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+				if (temp_nodeCount != -1) {
+					node_count = temp_nodeCount;
+				}
 				entry.add(new JsonPrimitive(node_count));
 			}
 			//if date is between the requested dates
-			if (!date.before(reqStartDate) && !date.after(reqEndDate)) {
+			if (!date.before(reqStartDate) && ( !date.after(reqEndDate) || date.toString().equals(reqEndDate.toString()) ) ) {
 				entry.add(new JsonPrimitive (reqNodeCount));
 			} else {
 				entry.add(new JsonPrimitive (0));
@@ -782,8 +804,7 @@ public class RESTHelpers {
 	 * @return the next page of job_pairs for the cluster status page
 	 * @author Wyatt Kaiser
 	 */
-	protected static JsonObject getNextDataTablesPageForClusterExplorer(
-			String type, int id, int userId, HttpServletRequest request) {
+	protected static JsonObject getNextDataTablesPageForClusterExplorer(String type, int id, int userId, HttpServletRequest request) {
 		return getNextDataTablesPageCluster(type, id, userId, request);
 	}
 
@@ -919,8 +940,7 @@ public class RESTHelpers {
 	 * @author Wyatt Kaiser
 	 */
 
-	private static JsonObject getNextDataTablesPageCluster(String type, int id,
-			int userId, HttpServletRequest request) {
+	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
 
 		// Parameter validation
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapCluster(type,
@@ -2302,7 +2322,7 @@ public class RESTHelpers {
 			RESTHelpers.addImg(sb);
 			sb.append(hiddenSpaceId);
 			String spaceLink = sb.toString();
-			
+						
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			Date start = req.getStartDate();
 			Date end = req.getEndDate();
@@ -2353,7 +2373,7 @@ public class RESTHelpers {
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(userLink));
 				entry.add(new JsonPrimitive(spaceLink));
-				entry.add(new JsonPrimitive(req.getNodeCount()));
+				entry.add(new JsonPrimitive(req.getNodeCount()));	//req.getNodeCount()
 				entry.add(new JsonPrimitive(start1));
 				entry.add(new JsonPrimitive(end1));
 				entry.add(new JsonPrimitive(approveButton));
@@ -2365,12 +2385,20 @@ public class RESTHelpers {
 				String cancelButton = sb.toString();
 				log.debug(cancelButton);
 
+				int queueId = Queues.getIdByName(req.getQueueName());
+				int minNode = Cluster.getMinNodeCount(queueId);
+				int maxNode = Cluster.getMaxNodeCount(queueId);
+				
 				// Create an object, and inject the above HTML, to represent an
 				// entry in the DataTable
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(spaceLink));
 				entry.add(new JsonPrimitive(req.getQueueName()));
-				entry.add(new JsonPrimitive(req.getNodeCount()));
+				if (minNode != maxNode) {
+					entry.add(new JsonPrimitive(minNode + " - " + maxNode));
+				} else {
+					entry.add(new JsonPrimitive(maxNode));
+				}
 				entry.add(new JsonPrimitive(start1));
 				entry.add(new JsonPrimitive(end1));
 				entry.add(new JsonPrimitive(cancelButton));

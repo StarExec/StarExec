@@ -1070,4 +1070,37 @@ public class Queues {
 		return false;
 	}
 
+	public static boolean notUniquePrimitiveName(String queue_name) {
+		log.debug("staring notUniquePrimitiveName");
+		// Initiate sql connection facilities.
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		try {
+			// If the type of the primitive is solver.
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL countQueueName(?)}");
+			procedure.setString(1, queue_name);
+			
+			results = procedure.executeQuery();		
+			
+			if(results.next()){
+				if(results.getInt(1) != 0) {
+					return true;
+				}
+				return false;
+			}
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return true;
+	}
+
 }

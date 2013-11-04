@@ -49,6 +49,7 @@ public class ReserveQueue extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		QueueRequest queueRequest = constructQueueRequest(request);
 		String message = request.getParameter(msg);
+		
 
 		// if this is an addQueue request initiated by the administrator,
 		// addQueue is set to true, false otherwise [this is determined by if

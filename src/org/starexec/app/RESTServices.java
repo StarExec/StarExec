@@ -3344,55 +3344,6 @@ public class RESTServices {
 	
 	
 	/**
-	 * Handles a queue request by either approving it or declining it
-	 * @param request the object containing the DataTable information
-	 * @return a JSON object representing the success/failure of the handled request
-	 * @author Wyatt Kaiser
-	 * @throws Exception
-	 */
-	/*
-	@POST
-	@Path("/queue/request/")
-	@Produces("application/json")
-	public String handleQueueRequest(@Context HttpServletRequest request) throws Exception {
-		String code = request.getParameter("code");
-		QueueRequest queueRequest = Requests.getQueueRequest(code);
-		
-		String approved = request.getParameter("approved");
-		
-		if(approved.equals("true")){
-			// Add them to the community & remove the request from the database
-			boolean success = Requests.approveQueueReservation(queueRequest);
-			
-			if(success) {
-				
-				// Notify user they've been approved	
-				Mail.sendReservationResults(queueRequest, true);
-				
-				log.info(String.format("User [%s] has finished the approval process.", Users.get(queueRequest.getUserId()).getFullName()));
-			return gson.toJson(0);
-			} else {
-				return gson.toJson(1);
-			}
-		} else {
-			// Remove their entry from INVITES
-			boolean success = Requests.declineQueueReservation(queueRequest);
-			
-			if (success) {
-				// Notify user they've been declined
-				Mail.sendReservationResults(queueRequest, false);
-				log.info(String.format("User [%s] has been declined queue reservation.", Users.get(queueRequest.getUserId()).getFullName(), Queues.get(queueRequest.getQueueId()).getName()));
-				return gson.toJson(2);	
-			} else {
-				return gson.toJson(3);
-			}
-			
-		}
-	}
-	*/
-	
-	
-	/**
 	 * Cancels a queue reservation 
 	 * @param spaceId the id of the space the reservation was for
 	 * @param queueId the id of the queue the reservation was for
@@ -3497,29 +3448,13 @@ public class RESTServices {
 		
 	}
 	
-	@POST
-	@Path("/cluster/move/node/{nodeId}/{queueId}")
-	@Produces("application/json")
-	public String moveNodeToQueue(@PathParam("nodeId") int nodeId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) {
-		{
-		//Check to see if node is related to queue reservation 
-			// do this by checking node_reserved table --> the code will give you the queue_reservation (from queue_reserved)
-			
-			// If it is -->
-				// delete from node_reserved table & update queue_reserved table (will probably need an e-mail to let user know -- maybe (or just say subject to change when first accept))
-				{
-				// Check to see if queue that node was dropped into is a reserved queue
-					// do this by checking comm_queue table
-					
-					// If it is -->
-						// insert into node_reserved with correct dates and queue_reserved_code
-		
-				}
-		}
-		
-		return gson.toJson(0);
-	}
 	
+	/**
+	 * Returns the paginated results of node assignments
+	 * For the manage_nodes page
+	 * 
+	 * @author Wyatt Kaiser
+	 */
 	@POST
 	@Path("/nodes/dates/pagination")
 	@Produces("application/json")
@@ -3549,6 +3484,13 @@ public class RESTServices {
 	    
 		}
 	
+	/**
+	 * Returns the paginated results of node assignments
+	 * For the approve/deny requests page
+	 * @param code the code of the queue_request
+	 * 
+	 * @author Wyatt Kaiser
+	 */
 	@POST
 	@Path("/nodes/dates/reservation/{code}/pagination")
 	@Produces("application/json")
@@ -3586,96 +3528,108 @@ public class RESTServices {
 	    
 		}
 	
-	
-	/** 
-	 * Updates information in the database using a POST. Attribute and
-	 * new value are included in the path. First validates that the new value
-	 * is legal, then updates the database and session information accordingly.
+	/**
+	 * Updates information in the database using a POST. the new values for 
+	 * queueName, nodeCount, startDate, and endDate are included in the path.
+	 * First validates that the new values are lega, and then updates the database
+	 * and session information accordingly.
 	 * 
-	 * @return a json string containing '0' if the update was successful, else 
+	 * @return a json string containing '0' if the update was successful, else
 	 * a json string containing '1'
 	 * @author Wyatt Kaiser
 	 */
 	@POST
-	@Path("/edit/request/{code}/{attr}/{val}")
+	@Path("/edit/request/{code}/{queueName}/{nodeCount}/{startDate}/{endDate}")
 	@Produces("application/json")
-	public String editQueueRequest(@PathParam("code") String code, @PathParam("attr") String attribute, @PathParam("val") String newValue, @Context HttpServletRequest request) {	
+	public String editQueueRequest(@PathParam("code") String code, @PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
+		log.debug("user name = " + u.getFirstName());
+		log.debug("user role = " + u.getRole());
 		if (!u.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		boolean success = false;
+		String start_month = startDate.substring(0,2);
+		String start_day = startDate.substring(2, 4);
+		String start_year = startDate.substring(4, 8);
 		
-		
-		// Go through all the cases, depending on what attribute we are changing.
-		// First, validate that it is in legal form. Then, try to update the database.
-		// Finally, update the current session data
-		if (attribute.equals("queuename")) {
-			if (true == Validator.isValidPrimName(newValue)) {
-				log.debug("validated name");
-				success = Requests.updateQueueName(code, newValue);
-			}
-		} else if (attribute.equals("nodecount")) {
-			if (true == Validator.isValidInteger(newValue)) {
-				log.debug("validated count");
-				success = Requests.updateNodeCount(code, newValue);
-			}
-		} else if (attribute.equals("startdate")) {
-			String month = newValue.substring(0,2);
-			String day = newValue.substring(2, 4);
-			String year = newValue.substring(4, 8);
+		String end_month = endDate.substring(0,2);
+		String end_day = endDate.substring(2, 4);
+		String end_year = endDate.substring(4, 8);
 
-			log.debug("month = " + month);
-			log.debug("day = " + day);
-			log.debug("year = " + year);
-			newValue = month + "/" + day + "/" + year;
-			if (true == Validator.isValidDate(newValue)) {
-				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-			    Date startDate = null;
-				try {
-					java.util.Date endDateJava = format.parse(newValue);
-					startDate = new Date(endDateJava.getTime());
-				} catch (ParseException e1) {
-					e1.printStackTrace();
-				}
-				Date today = new Date();
-				if(today.compareTo(startDate) <= 0) {
-					success = Requests.updateStartDate(code, newValue);
-				} else {
-					return gson.toJson(1);
-				}
-			}
-		} else if (attribute.equals("enddate")) {
-			String month = newValue.substring(0,2);
-			String day = newValue.substring(2, 4);
-			String year = newValue.substring(4, 8);
+		String new_start = start_month + "/" + start_day + "/" + start_year;
+		String new_end = end_month + "/" + end_day + "/" + end_year;
+		log.debug(Validator.isValidPrimName(queueName));
+		log.debug(Validator.isValidInteger(nodeCount));
+		log.debug(Validator.isValidDate(new_start));
+		log.debug(Validator.isValidDate(new_end));
+		
+		if (true == ( Validator.isValidPrimName(queueName) && Validator.isValidInteger(nodeCount) && Validator.isValidDate(new_start) && Validator.isValidDate(new_end)) ) {
+			log.debug("validated");
 			
-
-			newValue = month + "/" + day + "/" + year;
-			if (true == Validator.isValidDate(newValue)) {
-				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-			    Date endDate = null;
-				try {
-					java.util.Date endDateJava = format.parse(newValue);
-					endDate = new Date(endDateJava.getTime());
-				} catch (ParseException e1) {
-					e1.printStackTrace();
-				}
-				QueueRequest req = Requests.getQueueRequest(code);
-				Date startDate = req.getStartDate();
-				
-				if (startDate.compareTo(endDate) < 0 ) {
-					success = Requests.updateEndDate(code, newValue);
-				} else {
-					return gson.toJson(2);
-				}
+			// Make sure that the queue has a unique name
+			if(Queues.notUniquePrimitiveName(queueName)) {
+				return gson.toJson(6);
 			}
+			
+			
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+		    java.sql.Date startDateSql = null;
+		    java.sql.Date endDateSql = null;
+			try {
+				java.util.Date startDateJava = format.parse(new_start);
+				startDateSql = new java.sql.Date(startDateJava.getTime());
+				
+				java.util.Date endDateJava = format.parse(new_end);
+				endDateSql = new java.sql.Date(endDateJava.getTime());
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			}
+			Date today = new Date();
+			log.debug("today = " + today);
+			log.debug("startDate = " + startDateSql);
+			log.debug("endDate = " + endDateSql);
+			
+			if (startDateSql.before(today)) {
+				log.debug("start day is before today");
+				return gson.toJson(4);
+			} else if (endDateSql.before(startDateSql)) { //end date is before or equivalent to start date
+				log.debug("end date is before start date");
+				return gson.toJson(5);
+			} else if (endDateSql.toString().equals(startDateSql.toString())) {
+				log.debug("end date is equivalent to start date");
+				return gson.toJson(5);
+			} else {
+				QueueRequest req = Requests.getQueueRequest(code);
+				QueueRequest new_req = new QueueRequest();
+				new_req.setUserId(req.getUserId());
+				new_req.setSpaceId(req.getSpaceId());
+				new_req.setQueueName(queueName);
+				
+				//Only update max node_count if it has been changed
+				if (Integer.parseInt(nodeCount) == req.getNodeCount()) {
+					new_req.setNodeCount(req.getNodeCount());
+				} else {
+					new_req.setNodeCount(Integer.parseInt(nodeCount));
+				}
+				new_req.setStartDate(startDateSql);
+				new_req.setEndDate(endDateSql);
+				new_req.setMessage(req.getMessage());
+				new_req.setCode(req.getCode());
+				new_req.setCreateDate(req.getCreateDate());
+				
+				success = Requests.updateQueueRequest(new_req);		
+
+			}
+		} else {
+			log.debug("invalid");
+			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		// Passed validation AND Database update successful
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
+
 	
 	/** 
 	 * Adds a queue_request to the database
@@ -3695,6 +3649,34 @@ public class RESTServices {
 		}
 		
 		return gson.toJson(0);
+	}
+	
+	/**
+	 * Will delete all temporary changes that were made to node_counts
+	 * 
+	 * @return a json string containing '0' if the delet was successful, else a json string containing '1'
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/nodes/refresh")
+	@Produces("application/json")
+	public String refreshNodeUpdates() {
+		boolean success = Cluster.RefreshTempNodeChanges();
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Will update the database to reflect saved temp node_count changes
+	 * 
+	 * @return a json string containing '0' if the update was successful, else a json string containing '1'
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/nodes/update")
+	@Produces("applicat/json")
+	public String updateNodeCount() {
+		boolean success = Cluster.updateTempChanges();
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 }

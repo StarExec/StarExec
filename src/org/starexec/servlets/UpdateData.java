@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.jfree.util.Log;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Requests;
+import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueRequest;
 
 //import jquery.datatables.model.Company;
 //import jquery.datatables.model.DataRepository;
@@ -26,9 +29,10 @@ public class UpdateData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * This servlet handles post request from the JEditable and updates company property that is edited
+	 * This servlet handles post request from the JEditable and updates node_count property that is edited
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String code = request.getParameter("code");
 		
 		//This will be the date
 		String date = request.getParameter("id");
@@ -44,9 +48,10 @@ public class UpdateData extends HttpServlet {
 		String columnName = request.getParameter("columnName");
 		int queueId = Queues.getIdByName(columnName);
 
-
 		//Row #
 		//int rowId = Integer.parseInt(request.getParameter("rowId"));
+		
+		
 		
 		int value = 0;
 		//Updated value
@@ -69,8 +74,22 @@ public class UpdateData extends HttpServlet {
 			e.printStackTrace();
 		}
 
+		String queueName = null;
+		int space_id = 0;
 		
-		Cluster.updateNodeCount(value, queueId, reserve_date);
+		Queue q = Queues.get(queueId);
+		if (q != null) {
+			queueName = q.getName();
+			space_id = Requests.getQueueReservationSpaceId(queueId);
+		} else {
+			//queueName = columnName;
+			QueueRequest req = Requests.getQueueRequest(code);
+			queueName = req.getQueueName();
+			space_id = Requests.getQueueRequestSpaceId(queueName);
+		}
+		
+		Cluster.addTempNodeChange(space_id, queueName, value, reserve_date);
+		//Cluster.updateNodeCount(value, queueId, reserve_date);
 		
 
 		response.getWriter().print(value);

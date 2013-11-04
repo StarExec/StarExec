@@ -23,25 +23,25 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/nodes, lib/jquery-ui-1.8.16.custom.min, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/nodes, lib/jquery-ui-1.8.16.custom.min, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, admin/admin">
 	<style>
 		.statusConflict { color: red; }
 		.statusClear {color : green; }
 		.statusNeutral { color : black; }
 	</style>
-	<div id="explorer">
-		<h3>queues</h3>
-		<ul id="exploreList"></ul>
+	<div id="actionBar">
+			<button type="button" class="round" id="btnBack">cancel</button>
+			<button type="button" class="update" id="btnUpdate">update</button>			
 	</div>
-	<div id="detailPanel">
+	<div style="width: 100%; overflow: auto;">
 	<fieldset  id="nodeField">
 		<legend class="expd" id="nodeExpd">nodes</legend>
-		<table id="nodes">
+		<table id="nodes" class="manage">
 			<thead>
 				<tr>
-					<th>date</th>
+					<th style="width: 100px;">date</th>
 					<c:forEach items="${queues}" var="queue"> 
-						<th>${queue.name}</th>
+						<th style="width: 100px">${queue.name}</th>
 					</c:forEach>
 					<th>total</th>
 					<th class="statusConflict">conflict</th>

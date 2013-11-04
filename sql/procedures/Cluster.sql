@@ -163,12 +163,6 @@ CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64),
 		EXECUTE stmt;		
 	END // 
 	
-DROP PROCEDURE IF EXISTS UpdateNodeDate;
-CREATE PROCEDURE UpdateNodeDate(IN _nodeId INT, IN _queueId INT, IN _date DATE, IN _queueCode VARCHAR(36))
-	BEGIN
-		INSERT INTO node_reserved
-		VALUES (_nodeId, _queueId, _date, _queueCode);
-	END //
 	
 -- Updates a queues's attribute (assuming the column already exists)
 -- Author: Tyler Jensen
@@ -227,19 +221,9 @@ CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 		SET status=_status
 		WHERE name=_name;
 	END // 
-	
--- Gets all the nodes that will be available at a given start_date
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetUnReservedNodes;
-CREATE PROCEDURE GetUnReservedNodes(IN _start DATE, IN _end DATE)
-	BEGIN
-		SELECT DISTINCT id, name, status
-		FROM nodes
-			LEFT JOIN node_reserved
-				ON nodes.id = node_reserved.node_id
-				WHERE ( (reserve_date NOT BETWEEN _start AND _end) OR (start_date is NULL));
-	END //
 
+-- Get the number of the nodes
+-- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetNodeCount;
 CREATE PROCEDURE GetNodeCount()
 	BEGIN
@@ -248,25 +232,91 @@ CREATE PROCEDURE GetNodeCount()
 		FROM nodes;
 	END //
 	
+-- Returns the node count for a particular date for a particular queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNodeCountOnDate;
+CREATE PROCEDURE GetNodeCountOnDate(_queueId INT, IN _reserveDate DATE)
+	BEGIN
+		SELECT node_count AS count
+		FROM queue_reserved
+		WHERE queue_id = _queueId AND reserve_date = _reserveDate;
+	END //
 	
--- Returns the latest date in the node_reserved table 
+-- Returns the latest date in the queue_reserved table 
 -- Author: Wyatt Kaiser	
 DROP PROCEDURE IF EXISTS GetLatestNodeDate;
 CREATE PROCEDURE GetLatestNodeDate()
 	BEGIN
 		SELECT MAX(reserve_date)
-		FROM node_reserved;
+		FROM queue_reserved;
 	END //
 	
 DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
-CREATE PROCEDURE UpdateReservedNodeCount(IN _nodeCount INT, IN _queueId INT, IN _date DATE)
+CREATE PROCEDURE UpdateReservedNodeCount(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _date DATE)
 	BEGIN
-		INSERT INTO node_reserved
-		VALUES (_nodeCount, _queueId, _date)
+		INSERT INTO queue_reserved
+		VALUES (_spaceId, _queueId, _nodeCount, _date)
 		ON DUPLICATE KEY UPDATE
 		node_count=_nodeCount;
 	END //
 	
+-- Deletes all entries from the temporary temp_node_changes table
+-- Author: Wyatt Kaiser	
+DROP PROCEDURE IF EXISTS RefreshTempNodeChanges;
+CREATE PROCEDURE RefreshTempNodeChanges()
+	BEGIN
+		DELETE FROM temp_node_changes;
+	END //
+	
+-- Adds an entry to temporary temp_node_changes table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS AddTempNodeChange;
+CREATE PROCEDURE AddTempNodeChange(IN _spaceId INT, IN _queueName VARCHAR(64), IN _nodeCount INT, IN _reserveDate DATE)
+	BEGIN
+		INSERT INTO temp_node_changes
+		VALUES (_spaceId, _queueName, _nodeCount, _reserveDate)
+		ON DUPLICATE KEY UPDATE
+		node_count=_nodeCount;
+	END //
+	
+-- Returns the temp nodeCount for a particular queue on a particular date
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetTempNodeCountOnDate;
+CREATE PROCEDURE GetTempNodeCountOnDate(IN _queuename VARCHAR(64), IN _reserveDate DATE)
+	BEGIN
+		SELECT node_count AS count
+		FROM temp_node_changes
+		WHERE queue_name = _queuename AND reserve_date = _reserveDate;
+	END //
+	
+-- Returns the queueName, nodeCount, and reserveDate from the temp_node_changes table
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetTempChanges;
+CREATE PROCEDURE GetTempChanges()
+	BEGIN
+		SELECT * 
+		FROM temp_node_changes;
+	END //
+	
+-- Returns the minimum node count for a queue reservation
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetMinNodeCount;
+CREATE PROCEDURE GetMinNodeCount( IN _queueId INT )
+	BEGIN
+		SELECT MIN(node_count) AS count
+		FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
+	
+-- Returns the maximum node count for a queue reservation
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetMaxNodeCount;
+CREATE PROCEDURE GetMaxNodeCount (IN _queueId INT)
+	BEGIN
+		SELECT MAX(node_count) AS count
+		FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)

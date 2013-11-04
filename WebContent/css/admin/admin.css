@@ -7,6 +7,11 @@
 	bottom: 0px; 
 }
 
+#table.manage {
+	width: 100%;
+    clear: both;
+}
+
 #trashcan {
 	width: 50px;
 	height: 50px;
@@ -77,3 +82,4 @@
 button {
 	float: right;
 }
+

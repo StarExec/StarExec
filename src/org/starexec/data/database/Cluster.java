@@ -15,12 +15,17 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 
 
 /**
  * Handles all database interaction for cluster resources (queues and worker nodes)
  */
+
+
 public class Cluster {
 	private static final Logger log = Logger.getLogger(Cluster.class);	
 	
@@ -275,6 +280,14 @@ public class Cluster {
 		
 		return null;
 	}
+	
+/*
+	public static void updateNodeDate(int nodeId, int queueId, Date start, Date end, String queueCode) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			
 
 
 	public static Boolean reserveNodes(int queue_id, int node_count, Date start, Date end) {
@@ -300,8 +313,8 @@ public class Cluster {
 		}
 		return true;
 	}
-
-
+	*/
+	
 	/**
 	 * Updates the status of ALL worker nodes with the given status
 	 * @param status The status to set for all nodes
@@ -334,9 +347,7 @@ public class Cluster {
 				procedure = con.prepareCall("{CALL UpdateNodeStatus(?, ?)}");
 				procedure.setString(1, name);
 				procedure.setString(2, status);
-			}
-						
-			//log.debug(String.format("Status for node [%s] set to [%s]", (name == null) ? "<ALL>" : name, status));
+			}						
 			procedure.executeUpdate();			
 			return true;
 		} catch (Exception e){			
@@ -350,6 +361,7 @@ public class Cluster {
 		log.debug(String.format("Status for node [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
 	}
+
 	
 	/**
 	 * Takes in a node name and a hashmap representing an attribute for the node and its value. This method
@@ -414,8 +426,9 @@ public class Cluster {
 		log.debug(String.format("Node [%s] failed to be updated.", name));
 		return false;
 	}
+	
 
-	public static Boolean updateNodeCount(int nodeCount, int queueId, java.util.Date date) {
+	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -425,10 +438,11 @@ public class Cluster {
 		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
 			
-			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?)}");
-			procedure.setInt(1, nodeCount);
+			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?)}");
+			procedure.setInt(1, spaceId);
 			procedure.setInt(2, queueId);
-			procedure.setDate(3, sqlDate);
+			procedure.setInt(3, nodeCount);
+			procedure.setDate(4, sqlDate);
 			procedure.executeUpdate();
 
 			log.debug("successfully updated NodeCount for queue " + queueId);
@@ -445,53 +459,261 @@ public class Cluster {
 	}
 
 
-	/**
-	 * Takes in a node name and a hashmap representing an attribute for the node and its value. This method
-	 * will add a column to the database for the attribute if it does not exist. If it does exist, the attribute
-	 * for the given node is updated with the current value. If the given node does not exist, it is added to the database,
-	 * or else all of its attributes are updated.
-	 * @param name The name of the worker node to update/add
-	 * @param attributes A list of key/value attributes to add/update for the node
-	 * @return True if the operation was a success, false otherwise.
-	 * @author Tyler Jensen
-	 */
-	public static void updateNodeDate(int nodeId, int queueId, Date start, Date end, String queueCode) {
+	public static Boolean reserveNodes(int space_id, int queue_id, Date start, Date end) {
+			
+		//Get all the dates between these two dates
+	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
+	    Calendar calendar = new GregorianCalendar();
+	    calendar.setTime(start);
+	    while (calendar.getTime().before(end))
+	    {
+	        java.util.Date result = calendar.getTime();
+	        dates.add(result);
+	        calendar.add(Calendar.DATE, 1);
+	    }
+	    java.util.Date latestResult = calendar.getTime();
+	    dates.add(latestResult);
+		
+		for (java.util.Date utilDate : dates) {
+			Queue q = Queues.get(queue_id);
+			String queueName = q.getName();
+			int node_count = Requests.GetNodeCountOnDate(queueName, utilDate);
+			
+		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate);
+		    if (!result) {
+		    	return false;
+		    }
+		}
+		return true;
+	}
+
+
+	public static boolean RefreshTempNodeChanges() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
+			procedure = con.prepareCall("{CALL RefreshTempNodeChanges()}");
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("RefreshTempNodeChanges says "+e.getMessage(),e);
+		}finally	{
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
 
-			List<Date> dates = new ArrayList<Date>();
-		    Calendar calendar = new GregorianCalendar();
-		    calendar.setTime(start);
-		    while (calendar.getTime().before(end))
-		    {
-		        Date result = (Date) calendar.getTime();
-		        dates.add(result);
-		        calendar.add(Calendar.DATE, 1);
-		    }
 
-		    for (Date day : dates) {
-		    	procedure = con.prepareCall("{CALL UpdateNodeDate(?, ?, ?, ?)}");
-				procedure.setInt(1, nodeId);
-				procedure.setInt(2, queueId);
-				procedure.setDate(3, day);
-				procedure.setString(4, queueCode);
-				procedure.executeUpdate();
-		    }
-				
-					
-
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
+	public static boolean addTempNodeChange(int spaceId, String queueName, int value, Date reserve_date) {
+		log.debug("spaceId = " + spaceId);
+		log.debug("queueName = " + queueName);
+		log.debug("value = " + value);
+		log.debug("reserve_date = " + reserve_date);
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL AddTempNodeChange(?,?,?,?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setString(2, queueName);
+			procedure.setInt(3, value);
+			procedure.setDate(4, reserve_date);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("AddTempNodeChange says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		
-		log.debug(String.format("Node [%s] successfuly updated.", nodeId));
+		return false;
 	}
 
+
+	public static int getTempNodeCountOnDate(String name, java.util.Date date) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetTempNodeCountOnDate(?, ?)}");
+			procedure.setString(1, name);
+			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+			procedure.setDate(2, sqlDate);
+			
+			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getInt("count");
+			}			
+
+			return -1;			
+			
+		} catch (Exception e){			
+			log.error("GetTempNodeCountOnDate says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+	}
+
+
+	public static List<QueueRequest> getTempChanges() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetTempChanges()}");			
+			
+			results = procedure.executeQuery();
+			List<QueueRequest> requests = new LinkedList<QueueRequest>();
+			
+			while(results.next()){
+				QueueRequest req = new QueueRequest();
+				int spaceId = results.getInt("space_id");
+				String queueName = results.getString("queue_name");
+				int nodeCount = results.getInt("node_count");
+				Date reserveDate = results.getDate("reserve_date");
+				req.setSpaceId(spaceId);
+				req.setQueueName(queueName);
+				req.setNodeCount(nodeCount);
+				req.setStartDate(reserveDate);
+				
+				requests.add(req);
+			}			
+
+			return requests;			
+			
+		} catch (Exception e){			
+			log.error("GetTempChanges says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+		
+	
+	
+	public static boolean updateTempChanges() {
+		List<QueueRequest> temp_changes = Cluster.getTempChanges();
+		boolean success = true;
+		for (QueueRequest req : temp_changes) {
+			int queueId = Queues.getIdByName(req.getQueueName());
+			log.debug("spaceId = " + req.getSpaceId());
+			log.debug("nodeCount = " + req.getNodeCount());
+			log.debug("queueId = " + queueId);
+			log.debug("startDate = " + req.getStartDate());
+			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate());
+			if (! success) {
+				break;
+			}
+		}
+		return success ? true : false;
+	}
+
+
+	public static int getMinNodeCount(int queueId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetMinNodeCount(?)}");	
+			procedure.setInt(1, queueId);
+			
+			results = procedure.executeQuery();
+			
+			while(results.next()){
+				return results.getInt("count");
+			}			
+			
+		} catch (Exception e){			
+			log.error("GetMinNodeCount says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+	}
+
+	public static int getMaxNodeCount(int queueId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetMaxNodeCount(?)}");	
+			procedure.setInt(1, queueId);
+			
+			results = procedure.executeQuery();
+			
+			while(results.next()){
+				return results.getInt("count");
+			}			
+			
+		} catch (Exception e){			
+			log.error("GetMaxNodeCount says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+	}
+
+
+	public static List<Job> getJobsRunningOnQueue(int queueId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetJobsRunningOnQueue(?)}");	
+			procedure.setInt(1, queueId);
+			
+			results = procedure.executeQuery();
+			List<Job> jobs = new LinkedList<Job>();
+			
+			while(results.next()){
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));
+				int queue_Id = results.getInt("queue_id");
+				Queue queue = Queues.get(queue_Id);
+				j.setQueue(queue);
+				jobs.add(j);
+			}			
+			
+			return jobs;
+			
+		} catch (Exception e){			
+			log.error("GetJobsRunningOnQueue says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
 }

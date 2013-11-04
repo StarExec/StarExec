@@ -87,14 +87,12 @@ CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
 		LIMIT _cap;
 	END //	
 	
--- Gets the number of nodes associated with a queue on a given date
+-- Count the number of queues in a specific space with a specific name
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNodeCountOnDate;
-CREATE PROCEDURE GetNodeCountOnDate(IN _queueId INT, IN _date DATE)
+DROP PROCEDURE IF EXISTS countQueueName;
+CREATE PROCEDURE countQueueName(IN _name VARCHAR(128))
 	BEGIN
-		SELECT node_count AS count
-		FROM node_reserved
-		WHERE queue_id = _queueID AND _date = reserve_date;
-	END //	
+		SELECT COUNT(*) FROM Queues WHERE name = _name;		
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file

@@ -1,6 +1,8 @@
 package org.starexec.app;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -13,10 +15,17 @@ import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Queues;
+import org.starexec.data.database.Requests;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueRequest;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
@@ -178,6 +187,87 @@ public class Starexec implements ServletContextListener {
 				Jobs.cleanOrphanedDeletedJobs();
 			}
 		};
+		
+		final Runnable checkQueueReservations = new RobustRunnable("checkQueueReservations") {
+			@Override
+			protected void dorun() {
+				log.info("checkQueueReservationsTask (periodic)");
+				java.util.Date today = new java.util.Date();
+				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
+				
+				for (QueueRequest req : queueReservations) {
+					SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+					
+					/**
+					 * If today is when the reservation is ending
+					 */
+					boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
+					if (end_is_today) {
+						int queueId = Queues.getIdByName(req.getQueueName());
+						
+						//Pause jobs that are running on the queue
+						List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+						for (Job j : jobs) {
+							Jobs.pause(j.getId());
+						}
+						
+						//Send Email on either completion or all paused
+
+						//Move associated Nodes back to default queue
+						List<WorkerNode> nodes = Queues.getNodes(queueId);
+						for (WorkerNode n : nodes) {
+							//Util.executeCommand(.....)
+							Queues.associate(1, n.getId());
+						}
+						
+						
+						// delete queue and add its info into the historic_queue table
+						Requests.DeleteReservation(req);
+					}
+					
+					/**
+					 * if today is when the reservation is starting
+					 */
+					boolean start_is_today = fmt.format(req.getStartDate()).equals(fmt.format(today));
+					if (start_is_today) {
+						
+						String queueName = req.getQueueName();
+						int queueId = Queues.getIdByName(queueName);
+						Queue q = Queues.get(queueId);
+						if (!q.getStatus().equals("ACTIVE")) {
+							
+							//Need to deal with jobpairs running on nodes in all.q
+							
+							
+							//Make status "ACTIVE"
+							Queues.setStatus(req.getQueueName(), "ACTIVE"); 
+							List<WorkerNode> nodes = Queues.getNodes(1);
+							
+							
+							//Move Nodes that are associated with default queue to the new queue
+							for (int i = 0; i < req.getNodeCount(); i++) {
+								//Util.executeCommand(....);
+								Queues.associate(queueId, nodes.get(i).getId());
+							}
+							
+							List<WorkerNode> queue_nodes = Cluster.getNodesForQueue(queueId);
+							for (WorkerNode n : queue_nodes) {
+								//Clear the job pair that is running on the node
+								//Set its status to running again
+								
+								
+								//Util.executeCommand("qdel " + sge_id);
+
+
+							}
+							
+						}
+					}
+
+				}
+			}
+		};
+		
 		//created directories expected by the system to exist
 		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
@@ -194,8 +284,8 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
+		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 1, TimeUnit.HOURS);
 
-		}
-	
+		}	
 	}
 }

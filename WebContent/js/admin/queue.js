@@ -5,7 +5,7 @@ var progress = 0;
 
 $(document).ready(function() {
 	
-
+	refreshUpdates();
 	
 	InitUI();
 	
@@ -15,14 +15,28 @@ $(document).ready(function() {
 		}
 	});
 	
-
-	
-	
 	initDataTables();
-	
 
-	
 });
+
+function refreshUpdates() {
+	$.post(  
+			starexecRoot+"services/nodes/refresh",
+			function(nextDataTablePage){
+				switch(nextDataTablePage){
+				case 1:
+					break;
+				case 2:		
+					break;
+				default:	// Have to use the default case since this process returns JSON objects to the client
+				break;
+				}
+			},  
+			"json"
+	).error(function(){
+		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
+	});
+}
 
 function InitUI() {
 
@@ -55,14 +69,6 @@ function InitUI() {
 		);
 	});
 	
-
-
-	
-	var attributes = new Array();
-	attributes[0] = "queuename";
-	attributes[1] = "nodecount";
-	attributes[2] = "startdate";
-	attributes[3] = "enddate";	
     
 	$('#btnUpdate').button({
 		icons: {
@@ -76,39 +82,31 @@ function InitUI() {
 		var string_start_date = start_date.replace(/\//g , "");
 		var end_date = document.getElementById("end").value;
 		var string_end_date = end_date.replace(/\//g, "");
-		
-		
-		
-		var variables = new Array();
-		variables[0] = queueName;
-		variables[1] = nodeCount;
-		variables[2] = string_start_date;
-		variables[3] = string_end_date;	
-		for (var i=0; i<4; i++) {
-			var newVal = variables[i];
-			var attr = attributes[i];
-			if (attr == "queuename") {
-	    		document.getElementById('qName').innerHTML = newVal;
-			}
-				$.post(  
-						starexecRoot+"services/edit/request/" + code + "/" + attr + "/" + newVal,
-					    function(returnCode){  			        
-					    	if(returnCode == '0') {
-					    		nodeTable.fnDraw();
-					    		//showMessage('success', "successfully updated values", 3000);
-					    	} else if (returnCode == '1') {
-					    		showMessage('error', "date must be after today's date", 5000);
-					    	} else if (returnCode == "2") {
-					    		showMessage('error', "end date must be after start date", 5000);
-					    	} else {
-					    		showMessage('error', "There was an error processing your updates; please try again", 5000);
-					    	}
-					     },  
-					     "json"  
-				).error(function(){
-					showMessage('error',"Internal error updating user information",5000);
-				});	
-		}
+
+	
+		$.post(  
+				starexecRoot+"services/edit/request/" + code + "/" + queueName + "/" + nodeCount + "/" + string_start_date + "/" + string_end_date ,
+			    function(returnCode){  			        
+			    	if(returnCode == '0') {
+			    		nodeTable.fnDraw();
+			    		showMessage('success', "successfully updated values", 3000);
+			    		document.getElementById('qName').innerHTML = queueName;
+			    	} else if (returnCode == '2') {
+			    		showMessage('error', "invalid permissions", 5000);
+			    	} else if (returnCode == '4') {
+			    		showMessage('error', "date must be after today's date", 5000);
+			    	} else if (returnCode == '5') {
+			    		showMessage('error', "end date must be after start date", 5000);
+			    	} else if (returnCode == '6') {
+			    		showMessage('error', "The requested queue name is already in use. Please select another", 5000);
+			    	} else {
+			    		showMessage('error', "There was an error processing your updates; please try again", 5000);
+			    	}
+			     },  
+			     "json"  
+		).error(function(){
+			showMessage('error',"Internal error updating user information",5000);
+		});	
 	});
    
 	$('#btnBack').button({
@@ -129,6 +127,7 @@ function initDataTables() {
 		"bFilter"		: false,
 		"bInfo"			: false,
 		"bPaginate"		: false,
+		//"bAutoWidth"	: false,
 		"iDisplayStart"	: 0,
 		"iDisplayLength": 10,
 		"bServerSide"	: true,
@@ -157,6 +156,12 @@ function initDataTables() {
 		},
 		"fnServerData"	: fnPaginationHandler
 	});
+	nodeTable.makeEditable({
+		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
+		"fnStartProcessingMode": function() {
+			nodeTable.fnDraw();
+		}
+	  });
 
 	
 }

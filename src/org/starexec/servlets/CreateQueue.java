@@ -22,6 +22,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
@@ -66,21 +67,26 @@ public class CreateQueue extends HttpServlet {
 		QueueRequest req = Requests.getQueueRequest(queueCode);
 		
 		String queue_name = req.getQueueName();
-		int node_count = req.getNodeCount();
 		int queueUserId = req.getUserId();
 		int queueSpaceId = req.getSpaceId();
 		Date start = req.getStartDate();
 		Date end = req.getEndDate();
 	
+		// Make sure that the queue has a unique name
+		if(Queues.notUniquePrimitiveName(queue_name)) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The requested queue name is already in use. Please select another.");
+			return;
+		}
 		
 		
 		
 		//Add the queue, reserve the nodes, and approve the reservation
 		int newQueueId = Queues.add(queue_name);
-		log.debug(newQueueId);
-		Cluster.reserveNodes(newQueueId, node_count, start, end);
+		//Util.executeCommand(...)
+		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end);
+		Cluster.updateTempChanges();
 		boolean approved = Requests.approveQueueReservation(req, newQueueId);
-		
+
 		
 		User u = Users.get(queueUserId);
 		if(approved && !u.getRole().equals("admin")) {
@@ -94,22 +100,7 @@ public class CreateQueue extends HttpServlet {
 		} else {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error approving the queue reservation");
 		}
-		
-		/*
-		// create a recurring task to check whether or not the start_date is today and then 
-		// will finish the queue process by associating the nodes with the queue
-	    final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
-		Runnable checkDate = createRunnable(start, nodeIds, newQueueId);
-		taskScheduler.scheduleAtFixedRate(checkDate, 0, R.CREATE_QUEUE_PERIOD, TimeUnit.MINUTES);
-		log.debug("successfully created a recurring task");
 
-		
-		for (int nodeId : nodeIds) {
-			String reservedQueueCode = Requests.getQueueReservedCode(newQueueId);
-			Cluster.updateNodeDate(nodeId, newQueueId, start, end, reservedQueueCode);
-			log.debug("Successfully updated Node reservation dates");
-		}
-			*/
 		if (newQueueId <= 0) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
 		} else {
@@ -118,30 +109,4 @@ public class CreateQueue extends HttpServlet {
 		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));	
 		}		
 	}
-	
-	/*
-	private Runnable createRunnable(final Date start_date, final List<Integer> nodeIds, final int queueId) {
-		
-		Runnable aRunnable = new Runnable() {
-			public void run() {
-				associateNodes(start_date, nodeIds, queueId);
-			}
-		};
-		
-		return aRunnable;
-	}
-	
-	
-	private void associateNodes(Date start_date, List<Integer> nodeIds, int queueId) {
-		java.util.Date today = new java.util.Date();
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-		boolean is_today = fmt.format(start_date).equals(fmt.format(today));
-		if (is_today) {
-			Cluster.associateNodes(queueId, nodeIds);
-			Queues.setStatus(Queues.get(queueId).getName(), "ACTIVE");
-		}
-	}
-	
-	*/
-
 }
