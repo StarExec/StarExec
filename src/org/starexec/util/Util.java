@@ -221,6 +221,8 @@ public class Util {
 	 * @param envp The environment
 	 * @return A buffered reader holding the output from the command.
 	 */
+	
+	//TODO: This needs to work when arguments have spaces in them
     public static BufferedReader executeCommand(String[] command, String[] envp) {
 		Runtime r = Runtime.getRuntime();
 		BufferedReader reader = null;		
