@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -62,6 +63,64 @@ public class JobPairs {
 		}
 		return false;
 	}
+	
+	/**
+	 * Adds a new attribute to a job pair
+	 * @param con The connection to make the update on
+	 * @param pairId The id of the job pair the attribute is for
+	 * @param key The key of the attribute
+	 * @param val The value of the attribute
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	protected static boolean addJobPairAttr(Connection con, int pairId, String key, String val) throws Exception {
+		CallableStatement procedure = null;
+		 try {
+			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?)}");
+			procedure.setInt(1, pairId);
+			procedure.setString(2, key);
+			procedure.setString(3, val);
+			
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("addJobAttr says "+e.getMessage(),e);
+		}	finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Adds a set of attributes to a job pair
+	 * @param pairId The id of the job pair the attribute is for
+	 * @param attributes The attributes to add to the job pair
+	 * @return True if the operation was a success, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean addJobPairAttributes(int pairId, Properties attributes) {
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+
+			// For each attribute (key, value)...
+			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
+			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
+				// Add the attribute to the database
+				JobPairs.addJobPairAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
+			}	
+
+			return true;
+		} catch(Exception e) {			
+			log.error("error adding Job Attributes = " + e.getMessage(), e);
+		} finally {			
+			Common.safeClose(con);	
+		}
+
+		return false;		
+	}
+
 	
 	/**
 	 * Compares the solver names of jp1 and jp2 

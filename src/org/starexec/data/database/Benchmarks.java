@@ -2169,6 +2169,8 @@ public class Benchmarks {
 	 * @return True on success, false on error
 	 * @author Eric Burns
 	 */
+	
+	//TODO: What should we do about the type of the benchmarks?
 	public static boolean process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs) {
 		Connection con=null;
 		try {

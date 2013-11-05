@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -24,6 +25,7 @@ import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -178,62 +180,8 @@ public class Jobs {
 	}
 	
 
-	/**
-	 * Adds a new attribute to a job pair
-	 * @param con The connection to make the update on
-	 * @param pairId The id of the job pair the attribute is for
-	 * @param key The key of the attribute
-	 * @param val The value of the attribute
-	 * @return True if the operation was a success, false otherwise
-	 * @author Tyler Jensen
-	 */
-	protected static boolean addJobAttr(Connection con, int pairId, String key, String val) throws Exception {
-		CallableStatement procedure = null;
-		 try {
-			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?)}");
-			procedure.setInt(1, pairId);
-			procedure.setString(2, key);
-			procedure.setString(3, val);
-			
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e) {
-			log.error("addJobAttr says "+e.getMessage(),e);
-		}	finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
+	
 
-	/**
-	 * Adds a set of attributes to a job pair
-	 * @param pairId The id of the job pair the attribute is for
-	 * @param attributes The attributes to add to the job pair
-	 * @return True if the operation was a success, false otherwise
-	 * @author Tyler Jensen
-	 */
-	public static boolean addJobAttributes(int pairId, Properties attributes) {
-		Connection con = null;
-
-		try {
-			con = Common.getConnection();
-
-			// For each attribute (key, value)...
-			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
-			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
-				// Add the attribute to the database
-				Jobs.addJobAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
-			}	
-
-			return true;
-		} catch(Exception e) {			
-			log.error("error adding Job Attributes = " + e.getMessage(), e);
-		} finally {			
-			Common.safeClose(con);	
-		}
-
-		return false;		
-	}
 
 
 	/**
@@ -2773,13 +2721,44 @@ public class Jobs {
 	 */
 	//TODO: Obviously, we need to actually do stuff here
 	public static boolean runPostProcessor(int jobId, int processorId) {
-		
+		BufferedReader reader = null;
 		try {
 			setPairStatusByJob(jobId,StatusCode.STATUS_PROCESSING.getVal());
+			List<JobPair> pairs=Jobs.getPairs(jobId);
+			Processor p=Processors.get(processorId);
+			log.info("Beginning processing for " + pairs.size() + " pairs");			
+			// For each benchmark in the list to process...
+			for(JobPair jp : pairs) {
+				
+
+					// Run the processor on the benchmark file
+					String [] procCmd = new String[2];
+					procCmd[0] = p.getFilePath();
+			
+					procCmd[1] = jp.getPath();
+					reader = Util.executeCommand(procCmd,null);
+					
+					// Load results into a properties file
+					Properties prop = new Properties();
+					if (reader != null){
+						prop.load(reader);							
+						reader.close();
+					}
+					JobPairs.addJobPairAttributes(jp.getId(), prop);
+					JobPairs.setPairStatus(jp.getId(), Status.StatusCode.STATUS_COMPLETE.getVal());
+			}
+			return true;
+			
 		} catch (Exception e) {
 			log.error("runPostProcessor says "+e.getMessage(),e);
 		} finally {
-			
+			if(reader != null) {
+				try { 
+					reader.close(); 
+				} catch(Exception e) {
+					//ignore
+				}
+			}
 		}
 		
 		return false;

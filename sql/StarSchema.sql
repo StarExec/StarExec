@@ -292,8 +292,8 @@ CREATE TABLE job_attributes (
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	job_id INT NOT NULL,
-        PRIMARY KEY (pair_id, attr_key) ,
-        KEY (job_id),
+    PRIMARY KEY (pair_id, attr_key),
+    KEY (job_id),
 	CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
 

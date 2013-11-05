@@ -101,10 +101,7 @@ public class BenchmarkProcessor extends HttpServlet {
 	 */
 	private boolean isValidProcessRequest(HttpServletRequest request) {
 		try {			
-			System.out.println(request.getParameter(PROCESSOR_ID));
-			System.out.println(request.getParameter(SPACE_ID));
-			System.out.println(request.getParameter(SPACE_HIERARCHY));
-			System.out.println(request.getParameter(CLEAR_OLD));
+			
 			if(!Util.paramExists(PROCESSOR_ID,request) ||
 			   !Util.paramExists(SPACE_ID,request) ||
 			   !Util.paramExists(SPACE_HIERARCHY,request) ||
