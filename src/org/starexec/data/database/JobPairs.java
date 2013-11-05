@@ -370,15 +370,21 @@ public class JobPairs {
 	 */
 	
 	public static String getFilePath(JobPair pair) {
-		File file=new File(Jobs.getDirectory(pair.getJobId()));
-		String[] pathSpaces=pair.getPath().split("/");
-		for (String space : pathSpaces) {
-			file=new File(file,space);
+		try {
+			File file=new File(Jobs.getDirectory(pair.getJobId()));
+			String[] pathSpaces=pair.getPath().split("/");
+			for (String space : pathSpaces) {
+				file=new File(file,space);
+			}
+			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
+			file=new File(file,pair.getBench().getName());
+			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
+			return file.getAbsolutePath();
+		} catch(Exception e) {
+			log.error("getFilePath says "+e.getMessage(),e);
 		}
-		file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
-		file=new File(file,pair.getBench().getName());
-		log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
-		return file.getAbsolutePath();
+		return null;
+		
 	}
 	
 	/**

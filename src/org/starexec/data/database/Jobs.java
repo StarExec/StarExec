@@ -2719,7 +2719,6 @@ public class Jobs {
 	 * @return True if the operation was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	//TODO: Obviously, we need to actually do stuff here
 	public static boolean runPostProcessor(int jobId, int processorId) {
 		BufferedReader reader = null;
 		try {
@@ -2735,7 +2734,7 @@ public class Jobs {
 					String [] procCmd = new String[2];
 					procCmd[0] = p.getFilePath();
 			
-					procCmd[1] = JobPairs.getFilePath(jp);
+					procCmd[1] = JobPairs.getFilePath(jp.getId());
 					reader = Util.executeCommand(procCmd,null);
 					
 					// Load results into a properties file
