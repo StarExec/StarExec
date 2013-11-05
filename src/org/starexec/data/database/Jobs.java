@@ -2744,7 +2744,7 @@ public class Jobs {
 						prop.load(reader);							
 						reader.close();
 					}
-					JobPairs.addJobPairAttributes(jp.getId(), prop);
+					JobPairs.addJobPairAttributes(jp.getId(), prop,jobId);
 					JobPairs.setPairStatus(jp.getId(), Status.StatusCode.STATUS_COMPLETE.getVal());
 			}
 			return true;

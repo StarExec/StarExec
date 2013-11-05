@@ -73,13 +73,14 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addJobPairAttr(Connection con, int pairId, String key, String val) throws Exception {
+	protected static boolean addJobPairAttr(Connection con, int pairId, String key, String val, int jobId) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?, ?)}");
 			procedure.setInt(1, pairId);
-			procedure.setString(2, key);
-			procedure.setString(3, val);
+			procedure.setInt(2,jobId);
+			procedure.setString(3, key);
+			procedure.setString(4, val);
 			
 			procedure.executeUpdate();
 			return true;
@@ -98,7 +99,7 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean addJobPairAttributes(int pairId, Properties attributes) {
+	public static boolean addJobPairAttributes(int pairId, Properties attributes, int jobId) {
 		Connection con = null;
 
 		try {
@@ -108,7 +109,7 @@ public class JobPairs {
 			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
 			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
 				// Add the attribute to the database
-				JobPairs.addJobPairAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
+				JobPairs.addJobPairAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue(), jobId);
 			}	
 
 			return true;
