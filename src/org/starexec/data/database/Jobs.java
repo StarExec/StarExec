@@ -2730,12 +2730,12 @@ public class Jobs {
 			// For each benchmark in the list to process...
 			for(JobPair jp : pairs) {
 				
-
+					
 					// Run the processor on the benchmark file
 					String [] procCmd = new String[2];
 					procCmd[0] = p.getFilePath();
 			
-					procCmd[1] = jp.getPath();
+					procCmd[1] = JobPairs.getFilePath(jp);
 					reader = Util.executeCommand(procCmd,null);
 					
 					// Load results into a properties file
