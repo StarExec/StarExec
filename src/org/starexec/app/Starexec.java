@@ -231,10 +231,12 @@ public class Starexec implements ServletContextListener {
 					/**
 					 * if today is when the reservation is starting
 					 */
-					boolean start_is_today = fmt.format(req.getStartDate()).equals(fmt.format(today));
-					log.debug("today = " + today);
-					log.debug("start = " + req.getStartDate());
+					boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
+					boolean start_is_today2 = req.getStartDate().after(today);
+					log.debug("today = " + fmt.format(today));
+					log.debug("start = " + fmt.format(req.getStartDate()));
 					log.debug("start_is_today = " + start_is_today);
+					log.debug("start_is_today2 = " + start_is_today2);
 					if (start_is_today) {
 						
 						String queueName = req.getQueueName();
