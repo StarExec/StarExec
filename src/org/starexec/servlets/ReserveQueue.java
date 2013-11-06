@@ -55,8 +55,9 @@ public class ReserveQueue extends HttpServlet {
 		// addQueue is set to true, false otherwise [this is determined by if
 		// the message is null or not (addQueue doesn't have message associated with it)
 		boolean addQueue = false;
-		if (message == null) {
+		if (message == null && queueRequest != null) {
 			addQueue = true;
+			queueRequest.setMessage("[Admin created queue]");
 		}
 		
 		if(queueRequest == null && addQueue == true){

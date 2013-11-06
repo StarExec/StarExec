@@ -32,21 +32,29 @@ public class UpdateData extends HttpServlet {
 	 * This servlet handles post request from the JEditable and updates node_count property that is edited
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String code = request.getParameter("code");
+		//This boolean indicates if the column being changed is the new queue
+		boolean isNewQueue = false;
 		
 		//This will be the date
 		String date = request.getParameter("id");
 		
 		
-		//Column id -- hidden columns are counted
+		//Column # -- hidden columns are counted
 		//int columnId = Integer.parseInt(request.getParameter("columnId"));
-		
+				
 		//Column # (use this if column names are being changed dynamically) hidden columns not counted
 		//int columnPosition = Integer.parseInt(request.getParameter("columnPosition"));
-		
+				
 		//Name of the column -- use if the column names aren't being changed dynamically
 		String columnName = request.getParameter("columnName");
+		String code = columnName;
+		
+		QueueRequest req = null;
 		int queueId = Queues.getIdByName(columnName);
+		if (queueId == -1) {
+			req = Requests.getQueueRequest(code);
+			isNewQueue = true;
+		}
 
 		//Row #
 		//int rowId = Integer.parseInt(request.getParameter("rowId"));
@@ -77,15 +85,14 @@ public class UpdateData extends HttpServlet {
 		String queueName = null;
 		int space_id = 0;
 		
-		Queue q = Queues.get(queueId);
-		if (q != null) {
-			queueName = q.getName();
-			space_id = Requests.getQueueReservationSpaceId(queueId);
-		} else {
-			//queueName = columnName;
-			QueueRequest req = Requests.getQueueRequest(code);
+		
+		if (isNewQueue) {
 			queueName = req.getQueueName();
 			space_id = Requests.getQueueRequestSpaceId(queueName);
+		} else {
+			Queue q = Queues.get(queueId);
+			queueName = q.getName();
+			space_id = Requests.getQueueReservationSpaceId(queueId);
 		}
 		
 		Cluster.addTempNodeChange(space_id, queueName, value, reserve_date);

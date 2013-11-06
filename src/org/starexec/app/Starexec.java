@@ -13,6 +13,7 @@ import javax.servlet.ServletContextListener;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
+import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
@@ -192,7 +193,9 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
-				java.util.Date today = new java.util.Date();
+				//java.util.Date today = new java.util.Date();
+				java.util.Date today = new java.util.Date(13, 10, 7);
+				//Date d = new Date(63, 0, 16);	// January 16, 1963
 				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 				
 				for (QueueRequest req : queueReservations) {
@@ -229,12 +232,18 @@ public class Starexec implements ServletContextListener {
 					 * if today is when the reservation is starting
 					 */
 					boolean start_is_today = fmt.format(req.getStartDate()).equals(fmt.format(today));
+					log.debug("today = " + today);
+					log.debug("start = " + req.getStartDate());
+					log.debug("start_is_today = " + start_is_today);
 					if (start_is_today) {
 						
 						String queueName = req.getQueueName();
 						int queueId = Queues.getIdByName(queueName);
 						Queue q = Queues.get(queueId);
 						if (!q.getStatus().equals("ACTIVE")) {
+							
+							//Create Queue
+							//Util.executeCommand(....);
 							
 							//Need to deal with jobpairs running on nodes in all.q
 							
@@ -284,7 +293,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 1, TimeUnit.HOURS);
+		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 
 		}	
 	}

@@ -104,12 +104,12 @@ try {
 		<legend class="expd" id="nodeExpd">nodes</legend>
 		<table id="nodes">
 			<thead>
-				<tr>
+				<tr>				
 					<th style="width: 100px;">date</th>
 					<c:forEach items="${queues}" var="queue"> 
 						<th style="width: 100px;">${queue.name}</th>
 					</c:forEach>
-					<th style="width: 100px;" id="qName">${queueName}</th>
+					<th style="width: 100px;" id="qName">${code}</th>
 					<th>total</th>
 					<th class="statusConflict">conflict</th>
 				</tr>

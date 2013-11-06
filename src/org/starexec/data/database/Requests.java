@@ -617,6 +617,10 @@ public class Requests {
 	 * @author Wyatt Kaiser
 	 */
 	public static QueueRequest getQueueRequest(String code){
+		if (code == null) {
+			log.debug("code is null");
+		}
+		log.debug("code = " + code);
 		Connection con = null;			
 		ResultSet results=null;
 		CallableStatement procedure = null;

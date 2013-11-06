@@ -92,7 +92,7 @@ CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
 DROP PROCEDURE IF EXISTS countQueueName;
 CREATE PROCEDURE countQueueName(IN _name VARCHAR(128))
 	BEGIN
-		SELECT COUNT(*) FROM Queues WHERE name = _name;		
+		SELECT COUNT(*) FROM queues WHERE name = _name;		
 	END //
 	
 DELIMITER ; -- This should always be at the end of this file

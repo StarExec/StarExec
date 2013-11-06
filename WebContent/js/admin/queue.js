@@ -5,7 +5,13 @@ var progress = 0;
 
 $(document).ready(function() {
 	
+
 	refreshUpdates();
+	
+	var queueName = document.getElementById("queueName").value;
+
+	document.getElementById('qName').innerHTML = queueName;
+
 	
 	InitUI();
 	
