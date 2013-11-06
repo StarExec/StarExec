@@ -352,6 +352,7 @@ public class Requests {
 	public static void DeleteReservation(QueueRequest req) {
 		Connection con = null;
 		CallableStatement procedureAddHistory = null;
+		CallableStatement procedureRemoveReservation = null;
 		CallableStatement procedureDelete = null;
 
 		try {
@@ -369,6 +370,10 @@ public class Requests {
 			procedureAddHistory.setDate(4, req.getStartDate());
 			procedureAddHistory.setDate(5, req.getEndDate());
 			procedureAddHistory.executeUpdate();
+			
+			procedureRemoveReservation = con.prepareCall("{CALL CancelQueueReservation(?)}");
+			procedureRemoveReservation.setInt(1, queueId);
+			procedureRemoveReservation.executeUpdate();
 			
 			procedureDelete = con.prepareCall("{CALL RemoveQueue(?)}");
 			procedureDelete.setInt(1, queueId);
