@@ -194,7 +194,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
 				//java.util.Date today = new java.util.Date();
-				java.util.Date today = new java.util.Date(113, 10, 7);
+				java.util.Date today = new java.util.Date(113, 10, 14);
 				//Date d = new Date(63, 0, 16);	// January 16, 1963
 				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 				
@@ -205,6 +205,9 @@ public class Starexec implements ServletContextListener {
 					 * If today is when the reservation is ending
 					 */
 					boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
+					log.debug("today = " + fmt.format(today));
+					log.debug("end = " + fmt.format(req.getEndDate()));
+					log.debug("end_is_today = " + end_is_today);
 					if (end_is_today) {
 						int queueId = Queues.getIdByName(req.getQueueName());
 						
@@ -232,11 +235,7 @@ public class Starexec implements ServletContextListener {
 					 * if today is when the reservation is starting
 					 */
 					boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
-					boolean start_is_today2 = req.getStartDate().after(today);
-					log.debug("today = " + fmt.format(today));
-					log.debug("start = " + fmt.format(req.getStartDate()));
-					log.debug("start_is_today = " + start_is_today);
-					log.debug("start_is_today2 = " + start_is_today2);
+
 					if (start_is_today) {
 						
 						String queueName = req.getQueueName();
