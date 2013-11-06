@@ -318,6 +318,30 @@ CREATE PROCEDURE GetMaxNodeCount (IN _queueId INT)
 		WHERE queue_id = _queueId;
 	END //
 	
+-- Returns the jobs that are currently running on a specific queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetJobsRunningOnQueue;
+CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
+	BEGIN
+		SELECT DISTINCT
+			jobs.id, 
+			jobs.name, 
+			jobs.user_id, 
+			jobs.created, 
+			jobs.description, 
+			jobs.deleted,
+			jobs.primary_space,
+			GetJobStatus(jobs.id)		AS status,
+			GetTotalPairs(jobs.id) 		AS totalPairs,
+			GetCompletePairs(jobs.id) 	AS completePairs,
+			GetPendingPairs(jobs.id) 	AS pendingPairs,
+			GetErrorPairs(jobs.id) 		AS errorPairs
+		
+		FROM	jobs
+		JOIN    job_pairs ON jobs.id = job_pairs.job_id
+		WHERE 	job_pairs.status_code < 7 AND jobs.queue_id = _queueId;
+	END //
+	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
 	BEGIN
