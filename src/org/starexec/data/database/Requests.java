@@ -397,8 +397,10 @@ public class Requests {
 			List<QueueRequest> reservations = new LinkedList<QueueRequest>();
 			while (results.next()) {
 				QueueRequest req = new QueueRequest();
+				log.debug("space_id = " + results.getInt("space_id"));
 				req.setSpaceId(results.getInt("space_id"));
 				
+				log.debug("queue_id = " + results.getInt("queue_id"));
 				int queue_id = results.getInt("queue_id");
 				Queue q = Queues.get(queue_id);
 				log.debug("queue = " + q);
