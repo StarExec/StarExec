@@ -406,8 +406,8 @@ public class Requests {
 				int min_nodeCount = results.getInt("MIN(node_count)");
 				int max_nodeCount = results.getInt("MAX(node_count)");
 				req.setNodeCount(max_nodeCount);
-				req.setStartDate(results.getDate("start_date"));
-				req.setEndDate(results.getDate("end_date"));
+				req.setStartDate(results.getDate("MIN(reserve_date)"));
+				req.setEndDate(results.getDate("MAX(reserve_date)"));
 				
 				reservations.add(req);
 
