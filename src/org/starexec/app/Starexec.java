@@ -193,9 +193,8 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
-				//java.util.Date today = new java.util.Date();
-				java.util.Date today = new java.util.Date(113, 10, 14);
-				//Date d = new Date(63, 0, 16);	// January 16, 1963
+				java.util.Date today = new java.util.Date();
+				//java.util.Date today = new java.util.Date(113, 10, 14); // November 14, 2013
 				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 				
 				for (QueueRequest req : queueReservations) {
@@ -250,7 +249,8 @@ public class Starexec implements ServletContextListener {
 							
 							
 							//Make status "ACTIVE"
-							Queues.setStatus(req.getQueueName(), "ACTIVE"); 
+							Queues.setStatus(req.getQueueName(), "ACTIVE"); //Need to actually set to active via SGE
+							//Util.executeCommand(....);
 							List<WorkerNode> nodes = Queues.getNodes(1);
 							
 							
