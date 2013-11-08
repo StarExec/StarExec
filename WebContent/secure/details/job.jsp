@@ -20,9 +20,14 @@
 			}
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
-				int pausedOrKilledStatus=Jobs.isJobPausedOrKilled(jobId);
+				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
+				int pausedOrKilledStatus = Jobs.isJobPausedOrKilled(jobId);
 				boolean isPaused = pausedOrKilledStatus==1;
 				boolean isKilled = pausedOrKilledStatus==2;
+				boolean isRunning = false;
+				if (incomplete_pairs.size() != 0) {
+					isRunning = true;
+				}
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				request.setAttribute("usr",u);
@@ -31,6 +36,7 @@
 				request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 				request.setAttribute("isPaused", isPaused);
 				request.setAttribute("isKilled", isKilled);
+				request.setAttribute("isRunning", isRunning);
 				request.setAttribute("postProcs", ListOfPostProcessors);
 
 			} else {
@@ -216,7 +222,7 @@
 					
 					<c:if test="${pairStats.pendingPairs > 0}">
 						<c:if test="${j.userId == userId}">
-							<c:if test="${not isPaused and not isKilled}">
+							<c:if test="${not isPaused and not isKilled and isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>
 						</c:if>

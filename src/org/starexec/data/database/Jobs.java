@@ -2955,4 +2955,36 @@ public class Jobs {
 		}
 		return false;
 	}
+	
+	public static List<JobPair> getIncompleteJobPairs(int jobId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetIncompleteJobPairs(?)}");
+			procedure.setInt(1, jobId);
+			results = procedure.executeQuery();
+			
+			if(results.next()){
+				JobPair jp = new JobPair();
+				jp.setId(results.getInt("id"));
+				jp.setJobId(results.getInt("job_id"));
+				jp.setGridEngineId(results.getInt("sge_id"));
+				int benchId = results.getInt("bench_id");
+				Benchmark b = Benchmarks.get(benchId);
+				jp.setBench(b);
+				int config_id = results.getInt("config_id");
+				Configuration c = Solvers.getConfiguration(config_id);
+				jp.setConfiguration(c);
+			} 
+			return null;
+		} catch (Exception e) {
+			log.error("GetIncompleteJobPairs says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
 }

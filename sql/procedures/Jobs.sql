@@ -790,6 +790,18 @@ CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 		FROM jobs
 		WHERE id=_jobId;
 	END //
+	
+-- Get all the job pairs that are not complete
+-- Unknown, pending, enqueued, preparing, running, finishing, or awaiting results
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetIncompleteJobPairs;
+CREATE PROCEDURE GetIncompleteJobPairs(IN _jobId INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+		WHERE (job_id = _jobId AND status_code < 7)
+		ORDER BY sge_id ASC;
+	END //
 
 -- Sets the "deleted" property of a job to true and deletes all its job pairs from the database
 -- If the job has no more space associations, it is deleted from the database

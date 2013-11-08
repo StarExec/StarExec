@@ -216,18 +216,23 @@ public class Starexec implements ServletContextListener {
 							Jobs.pause(j.getId());
 						}
 						
-						//Send Email on either completion or all paused
+						//TODO: Send Email on either completion or all paused
 
 						//Move associated Nodes back to default queue
 						List<WorkerNode> nodes = Queues.getNodes(queueId);
 						for (WorkerNode n : nodes) {
+							// TODO: SGE command to move node from queue back to all.q
 							//Util.executeCommand(.....)
 							Queues.associate(1, n.getId());
 						}
 						
 						
-						// delete queue and add its info into the historic_queue table
-						Requests.DeleteReservation(req);
+						// TODO: delete queue and add its info into the historic_queue table
+						/***** DELETE THE QUEUE *****/
+							Requests.DeleteReservation(req);
+							//  DISABLE: sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d <queue name>
+							//	DELETE : sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -dq <queue name>
+
 					}
 					
 					/**
@@ -242,34 +247,37 @@ public class Starexec implements ServletContextListener {
 						Queue q = Queues.get(queueId);
 						if (!q.getStatus().equals("ACTIVE")) {
 							
-							//Create Queue
-							//Util.executeCommand(....);
+							// TODO: Create a queue
+							/***** CREATE A QUEUE *****/
+								// Create host.txt
+									//qconf -Ahgrp host.txt
 							
-							//Need to deal with jobpairs running on nodes in all.q
+								// Create queue.txt
+									// Util.ExecuteCommand(sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Mq <filename>)
+									// OR
+									// qconf -Aq name.q
 							
+														
 							
 							//Make status "ACTIVE"
-							Queues.setStatus(req.getQueueName(), "ACTIVE"); //Need to actually set to active via SGE
-							//Util.executeCommand(....);
+							/***** ACTIVATE A QUEUE *****/
+								Queues.setStatus(req.getQueueName(), "ACTIVE"); 
+								// TODO: SGE command to set ACTIVE
+								
+							
+							
+							
 							List<WorkerNode> nodes = Queues.getNodes(1);
-							
-							
 							//Move Nodes that are associated with default queue to the new queue
 							for (int i = 0; i < req.getNodeCount(); i++) {
-								//Util.executeCommand(....);
-								Queues.associate(queueId, nodes.get(i).getId());
+								/***** Move Node from all.q to new queue *****/
+									// TODO: SGE command to move queue
+									Queues.associate(queueId, nodes.get(i).getId());
 							}
 							
-							List<WorkerNode> queue_nodes = Cluster.getNodesForQueue(queueId);
-							for (WorkerNode n : queue_nodes) {
-								//Clear the job pair that is running on the node
-								//Set its status to running again
-								
-								
-								//Util.executeCommand("qdel " + sge_id);
+							// TODO: Get all the job pairs running on the nodes, and reset them
 
 
-							}
 							
 						}
 					}
@@ -294,7 +302,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
+		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 
 		}	
 	}
