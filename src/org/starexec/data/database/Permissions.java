@@ -145,17 +145,18 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeJob(int jobId, int userId){		
-		if (Jobs.isPublic(jobId)){
-			return true;
-		}
-		User user = Users.get(userId);
-		if (user.getRole().equals("admin")) {
-			return true;
-		}
+		
 		Connection con = null;			
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
+			if (Jobs.isPublic(jobId)){
+				return true;
+			}
+			User user = Users.get(userId);
+			if (user.getRole().equals("admin")) {
+				return true;
+			}
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
 			procedure.setInt(1, jobId);					
