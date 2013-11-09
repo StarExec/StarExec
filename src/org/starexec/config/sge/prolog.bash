@@ -8,7 +8,7 @@
 # Tyler Jensen
 #
 # MODIFIED:    
-# 10/25/2013
+# 11/08/2013
 #
 # DESCRIPTION:
 # This script runs BEFORE the user's job and
@@ -120,10 +120,15 @@ function copyDependencies {
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
 	log "solver copy complete"
 	if [ $SOLVER_CACHED -eq 0 ]; then
-		#store solver in a cache
-		log "storing solver in cache at $SOLVER_CACHE_PATH"
 		mkdir -p "$SOLVER_CACHE_PATH"
-		cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+		
+		
+		if mkdir "#SOLVER_CACHE_PATH/lock.lock" ; then
+			#store solver in a cache
+			log "storing solver in cache at $SOLVER_CACHE_PATH"
+			cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+			rm -f "#SOLVER_CACHE_PATH/lock.lock"
+		fi		
 	fi
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL\
 _SOLVER_DIR)"
