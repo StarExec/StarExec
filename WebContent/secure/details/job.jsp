@@ -22,8 +22,8 @@
 				j=Jobs.get(jobId);
 				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
 				int pausedOrKilledStatus = Jobs.isJobPausedOrKilled(jobId);
-				boolean isPaused = pausedOrKilledStatus==1;
-				boolean isKilled = pausedOrKilledStatus==2;
+				boolean isPaused = (pausedOrKilledStatus==1);
+				boolean isKilled = (pausedOrKilledStatus==2);
 				boolean isRunning = false;
 				if (incomplete_pairs.size() != 0) {
 					isRunning = true;

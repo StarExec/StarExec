@@ -2965,7 +2965,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetIncompleteJobPairs(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
-			
+			List<JobPair> pairs=new ArrayList<JobPair>();
 			if(results.next()){
 				JobPair jp = new JobPair();
 				jp.setId(results.getInt("id"));
@@ -2977,8 +2977,9 @@ public class Jobs {
 				int config_id = results.getInt("config_id");
 				Configuration c = Solvers.getConfiguration(config_id);
 				jp.setConfiguration(c);
+				pairs.add(jp);
 			} 
-			return null;
+			return pairs;
 		} catch (Exception e) {
 			log.error("GetIncompleteJobPairs says " + e.getMessage(), e);
 		} finally {
