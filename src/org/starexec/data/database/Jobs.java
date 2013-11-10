@@ -2721,11 +2721,16 @@ public class Jobs {
 	 */
 	public static boolean runPostProcessor(int jobId, int processorId) {
 		BufferedReader reader = null;
+		HashMap<Integer,Integer> statusCodes=new HashMap<Integer, Integer>();
 		try {
 			Processor p=Processors.get(processorId);
-			setPairStatusByJob(jobId,StatusCode.STATUS_PROCESSING.getVal());
 			List<JobPair> pairs=Jobs.getPairs(jobId);
-			
+			//store the status code of every pair so we can restore it after we're done
+			for (JobPair jp : pairs) {
+				statusCodes.put(jp.getId(), jp.getStatus().getCode().getVal());
+			}
+			Jobs.removeCachedJobStats(jobId);
+			setPairStatusByJob(jobId,StatusCode.STATUS_PROCESSING.getVal());
 			log.info("Beginning processing for " + pairs.size() + " pairs");			
 			// For each benchmark in the list to process...
 			for(JobPair jp : pairs) {
@@ -2745,9 +2750,15 @@ public class Jobs {
 							reader.close();
 						}
 						JobPairs.addJobPairAttributes(jp.getId(), prop,jobId);
-						JobPairs.setPairStatus(jp.getId(), Status.StatusCode.STATUS_COMPLETE.getVal());
+						
 					} catch (Exception e) {
 						log.error("error processing jp "+jp.getId()+" . Error says "+e.getMessage(),e);
+					}
+					try {
+						JobPairs.setPairStatus(jp.getId(), statusCodes.get(jp.getId()));
+					} catch (Exception e) {
+						log.error("error restoring pair status for jp with id = "+jp.getId()+" error says "+e.getMessage(),e);
+						//TODO: What is the behavior supposed to be here?
 					}
 					
 			}
@@ -2992,5 +3003,35 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return null;
+	}
+	
+	/**
+	 * Removes the cached job results for every job space associated with this job
+	 * @param jobId The ID of the job to remove the cached stats for
+	 * @return True if successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean removeCachedJobStats(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			Job j=Jobs.get(jobId);
+			List<Space> jobSpaces=Spaces.getSubSpacesForJob(j.getPrimarySpace(), true);
+			jobSpaces.add(Spaces.getJobSpace(j.getPrimarySpace()));
+			con=Common.getConnection();
+			for (Space s : jobSpaces) {
+				procedure=con.prepareCall("{CALL RemoveJobStatsInJobSpace(?)}");
+				procedure.setInt(1,s.getId());
+				procedure.executeUpdate();
+				Common.safeClose(procedure);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error("removeCachedJobStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 }

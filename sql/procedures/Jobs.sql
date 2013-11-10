@@ -600,6 +600,16 @@ CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT)
 		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
 
+-- Removes the cached job results for the hierarchy rooted at the given job space
+-- Author: Eric Burns	
+
+DROP PROCEDURE IF EXISTS RemoveJobStatsInJobSpace;
+CREATE PROCEDURE RemoveJobStatsInJobSpace(IN _jobSpaceId INT) 
+	BEGIN
+		DELETE FROM job_stats
+		WHERE job_stats.job_space_id = _jobSpaceId;
+	END //
+
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran
