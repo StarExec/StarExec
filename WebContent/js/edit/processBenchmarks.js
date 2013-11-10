@@ -7,7 +7,7 @@ $(document).ready(function(){
  * Initializes the user-interface
  */
 function initUI(){
-	$("#process").hide();
+	
 	// Attach icons
 	$('#cancel').button({
 		icons: {
@@ -44,14 +44,6 @@ function initUI(){
 		}
 	});
 
-	
-	
-	// Set up datatables
-	//$('#processorSelectionTable').dataTable( {
-     //   "sDom": 'rt<"bottom"f><"clear">',        
-      //  "bPaginate": false,        
-       // "bSort": true        
-    //});
 	$("#process").click(function(){
 		if(true == isFormValid){
 			var name = $("#name").val();
@@ -79,6 +71,7 @@ function initUI(){
 			);
 		}
 	});
+	$("#process").hide();
 	
 }
 

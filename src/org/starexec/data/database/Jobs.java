@@ -2722,29 +2722,34 @@ public class Jobs {
 	public static boolean runPostProcessor(int jobId, int processorId) {
 		BufferedReader reader = null;
 		try {
+			Processor p=Processors.get(processorId);
 			setPairStatusByJob(jobId,StatusCode.STATUS_PROCESSING.getVal());
 			List<JobPair> pairs=Jobs.getPairs(jobId);
-			Processor p=Processors.get(processorId);
+			
 			log.info("Beginning processing for " + pairs.size() + " pairs");			
 			// For each benchmark in the list to process...
 			for(JobPair jp : pairs) {
 				
-					
-					// Run the processor on the benchmark file
-					String [] procCmd = new String[2];
-					procCmd[0] = p.getFilePath();
-			
-					procCmd[1] = JobPairs.getFilePath(jp.getId());
-					reader = Util.executeCommand(procCmd,null);
-					
-					// Load results into a properties file
-					Properties prop = new Properties();
-					if (reader != null){
-						prop.load(reader);							
-						reader.close();
+					try {
+						// Run the processor on the benchmark file
+						String [] procCmd = new String[2];
+						procCmd[0] = p.getFilePath();
+				
+						procCmd[1] = JobPairs.getFilePath(jp.getId());
+						reader = Util.executeCommand(procCmd,null);
+						
+						// Load results into a properties file
+						Properties prop = new Properties();
+						if (reader != null){
+							prop.load(reader);							
+							reader.close();
+						}
+						JobPairs.addJobPairAttributes(jp.getId(), prop,jobId);
+						JobPairs.setPairStatus(jp.getId(), Status.StatusCode.STATUS_COMPLETE.getVal());
+					} catch (Exception e) {
+						log.error("error processing jp "+jp.getId()+" . Error says "+e.getMessage(),e);
 					}
-					JobPairs.addJobPairAttributes(jp.getId(), prop,jobId);
-					JobPairs.setPairStatus(jp.getId(), Status.StatusCode.STATUS_COMPLETE.getVal());
+					
 			}
 			return true;
 			

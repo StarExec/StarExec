@@ -97,6 +97,31 @@ $(document).ready(function(){
 	});
 	
 	initDialogs();
+	$("#leaveComm").click(function(){
+		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
+			
+		// Display the confirmation dialog
+		$('#dialog-confirm-leave').dialog({
+			modal: true,
+			buttons: {
+				'yes': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-leave').dialog('close');
+					leaveCommunity(id);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}		
+		});
+	});
+	
+	$("#downloadPostProcessors").click(function(){
+		downloadProcs(id, "post");
+	});
+	$("#downloadBenchProcessors").click(function(){
+		downloadProcs(id, "bench");
+	});
 });
 
 /**
@@ -224,31 +249,6 @@ function checkPermissions(perms) {
 function updateActionId(id) {
 	$('#joinComm').attr('href', starexecRoot+"secure/add/to_community.jsp?cid=" + id);
 	$('#editComm').attr('href', starexecRoot+"secure/edit/community.jsp?cid=" + id);
-	$("#leaveComm").click(function(){
-		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
-			
-		// Display the confirmation dialog
-		$('#dialog-confirm-leave').dialog({
-			modal: true,
-			buttons: {
-				'yes': function() {
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-leave').dialog('close');
-					leaveCommunity(id);
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}		
-		});
-	});
-	
-	$("#downloadPostProcessors").click(function(){
-		downloadProcs(id, "post");
-	});
-	$("#downloadBenchProcessors").click(function(){
-		downloadProcs(id, "bench");
-	});
 }
 
 function downloadProcs(id, procClass) {

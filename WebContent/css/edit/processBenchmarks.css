@@ -17,22 +17,12 @@ tr th {
 	padding: 10px;		
 	vertical-align: middle;
 }
-
+#process{
+	margin-top:5px;
+	margin-right:20px;
+}
 #detailsTbl tr td:first-child {
 	width: 20%;
-}
-
-#detailsTbl tr td textarea{
-	height: 125px;
-}
-
-#name{
-	width:80%
-}
-
-#description {
-	width: 80%;
-	height: 100px;
 }
 
 .error {
@@ -40,7 +30,5 @@ tr th {
 }
 
 #actionField button {
-	float:left;
-	margin-left:5px;
-	margin-bottom:10px;
+	float:right;
 }

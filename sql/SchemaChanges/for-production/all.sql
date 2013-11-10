@@ -1,5 +1,7 @@
-source renameKeys.sql
-source dropArchiveType.sql 
-source dropUnnecessaryKeys.sql
-source spaceCacheTable.sql
-
+source addConfigTimestamp.sql
+source attrPrimaryKey.sql 
+source recycledColumn.sql
+source removeCommentTable.sql
+source reserveQueueTables.sql
+source reserveQueueKeys.sql
+source statsCacheChange.sql
