@@ -11,6 +11,7 @@ import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Spaces;
@@ -268,6 +269,20 @@ public class Mail {
     		log.info(String.format("Notification email sent to user [%s] - their request to  reserve queue %s for space %s was declined", user.getFullName(), req.getQueueName(), Spaces.getName(req.getSpaceId())));
     	}
 		
+	}
+	
+	public static void sendReservationEnding(QueueRequest req) throws IOException {
+		User user = Users.get(req.getUserId());
+		
+		String email;
+		email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reservationEnded_email.txt"));
+		email = email.replace("$$USER$$", user.getFullName());
+		email = email.replace("$$QUEUENAME$$", req.getQueueName());
+		email = email.replace("$$SPACE$$", Spaces.getName(req.getSpaceId()));
+		
+		Mail.mail(email, "STAREXEC - Reservation for queue " + req.getQueueName() + " has ended", new String[] { user.getEmail() });
+		
+		Log.info(String.format("Notification email sent to user [%s] - their request to reserve queue %s for space %s was approved", user.getFullName(), req.getQueueName(), Spaces.getName((req.getSpaceId()))));
 	}
     
     

@@ -5,8 +5,9 @@ var progress = 0;
 
 $(document).ready(function() {
 	
-
 	refreshUpdates();
+	$('#dialog-warning').hide();
+
 	
 	var queueName = document.getElementById("queueName").value;
 
@@ -22,6 +23,28 @@ $(document).ready(function() {
 	});
 	
 	initDataTables();
+	
+	var start_date = document.getElementById("start").value;
+	dateComponents = start_date.split("/");
+	start_date = new Date(dateComponents[2], dateComponents[0] - 1, dateComponents[1]);
+	
+	
+	if (start_date <= new Date()) {
+		$('#dialog-warning-txt').text('WARNING: This request has expired. Please adjust dates accordingly.');
+		
+		$('#dialog-warning').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-warning').dialog('close');
+				}
+			}
+		});
+		
+		$('#btnDone').hide();
+	}
 
 });
 

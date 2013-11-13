@@ -130,4 +130,7 @@ try {
 	<c:if test="${not empty param.result and param.result == 'requestNotSent'}">			
 		<div class='error message'>you are already a member of that community, or have already requested to be and are awaiting approval</div>
 	</c:if>
+	<div id="dialog-warning" title="warning">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+	</div>
 </star:template>

@@ -25,7 +25,7 @@
 				boolean isPaused = (pausedOrKilledStatus==1);
 				boolean isKilled = (pausedOrKilledStatus==2);
 				boolean isRunning = false;
-				if (incomplete_pairs.size() != 0) {
+				if (incomplete_pairs != null) {
 					isRunning = true;
 				}
 				Space s=Spaces.getJobSpace(jobSpaceId);
@@ -237,6 +237,7 @@
 					<c:if test="${j.userId == userId}">
 						<c:if test="${isPaused}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
+							<li><button type="button" id="changeQueue">Change Queue</button></li>	
 						</c:if>
 					</c:if>
 				</ul>

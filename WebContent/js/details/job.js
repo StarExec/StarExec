@@ -200,6 +200,12 @@ function initUI(){
 			secondary: "ui-icon-play"
 		}
 	});
+	
+	$('#changeQueue').button({
+		icons: {
+			secondary: "ui-icon-transferthick-e-w"
+		}
+	});
 		
 	$("#deleteJob").click(function(){
 		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');

@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
@@ -17,9 +18,12 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
+import org.starexec.data.to.WorkerNode;
+import org.starexec.util.Mail;
 
 /**
  * Handles all database interaction for the various requests throughout the system. This includes
@@ -334,16 +338,17 @@ public class Requests {
 		try {			
 			con = Common.getConnection();
 
-			 procedure = con.prepareCall("{CALL DeclineQueueReservation(?)}");
+			procedure = con.prepareCall("{CALL DeclineQueueReservation(?)}");
 			procedure.setString(1, req.getCode());
 			
-			procedure.executeUpdate();			
+			procedure.executeUpdate();		
+			
 			return true;			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
+			Common.safeClose(procedure);			
 		}
 		
 		return false;
@@ -379,6 +384,8 @@ public class Requests {
 			procedureDelete.setInt(1, queueId);
 			procedureDelete.executeUpdate();
 			
+			Common.endTransaction(con);			
+
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -728,9 +735,41 @@ public class Requests {
 	}
 
 	public static boolean cancelQueueReservation(int queueId) {
+		/*String code = Requests.getQueueReservedCode(queueId);
+		QueueRequest req = Requests.getQueueRequest(code);
+		
+		//Pause jobs that are running on the queue
+		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+		for (Job j : jobs) {
+			Jobs.pause(j.getId());
+		}
+		
+		//TODO: Send Email on either completion or all paused
+		try {
+			Mail.sendReservationEnding(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//Move associated Nodes back to default queue
+		List<WorkerNode> nodes = Queues.getNodes(queueId);
+		for (WorkerNode n : nodes) {
+			// TODO: SGE command to move node from queue back to all.q
+			//Util.executeCommand(.....)
+			Queues.associate(1, n.getId());
+		}
+		
+		
+		// TODO: delete queue and add its info into the historic_queue table
+			Requests.DeleteReservation(req);
+			//  DISABLE: sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d <queue name>
+			//	DELETE : sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -dq <queue name>
+			
+		return true;
+		*/
 		boolean success = Queues.remove(queueId);
 		return success;
-		}
+	}
 
 	/**
 	 * Returns the number of queue_requests
@@ -919,220 +958,6 @@ public class Requests {
 		return false;
 	}
 	
-	
-/*
-	public static boolean updateDates(String code, String startDate, String endDate){
-		Connection con = null;			
-		CallableStatement procedure_delete = null;
-		CallableStatement procedure_add = null;
-		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-	    Date new_start_date = null;
-	    Date new_end_date = null;
-		try {
-			java.util.Date startDateJava = format.parse(startDate);
-			new_start_date = new Date(startDateJava.getTime());
-			java.util.Date endDateJava = format.parse(endDate);
-			new_end_date = new Date(endDateJava.getTime());
-		} catch (ParseException e1) {
-			e1.printStackTrace();
-			return false;
-		}
-		
-		QueueRequest req = Requests.getQueueRequest(code);
-
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
-
-			
-			
-			QueueRequest new_req = new QueueRequest();
-			new_req.setUserId(req.getUserId());
-			new_req.setSpaceId(req.getSpaceId());
-			new_req.setQueueName(req.getQueueName());
-			new_req.setNodeCount(req.getNodeCount());
-			
-			
-			procedure = con.prepareCall("{CALL UpdateRequestDates(?, ? , ? , ? , ?, ?, ?, ?)}");
-			procedure.setInt(1, req.getUserId());
-			procedure.setInt(2, req.getSpaceId());
-			procedure.setString(3, req.getQueueName());
-			procedure.setInt(4, req.getNodeCount());
-			procedure.setDate(5, reserveDate);
-			procedure.setString(6, req.getMessage());
-			procedure.setTimestamp(7, req.getCreateDate());
-			
-			
-			
-			if (new_start_date.toString().equals((old_start_date.toString()))) {
-				log.info(String.format("queueRequest updated startDate to [%s]", newValue));
-				return true;			
-			} else if (new_start_date.after(old_start_date)) {
-				//DELETE FROM queue_req where reserve_date < startDate
-				procedure = con.prepareCall("{CALL UpdateStartDateToLaterDate(?, ?)}");
-				procedure.setString(1, code);	
-				procedure.setDate(2, new_start_date);
-				
-				procedure.executeUpdate();
-			} else if (new_start_date.before(old_start_date)) {
-				//Get all the dates between these two dates
-			    List<java.util.Date> dates = new ArrayList<java.util.Date>();
-			    Calendar calendar = new GregorianCalendar();
-			    calendar.setTime(old_start_date);
-			    while (calendar.getTime().before(new_start_date))
-			    {
-			        java.util.Date result = calendar.getTime();
-			        dates.add(result);
-			        calendar.add(Calendar.DATE, 1);
-			    }
-			    java.util.Date latestResult = calendar.getTime();
-			    dates.add(latestResult);
-			    
-			    for (java.util.Date d : dates) {
-			    	procedure = con.prepareCall("{CALL UpdateStartDateToEarlierDate(?,?,?,?,?,?,?,?)}");
-			    	procedure.setInt(1, req.getUserId());
-			    	procedure.setInt(2, req.getSpaceId());
-			    	procedure.setString(3, req.getQueueName());
-			    	procedure.setInt(4, req.getNodeCount());
-					java.sql.Date sqlDate = new java.sql.Date(d.getTime());
-			    	procedure.setDate(5, sqlDate);
-			    	procedure.setString(6, req.getMessage());
-			    	procedure.setString(7, req.getCode());
-			    	procedure.setTimestamp(8, req.getCreateDate());
-			    	
-			    	procedure.executeUpdate();
-			    }
-			}
-						
-			log.info(String.format("queueRequest updated startDate to [%s]", newValue));
-			return true;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-
-	public static boolean updateEndDate(String code, String newValue) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-	    Date new_end_date = null;
-		try {
-			java.util.Date endDateJava = format.parse(newValue);
-			new_end_date = new Date(endDateJava.getTime());
-		} catch (ParseException e1) {
-			e1.printStackTrace();
-			return false;
-		}
-		QueueRequest req = Requests.getQueueRequest(code);
-		Date old_end_date = req.getEndDate();
-
-		try {
-			con = Common.getConnection();	
-			log.debug(new_end_date.toString());
-			log.debug(old_end_date.toString());
-			log.debug("equals = " + new_end_date.toString().equals((old_end_date.toString())) );
-			if (new_end_date.toString().equals((old_end_date.toString()))) {
-				log.info(String.format("queueRequest updated endDate to [%s]", newValue));
-				return true;			
-			} else if (new_end_date.after(old_end_date)) {
-				//Get all the dates between these two dates
-			    List<java.util.Date> dates = new ArrayList<java.util.Date>();
-			    Calendar calendar = new GregorianCalendar();
-			    calendar.setTime(old_end_date);
-			    while (calendar.getTime().before(new_end_date))
-			    {
-			        java.util.Date result = calendar.getTime();
-			        dates.add(result);
-			        calendar.add(Calendar.DATE, 1);
-			    }
-			    java.util.Date latestResult = calendar.getTime();
-			    dates.add(latestResult);
-			    
-			    for (java.util.Date d : dates) {
-			    	procedure = con.prepareCall("{CALL UpdateEndDateToLaterDate(?,?,?,?,?,?,?,?)}");
-			    	procedure.setInt(1, req.getUserId());
-			    	procedure.setInt(2, req.getSpaceId());
-			    	procedure.setString(3, req.getQueueName());
-			    	procedure.setInt(4, req.getNodeCount());
-					java.sql.Date sqlDate = new java.sql.Date(d.getTime());
-			    	procedure.setDate(5, sqlDate);
-			    	procedure.setString(6, req.getMessage());
-			    	procedure.setString(7, req.getCode());
-			    	procedure.setTimestamp(8, req.getCreateDate());
-			    	
-			    	procedure.executeUpdate();
-			    }
-			} else if (new_end_date.before(old_end_date)) {
-				//DELETE FROM queue_req where reserve_date < startDate
-				procedure = con.prepareCall("{CALL UpdateEndDateToEarlierDate(?, ?)}");
-				procedure.setString(1, code);	
-				procedure.setDate(2, new_end_date);
-				
-				procedure.executeUpdate();
-			}
-						
-			log.info(String.format("queueRequest updated endDate to [%s]", newValue));
-			return true;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-
-	public static boolean updateNodeCount(String code, String newValue) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		int node_count = Integer.parseInt(newValue);
-		try {
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL UpdateNodeCount(?, ?)}");
-			procedure.setString(1, code);	
-			procedure.setInt(2, node_count);
-			
-			procedure.executeUpdate();
-			log.info(String.format("queueRequest updated node count to [%s]", newValue));
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-
-	public static boolean updateQueueName(String code, String newValue){
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL UpdateQueueName(?, ?)}");
-			procedure.setString(1, code);					
-			procedure.setString(2, newValue);
-			
-			procedure.executeUpdate();			
-			log.info(String.format("queueRequest updated queue name to [%s]", newValue));
-			return true;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-	*/
 
 	/**
 	 * Returns the node count on a particlar day for a particular queue request
