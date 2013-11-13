@@ -63,8 +63,8 @@ try {
 	</fieldset>
 		<fieldset id="actionField">
 		<legend>actions</legend>
-		<button type="submit" id="process">process</button>
 		<button type="button" id="cancel">cancel</button>
+		<button type="submit" id="process">process</button>
 	</fieldset>
 	</form>
 
