@@ -5,6 +5,18 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+In revision 14421:
+
+-- ability to request StarExec to run benchmark processors and job
+   output processors, after benchmarks and job output has already
+   been processed once.
+
+-- fixed bug in registration page.
+
+-- working on admin functionality, queue reservation request system.
+
+-- caching downloads of public jobs and spaces, for faster downloads
+
 In revision 13525:
 
 -- ability to pause jobs, removing all running job pairs
