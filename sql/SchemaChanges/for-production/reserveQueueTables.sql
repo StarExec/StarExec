@@ -1,9 +1,9 @@
 USE starexec;
 
-DROP TABLE node_reserved;
-DROP TABLE queue_request;
-DROP TABLE queue_reserved;
-DROP TABLE reservation_history;
+DROP TABLE if exists node_reserved;
+DROP TABLE if exists queue_request;
+DROP TABLE if exists queue_reserved;
+DROP TABLE if exists reservation_history;
 
 -- Pending requests to reserve a queue
 -- Author: Wyatt Kaiser
