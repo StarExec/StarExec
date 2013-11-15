@@ -150,6 +150,7 @@ function initUI(){
 	$("#dialog-solverComparison").hide();
 	$("#dialog-spaceOverview").hide();
 	$("#dialog-postProcess").hide();
+	$("#dialog-changeQueue").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
 	
@@ -366,6 +367,48 @@ function initUI(){
 				},
 				"cancel": function() {
 					log('user canceled job resume');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$("#changeQueue").click(function(){
+		$('#dialog-changeQueue-txt').text('Please select a new queue to use for this job.');
+		
+		$('#dialog-changeQueue').dialog({
+			modal: true,
+			width: 380,
+			height: 200,
+			buttons: {
+				'OK': function() {
+					$('#dialog-changeQueue').dialog('close');
+					$.post(
+							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "Queue successfully changed. You may now resume the job", 3000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "Internal error running new post processor.", 5000);
+										break;
+									case 2:
+										showMessage('error', "Only the owner of this job can post-process its results.", 5000);
+										break;
+									case 3:
+										showMessage('error',"Only complete jobs can be processed with a new post-processor",5000);
+										break;
+									default:
+										showMessage('error', "Invalid parameters.", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
 					$(this).dialog("close");
 				}
 			}

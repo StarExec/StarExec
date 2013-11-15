@@ -872,6 +872,16 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 		WHERE job_id = _jobId AND (status_code = 1 OR status_code = 20);
 		
 	END //
+	
+-- Changes the queueid in the jobs datatable
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS ChangeQueue;
+CREATE PROCEDURE ChangeQueue(IN _jobId INT, IN _queueId INT)
+	BEGIN
+		UPDATE jobs
+		SET queue_id = _queueId
+		WHERE id = _jobId;
+	END //
 
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns

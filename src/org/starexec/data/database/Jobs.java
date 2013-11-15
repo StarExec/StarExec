@@ -2514,6 +2514,26 @@ public class Jobs {
 		return false;
 	}
 	
+	public static boolean changeQueue(int jobId, int queueId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL ChangeQueue(?, ?)}");
+			procedure.setInt(1, jobId);	
+			procedure.setInt(2, queueId);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("ChangeQueue says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 
 	/**
 	 * Given a resultset containing the results of a query for job pair attrs,

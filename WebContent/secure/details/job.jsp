@@ -6,12 +6,18 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
-		
+				
 		
 		Job j=null;
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			j=Jobs.get(jobId);
+			
+			boolean queueExists = true;
+			if (j.getQueue() == null) {
+				queueExists = false;
+			}
+			
 			int jobSpaceId=j.getPrimarySpace();
 			//this means it's an old job and we should run the backwards-compatibility routine
 			//to get everything set up first
@@ -38,6 +44,8 @@
 				request.setAttribute("isKilled", isKilled);
 				request.setAttribute("isRunning", isRunning);
 				request.setAttribute("postProcs", ListOfPostProcessors);
+				request.setAttribute("queues", Queues.getUserQueues(userId));
+				request.setAttribute("queueExists", queueExists);
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -235,11 +243,16 @@
 						</c:if>
 					</c:if>
 					<c:if test="${j.userId == userId}">
-						<c:if test="${isPaused}">
+						<c:if test="${isPaused and queueExists}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
-							<li><button type="button" id="changeQueue">Change Queue</button></li>	
 						</c:if>
 					</c:if>
+					<c:if test="${j.userId == userId}">
+						<c:if test="${isPaused}">
+							<li><button type="button" id="changeQueue">Change Queue</button></li>	
+						</c:if>
+					</c:if>					
+					
 				</ul>
 				<div id="dialog-confirm-delete" title="confirm delete">
 					<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
@@ -263,6 +276,16 @@
 					<p><select id="postProcessorSelection">
 						<c:forEach var="proc" items="${postProcs}">
 							<option value="${proc.id}">${proc.name} (${proc.id})</option>
+						</c:forEach>
+					</select></p>
+					
+				</div>
+				<div id="dialog-changeQueue" title="change queue">
+					<p><span id="dialog-changeQueue-txt"></span></p><br/>
+					
+					<p><select id="changeQueueSelection">
+						<c:forEach var="q" items="${queues}">
+							<option value="${q.id}">${q.name} (${q.id})</option>
 						</c:forEach>
 					</select></p>
 					

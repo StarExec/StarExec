@@ -2629,6 +2629,30 @@ public class RESTServices {
 		return Jobs.resume(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	/**
+	 * changes a queue for a job given a job's id. 
+	 * 
+	 * @param id the id of the job to resume
+	 * @param queueid the id of the queue to change to
+	 * @return 	0: success,<br>
+	 * 			1: error on the database level,<br>
+	 * 			2: insufficient permissions
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/changeQueue/job/{id}/{queueid}")
+	@Produces("application/json")
+	public String changeQueueJob(@PathParam("id") int jobId, @PathParam("queueid") int queueId, @Context HttpServletRequest request) {
+		// Permissions check; if user is NOT the owner of the job, deny resume request
+		int userId = SessionUtil.getUserId(request);
+		Job j = Jobs.get(jobId);
+		if(j == null || j.getUserId() != userId){
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		return Jobs.changeQueue(jobId, queueId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
 
 	/**
 	 * Updates the details of a benchmark. Benchmark id is required in the path.
