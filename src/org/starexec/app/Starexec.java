@@ -315,7 +315,7 @@ public class Starexec implements ServletContextListener {
 										newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
 										newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
 										newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
-										newQueue = newQueue.replace("$$SLOTS$$", "");
+										//newQueue = newQueue.replace("$$SLOTS$$", "");
 
 										FileUtils.writeStringToFile(new File("newQueue.q"), newQueue);
 									} catch (IOException e) {
