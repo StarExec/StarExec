@@ -199,8 +199,8 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
-				//java.util.Date today = new java.util.Date();
-				java.util.Date today = new java.util.Date(113, 10, 21); // November 14, 2013
+				java.util.Date today = new java.util.Date();
+				//java.util.Date today = new java.util.Date(113, 10, 21); // November 14, 2013
 				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 				
 				for (QueueRequest req : queueReservations) {
@@ -370,7 +370,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
+		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 
 		}	
 	}
