@@ -298,7 +298,7 @@ public class Starexec implements ServletContextListener {
 									newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
 									newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
 									newHost = newHost.replace("$$HOSTLIST$$", hostList);
-									FileUtils.writeStringToFile(new File("newHost.hgrp"), newHost);
+									FileUtils.writeStringToFile(new File("/tmp/newHost.hgrp"), newHost);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -318,7 +318,7 @@ public class Starexec implements ServletContextListener {
 										newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
 										//newQueue = newQueue.replace("$$SLOTS$$", "");
 
-										FileUtils.writeStringToFile(new File("newQueue.q"), newQueue);
+										FileUtils.writeStringToFile(new File("/tmp/newQueue.q"), newQueue);
 									} catch (IOException e) {
 										e.printStackTrace();
 									}
