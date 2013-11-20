@@ -307,7 +307,8 @@ public class Starexec implements ServletContextListener {
 								String[] envp = new String[2];
 								envp[0] = "-Ahgrp";
 								envp[1] = "newHost.hgrp";
-								Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf" , envp);
+								Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp newHost.hgrp");
+								//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf" , envp);
 							
 								// Create newQueue.q [COMPLETE]
 									String newQueue;
@@ -322,8 +323,9 @@ public class Starexec implements ServletContextListener {
 										e.printStackTrace();
 									}
 									envp[0] = "-Aq";
-									envp[1] = "queue.txt";
-									Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf", envp);							
+									envp[1] = "newQueue.q";
+									Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq newQueue.q");
+									//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf", envp);							
 														
 							
 							//Make status "ACTIVE"
