@@ -1,7 +1,10 @@
 package org.starexec.app;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
@@ -23,6 +27,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
@@ -30,6 +35,7 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
+import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -193,8 +199,8 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
-				java.util.Date today = new java.util.Date();
-				//java.util.Date today = new java.util.Date(113, 10, 14); // November 14, 2013
+				//java.util.Date today = new java.util.Date();
+				java.util.Date today = new java.util.Date(113, 10, 20); // November 14, 2013
 				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 				
 				for (QueueRequest req : queueReservations) {
@@ -216,22 +222,48 @@ public class Starexec implements ServletContextListener {
 							Jobs.pause(j.getId());
 						}
 						
-						//TODO: Send Email on either completion or all paused
+						//TODO: Send Email on either completion or all paused [COMPLETE]
+						try {
+							Mail.sendReservationEnding(req);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 
 						//Move associated Nodes back to default queue
 						List<WorkerNode> nodes = Queues.getNodes(queueId);
 						for (WorkerNode n : nodes) {
-							// TODO: SGE command to move node from queue back to all.q
-							//Util.executeCommand(.....)
+							// TODO: SGE command to move node from queue back to all.q [COMPLETE]
+							String[] envp = new String[5];
+							envp[0] = "-aattr";
+							envp[1] = "hostgroup";
+							envp[2] = "hostlist";
+							envp[3] = n.getName() + "cs.uiowa.edu";
+							envp[4] = "@allhosts";
+
+							Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf ", envp);
 							Queues.associate(1, n.getId());
 						}
 						
 						
-						// TODO: delete queue and add its info into the historic_queue table
-						/***** DELETE THE QUEUE *****/
+						// TODO: delete queue and add its info into the historic_queue table [COMPLETE]
+						/***** DELETE THE QUEUE *****/		
+							//Database modification:
 							Requests.DeleteReservation(req);
-							//  DISABLE: sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d <queue name>
-							//	DELETE : sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -dq <queue name>
+							
+							//Delete the host group:
+							String [] envp = new String[2];
+							envp[0] = "-dhgrp";
+							envp[1] = "@" + req.getQueueName() + "hosts";
+							Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf", envp);
+
+							//DISABLE the queue: 
+							envp[0] = "-d";
+							envp[1] = req.getQueueName();
+							Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod", envp);
+							//DELETE the queue:
+							envp[0] = "-dq";
+							envp[1] = req.getQueueName();
+							Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf", envp);
 
 					}
 					
@@ -247,33 +279,67 @@ public class Starexec implements ServletContextListener {
 						Queue q = Queues.get(queueId);
 						if (!q.getStatus().equals("ACTIVE")) {
 							
+							List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
+							
+							List<WorkerNode> nodes = Queues.getNodes(1);
+							StringBuilder sb = new StringBuilder();
+							for (int i = 0; i < req.getNodeCount(); i++) {
+								transferNodes.add(nodes.get(i));
+								sb.append(nodes.get(i).getName());
+								sb.append(" ");
+							}
+							String hostList = sb.toString();
+							
 							// TODO: Create a queue
 							/***** CREATE A QUEUE *****/
-								// Create host.txt
-									//qconf -Ahgrp host.txt
+								// Create newHost.hgrp [COMPLETE]
+								String newHost;
+								try {
+									newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
+									newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
+									newHost = newHost.replace("$$HOSTLIST$$", hostList);
+									FileUtils.writeStringToFile(new File("newHost.hgrp"), newHost);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								//Add the host [COMPLETE]
+								String[] envp = new String[2];
+								envp[0] = "-Ahgrp";
+								envp[1] = "newHost.hgrp";
+								Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf" , envp);
 							
-								// Create queue.txt
-									// Util.ExecuteCommand(sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Mq <filename>)
-									// OR
-									// qconf -Aq name.q
-							
+								// Create newQueue.q [COMPLETE]
+									String newQueue;
+									try {
+										newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
+										newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
+										newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
+										newQueue = newQueue.replace("$$SLOTS$$", "");
+
+										FileUtils.writeStringToFile(new File("newQueue.q"), newQueue);
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+									envp[0] = "-Aq";
+									envp[1] = "queue.txt";
+									Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf", envp);							
 														
 							
 							//Make status "ACTIVE"
 							/***** ACTIVATE A QUEUE *****/
 								Queues.setStatus(req.getQueueName(), "ACTIVE"); 
-								// TODO: SGE command to set ACTIVE
-								
+
 							
 							
 							
-							List<WorkerNode> nodes = Queues.getNodes(1);
+							//List<WorkerNode> nodes = Queues.getNodes(1);
 							//Move Nodes that are associated with default queue to the new queue
-							for (int i = 0; i < req.getNodeCount(); i++) {
+							//for (int i = 0; i < req.getNodeCount(); i++) {
 								/***** Move Node from all.q to new queue *****/
-									// TODO: SGE command to move queue
-									Queues.associate(queueId, nodes.get(i).getId());
-							}
+									// TODO: SGE command to move node
+								//	Queues.associate(queueId, nodes.get(i).getId());
+							//}
 							
 							// TODO: Get all the job pairs running on the nodes, and reset them
 
@@ -302,7 +368,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
+		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 
 		}	
 	}
