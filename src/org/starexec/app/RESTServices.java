@@ -1332,11 +1332,15 @@ public class RESTServices {
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
+		User user = Users.get(userId);
 		for (int id : selectedBenches) {
-			
-			if(userId!=Benchmarks.get(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+			log.debug("user.getRole() = " + user.getRole());
+			if (!user.getRole().equals("admin")) {
+				if(userId!=Benchmarks.get(id).getUserId()) {
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+				}
 			}
+			
 			boolean success=Benchmarks.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
@@ -2050,10 +2054,12 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
-		
+		User user = Users.get(userIdOfRemover);
 		for (int id : selectedSolvers) {
-			if (userIdOfRemover!=Solvers.get(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			if (!user.getRole().equals("admin")) {
+				if (userIdOfRemover!=Solvers.get(id).getUserId()) {
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);
+				}
 			}
 			boolean success=Solvers.recycle(id);
 			if (!success) {
@@ -2164,10 +2170,12 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
-		
+		User user = Users.get(userIdOfRemover);
 		for (int id : selectedSolvers) {
-			if (userIdOfRemover!=Solvers.get(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			if (!user.getRole().equals("admin")) {
+				if (userIdOfRemover!=Solvers.get(id).getUserId()) {
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);
+				}
 			}
 			
 			boolean success=Solvers.recycle(id);
@@ -2549,8 +2557,11 @@ public class RESTServices {
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
-		if(solver == null || solver.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		User user = Users.get(userId);
+		if (!user.getRole().equals("admin") || solver == null) {
+			if(solver == null || solver.getUserId() != userId){
+				gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
 		}
 		
 		return Solvers.recycle(solverId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -2672,8 +2683,11 @@ public class RESTServices {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
 		int userId = SessionUtil.getUserId(request);		
 		Benchmark bench = Benchmarks.get(benchId);
-		if(bench == null || bench.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		User user = Users.get(userId);
+		if (!user.getRole().equals("admin") || bench == null) {
+			if(bench == null || bench.getUserId() != userId){
+				gson.toJson(ERROR_INVALID_PERMISSIONS);
+			}
 		}
 		
 		// Delete the benchmark from the database

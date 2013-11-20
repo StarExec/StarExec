@@ -20,7 +20,6 @@
 %>
 
 <star:template title="${t_user.fullName}" js="admin/job, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
-	<a id="trashcan"></a>
 	<fieldset  id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
 			<table id="jobs">
@@ -39,7 +38,8 @@
 	<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
-				<li><button type="button" id="pauseAll" > Pause All</button></li>
+				<li><button type="button" id="pauseAll">pause all</button></li>
+				<li><button type="button" id="resumeAll">resume all</button></li>
 			</ul>
 	</fieldset>	
 </star:template>

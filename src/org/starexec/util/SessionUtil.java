@@ -100,11 +100,6 @@ public class SessionUtil {
 			// If the cache was successful and it was added, return the permission
 			return cache.get(spaceId);
 		}
-		//if the cache couldn't add it, or it doesn't exist, but the space is public
-		if (Spaces.isPublicSpace(spaceId)){
-			log.debug("Returning public users permissions");
-			return Permissions.get(R.PUBLIC_USER_ID, spaceId);
-		}
 		User u = Users.get(userId);
 		if (u.getRole().equals("admin")) {
 			log.debug("Returning admin user permissions");
@@ -123,6 +118,12 @@ public class SessionUtil {
 			p.setId(userId);
 			return p;
 		}
+		//if the cache couldn't add it, or it doesn't exist, but the space is public
+		if (Spaces.isPublicSpace(spaceId)){
+			log.debug("Returning public users permissions");
+			return Permissions.get(R.PUBLIC_USER_ID, spaceId);
+		}
+		
 		
 		// Return null if the cache couldn't add it and space is private, or it doesn't exist
 		return null;
