@@ -200,7 +200,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
 				//java.util.Date today = new java.util.Date();
-				java.util.Date today = new java.util.Date(113, 10, 20); // November 14, 2013
+				java.util.Date today = new java.util.Date(113, 10, 21); // November 14, 2013
 				List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 				
 				for (QueueRequest req : queueReservations) {
