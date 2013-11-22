@@ -199,7 +199,7 @@ function deleteAll(prim) {
 									break;
 								default:
 									solverTable.fnDraw(false);
-									benchTable.fnDra(false);
+									benchTable.fnDraw(false);
 									handleClassChange();
 			 						break;
 							}

@@ -112,7 +112,7 @@ return $?
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
 function checkCache {
 	if [ -d "$SOLVER_CACHE_PATH" ]; then
-		if [ -f "$SOLVER_CACHE_PATH/finished.lock" ]; then
+		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
 			log "solver exists in cache at $SOLVER_CACHE_PATH"
   			SOLVER_PATH=$SOLVER_CACHE_PATH	
   			SOLVER_CACHED=1
@@ -127,12 +127,12 @@ function copyDependencies {
 	if [ $SOLVER_CACHED -eq 0 ]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
-			if [ ! -f "$SOLVER_CACHE_PATH/finished.lock" ]; then
+			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
 				#store solver in a cache
 				log "storing solver in cache at $SOLVER_CACHE_PATH"
 				cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
 				mkdir "$SOLVER_CACHE_PATH/finished.lock"
-				rm -f "$SOLVER_CACHE_PATH/lock.lock"
+				rm -r "$SOLVER_CACHE_PATH/lock.lock"
 			fi
 		fi		
 	fi
