@@ -218,31 +218,27 @@
 		</tbody>
 	</table>
 	</fieldset>	
-	<!-- <fieldset>
+	<fieldset id="preProcessorField">
 		<legend>pre processors</legend>
-		<form id="updatePrePrcssForm" class="updateForm" enctype="multipart/form-data" method="post" action="/${starexecRoot}/secure/processors/manager">			
-			<input type="hidden" name="com" value="${com.id}"/>
-			<input type="hidden" name="action" value="update"/>
-			<input type="hidden" name="type" value="pre"/>
-			<table id="preProcessorTbl" class="shaded">
-				<thead>
-					<tr class="headerRow">
-						<th>name</th>				
-						<th>description</th>
-						<th>file name</th>
+		
+		<table id="preProcessorTbl" class="shaded">
+			<thead>
+				<tr class="headerRow">
+					<th>name</th>				
+					<th>description</th>
+					<th>file name</th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="proc" items="${pre_proc}">
+					<tr id="proc_${proc.id}">
+						<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name}</a></td>
+						<td>${proc.description}</td>
+						<td>${proc.fileName}</td>
 					</tr>
-				</thead>
-				<tbody>
-					<c:forEach var="proc" items="${pre_proc}">
-						<tr id="proc_${proc.id}">
-							<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name}</a></td>
-							<td>${proc.description}</td>
-							<td>${proc.fileName}</td>
-						</tr>
-					</c:forEach>
-				</tbody>																				
-			</table>
-		</form>
+				</c:forEach>
+			</tbody>																				
+		</table>
 		<span id="togglePreProcessor" class="caption">+ add new</span>
 		<form id="addPreProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
@@ -266,7 +262,7 @@
 				</tr>			 			 			
 			</table>
 		</form>
-	</fieldset>-->
+	</fieldset>
 	<fieldset id="processorField">
 		<legend>post processors</legend>
 			<table id="postProcessorTbl" class="shaded">

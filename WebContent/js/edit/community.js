@@ -270,7 +270,7 @@ function initUI(){
 	$('#benchmarkField').expandable(true);
 	$('#settingsField').expandable(true);
 	$('#processorField').expandable(true);
-	
+	$("#preProcessorField").expandable(true);
 	$('#addType').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
@@ -314,36 +314,6 @@ function attachFormValidation(){
 	});
 	
 	var formsToValidate = ['#addPreProcessorForm', '#newTypeForm'];
-	
-	$('#updateBenchTypeForm').validate({
-		rules : {
-			name : {
-				required : true,
-				maxlength: $("#benchName").attr("length")
-			},
-			desc: {
-				required : true,
-				maxlength: $('#benchDesc').attr('length')
-			},
-			file: {
-				required: true
-			}
-			
-		},
-		messages : {
-			name : {
-				required : 'please input a name',
-				maxlength: $("#benchName").attr("length")+" characters maximum"
-			},
-			desc : {
-				required : "please input a description",
-				maxlength: $('#benchDesc').attr('length') + " characters maximum"
-			},
-			file: {
-				required: "please choose a file"
-			}
-		}
-	});
 	
 	$.each(formsToValidate, function(i, selector) {
 		$(selector).validate({

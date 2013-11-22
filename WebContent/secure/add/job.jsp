@@ -18,13 +18,15 @@
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
+			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getUserQueues(userId));
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
-			request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
+			//request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
 			request.setAttribute("postProcs", ListOfPostProcessors);
+			request.setAttribute("preProcs", ListOfPostProcessors);
 			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
@@ -59,6 +61,17 @@
 					<tr class="noHover" title="are there any additional details that you want to document with the job?">
 						<td class="label"><p>description</p></td>
 						<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
+					</tr>
+					<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
+						<td class="label"><p>pre processor</p></td>
+						<td>					
+							<select id="preProcess" name="preProcess" default="-1">
+								<option value="-1">none</option>
+								<c:forEach var="proc" items="${preProcs}">
+										<option value="${proc.id}">${proc.name} (${proc.id})</option>
+								</c:forEach>
+							</select>
+						</td>
 					</tr>
 					<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>

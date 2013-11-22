@@ -114,19 +114,6 @@ tr th {
 	float: right;		
 }
 
-.updateForm input,
-.updateForm textarea {
-	width: 100%;
-}
-
-.updateForm textarea {
-	height: 50px;
-}
-
-.updateForm td {
-	vertical-align: top;
-}
-
 #savedesc, #canceldesc {
 	vertical-align: bottom;
 }
@@ -137,3 +124,9 @@ tr th {
 	margin-top: 10px;
 }
 
+#addPreProcessorForm input, #addPostProcessorForm input {
+	width:90%;
+}
+#addPreProcessorForm textarea, #addPostProcessorForm textarea {
+	width:90%;
+}

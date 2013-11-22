@@ -36,6 +36,7 @@
 				}
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
+				
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
 				request.setAttribute("jobspace",s);
@@ -46,6 +47,7 @@
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("queues", Queues.getUserQueues(userId));
 				request.setAttribute("queueExists", queueExists);
+				request.setAttribute("userId",userId);
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -224,25 +226,25 @@
 				<ul id="actionList">
 					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
-					<c:if test="${j.userId == userId}"> 
+					<c:if test="${job.userId == userId}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
 					</c:if>
 					
 					<c:if test="${pairStats.pendingPairs > 0}">
-						<c:if test="${j.userId == userId}">
+						<c:if test="${job.userId == userId}">
 							<c:if test="${not isPaused and not isKilled and isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>
 						</c:if>
 					</c:if>
 					<c:if test="${pairStats.pendingPairs == 0}">
-						<c:if test="${j.userId == userId}">
+						<c:if test="${job.userId == userId}">
 							<c:if test="${not isPaused and not isKilled}">
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
 					</c:if>
-					<c:if test="${j.userId == userId}">
+					<c:if test="${job.userId == userId}">
 						<c:if test="${isPaused and queueExists}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
 						</c:if>

@@ -75,8 +75,9 @@ public class BenchmarkProcessor extends HttpServlet {
 			if (commId!=p.getCommunityId()) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You may only use processors that are a part of the current community");
 			}
-			if (Benchmarks.process(spaceId,p,hier, userId,clearOld)) {
-			    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
+			Integer statusId=Benchmarks.process(spaceId, p, hier, userId, clearOld);
+			if (statusId!=null) {
+				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId));
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");	
 			}									

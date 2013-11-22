@@ -56,6 +56,9 @@ LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
+# Path to where benchmark will be stored after pre-processing
+LOCAL_PROCESSED_BENCH_DIR="$WORKING_DIR/procBenchmark"
+
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
 
@@ -109,9 +112,11 @@ return $?
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
 function checkCache {
 	if [ -d "$SOLVER_CACHE_PATH" ]; then
-		log "solver exists in cache at $SOLVER_CACHE_PATH"
-  		SOLVER_PATH=$SOLVER_CACHE_PATH	
-  		SOLVER_CACHED=1
+		if [ -f "$SOLVER_CACHE_PATH/finished.lock" ]; then
+			log "solver exists in cache at $SOLVER_CACHE_PATH"
+  			SOLVER_PATH=$SOLVER_CACHE_PATH	
+  			SOLVER_CACHED=1
+		fi
 	fi	
 }
 
@@ -121,13 +126,14 @@ function copyDependencies {
 	log "solver copy complete"
 	if [ $SOLVER_CACHED -eq 0 ]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
-		
-		
-		if mkdir "#SOLVER_CACHE_PATH/lock.lock" ; then
-			#store solver in a cache
-			log "storing solver in cache at $SOLVER_CACHE_PATH"
-			cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
-			rm -f "#SOLVER_CACHE_PATH/lock.lock"
+		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
+			if [ ! -f "$SOLVER_CACHE_PATH/finished.lock"]; then
+				#store solver in a cache
+				log "storing solver in cache at $SOLVER_CACHE_PATH"
+				cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH"
+				mkdir "$SOLVER_CACHE_PATH/finished.lock"
+				rm -f "$SOLVER_CACHE_PATH/lock.lock"
+			fi
 		fi		
 	fi
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL\
@@ -143,6 +149,17 @@ _SOLVER_DIR)"
 	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"
 	log "benchmark copy complete"
 	
+	#doing benchmark preprocessing here if the pre_processor actually exists
+	#if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
+	#	cp "$PRE_PROCESSOR_PATH" "$STAREXEC_OUT_DIR/preProcessor"
+	#	log "executing pre processor"
+	#	"$STAREXEC_OUT_DIR/preProcessor" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
+	#	#use the processed benchmark in subsequent steps
+	#	LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
+	#fi
+	
+	
+	# TODO: Does pre-processing need to be done on dependencies as well?
 	log "copying benchmark dependencies to execution host..."
 	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
 	do

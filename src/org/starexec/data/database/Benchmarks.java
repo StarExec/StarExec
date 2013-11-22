@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -31,6 +33,8 @@ import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -2161,22 +2165,57 @@ public class Benchmarks {
 		return false;
 	}
 	
+	
+	public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs) {
+		Integer statusId = Uploads.createUploadStatus(spaceId, userId);
+		Uploads.fileUploadComplete(statusId);
+		Uploads.fileExtractComplete(statusId);
+		Uploads.processingBegun(statusId);
+		final int s = spaceId;
+		final Processor proc=p;
+		final boolean h=hierarchy;
+		final int u=userId;
+		final boolean c=clearOldAttrs;
+		final Integer st=statusId;
+		//It will delay the redirect until this method is finished which is why a new thread is used
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		threadPool.execute(new Runnable() {
+			@Override
+			public void run(){
+				try {
+					process(s,proc,h,u,c,st);
+					Uploads.everythingComplete(st);
+				} catch (Exception e) {
+					
+				}
+				
+			}
+		});	
+		
+		return statusId;
+	}
+	
 	/**
 	 * Runs the given benchmark processor on all benchmarks in the given space (hierarchy)
 	 * @param spaceId The ID of the relevant space
 	 * @param p The benchmark processor to use
 	 * @param hierarchy True if we want to run on the hierarchy, false otherwise
-	 * @return True on success, false on error
+	 * @param statusId The ID of the UploadStatus object associated with this process, or null
+	 * if one does not yet exist
+	 * @return The status ID on success, -1 otherwise
 	 * @author Eric Burns
 	 */
 	
 	//TODO: What should we do about the type of the benchmarks?
-	public static boolean process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs) {
+	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId) {
 		Connection con=null;
+		
 		try {
+			
 			con=Common.getConnection();
 			List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
-			Benchmarks.attachBenchAttrs(benchmarks, p);
+			Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
+			
 			for (Benchmark b : benchmarks) {
 				//only work on the benchmarks the given user owns
 				if (b.getUserId()!=userId) {
@@ -2195,18 +2234,16 @@ public class Benchmarks {
 			if (hierarchy) {
 				List<Space> spaces=Spaces.getSubSpaces(spaceId, userId, true);
 				for (Space s : spaces) {
-					
-					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs);
+					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId);
 				}
 			}
-			return true;
+			
 		} catch (Exception e) {
 			log.error("process says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 		}
 		
-		return false;
 	}
 
 }

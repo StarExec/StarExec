@@ -142,6 +142,18 @@ public abstract class JobManager {
 				log.info("Postprocessor path is "+path+".");
 				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
 			}
+			
+			//pre processor
+			processor = job.getPreProcessor();
+			if (processor == null) {
+				log.warn("Preprocessor is null.");
+				jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "null");
+			}
+			else {
+				String path = processor.getFilePath();
+				log.info("Preprocessor path is "+path+".");
+				jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
+			}
 
 			Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
 
