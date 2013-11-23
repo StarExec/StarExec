@@ -1,0 +1,66 @@
+#topicList a.active {
+	border: 1px dashed #008d03;
+}
+
+#topicList a:hover{
+	background-color: #008d03;
+	border-radius:2px;
+}
+
+#spaceField a.spaceLink {
+	cursor: pointer;
+}
+
+#helpTopics {
+	margin-top: 15px;
+	float:left;
+	width: 28%;
+	min-height: 90%;
+	height: 90%;
+	overflow: auto;
+	overflow-y:hidden;
+	position: relative; 
+}
+
+#helpTopics a:link {
+	text-decoration: none;	
+}
+
+#detailPanel {
+	padding-left: 10px;
+	padding-right:55px;
+	margin-top: 15px;
+	float:right;	
+	width: 65%;
+	border-left: solid 3px #111111;	
+	min-height:700px;
+}
+
+#detailPanel hr {
+	border-top: solid 1px #666666;
+}
+
+#detailPanel h3, #helpTopics h3 {
+	color: #FFFFFF;
+	font-size: 24px;
+	margin-bottom: 5px;
+	display: inline-block;
+}
+
+#detailPanel p.accent {
+	color: #666666;
+	font-style: italic;
+}
+
+#topicList .topicHeader {
+	font-weight:bold;
+	margin-bottom:10px;
+	margin-top: 10px;
+	font-size:1.1em;
+}
+
+#topicList .subject {
+	margin-top:3px;
+	margin-bottom:3px;
+	margin-left:8px;
+}

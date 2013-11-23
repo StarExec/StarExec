@@ -7,6 +7,9 @@
 	<c:if test="${not empty user && user.role != 'unauthorized'}">
 		<nav>
 			<ul>
+				<li class="round" id="helpTab">
+					<a href="/${starexecRoot}/secure/help.jsp">help</a>
+				</li>
 				<c:if test="${user.role == 'admin'}">
 				<li class="round">
 					<a href="#">admin</a>  

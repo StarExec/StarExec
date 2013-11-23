@@ -24,9 +24,8 @@
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
-			//request.setAttribute("preProcs", Processors.getAll(ProcessorType.PRE));
 			request.setAttribute("postProcs", ListOfPostProcessors);
-			request.setAttribute("preProcs", ListOfPostProcessors);
+			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
