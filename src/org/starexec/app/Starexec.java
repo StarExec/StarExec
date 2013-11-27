@@ -135,14 +135,6 @@ public class Starexec implements ServletContextListener {
 			}
 		};	
 		
-		// Create a task that updates statistics of jobs that are finished
-		final Runnable processJobStatsTask = new RobustRunnable("processJobStats") {			
-			@Override
-			protected void dorun() {
-			    log.info("processJobStats (periodic)");
-			    GridEngineUtil.processResults();
-			}
-		};	
 		
 		// Create a task that submits jobs that have pending/rejected job pairs
 		final Runnable submitJobsTask = new RobustRunnable("submitJobTasks") {			
@@ -365,7 +357,6 @@ public class Starexec implements ServletContextListener {
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
-		    taskScheduler.scheduleAtFixedRate(processJobStatsTask, 0, R.SGE_STATISTICS_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
