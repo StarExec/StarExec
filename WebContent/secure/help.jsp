@@ -9,13 +9,11 @@
 			if (argIndex>=0) {
 				reference=reference.substring(0,argIndex);
 			}
-			System.out.println(reference);
 			//next, get rid of the ".jsp" and replace it with ".help"
 			reference=reference.substring(0,reference.length()-4)+".help";
 			
 			reference=reference.substring(reference.indexOf("/secure/")+1);
 			reference=Util.docRoot(reference);
-			System.out.println(reference);
 			request.setAttribute("ref",reference);
 			
 		}

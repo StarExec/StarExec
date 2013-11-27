@@ -117,7 +117,8 @@ public class Benchmarks {
 			procedure.setString(2, benchmark.getPath());
 			procedure.setBoolean(3, benchmark.isDownloadable());
 			procedure.setInt(4, benchmark.getUserId());			
-			procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
+			//an ID of 0 or less is invalid, and can come from copying
+			procedure.setInt(5, (Benchmarks.isBenchValid(attrs) && benchmark.getType().getId()>0) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
 			procedure.setInt(6, spaceId);
 			procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));		
 			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
@@ -681,7 +682,7 @@ public class Benchmarks {
 			Benchmark newBenchmark=new Benchmark();
 			newBenchmark.setAttributes(b.getAttributes());
 			newBenchmark.setType(b.getType());
-
+			
 			newBenchmark.setDescription(b.getDescription());
 			newBenchmark.setName(b.getName());
 			newBenchmark.setUserId(userId);
@@ -948,6 +949,7 @@ public class Benchmarks {
 				Benchmark b = resultToBenchmark(results,"bench");
 
 				Processor t = new Processor();
+				//if the ID is null, 0 is returned here
 				t.setId(results.getInt("types.id"));
 				t.setCommunityId(results.getInt("types.community"));
 				t.setDescription(results.getString("types.description"));
@@ -1337,6 +1339,7 @@ public class Benchmarks {
 				Benchmark b = new Benchmark();
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
+				b.setUserId(results.getInt("user_id"));
 				if (results.getBoolean("deleted")) {
 					b.setName(b.getName()+" (deleted)");
 				}
@@ -1382,6 +1385,7 @@ public class Benchmarks {
 				Benchmark b = new Benchmark();
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
+				b.setUserId(results.getInt("user_id"));
 				if (results.getBoolean("deleted")) {
 					b.setName(b.getName()+" (deleted)");
 				} else if (results.getBoolean("recycled")) {

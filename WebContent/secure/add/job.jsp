@@ -7,7 +7,6 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
-
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if(!p.canAddJob()) {

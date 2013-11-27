@@ -1399,6 +1399,7 @@ public class Jobs {
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));	
+				j.setUserId(results.getInt("user_id"));
 				if (results.getBoolean("deleted")) {
 					j.setName(j.getName()+" (deleted)");
 				}

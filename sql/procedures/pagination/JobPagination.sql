@@ -18,7 +18,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -48,7 +48,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -71,7 +71,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -101,7 +101,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -124,7 +124,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -154,7 +154,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -177,7 +177,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -207,7 +207,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -230,7 +230,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -260,7 +260,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -283,7 +283,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -313,7 +313,7 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -342,7 +342,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -370,7 +370,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -393,7 +393,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -421,7 +421,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -443,7 +443,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -472,7 +472,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -494,7 +494,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -523,7 +523,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -545,7 +545,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -574,7 +574,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -596,7 +596,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
@@ -625,7 +625,7 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 						created, 
 						description, 
 						deleted,
-						
+						user_id,
 						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,

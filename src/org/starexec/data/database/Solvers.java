@@ -1187,6 +1187,7 @@ public class Solvers {
 				if (results.getBoolean("deleted")) {
 					s.setName(s.getName()+" (deleted)");
 				}
+				s.setUserId(results.getInt("user_id"));
 				s.setDescription(results.getString("description"));
 				solvers.add(s);	
 			}	
@@ -1234,6 +1235,7 @@ public class Solvers {
 				} else if (results.getBoolean("recycled")) {
 					s.setName(s.getName()+" (recycled)");
 				}
+				s.setUserId(results.getInt("user_id"));
 				s.setDescription(results.getString("description"));
 				solvers.add(s);	
 			}	

@@ -1683,11 +1683,11 @@ public class RESTHelpers {
 		for (Job job : jobs) {
 			StringBuilder sb = new StringBuilder();
 			String hiddenJobId;
-
+			
 			// Create the hidden input tag containing the job id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(job.getId());
-			sb.append("\" prim=\"job\"/>");
+			sb.append("\" prim=\"job\" userId=\""+job.getUserId()+"\"/>");
 			hiddenJobId = sb.toString();
 
 			// Create the job "details" link and append the hidden input element
@@ -1945,7 +1945,7 @@ public class RESTHelpers {
 			// Create the hidden input tag containing the solver id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(solver.getId());
-			sb.append("\" prim=\"solver\" />");
+			sb.append("\" prim=\"solver\" userId=\""+solver.getUserId()+"\" />");
 			String hiddenSolverId = sb.toString();
 
 			// Create the solver "details" link and append the hidden input
@@ -2009,12 +2009,13 @@ public class RESTHelpers {
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Benchmark bench : benchmarks) {
+			
 			StringBuilder sb = new StringBuilder();
-
+			
 			// Create the hidden input tag containing the benchmark id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(bench.getId());
-			sb.append("\" prim=\"benchmark\"/>");
+			sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"/>");
 			String hiddenBenchId = sb.toString();
 
 			// Create the benchmark "details" link and append the hidden input

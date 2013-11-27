@@ -7,10 +7,11 @@ var resultTable;
 var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
-
+var currentUserId;
 
 $(document).ready(function(){	
-
+	currentUserId=parseInt($("#userId").attr("value"));
+	
 	// Build the tooltip styles (i.e. dimensions, color, etc)
 	initTooltipStyles();
 
@@ -288,7 +289,7 @@ function onDragStart(event, ui) {
 function onTrashDrop(event, ui){
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
-
+	ownsAll=userOwnsSelected($(ui.draggable).parents('table:first'));
 	if(ids.length < 2) {
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
 		ids = [ui.draggable.data('id')];
@@ -301,16 +302,16 @@ function onTrashDrop(event, ui){
 		break;
 	case 's':
 		if(ui.draggable.data('type')[1] == 'o'){
-			removeSolvers(ids);
+			removeSolvers(ids,ownsAll);
 		} else {
 			quickRemove(ids);//actual Remove called within here
 		}
 		break;
 	case 'b':
-		removeBenchmarks(ids);
+		removeBenchmarks(ids,ownsAll);
 		break;
 	case 'j':
-		removeJobs(ids);
+		removeJobs(ids,ownsAll);
 		break;
 
 	}
@@ -866,67 +867,108 @@ function initSpaceExplorer(){
  * Handles removal of benchmark(s) from a space
  * @author Todd Elvers
  */
-function removeBenchmarks(selectedBenches){
-	$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to send them to the recycle bin?');
+function removeBenchmarks(selectedBenches,ownsAll){
+	if (ownsAll) {
+		$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to send them to the recycle bin?');
+		
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			height: 220,
+			buttons: {
+				'remove from space': function() {
+					log('user confirmed benchmark removal');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
-		modal: true,
-		height: 220,
-		buttons: {
-			'remove from space': function() {
-				log('user confirmed benchmark removal');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+					$.post(  
+							starexecRoot+"services/remove/benchmark/" + spaceId,
+							{selectedIds : selectedBenches},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(benchTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"benchmark");
+								} 
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing benchmarks",5000);
+					});		
+				},
+				'move to recycle bin': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/remove/benchmark/" + spaceId,
-						{selectedIds : selectedBenches},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(benchTable);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"benchmark");
-							} 
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing benchmarks",5000);
-				});		
-			},
-			'move to recycle bin': function() {
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+					$.post(  
+							starexecRoot+"services/recycleandremove/benchmark/"+spaceId,
+							{selectedIds : selectedBenches},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(benchTable);
+									break;
+								default:
+									processRecycleErrorCode(returnCode,"benchmark");
+								} 
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing benchmarks",5000);
+					});		
+				},
+				"cancel": function() {
+					log('user canceled benchmark deletion');
+					$(this).dialog("close");
+				}
+			}		
+		});	
+	} else {
+		$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + '?');
+		
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			height: 220,
+			buttons: {
+				'remove from space': function() {
+					log('user confirmed benchmark removal');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/recycleandremove/benchmark/"+spaceId,
-						{selectedIds : selectedBenches},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(benchTable);
-								break;
-							default:
-								processRecycleErrorCode(returnCode,"benchmark");
-							} 
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing benchmarks",5000);
-				});		
-			},
-			"cancel": function() {
-				log('user canceled benchmark deletion');
-				$(this).dialog("close");
-			}
-		}		
-	});				
+					$.post(  
+							starexecRoot+"services/remove/benchmark/" + spaceId,
+							{selectedIds : selectedBenches},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(benchTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"benchmark");
+								} 
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing benchmarks",5000);
+					});		
+				},
+				"cancel": function() {
+					log('user canceled benchmark deletion');
+					$(this).dialog("close");
+				}
+			}		
+		});	
+	}
+				
 }	
 
 /**
@@ -1002,163 +1044,271 @@ function removeUsers(selectedUsers){
  * Handles removal of solver(s) from a space
  * @author Todd Elvers & Skylar Stark
  */
-function removeSolvers(selectedSolvers){
-	$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to move them to the recycle bin?');
+function removeSolvers(selectedSolvers,ownsAll){
+	if (ownsAll) {
+		$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to move them to the recycle bin?');
 
-	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
-		modal: true,
-		width: 380,
-		height: 250,
-		buttons: {
-			'remove from space hierarchy': function() {
-				log('user confirmed solver removal from space and its hierarchy');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 250,
+			buttons: {
+				'remove from space hierarchy': function() {
+					log('user confirmed solver removal from space and its hierarchy');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/remove/solver/" + spaceId,
-						{selectedIds : selectedSolvers, hierarchy : true},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(solverTable);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"solver");
-							}
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing solvers",5000);
-				});
-			},
-			'remove from space': function() {
-				log('user confirmed solver removal');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+					$.post(  
+							starexecRoot+"services/remove/solver/" + spaceId,
+							{selectedIds : selectedSolvers, hierarchy : true},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(solverTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"solver");
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing solvers",5000);
+					});
+				},
+				'remove from space': function() {
+					log('user confirmed solver removal');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/remove/solver/" + spaceId,
-						{selectedIds : selectedSolvers, hierarchy : false},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(solverTable);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"solver");
-							}
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing solvers",5000);
-				});
-			},
-			'move to recycle bin': function() {
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+					$.post(  
+							starexecRoot+"services/remove/solver/" + spaceId,
+							{selectedIds : selectedSolvers, hierarchy : false},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(solverTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"solver");
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing solvers",5000);
+					});
+				},
+				'move to recycle bin': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/recycleandremove/solver/"+spaceId,
-						{selectedIds : selectedSolvers, hierarchy : true},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(solverTable);
-								break;
-							default:
-								processRecycleErrorCode(returnCode,"solver");
-							}
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing solvers",5000);
-				});
-			},
-			"cancel": function() {
-				$(this).dialog("close");
-			}
-		}		
-	});		
+					$.post(  
+							starexecRoot+"services/recycleandremove/solver/"+spaceId,
+							{selectedIds : selectedSolvers, hierarchy : true},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(solverTable);
+									break;
+								default:
+									processRecycleErrorCode(returnCode,"solver");
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing solvers",5000);
+					});
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}		
+		});		
+	} else {
+		$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +"?");
+
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 250,
+			buttons: {
+				'remove from space hierarchy': function() {
+					log('user confirmed solver removal from space and its hierarchy');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
+
+					$.post(  
+							starexecRoot+"services/remove/solver/" + spaceId,
+							{selectedIds : selectedSolvers, hierarchy : true},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(solverTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"solver");
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing solvers",5000);
+					});
+				},
+				'remove from space': function() {
+					log('user confirmed solver removal');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
+
+					$.post(  
+							starexecRoot+"services/remove/solver/" + spaceId,
+							{selectedIds : selectedSolvers, hierarchy : false},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(solverTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"solver");
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing solvers",5000);
+					});
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}		
+		});		
+	}
+	
 }
 
 /**
  * Handles removal of job(s) from a space
  * @author Todd Elvers
  */
-function removeJobs(selectedJobs){
-	$('#dialog-confirm-delete-txt').text('do you want to remove the selected job(s) from ' + spaceName + ', or do you want to delete them permanently?');
+function removeJobs(selectedJobs,ownsAll){
+	if (ownsAll) {
+		$('#dialog-confirm-delete-txt').text('do you want to remove the selected job(s) from ' + spaceName + ', or do you want to delete them permanently?');
 
-	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
-		modal: true,
-		height: 250,
-		buttons: {
-			'remove jobs': function() {
-				jobTable.fnProcessingIndicator();
-				log('user confirmed job deletion');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			height: 250,
+			buttons: {
+				'remove jobs': function() {
+					jobTable.fnProcessingIndicator();
+					log('user confirmed job deletion');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/remove/job/" + spaceId,
-						{selectedIds : selectedJobs},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(jobTable);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"job");
-							}
-							jobTable.fnProcessingIndicator(false);
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing jobs",5000);
-				});
-			},
-			'delete permanently': function() {
-				jobTable.fnProcessingIndicator();
-				log('user confirmed job deletion');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
+					$.post(  
+							starexecRoot+"services/remove/job/" + spaceId,
+							{selectedIds : selectedJobs},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(jobTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"job");
+								}
+								jobTable.fnProcessingIndicator(false);
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing jobs",5000);
+					});
+				},
+				'delete permanently': function() {
+					jobTable.fnProcessingIndicator();
+					log('user confirmed job deletion');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
 
-				$.post(  
-						starexecRoot+"services/deleteandremove/job/"+spaceId,
-						{selectedIds : selectedJobs},
-						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
-								updateTable(jobTable);
-								break;
-							default:
-								processRecycleErrorCode(returnCode,"job");
-							}
-							jobTable.fnProcessingIndicator(false);
-						},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing jobs",5000);
-				});
-			},
-			"cancel": function() {
-				log('user canceled job deletion');
-				$(this).dialog("close");
-			}
-		}		
-	});		
+					$.post(  
+							starexecRoot+"services/deleteandremove/job/"+spaceId,
+							{selectedIds : selectedJobs},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(jobTable);
+									break;
+								default:
+									processRecycleErrorCode(returnCode,"job");
+								}
+								jobTable.fnProcessingIndicator(false);
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing jobs",5000);
+					});
+				},
+				"cancel": function() {
+					log('user canceled job deletion');
+					$(this).dialog("close");
+				}
+			}		
+		});	
+	} else {
+		$('#dialog-confirm-delete-txt').text('do you want to remove the selected job(s) from ' + spaceName + '?');
+
+		// Display the confirmation dialog
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			height: 250,
+			buttons: {
+				'remove jobs': function() {
+					jobTable.fnProcessingIndicator();
+					log('user confirmed job deletion');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
+
+					$.post(  
+							starexecRoot+"services/remove/job/" + spaceId,
+							{selectedIds : selectedJobs},
+							function(returnCode) {
+								log('AJAX response received with code ' + returnCode);
+								switch (returnCode) {
+								case 0:
+									// Remove the rows from the page and update the table size in the legend
+									updateTable(jobTable);
+									break;
+								default:
+									processRemoveErrorCode(returnCode,"job");
+								}
+								jobTable.fnProcessingIndicator(false);
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error removing jobs",5000);
+					});
+				},
+				"cancel": function() {
+					log('user canceled job deletion');
+					$(this).dialog("close");
+				}
+			}		
+		});	
+	}
+		
 }
 
 /**
@@ -1922,6 +2072,24 @@ function createDownloadSpacePost(hierarchy,id) {
 	destroyOnReturn(token);
 }
 
+
+/**
+ * For a given dataTable, this returns true if the user owns every selected
+ * primitive and false otherwise
+ * 
+ * @param dataTable the particular dataTable to extract the id's from
+ * @author Eric Burns
+ */
+function userOwnsSelected(dataTable){
+	allMatch=true;
+	var rows = $(dataTable).children('tbody').children('tr.row_selected');
+	$.each(rows, function(i, row) {		
+		if(parseInt($(this).children('td:first').children('input').attr("userId"))!=currentUserId) {
+			allMatch=false;
+		}
+	});
+	return allMatch;
+}
 
 /**
  * For a given dataTable, this extracts the id's of the rows that have been

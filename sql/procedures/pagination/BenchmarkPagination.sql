@@ -17,6 +17,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.description AS description,
 						deleted,
 						recycled,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -45,6 +46,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.description AS description,
 						deleted,
 						recycled,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -70,6 +72,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.description AS description,
 						deleted,
 						recycled,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -98,6 +101,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 						benchmarks.description AS description,
 						deleted,
 						recycled,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 				
@@ -137,6 +141,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						user_id,
 						benchmarks.description AS description,
 						deleted,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 						
@@ -157,6 +162,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						user_id,
 						benchmarks.description AS description,
 						deleted,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 						
@@ -177,6 +183,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						user_id,
 						benchmarks.description AS description,
 						deleted,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 						
@@ -197,6 +204,7 @@ CREATE PROCEDURE GetNextPageOfUserBenchmarks(IN _startingRecord INT, IN _records
 						user_id,
 						benchmarks.description AS description,
 						deleted,
+						user_id,
 						benchType.name							AS benchTypeName,
 						benchType.description					AS benchTypeDescription
 						
