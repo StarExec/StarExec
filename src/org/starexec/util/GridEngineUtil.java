@@ -776,7 +776,7 @@ public class GridEngineUtil {
 			//Add the host [COMPLETE]
 			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost2.hgrp", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost3.hgrp", envp);
 			
 			
 			
@@ -792,7 +792,7 @@ public class GridEngineUtil {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue2.q", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue3.q", envp);
 					
 			
 			
