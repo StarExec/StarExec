@@ -727,7 +727,8 @@ public class GridEngineUtil {
 			envp[2] = n.getName() + ".star.cs.uiowa.edu";
 			envp[3] = "@allhosts";
 
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr", envp);
+			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr", envp);
+			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist" + n.getName()+".star.cs.uiowa.edu @allhosts", envp);
 			Queues.associate(1, n.getId());
 		}
 		
@@ -781,13 +782,13 @@ public class GridEngineUtil {
 			
 
 			//Add the host [COMPLETE]
-			String[] envp = new String[2];
+			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			envp[1] = "/tmp/newHost.hgrp";
+			//envp[1] = "/tmp/newHost.hgrp";
 			//envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
 
-			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost.hgrp");
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp" , envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost.hgrp", envp);
+			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp" , envp);
 			
 			
 			
