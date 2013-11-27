@@ -753,7 +753,10 @@ public class GridEngineUtil {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < req.getNodeCount(); i++) {
 				transferNodes.add(nodes.get(i));
-				sb.append(nodes.get(i).getName());
+				String fullName = nodes.get(i).getName();
+				String[] split = fullName.split("\\.");
+				String shortName = split[0];
+				sb.append(shortName);
 				sb.append(" ");
 			}
 			String hostList = sb.toString();
@@ -765,7 +768,7 @@ public class GridEngineUtil {
 				newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
 				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
 				newHost = newHost.replace("$$HOSTLIST$$", hostList);
-				File f = new File("/tmp/newHost4.hgrp");
+				File f = new File("/tmp/newHost6.hgrp");
 				FileUtils.writeStringToFile(f, newHost);
 				f.setReadable(true, false);
 				f.setWritable(true, false);
@@ -777,7 +780,7 @@ public class GridEngineUtil {
 			//Add the host [COMPLETE]
 			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost4.hgrp", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost6.hgrp", envp);
 			
 			
 			
@@ -787,14 +790,14 @@ public class GridEngineUtil {
 				newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
 				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
 				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
-				File f = new File("/tmp/newQueue4.q");
+				File f = new File("/tmp/newQueue6.q");
 				FileUtils.writeStringToFile(f, newQueue);
 				f.setReadable(true, false);
 				f.setWritable(true, false);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue4.q", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue6.q", envp);
 					
 			
 			
