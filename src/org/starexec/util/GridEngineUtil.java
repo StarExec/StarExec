@@ -717,19 +717,13 @@ public class GridEngineUtil {
 			e.printStackTrace();
 		}
 
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		//Move associated Nodes back to default queue
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
 		for (WorkerNode n : nodes) {
 			// TODO: SGE command to move node from queue back to all.q [COMPLETE]
-			String[] envp = new String[4];
-			envp[0] = "hostgroup";
-			envp[1] = "hostlist";
-			envp[2] = n.getName() + ".star.cs.uiowa.edu";
-			envp[3] = "@allhosts";
-
-			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr", envp);
-			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist" + n.getName()+".star.cs.uiowa.edu @allhosts", envp);
-			Queues.associate(1, n.getId());
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist" + n.getName()+".star.cs.uiowa.edu @allhosts", envp);
 		}
 		
 		
@@ -739,15 +733,11 @@ public class GridEngineUtil {
 			Requests.DeleteReservation(req);
 			
 			//Delete the host group:
-			String [] envp = new String[1];
-			envp[0] = "@" + req.getQueueName() + "hosts";
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+req.getQueueName()+"hosts", envp);
 
 			//DISABLE the queue: 
-			envp[0] = req.getQueueName();
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
 			//DELETE the queue:
-			envp[0] = req.getQueueName();
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq", envp);
 	}
 	
@@ -775,7 +765,9 @@ public class GridEngineUtil {
 				newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
 				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
 				newHost = newHost.replace("$$HOSTLIST$$", hostList);
-				FileUtils.writeStringToFile(new File("/tmp/newHost.hgrp"), newHost);
+				File f = new File("/tmp/newHost.hgrp");
+				FileUtils.writeStringToFile(f, newHost);
+				f.setReadable(true);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -784,11 +776,7 @@ public class GridEngineUtil {
 			//Add the host [COMPLETE]
 			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			//envp[1] = "/tmp/newHost.hgrp";
-			//envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
-
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost.hgrp", envp);
-			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp" , envp);
 			
 			
 			
@@ -798,14 +786,13 @@ public class GridEngineUtil {
 				newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
 				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
 				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
-				FileUtils.writeStringToFile(new File("/tmp/newQueue.q"), newQueue);
+				File f = new File("/tmp/newQueue.q");
+				FileUtils.writeStringToFile(f, newQueue);
+				f.setReadable(true);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			envp[0] = "newQueue.q";
-			envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
-			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq newQueue.q");
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq newQueue.q", envp);
 					
 			
 			
@@ -813,14 +800,7 @@ public class GridEngineUtil {
 			
 			// TODO: SGE command to remove nodes from allhosts  [COMPLETE]
 			for (WorkerNode n : transferNodes) {
-				String[] envp2 = new String[5];
-				envp2[0] = "hostgroup";
-				envp2[1] = "hostlist";
-				envp2[2] = n.getName() + ".star.cs.uiowa.edu";
-				envp2[3] = "@allhosts";
-				envp2[4] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
-
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -rattr", envp2);
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -rattr hostgroup hostlist " + n.getName() + "star.cs.uiowa.edu @allhosts", envp);
 			}
 		}
 	}
