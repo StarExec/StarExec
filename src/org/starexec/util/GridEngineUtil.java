@@ -769,7 +769,7 @@ public class GridEngineUtil {
 				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
 				newHost = newHost.replace("$$HOSTLIST$$", hostList);
 				File f = new File("/tmp/newHost6.hgrp");
-				FileUtils.writeStringToFile(f, newHost);
+				FileUtils.writeStringToFile(f, "group_name @testHosts\nhostlist n003");
 				f.setReadable(true, false);
 				f.setWritable(true, false);
 			} catch (IOException e) {
