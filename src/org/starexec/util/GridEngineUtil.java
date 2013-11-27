@@ -782,8 +782,9 @@ public class GridEngineUtil {
 
 			//Add the host [COMPLETE]
 			String[] envp = new String[2];
-			envp[0] = "/tmp/newHost.hgrp";
-			envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
+			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+			envp[1] = "/tmp/newHost.hgrp";
+			//envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
 
 			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost.hgrp");
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp" , envp);
@@ -805,6 +806,8 @@ public class GridEngineUtil {
 			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq newQueue.q");
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq", envp);
 					
+			
+			
 			
 			
 			// TODO: SGE command to remove nodes from allhosts  [COMPLETE]
