@@ -4,8 +4,11 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -24,10 +27,13 @@ import org.starexec.data.database.Common;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Requests;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueRequest;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.Status.StatusCode;
 
 /**
@@ -662,4 +668,151 @@ public class GridEngineUtil {
 
     	return null;
     }
+    
+    /**
+     * Cancels/Ends a reservation
+     */
+    public static void checkQueueReservations() {
+    	//java.util.Date today = new java.util.Date();
+		java.util.Date today = new java.util.Date(113, 10, 28); // November 28, 2013
+		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
+		for (QueueRequest req : queueReservations) {
+			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+			
+			/**
+			 * If today is when the reservation is ending
+			 */
+			boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
+			log.debug("today = " + fmt.format(today));
+			log.debug("end = " + fmt.format(req.getEndDate()));
+			log.debug("end_is_today = " + end_is_today);
+			if (end_is_today) {
+				cancelReservation(req);
+			}
+			
+			
+			/**
+			 * if today is when the reservation is starting
+			 */
+			boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
+			if (start_is_today) {
+				startReservation(req);
+			}
+		}
+    }
+		
+	public static void cancelReservation(QueueRequest req) {
+		int queueId = Queues.getIdByName(req.getQueueName());
+		
+		//Pause jobs that are running on the queue
+		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+		for (Job j : jobs) {
+			Jobs.pause(j.getId());
+		}
+		
+		//TODO: Send Email on either completion or all paused [COMPLETE]
+		try {
+			Mail.sendReservationEnding(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//Move associated Nodes back to default queue
+		List<WorkerNode> nodes = Queues.getNodes(queueId);
+		for (WorkerNode n : nodes) {
+			// TODO: SGE command to move node from queue back to all.q [COMPLETE]
+			String[] envp = new String[4];
+			envp[0] = "hostgroup";
+			envp[1] = "hostlist";
+			envp[2] = n.getName() + ".star.cs.uiowa.edu";
+			envp[3] = "@allhosts";
+
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr", envp);
+			Queues.associate(1, n.getId());
+		}
+		
+		
+		// TODO: delete queue and add its info into the historic_queue table [COMPLETE]
+		/***** DELETE THE QUEUE *****/		
+			//Database modification:
+			Requests.DeleteReservation(req);
+			
+			//Delete the host group:
+			String [] envp = new String[1];
+			envp[0] = "@" + req.getQueueName() + "hosts";
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp", envp);
+
+			//DISABLE the queue: 
+			envp[0] = req.getQueueName();
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d", envp);
+			//DELETE the queue:
+			envp[0] = req.getQueueName();
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq", envp);
+	}
+	
+	public static void startReservation (QueueRequest req) {
+		String queueName = req.getQueueName();
+		int queueId = Queues.getIdByName(queueName);
+		Queue q = Queues.get(queueId);
+		if (!q.getStatus().equals("ACTIVE")) {
+			
+			//Get the nodes we are going to transfer
+			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
+			List<WorkerNode> nodes = Queues.getNodes(1);
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < req.getNodeCount(); i++) {
+				transferNodes.add(nodes.get(i));
+				sb.append(nodes.get(i).getName());
+				sb.append(" ");
+			}
+			String hostList = sb.toString();
+			
+			/***** CREATE A QUEUE *****/
+			// Create newHost.hgrp [COMPLETE]
+			String newHost;
+			try {
+				newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
+				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
+				newHost = newHost.replace("$$HOSTLIST$$", hostList);
+				FileUtils.writeStringToFile(new File("/tmp/newHost.hgrp"), newHost);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+
+			//Add the host [COMPLETE]
+			String[] envp = new String[1];
+			envp[0] = "/tmp/newHost.hgrp";
+			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost.hgrp");
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp" , envp);
+			
+			
+			
+			// Create newQueue.q [COMPLETE]
+			String newQueue;
+			try {
+				newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
+				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
+				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
+				FileUtils.writeStringToFile(new File("/tmp/newQueue.q"), newQueue);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			envp[0] = "newQueue.q";
+			//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq newQueue.q");
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq", envp);
+					
+			
+			
+			// TODO: SGE command to remove nodes from allhosts  [COMPLETE]
+			for (WorkerNode n : transferNodes) {
+				String[] envp2 = new String[4];
+				envp2[0] = "hostgroup";
+				envp2[1] = "hostlist";
+				envp2[2] = n.getName() + ".star.cs.uiowa.edu";
+				envp2[3] = "@allhosts";
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -rattr", envp2);
+			}
+		}
+	}
 }

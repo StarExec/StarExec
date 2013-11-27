@@ -23,12 +23,13 @@ $(document).ready(function() {
 	});
 	
 	initDataTables();
+	alert("new date = " + new Date());
 	
 	var start_date = document.getElementById("start").value;
 	dateComponents = start_date.split("/");
 	start_date = new Date(dateComponents[2], dateComponents[0] - 1, dateComponents[1]);
 	
-	
+	alert(new Date());
 	if (start_date <= new Date()) {
 		$('#dialog-warning-txt').text('WARNING: This request has expired. Please adjust dates accordingly.');
 		
@@ -42,8 +43,9 @@ $(document).ready(function() {
 				}
 			}
 		});
-		
+		alert("here");
 		$('#btnDone').hide();
+		alert("here2");
 	}
 
 });
