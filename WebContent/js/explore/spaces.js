@@ -289,7 +289,7 @@ function onDragStart(event, ui) {
 function onTrashDrop(event, ui){
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
-	ownsAll=userOwnsSelected($(ui.draggable).parents('table:first'));
+	ownsAll=userCanDeleteAll($(ui.draggable).parents('table:first'));
 	if(ids.length < 2) {
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
 		ids = [ui.draggable.data('id')];
@@ -2074,17 +2074,26 @@ function createDownloadSpacePost(hierarchy,id) {
 
 
 /**
- * For a given dataTable, this returns true if the user owns every selected
- * primitive and false otherwise
+ * For a given dataTable, this returns true if the user is allowed to delete
+ * every selected primitive. This occurs if they own all of them and none of them
+ * have already been recycled / deleted
  * 
- * @param dataTable the particular dataTable to extract the id's from
+ * @param dataTable the particular dataTable the selections are in
  * @author Eric Burns
  */
-function userOwnsSelected(dataTable){
+function userCanDeleteAll(dataTable){
 	allMatch=true;
 	var rows = $(dataTable).children('tbody').children('tr.row_selected');
-	$.each(rows, function(i, row) {		
-		if(parseInt($(this).children('td:first').children('input').attr("userId"))!=currentUserId) {
+	$.each(rows, function(i, row) {
+		if (!allMatch) {
+			return;
+		}
+		input=$(this).children('td:first').children("input");
+		if(parseInt(input.attr("userId"))!=currentUserId) {
+			allMatch=false;
+		}
+		
+		if (parseBoolean(input.attr("recycled")) || parseBoolean(input.attr("deleted"))) {
 			allMatch=false;
 		}
 	});

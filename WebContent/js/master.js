@@ -194,3 +194,17 @@ function getPrimDescRegex(){
 function getUserNameRegex(){
 	return "^[a-zA-Z\\-'\\s]+$";
 }
+/**
+ * Returns true if the string is "true" and false otherwise
+ * @param string
+ * @returns {Boolean}
+ */
+function parseBoolean(string) {
+	if (typeof string === 'undefined') {
+		return false;
+	}
+	if (string.trim().toLowerCase()=="true") {
+		return true;
+	}
+	return false;
+}

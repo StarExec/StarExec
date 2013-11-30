@@ -8,7 +8,7 @@
 		<nav>
 			<ul>
 				<li class="round" id="helpTab">
-					<a href="/${starexecRoot}/secure/help.jsp">help</a>
+					<a href="/${starexecRoot}/secure/help.jsp" target="_blank">help</a>
 				</li>
 				<c:if test="${user.role == 'admin'}">
 				<li class="round">

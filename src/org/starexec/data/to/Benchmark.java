@@ -24,6 +24,8 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	private String path;
 	private boolean isDownloadable;
 	private long diskSize;	
+	private boolean deleted;
+	private boolean recycled;
 	
 	/**
 	 * @return the user id of the user who uploaded the benchmark
@@ -156,5 +158,21 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	@Override
 	public Iterator<Entry<Object, Object>> iterator() {
 		return this.attributes.entrySet().iterator();
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setRecycled(boolean recycled) {
+		this.recycled = recycled;
+	}
+
+	public boolean isRecycled() {
+		return recycled;
 	}
 }

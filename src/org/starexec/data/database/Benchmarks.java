@@ -1343,8 +1343,10 @@ public class Benchmarks {
 				if (results.getBoolean("deleted")) {
 					b.setName(b.getName()+" (deleted)");
 				}
+				
 				b.setDescription(results.getString("description"));
-
+				b.setDeleted(results.getBoolean("deleted"));
+				b.setRecycled(results.getBoolean("recycled"));
 				Processor t = new Processor();
 				t.setDescription(results.getString("benchTypeDescription"));
 				t.setName(results.getString("benchTypeName"));
@@ -1391,6 +1393,8 @@ public class Benchmarks {
 				} else if (results.getBoolean("recycled")) {
 					b.setName(b.getName()+" (recycled)");
 				}
+				b.setDeleted(results.getBoolean("deleted"));
+				b.setRecycled(results.getBoolean("recycled"));
 				b.setDescription(results.getString("description"));
 
 				Processor t = new Processor();

@@ -1687,7 +1687,7 @@ public class RESTHelpers {
 			// Create the hidden input tag containing the job id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(job.getId());
-			sb.append("\" prim=\"job\" userId=\""+job.getUserId()+"\"/>");
+			sb.append("\" prim=\"job\" userId=\""+job.getUserId()+"\"  deleted=\""+job.isDeleted()+"\"/>");
 			hiddenJobId = sb.toString();
 
 			// Create the job "details" link and append the hidden input element
@@ -1945,7 +1945,7 @@ public class RESTHelpers {
 			// Create the hidden input tag containing the solver id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(solver.getId());
-			sb.append("\" prim=\"solver\" userId=\""+solver.getUserId()+"\" />");
+			sb.append("\" prim=\"solver\" userId=\""+solver.getUserId()+"\" deleted=\""+solver.isDeleted()+"\" recycled=\""+solver.isRecycled()+"\"/>");
 			String hiddenSolverId = sb.toString();
 
 			// Create the solver "details" link and append the hidden input
@@ -2015,7 +2015,7 @@ public class RESTHelpers {
 			// Create the hidden input tag containing the benchmark id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(bench.getId());
-			sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"/>");
+			sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"  deleted=\""+bench.isDeleted()+"\" recycled=\""+bench.isRecycled()+"\"/>");
 			String hiddenBenchId = sb.toString();
 
 			// Create the benchmark "details" link and append the hidden input

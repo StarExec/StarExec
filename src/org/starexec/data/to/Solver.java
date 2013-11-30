@@ -24,7 +24,8 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	private boolean isDownloadable;	
 	private List<Configuration> configurations;
 	private long diskSize;
-	
+	private boolean recycled;
+	private boolean deleted;
 	public Solver() {
 		this.configurations = new LinkedList<Configuration>();
 	}
@@ -161,5 +162,21 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 
 	public String getMostRecentUpdate() {
 		return mostRecentUpdateString;
+	}
+
+	public void setRecycled(boolean recycled) {
+		this.recycled = recycled;
+	}
+
+	public boolean isRecycled() {
+		return recycled;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
 	}
 }

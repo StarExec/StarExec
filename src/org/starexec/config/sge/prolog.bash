@@ -149,14 +149,14 @@ _SOLVER_DIR)"
 	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"
 	log "benchmark copy complete"
 	
-	#doing benchmark preprocessing here if the pre_processor actually exists
-	#if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-	#	cp "$PRE_PROCESSOR_PATH" "$STAREXEC_OUT_DIR/preProcessor"
-	#	log "executing pre processor"
-	#	"$STAREXEC_OUT_DIR/preProcessor" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
-	#	#use the processed benchmark in subsequent steps
-	#	LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
-	#fi
+	doing benchmark preprocessing here if the pre_processor actually exists
+	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
+		cp "$PRE_PROCESSOR_PATH" "$STAREXEC_OUT_DIR/preProcessor"
+		log "executing pre processor"
+		"$STAREXEC_OUT_DIR/preProcessor" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
+		#use the processed benchmark in subsequent steps
+		LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
+	fi
 	
 	
 	# TODO: Does pre-processing need to be done on dependencies as well?
@@ -166,7 +166,13 @@ _SOLVER_DIR)"
 		#log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
-		cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		if ["$PRE_PROCESSOR_PATH" != "null ]; then
+			"$STAREXEC_OUT_DIR/preProcessor" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		else
+			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		fi
+		
+		
 	done
 	log "benchmark dependencies copy complete"
 	return $?	

@@ -1403,6 +1403,7 @@ public class Jobs {
 				if (results.getBoolean("deleted")) {
 					j.setName(j.getName()+" (deleted)");
 				}
+				j.setDeleted(results.getBoolean("deleted"));
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
 				j.setLiteJobPairStats(liteJobPairStats);

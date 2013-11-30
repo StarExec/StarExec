@@ -31,7 +31,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	private HashMap<String, Integer> liteJobPairStats;
 	private Processor preProcessor;
 	private Processor postProcessor;	
-	
+	private boolean deleted;
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
 		preProcessor = new Processor();
@@ -214,5 +214,13 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 */
 	public HashMap<String, Integer> getLiteJobPairStats(){
 		return liteJobPairStats;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
 	}
 }
