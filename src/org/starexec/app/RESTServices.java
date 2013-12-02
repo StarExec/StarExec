@@ -3389,8 +3389,15 @@ public class RESTServices {
 	@Path("/cancel/queueReservation/{spaceId}/{queueId}")
 	@Produces("application/json")
 	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
+		
+		//Database Cancellation
 		QueueRequest req = Requests.getRequestForReservation(queueId);
 		boolean success = Requests.DeleteReservation(req);
+		
+		
+		//SGE cancellation
+		GridEngineUtil.cancelReservation(req);
+		
 		if (success) {
 			return gson.toJson(0);
 		} else {
@@ -3437,11 +3444,13 @@ public class RESTServices {
 		if (!u.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
-		//boolean success = Queues.cancelReservation(queueId);
-		
+				
+		//Database cancellation
 		QueueRequest req = Requests.getRequestForReservation(queueId);
 		Boolean success = Requests.DeleteReservation(req);
+		
+		//SGE cancellation
+		GridEngineUtil.cancelReservation(req);
 		if (success) {
 			return gson.toJson(0);
 		} else {
