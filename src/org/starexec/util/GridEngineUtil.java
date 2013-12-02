@@ -774,9 +774,9 @@ public class GridEngineUtil {
 				
 				*/
 				File f = new File("/tmp/newHost30.hgrp");
+				FileUtils.writeStringToFile(f, "group_name @"+ req.getQueueName() + "hosts\nhostlist " + hostList);
 				f.setReadable(true, false);
 				f.setWritable(true, false);
-				FileUtils.writeStringToFile(f, "group_name @"+ req.getQueueName() + "hosts\nhostlist " + hostList);
 
 			} catch (IOException e) {
 				e.printStackTrace();
