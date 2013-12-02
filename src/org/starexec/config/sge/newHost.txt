@@ -1,3 +1,2 @@
-group_name $$GROUPNAME$$
-hostlist $$HOSTLIST$$
+group_name $$GROUPNAME$$\nhostlist $$HOSTLIST$$
 
