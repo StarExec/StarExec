@@ -95,4 +95,14 @@ CREATE PROCEDURE countQueueName(IN _name VARCHAR(128))
 		SELECT COUNT(*) FROM queues WHERE name = _name;		
 	END //
 	
+-- Get the name of a queue given its id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS getNameById;
+CREATE PROCEDURE getNameById(IN _queueId INT)
+	BEGIN
+		SELECT name
+		FROM queues
+		WHERE id = _queueId;
+	END // 
+	
 DELIMITER ; -- This should always be at the end of this file

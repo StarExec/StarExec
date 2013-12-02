@@ -1039,4 +1039,33 @@ public class Queues {
 		return true;
 	}
 
+	public static String getNameById(int queue_id) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetNameById(?)}");
+			procedure.setInt(1, queue_id);
+			
+			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getString("name");
+			}			
+
+			return null;			
+			
+		} catch (Exception e){			
+			log.error("getIdByName says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
 }

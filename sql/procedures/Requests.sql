@@ -396,5 +396,13 @@ CREATE PROCEDURE GetQueueRequestSpaceId ( IN _queueName VARCHAR(64))
 		WHERE queue_name = _queueName;
 	END //
 	
+DROP PROCEDURE IF EXISTS GetQueueRequestForReservation;
+CREATE PROCEDURE GetQueueRequestForReservation( IN _queueId INT)
+	BEGIN
+		SELECT space_id, queue_id, MAX(node_count), MIN(reserve_date), MAX(reserve_date)
+		FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
+	
 	
 DELIMITER ; -- This should always be at the end of this file

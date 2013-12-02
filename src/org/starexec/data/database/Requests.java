@@ -712,29 +712,6 @@ public class Requests {
 		return null;
 		}
 	
-	public static String getQueueReservedCode(int newQueueId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {			
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL GetQueueReservedCode(?)}");
-			procedure.setInt(1, newQueueId);
-			ResultSet results = procedure.executeQuery();
-			String reservedCode = null;
-			if (results.next()) {
-				reservedCode = results.getString("code");
-			}		
-			return reservedCode;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return null;		
-	}
 
 	/**
 	 * Returns the number of queue_requests
@@ -1051,6 +1028,42 @@ public class Requests {
 			Common.safeClose(results);
 		}
 		return -1;
+	}
+
+	public static QueueRequest getRequestForReservation(int queueId) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetQueueRequestForReservation(?)}");
+			procedure.setInt(1, queueId);			
+			
+			results = procedure.executeQuery();
+
+			QueueRequest req = null;
+			while(results.next()){
+				int queue_id = results.getInt("queue_id");
+				String queueName = Queues.getNameById(queue_id);
+				req.setQueueName(queueName);
+				req.setSpaceId(results.getInt("space_id"));
+				req.setStartDate(results.getDate("MIN(reserve_date)"));
+				req.setEndDate(results.getDate("MAX(reserve_date)"));
+				req.setNodeCount(results.getInt("MAX(node_count"));
+			}			
+
+			return req;			
+			
+		} catch (Exception e){			
+			log.error("GetMinNodeCountForRequest says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+		
 	}
 
 }

@@ -3389,8 +3389,7 @@ public class RESTServices {
 	@Path("/cancel/queueReservation/{spaceId}/{queueId}")
 	@Produces("application/json")
 	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
-		String code = Requests.getQueueReservedCode(queueId);
-		QueueRequest req = Requests.getQueueRequest(code);
+		QueueRequest req = Requests.getRequestForReservation(queueId);
 		boolean success = Requests.DeleteReservation(req);
 		if (success) {
 			return gson.toJson(0);
@@ -3440,8 +3439,8 @@ public class RESTServices {
 		}
 		
 		//boolean success = Queues.cancelReservation(queueId);
-		String code = Requests.getQueueReservedCode(queueId);
-		QueueRequest req = Requests.getQueueRequest(code);
+		
+		QueueRequest req = Requests.getRequestForReservation(queueId);
 		Boolean success = Requests.DeleteReservation(req);
 		if (success) {
 			return gson.toJson(0);
