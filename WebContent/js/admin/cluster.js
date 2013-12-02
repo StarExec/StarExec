@@ -177,6 +177,7 @@ function initDataTables(){
 
 function fnPaginationHandler(sSource, aoData, fnCallback){
 	// Request the next page of primitives from the server via AJAX
+	alert("in here");
 	$.post(  
 			sSource + "queues/pending/pagination",
 			aoData,
