@@ -674,7 +674,7 @@ public class GridEngineUtil {
      */
     public static void checkQueueReservations() {
     	//java.util.Date today = new java.util.Date();
-		java.util.Date today = new java.util.Date(113, 10, 28); // November 28, 2013
+		java.util.Date today = new java.util.Date(113, 11, 3); // December 3, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 		for (QueueRequest req : queueReservations) {
 			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
