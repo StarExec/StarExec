@@ -23,6 +23,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Mail;
 
 /**
@@ -354,7 +355,7 @@ public class Requests {
 		return false;
 	}
 	
-	public static void DeleteReservation(QueueRequest req) {
+	public static Boolean DeleteReservation(QueueRequest req) {
 		Connection con = null;
 		CallableStatement procedureAddHistory = null;
 		CallableStatement procedureRemoveReservation = null;
@@ -385,10 +386,11 @@ public class Requests {
 			procedureDelete.executeUpdate();
 			
 			Common.endTransaction(con);			
-
+			return true;
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedureAddHistory);
@@ -732,43 +734,6 @@ public class Requests {
 		}
 		
 		return null;		
-	}
-
-	public static boolean cancelQueueReservation(int queueId) {
-		/*String code = Requests.getQueueReservedCode(queueId);
-		QueueRequest req = Requests.getQueueRequest(code);
-		
-		//Pause jobs that are running on the queue
-		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
-		for (Job j : jobs) {
-			Jobs.pause(j.getId());
-		}
-		
-		//TODO: Send Email on either completion or all paused
-		try {
-			Mail.sendReservationEnding(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		//Move associated Nodes back to default queue
-		List<WorkerNode> nodes = Queues.getNodes(queueId);
-		for (WorkerNode n : nodes) {
-			// TODO: SGE command to move node from queue back to all.q
-			//Util.executeCommand(.....)
-			Queues.associate(1, n.getId());
-		}
-		
-		
-		// TODO: delete queue and add its info into the historic_queue table
-			Requests.DeleteReservation(req);
-			//  DISABLE: sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d <queue name>
-			//	DELETE : sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -dq <queue name>
-			
-		return true;
-		*/
-		boolean success = Queues.remove(queueId);
-		return success;
 	}
 
 	/**

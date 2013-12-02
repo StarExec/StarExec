@@ -706,8 +706,10 @@ public class GridEngineUtil {
 		
 		//Pause jobs that are running on the queue
 		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
-		for (Job j : jobs) {
-			Jobs.pause(j.getId());
+		if (jobs != null) {
+			for (Job j : jobs) {
+				Jobs.pause(j.getId());
+			}
 		}
 		
 		//TODO: Send Email on either completion or all paused [COMPLETE]
@@ -723,7 +725,7 @@ public class GridEngineUtil {
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
 		for (WorkerNode n : nodes) {
 			// TODO: SGE command to move node from queue back to all.q [COMPLETE]
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist" + n.getName()+".star.cs.uiowa.edu @allhosts", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName()+ " @allhosts", envp);
 		}
 		
 		
@@ -736,9 +738,9 @@ public class GridEngineUtil {
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+req.getQueueName()+"hosts", envp);
 
 			//DISABLE the queue: 
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName() + ".q", envp);
 			//DELETE the queue:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName() + ".q", envp);
 	}
 	
 	public static void startReservation (QueueRequest req) {
@@ -798,7 +800,7 @@ public class GridEngineUtil {
 				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
 				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
 				*/
-				newQueue = "qname                   " + req.getQueueName() +
+				newQueue = "qname                   " + req.getQueueName() + ".q" + 
 							"\nhostlist             @" + req.getQueueName() + "hosts" + 
 							"\nseq_no                0" +
 							"\nload_thresholds       np_load_avg=1.75" +
@@ -865,7 +867,9 @@ public class GridEngineUtil {
 			
 			// TODO: SGE command to remove nodes from allhosts  [COMPLETE]
 			for (WorkerNode n : transferNodes) {
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -rattr hostgroup hostlist " + n.getName() + "star.cs.uiowa.edu @allhosts", envp);
+				//Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -rattr hostgroup hostlist " + n.getName() + ".star.cs.uiowa.edu @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+
 			}
 		}
 	}
