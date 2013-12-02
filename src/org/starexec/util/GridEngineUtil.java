@@ -768,6 +768,7 @@ public class GridEngineUtil {
 				newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
 				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
 				newHost = newHost.replace("$$HOSTLIST$$", hostList);
+				newHost.toString();
 				File f = new File("/tmp/newHost20.hgrp");
 				//FileUtils.writeStringToFile(f, "group_name @"+ req.getQueueName() + "hosts\nhostlist " + hostList);
 				FileUtils.writeStringToFile(f, newHost);
