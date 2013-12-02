@@ -68,10 +68,6 @@ public class GridEngineUtil {
 	"n003.q@n003.star.cs.uiowa.edu  BIP   0/0/1          0.07     lx24-amd64    \r\n" + 
 	"---------------------------------------------------------------------------------\r\n" + 
 	"n004.q@n004.star.cs.uiowa.edu  BIP   0/0/1          0.02     lx24-amd64    ";
-	
-	private static String newHost = 
-			"group_name $$GROUPNAME$$\n" +
-			"hostlist $$HOSTLIST$$";
 
 	static {
 		// Compile the SGE output parsing patterns when this class is loaded
@@ -767,15 +763,12 @@ public class GridEngineUtil {
 			
 			/***** CREATE A QUEUE *****/
 			// Create newHost.hgrp [COMPLETE]
-			//String newHost;
+			String newHost;
 			try {
-				//newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.txt"));
-				
-				//newHost.toString();
-				String newHostHere = newHost;
-				newHostHere = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
-				newHostHere = newHost.replace("$$HOSTLIST$$", hostList);
-				File f = new File("/tmp/newHost20.hgrp");
+				newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.hgrp"));
+				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
+				newHost = newHost.replace("$$HOSTLIST$$", hostList);
+				File f = new File("/tmp/newHost25.hgrp");
 				//FileUtils.writeStringToFile(f, "group_name @"+ req.getQueueName() + "hosts\nhostlist " + hostList);
 				FileUtils.writeStringToFile(f, newHost);
 				f.setReadable(true, false);
@@ -788,7 +781,7 @@ public class GridEngineUtil {
 			//Add the host [COMPLETE]
 			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost20.hgrp", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost25.hgrp", envp);
 			
 			
 			
@@ -798,14 +791,14 @@ public class GridEngineUtil {
 				newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
 				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
 				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
-				File f = new File("/tmp/newQueue20.q");
+				File f = new File("/tmp/newQueue25.q");
 				FileUtils.writeStringToFile(f, newQueue);
 				f.setReadable(true, false);
 				f.setWritable(true, false);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue20.q", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue25.q", envp);
 					
 			
 			

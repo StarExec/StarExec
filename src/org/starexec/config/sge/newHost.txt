@@ -1,2 +1,0 @@
-group_name $$GROUPNAME$$\nhostlist $$HOSTLIST$$
-
