@@ -1042,7 +1042,7 @@ public class Requests {
 			
 			results = procedure.executeQuery();
 
-			QueueRequest req = null;
+			QueueRequest req = new QueueRequest();
 			while(results.next()){
 				int queue_id = results.getInt("queue_id");
 				String queueName = Queues.getNameById(queue_id);
@@ -1056,7 +1056,7 @@ public class Requests {
 			return req;			
 			
 		} catch (Exception e){			
-			log.error("GetMinNodeCountForRequest says " + e.getMessage(), e);		
+			log.error("GetRequestForReservation says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
