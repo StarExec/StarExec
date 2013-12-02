@@ -1050,7 +1050,7 @@ public class Requests {
 				req.setSpaceId(results.getInt("space_id"));
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
 				req.setEndDate(results.getDate("MAX(reserve_date)"));
-				req.setNodeCount(results.getInt("MAX(node_count"));
+				req.setNodeCount(results.getInt("MAX(node_count)"));
 			}			
 
 			return req;			
