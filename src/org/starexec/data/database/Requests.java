@@ -690,7 +690,7 @@ public class Requests {
 				Log.debug("queue_id = " + queue_id);
 				Queue q = Queues.get(queue_id);
 				Log.debug("q = " + q);
-				req.setQueueName(q.getName());
+				//req.setQueueName(q.getName());
 				req.setNodeCount(results.getInt("node_count"));
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
 				req.setEndDate(results.getDate("MAX(reserve_date)"));
