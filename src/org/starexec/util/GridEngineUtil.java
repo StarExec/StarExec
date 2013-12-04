@@ -749,6 +749,8 @@ public class GridEngineUtil {
 	public static void startReservation (QueueRequest req) {
 		log.debug("req = " + req);
 		String queueName = req.getQueueName();
+		String[] split = queueName.split("\\.");
+		String shortQueueName = split[0];
 		log.debug("queuename = " + queueName);
 		int queueId = Queues.getIdByName(queueName);
 		log.debug("queueId = " + queueId);
@@ -763,8 +765,8 @@ public class GridEngineUtil {
 			for (int i = 0; i < req.getNodeCount(); i++) {
 				transferNodes.add(nodes.get(i));
 				String fullName = nodes.get(i).getName();
-				String[] split = fullName.split("\\.");
-				String shortName = split[0];
+				String[] split2 = fullName.split("\\.");
+				String shortName = split2[0];
 				sb.append(shortName);
 				sb.append(" ");
 			}
@@ -782,8 +784,11 @@ public class GridEngineUtil {
 				FileUtils.writeStringToFile(f, newHost);
 				
 				*/
+				newHost = "group_name @" + shortQueueName + "hosts" +
+						  "\nhostlist " + hostList;
 				File f = new File("/tmp/newHost30.hgrp");
-				FileUtils.writeStringToFile(f, "group_name @"+ req.getQueueName() + "hosts\nhostlist " + hostList);
+				//FileUtils.writeStringToFile(f, "group_name @"+ shortQueueName + "hosts\nhostlist " + hostList);
+				FileUtils.writeStringToFile(f, newHost);
 				f.setReadable(true, false);
 				f.setWritable(true, false);
 
@@ -807,7 +812,7 @@ public class GridEngineUtil {
 				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
 				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
 				*/
-				newQueue = "qname                   " + req.getQueueName() + ".q" + 
+				newQueue = "qname                   " + queueName + 
 							"\nhostlist             @" + req.getQueueName() + "hosts" + 
 							"\nseq_no                0" +
 							"\nload_thresholds       np_load_avg=1.75" +
