@@ -687,9 +687,9 @@ public class Requests {
 				QueueRequest req = new QueueRequest();
 				req.setSpaceId(results.getInt("space_id"));
 				int queue_id = results.getInt("queue_id");
-				Log.debug("queue_id = " + queue_id);
+				log.debug("queue_id = " + queue_id);
 				Queue q = Queues.get(queue_id);
-				Log.debug("q = " + q);
+				log.debug("q = " + q);
 				//req.setQueueName(q.getName());
 				req.setNodeCount(results.getInt("node_count"));
 				req.setStartDate(results.getDate("MIN(reserve_date)"));

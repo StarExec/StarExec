@@ -749,9 +749,9 @@ public class GridEngineUtil {
 	public static void startReservation (QueueRequest req) {
 		String queueName = req.getQueueName();
 		int queueId = Queues.getIdByName(queueName);
-		Log.debug("queueId = " + queueId);
+		log.debug("queueId = " + queueId);
 		Queue q = Queues.get(queueId);
-		Log.debug("q = " + q);
+		log.debug("q = " + q);
 		if (!q.getStatus().equals("ACTIVE")) {
 			
 			//Get the nodes we are going to transfer
