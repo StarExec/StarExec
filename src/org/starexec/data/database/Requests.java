@@ -416,7 +416,7 @@ public class Requests {
 				int queue_id = results.getInt("queue_id");
 				Queue q = Queues.get(queue_id);
 				
-				req.setQueueName(q.getName());
+				//req.setQueueName(q.getName());
 				int min_nodeCount = results.getInt("MIN(node_count)");
 				int max_nodeCount = results.getInt("MAX(node_count)");
 				req.setNodeCount(max_nodeCount);
