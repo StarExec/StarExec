@@ -813,7 +813,7 @@ public class GridEngineUtil {
 				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
 				*/
 				newQueue = "qname                   " + queueName + 
-							"\nhostlist             @" + req.getQueueName() + "hosts" + 
+							"\nhostlist             @" + shortQueueName + "hosts" + 
 							"\nseq_no                0" +
 							"\nload_thresholds       np_load_avg=1.75" +
 							"\nsuspend_thresholds    NONE" +
