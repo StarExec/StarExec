@@ -477,8 +477,9 @@ public class Cluster {
 		for (java.util.Date utilDate : dates) {
 			Queue q = Queues.get(queue_id);
 			String queueName = q.getName();
-			log.debug("queue name before node count = " + queueName);
-			int node_count = Requests.GetNodeCountOnDate(queueName, utilDate);
+			String[] split = queueName.split("\\.");
+			String shortQueueName = split[0];
+			int node_count = Requests.GetNodeCountOnDate(shortQueueName, utilDate);
 			
 		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate);
 		    if (!result) {
