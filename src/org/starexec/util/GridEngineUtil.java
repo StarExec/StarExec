@@ -676,27 +676,29 @@ public class GridEngineUtil {
     	//java.util.Date today = new java.util.Date();
 		java.util.Date today = new java.util.Date(113, 11, 5); // December 5, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
-		for (QueueRequest req : queueReservations) {
-			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-			
-			/**
-			 * If today is when the reservation is ending
-			 */
-			boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
-			log.debug("today = " + fmt.format(today));
-			log.debug("end = " + fmt.format(req.getEndDate()));
-			log.debug("end_is_today = " + end_is_today);
-			if (end_is_today) {
-				cancelReservation(req);
-			}
-			
-			
-			/**
-			 * if today is when the reservation is starting
-			 */
-			boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
-			if (start_is_today) {
-				startReservation(req);
+		if (queueReservations != null) {
+			for (QueueRequest req : queueReservations) {
+				SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+				
+				/**
+				 * If today is when the reservation is ending
+				 */
+				boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
+				log.debug("today = " + fmt.format(today));
+				log.debug("end = " + fmt.format(req.getEndDate()));
+				log.debug("end_is_today = " + end_is_today);
+				if (end_is_today) {
+					cancelReservation(req);
+				}
+				
+				
+				/**
+				 * if today is when the reservation is starting
+				 */
+				boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
+				if (start_is_today) {
+					startReservation(req);
+				}
 			}
 		}
     }
