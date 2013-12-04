@@ -747,7 +747,9 @@ public class GridEngineUtil {
 	}
 	
 	public static void startReservation (QueueRequest req) {
+		log.debug("req = " + req);
 		String queueName = req.getQueueName();
+		log.debug("queuename = " + queueName);
 		int queueId = Queues.getIdByName(queueName);
 		log.debug("queueId = " + queueId);
 		Queue q = Queues.get(queueId);
