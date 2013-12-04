@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
@@ -748,7 +749,9 @@ public class GridEngineUtil {
 	public static void startReservation (QueueRequest req) {
 		String queueName = req.getQueueName();
 		int queueId = Queues.getIdByName(queueName);
+		Log.debug("queueId = " + queueId);
 		Queue q = Queues.get(queueId);
+		Log.debug("q = " + q);
 		if (!q.getStatus().equals("ACTIVE")) {
 			
 			//Get the nodes we are going to transfer

@@ -183,8 +183,6 @@ public class Queues {
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		
-					
-		
 		try {
 			procedure = con.prepareCall("{CALL GetQueue(?)}");
 			procedure.setInt(1, qid);			
