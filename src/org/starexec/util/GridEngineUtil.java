@@ -685,9 +685,6 @@ public class GridEngineUtil {
 				 * If today is when the reservation is ending
 				 */
 				boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
-				log.debug("today = " + fmt.format(today));
-				log.debug("end = " + fmt.format(req.getEndDate()));
-				log.debug("end_is_today = " + end_is_today);
 				if (end_is_today) {
 					cancelReservation(req);
 				}
@@ -705,6 +702,7 @@ public class GridEngineUtil {
     }
 		
 	public static void cancelReservation(QueueRequest req) {
+		log.debug("Begin cancelReservation");
 		int queueId = Queues.getIdByName(req.getQueueName());
 		
 		//Pause jobs that are running on the queue
@@ -747,15 +745,12 @@ public class GridEngineUtil {
 	}
 	
 	public static void startReservation (QueueRequest req) {
-		log.debug("req = " + req);
+		log.debug("begin startReservation");
 		String queueName = req.getQueueName();
 		String[] split = queueName.split("\\.");
 		String shortQueueName = split[0];
-		log.debug("queuename = " + queueName);
 		int queueId = Queues.getIdByName(queueName);
-		log.debug("queueId = " + queueId);
 		Queue q = Queues.get(queueId);
-		log.debug("q = " + q);
 		if (!q.getStatus().equals("ACTIVE")) {
 			
 			//Get the nodes we are going to transfer

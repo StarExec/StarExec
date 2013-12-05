@@ -3436,7 +3436,6 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 				
-		//Database cancellation
 		QueueRequest req = Requests.getRequestForReservation(queueId);
 		GridEngineUtil.cancelReservation(req);
 		return gson.toJson(0);
