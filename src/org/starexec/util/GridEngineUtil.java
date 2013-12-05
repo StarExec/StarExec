@@ -703,17 +703,21 @@ public class GridEngineUtil {
 		
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
+		log.debug("queueName = " + req.getQueueName());
 		int queueId = Queues.getIdByName(req.getQueueName());
 		log.debug("queueId = " + queueId);
 		
 		//Pause jobs that are running on the queue
 		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+		log.debug("jobs = " + jobs);
+		log.debug("jobssize = " + jobs.size());
 		if (jobs != null) {
 			for (Job j : jobs) {
 				Jobs.pause(j.getId());
 			}
 		}
 		
+		log.debug("before email");
 		//TODO: Send Email on either completion or all paused [COMPLETE]
 		try {
 			Mail.sendReservationEnding(req);
