@@ -356,6 +356,7 @@ public class Requests {
 	}
 	
 	public static Boolean DeleteReservation(QueueRequest req) {
+		log.debug("deleteReservation");
 		Connection con = null;
 		CallableStatement procedureAddHistory = null;
 		CallableStatement procedureRemoveReservation = null;

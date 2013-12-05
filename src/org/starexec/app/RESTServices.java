@@ -3430,13 +3430,17 @@ public class RESTServices {
 	@Path("/remove/queue/{id}")
 	@Produces("application/json")
 	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
+		log.debug("starting removeQueue");
 		int userId = SessionUtil.getUserId(request);
+		log.debug("userId = " + userId);
 		User u = Users.get(userId);
+		log.debug("u = " + u);
 		if (!u.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-				
+		
 		QueueRequest req = Requests.getRequestForReservation(queueId);
+		log.debug("req = " + req);
 		GridEngineUtil.cancelReservation(req);
 		return gson.toJson(0);
 

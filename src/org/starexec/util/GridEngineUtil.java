@@ -704,6 +704,7 @@ public class GridEngineUtil {
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
 		int queueId = Queues.getIdByName(req.getQueueName());
+		log.debug("queueId = " + queueId);
 		
 		//Pause jobs that are running on the queue
 		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
@@ -724,6 +725,8 @@ public class GridEngineUtil {
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		//Move associated Nodes back to default queue
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
+		log.debug("nodes = " + nodes);
+		log.debug("nodessize = " + nodes.size());
 		for (WorkerNode n : nodes) {
 			// TODO: SGE command to move node from queue back to all.q [COMPLETE]
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName()+ " @allhosts", envp);
