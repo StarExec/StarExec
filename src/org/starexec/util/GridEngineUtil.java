@@ -719,6 +719,7 @@ public class GridEngineUtil {
 		
 		log.debug("before email");
 		//TODO: Send Email on either completion or all paused [COMPLETE]
+		/*
 		try {
 			log.debug("sending email...");
 			Mail.sendReservationEnding(req);
@@ -727,6 +728,7 @@ public class GridEngineUtil {
 			log.debug("ERROR");
 			e.printStackTrace();
 		}
+		*/
 
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;

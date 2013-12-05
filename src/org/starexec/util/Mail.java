@@ -18,6 +18,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.QueueRequest;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.servlets.PasswordReset;
 
@@ -273,8 +274,9 @@ public class Mail {
 	
 	public static void sendReservationEnding(QueueRequest req) throws IOException {
 		log.debug("sendReservationEnding started...");
+		int space_id = req.getSpaceId();
+		Space s = Spaces.get(space_id);
 		User user = Users.get(req.getUserId());
-		log.debug("user = " + user);
 		
 		String email;
 		email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reservationEnded_email.txt"));
