@@ -272,13 +272,19 @@ public class Mail {
 	}
 	
 	public static void sendReservationEnding(QueueRequest req) throws IOException {
+		log.debug("sendReservationEnding started...");
 		User user = Users.get(req.getUserId());
+		log.debug("user = " + user);
 		
 		String email;
 		email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reservationEnded_email.txt"));
+		log.debug("email = " + email);
 		email = email.replace("$$USER$$", user.getFullName());
+		log.debug("email = " + email);
 		email = email.replace("$$QUEUENAME$$", req.getQueueName());
+		log.debug("email = " + email);
 		email = email.replace("$$SPACE$$", Spaces.getName(req.getSpaceId()));
+		log.debug("email  = " + email);
 		
 		Mail.mail(email, "STAREXEC - Reservation for queue " + req.getQueueName() + " has ended", new String[] { user.getEmail() });
 		
