@@ -675,7 +675,7 @@ public class GridEngineUtil {
      */
     public static void checkQueueReservations() {
     	//java.util.Date today = new java.util.Date();
-		java.util.Date today = new java.util.Date(113, 11, 5); // December 5, 2013
+		java.util.Date today = new java.util.Date(113, 11, 6); // December 6, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 		if (queueReservations != null) {
 			for (QueueRequest req : queueReservations) {
@@ -704,7 +704,10 @@ public class GridEngineUtil {
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
 		log.debug("queueName = " + req.getQueueName());
-		int queueId = Queues.getIdByName(req.getQueueName());
+		String queueName = req.getQueueName();
+		String[] split = queueName.split("\\.");
+		String shortQueueName = split[0];
+		int queueId = Queues.getIdByName(queueName);
 		log.debug("queueId = " + queueId);
 		
 		//Pause jobs that are running on the queue
@@ -739,7 +742,7 @@ public class GridEngineUtil {
 		if (nodes != null) {
 			for (WorkerNode n : nodes) {
 				// TODO: SGE command to move node from queue back to all.q [COMPLETE]
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName()+ " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}
 		}
 		
@@ -748,14 +751,14 @@ public class GridEngineUtil {
 		/***** DELETE THE QUEUE *****/		
 			//Database modification:
 			Requests.DeleteReservation(req);
-			
-			//Delete the host group:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+req.getQueueName()+"hosts", envp);
 
 			//DISABLE the queue: 
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName() + ".q", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
 			//DELETE the queue:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName() + ".q", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName(), envp);
+			
+			//Delete the host group:
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
 	}
 	
 	public static void startReservation (QueueRequest req) {
