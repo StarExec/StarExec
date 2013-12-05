@@ -736,9 +736,11 @@ public class GridEngineUtil {
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
 		log.debug("nodes = " + nodes);
 		log.debug("nodessize = " + nodes.size());
-		for (WorkerNode n : nodes) {
-			// TODO: SGE command to move node from queue back to all.q [COMPLETE]
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName()+ " @allhosts", envp);
+		if (nodes != null) {
+			for (WorkerNode n : nodes) {
+				// TODO: SGE command to move node from queue back to all.q [COMPLETE]
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName()+ " @allhosts", envp);
+			}
 		}
 		
 		
