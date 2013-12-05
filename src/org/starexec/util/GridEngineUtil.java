@@ -720,8 +720,11 @@ public class GridEngineUtil {
 		log.debug("before email");
 		//TODO: Send Email on either completion or all paused [COMPLETE]
 		try {
+			log.debug("sending email...");
 			Mail.sendReservationEnding(req);
+			log.debug("email sent");
 		} catch (IOException e) {
+			log.debug("ERROR");
 			e.printStackTrace();
 		}
 
