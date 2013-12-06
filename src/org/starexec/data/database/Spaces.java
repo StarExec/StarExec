@@ -1017,7 +1017,6 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 				subSpaces.addAll(additionalSubspaces);
 			}
 			log.debug("Returning from adding subspaces");
-			log.info(subSpaces);
 			return subSpaces;
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
