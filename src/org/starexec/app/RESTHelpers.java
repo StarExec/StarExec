@@ -2439,7 +2439,7 @@ public class RESTHelpers {
 		}
 
 		Space sourceSpace = Spaces.getDetails(srcId, usrId);
-
+		
 		// Create a new space
 		Space tempSpace = new Space();
 		tempSpace.setName(sourceSpace.getName());
@@ -2449,22 +2449,8 @@ public class RESTHelpers {
 		tempSpace.setSolvers(sourceSpace.getSolvers());
 		tempSpace.setJobs(sourceSpace.getJobs());
 
-		// Make the default permissions for the space to be added
-		Permission p = new Permission();
-		p.setAddBenchmark(true);
-		p.setAddJob(true);
-		p.setAddSolver(true);
-		p.setAddSpace(true);
-		p.setAddUser(true);
-		p.setLeader(true);
-		p.setRemoveBench(true);
-		p.setRemoveJob(true);
-		p.setRemoveSolver(true);
-		p.setRemoveSpace(true);
-		p.setRemoveUser(true);
-
 		// Set the default permission on the space
-		tempSpace.setPermission(p);
+		tempSpace.setPermission(sourceSpace.getPermission());
 		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
 
 		if (newSpaceId <= 0) {

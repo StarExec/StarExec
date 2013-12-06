@@ -12,6 +12,32 @@ function removeActiveLinks() {
 		$(this).removeClass("active");
 	});
 }
+/**
+ * Returns null if the content is not a stub
+ */
+function getStubURL(string) {
+	if (string.indexOf("--STUB:")==0) {
+		string=string.replace("--STUB:","").trim();
+		string=starexecRoot +string;
+		return string;
+	} 
+	return null;
+}
+
+function getHTML(URL) {
+	//load the contents of the help file into the right hand side
+	$.get( URL, function( data ) {
+			stubURL=getStubURL(data);
+			if (stubURL!=null) {
+				selectMatchingReference(stubURL);
+			} else {
+				$( "#detailPanel" ).html( data );
+			}
+			
+	},"html").error(function(){
+		showMessage('error',"Internal error retrieving help page",5000);
+	});
+}
 
 /**
  * For every topic link, attaches an event that makes that topic get loaded into the topic
@@ -22,24 +48,23 @@ function attachClickEvents() {
 	$("#topicList a").click(function(event) {
 		removeActiveLinks();
 		$(this).addClass("active");
-		//load the contents of the help file into the right hand side
-		$.get( $(this).attr("href"), function( data ) {
-				$( "#detailPanel" ).html( data );
-		},"html").error(function(){
-			showMessage('error',"Internal error retrieving help page",5000);
-		});;
+		getHTML($(this).attr("href"));
 		return false; // this ensures that we don't actually follow the link
-	})
+	});
 }
+function selectMatchingReference(reference) {
+	$("#topicList a").each(function() {
+		if (reference==$(this).attr("href")) {
+			$(this).trigger("click");
+		}
+	});
+}
+
 /**
  * Tries to load the file that relates to the page the user came from. If no such file can be found,
  * then the main help page is loaded.
  */
 function findReferringFile() {
 	reference=$("#reference").attr("href");
-	$("#topicList a").each(function() {
-		if (reference==$(this).attr("href")) {
-			$(this).trigger("click");
-		}
-	});
+	selectMatchingReference(reference);
 }

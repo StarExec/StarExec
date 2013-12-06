@@ -42,7 +42,7 @@
 			<li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">uploading benchmarks</a></li>
 			<li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">viewing benchmarks</a></li>
 			<li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">editing benchmarks</a></li>
-			
+			<li class="stub"><a href="/${starexecRoot}/secure/details/recycleBin.help"></a></li>
 		</ul>
 	</div>
 	

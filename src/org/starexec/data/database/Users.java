@@ -98,6 +98,7 @@ public class Users {
 	 */
 	public static boolean associate(List<Integer> userIds, int spaceId) {
 		List<Integer> space=new ArrayList<Integer>();
+		space.add(spaceId);
 		return associate(userIds,space);
 	}
 	

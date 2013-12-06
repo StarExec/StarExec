@@ -107,9 +107,9 @@ public class Processors {
 		ResultSet results = null;
 					
 		try {
-			 procedure = con.prepareCall("{CALL GetProcessorById(?)}");
+			procedure = con.prepareCall("{CALL GetProcessorById(?)}");
 			procedure.setInt(1, processorId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			if(results.next()){							
 				Processor t = new Processor();
 				t.setId(results.getInt("id"));

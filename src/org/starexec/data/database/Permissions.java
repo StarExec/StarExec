@@ -428,6 +428,30 @@ public class Permissions {
 
 		return null;		
 	}
+	
+	/**
+	 * Returns a permissions object with every permission set to true. The ID is not set
+	 * @return 
+	 * @author Eric Burns
+	 */
+	
+	public static Permission getFullPermission() {
+		Permission p = new Permission();
+		p.setAddBenchmark(true);
+		p.setAddSolver(true);
+		p.setAddSpace(true);
+		p.setAddUser(true);
+		p.setAddJob(true);
+		p.setRemoveBench(true);
+		p.setRemoveSolver(true);
+		p.setRemoveSpace(true);
+		p.setRemoveUser(true);
+		p.setRemoveJob(true);
+		p.setLeader(true);
+		//p.setId(userId);
+		return p;
+	}
+	
 
 
 	/**

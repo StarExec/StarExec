@@ -222,9 +222,9 @@ public class Util {
 	 * @return A buffered reader holding the output from the command.
 	 */
 	
-	//TODO: This needs to work when arguments have spaces in them
     public static BufferedReader executeCommand(String[] command, String[] envp) {
 		Runtime r = Runtime.getRuntime();
+		
 		BufferedReader reader = null;		
 		//log.debug("Command from execute command = " + command);
 		try {					
@@ -233,7 +233,7 @@ public class Util {
 			p = r.exec(command[0], envp);
 		    else
 			p = r.exec(command, envp);
-
+		    
 			//ProcessBuilder pb = new ProcessBuilder(command);
 			//Process p = pb.start();
 		    //log.debug("Process is null = " + (p==null));

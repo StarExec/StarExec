@@ -83,7 +83,7 @@ public class AddSpace extends HttpServlet {
 		p.setRemoveSpace(request.getParameter(removeSpace) != null);
 		p.setRemoveUser(request.getParameter(removeUser) != null);
 		p.setRemoveJob(request.getParameter(removeJob) != null);
-		
+		p.setLeader(false);
 		// Set the default permission on the space
 		s.setPermission(p);
 		

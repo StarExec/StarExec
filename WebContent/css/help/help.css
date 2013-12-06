@@ -64,3 +64,7 @@
 	margin-bottom:3px;
 	margin-left:8px;
 }
+
+#topicList .stub {
+	display:none;
+}

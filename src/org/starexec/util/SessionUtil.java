@@ -81,6 +81,7 @@ public class SessionUtil {
 		return SessionUtil.getPermission(request.getSession(), spaceId);
 	}
 	
+	
 	/**
 	 * @param session The session to get the permission from
 	 * @param spaceId The space to get the current user's permissions for
@@ -103,18 +104,7 @@ public class SessionUtil {
 		User u = Users.get(userId);
 		if (u.getRole().equals("admin")) {
 			log.debug("Returning admin user permissions");
-			Permission p = new Permission();
-			p.setAddBenchmark(true);
-			p.setAddSolver(true);
-			p.setAddSpace(true);
-			p.setAddUser(true);
-			p.setAddJob(true);
-			p.setRemoveBench(true);
-			p.setRemoveSolver(true);
-			p.setRemoveSpace(true);
-			p.setRemoveUser(true);
-			p.setRemoveJob(true);
-			p.setLeader(true);
+			Permission p = Permissions.getFullPermission();
 			p.setId(userId);
 			return p;
 		}

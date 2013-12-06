@@ -996,7 +996,7 @@ public class RESTServices {
 		p.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
 		p.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
 		p.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
-		
+		p.setLeader(false);
 		s.setPermission(p);
 		
 		// Perform the update and return information according to success/failure
@@ -1545,6 +1545,7 @@ public class RESTServices {
 			return Users.associate(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else {
 			// Add the user(s) to the destination space
+			
 			return Users.associate(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
 	}
@@ -1888,17 +1889,7 @@ public class RESTServices {
 		Permission perm = new Permission();
 		if (u.getRole().equals("admin")) {
 			log.debug("Returning admin user permissions");
-			perm.setAddBenchmark(true);
-			perm.setAddSolver(true);
-			perm.setAddSpace(true);
-			perm.setAddUser(true);
-			perm.setAddJob(true);
-			perm.setRemoveBench(true);
-			perm.setRemoveSolver(true);
-			perm.setRemoveSpace(true);
-			perm.setRemoveUser(true);
-			perm.setRemoveJob(true);
-			perm.setLeader(true);
+			perm=Permissions.getFullPermission();
 			perm.setId(userIdOfRemover);
 			
 		} else {
@@ -3003,18 +2994,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_CANT_PROMOTE_LEADER);
 			}
 			
-			Permission p = new Permission();
-			p.setAddBenchmark(true);
-			p.setAddJob(true);
-			p.setAddSolver(true);
-			p.setAddSpace(true);
-			p.setAddUser(true);
-			p.setRemoveBench(true);
-			p.setRemoveJob(true);
-			p.setRemoveSolver(true);
-			p.setRemoveSpace(true);
-			p.setRemoveUser(true);
-			p.setLeader(true);
+			Permission p = Permissions.getFullPermission();
 			
 			Permissions.set(userId, spaceId, p);
 		}
