@@ -697,6 +697,8 @@ public class GridEngineUtil {
 				if (start_is_today) {
 					startReservation(req);
 				}
+			    GridEngineUtil.loadWorkerNodes();
+			    GridEngineUtil.loadQueues();
 			}
 		}
     }
@@ -759,6 +761,7 @@ public class GridEngineUtil {
 			
 			//Delete the host group:
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+			
 	}
 	
 	public static void startReservation (QueueRequest req) {
