@@ -105,7 +105,6 @@ public class CommandParser {
 			
 			boolean isPollJob=false;
 			if (c.equals(R.COMMAND_CREATEJOB)) {
-				
 				if (commandParams.containsKey(R.PARAM_TIME) || commandParams.containsKey(R.PARAM_OUTPUT_FILE)) {
 					HashMap<String,String> pollParams=new HashMap<String,String>();
 					isPollJob=true;
@@ -298,6 +297,7 @@ public class CommandParser {
 				urlParams.put(R.FORMPARAM_TYPE, "benchmarks");
 				
 			} else if (c.equals(R.COMMAND_LISTJOBS)) {
+				
 				urlParams.put(R.FORMPARAM_TYPE,"jobs");
 				
 			} else if(c.equals(R.COMMAND_LISTUSERS)) {

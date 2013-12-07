@@ -391,6 +391,14 @@ public class Connection {
 					traversalMethod="robin";
 				}
 			}
+			String postProcId="-1";
+			String preProcId="-1";
+			if (commandParams.containsKey(R.PARAM_PROCID)) {
+				preProcId=commandParams.get(R.PARAM_PROCID);
+			}
+			if (commandParams.containsKey(R.PARAM_PREPROCID)) {
+				preProcId=commandParams.get(R.PARAM_PREPROCID);
+			}
 			
 			br.close();
 			response.getEntity().getContent().close();
@@ -415,7 +423,8 @@ public class Connection {
 			params.add(new BasicNameValuePair("wallclockTimeout",wallclock));
 			params.add(new BasicNameValuePair("cpuTimeout",cpu));
 			params.add(new BasicNameValuePair("queue",commandParams.get(R.PARAM_QUEUEID)));
-			params.add(new BasicNameValuePair("postProcess",commandParams.get(R.PARAM_PROCID)));
+			params.add(new BasicNameValuePair("postProcess",postProcId));
+			params.add(new BasicNameValuePair("preProcess",preProcId));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
@@ -431,7 +440,7 @@ public class Connection {
 			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return id;
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 			return R.ERROR_SERVER;
 		}
 	}
@@ -848,6 +857,7 @@ public class Connection {
 	public HashMap<Integer,String> getPrimsInSpace(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
 		HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 		HashMap<Integer,String> prims=new HashMap<Integer,String>();
+		
 		try {
 			int valid=Validator.isValidGetPrimRequest(urlParams,commandParams);
 			if (valid<0) {
@@ -955,6 +965,7 @@ public class Connection {
 		} catch (Exception e) {
 			
 			errorMap.put(R.ERROR_SERVER, null);
+			
 			return errorMap;
 		}
 	}

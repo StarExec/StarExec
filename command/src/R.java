@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="10/15/2013-1";
+	public static String VERSION="12/7/2013-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -97,7 +97,7 @@ public class R {
 		errorMessages.put(R.ERROR_BAD_COMMAND, "Unrecognized command");
 		errorMessages.put(R.ERROR_BAD_ARGS, "Parameters must be in the form {key}={value}");
 		errorMessages.put(R.ERROR_SERVER,"Error communicating with server");
-		errorMessages.put(R.ERROR_BAD_ARCHIVETYPE,"Bad archive type-- valid types include zip, tar, and tgz");
+		errorMessages.put(R.ERROR_BAD_ARCHIVETYPE,"Bad archive type-- only zip files are supported");
 		errorMessages.put(R.ERROR_FILE_AND_URL,"An upload should contain either a url or a local file, not both");
 		errorMessages.put(R.ERROR_INVALID_FILEPATH,"The given filepath is invalid");
 		errorMessages.put(R.ERROR_MISSING_PARAM,"Command is missing a required parameter-- please consult the StarexecCommand reference");
@@ -267,6 +267,7 @@ public class R {
 	public static String PARAM_HIERARCHY="hier";
 	public static String PARAM_QUEUEID="qid";
 	public static String PARAM_PROCID="pid";
+	public static String PARAM_PREPROCID="preid";
 	public static String PARAM_WALLCLOCKTIMEOUT="w";
 	public static String PARAM_CPUTIMEOUT="cpu";
 	public static String PARAM_SINCE="since";

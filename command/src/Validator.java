@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 public class Validator {
 	
-	public static String[] VALID_ARCHIVETYPES={"zip","tar","tar.gz","tgz"};
+	public static String[] VALID_ARCHIVETYPES={"zip"};
 	public static Pattern patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
 	public static Pattern patternInteger = Pattern.compile(R.LONG_PATTERN);
 	public static Pattern patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
@@ -48,7 +48,7 @@ public class Validator {
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
 		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL};
-	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
+	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
 		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
@@ -489,7 +489,7 @@ public class Validator {
 	
 	public static int isValidCreateJobRequest(HashMap<String,String> commandParams) {
 		//Job creation must include a space ID, a processor ID, and a queue ID
-		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_PROCID,R.PARAM_QUEUEID},commandParams)) {
+		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_QUEUEID},commandParams)) {
 			return R.ERROR_MISSING_PARAM;
 		}
 		
@@ -500,11 +500,21 @@ public class Validator {
 			}
 		}
 		
+		
 		//all IDs should be integers greater than 0
 		if (!isValidPosInteger(commandParams.get(R.PARAM_ID)) ||
-				!isValidPosInteger(commandParams.get(R.PARAM_PROCID)) ||
 				!isValidPosInteger(commandParams.get(R.PARAM_QUEUEID))) {
 			return R.ERROR_INVALID_ID;
+		}
+		if (commandParams.containsKey(R.PARAM_PROCID)) {
+			if (!isValidPosInteger(commandParams.get(R.PARAM_PROCID))) {
+				return R.ERROR_INVALID_ID;
+			}
+		}
+		if (commandParams.containsKey(R.PARAM_PREPROCID)) {
+			if (!isValidPosInteger(commandParams.get(R.PARAM_PREPROCID))) {
+				return R.ERROR_INVALID_ID;
+			}
 		}
 		
 		//timeouts should also be integers greater than 0
