@@ -562,7 +562,7 @@ CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 		SELECT pair.id, attr.attr_key, attr.attr_value
 		FROM job_pairs AS pair
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
-			INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
+			INNER JOIN job_pair_completion AS complete ON pair.id=complete.pair_id
 			WHERE pair.job_id=_jobId AND complete.completion_id>_completionId;
 
 	END //

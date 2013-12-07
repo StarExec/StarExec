@@ -8,7 +8,8 @@
 			$('button').button();
 		});
 	</script>
-	<form method="POST" action="j_security_check" id="loginForm">			
+	<form method="POST" action="j_security_check" id="loginForm">	
+		<span id="uniqueLoginTag"></span>		
 		<fieldset>
 			<legend>credentials</legend>
 			<table cellspacing="10px">								

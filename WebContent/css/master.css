@@ -346,3 +346,7 @@ ul.horizontal li {
 	float: right;
 	display: inline;
 }
+
+#helpTag.pageFound {
+	text-decoration:underline;
+}

@@ -79,7 +79,38 @@ $(document).ready(function(){
 		    return $(this); 				
 		}
 	}); 
+	checkForHelpFile();
 });
+
+function checkForHelpFile() {
+	currentLocation=window.location.pathname;
+	reference=currentLocation;
+	if (reference.length<5) {
+		return;
+	}
+	if ($("#uniqueLoginTag").length>0 || reference.indexOf("j_security_check")>=0) {
+		return;
+	}
+	argIndex=reference.indexOf("?");
+	if (argIndex>=0) {
+		reference=reference.substring(0,argIndex);
+	}
+	
+	reference=reference.substring(0,reference.length-4)+".help";
+	
+	$.ajax({
+	    url:reference,
+	    type:'HEAD',
+	    error: function()
+	    {
+	    	
+	    },
+	    success: function()
+	    {
+	        $("#helpTag").addClass("pageFound");
+	    }
+	});
+}
 
 /**
  * Prints a message to the Chrome javascript console if debugging is enabled
