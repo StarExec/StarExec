@@ -661,10 +661,18 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
 				if (returnCode==0) {
 					
 					if(ids.length > 1) {		
-						
-						showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
-					} else {					    		
-						showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
+						if (copyToSubspaces) {
+							showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
+						} else {
+							showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
+						}
+					} else {		
+						if (copyToSubspaces) {
+							showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
+						} else {
+							showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
+
+						}
 					}
 				}else {
 						processCopyErrorCode(returnCode, "users",destName);
