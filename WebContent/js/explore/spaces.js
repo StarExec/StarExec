@@ -517,14 +517,14 @@ function onSpaceDrop(event, ui) {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 					// Make the request to the server	
-					doUserCopyPost(ids,destSpace,spaceId,true,destName);
+					doUserCopyPost(ids,destSpace,spaceId,true,destName,ui);
 								
 											
 				},
 				'space': function(){
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-					doUserCopyPost(ids,destSpace,spaceId,false,destName);
+					doUserCopyPost(ids,destSpace,spaceId,false,destName,ui);
 						
 				},
 				"cancel": function() {
@@ -652,14 +652,16 @@ function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
 	});
 }
 
-function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName){
+function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/user',
 			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: copyToSubspaces},	
 			function(returnCode) {
 				log('AJAX response recieved with code ' + returnCode);
 				if (returnCode==0) {
-					if(ids.length > 1) {								
+					
+					if(ids.length > 1) {		
+						
 						showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
 					} else {					    		
 						showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
