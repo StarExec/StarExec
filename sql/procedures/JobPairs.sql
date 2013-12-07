@@ -139,4 +139,15 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 		WHERE job_pairs.id=_pairId;
 	END //
 
+-- Gets back only the fields of a job pair that are necessary to determine where it is stored on disk
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfo;
+CREATE PROCEDURE GetNewJobPairFilePathInfo(IN _pairId INT, IN _since INT)
+	BEGIN
+		SELECT job_id,path,solver_name,config_name,bench_name, completion_id FROM job_pairs
+		JOIN job_pair_completion as complete on complete.pair_id=job_pairs.id
+		
+		WHERE job_pairs.id=_pairId AND complete.completion_id>_since;
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

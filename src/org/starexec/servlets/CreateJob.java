@@ -100,6 +100,7 @@ public class CreateJob extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
 			return;
 		}
+		
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,

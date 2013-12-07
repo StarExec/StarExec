@@ -1599,7 +1599,7 @@ public class Jobs {
 			
 			log.info("getting detailed pairs for job " + jobId );
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			 procedure = con.prepareCall("{CALL GetJobPairFilePathInfo(?, ?)}");
+			 procedure = con.prepareCall("{CALL GetNewJobPairFilePathInfo(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
 			results = procedure.executeQuery();

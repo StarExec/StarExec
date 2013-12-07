@@ -91,7 +91,9 @@ corresponds to a dependent bench space.
 
 "ow" -Indicates that the file at the path given by "out", if it exists, should be overwritten with the new file.
 
-"pid" -Specifies a processor id (used only in job creation).
+"pid" -Specifies a post processor id (used only in job creation).
+
+"preid" -Specifies a pre processor id (used only in job creation).
 
 "qid" -Specifies a queue id (used only in job creation).
 
@@ -403,8 +405,8 @@ varied set of parameters.
 			 the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
-REQUIRED: "id" "pid" "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow"
+REQUIRED: "id"  "qid" 
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
