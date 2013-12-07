@@ -1596,10 +1596,9 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {			
 			con = Common.getConnection();	
-			
-			log.info("getting detailed pairs for job " + jobId );
+			log.debug("getting shallow pairs for job " + jobId );
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			 procedure = con.prepareCall("{CALL GetNewJobPairFilePathInfo(?, ?)}");
+			procedure = con.prepareCall("{CALL GetNewJobPairFilePathInfoByJob(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
 			results = procedure.executeQuery();

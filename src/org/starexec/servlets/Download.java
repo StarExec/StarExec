@@ -478,25 +478,29 @@ public class Download extends HttpServlet {
 	 */
 	private static File handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws IOException {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
+		boolean jobComplete=Jobs.isJobComplete(jobId);
 		if (Permissions.canUserSeeJob(jobId, userId)) {
-			String cachedFileName = null;
-			if (returnIds) {
-				cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
-			} else {
-				cachedFileName=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
-			}
-			if (cachedFileName!= null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				if (cachedFile.exists()) {
-					//it's there, so give back the name
-					log.debug("returning a cached file!");
-					return cachedFile;
+			if (jobComplete && since==null) {
+				String cachedFileName = null;
+				if (returnIds) {
+					cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
 				} else {
-					log.warn("a cached file did not exist when it should have!");
-					Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
+					cachedFileName=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
+				}
+				if (cachedFileName!= null) {
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+					//it might have been cleared if it has been there too long, so make sure that hasn't happened
+					if (cachedFile.exists()) {
+						//it's there, so give back the name
+						log.debug("returning a cached file!");
+						return cachedFile;
+					} else {
+						log.warn("a cached file did not exist when it should have!");
+						Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
+					}
 				}
 			}
+			
 
 			Job job;
 			if (since==null) {
@@ -505,7 +509,7 @@ public class Download extends HttpServlet {
 				job=Jobs.getDetailed(jobId,since);
 
 				//we want to find the largest completion ID seen and send that back to the client
-				//so that they know what to ask for next time (mostly for StarexecCommand
+				//so that they know what to ask for next time (mostly for StarexecCommand)
 				int maxCompletion=since;
 				for (JobPair x : job.getJobPairs()) {
 					if (x.getCompletionId()>maxCompletion) {
@@ -514,7 +518,7 @@ public class Download extends HttpServlet {
 				}
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				try {
-					if (Statistics.getJobPairOverview(job.getId()).get("pendingPairs").equals("0")) {
+					if (jobComplete) {
 						response.addCookie(new Cookie("Job-Complete","true"));
 					}
 				} catch (Exception e) {
@@ -527,7 +531,7 @@ public class Download extends HttpServlet {
 			uniqueDir.createNewFile();
 			String jobFile = CreateJobCSV(job, returnIds);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
-			if (returnIds) {
+			if (returnIds && jobComplete) {
 				Cache.setCache(jobId, CacheType.CACHE_JOB_CSV,uniqueDir, fileName);
 			}
 			return uniqueDir;
@@ -593,7 +597,6 @@ public class Download extends HttpServlet {
 		sb.append("\r\n");
 		
 		while(itr.hasNext()) {
-			log.debug("I FOUND A PAIR GUYZ!\n\n\n\n");
 			JobPair pair = itr.next();
 			if (returnIds) {
 				sb.append(pair.getId());
@@ -668,28 +671,27 @@ public class Download extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	private static File handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
-
+		boolean jobComplete=Jobs.isJobComplete(j.getId());
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {
-			
-			String cachedFileName=null;
-			
-			cachedFileName=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
-			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				if (cachedFile.exists()) {
-					//it's there, so give back the name
-					log.debug("returning a cached file!");
-					return cachedFile;
-				} else {
-					log.warn("a cached file did not exist when it should have!");
-					Cache.invalidateCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+			if (jobComplete && since==null) {
+				String cachedFileName=null;
+				cachedFileName=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+				//if the entry was in the cache, make sure the file actually exists
+				if (cachedFileName!=null) {
+					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+					//it might have been cleared if it has been there too long, so make sure that hasn't happened
+					if (cachedFile.exists()) {
+						//it's there, so give back the name
+						log.debug("returning a cached file!");
+						return cachedFile;
+					} else {
+						log.warn("a cached file did not exist when it should have!");
+						Cache.invalidateCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+					}
 				}
 			}
-			
-			
+
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
@@ -697,9 +699,7 @@ public class Download extends HttpServlet {
 
 			uniqueDir.createNewFile();
 			
-
-			File file;
-			File dir;
+			File file, dir;
 			
 			//if we only want the new job pairs
 			List<JobPair> pairs;
@@ -750,14 +750,15 @@ public class Download extends HttpServlet {
 				}
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
 			} else {
-				
 				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
-				Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
+				if (jobComplete) {
+					Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
+				}
 			}
 
 			//if there are no pending pairs, the job is done
 			try {
-				if (Statistics.getJobPairOverview(j.getId()).get("pendingPairs").equals("0")) {
+				if (jobComplete) {
 					response.addCookie(new Cookie("Job-Complete","true"));
 				}
 			} catch (Exception e) {
