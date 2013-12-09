@@ -697,10 +697,72 @@ public class GridEngineUtil {
 				if (start_is_today) {
 					startReservation(req);
 				}
+				
+				int queueId = Queues.getIdByName(req.getQueueName());
+				int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
+				int actualNodeCount = actualNodes.size();
+				String queueName = Queues.getNameById(queueId);
+				String[] split = queueName.split("\\.");
+				String shortQueueName = split[0];
+
+
+				/**The Following code if for when the node count is changing throughout the reservation**/
+				//When the node count is decreasing for this reservation on this day
+				//Need to move a certain number of nodes back to all.q
+				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+				
+				//When the node count is increasing for this reservation on this day
+				//Need to move a certain number of nodes from all.q to this queue
+				transferUnderflowNodes(req, shortQueueName, nodeCount, actualNodeCount);
+				
 			}
 		}
     }
 		
+	private static void transferOverflowNodes(QueueRequest req, String queueName, int nodeCount, int actualNodeCount, List<WorkerNode> actualNodes) {
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+		
+		if (actualNodeCount > nodeCount) {
+			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
+			
+			for (int i = 0; i < (actualNodeCount - nodeCount); i++) {
+				transferNodes.add(actualNodes.get(i));
+			}	
+			
+			for (WorkerNode n : transferNodes) {
+				//add it to @allhosts
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+				
+				//remove it from @<queueName>hosts
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
+			}
+		}		
+	}
+	
+	private static void transferUnderflowNodes(QueueRequest req, String queueName, int nodeCount, int actualNodeCount) {
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+		List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
+		
+		if (actualNodeCount < nodeCount) {
+			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
+			
+			for (int i = 0; i < (actualNodeCount - nodeCount); i++) {
+				transferNodes.add(AllQueueNodes.get(i));
+			}	
+			
+			for (WorkerNode n : transferNodes) {
+				//add it to @<queueName>hosts
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
+				
+				//Remove it from allhosts
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+			}
+		}		
+	}
+
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
 		log.debug("queueName = " + req.getQueueName());
@@ -741,13 +803,11 @@ public class GridEngineUtil {
 		log.debug("nodessize = " + nodes.size());
 		if (nodes != null) {
 			for (WorkerNode n : nodes) {
-				// TODO: SGE command to move node from queue back to all.q [COMPLETE]
 				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}
 		}
 		
 		
-		// TODO: delete queue and add its info into the historic_queue table [COMPLETE]
 		/***** DELETE THE QUEUE *****/		
 			//Database modification:
 			Requests.DeleteReservation(req);
@@ -803,7 +863,6 @@ public class GridEngineUtil {
 				newHost = "group_name @" + shortQueueName + "hosts" +
 						  "\nhostlist " + hostList;
 				File f = new File("/tmp/newHost30.hgrp");
-				//FileUtils.writeStringToFile(f, "group_name @"+ shortQueueName + "hosts\nhostlist " + hostList);
 				FileUtils.writeStringToFile(f, newHost);
 				f.setReadable(true, false);
 				f.setWritable(true, false);
@@ -889,11 +948,7 @@ public class GridEngineUtil {
 			}
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue30.q", envp);
 					
-			
-			
-			
-			
-			// TODO: SGE command to remove nodes from allhosts  [COMPLETE]
+			//Transfer nodes out of @allhosts
 			for (WorkerNode n : transferNodes) {
 				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}

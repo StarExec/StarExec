@@ -718,4 +718,36 @@ public class Cluster {
 		}
 		return null;
 	}
+
+
+	public static int getReservedNodeCountOnDate(int queueId, java.util.Date today) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
+			procedure.setInt(1, queueId);
+			java.sql.Date sqlDate = new java.sql.Date(today.getTime());
+			procedure.setDate(2, sqlDate);
+			
+			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getInt("count");
+			}			
+
+			return -1;			
+			
+		} catch (Exception e){			
+			log.error("GetNodeCountOnDate says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;		
+	}
 }
