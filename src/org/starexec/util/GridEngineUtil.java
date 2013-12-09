@@ -755,7 +755,7 @@ public class GridEngineUtil {
 		
 		if (actualNodeCount < nodeCount) {
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
-			for (int i = 0; i < (actualNodeCount - nodeCount); i++) {
+			for (int i = 0; i < (nodeCount - actualNodeCount); i++) {
 				transferNodes.add(AllQueueNodes.get(i));
 				log.debug("transferNodes = " + transferNodes);
 				log.debug("transferNodesSize = " + transferNodes.size());
