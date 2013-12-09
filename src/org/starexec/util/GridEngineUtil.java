@@ -724,6 +724,8 @@ public class GridEngineUtil {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		
+		log.debug("transferOverflowNodes start...");
+		
 		if (actualNodeCount > nodeCount) {
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
 			
@@ -746,11 +748,17 @@ public class GridEngineUtil {
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
 		
+		log.debug("transferUnderflowNodes start...");
+		log.debug("actualNodeCount = " + actualNodeCount);
+		log.debug("nodeCount = " + nodeCount);
+		log.debug("queueName = " + queueName);
+		
 		if (actualNodeCount < nodeCount) {
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
-			
 			for (int i = 0; i < (actualNodeCount - nodeCount); i++) {
 				transferNodes.add(AllQueueNodes.get(i));
+				log.debug("transferNodes = " + transferNodes);
+				log.debug("transferNodesSize = " + transferNodes.size());
 			}	
 			
 			for (WorkerNode n : transferNodes) {
