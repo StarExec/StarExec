@@ -1060,4 +1060,28 @@ public class Requests {
 		
 	}
 
+	public static Date getEarliestEndDate() {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL GetEarliestEndDate()}");			
+			results = procedure.executeQuery();
+
+			while(results.next()){
+				return results.getDate("min(endDate)");
+			}			
+			
+		} catch (Exception e){			
+			log.error("GetRequestForReservation says " + e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
 }

@@ -65,7 +65,6 @@ public class Cluster {
 				latest = results.getDate("MAX(reserve_date)");
 			}	
 		
-			log.debug("latest = " + latest);
 			java.util.Date newDate = null;
 			if (latest == null) {
 				java.util.Calendar cal = java.util.Calendar.getInstance();
@@ -516,18 +515,43 @@ public class Cluster {
 		log.debug("queueName = " + queueName);
 		log.debug("value = " + value);
 		log.debug("reserve_date = " + reserve_date);
+		Date earliestEndDate = Requests.getEarliestEndDate();
+		if (earliestEndDate == null) {
+			earliestEndDate = reserve_date;
+		}
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
+			Common.beginTransaction(con);
+	        java.util.Date utilEarliestEndDate = new java.util.Date(earliestEndDate.getTime());
 			
-			procedure = con.prepareCall("{CALL AddTempNodeChange(?,?,?,?)}");
-			procedure.setInt(1, spaceId);
-			procedure.setString(2, queueName);
-			procedure.setInt(3, value);
-			procedure.setDate(4, reserve_date);
-			procedure.executeUpdate();
+			 	List<java.util.Date> dates = new ArrayList<java.util.Date>();
+			    Calendar calendar = new GregorianCalendar();
+			    calendar.setTime(reserve_date);
+			    while (calendar.getTime().before(utilEarliestEndDate))
+			    {
+			        java.util.Date result = calendar.getTime();
+			        dates.add(result);
+			        calendar.add(Calendar.DATE, 1);
+			    }
+			    java.util.Date latestResult = calendar.getTime();
+			    dates.add(latestResult);
+				
+			    if (dates != null) {
+					for (java.util.Date d : dates) {
+					    java.sql.Date sqlDate = new java.sql.Date(d.getTime());
+						procedure = con.prepareCall("{CALL AddTempNodeChange(?,?,?,?)}");
+						procedure.setInt(1, spaceId);
+						procedure.setString(2, queueName);
+						procedure.setInt(3, value);
+						procedure.setDate(4, sqlDate);
+						procedure.executeUpdate();
+					}
+			    }
 			
+
+			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
 			log.error("AddTempNodeChange says " + e.getMessage(), e);

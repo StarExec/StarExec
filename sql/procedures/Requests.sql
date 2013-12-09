@@ -404,5 +404,18 @@ CREATE PROCEDURE GetQueueRequestForReservation( IN _queueId INT)
 		WHERE queue_id = _queueId;
 	END //
 	
+-- Gets the earliest end date of all reserved queues
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetEarliestEndDate;
+CREATE PROCEDURE GetEarliestEndDate()
+	BEGIN
+		SELECT min(endDate)
+		FROM (
+			SELECT MAX(reserve_date) AS endDate
+			FROM queue_reserved
+			GROUP BY queue_id
+		) AS allEndDates;
+	END //
+	
 	
 DELIMITER ; -- This should always be at the end of this file
