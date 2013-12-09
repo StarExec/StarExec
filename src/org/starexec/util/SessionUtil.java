@@ -90,7 +90,14 @@ public class SessionUtil {
 	public static Permission getPermission(HttpSession session, int spaceId) {
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
 		int userId = SessionUtil.getUserId(session);
-		log.debug("get Permission for space " + spaceId);
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			log.debug("Returning admin user permissions");
+			Permission p = Permissions.getFullPermission();
+			p.setId(userId);
+			return p;
+		}
+
 		// If the cache doesn't contain the requested permission...
 		if(!cache.containsKey(spaceId)) {
 			// Then cache it
@@ -101,13 +108,7 @@ public class SessionUtil {
 			// If the cache was successful and it was added, return the permission
 			return cache.get(spaceId);
 		}
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
-			log.debug("Returning admin user permissions");
-			Permission p = Permissions.getFullPermission();
-			p.setId(userId);
-			return p;
-		}
+
 		//if the cache couldn't add it, or it doesn't exist, but the space is public
 		if (Spaces.isPublicSpace(spaceId)){
 			log.debug("Returning public users permissions");

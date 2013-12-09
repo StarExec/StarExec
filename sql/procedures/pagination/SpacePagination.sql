@@ -23,7 +23,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true)
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId = (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
@@ -44,7 +44,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true)
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId = (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
@@ -63,7 +63,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true)
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId = (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
@@ -84,7 +84,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true)
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId = (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
