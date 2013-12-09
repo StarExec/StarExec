@@ -8,10 +8,7 @@ $(document).ready(function() {
 	refreshUpdates();
 	$('#dialog-warning').hide();
 
-	
-	var queueName = document.getElementById("queueName").value;
 
-	document.getElementById('qName').innerHTML = queueName;
 
 	
 	InitUI();
@@ -23,6 +20,11 @@ $(document).ready(function() {
 	});
 	
 	initDataTables();
+	
+	
+	var queueName = document.getElementById("queueName").value;
+
+	document.getElementById('qName').innerHTML = queueName;
 	
 	var start_date = document.getElementById("start").value;
 	dateComponents = start_date.split("/");

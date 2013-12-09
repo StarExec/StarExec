@@ -50,6 +50,7 @@ public class UpdateData extends HttpServlet {
 		String code = columnName;
 		
 		QueueRequest req = null;
+		String queueName = null;
 		int queueId = Queues.getIdByName(columnName);
 		if (queueId == -1) {
 			req = Requests.getQueueRequest(code);
@@ -82,7 +83,6 @@ public class UpdateData extends HttpServlet {
 			e.printStackTrace();
 		}
 
-		String queueName = null;
 		int space_id = 0;
 		
 		
@@ -95,9 +95,7 @@ public class UpdateData extends HttpServlet {
 			space_id = Requests.getQueueReservationSpaceId(queueId);
 		}
 		
-		Cluster.addTempNodeChange(space_id, queueName, value, reserve_date);
-		//Cluster.updateNodeCount(value, queueId, reserve_date);
-		
+		Cluster.addTempNodeChange(space_id, queueName, value, reserve_date);		
 
 		response.getWriter().print(value);
 	}

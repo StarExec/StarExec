@@ -3477,7 +3477,6 @@ public class RESTServices {
 
 		//Get the latest date that a node is reserved for
 		Date latest = Cluster.getLatestNodeDate();
-		log.debug("latest = " + latest);
 		
 		//Get all the dates between these two dates
 	    List<Date> dates = new ArrayList<Date>();
