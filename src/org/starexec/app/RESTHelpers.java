@@ -1055,7 +1055,9 @@ public class RESTHelpers {
 		case JOB:
 			List<Job> jobsToDisplay = new LinkedList<Job>();
 
-			int totalJobs = Jobs.getRunningJobCount();
+			int runningjobs = Jobs.getRunningJobCount();
+			int pausedjobs = Jobs.getPausedJobCount();
+			int totalJobs = runningjobs + pausedjobs;
 			// Retrieves the relevant Job objects to use in constructing the
 			// JSON to send to the client
 			jobsToDisplay = Jobs.getJobsForNextPageAdmin(

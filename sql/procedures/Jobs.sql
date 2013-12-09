@@ -117,7 +117,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 				
 				FROM	jobs
 				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7
+				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -149,7 +149,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 				
 				FROM	jobs
 				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7				
+				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20				
 				
 				ORDER BY 
 					 (CASE _colSortedOn
@@ -182,7 +182,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 				
 				FROM	jobs
 				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7
+				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20
 				AND
 				
 				-- Exclude Jobs whose name and status don't contain the query string
@@ -219,7 +219,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 						GetErrorPairs(jobs.id) 		AS errorPairs
 				FROM	jobs
 				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 
+				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20 
 				AND
 					 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
@@ -944,6 +944,17 @@ CREATE PROCEDURE GetRunningJobCount()
 		FROM jobs
 		JOIN    job_pairs ON jobs.id = job_pairs.job_id
 		WHERE 	job_pairs.status_code < 7;
+	END //
+	
+-- Returns the number of paused jobs in the entire system
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetPausedJobCount;
+CREATE PROCEDURE GetPausedJobCount()
+	BEGIN
+		SELECT COUNT(distinct jobs.id) as jobCount
+		FROM jobs
+		JOIN    job_pairs ON jobs.id = job_pairs.job_id
+		WHERE 	job_pairs.status_code = 20;
 	END //
 
 -- Get the total count of the jobs belong to a specific user

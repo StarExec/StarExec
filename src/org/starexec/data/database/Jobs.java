@@ -3055,4 +3055,26 @@ public class Jobs {
 		}
 		return false;
 	}
+
+	public static int getPausedJobCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetPausedJobCount()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
 }
