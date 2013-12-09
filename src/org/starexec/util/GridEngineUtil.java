@@ -674,8 +674,8 @@ public class GridEngineUtil {
      * Cancels/Ends a reservation
      */
     public static void checkQueueReservations() {
-    	//java.util.Date today = new java.util.Date();
-		java.util.Date today = new java.util.Date(113, 11, 10); // December 10, 2013
+    	java.util.Date today = new java.util.Date();
+		//java.util.Date today = new java.util.Date(113, 11, 10); // December 10, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 		if (queueReservations != null) {
 			for (QueueRequest req : queueReservations) {
