@@ -389,6 +389,14 @@ public class CommandParser {
 		}
 	}
 	
+	public int exit() {
+		if (con!=null) {
+			con.logout();
+			con=null;
+		}
+		return R.SUCCESS_EXIT;
+	}
+	
 	/**
 	 * This function takes in a command issued by the user, processes it, and
 	 * returns a status code indicating the outcome.
@@ -412,11 +420,7 @@ public class CommandParser {
 		String c=splitCommand[0].toLowerCase().trim();
 		HashMap<String,String> commandParams=extractParams(command);
 		if (command.equalsIgnoreCase(R.COMMAND_EXIT)) {
-			if (con!=null) {
-				con.logout();
-				con=null;
-			}
-			return R.SUCCESS_EXIT;
+			exit();
 		} else if (c.equals(R.COMMAND_HELP)) {
 			System.out.println(R.HELP_MESSAGE);
 			return 0;
@@ -458,8 +462,8 @@ public class CommandParser {
 			if (valid<0) {
 				return valid;
 			}
-			this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
-			return 0;
+			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
+			
 		} else if (c.equals(R.COMMAND_IGNOREIDS)) {
 			returnIDsOnUpload=false;
 			return 0;
