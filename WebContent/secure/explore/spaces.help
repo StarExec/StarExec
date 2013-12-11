@@ -1,1 +1,17 @@
-<p>Insert help contents here</p>
+<h3>The Space Explorer</h3>
+
+<br>
+
+<h2>Overview</h2>
+
+<p>The space explorer is the main page for viewing the space hierarchy
+on StarExec.  With it, you can view spaces and their contents, which
+can be subspaces, solvers, benchmarks, and users.  If you are not in a
+space, you will not be able to see it.  Permissions control whether
+you can make certain kinds of modifications to spaces.  See the
+actions at the very bottom of the right part of the page, for things
+you can do in a particular space. </p>
+
+<br>
+
+<p>[more documentation to come]</p>

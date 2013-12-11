@@ -5,6 +5,32 @@
 <star:template title="Version Information" css="public/versionInfo">
 	<pre id="infoLoc">
 
+In revision 14663:
+
+-- Bugs we have fixed:
+
+   -- users copied into a space hierarchy were sometimes automatically 
+      becoming leaders of that hierarchy. 
+
+   -- copying a user to a space only (as opposed to hierarchy) 
+      was not working.
+
+   -- copying a benchmark (as opposed to linking it) was not working.
+
+   -- when dragging a primitive to the trashcan, users were being
+      presented with the option to recycle the primitive even if
+      they did not own it.
+
+-- More work on the administrative interface (for the StarExec admin),
+   including GridEngine queue creation via the web interface.
+
+-- We started an on-page help system and filled in a few of the
+   help pages.
+
+-- caching solvers on the compute nodes is implemented and 
+   working now (this might have been in the previous deployment
+   but was not mentioned below).
+
 In revision 14421:
 
 -- ability to request StarExec to run benchmark processors and job

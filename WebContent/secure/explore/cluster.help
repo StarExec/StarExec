@@ -1,1 +1,10 @@
-<p>Insert help contents here</p>
+<h3>Cluster status</h3>
+
+<p>This page shows the current queues for StarExec.  The queue all.q
+is available for everyone to use.  The other queues serve special
+functions or are reserved for exclusive use by a community.  Note that
+only community leaders can request reservation of a queue.  You can
+select a queue to see pending job pairs for that queue, or a node
+to see currently executing job pairs on that node.  In the latter
+case, you may sometimes see multiple job pairs listed when only
+one is running (this is a bug we have not resolved yet). </p>

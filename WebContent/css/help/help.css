@@ -40,16 +40,25 @@
 	border-top: solid 1px #666666;
 }
 
-#detailPanel h3, #helpTopics h3 {
-	color: #FFFFFF;
+#detailPanel h3 {
+	color: #999999;
 	font-size: 24px;
 	margin-bottom: 5px;
-	display: inline-block;
+}
+
+#detailPanel h2 {
+	color: #898989;
+	font-size: 18px;
+	margin-bottom: 4px;
 }
 
 #detailPanel p.accent {
 	color: #666666;
 	font-style: italic;
+}
+
+#detailPanel p {
+	margin: 10px;
 }
 
 #topicList .topicHeader {

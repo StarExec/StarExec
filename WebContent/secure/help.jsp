@@ -25,7 +25,6 @@
 <star:template title="help pages" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, help/help, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, help/help">			
 	<span id="reference" href="${ref}"></span>
 	<div id="helpTopics">
-		<h3>topics</h3>
 		<ul id="topicList">
 			<li class="topicHeader">general topics</li>
 			<li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">exploring spaces</a></li>
