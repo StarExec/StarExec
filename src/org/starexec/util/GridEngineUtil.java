@@ -724,20 +724,11 @@ public class GridEngineUtil {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		
-		log.debug("transferOverflowNodes start...");
-		log.debug("req = " + req);
-		log.debug("queueName = " + queueName);
-		log.debug("nodeCount = " + nodeCount);
-		log.debug("actualNodeCount = " + actualNodeCount);
-		log.debug("actualNodes = " + actualNodes);
-		
 		if (actualNodeCount > nodeCount) {
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
 			
 			for (int i = 0; i < (actualNodeCount - nodeCount); i++) {
-				log.debug("i = " + i);
 				WorkerNode n = actualNodes.get(i);
-				log.debug("n = " + n);
 				transferNodes.add(n);
 			}	
 			
@@ -755,18 +746,11 @@ public class GridEngineUtil {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
-		
-		log.debug("transferUnderflowNodes start...");
-		log.debug("actualNodeCount = " + actualNodeCount);
-		log.debug("nodeCount = " + nodeCount);
-		log.debug("queueName = " + queueName);
-		
+
 		if (actualNodeCount < nodeCount) {
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
 			for (int i = 0; i < (nodeCount - actualNodeCount); i++) {
 				transferNodes.add(AllQueueNodes.get(i));
-				log.debug("transferNodes = " + transferNodes);
-				log.debug("transferNodesSize = " + transferNodes.size());
 			}	
 			
 			for (WorkerNode n : transferNodes) {
@@ -781,24 +765,20 @@ public class GridEngineUtil {
 
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
-		log.debug("queueName = " + req.getQueueName());
 		String queueName = req.getQueueName();
 		String[] split = queueName.split("\\.");
 		String shortQueueName = split[0];
 		int queueId = Queues.getIdByName(queueName);
-		log.debug("queueId = " + queueId);
 		
 		//Pause jobs that are running on the queue
 		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
-		log.debug("jobs = " + jobs);
-		log.debug("jobssize = " + jobs.size());
+
 		if (jobs != null) {
 			for (Job j : jobs) {
 				Jobs.pause(j.getId());
 			}
 		}
 		
-		log.debug("before email");
 		//TODO: Send Email on either completion or all paused [COMPLETE]
 		/*
 		try {
@@ -815,8 +795,7 @@ public class GridEngineUtil {
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		//Move associated Nodes back to default queue
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
-		log.debug("nodes = " + nodes);
-		log.debug("nodessize = " + nodes.size());
+		
 		if (nodes != null) {
 			for (WorkerNode n : nodes) {
 				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
