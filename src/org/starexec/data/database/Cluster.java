@@ -766,7 +766,7 @@ public class Cluster {
 				return results.getInt("count");
 			}			
 
-			return -1;			
+			return 0;			
 			
 		} catch (Exception e){			
 			log.error("GetNodeCountOnDate says " + e.getMessage(), e);		
