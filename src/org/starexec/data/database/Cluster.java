@@ -92,7 +92,7 @@ public class Cluster {
 		CallableStatement procedure = null;
 		try {		
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNodeCount()}");
+			procedure = con.prepareCall("{CALL GetActiveNodeCount()}");
 			ResultSet results = procedure.executeQuery();	
 			
 			
