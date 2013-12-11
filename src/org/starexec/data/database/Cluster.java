@@ -754,6 +754,9 @@ public class Cluster {
 			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
 			procedure.setInt(1, queueId);
 			java.sql.Date sqlDate = new java.sql.Date(today.getTime());
+			log.debug("queueID = " + queueId);
+			log.debug("utilDate = " + today);
+			log.debug("sqlDate = " + sqlDate);
 			procedure.setDate(2, sqlDate);
 			
 			
