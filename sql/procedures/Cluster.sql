@@ -222,14 +222,15 @@ CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 		WHERE name=_name;
 	END // 
 
--- Get the number of the nodes
+-- Get the number of active nodes
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNodeCount;
-CREATE PROCEDURE GetNodeCount()
+DROP PROCEDURE IF EXISTS GetActiveNodeCount;
+CREATE PROCEDURE GetActiveNodeCount()
 	BEGIN
 		SELECT Count(*)
 		AS nodeCount
-		FROM nodes;
+		FROM nodes
+		WHERE status = "ACTIVE";
 	END //
 	
 -- Returns the node count for a particular date for a particular queue
