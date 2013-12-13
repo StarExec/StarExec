@@ -380,14 +380,13 @@ public class JobPairs {
 			testFile=new File(testFile,pair.getConfiguration().getName());
 			
 			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
-			
-			
-			
+
 			file=new File(file,pair.getBench().getName());
 			testFile=new File(testFile,pair.getBench().getName());
 			if (!file.exists()) {	    // if the job output could not be found
 				if (testFile.exists()) {  //check the alternate path some pairs are still stored at
 					FileUtils.copyFile(testFile, file);
+					testFile.delete();
 				}
 			}
 			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
