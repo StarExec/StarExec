@@ -27,4 +27,4 @@ the run a single job from the space containing those subspaces.</p>
 <p>Once the job is created, it will begin queueing immediately.  If
 other jobs are running, of course, it may take some time for your job
 to make it through the queue to execute on the compute nodes.  You can
-use the cluster status page to monitor queues and nodes.</p>
+use the <a href="explore/cluster.jsp">cluster status page</a> to monitor queues and nodes.</p>
