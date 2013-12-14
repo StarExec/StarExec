@@ -27,9 +27,9 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 -- Adds a new attribute to a job pair 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobAttr;
-CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _jobId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
+CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
-		REPLACE INTO job_attributes VALUES (_pairId, _key, _val, _jobId);
+		REPLACE INTO job_attributes VALUES (_pairId, _key, _val, (select job_id from job_pairs where id=_pairId));
 	END //
 
 -- Returns the number of jobs in a given space
@@ -1037,5 +1037,13 @@ CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 		DELETE jobs FROM jobs
 			LEFT JOIN job_assoc ON job_assoc.job_id=jobs.id
 		WHERE deleted=true AND job_assoc.space_id IS NULL;
+	END //
+	
+DROP PROCEDURE IF EXISTS CountProcessingPairsByJob;
+CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT)
+	BEGIN
+		SELECT COUNT(*) AS processing
+		FROM job_pairs JOIN processing_job_pairs ON job_pairs.id=processing_job_pairs.pair_id
+		WHERE job_pairs.job_id=_jobId;
 	END //
 DELIMITER ; -- this should always be at the end of the file

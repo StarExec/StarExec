@@ -25,6 +25,8 @@ import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Solver;
@@ -2183,6 +2185,83 @@ public class Jobs {
 		}
 	}
 	
+	public static int CountProcessingPairsByJob(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL CountProcessingPairsByJob(?)}");
+			procedure.setInt(1,jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("processing");
+			}
+		} catch (Exception e) {
+			log.error("doesJobHaveProcessingPairs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return -1;
+	}
+	
+	public static Boolean hasProcessingPairs(int jobId) {
+		int count=CountProcessingPairsByJob(jobId);
+		if (count<0) {
+			return null;
+		}
+		return count>0;
+	}
+	
+	/**
+	 * Determines whether the given job is in a good state to be post-processed
+	 * @param jobId The ID of the job to check
+	 * @return True if the job can be processed, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean canJobBePostProcessed(int jobId) {
+		JobStatus status=getJobStatusCode(jobId);
+		if (status.getCode()==JobStatusCode.STATUS_COMPLETE) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static JobStatus getJobStatusCode(int jobId) {
+		JobStatus status=new JobStatus();
+		
+		try {
+			if (isJobPaused(jobId)) {
+				status.setCode(JobStatusCode.STATUS_PAUSED);
+				return status;
+			}
+			if (isJobKilled(jobId)) {
+				status.setCode(JobStatusCode.STATUS_KILLED);
+				return status;
+			}
+			if (hasProcessingPairs(jobId)) {
+				status.setCode(JobStatusCode.STATUS_PROCESSING);
+				return status;
+			}
+			
+			HashMap<String,String> overview = Statistics.getJobPairOverview(jobId);
+			//if the job is not paused and no pending pairs remain, it is done
+			if (overview.get("pendingPairs").equals("0")) {
+				status.setCode(JobStatusCode.STATUS_COMPLETE);
+				return status;
+			} 
+			status.setCode(JobStatusCode.STATUS_RUNNING);
+			return status;
+		} catch (Exception e) {
+			log.error("getJobStatusCode says "+e.getMessage(),e);
+		}
+		return status;
+	}
+	
 	/**
 	 * Determines whether the job with the given ID is complete
 	 * @param jobId The ID of the job in question 
@@ -2191,22 +2270,7 @@ public class Jobs {
 	 */
 	
 	public static boolean isJobComplete(int jobId) {
-		try {
-			//if the job is paused, it is not done yet
-			if (isJobPaused(jobId)) {
-				return false;
-			}
-			HashMap<String,String> overview = Statistics.getJobPairOverview(jobId);
-			//if the job is not paused and no pending pairs remain, it is done
-			if (overview.get("pendingPairs").equals("0")) {
-				return true;
-			} 
-
-			return false;
-		} catch (Exception e) {
-			log.error("isJobComplete says "+e.getMessage(),e);
-		}
-		return false;
+		return getJobStatusCode(jobId).getCode()==JobStatusCode.STATUS_COMPLETE;
 	}
 	
 	/**
@@ -2732,71 +2796,52 @@ public class Jobs {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Runs the given post processor on the pair output of the already-finished job
+	 * Sets the given job up to be post processed by adding all of its pairs
+	 * to the processing_job_pairs table
 	 * @param jobId The ID of the the job to process
 	 * @param processorId The ID of the post-processor to use
 	 * @return True if the operation was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean runPostProcessor(int jobId, int processorId) {
-		BufferedReader reader = null;
-		HashMap<Integer,Integer> statusCodes=new HashMap<Integer, Integer>();
+	public static boolean prepareJobForPostProcessing(int jobId, int processorId) {
+		Connection con=null;
 		try {
-			Processor p=Processors.get(processorId);
+			con=Common.getConnection();
+			if (!Jobs.removeCachedJobStats(jobId,con)) {
+				throw new Exception("Couldn't clear out the cache of job stats");
+			}
+
 			List<JobPair> pairs=Jobs.getPairs(jobId);
 			//store the status code of every pair so we can restore it after we're done
 			for (JobPair jp : pairs) {
-				statusCodes.put(jp.getId(), jp.getStatus().getCode().getVal());
-			}
-			Jobs.removeCachedJobStats(jobId);
-			setPairStatusByJob(jobId,StatusCode.STATUS_PROCESSING.getVal());
-			log.info("Beginning processing for " + pairs.size() + " pairs");			
-			// For each benchmark in the list to process...
-			for(JobPair jp : pairs) {
-				
-					try {
-						// Run the processor on the benchmark file
-						String [] procCmd = new String[2];
-						procCmd[0] = p.getFilePath();
-				
-						procCmd[1] = JobPairs.getFilePath(jp.getId());
-						reader = Util.executeCommand(procCmd,null);
-						
-						// Load results into a properties file
-						Properties prop = new Properties();
-						if (reader != null){
-							prop.load(reader);							
-							reader.close();
-						}
-						JobPairs.addJobPairAttributes(jp.getId(), prop,jobId);
-						
-					} catch (Exception e) {
-						log.error("error processing jp "+jp.getId()+" . Error says "+e.getMessage(),e);
+				Common.beginTransaction(con);
+				try {
+					if (!JobPairs.AddPairToBePostProcessed(jp.getId(), processorId, con)) {
+						Common.doRollback(con);
+						throw new Exception("Failed to add all the new pairs to be processed");
 					}
-					try {
-						JobPairs.setPairStatus(jp.getId(), statusCodes.get(jp.getId()));
-					} catch (Exception e) {
-						log.error("error restoring pair status for jp with id = "+jp.getId()+" error says "+e.getMessage(),e);
-						//TODO: What is the behavior supposed to be here?
+					if (!JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal(),con)) {
+						Common.doRollback(con);
+						throw new Exception("Failed to set the status of one of the pairs");
 					}
-					
+				} catch (Exception e) {
+					log.error("prepareJobForPostProcessing says "+e.getMessage(),e);
+					Common.doRollback(con);
+				} finally {
+					Common.endTransaction(con);
+				}
 			}
 			return true;
 			
 		} catch (Exception e) {
+			Common.doRollback(con);
 			log.error("runPostProcessor says "+e.getMessage(),e);
 		} finally {
-			if(reader != null) {
-				try { 
-					reader.close(); 
-				} catch(Exception e) {
-					//ignore
-				}
-			}
+			Common.endTransaction(con);
+			Common.safeClose(con);
 		}
-		
 		return false;
 	}
 
@@ -2807,8 +2852,7 @@ public class Jobs {
 	 * @param stats The stats, which should have been compiled already
 	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
-	 */
-	
+	 */	
 	public static boolean saveStats(int jobId, int jobSpaceId,List<SolverStats> stats) {
 		if (!isJobComplete(jobId)) {
 			return false; //don't save stats if the job is not complete
@@ -2822,7 +2866,6 @@ public class Jobs {
 					throw new Exception ("saving stats failed, rolling back connection");
 				}
 			}
-			
 			return true;
 		} catch (Exception e) {
 			log.error("saveStats says "+e.getMessage(),e);
@@ -3026,20 +3069,13 @@ public class Jobs {
 		return null;
 	}
 	
-	/**
-	 * Removes the cached job results for every job space associated with this job
-	 * @param jobId The ID of the job to remove the cached stats for
-	 * @return True if successful, false otherwise
-	 * @author Eric Burns
-	 */
-	public static boolean removeCachedJobStats(int jobId) {
-		Connection con=null;
+	public static boolean removeCachedJobStats(int jobId, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			Job j=Jobs.get(jobId);
 			List<Space> jobSpaces=Spaces.getSubSpacesForJob(j.getPrimarySpace(), true);
 			jobSpaces.add(Spaces.getJobSpace(j.getPrimarySpace()));
-			con=Common.getConnection();
+			
 			for (Space s : jobSpaces) {
 				procedure=con.prepareCall("{CALL RemoveJobStatsInJobSpace(?)}");
 				procedure.setInt(1,s.getId());
@@ -3050,8 +3086,27 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error("removeCachedJobStats says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Removes the cached job results for every job space associated with this job
+	 * @param jobId The ID of the job to remove the cached stats for
+	 * @return True if successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean removeCachedJobStats(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return removeCachedJobStats(jobId,con);
+			
+		} catch (Exception e) {
+			log.error("removeCachedJobStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
 		}
 		return false;
 	}

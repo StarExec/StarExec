@@ -1029,7 +1029,7 @@ public class RESTServices {
 		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
-		return Jobs.runPostProcessor(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.prepareJobForPostProcessing(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**

@@ -138,5 +138,32 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 		SELECT job_id,path,solver_name,config_name,bench_name FROM job_pairs
 		WHERE job_pairs.id=_pairId;
 	END //
-	
+-- Adds a new pair to the processing table.
+DROP PROCEDURE IF EXISTS AddProcessingPair;
+CREATE PROCEDURE AddProcessingPair (IN _pairId INT, IN _procId INT)
+	BEGIN
+		INSERT INTO processing_job_pairs (pair_id, proc_id,old_status_code) VALUES (_pairId, _procId,
+		(select status_code from job_pairs where job_pairs.id=_pairId));
+	END //
+
+DROP PROCEDURE IF EXISTS RemoveProcessingPair;
+CREATE PROCEDURE RemoveProcessingPair (IN _pairId INT)
+	BEGIN
+		UPDATE job_pairs SET status_code=(SELECT old_status_code FROM processing_job_pairs where pair_id=_pairId) WHERE id=_pairId;
+		DELETE FROM processing_job_pairs WHERE pair_id=_pairId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
+CREATE PROCEDURE GetPairsToBeProcessed()
+	BEGIN
+		SELECT * from processing_job_pairs;
+	END //
+
+DROP PROCEDURE IF EXISTS IsPairWaitingForProcessing;
+CREATE PROCEDURE IsPairWaitingForProcessing(IN _pairId INT)
+	BEGIN
+		SELECT COUNT(*) AS waiting
+		from processing_job_pairs
+		WHERE pair_id=_pairId;
+	END //
 DELIMITER ; -- this should always be at the end of the file
