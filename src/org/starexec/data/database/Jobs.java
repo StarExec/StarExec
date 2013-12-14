@@ -2802,10 +2802,13 @@ public class Jobs {
 	 * to the processing_job_pairs table
 	 * @param jobId The ID of the the job to process
 	 * @param processorId The ID of the post-processor to use
-	 * @return True if the operation was successful, false otherwise
+	 * @return True if the operation was successful, false otherwise.
 	 * @author Eric Burns
 	 */
 	public static boolean prepareJobForPostProcessing(int jobId, int processorId) {
+		if (!Jobs.canJobBePostProcessed(jobId)){
+			return false;
+		}
 		Connection con=null;
 		try {
 			con=Common.getConnection();
@@ -2822,9 +2825,10 @@ public class Jobs {
 					if (!JobPairs.AddPairToBePostProcessed(jp.getId(), processorId, con)) {
 						throw new Exception("Failed to add one of the pairs to be processed");
 					}
-					if (!JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal(),con)) {
-						throw new Exception("Failed to set the status of one of the pairs");
-					}
+					throw new Exception("testing reliability");
+					//if (!JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal(),con)) {
+					//	throw new Exception("Failed to set the status of one of the pairs");
+					//}
 				} catch (Exception e) {
 					log.error("prepareJobForPostProcessing says "+e.getMessage(),e);
 					Common.doRollback(con);
