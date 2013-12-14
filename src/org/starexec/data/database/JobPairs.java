@@ -177,12 +177,12 @@ public class JobPairs {
 	public static boolean RemovePairFromProcessingTable(int pairId,Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL RemoveProcessingPair(?,?)}");
+			procedure=con.prepareCall("{CALL RemoveProcessingPair(?)}");
 			procedure.setInt(1, pairId);
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("AddPairToBePostProcessed says "+e.getMessage(),e );
+			log.error("RemovePairToBePostProcessed says "+e.getMessage(),e );
 		} finally {
 			Common.safeClose(procedure);
 		}
