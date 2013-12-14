@@ -144,6 +144,7 @@ CREATE PROCEDURE AddProcessingPair (IN _pairId INT, IN _procId INT)
 	BEGIN
 		INSERT INTO processing_job_pairs (pair_id, proc_id,old_status_code) VALUES (_pairId, _procId,
 		(select status_code from job_pairs where job_pairs.id=_pairId));
+		
 	END //
 
 DROP PROCEDURE IF EXISTS RemoveProcessingPair;

@@ -28,7 +28,6 @@
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
 				JobStatus status=Jobs.getJobStatusCode(jobId);
-				System.out.println(status);
 				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
 				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
 				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);

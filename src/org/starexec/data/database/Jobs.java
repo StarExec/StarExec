@@ -2820,11 +2820,9 @@ public class Jobs {
 				Common.beginTransaction(con);
 				try {
 					if (!JobPairs.AddPairToBePostProcessed(jp.getId(), processorId, con)) {
-						Common.doRollback(con);
 						throw new Exception("Failed to add one of the pairs to be processed");
 					}
 					if (!JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal(),con)) {
-						Common.doRollback(con);
 						throw new Exception("Failed to set the status of one of the pairs");
 					}
 				} catch (Exception e) {

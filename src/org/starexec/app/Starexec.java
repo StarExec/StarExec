@@ -225,8 +225,8 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,1,TimeUnit.MINUTES);
-
+		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,30,TimeUnit.SECONDS);
 		}	
+		
 	}
 }

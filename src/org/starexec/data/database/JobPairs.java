@@ -73,7 +73,7 @@ public class JobPairs {
 		ResultSet results=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("CALL {GetPairsToBeProcessed()}");
+			procedure=con.prepareCall("{CALL GetPairsToBeProcessed()}");
 			results=procedure.executeQuery();
 			HashMap<Integer,Integer> mapping=new HashMap<Integer,Integer>();
 			while (results.next()) {
