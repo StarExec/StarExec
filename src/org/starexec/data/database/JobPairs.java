@@ -114,7 +114,9 @@ public class JobPairs {
 			Common.doRollback(con);
 			log.error("postProcessPair says "+e.getMessage(),e);
 		} finally {
+			Common.endTransaction(con);
 			Common.safeClose(con);
+			
 		}
 		return false;
 	}
@@ -158,12 +160,23 @@ public class JobPairs {
 		return null;
 	}
 	
+	/**
+	 * Adds the given job pair / processor pair to the processing_job_pairs table.
+	 * Also sets the status code of the pair to STATUS_PROCESSING
+	 * @param pairId The ID of the pair to use
+	 * @param processorId The ID of the processor to use
+	 * @param con The open connection to make the call on 
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	
 	public static boolean AddPairToBePostProcessed(int pairId,int processorId,Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddProcessingPair(?,?)}");
+			procedure=con.prepareCall("{CALL AddProcessingPair(?,?,?)}");
 			procedure.setInt(1, pairId);
 			procedure.setInt(2,processorId);
+			procedure.setInt(3, StatusCode.STATUS_PROCESSING.getVal());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
@@ -173,6 +186,16 @@ public class JobPairs {
 		}
 		return false;
 	}
+	
+	/**
+	 * Removes the given pair from the processing_job_pairs table.
+	 * Also sets the status of the job pair back to whatever it was
+	 * originally
+	 * @param pairId The ID of the pair in question
+	 * @param con The open connection to execute the procedure one
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
 	
 	public static boolean RemovePairFromProcessingTable(int pairId,Connection con) {
 		CallableStatement procedure=null;

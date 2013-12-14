@@ -140,11 +140,11 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	END //
 -- Adds a new pair to the processing table.
 DROP PROCEDURE IF EXISTS AddProcessingPair;
-CREATE PROCEDURE AddProcessingPair (IN _pairId INT, IN _procId INT)
+CREATE PROCEDURE AddProcessingPair (IN _pairId INT, IN _procId INT,IN _processingStatusCode INT)
 	BEGIN
 		INSERT INTO processing_job_pairs (pair_id, proc_id,old_status_code) VALUES (_pairId, _procId,
 		(select status_code from job_pairs where job_pairs.id=_pairId));
-		
+		UPDATE job_pairs SET status_code=_processingStatusCode WHERE id =_pairId;
 	END //
 
 DROP PROCEDURE IF EXISTS RemoveProcessingPair;

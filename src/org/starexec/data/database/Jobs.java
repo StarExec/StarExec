@@ -2820,20 +2820,14 @@ public class Jobs {
 			//store the status code of every pair so we can restore it after we're done
 			for (JobPair jp : pairs) {
 				con=Common.getConnection();
-				Common.beginTransaction(con);
 				try {
 					if (!JobPairs.AddPairToBePostProcessed(jp.getId(), processorId, con)) {
 						throw new Exception("Failed to add one of the pairs to be processed");
 					}
-					throw new Exception("testing reliability");
-					//if (!JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal(),con)) {
-					//	throw new Exception("Failed to set the status of one of the pairs");
-					//}
+					
 				} catch (Exception e) {
 					log.error("prepareJobForPostProcessing says "+e.getMessage(),e);
-					Common.doRollback(con);
 				} finally {
-					Common.endTransaction(con);
 					Common.safeClose(con);
 				}
 			}
