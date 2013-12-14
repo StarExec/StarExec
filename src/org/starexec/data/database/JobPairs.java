@@ -811,7 +811,7 @@ public class JobPairs {
 		} catch (Exception e) {
 			log.debug("setPairStatus says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}	
 		return false;
 	}

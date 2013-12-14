@@ -2816,11 +2816,12 @@ public class Jobs {
 			List<JobPair> pairs=Jobs.getPairs(jobId);
 			//store the status code of every pair so we can restore it after we're done
 			for (JobPair jp : pairs) {
+				con=Common.getConnection();
 				Common.beginTransaction(con);
 				try {
 					if (!JobPairs.AddPairToBePostProcessed(jp.getId(), processorId, con)) {
 						Common.doRollback(con);
-						throw new Exception("Failed to add all the new pairs to be processed");
+						throw new Exception("Failed to add one of the pairs to be processed");
 					}
 					if (!JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal(),con)) {
 						Common.doRollback(con);
@@ -2831,6 +2832,7 @@ public class Jobs {
 					Common.doRollback(con);
 				} finally {
 					Common.endTransaction(con);
+					Common.safeClose(con);
 				}
 			}
 			return true;
