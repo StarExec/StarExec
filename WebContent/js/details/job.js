@@ -264,15 +264,15 @@ function initUI(){
 							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val(),
 							function(returnCode) {
 								switch (returnCode) {
-									case 0:
+									case "0":
 										break;
-									case 1:
+									case "1":
 										showMessage('error', "Internal error running new post processor.", 5000);
 										break;
-									case 2:
+									case "2":
 										showMessage('error', "Only the owner of this job can post-process its results.", 5000);
 										break;
-									case 3:
+									case "3":
 										showMessage('error',"Only complete jobs can be processed with a new post-processor",5000);
 										break;
 									default:
