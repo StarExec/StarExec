@@ -41,6 +41,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -89,6 +90,7 @@ public class RESTServices {
 	private static final int ERROR_CANT_EDIT_LEADER_PERMS=3;
 	private static final int ERROR_CANT_PROMOTE_SELF=3;
 	private static final int ERROR_CANT_PROMOTE_LEADER=3;
+	private static final int ERROR_JOB_NOT_PROCESSING=3;
 	
 	private static final int ERROR_NOT_IN_SPACE=4;
 	private static final int ERROR_CANT_REMOVE_LEADER=4;
@@ -1023,14 +1025,39 @@ public class RESTServices {
 		if (!Users.isMemberOfCommunity(userId, p.getCommunityId())) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		if (!Jobs.isJobComplete(jid)) {
+		if (!Jobs.canJobBePostProcessed(jid)) {
 			return gson.toJson(ERROR_JOB_INCOMPLETE);
 		}
-		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
 		return Jobs.prepareJobForPostProcessing(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
+	
+	/**
+	 * Post-processes an already-complete job with a new post processor
+	 * 
+	 * @return a json string with result status (0 for success, otherwise 1)
+	 * @author Eric Burns
+	 
+	@GET
+	@Path("/postprocess/job/{jobId}/cancel")
+	@Produces("application/json")
+	public String cancelOostProcessJob(@PathParam("jobId") int jid, @Context HttpServletRequest request) {
+		
+		int userId=SessionUtil.getUserId(request);
+		Job job=Jobs.get(jid);
+		if (job.getUserId()!=userId) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		if (Jobs.getJobStatusCode(jid).getCode()!=JobStatusCode.STATUS_PROCESSING) {
+			return gson.toJson(ERROR_JOB_NOT_PROCESSING);
+		}
+		
+		
+		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
+		
+		return Jobs.cancelPostProcessing(jid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}*/
 	
 	/**
 	 * Removes a benchmark type from a given space

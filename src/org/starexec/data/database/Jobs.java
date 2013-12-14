@@ -2796,6 +2796,12 @@ public class Jobs {
 		}
 		return false;
 	}
+	/*
+	 *Perhaps we will want to cancel  jobs in the future? 
+	 *
+	public static boolean cancelPostProcessing(int jobId) {
+		return false
+	}*/
 
 	/**
 	 * Sets the given job up to be post processed by adding all of its pairs
