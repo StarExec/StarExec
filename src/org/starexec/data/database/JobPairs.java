@@ -250,10 +250,8 @@ public class JobPairs {
 
 			return true;
 		} catch (Exception e) {
-			
-		} finally {
-			
-		}
+			log.error("addJobPairAttributes says "+e.getMessage(),e);
+		} 
 		return false;
 	}
 	

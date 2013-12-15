@@ -10,4 +10,6 @@ CREATE TABLE processing_job_pairs (
 	CONSTRAINT processing_job_pairs_proc_id FOREIGN KEY (proc_id) REFERENCES processors(id) ON DELETE CASCADE
 );
 
-UPDATE job_pairs SET status_code=7 WHERE status_code=22;
+UPDATE job_pairs SET status_code=14 WHERE status_code=22 AND job_id=419 AND wallclock>1500;
+UPDATE job_pairs SET status_code=17 WHERE status_code=22 AND job_id=419 AND max_vmem>65000000;
+UPDATE job_pairs SET status_code=7 WHERE status_code=22 AND job_id=419;
