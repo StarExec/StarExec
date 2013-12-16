@@ -1047,7 +1047,9 @@ CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT, IN _processingStatus I
 		FROM job_pairs 
 		WHERE job_pairs.job_id=_jobId and _processingStatus=status_code;
 	END //
-
+	
+-- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor
+-- of the job to the given one
 DROP PROCEDURE IF EXISTS PrepareJobForPostProcessing;
 CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _completeStatus INT, IN _processingStatus INT)
 	BEGIN

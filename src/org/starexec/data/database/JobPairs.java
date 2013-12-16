@@ -192,6 +192,14 @@ public class JobPairs {
 		return false;
 	}
 	
+	/**
+	 * Adds the list of attributes to the given job pair. If old attributes
+	 * have the same keys as new ones, the old ones are replaced
+	 * @param pairId The ID of the pair to add attributes to
+	 * @param attributes The key/value attributes
+	 * @param con The open connection to make the call on
+	 * @return True on success, false on error
+	 */
 	public static boolean addJobPairAttributes(int pairId, Properties attributes, Connection con) {
 		try {
 			// For each attribute (key, value)...

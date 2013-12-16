@@ -138,7 +138,8 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 		SELECT job_id,path,solver_name,config_name,bench_name FROM job_pairs
 		WHERE job_pairs.id=_pairId;
 	END //
-
+	
+-- Gets every pair_id and processor_id for pairs awiting processing
 DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
 CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 	BEGIN
