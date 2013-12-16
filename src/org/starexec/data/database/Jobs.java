@@ -1678,7 +1678,7 @@ public class Jobs {
 	
 	/**
 	 * Gets all job pairs for the given job non-recursively 
-	 * (Worker node, status, benchmark and solver will NOT be populated)
+	 * (Worker node, benchmark and solver will NOT be populated)
 	 * @param con The connection to make the query on 
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given job.
@@ -2191,8 +2191,9 @@ public class Jobs {
 		ResultSet results=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL CountProcessingPairsByJob(?)}");
+			procedure=con.prepareCall("{CALL CountProcessingPairsByJob(?,?)}");
 			procedure.setInt(1,jobId);
+			procedure.setInt(2,StatusCode.STATUS_PROCESSING.getVal());
 			results=procedure.executeQuery();
 			if (results.next()) {
 				return results.getInt("processing");
@@ -2207,7 +2208,12 @@ public class Jobs {
 		
 		return -1;
 	}
-	
+	/**
+	 * Returns whether the given job has any pairs that are currently waiting
+	 * to be re post processed.
+	 * @param jobId The ID of the job ot check
+	 * @return True / false as expected, and null on error 
+	 */
 	public static Boolean hasProcessingPairs(int jobId) {
 		int count=CountProcessingPairsByJob(jobId);
 		if (count<0) {
@@ -2816,27 +2822,22 @@ public class Jobs {
 			return false;
 		}
 		Connection con=null;
+		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
+			Common.beginTransaction(con);
 			if (!Jobs.removeCachedJobStats(jobId,con)) {
 				throw new Exception("Couldn't clear out the cache of job stats");
 			}
 
-			List<JobPair> pairs=Jobs.getPairs(jobId);
-			//store the status code of every pair so we can restore it after we're done
-			for (JobPair jp : pairs) {
-				con=Common.getConnection();
-				try {
-					if (!JobPairs.AddPairToBePostProcessed(jp.getId(), processorId, con)) {
-						throw new Exception("Failed to add one of the pairs to be processed");
-					}
-					
-				} catch (Exception e) {
-					log.error("prepareJobForPostProcessing says "+e.getMessage(),e);
-				} finally {
-					Common.safeClose(con);
-				}
-			}
+			
+			
+			procedure=con.prepareCall("{CALL PrepareJobForPostProcessing(?,?,?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2,processorId);
+			procedure.setInt(3,StatusCode.STATUS_COMPLETE.getVal());
+			procedure.setInt(4, StatusCode.STATUS_PROCESSING.getVal());
+			procedure.executeUpdate();
 			return true;
 			
 		} catch (Exception e) {

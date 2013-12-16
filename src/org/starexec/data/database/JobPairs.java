@@ -73,11 +73,12 @@ public class JobPairs {
 		ResultSet results=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetPairsToBeProcessed()}");
+			procedure=con.prepareCall("{CALL GetPairsToBeProcessed(?)}");
+			procedure.setInt(1,StatusCode.STATUS_PROCESSING.getVal());
 			results=procedure.executeQuery();
 			HashMap<Integer,Integer> mapping=new HashMap<Integer,Integer>();
 			while (results.next()) {
-				mapping.put(results.getInt("pair_id"),results.getInt("proc_id"));
+				mapping.put(results.getInt("id"),results.getInt("post_processor"));
 			}
 			return mapping;
 			
@@ -107,7 +108,7 @@ public class JobPairs {
 			con=Common.getConnection();
 			Common.beginTransaction(con);
 			JobPairs.addJobPairAttributes(pairId, props,con);
-			JobPairs.RemovePairFromProcessingTable(pairId, con);
+			JobPairs.setPairStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(),con);
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
@@ -160,57 +161,9 @@ public class JobPairs {
 		return null;
 	}
 	
-	/**
-	 * Adds the given job pair / processor pair to the processing_job_pairs table.
-	 * Also sets the status code of the pair to STATUS_PROCESSING
-	 * @param pairId The ID of the pair to use
-	 * @param processorId The ID of the processor to use
-	 * @param con The open connection to make the call on 
-	 * @return True on success, false otherwise
-	 * @author Eric Burns
-	 */
 	
-	public static boolean AddPairToBePostProcessed(int pairId,int processorId,Connection con) {
-		CallableStatement procedure=null;
-		try {
-			procedure=con.prepareCall("{CALL AddProcessingPair(?,?,?)}");
-			procedure.setInt(1, pairId);
-			procedure.setInt(2,processorId);
-			procedure.setInt(3, StatusCode.STATUS_PROCESSING.getVal());
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e) {
-			log.error("AddPairToBePostProcessed says "+e.getMessage(),e );
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
 	
-	/**
-	 * Removes the given pair from the processing_job_pairs table.
-	 * Also sets the status of the job pair back to whatever it was
-	 * originally
-	 * @param pairId The ID of the pair in question
-	 * @param con The open connection to execute the procedure one
-	 * @return True on success, false otherwise
-	 * @author Eric Burns
-	 */
 	
-	public static boolean RemovePairFromProcessingTable(int pairId,Connection con) {
-		CallableStatement procedure=null;
-		try {
-			procedure=con.prepareCall("{CALL RemoveProcessingPair(?)}");
-			procedure.setInt(1, pairId);
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e) {
-			log.error("RemovePairToBePostProcessed says "+e.getMessage(),e );
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
 	
 	/**
 	 * Adds a new attribute to a job pair

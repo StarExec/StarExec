@@ -1039,11 +1039,19 @@ CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 		WHERE deleted=true AND job_assoc.space_id IS NULL;
 	END //
 	
+-- Gives back the number of pairs that are awaiting post_processing for a given job
 DROP PROCEDURE IF EXISTS CountProcessingPairsByJob;
-CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT)
+CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT, IN _processingStatus INT)
 	BEGIN
 		SELECT COUNT(*) AS processing
-		FROM job_pairs JOIN processing_job_pairs ON job_pairs.id=processing_job_pairs.pair_id
-		WHERE job_pairs.job_id=_jobId;
+		FROM job_pairs 
+		WHERE job_pairs.job_id=_jobId and _processingStatus=status_code;
+	END //
+
+DROP PROCEDURE IF EXISTS PrepareJobForPostProcessing;
+CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _completeStatus INT, IN _processingStatus INT)
+	BEGIN
+		UPDATE job_pairs SET status_code=_processingStatus WHERE job_id=_jobId AND status_code=_completeStatus;
+		UPDATE jobs SET post_processor = _procId WHERE id=_jobId;
 	END //
 DELIMITER ; -- this should always be at the end of the file
