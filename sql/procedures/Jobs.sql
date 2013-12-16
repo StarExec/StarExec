@@ -27,9 +27,9 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 -- Adds a new attribute to a job pair 
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobAttr;
-CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _jobId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
+CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
-		REPLACE INTO job_attributes VALUES (_pairId, _key, _val, _jobId);
+		REPLACE INTO job_attributes VALUES (_pairId, _key, _val, (select job_id from job_pairs where id=_pairId));
 	END //
 
 -- Returns the number of jobs in a given space
@@ -1037,5 +1037,23 @@ CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 		DELETE jobs FROM jobs
 			LEFT JOIN job_assoc ON job_assoc.job_id=jobs.id
 		WHERE deleted=true AND job_assoc.space_id IS NULL;
+	END //
+	
+-- Gives back the number of pairs that are awaiting post_processing for a given job
+DROP PROCEDURE IF EXISTS CountProcessingPairsByJob;
+CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT, IN _processingStatus INT)
+	BEGIN
+		SELECT COUNT(*) AS processing
+		FROM job_pairs 
+		WHERE job_pairs.job_id=_jobId and _processingStatus=status_code;
+	END //
+	
+-- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor
+-- of the job to the given one
+DROP PROCEDURE IF EXISTS PrepareJobForPostProcessing;
+CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _completeStatus INT, IN _processingStatus INT)
+	BEGIN
+		UPDATE job_pairs SET status_code=_processingStatus WHERE job_id=_jobId AND status_code=_completeStatus;
+		UPDATE jobs SET post_processor = _procId WHERE id=_jobId;
 	END //
 DELIMITER ; -- this should always be at the end of the file

@@ -149,6 +149,20 @@ public class Starexec implements ServletContextListener {
 			    }
 			}
 		};
+		
+		// Create a task that submits jobs that have pending/rejected job pairs
+		final Runnable postProcessJobsTask = new RobustRunnable("postProcessJobsTask") {			
+			@Override
+			protected void dorun() {
+			    log.info("checkProcessJobsTask (periodic)");
+			    try {
+			    	JobManager.checkProcessingPairs();
+			    }
+			    catch(Exception e) {
+				log.warn("postProcessJobsTask caught exception: "+e,e);
+			    }
+			}
+		};
 
 		// Create a task that deletes download files older than 1 day
 		final Runnable clearDownloadsTask = new RobustRunnable("clearDownloadsTask") {			
@@ -211,7 +225,8 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
-
+		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,30,TimeUnit.SECONDS);
 		}	
+		
 	}
 }

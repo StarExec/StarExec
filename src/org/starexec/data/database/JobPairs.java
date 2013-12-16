@@ -1,10 +1,12 @@
 package org.starexec.data.database;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -15,6 +17,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
@@ -64,6 +67,104 @@ public class JobPairs {
 		return false;
 	}
 	
+	public static HashMap<Integer,Integer> getAllPairsForProcessing() {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetPairsToBeProcessed(?)}");
+			procedure.setInt(1,StatusCode.STATUS_PROCESSING.getVal());
+			results=procedure.executeQuery();
+			HashMap<Integer,Integer> mapping=new HashMap<Integer,Integer>();
+			while (results.next()) {
+				mapping.put(results.getInt("id"),results.getInt("post_processor"));
+			}
+			return mapping;
+			
+		} catch (Exception e){
+			log.error("getAllPairsForProcessing says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Post processes the given pair with the given processor ID,
+	 * add the properties to the pair attributes table, and removes
+	 * the pair from the processing job pairs table
+	 * @param pairId The ID of the pair to process
+	 * @param processorId The ID of the processor to use
+	 * @return True on success, false on error
+	 */
+	
+	public static boolean postProcessPair(int pairId,int processorId) {
+		Connection con=null;
+		try {
+			Properties props=runPostProcessorOnPair(pairId,processorId);
+			con=Common.getConnection();
+			Common.beginTransaction(con);
+			JobPairs.addJobPairAttributes(pairId, props,con);
+			JobPairs.setPairStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(),con);
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e) {
+			Common.doRollback(con);
+			log.error("postProcessPair says "+e.getMessage(),e);
+		} finally {
+			Common.endTransaction(con);
+			Common.safeClose(con);
+			
+		}
+		return false;
+	}
+	
+	/**
+	 * Runs the given post processor on the given pair and returns the properties that were obtained
+	 * @param pairId The ID of the pair in question
+	 * @param processorId The ID of the processor in question
+	 * @return The properties on success, or null otherwise
+	 */
+	
+	private static Properties runPostProcessorOnPair(int pairId, int processorId) {
+		BufferedReader reader = null;
+		try {
+			Processor p=Processors.get(processorId);
+			// Run the processor on the benchmark file
+			String [] procCmd = new String[2];
+			procCmd[0] = p.getFilePath();
+	
+			procCmd[1] = JobPairs.getFilePath(pairId);
+			reader = Util.executeCommand(procCmd,null);
+			
+			// Load results into a properties file
+			Properties prop = new Properties();
+			if (reader != null){
+				prop.load(reader);							
+				reader.close();
+			}
+			return prop;
+		} catch (Exception e) {
+			log.error("runPostProcessorOnPair says "+e.getMessage(),e);
+		} finally {
+			if(reader != null) {
+				try { 
+					reader.close(); 
+				} catch(Exception e) {
+					//ignore
+				}
+			}
+		}
+		return null;
+	}
+	
+	
+	
+	
+	
 	/**
 	 * Adds a new attribute to a job pair
 	 * @param con The connection to make the update on
@@ -73,14 +174,13 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addJobPairAttr(Connection con, int pairId, String key, String val, int jobId) throws Exception {
+	protected static boolean addJobPairAttr(Connection con, int pairId, String key, String val) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?)}");
 			procedure.setInt(1, pairId);
-			procedure.setInt(2,jobId);
-			procedure.setString(3, key);
-			procedure.setString(4, val);
+			procedure.setString(2, key);
+			procedure.setString(3, val);
 			
 			procedure.executeUpdate();
 			return true;
@@ -93,26 +193,42 @@ public class JobPairs {
 	}
 	
 	/**
+	 * Adds the list of attributes to the given job pair. If old attributes
+	 * have the same keys as new ones, the old ones are replaced
+	 * @param pairId The ID of the pair to add attributes to
+	 * @param attributes The key/value attributes
+	 * @param con The open connection to make the call on
+	 * @return True on success, false on error
+	 */
+	public static boolean addJobPairAttributes(int pairId, Properties attributes, Connection con) {
+		try {
+			// For each attribute (key, value)...
+			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
+			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
+				// Add the attribute to the database
+				JobPairs.addJobPairAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
+			}	
+
+			return true;
+		} catch (Exception e) {
+			log.error("addJobPairAttributes says "+e.getMessage(),e);
+		} 
+		return false;
+	}
+	
+	/**
 	 * Adds a set of attributes to a job pair
 	 * @param pairId The id of the job pair the attribute is for
 	 * @param attributes The attributes to add to the job pair
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean addJobPairAttributes(int pairId, Properties attributes, int jobId) {
+	public static boolean addJobPairAttributes(int pairId, Properties attributes) {
 		Connection con = null;
 
 		try {
 			con = Common.getConnection();
-
-			// For each attribute (key, value)...
-			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
-			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
-				// Add the attribute to the database
-				JobPairs.addJobPairAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue(), jobId);
-			}	
-
-			return true;
+			return addJobPairAttributes(pairId,attributes,con);
 		} catch(Exception e) {			
 			log.error("error adding Job Attributes = " + e.getMessage(), e);
 		} finally {			
@@ -664,6 +780,24 @@ public class JobPairs {
 		return jp;
 	}
 	
+	public static boolean setPairStatus(int pairId, int statusCode, Connection con) {
+		CallableStatement procedure= null;
+		try{
+			procedure = con.prepareCall("{CALL UpdatePairStatus(?, ?)}");
+			procedure.setInt(1, pairId);
+			procedure.setInt(2, statusCode);
+
+			procedure.executeUpdate();								
+			
+			return true;
+		} catch (Exception e) {
+			log.debug("setPairStatus says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}	
+		return false;
+	}
+	
 	/**
 	 * @param pairId the id of the pair to update the status of
 	 * @param statusCode the status code to set for the pair
@@ -671,21 +805,15 @@ public class JobPairs {
 	 */
 	public static boolean setPairStatus(int pairId, int statusCode) {
 		Connection con = null;
-		CallableStatement procedure= null;
+		
 		try {
 			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL UpdatePairStatus(?, ?)}");
-			procedure.setInt(1, pairId);
-			procedure.setInt(2, statusCode);
-
-			procedure.executeUpdate();								
-			return true;
+			return setPairStatus(pairId,statusCode,con);
+			
 		} catch(Exception e) {			
 			log.error(e.getMessage(), e);
 		} finally {			
 			Common.safeClose(con);	
-			Common.safeClose(procedure);
 		}
 
 		return false;

@@ -72,6 +72,23 @@ public abstract class JobManager {
 		}
 		return false;
 	}
+    
+    /**
+     * Checks to see which pairs need to be processed and runs the correct 
+     * processors on them
+     * @return
+     */
+    
+    public synchronized static boolean checkProcessingPairs(){
+    	HashMap<Integer,Integer> mapping=JobPairs.getAllPairsForProcessing();
+    	
+    	for (Integer pairId : mapping.keySet()) {
+    		Integer procId=mapping.get(pairId);
+    		JobPairs.postProcessPair(pairId, procId);
+    	}
+    	
+    	return true;
+    }
 
 	/**
 	 * initialize mainTemplate, a string hold the jobscript customized for the

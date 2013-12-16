@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -24,16 +24,17 @@
 			if (jobSpaceId==0) {
 				jobSpaceId=Jobs.setupJobSpaces(jobId);
 			}
+			
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
+				JobStatus status=Jobs.getJobStatusCode(jobId);
 				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
-				int pausedOrKilledStatus = Jobs.isJobPausedOrKilled(jobId);
-				boolean isPaused = (pausedOrKilledStatus==1);
-				boolean isKilled = (pausedOrKilledStatus==2);
-				boolean isRunning = false;
-				if (incomplete_pairs != null) {
-					isRunning = true;
-				}
+				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
+				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
+				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
+				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
+				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
+				System.out.println(isPaused);
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
@@ -44,6 +45,8 @@
 				request.setAttribute("isPaused", isPaused);
 				request.setAttribute("isKilled", isKilled);
 				request.setAttribute("isRunning", isRunning);
+				request.setAttribute("isComplete", isComplete);
+				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("queues", Queues.getUserQueues(userId));
 				request.setAttribute("queueExists", queueExists);
@@ -228,32 +231,25 @@
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
 					<c:if test="${job.userId == userId}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
-					</c:if>
-					
-					<c:if test="${pairStats.pendingPairs > 0}">
-						<c:if test="${job.userId == userId}">
-							<c:if test="${not isPaused and not isKilled and isRunning}">
+						<c:if test="${pairStats.pendingPairs > 0}">
+							<c:if test="${isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>
 						</c:if>
-					</c:if>
-					<c:if test="${pairStats.pendingPairs == 0}">
-						<c:if test="${job.userId == userId}">
-							<c:if test="${not isPaused and not isKilled}">
+						<c:if test="${pairStats.pendingPairs == 0}">
+							<c:if test="${isComplete}">
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
-					</c:if>
-					<c:if test="${job.userId == userId}">
 						<c:if test="${isPaused and queueExists}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
 						</c:if>
-					</c:if>
-					<c:if test="${j.userId == userId}">
 						<c:if test="${isPaused}">
 							<li><button type="button" id="changeQueue">Change Queue</button></li>	
 						</c:if>
-					</c:if>					
+						</c:if>
+					
+									
 					
 				</ul>
 				<div id="dialog-confirm-delete" title="confirm delete">

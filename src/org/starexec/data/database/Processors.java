@@ -127,7 +127,7 @@ public class Processors {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-									
+		log.debug("returning a null processor");			
 		
 		return null;
 	}

@@ -3,7 +3,7 @@ package org.starexec.data.to;
 import com.google.gson.annotations.Expose;
 
 /**
- * Represents a status for a job
+ * Represents a status for a job pair
  * @author Tyler Jensen
  */
 public class Status {

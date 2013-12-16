@@ -139,4 +139,12 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 		WHERE job_pairs.id=_pairId;
 	END //
 	
+-- Gets every pair_id and processor_id for pairs awiting processing
+DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
+CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
+	BEGIN
+		SELECT post_processor ,job_pairs.id AS id 
+		FROM job_pairs JOIN jobs ON job_pairs.job_id=jobs.id
+		WHERE status_code=_processingStatus;
+	END //
 DELIMITER ; -- this should always be at the end of the file

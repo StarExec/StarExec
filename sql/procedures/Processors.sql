@@ -50,22 +50,18 @@ CREATE PROCEDURE GetProcessorsByCommunity(IN _id INT, IN _type TINYINT)
 		WHERE community=_id AND processor_type=_type
 		ORDER BY name;
 	END //
-	
+
 -- Retrieves all processors in all communities a user is a part of
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetProcessorsByUser;
 CREATE PROCEDURE GetProcessorsByUser(IN _userId INT, IN _type TINYINT)
 	BEGIN
-		SELECT DISTINCT processors.name AS name,processors.id AS id FROM processors 
-			JOIN 	(SELECT child_id AS id FROM set_assoc 
-						JOIN 	(SELECT ancestor AS id FROM closure
-								JOIN user_assoc ON user_assoc.space_id=closure.descendant
-								WHERE user_assoc.user_id=_userId) AS user_spaces
-							ON user_spaces.id=id				
-					WHERE space_id=1) AS comms
-				ON comms.id=processors.community
-		WHERE processor_type=_type;
+		SELECT p.name AS name,p.id AS id, p.community as community FROM processors AS p
+		WHERE processor_type=_type AND EXISTS ( SELECT * FROM closure 
+											  JOIN user_assoc ON user_assoc.space_id=closure.descendant
+											  WHERE user_assoc.user_id=_userId AND closure.ancestor=p.community);
 	END //
+
 	
 -- Gets the processor with the given ID
 -- Author: Tyler Jensen
