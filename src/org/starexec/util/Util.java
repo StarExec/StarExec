@@ -226,37 +226,45 @@ public class Util {
 		Runtime r = Runtime.getRuntime();
 		
 		BufferedReader reader = null;		
-		//log.debug("Command from execute command = " + command);
+		//
 		try {					
 		    Process p;
-		    if (command.length == 1)
+		    if (command.length == 1) {
+			log.info("Executing the following command: " + command);
 			p = r.exec(command[0], envp);
-		    else
+		    }
+		    else {
+			StringBuilder b = new StringBuilder();
+			b.append("Executing the following command:\n");
+			for (int i = 0; i < command.length; i++) {
+			    b.append("  ");
+			    b.append(command[i]);
+			}
+
+			log.info(b.toString());
+			    
 			p = r.exec(command, envp);
-		    
-			//ProcessBuilder pb = new ProcessBuilder(command);
-			//Process p = pb.start();
-		    //log.debug("Process is null = " + (p==null));
-			InputStream in = p.getInputStream();
-			BufferedInputStream buf = new BufferedInputStream(in);
-			InputStreamReader inread = new InputStreamReader(buf);
-			reader = new BufferedReader(inread);		
+		    }
+		    InputStream in = p.getInputStream();
+		    BufferedInputStream buf = new BufferedInputStream(in);
+		    InputStreamReader inread = new InputStreamReader(buf);
+		    reader = new BufferedReader(inread);		
 			
-			//Also handle error stream
-			InputStream err = p.getErrorStream();
-			BufferedInputStream bufErr = new BufferedInputStream(err);
-			InputStreamReader inreadErr = new InputStreamReader(bufErr);
-			BufferedReader errReader = new BufferedReader(inreadErr);
-			String errLine = null;
-			while ((errLine = errReader.readLine()) != null){
-				log.error("stdErr = " + errLine);
-			}
-			errReader.close();
-			//This will hang indefinitely if the stream is too large.  TODO: fix increase size?
-			if (p.waitFor() != 0) {
-				log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
-			}
-			return reader;
+		    //Also handle error stream
+		    InputStream err = p.getErrorStream();
+		    BufferedInputStream bufErr = new BufferedInputStream(err);
+		    InputStreamReader inreadErr = new InputStreamReader(bufErr);
+		    BufferedReader errReader = new BufferedReader(inreadErr);
+		    String errLine = null;
+		    while ((errLine = errReader.readLine()) != null){
+			log.error("stdErr = " + errLine);
+		    }
+		    errReader.close();
+		    //This will hang indefinitely if the stream is too large.  TODO: fix increase size?
+		    if (p.waitFor() != 0) {
+			log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
+		    }
+		    return reader;
 		} catch (Exception e) {
 			log.warn("execute command says " + e.getMessage(), e);		
 		}

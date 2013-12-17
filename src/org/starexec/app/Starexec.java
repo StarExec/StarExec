@@ -48,7 +48,7 @@ import org.starexec.util.Validator;
  */
 public class Starexec implements ServletContextListener {
     private Logger log;
-    private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(5);	
+    private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);	
     private Session session; // GridEngine session
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
@@ -225,7 +225,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,30,TimeUnit.SECONDS);
+		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		}	
 		
 	}
