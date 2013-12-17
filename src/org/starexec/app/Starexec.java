@@ -33,6 +33,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.jobs.JobManager;
+import org.starexec.jobs.ProcessingManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Mail;
@@ -143,7 +144,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("submitJobsTask (periodic)");
 			    try {
-				JobManager.checkPendingJobs();
+			    	JobManager.checkPendingJobs();
 			    }
 			    catch(Exception e) {
 				log.warn("submitJobsTask caught exception: "+e,e);
@@ -157,7 +158,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("checkProcessJobsTask (periodic)");
 			    try {
-			    	JobManager.checkProcessingPairs();
+			    	ProcessingManager.checkProcessingPairs();
 			    }
 			    catch(Exception e) {
 				log.warn("postProcessJobsTask caught exception: "+e,e);
