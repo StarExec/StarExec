@@ -230,7 +230,7 @@ public class Util {
 		try {					
 		    Process p;
 		    if (command.length == 1) {
-			log.info("Executing the following command: " + command);
+			log.info("Executing the following command: " + command[0]);
 			p = r.exec(command[0], envp);
 		    }
 		    else {
