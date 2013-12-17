@@ -81,10 +81,15 @@ public abstract class JobManager {
     
     public synchronized static boolean checkProcessingPairs(){
     	HashMap<Integer,Integer> mapping=JobPairs.getAllPairsForProcessing();
+	int num_processed = 0;
     	
     	for (Integer pairId : mapping.keySet()) {
-    		Integer procId=mapping.get(pairId);
-    		JobPairs.postProcessPair(pairId, procId);
+	    if (num_processed > R.NUM_REPOSTPROCESS_AT_A_TIME)
+		break;
+	    
+	    Integer procId=mapping.get(pairId);
+	    JobPairs.postProcessPair(pairId, procId);
+	    num_processed++;
     	}
     	
     	return true;

@@ -72,6 +72,7 @@ public class Starexec implements ServletContextListener {
 
 			// Wait for the task scheduler to finish
 			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
+			taskScheduler.shutdownNow();
 			log.info("StarExec successfully shutdown");
 		} catch (Exception e) {
 			log.error(e);
