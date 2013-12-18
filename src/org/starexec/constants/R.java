@@ -167,6 +167,6 @@ public class R {
     public static long MAX_PAIR_VMEM = 4194304;  							// The largest possible amount of memory (in kilobytes) a job pair is allowed to use
     public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
-    public static int NUM_REPOSTPROCESS_AT_A_TIME = 100; // number of job pairs to re-postprocess at a time with our periodic task
+    public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
 
 }	
