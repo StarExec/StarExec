@@ -10,8 +10,8 @@
 	</style>
 	<p>Starexec is a cross community logic solving service under
 		development at the University of Iowa under the direction of principal
-		investigators Dr. Aaron Stump (Iowa), Dr. Geoff Sutcliffe (University
-		of Miami), and Dr. Cesare Tinelli (Iowa).</p>
+		investigators Aaron Stump (Iowa), Geoff Sutcliffe (University
+		of Miami), and Cesare Tinelli (Iowa).</p>
 	<br />
 	<p>Our goal is to provide a shared logic solving infrastructure to
 		researchers to manage benchmark libraries, community membership, and
@@ -21,9 +21,8 @@
 	<p>
 		Development details can be found on our <a
 			href="http://wiki.uiowa.edu/display/stardev/Home">public
-			development wiki</a>. We aim to have Starexec available to select
-		communities in spring of 2012, expanding to all communities in fall of
-		2012.
+			development wiki</a>. We ran our first public events Summer 2013 (CoCo 2013 and SMT-EVAL 2013), 
+                        and plan to run many more Summer 2014.
 	</p>
 	<br />
 	<p>
