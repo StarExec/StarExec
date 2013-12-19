@@ -15,7 +15,7 @@
 				padding: 3px;
 			}
 		</style>		
-		<p>this is a beta release of starexec.  you can help us improve starexec's quality by reporting bugs directly to the developers as well as any general feedback on functionality and design by selecting 'give feedback' below.  the links below, particularly the user guide, can be of great help to new users.</p>
+		<p>Some of the documentation below needs to be updated, but this should still be helpful.  We are also working to create on-page documentation, via the help link at the top of the page. </p>
 		<br/><br/>		
 		<li>
 			<a href="http://starexec.cs.uiowa.edu/starexec/public/quickReference.jsp">quick reference</a>
