@@ -11,9 +11,6 @@
 			<li>|</li>
 			<li><a onclick="javascript:logout();">logout</a></li>
 			<li>|</li>
-			<li><a id="writeJob"
-				href="/${starexecRoot}/secure/add/singleJobPair.jsp">quick job</a></li>
-			<li>|</li>
 			<li><a id="about" href="/${starexecRoot}/public/about.jsp">about</a></li>
 			<li>|</li>
 			<li><a id="help" href="/${starexecRoot}/public/help.jsp">help</a></li>
@@ -38,6 +35,6 @@
 		</ul>
 	</c:if>
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy;
-		2012 the university of iowa</a>
+		2012-2013 the university of iowa</a>
 </footer>
 
