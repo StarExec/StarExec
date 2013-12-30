@@ -3452,7 +3452,7 @@ public class RESTServices {
 			return gson.toJson(0);
 		} else {
 			//TODO: permanent Queue Delete
-			
+			GridEngineUtil.removePermanentQueue(queueId);
 			return gson.toJson(0);
 			
 		}

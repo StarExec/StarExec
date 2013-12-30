@@ -112,7 +112,6 @@ function initUI(id){
 }
 
 function updateActionId(id, type, permanent) {
-	alert("permanent = " + permanent);
 	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {
 		$("#removeQueue").show();
 		$("#makePermanent").show();
