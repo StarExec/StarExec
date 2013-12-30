@@ -3732,11 +3732,10 @@ public class RESTServices {
 	@Path("/permanent/queue/{queueId}")
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id) {
-		boolean success = Queues.makeQueuePermanent(queue_id);
+		QueueRequest req = Requests.getRequestForReservation(queue_id);
+		boolean success = GridEngineUtil.createPermanentQueue(req);
 		if (success) {
-			//TODO: SGE activate queue
-			QueueRequest req = Requests.getRequestForReservation(queue_id);
-			success = GridEngineUtil.createPermanentQueue(req);
+			success = Queues.makeQueuePermanent(queue_id);
 		}
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
