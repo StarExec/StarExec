@@ -105,6 +105,7 @@ function initUI(id){
 	if (id == -1) {
 		$("#reserveQueue").hide();
 		$("#removeQueue").hide();
+		$("#makePermanent").hide();
 	}
 	
 
