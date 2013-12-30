@@ -765,6 +765,7 @@ public class GridEngineUtil {
 
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
+		log.debug("req.getQueueName() = " + req.getQueueName());
 		String queueName = req.getQueueName();
 		String[] split = queueName.split("\\.");
 		String shortQueueName = split[0];
@@ -961,6 +962,7 @@ public class GridEngineUtil {
 		int queueId = Queues.getIdByName(queueName);
 		Queue q = Queues.get(queueId);
 		if (!q.getStatus().equals("ACTIVE")) {
+			log.debug("Queue is not active yet");
 			
 			//Get the nodes we are going to transfer
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
@@ -1086,5 +1088,44 @@ public class GridEngineUtil {
 		    GridEngineUtil.loadQueues();
 		}
 		return true;
+	}
+
+	public static void removePermanentQueue(int queueId) {
+		String queueName = Queues.getNameById(queueId);
+		String[] split = queueName.split("\\.");
+		String shortQueueName = split[0];
+		
+		//Pause jobs that are running on the queue
+		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+
+		if (jobs != null) {
+			for (Job j : jobs) {
+				Jobs.pause(j.getId());
+			}
+		}
+
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+		//Move associated Nodes back to default queue
+		List<WorkerNode> nodes = Queues.getNodes(queueId);
+		
+		if (nodes != null) {
+			for (WorkerNode n : nodes) {
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+			}
+		}
+		
+		
+		/***** DELETE THE QUEUE *****/		
+			//DISABLE the queue: 
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
+			//DELETE the queue:
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
+			
+			//Delete the host group:
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+			
+		    GridEngineUtil.loadWorkerNodes();
+		    GridEngineUtil.loadQueues();		
 	}
 }
