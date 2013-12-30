@@ -1116,7 +1116,10 @@ public class GridEngineUtil {
 		}
 		
 		
-		/***** DELETE THE QUEUE *****/		
+		/***** DELETE THE QUEUE *****/	
+			//Database Change
+			Queues.delete(queueId);
+			
 			//DISABLE the queue: 
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
 			//DELETE the queue:

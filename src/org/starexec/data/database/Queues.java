@@ -1129,4 +1129,22 @@ public class Queues {
 		return false;
 	}
 
+	public static void delete(int queueId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL RemoveQueue(?)}");
+			procedure.setInt(1, queueId);
+			procedure.executeUpdate();
+
+		} catch (Exception e) {
+			log.error("RemoveQueue says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
 }
