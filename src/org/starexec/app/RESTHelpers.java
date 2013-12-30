@@ -657,7 +657,7 @@ public class RESTHelpers {
 			
 	    	JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(date1));
-			List<Queue> queues = Queues.getAllAdmin();
+			List<Queue> queues = Queues.getAllNonPermanent();
 			int total = 0;
 			
 			//Get the total number of nodes that have been reserved
@@ -728,7 +728,7 @@ public class RESTHelpers {
 			
 	    	JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(date1));
-			List<Queue> queues = Queues.getAllAdmin();
+			List<Queue> queues = Queues.getAllNonPermanent();
 			int total = 0;
 			
 			//Get the total number of nodes that have been reserved
