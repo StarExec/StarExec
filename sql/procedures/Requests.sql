@@ -417,5 +417,12 @@ CREATE PROCEDURE GetEarliestEndDate()
 		) AS allEndDates;
 	END //
 	
+DROP PROCEDURE IF EXISTS RemoveReservedEntries;
+CREATE PROCEDURE RemoveReservedEntries(IN _queueId INT)
+	BEGIN
+		DELETE FROM queue_reserved
+		WHERE queue_id = _queueId;
+	END //
+	
 	
 DELIMITER ; -- This should always be at the end of this file

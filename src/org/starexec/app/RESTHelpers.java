@@ -239,10 +239,14 @@ public class RESTHelpers {
 	protected static class JSTreeAttribute {
 		private int id;
 		private String rel;
+		private boolean permanent;
 
 		public JSTreeAttribute(int id, String type) {
 			this.id = id;
 			this.rel = type;
+			if (type.equals("active_queue") || type.equals("inactive_queue")) {
+				this.permanent = Queues.isQueuePermanent(id);
+			}
 		}
 	}
 

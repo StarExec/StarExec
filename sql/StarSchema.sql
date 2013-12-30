@@ -163,6 +163,7 @@ CREATE TABLE queues (
 	slots_reserved INTEGER DEFAULT 0,
 	slots_free INTEGER DEFAULT 0,
 	slots_total INTEGER DEFAULT 0,
+	permanent BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
 	UNIQUE KEY (name)
 );

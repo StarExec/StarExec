@@ -3712,9 +3712,27 @@ public class RESTServices {
 	 */
 	@POST
 	@Path("/nodes/update")
-	@Produces("applicat/json")
+	@Produces("application/json")
 	public String updateNodeCount() {
 		boolean success = Cluster.updateTempChanges();
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Will update a queue making it permanent
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/permanent/queue/{queueId}")
+	@Produces("application/json")
+	public String makeQueuePermanent(@PathParam("queueId") int queue_id) {
+		boolean success = Queues.makeQueuePermanent(queue_id);
+		if (success) {
+			//TODO: SGE activate queue
+			QueueRequest req = Requests.getRequestForReservation(queue_id);
+			success = GridEngineUtil.createPermanentQueue(req);
+		}
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	

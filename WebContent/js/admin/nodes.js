@@ -127,8 +127,8 @@ function initDataTables() {
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
 			//alert("start");
-			nodeTable.fnDraw();
 			needToConfirm = true;
+			nodeTable.fnDraw();
 		},
 	  });
 	

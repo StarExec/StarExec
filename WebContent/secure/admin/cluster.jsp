@@ -38,6 +38,7 @@
 			<ul id="actionList">
 				<li><button type="button" id="removeQueue">remove queue</button></li>
 				<li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">Manage Nodes</a></li>
+				<li><button type="button" id="makePermanent">make queue permanent</button></li>
 							
 			</ul>
 		</fieldset>	
@@ -74,5 +75,8 @@
 	</div>	
 	<div id="dialog-confirm-remove" title="confirm removal">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-remove-txt"></span></p>
+	</div>
+	<div id="dialog-confirm-permanent" title="confirm make queue permanent">
+				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-permanent-txt"></span></p>
 	</div>
 </star:template>

@@ -105,4 +105,33 @@ CREATE PROCEDURE getNameById(IN _queueId INT)
 		WHERE id = _queueId;
 	END // 
 	
+-- Determines if the queue is a permanent queue
+-- Author: Wyatt kaiser
+DROP PROCEDURE IF EXISTS IsQueuePermanent;
+CREATE PROCEDURE IsQueuePermanent (IN _queueId INT)
+	BEGIN
+		SELECT permanent
+		FROM queues
+		WHERE id = _queueId;
+	END //
+	
+-- Makes a queue permanent by setting its value to true
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS MakeQueuePermanent;
+CREATE PROCEDURE MakeQueuePermanent (IN _queueId INT)
+	BEGIN
+		UPDATE queues
+		SET permanent = true
+		WHERE id = _queueId;
+	END //
+	
+-- Removes a queue's association with a space
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS RemoveQueueAssociation;
+CREATE PROCEDURE RemoveQueueAssociation(IN _queueId INT)
+	BEGIN
+		DELETE FROM comm_queue
+		WHERE queue_id = _queueId;
+	END //
+		
 DELIMITER ; -- This should always be at the end of this file

@@ -951,4 +951,140 @@ public class GridEngineUtil {
 		    GridEngineUtil.loadQueues();
 		}
 	}
+	
+	
+	public static boolean createPermanentQueue(QueueRequest req) {
+		log.debug("begin createPermanentQueue");
+		String queueName = req.getQueueName();
+		String[] split = queueName.split("\\.");
+		String shortQueueName = split[0];
+		int queueId = Queues.getIdByName(queueName);
+		Queue q = Queues.get(queueId);
+		if (!q.getStatus().equals("ACTIVE")) {
+			
+			//Get the nodes we are going to transfer
+			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
+			List<WorkerNode> nodes = Queues.getNodes(1);
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < req.getNodeCount(); i++) {
+				transferNodes.add(nodes.get(i));
+				String fullName = nodes.get(i).getName();
+				String[] split2 = fullName.split("\\.");
+				String shortName = split2[0];
+				sb.append(shortName);
+				sb.append(" ");
+			}
+			String hostList = sb.toString();
+			
+			/***** CREATE A QUEUE *****/
+			// Create newHost.hgrp [COMPLETE]
+			String newHost;
+			try {
+				/**THIS IS HOW I WANT TO DO IT**/
+				/*
+				newHost = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newHost.hgrp"));
+				newHost = newHost.replace("$$GROUPNAME$$", "@" + req.getQueueName() + "hosts");
+				newHost = newHost.replace("$$HOSTLIST$$", hostList);
+				FileUtils.writeStringToFile(f, newHost);
+				
+				*/
+				newHost = "group_name @" + shortQueueName + "hosts" +
+						  "\nhostlist " + hostList;
+				File f = new File("/tmp/newHost30.hgrp");
+				FileUtils.writeStringToFile(f, newHost);
+				f.setReadable(true, false);
+				f.setWritable(true, false);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+			
+
+			//Add the host [COMPLETE]
+			String[] envp = new String[1];
+			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
+			
+			
+			
+			// Create newQueue.q [COMPLETE]
+			String newQueue;
+			try {
+				/*
+				newQueue = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/sge/newQueue.txt"));
+				newQueue = newQueue.replace("$$QUEUENAME$$", req.getQueueName());
+				newQueue = newQueue.replace("$$HOSTLIST$$", "@" + req.getQueueName() + "hosts");
+				*/
+				newQueue = "qname                   " + queueName + 
+							"\nhostlist             @" + shortQueueName + "hosts" + 
+							"\nseq_no                0" +
+							"\nload_thresholds       np_load_avg=1.75" +
+							"\nsuspend_thresholds    NONE" +
+							"\nnsuspend              1" +
+							"\nsuspend_interval      00:05:00" +
+							"\npriority              0" +
+							"\nmin_cpu_interval      00:05:00" +
+							"\nprocessors            UNDEFINED" +
+							"\nqtype                 BATCH INTERACTIVE" +
+							"\nckpt_list             NONE" +
+							"\npe_list               make" +
+							"\nrerun                 FALSE" +
+							"\nslots                 1" +
+							"\ntmpdir                /tmp" +
+							"\nshell                 /bin/csh" +
+							"\nprolog                NONE" +
+							"\nepilog                NONE" +
+							"\nshell_start_mode      posix_compliant" +
+							"\nstarter_method        NONE" +
+							"\nsuspend_method        NONE" +
+							"\nresume_method         NONE" +
+							"\nterminate_method      NONE" +
+							"\nnotify                00:00:60"+
+							"\nowner_list            NONE"+
+							"\nuser_lists            NONE"+
+							"\nxuser_lists           NONE"+
+							"\nsubordinate_list      NONE"+
+							"\ncomplex_values        NONE"+
+							"\nprojects              NONE"+
+							"\nxprojects             NONE"+
+							"\ncalendar              NONE"+
+							"\ninitial_state         default"+
+							"\ns_rt                  INFINITY"+
+							"\nh_rt                  INFINITY"+
+							"\ns_cpu                 INFINITY"+
+							"\nh_cpu                 INFINITY"+
+							"\ns_fsize               INFINITY"+
+							"\nh_fsize               INFINITY"+
+							"\ns_data                INFINITY"+
+							"\nh_data                INFINITY"+
+							"\ns_stack               INFINITY"+
+							"\nh_stack               INFINITY"+
+							"\ns_core                INFINITY"+
+							"\nh_core                INFINITY"+
+							"\ns_rss                 INFINITY"+
+							"\nh_rss                 INFINITY"+
+							"\ns_vmem                INFINITY"+
+							"\nh_vmem                INFINITY";
+				
+				File f = new File("/tmp/newQueue30.q");
+				FileUtils.writeStringToFile(f, newQueue);
+				f.setReadable(true, false);
+				f.setWritable(true, false);
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue30.q", envp);
+					
+			//Transfer nodes out of @allhosts
+			for (WorkerNode n : transferNodes) {
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+			}
+		    GridEngineUtil.loadWorkerNodes();
+		    GridEngineUtil.loadQueues();
+		}
+		return true;
+	}
 }

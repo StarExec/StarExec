@@ -1065,5 +1065,68 @@ public class Queues {
 		}
 		return null;
 	}
+	
+	public static boolean isQueuePermanent(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL IsQueuePermanent(?)}");
+			procedure.setInt(1, queue_id);
+			
+			results = procedure.executeQuery();
+			boolean permanent = false;
+			while(results.next()) {
+				permanent = results.getBoolean("permanent");
+			}
+			return permanent;
+		} catch (Exception e) {
+			log.error("IsQueuePermanent says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
+
+	public static boolean makeQueuePermanent(int queue_id) {
+		Connection con = null;
+		CallableStatement MakePermanent = null;
+		CallableStatement DeleteEntries = null;
+		CallableStatement DeleteAssociation = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			//Set permanent flag in queues
+			MakePermanent = con.prepareCall("{CALL MakeQueuePermanent(?)}");
+			MakePermanent.setInt(1, queue_id);
+			MakePermanent.executeUpdate();
+			
+			//remove all entries in queue_reserved
+			DeleteEntries = con.prepareCall("{CALL RemoveReservedEntries(?)}");
+			DeleteEntries.setInt(1, queue_id);
+			DeleteEntries.executeUpdate();
+			
+			//Delete from comm_queue
+			DeleteAssociation = con.prepareCall("{CALL RemoveQueueAssociation(?)}");
+			DeleteAssociation.setInt(1, queue_id);
+			DeleteAssociation.executeUpdate();
+			
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e) {
+			log.error("MakeQueuePermanent says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(MakePermanent);
+			Common.safeClose(DeleteEntries);
+			Common.safeClose(DeleteAssociation);
+		}
+		return false;
+	}
 
 }

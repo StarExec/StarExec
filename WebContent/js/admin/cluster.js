@@ -60,8 +60,9 @@ $(document).ready(function(){
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane		
 	   id = data.rslt.obj.attr("id");
-	   window['type'] = data.rslt.obj.attr("rel"); 
-	   updateActionId(id, type);
+	   window['type'] = data.rslt.obj.attr("rel");
+	   var permanent = data.rslt.obj.attr("permanent");
+	   updateActionId(id, type, permanent);
 	   //getCommunityDetails(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
@@ -74,6 +75,7 @@ $(document).ready(function(){
 function initUI(id){
 	
 	$('#dialog-confirm-remove').hide();
+	$('#dialog-confirm-permanent').hide();
 
 	
 	$("#newQueue").button({
@@ -94,6 +96,12 @@ function initUI(id){
 		}
 	});
 	
+	$("#makePermanent").button({
+		icons: {
+			primary: "ui-icon-locked"
+		}
+	});
+	
 	if (id == -1) {
 		$("#reserveQueue").hide();
 		$("#removeQueue").hide();
@@ -103,12 +111,56 @@ function initUI(id){
 
 }
 
-function updateActionId(id, type) {
+function updateActionId(id, type, permanent) {
+	alert("permanent = " + permanent);
 	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {
 		$("#removeQueue").show();
+		$("#makePermanent").show();
 	} else {
 		$("#removeQueue").hide();
+		$("#makePermanent").hide();
 	}
+	if (permanent=='true' || id == 1) {
+		$("#makePermanent").hide();
+	} else {	
+		$("#makePermanent").show();
+	}
+	
+	
+	$("#makePermanent").click(function() {
+		$('#dialog-confirm-permanent-txt').text('are you sure you want to make this queue permanent?');
+	
+		$('#dialog-confirm-permanent').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed to make queue permanent');
+					$('#dialog-confirm-permanent').dialog('close');
+					$.post(
+							starexecRoot+"services/permanent/queue/" + id,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "the queue is now permament", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "queue was not made permanent; please try again", 5000);
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled make queue permanent');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
 	
 	$("#removeQueue").click(function(){
 		$('#dialog-confirm-remove-txt').text('are you sure you want to remove this queue?');
