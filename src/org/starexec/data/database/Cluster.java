@@ -108,6 +108,28 @@ public class Cluster {
 		return 0;
 	}	
 	
+	public static int getNonPermanentNodeCount() {
+		log.debug("Calling GetNonPermanentNodeCount");
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {		
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount()}");
+			ResultSet results = procedure.executeQuery();	
+			
+			
+			while(results.next()){
+				return results.getInt("nodeCount");
+			}						
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}	
+		return 0;
+	}
+	
 	/**
 	 * Gets a worker node with detailed information (Id and name along with all attributes)
 	 * @param con The connection to make the query with

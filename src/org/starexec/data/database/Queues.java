@@ -246,7 +246,16 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Queue> getAllAdmin() {
-	    return getQueues(1);
+	    return getQueues(-2);
+	}
+	
+	/**
+	 * Gets all queues in the starexec cluster (excluding 'permanent' queues)
+	 * @return A list of queues
+	 * @author Wyatt Kaiser
+	 */
+	public static List<Queue> getAllNonPermanent() {
+		return getQueues(-3);
 	}
 
 	/**
@@ -597,32 +606,6 @@ public class Queues {
 		}
 		return 0;
 	}
-/*
-	public static String getNameById(int queue_id) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNameById(?)}");
-			procedure.setInt(1, queue_id);
-			results = procedure.executeQuery();
-			
-			while (results.next()){
-				return results.getString("name");
-			}
-			
-		} catch (Exception e){
-			log.error("GetNameById says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-		
-	}
-*/
 	
 	/**
 	 * Gets all nodes in the cluster that belong to the queue
@@ -693,10 +676,12 @@ public class Queues {
 			if (userId == 0) {
 				//only gets the queues that have status "ACTIVE"
 			    procedure = con.prepareCall("{CALL GetAllQueues}");
-			} else if (userId == 1) {
+			} else if (userId == -2) {
+				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
+			} else if (userId == -3) {
+				procedure = con.prepareCall("{CALL GetAllQueuesNonPermanent}");
 			} else {
-
 			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
 			    procedure.setInt(1, userId);
 			}

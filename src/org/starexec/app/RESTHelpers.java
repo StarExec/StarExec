@@ -648,7 +648,7 @@ public class RESTHelpers {
 	
 	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.util.Date> dates, HttpServletRequest request) {		
 		JsonArray dataTablePageEntries = new JsonArray();
-		int total_node_count = Cluster.getNodeCount();
+		int total_node_count = Cluster.getNonPermanentNodeCount();
 
 		for (java.util.Date date : dates ) {
 			

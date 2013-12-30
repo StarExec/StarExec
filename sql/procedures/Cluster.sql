@@ -92,6 +92,17 @@ CREATE PROCEDURE GetAllQueuesAdmin()
 		FROM queues
 		ORDER BY id;	
 	END //
+
+-- Gets the id, name, and status of all queues in the cluster, excludign permanent queues
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetAllQueuesNonPermanent;
+CREATE PROCEDURE GetAllQueuesNonPermanent()
+	BEGIN
+		SELECT id, name, status
+		FROM queues
+		WHERE permanent = false
+		ORDER BY id;
+	END //
 	
 -- Gets the id, name and status of all queues in the cluster that are active and the user can use
 -- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
@@ -231,6 +242,18 @@ CREATE PROCEDURE GetActiveNodeCount()
 		AS nodeCount
 		FROM nodes
 		WHERE status = "ACTIVE";
+	END //
+	
+DROP PROCEDURE IF EXISTS GetNonPermanentNodeCount;
+CREATE PROCEDURE GetNonPermanentNodeCount()
+	BEGIN
+		SELECT Count(*)
+		AS nodeCount
+		FROM nodes, queue_assoc, queues
+		WHERE nodes.id = queue_assoc.node_id
+				AND nodes.status = "ACTIVE" 
+				AND queue_assoc.queue_id = queues.id
+				AND queues.permanent = false;
 	END //
 	
 -- Returns the node count for a particular date for a particular queue

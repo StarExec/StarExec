@@ -8,7 +8,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
-		List<Queue> queues = Queues.getAllAdmin();
+		//List<Queue> queues = Queues.getAllAdmin();
+		List<Queue> queues = Queues.getAllNonPermanent();
 		
 		if (!u.getRole().equals("admin")) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
