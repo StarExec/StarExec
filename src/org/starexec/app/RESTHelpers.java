@@ -715,7 +715,7 @@ public class RESTHelpers {
 	
 	protected static JsonObject getNextdataTablesPageForApproveQueueRequest(List<java.util.Date> dates, QueueRequest req, HttpServletRequest request) {
 		JsonArray dataTablePageEntries = new JsonArray();
-		int total_node_count = Cluster.getNodeCount();
+		int total_node_count = Cluster.getNonPermanentNodeCount();
 		Date reqStartDate = req.getStartDate();
 		Date reqEndDate = req.getEndDate();
 
