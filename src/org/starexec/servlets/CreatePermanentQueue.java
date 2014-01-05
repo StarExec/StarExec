@@ -93,23 +93,13 @@ public class CreatePermanentQueue extends HttpServlet {
 		GridEngineUtil.createPermanentQueue(req, true, NQ);
 		
 		//DatabaseChanges
-		Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
+		boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
 		
-		//TODO: Add the queue
-		//TODO: reserve the node to this queue
-		//TODO: remove the node from the other queue it is already associated to
-				// If it was associated to a reserved queue, need to reduce the count
-		
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "queueName = " + queue_name + " nodeName = " + node_name);
-
-		/*
-		if (newQueueId <= 0) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
+		if (!success) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error addign the queue to the starexec database");
 		} else {
 			// On success, redirect to the space explorer so they can see changes
-			response.addCookie(new Cookie("New_ID", String.valueOf(newQueueId)));
-		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));	
-		}		
-		*/
+		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
+		}
 	}
 }
