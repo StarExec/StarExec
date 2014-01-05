@@ -4,6 +4,11 @@ $(document).ready(function(){
 	attachFormValidation();
 
 	initUI();
+	
+	// Remove all unselected rows from the DOM before submitting
+	$('#addForm').submit(function() {
+		$('#tblNodes tbody').children('tr').not('.row_selected').find('input').remove();
+	});
 		
 });
 
@@ -13,6 +18,17 @@ function initUI(){
 		icons: {
 			primary: "ui-icon-locked"
 		}
+	});
+	
+	// Set up datatables
+	$('#tblNodes').dataTable( {
+        "sDom": 'rt<"bottom"f><"clear">',        
+        "bPaginate": false,        
+        "bSort": true        
+    });
+	
+	$("#tblNodes").delegate("tr", "click", function() {
+		$(this).toggleClass("row_selected");
 	});
 
 }

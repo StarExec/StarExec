@@ -49,7 +49,9 @@ public class CreatePermanentQueue extends HttpServlet {
 
 	// Request attributes
 	private static final String name = "name";
-	private static final String Nodes = "Nodes";
+	//private static final String Nodes = "Nodes";
+	private static final String nodes = "node";
+
 	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -64,7 +66,9 @@ public class CreatePermanentQueue extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 
 		String queue_name = (String)request.getParameter(name);
-		String node_name = (String)request.getParameter(Nodes);
+		//String node_name = (String)request.getParameter(Nodes);
+		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
+
 	
 		// Make sure that the queue has a unique name
 		if(Queues.notUniquePrimitiveName(queue_name)) {
@@ -73,19 +77,16 @@ public class CreatePermanentQueue extends HttpServlet {
 		}
 		
 		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
-		//TODO: get the nodes that are being moved to this permanent queue
-		WorkerNode n = new WorkerNode();
-		int node_id = Cluster.getNodeIdByName(node_name);
-
-		n.setName(node_name);
-		n.setId(node_id);
 		
-		//TODO: get the queue that have this node already associated with it
-		Queue q = Cluster.getQueueForNode(n);
-		
-		//Add the node and its currently associated queue to the hashmap
-		NQ.put(n, q);
-
+		log.debug("nodeIds = " + nodeIds);
+		for (int id : nodeIds) {
+			log.debug("id = " + id);
+			WorkerNode n = new WorkerNode();
+			n.setId(id);
+			n.setName(Cluster.getNodeNameById(id));
+			Queue q = Cluster.getQueueForNode(n);
+			NQ.put(n, q);
+		}
 		
 		//GridEngine Changes
 		QueueRequest req = new QueueRequest();

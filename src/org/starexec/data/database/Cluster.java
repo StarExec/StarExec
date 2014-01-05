@@ -824,9 +824,6 @@ public class Cluster {
 
 
 	public static Queue getQueueForNode(WorkerNode node) {
-		log.debug("Starting getQueueForNode...");
-		log.debug("node = " + node);
-		log.debug("id = " + node.getId());
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -876,5 +873,29 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return -1;
+	}
+
+
+	public static String getNodeNameById(int id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetNodeNameById(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();
+			while (results.next()) {
+				return results.getString("name");
+			}
+			return null;
+		} catch (Exception e) {
+			log.error("GetNodeNameById says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
 	}
 }

@@ -409,6 +409,16 @@ CREATE PROCEDURE GetNodeIdByName(IN _nodeName VARCHAR(128))
 		WHERE name = _nodeName;
 	END //
 	
+-- Return the node name given its id
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNodeNameById;
+CREATE PROCEDURE GetNodeNameById(IN _nodeId INT)
+	BEGIN
+		SELECT name
+		FROM nodes
+		WHERE id = _nodeId;
+	END //
+	
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)

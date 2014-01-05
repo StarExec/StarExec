@@ -33,20 +33,31 @@ try {
 					<tr id="queueName" class="noHover" title="what would you like to name your permanent queue?">
 						<td class="label"><p>queue name</p></td>
 						<td><input length="${queueNameLen}" id="txtQueueName" name="name" type="text"/></td>
-					</tr>
-					<tr id="nodeName" class="noHover" title="the node to reserve for this queue">
-						<td class="label"><p>Node</p></td>
-						<td>
-							<select name="Nodes" id="nodes">
-       							<c:forEach var="node" items="${nodes}">
-           							 <option value="${node.name}">${node.name}</option>
-        						</c:forEach>
-    						</select>
-    					</td>
 					</tr>						
 				</tbody>
 			</table>
 	</fieldset>
+	<fieldset id="fieldSelectNodeSpace"> 
+			<legend>node selection</legend>
+			<table id="tblNodes" class="contentTbl">
+				<thead>
+					<tr>
+						<th>node</th>
+					</tr>
+				</thead>	
+				<tbody>
+				<c:forEach var="n" items="${nodes}">
+					<tr id="node_${n.id}">
+						<td>
+							<input type="hidden" name="node" value="${n.id}"/>
+							<p>${n.name}</p>							
+							
+						</td>																		
+					</tr>
+				</c:forEach>
+				</tbody>					
+			</table>		
+		</fieldset>
 	<div id="actionBar">
 		<fieldset>
 			<legend>actions</legend>
