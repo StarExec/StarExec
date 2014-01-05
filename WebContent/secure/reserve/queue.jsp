@@ -48,9 +48,10 @@
 						<td class="label"><p>start date</p></td>
 						<td>
 							<SCRIPT ID="js1">
-								var now = new Date();
+								var yesterday = new Date();
+								yesterday.setDate(yesterday.getDate() - 1);
 								var cal1 = new CalendarPopup();
-								cal1.addDisabledDates(null,formatDate(now,"yyyy-MM-dd"));
+								cal1.addDisabledDates(null,formatDate(yesterday,"yyyy-MM-dd"));
 							</SCRIPT>
 							<INPUT TYPE="text" ID="start" NAME="start" VALUE="" SIZE=25>
 							<A HREF="#" onClick="cal1.select(document.forms[0].start,'anchor1','MM/dd/yyyy'); return false;" NAME="anchor1" ID="anchor1">select</A>		

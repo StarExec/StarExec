@@ -34,8 +34,9 @@ function attachFormValidation() {
 			"greaterThanToday", 
 			function(value, element, params) {
 				var today = new Date();
+				today.setHours(0, 0, 0, 0);
 			    if (!/Invalid|NaN/.test(new Date())) {
-			        return today < new Date(Date.parse(value));
+			        return today <= new Date(Date.parse(value));
 			    }
 			    alert(today);
 			    return isNaN(value) && isNaN(value) 

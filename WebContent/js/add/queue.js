@@ -3,7 +3,6 @@ var progress = 0;
 
 $(document).ready(function() {
 	attachFormValidation();
-	
 	$('#btnSubmit').button({
 		icons: {
 			secondary: "ui-icon-circle-check"
@@ -36,9 +35,10 @@ function attachFormValidation() {
 			},'Must be greater than {0}.');
 	
 	$.validator.addMethod(
-			"greaterThanToday", 
+			"greaterThanYesterday", 
 			function(value, element, params) {
 				var today = new Date();
+				today.setHours(0, 0, 0, 0);
 			    if (!/Invalid|NaN/.test(new Date())) {
 			        return today <= new Date(Date.parse(value));
 			    }
@@ -64,7 +64,7 @@ function attachFormValidation() {
 			},
 			start: {
 				required: true,
-				greaterThanToday: today,
+				greaterThanYesterday: today,
 				regex:  "[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]"
 			},
 			end: {
@@ -86,7 +86,7 @@ function attachFormValidation() {
 			},
 			start: {
 				required: "enter a start date",
-				greaterThanToday: "date must be after or on today's date",
+				greaterThanYesterday: "date must be after or on today's date",
 				regex: "invalid format - ex. mm/dd/yyyy"
 			},
 			end: {
