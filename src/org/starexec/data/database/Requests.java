@@ -1089,7 +1089,7 @@ public class Requests {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{DecreaseNodeCount(?)}");
+			procedure = con.prepareCall("{CALL DecreaseNodeCount(?)}");
 			procedure.setInt(1, id);
 			procedure.executeUpdate();
 			
