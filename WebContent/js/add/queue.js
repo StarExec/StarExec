@@ -39,6 +39,7 @@ function attachFormValidation() {
 			function(value, element, params) {
 				var today = new Date();
 				today.setHours(0, 0, 0, 0);
+				
 			    if (!/Invalid|NaN/.test(new Date())) {
 			        return today <= new Date(Date.parse(value));
 			    }

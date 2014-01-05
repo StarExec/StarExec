@@ -29,8 +29,9 @@ $(document).ready(function() {
 	var start_date = document.getElementById("start").value;
 	dateComponents = start_date.split("/");
 	start_date = new Date(dateComponents[2], dateComponents[0] - 1, dateComponents[1]);
-	
-	if (start_date <= new Date()) {
+	var today = new Date();
+	today.setHours(0, 0, 0, 0);
+	if (start_date < today) {
 		$('#dialog-warning-txt').text('WARNING: This request has expired. Please adjust dates accordingly.');
 		
 		$('#dialog-warning').dialog({

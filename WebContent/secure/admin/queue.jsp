@@ -23,11 +23,7 @@ try {
 		java.util.Date end = req.getEndDate();
 		String start1 = sdf.format(start);
 		String end1 = sdf.format(end);
-		java.util.Date today = new java.util.Date();
 
-		if (start.before(today)) {
-			request.setAttribute("isExpired", true);
-		}
 		request.setAttribute("queueName", req.getQueueName());
 		request.setAttribute("message", req.getMessage());
 		request.setAttribute("code", req.getCode());
@@ -60,9 +56,6 @@ try {
 		<input type="hidden" name="start" value="${start}"/>
 		<input type="hidden" name="end" value="${end}"/>
 		<input type="hidden" name="queueName" value="${queueName}"/>
-		<c:if test="${isExpired}" >
-			<p id="expireNote"> THIS REQUEST HAS EXPIRED. ADJUST DATES ACCORDINGLY <p>
-		</c:if>
 		<fieldset id="fieldStep1">
 			<legend>Add a Queue</legend>
 			<table id="tblConfig" class="shaded contentTbl">

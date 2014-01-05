@@ -1084,4 +1084,21 @@ public class Requests {
 		return null;
 	}
 
+	public static void DecreaseNodeCount(int id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{DecreaseNodeCount(?)}");
+			procedure.setInt(1, id);
+			procedure.executeUpdate();
+			
+		} catch (Exception e) {
+			log.error("DecreaseNodeCount says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
 }

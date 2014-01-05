@@ -424,5 +424,15 @@ CREATE PROCEDURE RemoveReservedEntries(IN _queueId INT)
 		WHERE queue_id = _queueId;
 	END //
 	
+-- Decreases the node count of a reservation by 1
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS DecreaseNodeCount;
+CREATE PROCEDURE DecreaseNodeCount(IN _queueId INT)
+	BEGIN
+		UPDATE queue_reserved
+		SET node_count = node_count - 1
+		WHERE queue_id = _queueId;
+	END //
+	
 	
 DELIMITER ; -- This should always be at the end of this file
