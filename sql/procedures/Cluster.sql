@@ -342,6 +342,16 @@ CREATE PROCEDURE GetMaxNodeCount (IN _queueId INT)
 		WHERE queue_id = _queueId;
 	END //
 	
+-- Returns all the nodes in the system that are active
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetAllNodes;
+CREATE PROCEDURE GetAllNodes ()
+	BEGIN
+		SELECT *
+		FROM nodes
+		WHERE status = "ACTIVE";
+	END //
+	
 -- Returns the jobs that are currently running on a specific queue
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetJobsRunningOnQueue;
@@ -365,6 +375,27 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 		JOIN    job_pairs ON jobs.id = job_pairs.job_id
 		WHERE 	job_pairs.status_code < 7 AND jobs.queue_id = _queueId;
 	END //
+	
+-- Returns the Queue that a specific node is associated with
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueueForNode;
+CREATE PROCEDURE GetQueueForNode(IN _nodeId INT)
+	BEGIN
+		SELECT queues.id, queues.name, queues.status, queues.permanent
+		FROM queues, queue_assoc
+		WHERE queues.id = queue_assoc.queue_id AND queue_assoc.node_id = _nodeId;
+	END //
+	
+-- Return the node id given its name
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNodeIdByName;
+CREATE PROCEDURE GetNodeIdByName(IN _nodeName VARCHAR(128))
+	BEGIN
+		SELECT id
+		FROM nodes
+		WHERE name = _nodeName;
+	END //
+	
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)

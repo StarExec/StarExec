@@ -301,40 +301,7 @@ public class Cluster {
 		
 		return null;
 	}
-	
-/*
-	public static void updateNodeDate(int nodeId, int queueId, Date start, Date end, String queueCode) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			
 
-
-	public static Boolean reserveNodes(int queue_id, int node_count, Date start, Date end) {
-			
-		//Get all the dates between these two dates
-	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(start);
-	    while (calendar.getTime().before(end))
-	    {
-	        java.util.Date result = calendar.getTime();
-	        dates.add(result);
-	        calendar.add(Calendar.DATE, 1);
-	    }
-	    java.util.Date latestResult = calendar.getTime();
-	    dates.add(latestResult);
-		
-		for (java.util.Date utilDate : dates) {
-		    Boolean result = updateNodeCount(node_count, queue_id, utilDate);
-		    if (!result) {
-		    	return false;
-		    }
-		}
-		return true;
-	}
-	*/
 	
 	/**
 	 * Updates the status of ALL worker nodes with the given status
@@ -795,5 +762,93 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return -1;		
+	}
+	
+	public static List<WorkerNode> getAllNodes() {
+		log.debug("Starting getAllNodes...");
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetAllNodes()}");
+			results = procedure.executeQuery();
+			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			log.debug("results = " + results);
+			while (results.next()){
+				WorkerNode n = new WorkerNode();
+				n.setId(results.getInt("id"));
+				n.setName(results.getString("name"));
+				n.setStatus(results.getString("status"));
+				log.debug("n = " + n);
+				nodes.add(n);
+			}
+			log.debug("nodes = " + nodes);
+			return nodes;
+		} catch (Exception e) {
+			log.error("GetAllNodes says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
+
+	public static Queue getQueueForNode(WorkerNode node) {
+		log.debug("Starting getQueueForNode...");
+		log.debug("node = " + node);
+		log.debug("id = " + node.getId());
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetQueueForNode(?)}");
+			procedure.setInt(1, node.getId());
+			results = procedure.executeQuery();
+			Queue q = new Queue();
+			while (results.next()){
+				q.setId(results.getInt("id"));
+				q.setName(results.getString("name"));
+				q.setStatus(results.getString("status"));
+				q.setPermanent(results.getBoolean("permanent"));
+				return q;
+			}
+		} catch (Exception e) {
+			log.error("GetQueueForNode says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
+
+	public static int getNodeIdByName(String node_name) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetNodeIdByName(?)}");
+			procedure.setString(1, node_name);
+			results = procedure.executeQuery();
+			while (results.next()) {
+				return results.getInt("id");
+			}
+			return -1;
+		} catch (Exception e) {
+			log.error("GetNodeIdByName says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
 	}
 }

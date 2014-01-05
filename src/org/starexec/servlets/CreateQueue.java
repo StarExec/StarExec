@@ -35,8 +35,8 @@ import org.starexec.util.Validator;
 
 
 /**
- * Servlet which handles incoming requests adding new spaces
- * @author Tyler Jensen
+ * Servlet which handles incoming requests adding new queues
+ * @author Wyatt Kaiser
  */
 @SuppressWarnings("serial")
 public class CreateQueue extends HttpServlet {		

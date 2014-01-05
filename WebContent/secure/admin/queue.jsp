@@ -7,7 +7,6 @@ try {
 	String code = request.getParameter("code");
 	int userId = SessionUtil.getUserId(request);
 	QueueRequest req = Requests.getQueueRequest(code);
-	//List<Queue> queues = Queues.getAllAdmin();
 	List<Queue> queues = Queues.getAllNonPermanent();
 
 

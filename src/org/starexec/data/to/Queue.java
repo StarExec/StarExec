@@ -18,9 +18,11 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Expose private int slotsReserved;
 	@Expose private int slotsAvailable;
 	@Expose private int slotsTotal;
+	@Expose private boolean permanent;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
 	@Expose private HashMap<Integer, String[]> jobPairs;
+	
 	
 	public Queue() {
 		this.nodes = new LinkedList<WorkerNode>();
@@ -107,6 +109,20 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	 */
 	public void setSlotsTotal(int slotaTotal) {
 		this.slotsTotal = slotaTotal;
+	}
+	
+	/**
+	 * @return true if the queue is permanent, false otherwise
+	 */
+	public boolean getPermanent() {
+		return permanent;
+	}
+
+	/**
+	 * @param permanent true if queue is permanent, false otherwise
+	 */
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
 	}
 
 	/**

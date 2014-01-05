@@ -84,6 +84,12 @@ function initUI(id){
 		}
     });
 	
+	$("#newPermanent").button({
+		icons: {
+			primary: "ui-icon-plusthick"
+		}
+	});
+	
 	$("#removeQueue").button({
 		icons: {
 			primary: "ui-icon-minusthick"

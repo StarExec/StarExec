@@ -45,6 +45,7 @@ import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverStats;
@@ -3733,10 +3734,18 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id) {
 		QueueRequest req = Requests.getRequestForReservation(queue_id);
-		boolean success = GridEngineUtil.createPermanentQueue(req);
+		Queue q = Queues.get(queue_id);
+		boolean success = true;
+		//Make GridEngine changes
+		if (!q.getStatus().equals("ACTIVE")) {
+			success = GridEngineUtil.createPermanentQueue(req, true, null);
+		}
+		
+		//Make database changes
 		if (success) {
 			success = Queues.makeQueuePermanent(queue_id);
 		}
+		
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	

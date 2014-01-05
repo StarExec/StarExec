@@ -66,6 +66,15 @@
   	<servlet-name>CreateQueue</servlet-name>
     <url-pattern>/secure/add/queue</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>CreatePermanentQueue</servlet-name>
+  	<servlet-class>org.starexec.servlets.CreatePermanentQueue</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>CreatePermanentQueue</servlet-name>
+    <url-pattern>/secure/permanent/queue</url-pattern>
+  </servlet-mapping>
 
   <servlet>
     <servlet-name>Registration</servlet-name>
