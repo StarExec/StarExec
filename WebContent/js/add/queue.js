@@ -51,6 +51,7 @@ function attachFormValidation() {
 	
 	// Set up form validation
 	var today = new Date();
+	today.setHours(0,0,0,0);
 	$("#addForm").validate({
 		rules: {
 			name: {

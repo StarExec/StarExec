@@ -6,7 +6,8 @@
 try {
 	int userId = SessionUtil.getUserId(request);
 	List<Space> spaces = Spaces.GetAllSpaces();
-	List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();
+	List<WorkerNode> nodes = Cluster.getAllNodes();
+	//List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();
 	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
 	request.setAttribute("nodes", nodes);
 			
