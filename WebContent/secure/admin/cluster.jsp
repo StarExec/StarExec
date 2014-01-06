@@ -40,7 +40,7 @@
 				<li><button type="button" id="removeQueue">remove queue</button></li>
 				<li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>
 				<li><button type="button" id="makePermanent">make queue permanent</button></li>
-				<li><button type="button" id="moveNodes">move nodes to this queue</button></li>
+				<li><a type="button" id="moveNodes" href="/${starexecRoot}/secure/admin/moveNodes.jsp">move nodes to this queue</a></li>
 							
 			</ul>
 		</fieldset>	

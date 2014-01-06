@@ -95,6 +95,15 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>MoveNodes</servlet-name>
+    <servlet-class>org.starexec.servlets.MoveNodes</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>MoveNodes</servlet-name>
+    <url-pattern>/secure/move/nodes</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>Verify</servlet-name>
     <servlet-class>org.starexec.servlets.Verify</servlet-class>
   </servlet>

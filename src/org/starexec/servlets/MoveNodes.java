@@ -45,12 +45,11 @@ import org.starexec.util.Validator;
  * @author Wyatt Kaiser
  */
 @SuppressWarnings("serial")
-public class CreatePermanentQueue extends HttpServlet {		
+public class MoveNodes extends HttpServlet {		
 	private static final Logger log = Logger.getLogger(AddSpace.class);	
 
 	// Request attributes
 	private static final String name = "name";
-	//private static final String Nodes = "Nodes";
 	private static final String nodes = "node";
 
 	
@@ -69,13 +68,6 @@ public class CreatePermanentQueue extends HttpServlet {
 		String queue_name = (String)request.getParameter(name);
 		//String node_name = (String)request.getParameter(Nodes);
 		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
-
-	
-		// Make sure that the queue has a unique name
-		if(Queues.notUniquePrimitiveName(queue_name)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The requested queue name is already in use. Please select another.");
-			return;
-		}
 		
 		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
@@ -94,7 +86,8 @@ public class CreatePermanentQueue extends HttpServlet {
 		//GridEngine Changes
 		QueueRequest req = new QueueRequest();
 		req.setQueueName(queue_name);
-		GridEngineUtil.createPermanentQueue(req, true, NQ);
+		
+		GridEngineUtil.moveNodes(req, NQ);
 		
 		//TODO: reduce the count of reservations for nodes that were removed from reservations
 		Collection<Queue> queues = NQ.values();
@@ -108,13 +101,7 @@ public class CreatePermanentQueue extends HttpServlet {
 		}
 		
 		//DatabaseChanges
-		boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
-		
-		if (!success) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
-		} else {
-			// On success, redirect to the space explorer so they can see changes
-		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
+		//boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
+		response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 		}
 	}
-}

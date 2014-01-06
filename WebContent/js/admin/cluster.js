@@ -129,9 +129,12 @@ function updateActionId(id, type, permanent) {
 	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {
 		$("#removeQueue").show();
 		$("#makePermanent").show();
-		if (permanent=='false') {
+		if (permanent == 'false') {
 			$("#makePermanent").show();
 			$("#moveNodes").hide();
+		} else {
+			$("#moveNodes").show();
+			$("#makePermanent").hide();
 		}
 	} else {
 		$("#removeQueue").hide();
@@ -141,6 +144,9 @@ function updateActionId(id, type, permanent) {
 			$("#moveNodes").show();
 		}
 	}
+	
+	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
+
 	/*
 	if (permanent=='true' || id == 1) {
 		$("#makePermanent").hide();

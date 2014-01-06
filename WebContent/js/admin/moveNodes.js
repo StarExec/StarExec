@@ -65,10 +65,3 @@ function attachFormValidation() {
 		}
 	});
 };
-
-	
-
-
-
-
-

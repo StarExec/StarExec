@@ -969,10 +969,7 @@ public class GridEngineUtil {
 					sb.append(" ");
 					
 					//TODO: remove the association with this node and the queue it is currently associated with
-					log.debug("nodesAndQueues = " + nodesAndQueues);
-					log.debug("n = " + n);
 					Queue queue = nodesAndQueues.get(n);
-					log.debug("queue = " + queue);
 					String name = queue.getName();
 					String[] split3 = name.split("\\.");
 					String shortQName = split3[0];
@@ -1135,5 +1132,37 @@ public class GridEngineUtil {
 			
 		    GridEngineUtil.loadWorkerNodes();
 		    GridEngineUtil.loadQueues();		
+	}
+
+	public static void moveNodes(QueueRequest req, HashMap<WorkerNode, Queue> NQ) {
+		String queueName = req.getQueueName();
+		String[] split = queueName.split("\\.");
+		String shortQueueName = split[0];
+		List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
+		StringBuilder sb = new StringBuilder();
+		
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+
+		//This is being called from "Create new permanent queue"
+		Set<WorkerNode> nodes = NQ.keySet();
+		if (nodes != null) {
+			for (WorkerNode n : nodes) {
+				transferNodes.add(n);
+				String fullName = n.getName();
+				String[] split2 = fullName.split("\\.");
+				String shortName = split2[0];
+				sb.append(shortName);
+				sb.append(" ");
+				
+				//TODO: remove the association with this node and the queue it is currently associated with and add it to the permanent queue
+				Queue queue = NQ.get(n);
+				String name = queue.getName();
+				String[] split3 = name.split("\\.");
+				String shortQName = split3[0];
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
+			}
+		}
 	}
 }
