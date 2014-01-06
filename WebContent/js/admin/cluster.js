@@ -108,10 +108,17 @@ function initUI(id){
 		}
 	});
 	
+	$("#moveNodes").button({
+		icons: {
+			primary: "ui-icon-locked"
+		}
+	});
+	
 	if (id == -1) {
 		$("#reserveQueue").hide();
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
+		$("#moveNodes").hide();
 	}
 	
 
@@ -122,15 +129,29 @@ function updateActionId(id, type, permanent) {
 	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {
 		$("#removeQueue").show();
 		$("#makePermanent").show();
+		if (permanent=='false') {
+			$("#makePermanent").show();
+			$("#moveNodes").hide();
+		}
 	} else {
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
+		if ((type=="active_queue" || type=="inactive_queue") && (permanent == 'true')) {
+			$("#makePermanent").hide();
+			$("#moveNodes").show();
+		}
 	}
+	/*
 	if (permanent=='true' || id == 1) {
 		$("#makePermanent").hide();
+		if (id != 1) {
+			$("#moveNodes").show();
+		}
 	} else {	
 		$("#makePermanent").show();
+		$("#moveNodes").hide();
 	}
+	*/
 	
 	
 	$("#makePermanent").click(function() {

@@ -38,8 +38,9 @@
 		<legend>actions</legend>
 			<ul id="actionList">
 				<li><button type="button" id="removeQueue">remove queue</button></li>
-				<li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">Manage Nodes</a></li>
+				<li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>
 				<li><button type="button" id="makePermanent">make queue permanent</button></li>
+				<li><button type="button" id="moveNodes">move nodes to this queue</button></li>
 							
 			</ul>
 		</fieldset>	
