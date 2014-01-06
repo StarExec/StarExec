@@ -80,13 +80,15 @@ public class CreatePermanentQueue extends HttpServlet {
 		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
 		log.debug("nodeIds = " + nodeIds);
-		for (int id : nodeIds) {
-			log.debug("id = " + id);
-			WorkerNode n = new WorkerNode();
-			n.setId(id);
-			n.setName(Cluster.getNodeNameById(id));
-			Queue q = Cluster.getQueueForNode(n);
-			NQ.put(n, q);
+		if (nodeIds != null) {
+			for (int id : nodeIds) {
+				log.debug("id = " + id);
+				WorkerNode n = new WorkerNode();
+				n.setId(id);
+				n.setName(Cluster.getNodeNameById(id));
+				Queue q = Cluster.getQueueForNode(n);
+				NQ.put(n, q);
+			}
 		}
 		
 		//GridEngine Changes

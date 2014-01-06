@@ -959,23 +959,25 @@ public class GridEngineUtil {
 		if (isNewQueue) {
 			//This is being called from "Create new permanent queue"
 			Set<WorkerNode> nodes = nodesAndQueues.keySet();
-			for (WorkerNode n : nodes) {
-				transferNodes.add(n);
-				String fullName = n.getName();
-				String[] split2 = fullName.split("\\.");
-				String shortName = split2[0];
-				sb.append(shortName);
-				sb.append(" ");
-				
-				//TODO: remove the association with this node and the queue it is currently associated with
-				log.debug("nodesAndQueues = " + nodesAndQueues);
-				log.debug("n = " + n);
-				Queue queue = nodesAndQueues.get(n);
-				log.debug("queue = " + queue);
-				String name = queue.getName();
-				String[] split3 = name.split("\\.");
-				String shortQName = split3[0];
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+			if (nodes != null) {
+				for (WorkerNode n : nodes) {
+					transferNodes.add(n);
+					String fullName = n.getName();
+					String[] split2 = fullName.split("\\.");
+					String shortName = split2[0];
+					sb.append(shortName);
+					sb.append(" ");
+					
+					//TODO: remove the association with this node and the queue it is currently associated with
+					log.debug("nodesAndQueues = " + nodesAndQueues);
+					log.debug("n = " + n);
+					Queue queue = nodesAndQueues.get(n);
+					log.debug("queue = " + queue);
+					String name = queue.getName();
+					String[] split3 = name.split("\\.");
+					String shortQName = split3[0];
+					Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+				}
 			}
 			
 		} else {
