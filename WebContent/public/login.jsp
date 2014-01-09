@@ -8,6 +8,9 @@
 			$('button').button();
 		});
 	</script>
+        <br>
+	<p>StarExec is in read-only mode for a security scan, January 9, 2014.</p>
+	<br>
 	<form method="POST" action="j_security_check" id="loginForm">	
 		<span id="uniqueLoginTag"></span>		
 		<fieldset>
