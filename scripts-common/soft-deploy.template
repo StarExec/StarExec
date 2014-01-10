@@ -12,6 +12,12 @@ WAR=$APPNAME.war
 APPDIR=$WEB_HOME/$APPNAME
 STAR_WAR=$WEB_HOME/$WAR
 
+if [ ! -f $WAR ] ; then
+  echo "This script should be run from the deployed/ directory, "
+  echo "where starexec.war can be found."
+  exit 1
+fi
+
 echo Moving existing war file: $STAR_WAR
 rm -f $STAR_WAR 
 
