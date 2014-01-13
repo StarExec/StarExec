@@ -1144,7 +1144,6 @@ public class GridEngineUtil {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 
-		//This is being called from "Create new permanent queue"
 		Set<WorkerNode> nodes = NQ.keySet();
 		if (nodes != null) {
 			for (WorkerNode n : nodes) {
@@ -1155,7 +1154,7 @@ public class GridEngineUtil {
 				sb.append(shortName);
 				sb.append(" ");
 				
-				//TODO: remove the association with this node and the queue it is currently associated with and add it to the permanent queue
+				//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
 				Queue queue = NQ.get(n);
 				String name = queue.getName();
 				String[] split3 = name.split("\\.");
@@ -1164,5 +1163,7 @@ public class GridEngineUtil {
 				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
 			}
 		}
+	    GridEngineUtil.loadWorkerNodes();
+	    GridEngineUtil.loadQueues();
 	}
 }

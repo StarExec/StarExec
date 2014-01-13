@@ -3623,21 +3623,24 @@ public class RESTServices {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 		    java.sql.Date startDateSql = null;
 		    java.sql.Date endDateSql = null;
+		    java.sql.Date todaySql = null;
 			try {
 				java.util.Date startDateJava = format.parse(new_start);
 				startDateSql = new java.sql.Date(startDateJava.getTime());
 				
 				java.util.Date endDateJava = format.parse(new_end);
 				endDateSql = new java.sql.Date(endDateJava.getTime());
+				
+				java.util.Date today = new Date();
+				todaySql = new java.sql.Date(today.getTime());
 			} catch (ParseException e1) {
 				e1.printStackTrace();
 			}
-			Date today = new Date();
-			log.debug("today = " + today);
+			log.debug("today = " + todaySql);
 			log.debug("startDate = " + startDateSql);
 			log.debug("endDate = " + endDateSql);
 			
-			if (startDateSql.before(today)) {
+			if (startDateSql.before(todaySql) && (!startDateSql.toString().equals(todaySql.toString())) ) {
 				log.debug("start day is before today");
 				return gson.toJson(4);
 			} else if (endDateSql.before(startDateSql)) { //end date is before or equivalent to start date
