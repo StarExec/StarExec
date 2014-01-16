@@ -34,6 +34,7 @@ import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
+import org.starexec.test.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Mail;
@@ -121,6 +122,7 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
 		event.getServletContext().setAttribute("starexecRoot", R.STAREXEC_APPNAME);		
 		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
+		
 	}	
 	
 	/**
@@ -218,7 +220,8 @@ public class Starexec implements ServletContextListener {
 		cacheDir.mkdirs();
 		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
 		graphDir.mkdirs();
-
+		TestManager.initializeTests();
+		TestManager.executeAllTests();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	

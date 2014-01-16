@@ -52,6 +52,8 @@ import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.test.TestManager;
+import org.starexec.test.TestSequence;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
 import org.starexec.util.Mail;
@@ -377,7 +379,6 @@ public class RESTServices {
 	@Path("/space/{id}")
 	@Produces("application/json")	
 	public String getSpaceDetails(@PathParam("id") int spaceId, @Context HttpServletRequest request) {			
-		System.out.println("here");
 		int userId = SessionUtil.getUserId(request);
 		
 		Space s = null;
@@ -826,6 +827,44 @@ public class RESTServices {
 		//boolean success=Users.setDiskQuota(userId, newQuota);
 		
 		//return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	@POST
+	@Path("/test/runTests")
+	@Produces("appliation/json")
+	public String runTest(@Context HttpServletRequest request) {
+		int u=SessionUtil.getUserId(request);
+		User user=Users.get(u);
+		
+		if (user.getRole().equals("admin")) {
+			String[] testNames=request.getParameterValues("testNames[]");
+			if (testNames==null || testNames.length==0) {
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
+			
+			//TODO: Spin off a new thread here?
+			for (String testName : testNames) {
+				TestManager.executeTest(testName);
+			}
+			return gson.toJson(0);
+			
+		} else {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+	}
+	
+	@POST
+	@Path("/test/runAllTests")
+	@Produces("appliation/json")
+	public String runAllTests(@Context HttpServletRequest request) {
+		int u=SessionUtil.getUserId(request);
+		User user=Users.get(u);
+		if (user.getRole().equals("admin")) {
+			TestManager.executeAllTests();
+			return gson.toJson(0);
+		} else {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
 	}
 
 	/** 
@@ -3181,6 +3220,30 @@ public class RESTServices {
 		}
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request,false);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	/**
+	 * Get the paginated result of the jobs belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of jobs if successful
+	 * 		   1: The get job procedure fails.
+	 * @author Ruoyu Zhang
+	 */
+	@GET
+	@Path("/tests/pagination")
+	@Produces("application/json")	
+	public String getTestsPaginated(@Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		User user=SessionUtil.getUser(request);
+		if (!user.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		// Query for the next page of job pairs and return them to the user
+		List<TestSequence> tests=TestManager.getAllTests();
+		nextDataTablesPage=RESTHelpers.convertTestSequencesToJsonObject(tests, tests.size(), tests.size(), -1);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}

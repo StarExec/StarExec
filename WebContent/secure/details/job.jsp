@@ -34,7 +34,6 @@
 				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
 				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
 				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
-				System.out.println(isPaused);
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				

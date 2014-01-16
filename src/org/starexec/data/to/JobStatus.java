@@ -23,15 +23,7 @@ public class JobStatus {
 		public int getVal() {
 			return this.val;			
 		}				
-		public boolean error() {
-		    return (val >= 8 && val <= 18) || val == 0;
-		}
-		public boolean incomplete() {
-		    return (val<=6 || val==19 || val == 20 || val == 21);
-		}
-		public boolean complete() {
-		    return val==7;
-		}
+	
 		public static JobStatusCode toStatusCode(int code) {
 			
 		    switch (code) {

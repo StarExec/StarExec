@@ -323,6 +323,16 @@
     </auth-constraint>			
   </security-constraint>
   
+  <security-constraint>	
+    <web-resource-collection>
+	  <web-resource-name>Admins Only</web-resource-name>
+	  <url-pattern>/secure/admin/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	  <role-name>admin</role-name>
+    </auth-constraint>			
+  </security-constraint>
+  
   <security-constraint>
   	<web-resource-collection>
   	  <web-resource-name>Users Only</web-resource-name>

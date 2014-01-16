@@ -17,8 +17,10 @@
 			            <li class="round"><a href="/${starexecRoot}/secure/admin/user.jsp">users</a></li>  
 			            <li class="round"><a href="/${starexecRoot}/secure/admin/cluster.jsp">cluster</a></li>
 			            <li class="round"><a href="/${starexecRoot}/secure/admin/job.jsp">jobs</a></li>
-			            <li class="round"><a href="/${starexecRoot}/secure/admin/community.jsp">communities</a></li>  
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/community.jsp">communities</a></li>
+			            <li class="round"><a href="/${starexecRoot}/secure/admin/testing.jsp">Testing</a></li>  
 			            <li class="round"><a href="/${starexecRoot}/secure/admin/starexec.jsp">Starexec</a></li>
+			           
 			        </ul>  
 				</li>
 				</c:if>
