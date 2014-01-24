@@ -1678,6 +1678,12 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 		}
 	}
 	
+	public static boolean removeSubspaces(int subspaceId,int parentSpaceId,int userId) {
+		List<Integer> spaceId=new ArrayList<Integer>();
+		spaceId.add(subspaceId);
+		return removeSubspaces(spaceId,parentSpaceId,userId);
+	}
+	
 	/**
 	 * Removes a list of subspaces, and all of their subspaces, from a given space 
 	 * in an all-or-none fashion (creates a transaction)

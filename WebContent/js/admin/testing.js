@@ -2,10 +2,12 @@ var testTable;
 
 $(document).ready(function(){
 	initUI();
-	
 	setInterval(function() {
-		testTable.fnReloadAjax();
-	},3000);
+		rows = $(testTable).children('tbody').children('tr.row_selected');
+		if (rows.length==0) {
+			testTable.fnReloadAjax();
+		}
+	},5000);
 });
 
 
@@ -36,6 +38,7 @@ function initUI(){
 				},
 				"json"
 		);
+		unselectAllRows(testTable);
 	});
 	
 	$("#runSelected").click(function() {
@@ -52,6 +55,7 @@ function initUI(){
 			},
 			"json"
 		);
+		unselectAllRows(testTable);
 	});
 	
 	extendDataTableFunctions();
@@ -111,6 +115,12 @@ function getSelectedRows(dataTable){
 		alert($(this).children("td:first").html());
 	});
 	return nameArray;
+}
+
+function unselectAllRows(dataTable) {
+	$(dataTable).find("tr").each(function() {
+		$(this).removeClass("row_selected");
+	});
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {

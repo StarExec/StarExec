@@ -33,6 +33,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -1877,9 +1878,18 @@ public class RESTHelpers {
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(test.getName()));
+			StringBuilder sb=new StringBuilder();
+			sb.append("<a href=\""+Util.docRoot("secure/admin/testResults.jsp?sequenceName="));
+    		sb.append(test.getName());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(test.getName());
+    		RESTHelpers.addImg(sb);
+			
+			entry.add(new JsonPrimitive(sb.toString()));
+			entry.add(new JsonPrimitive(test.getTestCount()));
+			entry.add(new JsonPrimitive(test.getTestsPassed()));
+			entry.add(new JsonPrimitive(test.getTestsFailed()));
 			entry.add(new JsonPrimitive(test.getStatus().getStatus()));
-			entry.add(new JsonPrimitive(test.getMessage()));	
 			dataTablePageEntries.add(entry);
 		}
 		JsonObject nextPage = new JsonObject();
@@ -1891,6 +1901,55 @@ public class RESTHelpers {
 	    } else {
 	    	nextPage.addProperty(TOTAL_RECORDS, totalRecords);
 	    }
+		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+		nextPage.add("aaData", dataTablePageEntries);
+
+		// Return the next DataTable page
+		return nextPage;
+	}
+	
+	/**
+
+	 * Generate the HTML for the next DataTable page of entries
+	 * Given a HashMap mapping the names of tests to messages, creates a JsonObject that can be used to populate
+	 * a datatable client-side
+	 * 
+	 * @param tests A HashMap of tests, where each test will be a row of a table
+	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
+	 * @param totalRecordsAfterQuery The total number of records in the table after a given search
+	 *            query was applied (if no search query, this should be the same
+	 *            as totalRecords)
+	 * @param syncValue An integer value possibly given by the datatable to keep the
+	 *            client and server synchronized. If one isn't present, any integer
+	 * @param currentUserId the ID of the user making the request for this datatable
+	 * @return A JsonObject that can be used to populate a datatable
+	 * @author Eric Burns
+	 */
+	public static JsonObject convertTestResultsToJsonObject(List<TestResult> tests, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+		/**
+		 * Generate the HTML for the next DataTable page of entries
+		 */
+		JsonArray dataTablePageEntries = new JsonArray();
+		for (TestResult test : tests) {
+			// Create an object, and inject the above HTML, to represent an
+			// entry in the DataTable
+			JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(test.getName()));
+			entry.add(new JsonPrimitive(test.getStatus().getStatus()));
+			entry.add(new JsonPrimitive(test.getMessage()));
+			entry.add(new JsonPrimitive(test.getErrorTrace()));
+			dataTablePageEntries.add(entry);
+		}
+		JsonObject nextPage = new JsonObject();
+		// Build the actual JSON response object and populated it with the
+		// created data
+		nextPage.addProperty(SYNC_VALUE, syncValue);
+	    if(totalRecords < 0) {
+	    	nextPage.addProperty(TOTAL_RECORDS, 0); // accounts for when there are no users except for public user (-1 result)
+	    } else {
+	    	nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+	    }
+	    
 		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
 		nextPage.add("aaData", dataTablePageEntries);
 

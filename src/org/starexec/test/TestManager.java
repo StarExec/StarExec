@@ -3,27 +3,30 @@ package org.starexec.test;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class TestManager {
 	
 	private static List<TestSequence> tests=new ArrayList<TestSequence>();
 	
 	public static void initializeTests() {
 		
-		tests.add(new CreateCommunityTest());
+		tests.add(new SpacePropertiesTest());
 	}
 	
 	/**
 	 * Executes every test sequence in tests
 	 */
-	public static void executeAllTests() {
+	public static void executeAllTestSequences() {
 		for (TestSequence t : tests) {
 			t.execute();
-			
 		}
 	}
 	
-	public static List<TestSequence> getAllTests() {
+	public static List<TestSequence> getAllTestSequences() {
 		return tests;
+	}
+	public static List<TestResult> getAllTestResults(String sequenceName) {
+		return TestManager.getTestSequence(sequenceName).getTestResults();
 	}
 	/**
 	 * Executes the test that has the given name. If no such test exists, 
@@ -46,7 +49,6 @@ public class TestManager {
 	 */
 	public static void executeTest(TestSequence test) {
 		test.execute();
-		//TODO: Store test name / status / message in the database?
 	}
 	
 	public static List<String> getTestNames() {

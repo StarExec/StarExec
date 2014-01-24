@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -35,6 +37,7 @@ import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
@@ -53,6 +56,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.test.TestManager;
+import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
@@ -837,15 +841,27 @@ public class RESTServices {
 		User user=Users.get(u);
 		
 		if (user.getRole().equals("admin")) {
-			String[] testNames=request.getParameterValues("testNames[]");
+			final String[] testNames=request.getParameterValues("testNames[]");
 			if (testNames==null || testNames.length==0) {
 				return gson.toJson(ERROR_INVALID_PARAMS);
 			}
 			
-			//TODO: Spin off a new thread here?
-			for (String testName : testNames) {
-				TestManager.executeTest(testName);
-			}
+			final ExecutorService threadPool = Executors.newCachedThreadPool();
+			//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run(){
+					try {
+						for (String testName : testNames) {
+							TestManager.executeTest(testName);
+						}
+					} catch (Exception e) {
+						log.error("runAllTests says "+e.getMessage(),e);
+					}
+					
+				}
+			});	
+			
 			return gson.toJson(0);
 			
 		} else {
@@ -860,7 +876,20 @@ public class RESTServices {
 		int u=SessionUtil.getUserId(request);
 		User user=Users.get(u);
 		if (user.getRole().equals("admin")) {
-			TestManager.executeAllTests();
+			final ExecutorService threadPool = Executors.newCachedThreadPool();
+			//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run(){
+					try {
+						TestManager.executeAllTestSequences();
+					} catch (Exception e) {
+						log.error("runAllTests says "+e.getMessage(),e);
+					}
+					
+				}
+			});	
+			
 			return gson.toJson(0);
 		} else {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -3242,8 +3271,32 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of job pairs and return them to the user
-		List<TestSequence> tests=TestManager.getAllTests();
+		List<TestSequence> tests=TestManager.getAllTestSequences();
 		nextDataTablesPage=RESTHelpers.convertTestSequencesToJsonObject(tests, tests.size(), tests.size(), -1);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	/**
+	 * Get the paginated result of the jobs belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of jobs if successful
+	 * 		   1: The get job procedure fails.
+	 * @author Ruoyu Zhang
+	 */
+	@GET
+	@Path("/testResults/pagination/{name}")
+	@Produces("application/json")	
+	public String getTestResultssPaginated(@PathParam("name") String name, @Context HttpServletRequest request) {
+		JsonObject nextDataTablesPage = null;
+		User user=SessionUtil.getUser(request);
+		if (!user.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		// Query for the next page of job pairs and return them to the user
+		List<TestResult> tests=TestManager.getAllTestResults(name);
+		nextDataTablesPage=RESTHelpers.convertTestResultsToJsonObject(tests, tests.size(), tests.size(), -1);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
