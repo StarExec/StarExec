@@ -140,6 +140,11 @@ public class Common {
 		
 			log.debug("Setting up data connection pool properties");
 			PoolProperties poolProp = new PoolProperties();				// Set up the Tomcat JDBC connection pool with the following properties
+			log.info("Setting up data connection pool with these properties:");
+			log.info(R.MYSQL_URL);
+			log.info(R.MYSQL_DRIVER);
+			log.info(R.MYSQL_USERNAME);
+
 			poolProp.setUrl(R.MYSQL_URL);								// URL to the database we want to use
 			poolProp.setDriverClassName(R.MYSQL_DRIVER);				// We're using the JDBC driver
 			poolProp.setUsername(R.MYSQL_USERNAME);						// Database username

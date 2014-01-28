@@ -1,5 +1,3 @@
-USE starexec;
-
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 -- Adds a new queue given a name

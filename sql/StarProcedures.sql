@@ -1,6 +1,8 @@
 -- Author: Todd Elvers
 -- Description: This file loads all stored procedure files into the starexec database
 
+USE starexec;
+
 source procedures/Benchmarks.sql;
 source procedures/Cluster.sql;
 source procedures/Communities.sql;

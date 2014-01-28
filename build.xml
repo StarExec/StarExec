@@ -11,7 +11,7 @@
         <loadproperties srcFile="local.properties"/>
 
 	<!-- Set up path information for use throughout this script -->
-	<property name="project-name" value="${ant.project.name}" />	
+	<property name="project-name" value="${appname}" />	
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-dir" value="src" />
 	<property name="scripts-dir" value="scripts-common" />
@@ -153,6 +153,7 @@
                      deployment.  They do not need to go in the WAR file. -->
 		<delete dir="deployed-sql" />
 		<mkdir dir="deployed-sql" />
+		<mkdir dir="${data_dir}" />
 		<copy todir="deployed-sql">
 			<fileset dir="sql">
 				<include name="**/*" />
@@ -165,8 +166,8 @@
 		</replaceregexp>
 		
 		<!-- Update the sql schema to use the correct database -->
-		<replaceregexp file="deployed-sql/StarSchema.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
-		<replaceregexp file="deployed-sql/StarSchema.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
+		<replaceregexp file="deployed-sql/NewInstall.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
+		<replaceregexp file="deployed-sql/NewInstall.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
 		
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        

@@ -1,8 +1,6 @@
 -- Description: This file contains all stored procedures used for requesting membership in a community, registering, and the resetting of passwords
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-USE starexec;
-
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 

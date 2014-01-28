@@ -2,8 +2,6 @@
 -- our old method was to use a order by (CASE) statement to order on different columns, but doing this
 -- prevents SQL from using indexes for sorting for some reason, and as such is very slow. 
 
-USE starexec;
-
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 -- Gets the fewest necessary JobPairs in order to service a client's

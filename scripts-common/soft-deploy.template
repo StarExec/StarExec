@@ -65,7 +65,7 @@ if [ "$1" == "--remove" ] ; then
 fi
 
 echo Copying new WAR to $WEB_HOME
-cp starexec.war $WEB_HOME/$WAR
+cp $APPNAME.war $WEB_HOME/$WAR
 
 #echo Changing permissions on $STAR_WAR
 chmod 775 $STAR_WAR

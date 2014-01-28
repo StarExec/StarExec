@@ -1,5 +1,3 @@
-USE starexec;
-
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 -- Gets the fewest necessary Benchmarks in order to service a client's

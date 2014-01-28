@@ -1,12 +1,6 @@
 -- Author: Tyler Jensen
 -- Description: This file is the schema used to create the starexec database in MySQL
 
--- Drop and recreate the database to get a fresh slate
-DROP DATABASE IF EXISTS starexec;
-CREATE DATABASE starexec;
-
-USE starexec;
-
 -- The table of all users in the system
 CREATE TABLE users (
 	id INT NOT NULL AUTO_INCREMENT,	
