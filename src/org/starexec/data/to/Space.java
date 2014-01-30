@@ -42,6 +42,7 @@ public class Space extends Identifiable implements Iterable<Space> {
 		this.jobs = new LinkedList<Job>();
 		this.users = new LinkedList<User>();
 		this.subspaces = new LinkedList<Space>();
+		this.defaultPermission = new Permission();
 		
 	}
 	

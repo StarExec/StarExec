@@ -542,6 +542,7 @@ public class Spaces {
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId, false));
 			s.setPublic(Spaces.isPublicSpace(spaceId));
+			s.setPermission(Permissions.getSpaceDefault(spaceId));
 												
 			return s;			
 		} catch (Exception e){			
