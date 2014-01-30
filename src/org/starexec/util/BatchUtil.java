@@ -345,7 +345,7 @@ public class BatchUtil {
 				}
 				else if (elementType.equals("Solver")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
-					if (!Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), parentId, 1)) {
+					if (!Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), parentId, 1)) {
 						solvers.add(id);
 					}
 				}
