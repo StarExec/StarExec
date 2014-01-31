@@ -149,7 +149,7 @@ _SOLVER_DIR)"
 	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"
 	log "benchmark copy complete"
 	
-	doing benchmark preprocessing here if the pre_processor actually exists
+	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
 		cp "$PRE_PROCESSOR_PATH" "$STAREXEC_OUT_DIR/preProcessor"
 		log "executing pre processor"
