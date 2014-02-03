@@ -242,9 +242,10 @@ public class Connection {
 	}
 	
 	protected int uploadBenchmarks(String filePath,Integer type,Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy,
-			Integer dependency,Boolean depLinked) {		
+			Boolean dependency,Boolean linked, Integer depRoot) {		
 		try {
-			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
+			
+			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADBENCHMARKS);
 			MultipartEntity entity = new MultipartEntity();
 			entity.addPart("space", new StringBody(spaceID.toString(), utf8));
 			entity.addPart("localOrURL",new StringBody(upMethod,utf8));
@@ -254,15 +255,14 @@ public class Connection {
 			
 			entity.addPart("download", new StringBody(downloadable.toString(), utf8));
 			entity.addPart("benchType",new StringBody(type.toString(),utf8));
-			if (dependency==null) {
-				entity.addPart("dependency",new StringBody("false",utf8));
-				entity.addPart("linked",new StringBody("",utf8));
-			} else  {
-				entity.addPart("dependency",new StringBody("true",utf8));
-				entity.addPart("linked",new StringBody(dependency.toString(),utf8));
-			}
 			
-			entity.addPart("depRoot",new StringBody(depLinked.toString(),utf8));
+				entity.addPart("dependency",new StringBody(dependency.toString(),utf8));
+				entity.addPart("linked",new StringBody(linked.toString(),utf8));
+			if (depRoot==null) {
+				entity.addPart("depRoot",new StringBody("-1",utf8));
+			} else {
+				entity.addPart("depRoot",new StringBody(depRoot.toString(),utf8));
+			}
 			if (hierarchy) {
 				entity.addPart("upMethod", new StringBody("convert",utf8));
 			} else {
@@ -288,6 +288,8 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
+			
+			//TODO: improve the error handling here
 			return 0;
 		} catch (Exception e) {
 			

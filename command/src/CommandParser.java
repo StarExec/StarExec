@@ -86,6 +86,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return R.ERROR_BAD_ARGS;
 		}
 	}
@@ -388,6 +389,7 @@ class CommandParser {
 	}
 	
 	protected int exit() {
+		
 		if (parser!=null) {
 			parser.logout();
 			parser=null;
@@ -421,7 +423,7 @@ class CommandParser {
 			return R.ERROR_BAD_ARGS;
 		}
 		if (command.equalsIgnoreCase(R.COMMAND_EXIT)) {
-			exit();
+			return exit();
 		} else if (c.equals(R.COMMAND_HELP)) {
 			System.out.println(R.HELP_MESSAGE);
 			return 0;

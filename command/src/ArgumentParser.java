@@ -490,7 +490,7 @@ class ArgumentParser {
 		
 		
 		Boolean dependency=false;
-		String depRoot="";
+		String depRoot="-1";
 		Boolean depLinked=false;
 		
 		//if the dependency parameter exists, we're using the dependencies it specifies
@@ -533,15 +533,10 @@ class ArgumentParser {
 				p.setPermissionOn(x);
 			}
 		}
-		if (dependency) {
-			return con.uploadBenchmarks(commandParams.get(R.PARAM_FILE), Integer.parseInt(type), Integer.parseInt(space), 
-					upMethod, p, url, downloadable,
-					hierarchy, Integer.parseInt(depRoot), depLinked);
-		} else {
-			return con.uploadBenchmarks(commandParams.get(R.PARAM_FILE), Integer.parseInt(type), Integer.parseInt(space), 
-					upMethod, p, url, downloadable,
-					hierarchy, null, depLinked);
-		}
+		
+		return con.uploadBenchmarks(commandParams.get(R.PARAM_FILE), Integer.parseInt(type), Integer.parseInt(space), 
+				upMethod, p, url, downloadable,
+				hierarchy, dependency, depLinked,Integer.parseInt(depRoot));
 		
 		
 		

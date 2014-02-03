@@ -24,6 +24,7 @@ public class R {
 	public static String URL_LOGOUT="services/session/logout";
 	public static String URL_USERSETTING="services/edit/user/";
 	public static String URL_UPLOADSOLVER="secure/upload/solvers";
+	public static String URL_UPLOADBENCHMARKS="/secure/upload/benchmarks";
 	public static String URL_UPLOADPROCESSOR="secure/processors/manager";
 	public static String URL_UPLOADSPACE="secure/upload/space";
 	public static String URL_DELETEPRIMITIVE="services/delete";

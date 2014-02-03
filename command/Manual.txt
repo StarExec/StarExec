@@ -310,7 +310,7 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
-EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '
+EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
 
 --pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
 				 refers to a community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
