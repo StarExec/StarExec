@@ -41,7 +41,7 @@ public class Validator {
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
-	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
+	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE,R.PARAM_TEST};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
 	private static String[] allowedPauseOrResumeParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,

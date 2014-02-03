@@ -1,9 +1,12 @@
 package org.starexec.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TestResult {
 	private String name="no name";
 	private TestStatus status=new TestStatus();
-	private String message="no message";
+	private List<String> messages=new ArrayList<String>();
 	private Throwable error=null;
 	public TestResult() {
 		status.setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
@@ -21,24 +24,29 @@ public class TestResult {
 	public TestStatus getStatus() {
 		return status;
 	}
-	public void setMessage(String message) {
-		if (message==null) {
-			this.message="no message";
-			return;
+	public void addMessage(String message) {
+		this.messages.add(message);
+		
+	}
+	public void clearMessages() {
+		this.messages=new ArrayList<String>();
+	}
+	public String getMostRecentMessage() {
+		if (messages.size()>0) {
+			return messages.get(0);
+		} else {
+			return "no message";
 		}
-		this.message = message;
+		
 	}
-	public String getMessage() {
-		return message;
-	}
-	public String getErrorTrace() {
-		if (getError()==null) {
-			return "no error";
+	
+	public String getAllMessages() {
+		if (messages.size()==0) {
+			return "no message";
 		}
 		StringBuilder sb=new StringBuilder();
-		StackTraceElement[] trace=getError().getStackTrace();
-		for (StackTraceElement te : trace) {
-			sb.append(te.toString()+"\n");
+		for (String s : messages) {
+			sb.append("--"+s+"\n");
 		}
 		return sb.toString();
 	}
@@ -49,6 +57,9 @@ public class TestResult {
 
 	public Throwable getError() {
 		return error;
+	}
+	public String getErrorTrace() {
+		return TestUtil.getErrorTrace(error);
 	}
 	
 }

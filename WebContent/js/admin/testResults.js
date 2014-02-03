@@ -30,14 +30,14 @@ function extendDataTableFunctions() {
 	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource ) {
 	    if ( typeof sNewSource != 'undefined' )
 	    oSettings.sAjaxSource = sNewSource;
-	     
-	    this.fnClearTable( this );
-	    this.oApi._fnProcessingDisplay( oSettings, true );
-	    var that = this;
-	     
+	    theTable=this;
 	    $.getJSON( oSettings.sAjaxSource, null, function(json) {
 	    /* Got the data - add it to the table */
+	    	theTable.fnClearTable( theTable );
+		    theTable.oApi._fnProcessingDisplay( oSettings, true );
+		    var that = theTable;
 	    for ( var i=0 ; i<json.aaData.length ; i++ ) {
+	    	
 	    that.oApi._fnAddData( oSettings, json.aaData[i] );
 	    }
 	     

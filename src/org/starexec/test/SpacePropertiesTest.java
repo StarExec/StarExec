@@ -1,7 +1,6 @@
 package org.starexec.test;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
@@ -18,10 +17,9 @@ public class SpacePropertiesTest extends TestSequence {
 	@Test
 	private void leafTest() {
 		//the new community should be a leaf
-		Assert.assertTrue(!Spaces.isLeaf(c.getId()));
-		
+		Assert.assertTrue(Spaces.isLeaf(c.getId()));
 	}
-	@Test()
+	@Test
 	private void communityTest() {
 		//of course, it should actually be a community
 		Assert.assertTrue(Communities.isCommunity(c.getId()));
@@ -42,9 +40,11 @@ public class SpacePropertiesTest extends TestSequence {
 	private void nameUpdateTest() throws Exception {
 		String currentName=c.getName();
 		Assert.assertEquals(currentName,Spaces.getName(c.getId()));
+		addMessage("Space name consistent before update");
 		String newName=TestUtil.getRandomSpaceName();
 		Assert.assertTrue(Spaces.updateName(c.getId(), newName));
 		Assert.assertEquals(newName,Spaces.getName(c.getId()));
+		addMessage("Space name consistent after update");
 		c.setName(newName);
 	}
 	@Test
@@ -60,27 +60,20 @@ public class SpacePropertiesTest extends TestSequence {
 	
 	
 	@Override
-	protected boolean setup() {
+	protected void setup() {
 		Space newCommunity = new Space();
 		newCommunity.setDescription("test desc");
 		newCommunity.setName(TestUtil.getRandomSpaceName());
 		int id=Spaces.add(newCommunity, 1, R.ADMIN_USER_ID);
-		if (id<0) {
-			setMessage("creation of a new community failed");
-			return false;
-		}
+		Assert.assertNotEquals(-1,id);
 		c=newCommunity;
 		c.setId(id);
-		return true;
 	}
 	
 	@Override
-	protected boolean teardown() {
+	protected void teardown() {
 		boolean success=Spaces.removeSubspaces(c.getId(), 1, R.ADMIN_USER_ID);
-		if (!success) {
-			setMessage("deletion of the new test community failed");
-		}
-		return success;
+		Assert.assertTrue(success);
 	}
 
 }

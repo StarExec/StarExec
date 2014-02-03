@@ -330,6 +330,7 @@ public class Spaces {
 			
 			if(results.next()){
 				Space s = new Space();
+			
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
@@ -542,7 +543,7 @@ public class Spaces {
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId, false));
 			s.setPublic(Spaces.isPublicSpace(spaceId));
-												
+			s.setPermission(Permissions.getSpaceDefault(spaceId));
 			return s;			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

@@ -846,21 +846,13 @@ public class RESTServices {
 				return gson.toJson(ERROR_INVALID_PARAMS);
 			}
 			
-			final ExecutorService threadPool = Executors.newCachedThreadPool();
-			//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-			threadPool.execute(new Runnable() {
-				@Override
-				public void run(){
-					try {
-						for (String testName : testNames) {
-							TestManager.executeTest(testName);
-						}
-					} catch (Exception e) {
-						log.error("runAllTests says "+e.getMessage(),e);
-					}
+			
+		
+			for (String testName : testNames) {
+				TestManager.executeTest(testName);
+			}
 					
-				}
-			});	
+				
 			
 			return gson.toJson(0);
 			
@@ -876,19 +868,8 @@ public class RESTServices {
 		int u=SessionUtil.getUserId(request);
 		User user=Users.get(u);
 		if (user.getRole().equals("admin")) {
-			final ExecutorService threadPool = Executors.newCachedThreadPool();
-			//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-			threadPool.execute(new Runnable() {
-				@Override
-				public void run(){
-					try {
-						TestManager.executeAllTestSequences();
-					} catch (Exception e) {
-						log.error("runAllTests says "+e.getMessage(),e);
-					}
-					
-				}
-			});	
+			
+			TestManager.executeAllTestSequences();
 			
 			return gson.toJson(0);
 		} else {
@@ -3156,7 +3137,7 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/copySpace")
 	@Produces("application/json")
 	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copyHierarchy", request)

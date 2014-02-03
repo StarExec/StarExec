@@ -1879,7 +1879,7 @@ public class RESTHelpers {
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
 			StringBuilder sb=new StringBuilder();
-			sb.append("<a href=\""+Util.docRoot("secure/admin/testResults.jsp?sequenceName="));
+			sb.append("<a name=\""+test.getName()+"\" href=\""+Util.docRoot("secure/admin/testResults.jsp?sequenceName="));
     		sb.append(test.getName());
     		sb.append("\" target=\"_blank\">");
     		sb.append(test.getName());
@@ -1890,6 +1890,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(test.getTestsPassed()));
 			entry.add(new JsonPrimitive(test.getTestsFailed()));
 			entry.add(new JsonPrimitive(test.getStatus().getStatus()));
+			entry.add(new JsonPrimitive(test.getErrorTrace()));
 			dataTablePageEntries.add(entry);
 		}
 		JsonObject nextPage = new JsonObject();
@@ -1933,10 +1934,12 @@ public class RESTHelpers {
 		for (TestResult test : tests) {
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
+			
 			JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(test.getName()));
 			entry.add(new JsonPrimitive(test.getStatus().getStatus()));
-			entry.add(new JsonPrimitive(test.getMessage()));
+			//replacing newlines with HTML line breaks
+			entry.add(new JsonPrimitive(test.getAllMessages().replace("\n", "<br/>")));
 			entry.add(new JsonPrimitive(test.getErrorTrace()));
 			dataTablePageEntries.add(entry);
 		}

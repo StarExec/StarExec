@@ -2,14 +2,18 @@ package org.starexec.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class TestManager {
 	
-	private static List<TestSequence> tests=new ArrayList<TestSequence>();
+	//this should never be modified outside of the initializeTests method
+	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
 	
+	//all test sequences need to be initialized here
 	public static void initializeTests() {
-		
+		tests.add(new SolverTestSequence());
 		tests.add(new SpacePropertiesTest());
 	}
 	
@@ -17,9 +21,17 @@ public class TestManager {
 	 * Executes every test sequence in tests
 	 */
 	public static void executeAllTestSequences() {
-		for (TestSequence t : tests) {
-			t.execute();
-		}
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
+		threadPool.execute(new Runnable() {
+			@Override
+			public void run(){
+				for (TestSequence t : tests) {
+					t.execute();
+				}				
+			}
+		});	
+		
 	}
 	
 	public static List<TestSequence> getAllTestSequences() {
@@ -35,11 +47,19 @@ public class TestManager {
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTest(String testName) {
-		TestSequence t = getTestSequence(testName);
-		if (t==null) {
-			return false;
-		}
-		executeTest(t);
+		final String t=testName;
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
+		threadPool.execute(new Runnable() {
+			@Override
+			public void run(){
+				TestSequence test = getTestSequence(t);
+				
+				executeTest(test);
+				
+			}
+		});	
+		
 		return true;
 	}
 	
@@ -75,7 +95,7 @@ public class TestManager {
 		return t.getMessage();
 	}
 	
-	private static TestSequence getTestSequence(String name) {
+	private static TestSequence getTestSequence(String name) {		
 		for (TestSequence t : tests) {
 			if (t.getName().equals(name)) {
 				return t;

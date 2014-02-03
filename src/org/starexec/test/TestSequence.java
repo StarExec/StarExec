@@ -4,7 +4,6 @@ package org.starexec.test;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,17 +11,17 @@ import org.apache.log4j.Logger;
 
 public abstract class TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
-	protected static String name="No Name";
+	protected String name="No Name";
 	protected TestStatus status=new TestStatus();
 	protected String message="No Message";
 	protected int testsPassed=0;
 	protected int testsFailed=0;
+	protected Throwable error = null;
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
 	
 	
 	public TestSequence() {
-		System.out.println("here");
 		initTestResults();
 	}
 	
@@ -42,90 +41,106 @@ public abstract class TestSequence {
 	 * @return
 	 */
 	protected final boolean execute() {
+		try {
 		testsPassed=0;
 		testsFailed=0;
 		status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 		for (TestResult r : testResults.values()) {
-			r.setMessage("test not started");
+			r.clearMessages();
+			r.addMessage("test not started");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
 			r.setError(null); 
 		}
-		try {
-			boolean setup=setup();
-			if (setup) {
-				runTests();
-				teardown();
-				if (testsFailed==0) {
-					status.setCode(TestStatus.TestStatusCode.STATUS_SUCCESS.getVal());
-					setMessage("test completed successfully");
-				} else {
-					status.setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
-					setMessage("failed tests detected");
-				}
+			setup();
+			runTests();
+			teardown();
+			if (testsFailed==0) {
+				status.setCode(TestStatus.TestStatusCode.STATUS_SUCCESS.getVal());
+				setMessage("test completed successfully");
 			} else {
 				status.setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
+				setMessage("failed tests detected");
 			}
+			
 			return true;
-		} catch (Exception e) {
+		} catch (AssertionError e) {
 			status.setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
-			log.error(e);
+			setMessage(e.getMessage());
+			log.error(e.getMessage(),e);
+			error=e;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
 		return false;
 	}
 	
+	/**
+	 * This function is called before the tests beloning to this sequence are run.
+	 * All initialization should be done here (creating spaces, solvers, etc. that are
+	 * used by the tests in this sequence).
+	 * @throws Exception
+	 */
 	
-	
-	abstract protected boolean setup();
+	abstract protected void setup() throws Exception;
 	protected final void runTests() {
 		for (TestResult r : testResults.values()) {
-			r.setMessage("test running");
+			r.clearMessages();
+			r.addMessage("test running");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 		}
 		try {
 			List<Method> tests=getTests();
 			for (Method m : tests) {
 				TestResult t=testResults.get(m.getName());
+				t.clearMessages();
 				try {
 					m.setAccessible(true);
 					m.invoke(this, null);
 					t.getStatus().setCode(TestStatus.TestStatusCode.STATUS_SUCCESS.getVal());
-					t.setMessage("test executed without errors");
+					t.addMessage("test executed without errors");
 					testsPassed++;
 					
 				} catch (Exception error) {
 					Throwable e=error.getCause();
-					//log.error("test "+m.getName()+" says "+e.getMessage(),e);
 					testsFailed++;
 					t.setError(e);
-					t.setMessage(e.getMessage());
+					t.addMessage(e.getMessage());
 					t.getStatus().setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
 				}
 				
 			}
 		} catch (Exception e) {
 			log.debug("runTests says "+e.getMessage(),e);
-		}
-		
+		}	
 	}
-	abstract protected boolean teardown();
+	/**
+	 * This function is called after all the tests have finished running
+	 * It will be called ONLY if setup ran successfully. 
+	 */
 	
-	public String getName() {
+	abstract protected void teardown() throws Exception;
+	
+	public final String getName() {
 		return name;
 	}
-	public TestStatus getStatus() {
+	public final TestStatus getStatus() {
 		return status;	
 	}
 	
-	public String getMessage() {
+	public final String getMessage() {
+		if (message==null) {
+			return "no message";
+		}
 		return message;
 	}
-	protected void setMessage(String newMessage) {
+	protected final void setMessage(String newMessage) {
 		message=newMessage;
 	}
-	protected void setStatusCode(int statusCode) {
+	protected final void setStatusCode(int statusCode) {
 		status.setCode(statusCode);
 	}
-	protected void setName(String newName) {
+	protected final void setName(String newName) {
 		name=newName;
 	}
 	
@@ -135,7 +150,7 @@ public abstract class TestSequence {
 	 * Gets the total number of tests in this sequence
 	 * @return the integer number
 	 */
-	public int getTestCount() {
+	public final int getTestCount() {
 		return getTests().size();
 	}
 	
@@ -143,7 +158,7 @@ public abstract class TestSequence {
 	 * Gets the number of tests that have passed in this sequence
 	 * @return the integer number
 	 */
-	public int getTestsPassed() {
+	public final int getTestsPassed() {
 		return testsPassed;
 	}
 	
@@ -152,16 +167,32 @@ public abstract class TestSequence {
 	 * @return the integer number
 	 */
 	
-	public int getTestsFailed() {
+	public final int getTestsFailed() {
 		return testsFailed;
 	}
-	
-	public List<TestResult> getTestResults() {
+	/**
+	 * Gets the test results for every test in this sequence
+	 * @return
+	 */
+	public final List<TestResult> getTestResults() {
 		List<TestResult> tr=new ArrayList<TestResult>();
 		for (TestResult r : testResults.values()) {
 			tr.add(r);
 		}
 		return tr;
+	}
+	
+	public final TestResult getTestResult(String testName) {
+		return testResults.get(testName);
+	}
+	/**
+	 * Gets the trace for the most recent error that affected this 
+	 * test sequence (in the setup-- errors in individual tests are reported there)
+	 * If there was no error, returns "no error"
+	 * @return The stack trace as a string
+	 */
+	public final String getErrorTrace() {
+		return TestUtil.getErrorTrace(error);
 	}
 	
 	/**
@@ -206,6 +237,17 @@ public abstract class TestSequence {
 	
 	protected static boolean isTestAnnotation(Annotation a) {
 		return a.annotationType().equals(Test.class);
+	}
+	
+	protected final void addMessage(String message) {
+		try {
+			String methodName=Thread.currentThread().getStackTrace()[2].getMethodName();
+			System.out.println(methodName+"\n\n");
+			this.getTestResult(methodName).addMessage(message);
+		} catch (Exception e) {
+			log.error("addMessage says "+e.getMessage(),e);
+		}
+		
 	}
 	
 }

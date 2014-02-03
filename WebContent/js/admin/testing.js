@@ -32,6 +32,7 @@ function initUI(){
 				function(returnCode) {
 					if (returnCode=="0") {
 						showMessage("success","testing started succesfully",5000);
+						testTable.fnReloadAjax();
 					} else {
 						showMessage("error","There was an error while starting the testing",5000);
 					}
@@ -39,6 +40,7 @@ function initUI(){
 				"json"
 		);
 		unselectAllRows(testTable);
+		
 	});
 	
 	$("#runSelected").click(function() {
@@ -49,6 +51,7 @@ function initUI(){
 			function(returnCode) {
 				if (returnCode=="0") {
 					showMessage("success","testing started succesfully",5000);
+					testTable.fnReloadAjax();
 				} else {
 					showMessage("error","There was an error while starting the testing",5000);
 				}
@@ -81,12 +84,11 @@ function extendDataTableFunctions() {
 	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource ) {
 	    if ( typeof sNewSource != 'undefined' )
 	    oSettings.sAjaxSource = sNewSource;
-	     
-	    this.fnClearTable( this );
-	    this.oApi._fnProcessingDisplay( oSettings, true );
-	    var that = this;
-	     
+	    theTable=this;
 	    $.getJSON( oSettings.sAjaxSource, null, function(json) {
+	    	theTable.fnClearTable( theTable );
+		    theTable.oApi._fnProcessingDisplay( oSettings, true );
+		    var that = theTable;
 	    /* Got the data - add it to the table */
 	    for ( var i=0 ; i<json.aaData.length ; i++ ) {
 	    that.oApi._fnAddData( oSettings, json.aaData[i] );
@@ -111,8 +113,7 @@ function getSelectedRows(dataTable){
 	var nameArray = new Array();
 	var rows = $(dataTable).children('tbody').children('tr.row_selected');
 	$.each(rows, function(i, row) {
-		nameArray.push($(this).children('td:first').html());
-		alert($(this).children("td:first").html());
+		nameArray.push($(this).find('a:first').attr("name"));
 	});
 	return nameArray;
 }

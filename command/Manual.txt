@@ -237,6 +237,10 @@ OPTIONAL: "ow" "since"
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
+--getpreproc -Downloads all pre processors associated with the given community id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+
 --getsolver -Downloads the solver associated with the given community id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
@@ -248,7 +252,7 @@ OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacehierarchy -Downloads the space hierarchy associated with the given space id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacexml -Downloads an XML file representing.
 REQUIRED: "id" "out"

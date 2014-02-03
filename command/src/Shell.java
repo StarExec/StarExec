@@ -92,8 +92,7 @@ public class Shell {
 		System.out.println("Last update = "+R.VERSION);
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
-			int status=shell.parser.runFile(args[0], false);
-		
+			int status=shell.parser.runFile(args[0], false,false);
 		} else {
 			shell.runShell();
 		}

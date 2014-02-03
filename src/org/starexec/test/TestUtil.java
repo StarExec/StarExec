@@ -11,13 +11,32 @@ public class TestUtil {
 	 * @return
 	 */
 	public static String getRandomSpaceName() {
-		int length=R.SPACE_NAME_LEN-1;
+		return getRandomAlphaString(R.SPACE_NAME_LEN-1);
 		
+			
+	}
+	
+	public static String getRandomSolverName() {
+		return getRandomAlphaString(R.SOLVER_NAME_LEN-1);
+	}
+	
+	private static String getRandomAlphaString(int length) {
 		String name="";
 		while (length>0) {
 			name=name+letters[rnd.nextInt(letters.length)];
 			length--;
 		}
-		return name;	
+		return name;
+	}
+	public static String getErrorTrace(Throwable error) {
+		if (error==null) {
+			return "no error";
+		}
+		StringBuilder sb=new StringBuilder();
+		StackTraceElement[] trace=error.getStackTrace();
+		for (StackTraceElement te : trace) {
+			sb.append(te.toString()+"\n");
+		}
+		return sb.toString();
 	}
 }

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import org.apache.http.Header;
 import org.apache.http.message.BasicNameValuePair;
 
-public class HTMLParser {
+class HTMLParser {
 	
 
 	/**
@@ -21,7 +21,7 @@ public class HTMLParser {
 	 * @author Eric Burns
 	 */
 	
-	public static String URLEncode(String u, HashMap<String,String> params) {
+	protected static String URLEncode(String u, HashMap<String,String> params) {
 		StringBuilder answer=new StringBuilder();
 		answer.append(u);
 		answer.append("?");
@@ -171,7 +171,7 @@ public class HTMLParser {
 	 * @author Eric Burns
 	 */
 	
-	public static String extractCookie(Header[] headers, String cookieName) {
+	protected static String extractCookie(Header[] headers, String cookieName) {
 		
 		for (Header x : headers) {
 			if (x.getName().equals("Set-Cookie")) {

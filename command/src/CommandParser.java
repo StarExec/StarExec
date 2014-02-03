@@ -10,13 +10,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class CommandParser {
+class CommandParser {
 	
-	private Connection con=null;
+	private ArgumentParser parser=null;
 	
 	private boolean returnIDsOnUpload=false;
-	public CommandParser() {
-		con=null;
+	protected CommandParser() {
+		parser=null;
 	}
 	
 	/**
@@ -27,20 +27,20 @@ public class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	public int handleSetCommand(String c, HashMap<String,String> commandParams) {
+	protected int handleSetCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus=0;
 			
 			if(c.equals(R.COMMAND_SETFIRSTNAME)) {
-				serverStatus=con.setUserSetting("firstname",commandParams);
+				serverStatus=parser.setUserSetting("firstname",commandParams);
 			} else if (c.equals(R.COMMAND_SETLASTNAME)) {
-				serverStatus=con.setUserSetting("lastname",commandParams);
+				serverStatus=parser.setUserSetting("lastname",commandParams);
 			}  else if (c.equals(R.COMMAND_SETINSTITUTION)) {
-				serverStatus=con.setUserSetting("institution",commandParams);
+				serverStatus=parser.setUserSetting("institution",commandParams);
 			} else if (c.equals(R.COMMAND_SETSPACEPUBLIC)) {
-				serverStatus=con.setSpaceVisibility(commandParams, true);
+				serverStatus=parser.setSpaceVisibility(commandParams, true);
 			} else if (c.equals(R.COMMAND_SETSPACEPRIVATE)) {
-				serverStatus=con.setSpaceVisibility(commandParams, false);
+				serverStatus=parser.setSpaceVisibility(commandParams, false);
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -60,20 +60,20 @@ public class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	public int handlePushCommand(String c, HashMap<String,String> commandParams) {
+	protected int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus;
 
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
-				serverStatus=con.uploadBenchmarks(commandParams);
+				serverStatus=parser.uploadBenchmarks(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHBENCHPROC)) {
-				serverStatus=con.uploadBenchProc(commandParams);
+				serverStatus=parser.uploadBenchProc(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHPOSTPROC)) {
-				serverStatus=con.uploadPostProc(commandParams);
+				serverStatus=parser.uploadPostProc(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
-				serverStatus=con.uploadSolver(commandParams);
+				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
-				serverStatus=con.uploadSpaceXML(commandParams);
+				serverStatus=parser.uploadSpaceXML(commandParams);
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -99,7 +99,7 @@ public class CommandParser {
 	 * @author Eric Burns
 	 */
 	
-	public int handleCreateCommand(String c, HashMap<String,String> commandParams){
+	protected int handleCreateCommand(String c, HashMap<String,String> commandParams){
 		try {
 			int serverStatus=0;
 			
@@ -118,7 +118,7 @@ public class CommandParser {
 					if (valid<0) {
 						return valid;
 					}
-					int id=con.createJob(commandParams);
+					int id=parser.createJob(commandParams);
 					
 					if (id<0) {
 						return id;
@@ -130,11 +130,11 @@ public class CommandParser {
 					System.out.println("Job created, polling has begun");
 					serverStatus=pollJob(pollParams);
 				} else {
-					serverStatus=con.createJob(commandParams);
+					serverStatus=parser.createJob(commandParams);
 				}
 				
 			} else if (c.equals(R.COMMAND_CREATESUBSPACE)) {
-				serverStatus=con.createSubspace(commandParams);
+				serverStatus=parser.createSubspace(commandParams);
 			} 
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -162,25 +162,25 @@ public class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	public int handleCopyCommand(String c, HashMap<String,String> commandParams) {
+	protected int handleCopyCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus=0;
 			
 			if (c.equals(R.COMMAND_COPYSOLVER)) {
-				serverStatus=con.copyPrimitives(commandParams, true,"solver");
+				serverStatus=parser.copyPrimitives(commandParams, true,"solver");
 			} else if (c.equals(R.COMMAND_LINKSOLVER)) {
-				serverStatus=con.copyPrimitives(commandParams, false,"solver");
+				serverStatus=parser.copyPrimitives(commandParams, false,"solver");
 			}  else if (c.equals(R.COMMAND_COPYBENCH)) {
-				serverStatus=con.copyPrimitives(commandParams, true,"benchmark");
+				serverStatus=parser.copyPrimitives(commandParams, true,"benchmark");
 			} else if(c.equals(R.COMMAND_LINKBENCH))  {
-				serverStatus=con.copyPrimitives(commandParams, false,"benchmark");;
+				serverStatus=parser.copyPrimitives(commandParams, false,"benchmark");;
 			} else if (c.equals(R.COMMAND_COPYSPACE)) {
 				
-				serverStatus=con.copyPrimitives(commandParams,true,"space");
+				serverStatus=parser.copyPrimitives(commandParams,true,"space");
 			} else if (c.equals(R.COMMAND_LINKJOB)) {
-				serverStatus=con.copyPrimitives(commandParams,false,"job");
+				serverStatus=parser.copyPrimitives(commandParams,false,"job");
 			} else if (c.equals(R.COMMAND_LINKUSER)) {
-				serverStatus=con.copyPrimitives(commandParams, false, "user");
+				serverStatus=parser.copyPrimitives(commandParams, false, "user");
 			}
 			else {
 				
@@ -201,21 +201,21 @@ public class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	public int handleRemoveCommand(String c, HashMap<String,String> commandParams) {
+	protected int handleRemoveCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus=0;
 			
 			//the types specified below must match the types given in RESTServices.java
 			if (c.equals(R.COMMAND_REMOVEBENCHMARK)) {
-				serverStatus=con.removePrimitive(commandParams, "benchmark");
+				serverStatus=parser.removePrimitive(commandParams, "benchmark");
 			} else if (c.equals(R.COMMAND_REMOVESOLVER) || c.equals(R.COMMAND_DELETEPOSTPROC)) {
-				serverStatus=con.removePrimitive(commandParams, "solver");
+				serverStatus=parser.removePrimitive(commandParams, "solver");
 			}  else if (c.equals(R.COMMAND_REMOVEUSER)) {
-				serverStatus=con.removePrimitive(commandParams,"user");
+				serverStatus=parser.removePrimitive(commandParams,"user");
 			} else if(c.equals(R.COMMAND_REMOVEJOB))  {
-				serverStatus=con.removePrimitive(commandParams, "job");
+				serverStatus=parser.removePrimitive(commandParams, "job");
 			} else if (c.equals(R.COMMAND_REMOVESUBSPACE)) {
-				serverStatus=con.removePrimitive(commandParams,"subspace");
+				serverStatus=parser.removePrimitive(commandParams,"subspace");
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -235,20 +235,20 @@ public class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	public int handleDeleteCommand(String c, HashMap<String,String> commandParams) {
+	protected int handleDeleteCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus=0;
 			
 			if (c.equals(R.COMMAND_DELETEBENCH)) {
-				serverStatus=con.deletePrimitive(commandParams, "benchmark");
+				serverStatus=parser.deletePrimitive(commandParams, "benchmark");
 			} else if (c.equals(R.COMMAND_DELETEBENCHPROC) || c.equals(R.COMMAND_DELETEPOSTPROC)) {
-				serverStatus=con.deletePrimitive(commandParams, "processor");
+				serverStatus=parser.deletePrimitive(commandParams, "processor");
 			} else if (c.equals(R.COMMAND_DELETESOLVER)) {
-				serverStatus=con.deletePrimitive(commandParams,"solver");
+				serverStatus=parser.deletePrimitive(commandParams,"solver");
 			} else if(c.equals(R.COMMAND_DELETECONFIG))  {
-				serverStatus=con.deletePrimitive(commandParams, "configuration");
+				serverStatus=parser.deletePrimitive(commandParams, "configuration");
 			} else if (c.equals(R.COMMAND_DELETEJOB)) {
-				serverStatus=con.deletePrimitive(commandParams,"job");
+				serverStatus=parser.deletePrimitive(commandParams,"job");
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
@@ -283,27 +283,25 @@ public class CommandParser {
 	 * @author Eric Burns
 	 */
 	
-	public int handleLSCommand(String c, HashMap<String,String> commandParams) {
+	protected int handleLSCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			
 			
-			HashMap<String,String> urlParams=new HashMap<String,String>();
 			HashMap<Integer,String> answer=new HashMap<Integer,String>();
-			urlParams.put("id", commandParams.get(R.PARAM_ID));
+			String type="";
 			if (c.equals(R.COMMAND_LISTSOLVERS)) {
-				urlParams.put(R.FORMPARAM_TYPE, "solvers");
+				type="solvers";
 				
 			} else if (c.equals(R.COMMAND_LISTBENCHMARKS)) {
-				urlParams.put(R.FORMPARAM_TYPE, "benchmarks");
+				type="benchmarks";
 				
 			} else if (c.equals(R.COMMAND_LISTJOBS)) {
-				
-				urlParams.put(R.FORMPARAM_TYPE,"jobs");
+				type="jobs";
 				
 			} else if(c.equals(R.COMMAND_LISTUSERS)) {
-				urlParams.put(R.FORMPARAM_TYPE, "users");
+				type="users";
 			} else if(c.equals(R.COMMAND_LISTSUBSPACES)) {
-				urlParams.put(R.FORMPARAM_TYPE,"spaces");
+				type="spaces";
 			} else if (c.equals(R.COMMAND_LISTPRIMITIVES)) {
 				String[] types;
 				if (commandParams.containsKey(R.PARAM_USER)) {
@@ -312,9 +310,8 @@ public class CommandParser {
 					types=new String[] {"solvers","benchmarks","jobs","users","spaces"};
 				}
 				for (String x : types) {
-					urlParams.put("type",x);
 					System.out.println(x.toUpperCase()+"\n");
-					answer=con.getPrimsInSpace(urlParams,commandParams);
+					answer=parser.getPrimsInSpace(type,commandParams);
 					if (answer.keySet().size()==1) {
 						for (int test : answer.keySet()) {
 							if (test<0) {
@@ -331,7 +328,7 @@ public class CommandParser {
 			else {
 				return R.ERROR_BAD_COMMAND;
 			}
-			answer=con.getPrimsInSpace(urlParams, commandParams);
+			answer=parser.getPrimsInSpace(type,commandParams);
 			//if we only have 1 key and it is negative, it represents an error code
 			if (answer.keySet().size()==1) {
 				for (int x : answer.keySet()) {
@@ -357,7 +354,8 @@ public class CommandParser {
 	 * @param verbose Indicates whether to print status
 	 * @author Eric Burns
 	 */
-	public int runFile(String filePath, boolean verbose) {
+	protected int runFile(String filePath, boolean verbose,boolean test) {
+		
 		try {
 			BufferedReader br=new BufferedReader(new FileReader(filePath));
 			String line=br.readLine();
@@ -367,7 +365,7 @@ public class CommandParser {
 					System.out.println("Processing Command: "+line);
 				}
 				status=parseCommand(line);
-				if (verbose) {
+				if (verbose || test) {
 					Shell.printStatusMessage(status);	
 					Shell.printWarningMessages();
 				}
@@ -386,13 +384,13 @@ public class CommandParser {
 		} catch (Exception e) {
 			
 			return R.ERROR_COMMAND_FILE_TERMINATING;
-		}
+		} 
 	}
 	
-	public int exit() {
-		if (con!=null) {
-			con.logout();
-			con=null;
+	protected int exit() {
+		if (parser!=null) {
+			parser.logout();
+			parser=null;
 		}
 		return R.SUCCESS_EXIT;
 	}
@@ -405,7 +403,7 @@ public class CommandParser {
 	 * and less than 0 indicates some error
 	 * @author Eric Burns
 	 */
-	public int parseCommand(String command) {
+	protected int parseCommand(String command) {
 		//means end of input has been reached
 		if (command==null) {
 			command="exit";
@@ -419,6 +417,9 @@ public class CommandParser {
 		String [] splitCommand=command.split(" ");
 		String c=splitCommand[0].toLowerCase().trim();
 		HashMap<String,String> commandParams=extractParams(command);
+		if (commandParams==null) {
+			return R.ERROR_BAD_ARGS;
+		}
 		if (command.equalsIgnoreCase(R.COMMAND_EXIT)) {
 			exit();
 		} else if (c.equals(R.COMMAND_HELP)) {
@@ -439,7 +440,7 @@ public class CommandParser {
 		} else if(c.equals(R.COMMAND_LOGIN)) {
 			
 			//don't allow a login if we have a session already-- they should logout first
-			if (con!=null) {
+			if (parser!=null) {
 				return R.ERROR_CONNECTION_EXISTS;
 			}
 			int valid=Validator.isValidLoginRequest(commandParams);
@@ -447,12 +448,12 @@ public class CommandParser {
 				return valid;
 			}
 			
-			con=new Connection(commandParams);
-			valid=con.login();
+			parser=new ArgumentParser(commandParams);
+			valid=parser.login();
 			
 			//if we couldn't log in, scrap this connection and return the error code
 			if (valid<0) {
-				con=null;
+				parser=null;
 				return valid;
 			}
 			
@@ -462,7 +463,7 @@ public class CommandParser {
 			if (valid<0) {
 				return valid;
 			}
-			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
+			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE),commandParams.containsKey(R.PARAM_TEST));
 			
 		} else if (c.equals(R.COMMAND_IGNOREIDS)) {
 			returnIDsOnUpload=false;
@@ -472,22 +473,22 @@ public class CommandParser {
 			return 0;
 		}
 		int status;
-		if (con==null) {
+		if (parser==null) {
 			return R.ERROR_NOT_LOGGED_IN;
 		}
 		
 		if (c.equals(R.COMMAND_LOGOUT)) {
-			con.logout();
-			con=null;
+			parser.logout();
+			parser=null;
 			
 			return R.SUCCESS_LOGOUT;
 			
 		} else if (c.equals(R.COMMAND_POLLJOB)) {
 			status=pollJob(commandParams);
 		} else if (c.equals(R.COMMAND_RESUMEJOB)) {
-			status=con.resumeJob(commandParams);
+			status=parser.resumeJob(commandParams);
 		} else if (c.equals(R.COMMAND_PAUSEJOB)) {
-			status=con.pauseJob(commandParams);
+			status=parser.pauseJob(commandParams);
 		}
 		else if (c.startsWith("get")) {
 			status=handleGetCommand(c,commandParams);
@@ -511,10 +512,10 @@ public class CommandParser {
 		}
 		//If our connection is no longer valid, attempt to get a new one and log back in without bothering
 		//the user
-		if (con!=null && !con.isValid()) {
+		if (parser!=null && !parser.isConnectionValid()) {
 			
-			con=new Connection(con);
-			int valid=con.login();
+			parser.refreshConnection();
+			int valid=parser.login();
 			if (valid<0) {
 				return R.ERROR_CONNECTION_LOST;
 			}
@@ -532,13 +533,23 @@ public class CommandParser {
 	 * @return An array of strings 
 	 */
 	
-	public static String[] convertToArray(String str) {
+	protected static String[] convertToArray(String str) {
 		String[] ids=str.split(",");
 		for (int x=0;x<ids.length;x++) {
 			ids[x]=ids[x].trim();
 		}
 		
 		return ids;
+	}
+	
+	protected static Integer[] convertToIntArray(String str) {
+		String[] ids=str.split(",");
+		Integer[] answer=new Integer[ids.length];
+		for (int x=0;x<ids.length;x++) {
+			answer[x]=Integer.parseInt(ids[x]);
+		}
+		
+		return answer;
 	}
 	
 
@@ -549,21 +560,14 @@ public class CommandParser {
 	 * @author Eric Burns
 	 */
 	
-	public int pollJob(HashMap<String,String> commandParams) {
+	protected int pollJob(HashMap<String,String> commandParams) {
 		int valid=Validator.isValidPollJobRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}
 		
 		try {
-			//setup necessary parameters for both getting job info and job output
-			HashMap<String,String> infoURLParams=new HashMap<String,String>();
-			HashMap<String,String> outputURLParams=new HashMap<String,String>();
-			infoURLParams.put("id", commandParams.get(R.PARAM_ID));
-			infoURLParams.put(R.FORMPARAM_TYPE, "job");
 			
-			outputURLParams.put("id", commandParams.get(R.PARAM_ID));
-			outputURLParams.put(R.FORMPARAM_TYPE, "j_outputs");
 			String filename=commandParams.get(R.PARAM_OUTPUT_FILE);
 			String baseFileName="";
 			String extension=null;
@@ -589,11 +593,12 @@ public class CommandParser {
 			//only when we're done getting both types of info are we actually done
 			boolean infoDone=false;
 			boolean outputDone=false;
+			Integer since;
 			while (true) {
 				nextName=baseFileName+"-info"+String.valueOf(infoCounter)+extension;
 				commandParams.put(R.PARAM_OUTPUT_FILE, nextName);
-				infoURLParams.put("since",String.valueOf(con.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
-				status=con.downloadArchive(infoURLParams, commandParams);
+				since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+				status=parser.downloadArchive("job",since,null,null,commandParams);
 				if (status!=R.SUCCESS_NOFILE) {
 					infoCounter+=1;
 				} else {
@@ -608,8 +613,8 @@ public class CommandParser {
 				}
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
 				commandParams.put(R.PARAM_OUTPUT_FILE, nextName);
-				outputURLParams.put("since",String.valueOf(con.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
-				status=con.downloadArchive(outputURLParams, commandParams);
+				since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+				status=parser.downloadArchive("j_outputs",since,null,null, commandParams);
 				if (status!=R.SUCCESS_NOFILE) {
 					outputCounter+=1;
 				} else {
@@ -646,70 +651,75 @@ public class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	public int handleGetCommand(String c, HashMap<String,String> commandParams) {
+	protected int handleGetCommand(String c, HashMap<String,String> commandParams) {
 		
 		try {
 			System.out.println("Processing your download request, please wait. This will take some time for large files");
 			int serverStatus=0;
 			
-			HashMap<String,String> urlParams=new HashMap<String,String>();
-		
-			urlParams.put(R.FORMPARAM_ID,commandParams.get(R.PARAM_ID));
+			String procClass=null;
+			String type=null;
+			Boolean hierarchy=null;
+			Integer since=null;
 			if (c.equals(R.COMMAND_GETJOBOUT)) {
-				urlParams.put(R.FORMPARAM_TYPE,"j_outputs");
+				type="j_outputs";
 			} else if (c.equals(R.COMMAND_GETJOBINFO)) {
-				urlParams.put(R.FORMPARAM_TYPE,"job");
+				type="job";
 			} else if (c.equals(R.COMMAND_GETSPACEXML)) {
-				urlParams.put(R.FORMPARAM_TYPE,"spaceXML");
+				type="spaceXML";
 				
 			} else if (c.equals(R.COMMAND_GETSPACE)) {
-				urlParams.put("hierarchy","false");
-				urlParams.put(R.FORMPARAM_TYPE,"space");
+				hierarchy=false;
+				type="space";
 				
 			} else if (c.equals(R.COMMAND_GETSPACEHIERARCHY)) {
-				urlParams.put("hierarchy","true");
-				urlParams.put(R.FORMPARAM_TYPE,"space");
+				hierarchy=true;
+				type="space";
 				
 			} else if (c.equals(R.COMMAND_GETPOSTPROC)) {
-				urlParams.put(R.FORMPARAM_TYPE,"proc");
-				urlParams.put("procClass","post");
+				type="proc";
+				procClass="post";
 				
 			} else if (c.equals(R.COMMAND_GETBENCHPROC)) {
-				urlParams.put(R.FORMPARAM_TYPE,"proc");
-				urlParams.put("procClass","bench");
+				type="proc";
+				procClass="bench";
+				
+			}else if (c.equals(R.COMMAND_GETPREPROC)) {
+				type="proc";
+				procClass="pre";
 				
 			} else if (c.equals(R.COMMAND_GETBENCH)) {
-				urlParams.put(R.FORMPARAM_TYPE, "bench");
+				type="bench";
 				
 			} else if (c.equals(R.COMMAND_GETSOLVER)) {
-				urlParams.put(R.FORMPARAM_TYPE, "solver");
+				type="solver";
 				
 			} else if (c.equals(R.COMMAND_GETJOBPAIR)) {
-				urlParams.put(R.FORMPARAM_TYPE, "jp_output");
+				type="jp_output";
 				
 			} else if (c.equals(R.COMMAND_GETNEWJOBINFO)) {
-				urlParams.put(R.FORMPARAM_TYPE, "job");
+				type="job";
 				//Note: The reason the parameter "since" is not being taken from R.PARAM_SINCE
 				//is that it is actually expected on StarExec-- it is not a command line parameter,
 				//even though that parameter also happens to be "since"
 				if (commandParams.containsKey(R.FORMPARAM_SINCE)) {
-					urlParams.put(R.FORMPARAM_SINCE, commandParams.get(R.PARAM_SINCE));
+					since=Integer.parseInt(commandParams.get(R.PARAM_SINCE));
 				} else {
-					urlParams.put(R.FORMPARAM_SINCE,String.valueOf(con.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
+					since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
 				}
 			} else if (c.equals(R.COMMAND_GETNEWJOBOUT)) {
-				urlParams.put("type", "j_outputs");
+				type="j_outputs";
 				if (commandParams.containsKey(R.PARAM_SINCE)) {
-					urlParams.put(R.FORMPARAM_SINCE, commandParams.get(R.PARAM_SINCE));
+					since=Integer.parseInt(commandParams.get(R.PARAM_SINCE));
 				} else {
-					urlParams.put(R.FORMPARAM_SINCE,String.valueOf(con.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)))));
+					since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
 				}
 				
 			}
 			else {
 				return R.ERROR_BAD_COMMAND;
 			}
-			serverStatus=con.downloadArchive(urlParams,commandParams);
+			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {
 				System.out.println("Download complete");
 			}
@@ -727,7 +737,7 @@ public class CommandParser {
 	 * @author Eric Burns
 	 */
 	
-	public HashMap<String,String> extractParams(String command) {
+	protected HashMap<String,String> extractParams(String command) {
 		List<String> args=Arrays.asList(command.split(" "));
 		
 		//the first element is the command, which we don't want

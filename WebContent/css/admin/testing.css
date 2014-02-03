@@ -8,3 +8,10 @@
 #tableTests {
 	width:100%;
 }
+
+#errorHead {
+	width:40%;
+}
+#passedHead,#failedHead,#totalHead {
+	width:9%;
+}
