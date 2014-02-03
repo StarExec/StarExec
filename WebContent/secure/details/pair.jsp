@@ -207,7 +207,7 @@
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			
 		<textarea class=contentTextarea id="jpLog" readonly="readonly"></textarea>
-		<a href="/starexec/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
+		<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
 	</fieldset>
 	<fieldset id="fieldActions">
 	<legend>actions</legend>
