@@ -166,7 +166,7 @@ _SOLVER_DIR)"
 		#log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
-		if ["$PRE_PROCESSOR_PATH" != "null" ]; then
+		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
 			"$STAREXEC_OUT_DIR/preProcessor" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"

@@ -102,12 +102,11 @@ public class CreateJob extends HttpServlet {
 		}
 		
 		//Setup the job's attributes
-		//TODO: put the pre processor ID back here
 		Job j = JobManager.setupJob(
 				userId,
 				(String)request.getParameter(name), 
 				(String)request.getParameter(description),
-				-1,
+				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)));
 		j.setPrimarySpace(space);
