@@ -23,7 +23,7 @@
 	<property name="starcom-base" value="src\org\starexec\command"/>
 	<property name="starcom-comp" value="${starcom-base}/compile"/>
 	<property name="starcom-build" value="${starcom-base}/build" />
-	<property name="starcomlib" value="${web-inf}/lib"/>
+	<property name="starcomlib" value="starcomlib"/>
 	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
 	<property name="starcomsrc" value="${starcom-base}"/>
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
