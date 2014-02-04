@@ -940,7 +940,7 @@ public class Benchmarks {
 				procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
 
 			} else {
-				procedure = con.prepareCall("{CALL GetBenchmarkByIdIncludeDeleted(?)}");
+				procedure = con.prepareCall("{CALL GetBenchmarkByIdIncludeDeletedAndRecycled(?)}");
 			}
 			procedure.setInt(1, benchId);					
 			results = procedure.executeQuery();
