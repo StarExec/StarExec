@@ -30,6 +30,7 @@
 			href="http://www.nsf.gov/awardsearch/showAward.do?AwardNumber=1058748&WT.z_pims_id=12810">here</a>.
 	</p>
 
+	<p> See <a href="machine-specs.txt">here</a> for machine specifications for the compute nodes.</p>
 
    <h2>StarExec Advisory Committee</h2>
 	<ul>
