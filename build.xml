@@ -20,12 +20,12 @@
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
-	<property name="starcom-base" value="src\org\starexec\command"/>
+	<property name="starcom-base" value="command"/>
 	<property name="starcom-comp" value="${starcom-base}/compile"/>
 	<property name="starcom-build" value="${starcom-base}/build" />
 	<property name="starcomlib" value="starcomlib"/>
 	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
-	<property name="starcomsrc" value="${starcom-base}"/>
+	<property name="starcomsrc" value="${starcom-base}/src"/>
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
         <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
@@ -85,11 +85,8 @@
 		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
-	<target name="postcleanstarcom" depends="zipstarcom">
-		<delete dir="${starcom-build}" />
-		<delete dir="${starcom-comp}" />
-	</target>
-	<target name="war" depends="postcleanstarcom">		
+	
+	<target name="war" depends="zipcleanstarcom">		
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
 	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
