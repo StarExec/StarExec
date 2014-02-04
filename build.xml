@@ -86,7 +86,11 @@
 		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
-	<target name="war" depends="zipstarcom">		
+	<target name="postcleanstarcom" depends="zipstarcom">
+		<delete dir="${starcom-build}" />
+		<delete dir="${starcom-comp}" />
+	</target>
+	<target name="war" depends="postcleanstarcom">		
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
 	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
