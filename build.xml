@@ -86,7 +86,8 @@
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
 	
-	<target name="war" depends="zipcleanstarcom">		
+	<target name="war" depends="zipstarcom">		
+		
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
 	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
