@@ -24,7 +24,7 @@
 	<property name="starcom-base" value="src\org\starexec\command"/>
 	<property name="starcom-comp" value="${starcom-base}/compile"/>
 	<property name="starcom-build" value="${starcom-base}/build" />
-	<property name="starcomlib" value="${starcom-base}/lib"/>
+	<property name="starcomlib" value="${web-inf}/lib"/>
 	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
 	<property name="starcomsrc" value="${starcom-base}"/>
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
@@ -83,7 +83,7 @@
 		
 		<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
 	<target name="zipstarcom" depends="command">
-		<copy file="${starcom-base}/Manual.txt" tofile="${starcom-build}/Manual.txt" />
+		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
 	<target name="war" depends="zipstarcom">		

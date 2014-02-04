@@ -91,7 +91,9 @@ corresponds to a dependent bench space.
 
 "ow" -Indicates that the file at the path given by "out", if it exists, should be overwritten with the new file.
 
-"pid" -Specifies a processor id (used only in job creation).
+"pid" -Specifies a post processor id (used only in job creation).
+
+"preid" -Specifies a pre processor id (used only in job creation).
 
 "qid" -Specifies a queue id (used only in job creation).
 
@@ -235,6 +237,10 @@ OPTIONAL: "ow" "since"
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
+--getpreproc -Downloads all pre processors associated with the given community id.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+
 --getsolver -Downloads the solver associated with the given community id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
@@ -246,7 +252,7 @@ OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacehierarchy -Downloads the space hierarchy associated with the given space id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacexml -Downloads an XML file representing.
 REQUIRED: "id" "out"
@@ -304,7 +310,7 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
-EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar '
+EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
 
 --pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
 				 refers to a community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
@@ -403,8 +409,8 @@ varied set of parameters.
 			 the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
-REQUIRED: "id" "pid" "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow"
+REQUIRED: "id"  "qid" 
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
