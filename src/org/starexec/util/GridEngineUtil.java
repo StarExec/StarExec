@@ -864,6 +864,7 @@ public class GridEngineUtil {
 			//Add the host [COMPLETE]
 			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+			log.debug("envp[0] = " + envp[0]);
 			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
 			
 			
