@@ -336,7 +336,7 @@ public abstract class JobManager {
 		File f = new File(scriptPath);
 
 		f.delete();		
-		f.mkdirs();
+		f.getParentFile().mkdirs();
 		f.createNewFile();
 
 		if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
