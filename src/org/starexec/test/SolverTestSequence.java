@@ -20,7 +20,6 @@ public class SolverTestSequence extends TestSequence {
 		Solver cs=Solvers.get(s.getId());
 		Assert.assertNotNull(cs);
 		Assert.assertEquals(cs.getId(),s.getId());
-		
 	}
 	
 	@Test

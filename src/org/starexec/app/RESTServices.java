@@ -3151,7 +3151,6 @@ public class RESTServices {
 		// Get the space the subSpace is being copied from
 		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
-		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
 		
 		// Convert the subSpaces to copy to an int list

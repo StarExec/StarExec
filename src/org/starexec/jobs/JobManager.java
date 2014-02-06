@@ -335,7 +335,8 @@ public abstract class JobManager {
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		File f = new File(scriptPath);
 
-		f.delete();				
+		f.delete();		
+		f.mkdirs();
 		f.createNewFile();
 
 		if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
