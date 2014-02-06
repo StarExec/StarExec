@@ -56,13 +56,13 @@ public abstract class JobManager {
 	List<Queue> queues = Queues.getAll();
 	for (Queue q : queues) {
 	    int qId = q.getId();
+	    log.debug("got queue = "+qId);
 	    String qname = q.getName();
-
-
 			int queueSize = Queues.getSizeOfQueue(qId);
-
+			log.debug("got a queue size of "+queueSize);
 			if (queueSize < R.NUM_JOB_SCRIPTS) {
 				List<Job> joblist = Queues.getPendingJobs(qId);
+				log.debug("got a list of jobs of size "+joblist.size());
 				if (joblist.size() > 0) {
 					submitJobs(joblist, q, queueSize);
 				}

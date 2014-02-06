@@ -127,7 +127,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_eaburns" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_eaburns?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/starexec_eaburns/data_dir/batchSpace/batchSpaceSchema.xsd" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
