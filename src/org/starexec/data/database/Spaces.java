@@ -8,9 +8,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -53,15 +55,16 @@ public class Spaces {
 			int defaultPermId = Permissions.add(s.getPermission(), con);
 			
 			// Add the space with the default permissions
-			 procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?)}");	
+			 procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?,?)}");	
 			procAddSpace.setString(1, s.getName());
 			procAddSpace.setString(2, s.getDescription());
 			procAddSpace.setBoolean(3, s.isLocked());
 			procAddSpace.setInt(4, defaultPermId);
 			procAddSpace.setInt(5, parentId);
-			procAddSpace.registerOutParameter(6, java.sql.Types.INTEGER);		
+			procAddSpace.setBoolean(6, s.isStickyLeaders());
+			procAddSpace.registerOutParameter(7, java.sql.Types.INTEGER);		
 			procAddSpace.executeUpdate();
-			int newSpaceId = procAddSpace.getInt(6);
+			int newSpaceId = procAddSpace.getInt(7);
 			
 			log.debug("Calling AssociateSpace");
 			// Add the new space as a child space of the parent space
@@ -337,6 +340,7 @@ public class Spaces {
 				s.setLocked(results.getBoolean("locked"));
 				s.setCreated(results.getTimestamp("created"));
 				s.setPublic(results.getBoolean("public_access"));
+				s.setStickyLeaders(results.getBoolean("sticky_leaders"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -764,7 +768,8 @@ public class Spaces {
 				s.setName(results.getString("space.name"));
 				s.setId(results.getInt("space.id"));
 				s.setDescription(results.getString("space.description"));
-				s.setLocked(results.getBoolean("space.locked"));				
+				s.setLocked(results.getBoolean("space.locked"));	
+				s.setStickyLeaders(results.getBoolean("space.sticky_leaders"));
 				spaces.add(s);
 			}					
 			return spaces;
@@ -2092,18 +2097,19 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 	protected static boolean updateDetails(Space s, Connection con) throws Exception {
 		CallableStatement procedure = null;
 		try {
-			 procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?)}");	
+			 procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?,?)}");	
 			
 			procedure.setInt(1, s.getId());
 			procedure.setString(2, s.getName());
 			procedure.setString(3, s.getDescription());
 			procedure.setBoolean(4, s.isLocked());
-			procedure.registerOutParameter(5, java.sql.Types.INTEGER);		
+			procedure.setBoolean(5,s.isStickyLeaders());
+			procedure.registerOutParameter(6, java.sql.Types.INTEGER);		
 
 			procedure.executeUpdate();
 
 			// Get the id of the associated default permission, then update that permission
-			int permId = procedure.getInt(5);
+			int permId = procedure.getInt(6);
 			Permissions.updatePermission(permId, s.getPermission(), con);
 			
 			return true;
@@ -2143,5 +2149,35 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 		}
 		
 		return false;
+	}
+	/**
+	 * For a given space, gets the IDs of every person that should be a leader in that
+	 * space due to being sticky leaders in some ancestor space
+	 * @param spaceId The ID of the space to get all the sticky leaders for
+	 * @return A set of integers containing the IDs of all the relevant users
+	 */
+	public static Set<Integer> getStickyLeaders(int spaceId) {
+		
+		if (Communities.isCommunity(spaceId)) {
+			return new HashSet<Integer>();
+		}
+		return recGetStickyLeaders(Spaces.getParentSpace(spaceId));
+	}
+	private static Set<Integer> recGetStickyLeaders(int spaceId) {
+		HashSet<Integer> ids=new HashSet<Integer>();
+		Space s=Spaces.get(spaceId);
+		if (s.isStickyLeaders()) {
+			List<User> leaders=Spaces.getLeaders(spaceId);
+			for (User u: leaders) {
+				ids.add(u.getId());
+			}
+		}
+		
+		if (Communities.isCommunity(spaceId)) {
+			return ids;
+		} else {
+			ids.addAll(recGetStickyLeaders(Spaces.getParentSpace(spaceId)));
+			return ids;
+		}
 	}
 }

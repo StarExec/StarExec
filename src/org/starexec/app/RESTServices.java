@@ -1003,14 +1003,18 @@ public class RESTServices {
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("description", request)
-				|| !Util.paramExists("locked", request)){
+				|| !Util.paramExists("locked", request)
+				|| !Util.paramExists("sticky", request)){
+			System.out.println("here");
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(request.getParameter("name"))
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
-				|| !Validator.isValidBool(request.getParameter("locked"))){
+				|| !Validator.isValidBool(request.getParameter("locked"))
+				|| !Validator.isValidBool(request.getParameter("sticky"))){
+			System.out.println("here2");
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		Space os=Spaces.get(id);
@@ -1034,7 +1038,7 @@ public class RESTServices {
 		s.setName(request.getParameter("name"));
 		s.setDescription(request.getParameter("description"));
 		s.setLocked(Boolean.parseBoolean(request.getParameter("locked")));
-		
+		s.setStickyLeaders(Boolean.parseBoolean(request.getParameter("sticky")));
 		// Extract permission details from request and add them to a new permission object
 		// Then set the above space's permission to this new permission object
 		Permission p = new Permission();

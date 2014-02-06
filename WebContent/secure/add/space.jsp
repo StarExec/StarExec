@@ -86,6 +86,14 @@
 							<input type="radio" name="users" value="true" checked="checked"/> yes
 							<input type="radio" name="users" value="false"/> no
 						</td>
+					</tr>
+					<tr>
+						<td class="label"> <p>Sticky-Leaders</p> </td>
+						<td>
+							<input type="radio" name="sticky" value="true"/> yes
+							<input type="radio" name="sticky" value="false" checked="checked"/> no
+						</td>
+					</tr>
 					<tr>
 						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
 						<td colspan="1"><button id="btnCreate">create</button></td>

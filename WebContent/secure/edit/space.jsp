@@ -54,6 +54,11 @@
 				} else {
 					request.setAttribute("isNotLocked", "checked=\"checked\" ");
 				}
+				if (s.isStickyLeaders()) {
+					request.setAttribute("isSticky","checked=\"checked\"");
+				} else {
+					request.setAttribute("isNotSticky","checked=\"checked\"");
+				}
 			}
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Space does not exist or is restricted");
@@ -122,7 +127,15 @@
 							<input id="locked" type="radio" name="locked" value="true"  ${isLocked} /><label>yes</label>
 							<input id="locked" type="radio" name="locked" value="false" ${isNotLocked} /><label>no</label>
 						</td>
-					</tr>																			
+					</tr>	
+					<tr>
+						<td>sticky leaders</td>
+						<td>
+							<input id="sticky" type="radio" name="sticky" value="true" ${isSticky} /><label>yes</label>
+							<input id="sticky" type="radio" name="sticky" value="false" ${isNotSticky} /><label>no</label>
+						</td>
+						
+					</tr>																		
 				</tbody>
 			</table>
 			<button type="button" id="update">update</button>

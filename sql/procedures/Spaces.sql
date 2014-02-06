@@ -8,10 +8,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddSpace;
-CREATE PROCEDURE AddSpace(IN _name VARCHAR(128), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, OUT id INT)
+CREATE PROCEDURE AddSpace(IN _name VARCHAR(128), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, IN _sticky BOOLEAN, OUT id INT)
 	BEGIN		
-		INSERT INTO spaces (name, created, description, locked, default_permission)
-		VALUES (_name, SYSDATE(), _desc, _locked, _permission);
+		INSERT INTO spaces (name, created, description, locked, default_permission,sticky_leaders)
+		VALUES (_name, SYSDATE(), _desc, _locked, _permission,_sticky);
 		SELECT LAST_INSERT_ID() INTO id;
 		INSERT INTO closure (ancestor, descendant)	-- Update closure table
 			SELECT ancestor, id FROM closure
@@ -99,7 +99,7 @@ CREATE PROCEDURE GetJobSpaceById(IN _id INT)
 DROP PROCEDURE IF EXISTS GetSpacesByUser;
 CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 	BEGIN
-		SELECT space.name,space.id,space.locked,space.description
+		SELECT space.name,space.id,space.locked,space.description,space.sticky_leaders
 		FROM user_assoc
 			JOIN spaces AS space ON space.id=space_id
 		WHERE user_id=_userId;
@@ -349,12 +349,13 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 -- help update default permissions.
 -- Author: Skylar Stark	
 DROP PROCEDURE IF EXISTS UpdateSpaceDetails;
-CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(128), IN _desc TEXT, IN _locked BOOLEAN, OUT _perm INT)
+CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(128), IN _desc TEXT, IN _locked BOOLEAN, IN _sticky BOOLEAN, OUT _perm INT)
 	BEGIN
 		UPDATE spaces
 		SET name = _name,
 		description = _desc,
-		locked = _locked
+		locked = _locked,
+		sticky_leaders=_sticky
 		WHERE id = _spaceId;
 		
 		SELECT default_permission INTO _perm
@@ -525,6 +526,15 @@ BEGIN
 	SELECT id
 	FROM spaces
 	WHERE name = _spaceName;
+END //
+
+
+-- Sets the "sticky_leader" flag for a given space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetStickyLeader;
+CREATE PROCEDURE SetStickyLeader(IN _spaceID INT, IN _val BOOLEAN)
+BEGIN
+	UPDATE spaces SET sticky_leader =  _val WHERE id=_spaceID;
 END //
 
 DELIMITER ; -- This should always be at the end of this file

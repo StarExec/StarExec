@@ -2,7 +2,9 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -11,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
@@ -44,6 +47,7 @@ public class AddSpace extends HttpServlet {
 	private static final String removeUser = "removeUser";
 	private static final String removeSpace = "removeSpace";
 	private static final String removeJob = "removeJob";
+	private static final String stickyLeaders="sticky";
 	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -67,6 +71,7 @@ public class AddSpace extends HttpServlet {
 		s.setName((String)request.getParameter(name));
 		s.setDescription((String)request.getParameter(description));
 		s.setLocked(Boolean.parseBoolean((String)request.getParameter(locked)));
+		s.setStickyLeaders(Boolean.parseBoolean((String)request.getParameter(stickyLeaders)));
 		int spaceId1 = Integer.parseInt(request.getParameter(parentSpace));
 		s.setParentSpace(spaceId1);
 		
@@ -94,7 +99,7 @@ public class AddSpace extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
 			return;
 		}
-				
+		Space parent=Spaces.get(spaceId);		
 		int newSpaceId = Spaces.add(s, spaceId, userId);
 		
 		//Inherit Users
@@ -109,6 +114,14 @@ public class AddSpace extends HttpServlet {
 				int tempId = u.getId();
 				Users.associate(tempId, newSpaceId);
 			}
+		}
+		//adds sticky users from ancestor spaces
+		log.debug("adding leaders from parent spaces");
+		Set<Integer> users=Spaces.getStickyLeaders(newSpaceId);
+		Permission perm=Permissions.getFullPermission();
+		for (Integer id : users) {
+			Users.associate(id, newSpaceId);
+			Permissions.set(id, newSpaceId, perm);
 		}
 		
 		if(newSpaceId <= 0) {			
@@ -147,6 +160,12 @@ public class AddSpace extends HttpServlet {
 			if(!lockVal.equals("true") && ! lockVal.equals("false")) {
 				return false;
 			}
+			//sticky should also be a parsable boolean
+			String sticky = (String) spaceRequest.getParameter(stickyLeaders);
+			if (!sticky.equals("true") && ! sticky.equals("false")) {
+				return false;
+			}
+			
 			
 			// Verify this user can add spaces to this space
 			Permission p = SessionUtil.getPermission(spaceRequest, spaceId);

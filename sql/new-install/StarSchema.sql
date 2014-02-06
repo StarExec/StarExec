@@ -68,6 +68,7 @@ CREATE TABLE spaces (
 	locked BOOLEAN DEFAULT 0,
 	default_permission INT,
 	public_access BOOLEAN DEFAULT 0,
+	sticky_leaders BOOLEAN DEFAULT 0,
 	PRIMARY KEY (id),
 	CONSTRAINT spaces_default_permission FOREIGN KEY (default_permission) REFERENCES permissions(id) ON DELETE SET NULL
 );

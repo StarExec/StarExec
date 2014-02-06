@@ -27,7 +27,7 @@ public class Space extends Identifiable implements Iterable<Space> {
 	@Expose	private List<User> users;
 	@Expose	private List<Space> subspaces;
 	@Expose private Integer parentSpace;
-	
+	@Expose private boolean stickyLeaders;
 	public void setParentSpace(Integer space) {
 		this.parentSpace = space;
 	}
@@ -228,5 +228,13 @@ public class Space extends Identifiable implements Iterable<Space> {
 	@Override
 	public Iterator<Space> iterator() {
 		return this.subspaces.iterator();
+	}
+
+	public void setStickyLeaders(boolean stickyLeaders) {
+		this.stickyLeaders = stickyLeaders;
+	}
+
+	public boolean isStickyLeaders() {
+		return stickyLeaders;
 	}			
 }

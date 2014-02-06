@@ -86,6 +86,7 @@ function attachButtonActions(){
 			{		name		: $("#name").val(), 
 					description	: $("#description").val(),
 					locked		: $("#locked").is(':checked'),
+					sticky 		: $("#sticky").is(":checked"),
 					addBench	: $("#addBench").is(':checked'),
 					addJob		: $("#addJob").is(':checked'),
 					addSolver	: $("#addSolver").is(':checked'),

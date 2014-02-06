@@ -987,4 +987,13 @@ public class Users {
 		
 		return false;
 	}
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isAdmin(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("admin");
+	}
 }

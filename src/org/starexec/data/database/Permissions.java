@@ -388,8 +388,10 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		
 		//the admin has full permissions everywhere
-		if (userId==R.ADMIN_USER_ID) {
+		if (Users.isAdmin(userId)) {
+			System.out.println("permissions for an admin were obtained userId = "+userId);
 			return Permissions.getFullPermission();
 		}
 		try {
@@ -454,7 +456,6 @@ public class Permissions {
 		p.setRemoveUser(true);
 		p.setRemoveJob(true);
 		p.setLeader(true);
-		//p.setId(userId);
 		return p;
 	}
 	
