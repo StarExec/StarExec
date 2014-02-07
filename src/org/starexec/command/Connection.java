@@ -53,7 +53,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.entity.mime.content.StringBody;
 
 import com.google.gson.*;
-import com.sun.istack.internal.logging.Logger;
 
 
 public class Connection {
