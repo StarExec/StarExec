@@ -15,6 +15,7 @@ public class TestManager {
 	public static void initializeTests() {
 		tests.add(new SolverTestSequence());
 		tests.add(new SpacePropertiesTest());
+		tests.add(new StarexecCommandTests());
 	}
 	
 	/**

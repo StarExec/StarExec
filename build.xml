@@ -20,12 +20,12 @@
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
-	<property name="starcom-base" value="command"/>
+	<property name="starcom-base" value="${source-dir}/org/starexec/command"/>
 	<property name="starcom-comp" value="${starcom-base}/compile"/>
 	<property name="starcom-build" value="${starcom-base}/build" />
-	<property name="starcomlib" value="${starcom-base}/lib"/>
+	<property name="starcomlib" value="${web-inf}/lib"/>
 	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
-	<property name="starcomsrc" value="${starcom-base}/src"/>
+	<property name="starcomsrc" value="${starcom-base}"/>
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
         <fileset dir="${web-inf}/lib" includes="**/*.jar"/>

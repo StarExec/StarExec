@@ -53,6 +53,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.entity.mime.content.StringBody;
 
 import com.google.gson.*;
+import com.sun.istack.internal.logging.Logger;
 
 
 public class Connection {
@@ -108,7 +109,7 @@ public class Connection {
 			ClientConnectionManager ccm = base.getConnectionManager();
 			SchemeRegistry sr = ccm.getSchemeRegistry();
 			sr.register(new Scheme("https", ssf, 443));
-
+			
 			client = new DefaultHttpClient(ccm, base.getParams());
 			return client;
 		} catch (Exception e) {
@@ -128,7 +129,7 @@ public class Connection {
 		setUsername(con.getUsername());
 		setPassword(con.getPassword());
 		client=getClient();
-		
+		client.getParams();
 		setInfoIndices(con.getInfoIndices());
 		setOutputIndices(con.getOutputIndices());
 	}
@@ -139,20 +140,20 @@ public class Connection {
 	 * @param commandParams User specified parameters
 	 */
 	
-	protected Connection(String user, String pass, String url) {
+	public Connection(String user, String pass, String url) {
 		this.setBaseURL(url);
 		setUsername(user);
 		setPassword(pass);
 		initializeComponents();
 	}
 	
-	protected Connection(String user, String pass) {
+	public Connection(String user, String pass) {
 		setBaseURL(R.URL_STAREXEC_BASE);
 		setUsername(user);
 		setPassword(pass);
 		initializeComponents();
 	}
-	protected Connection() {
+	public Connection() {
 		setBaseURL(R.URL_STAREXEC_BASE);
 		setUsername("public");
 		setPassword("public");
@@ -183,7 +184,10 @@ public class Connection {
 	protected void setUsername(String username) {
 		this.username = username;
 	}
-
+	/**
+	 * Gets the username that is being used on this connection
+	 * @return The username as a String
+	 */
 	protected String getUsername() {
 		return username;
 	}
@@ -191,7 +195,10 @@ public class Connection {
 	protected void setPassword(String password) {
 		this.password = password;
 	}
-
+	/**
+	 * Gets the password that is being used on this connection
+	 * @return The password as a String
+	 */
 	protected String getPassword() {
 		return password;
 	}
@@ -240,7 +247,7 @@ public class Connection {
 		return true;
 	}
 	
-	protected int uploadBenchmarks(String filePath,Integer type,Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy,
+	public int uploadBenchmarks(String filePath,Integer type,Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy,
 			Boolean dependency,Boolean linked, Integer depRoot) {		
 		try {
 			
@@ -295,7 +302,14 @@ public class Connection {
 			return Status.ERROR_SERVER;
 		}
 	}
-	
+	/**
+	 * Uploads a new configuration to an existing solver
+	 * @param name The name of the new configuration
+	 * @param desc A description of the configuration
+	 * @param filePath The file to upload
+	 * @param solverID The ID of the solver to attach the configuration to
+	 * @return The ID of the new configuration on success (a positive integer), or a negative error code on failure
+	 */
 	public int uploadConfiguration(String name, String desc, String filePath, Integer solverID) {
 		try {
 			
@@ -612,7 +626,7 @@ public class Connection {
 	 * @return The integer user ID
 	 */
 	
-	protected int getUserID() {
+	public int getUserID() {
 		try {
 			HttpGet get=new HttpGet(baseURL+R.URL_GETID);
 			get=(HttpGet) setHeaders(get);
@@ -777,7 +791,7 @@ public class Connection {
 	 * @author Eric Burns
 	 */
 	
-	protected boolean logout() {
+	public boolean logout() {
 		try {
 			HttpPost post=new HttpPost(baseURL+R.URL_LOGOUT);
 			post=(HttpPost) setHeaders(post);
@@ -796,7 +810,7 @@ public class Connection {
 	 * indicating an error
 	 * @author Eric Burns
 	 */
-	protected int login() {
+	public int login() {
 		try {
 			HttpGet get = new HttpGet(baseURL+R.URL_HOME);
 			HttpResponse response=client.execute(get);
