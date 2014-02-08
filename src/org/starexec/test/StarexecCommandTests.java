@@ -2,6 +2,7 @@ package org.starexec.test;
 
 import org.junit.Assert;
 import org.starexec.command.Connection;
+import org.starexec.util.Util;
 
 import org.apache.log4j.Logger;
 public class StarexecCommandTests extends TestSequence {
@@ -25,7 +26,7 @@ public class StarexecCommandTests extends TestSequence {
 		//this prevents the apache http libraries from logging things. Their logs are very prolific
 		//and drown out ours
 		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
-		con=new Connection("user@uiowa.edu","Starexec4ever","http://localhost:8080/starexec/");
+		con=new Connection("user@uiowa.edu","Starexec4ever",Util.url(""));
 		int status = con.login();
 		Assert.assertEquals(0,status);
 	}
