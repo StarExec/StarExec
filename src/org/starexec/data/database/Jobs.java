@@ -325,6 +325,54 @@ public class Jobs {
 		return get(jobId,false);
 	}
 	
+	public static int getWallclockTimeout(int jobId) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		int timeout=-1;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetWallclockTimeout(?)}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				timeout=results.getInt("wallclock");
+			}
+		} catch (Exception e) {
+			log.error("getWallclockTimeout says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		
+		}
+		return timeout;
+	}
+	
+	public static int getCpuTimeout(int jobId) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		int timeout=-1;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetCpuTimeout(?)}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				timeout=results.getInt("cpu");
+			}
+		} catch (Exception e) {
+			log.error("getCpuTimeout says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		
+		}
+		return timeout;
+	}
+	
 	
 	/**
 	 * Gets information about the job with the given ID. Job pair information is not returned

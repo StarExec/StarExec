@@ -391,7 +391,7 @@ public class Permissions {
 		
 		//the admin has full permissions everywhere
 		if (Users.isAdmin(userId)) {
-			System.out.println("permissions for an admin were obtained userId = "+userId);
+			log.debug("permissions for an admin were obtained userId = "+userId);
 			return Permissions.getFullPermission();
 		}
 		try {

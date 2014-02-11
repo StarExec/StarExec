@@ -647,6 +647,7 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
 		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
+			log.debug("user "+userId+" requested to see a space they are not allowed to see");
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		

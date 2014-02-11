@@ -164,7 +164,9 @@ public class Users {
 				u.setRole(results.getString("role"));
 				u.setDiskQuota(results.getLong("disk_quota"));
 				return u;
-			}			
+			} else {
+				log.debug("Could not find user with id = "+id);
+			}
 			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

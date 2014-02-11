@@ -34,6 +34,8 @@
 				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
 				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
 				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
+				int wallclock=Jobs.getWallclockTimeout(jobId);
+				int cpu=Jobs.getCpuTimeout(jobId);
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
@@ -50,6 +52,8 @@
 				request.setAttribute("queues", Queues.getUserQueues(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
+				request.setAttribute("cpu",cpu);
+				request.setAttribute("wallclock",wallclock);
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -217,7 +221,15 @@
 							<c:if test="${empty job.queue}">
 							<td>unknown</td>
 							</c:if>						
-						</tr>				
+						</tr>
+						<tr title="the wallclock timeout each pair in the job was subjected to">
+							<td>wallclock timeout</td>
+							<td>${wallclock}</td>
+						</tr>		
+						<tr title="the wallclock timeout each pair in the job was subjected to">
+							<td>cpu timeout</td>
+							<td>${cpu}</td>
+						</tr>		
 					</tbody>
 				</table>	
 			</fieldset>

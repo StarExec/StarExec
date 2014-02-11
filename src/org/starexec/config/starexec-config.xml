@@ -207,7 +207,7 @@
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="eric-burns@uiowa.edu" />    
-	  <property key="PUBLIC_USER_ID" value="8" /> 
+	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 
  <!--   SGE Configuration     --> 
 	  <property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Users\\Eric\\CmdSpoof -sql.txt" /> 

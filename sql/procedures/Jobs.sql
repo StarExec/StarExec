@@ -1054,4 +1054,18 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 		UPDATE job_pairs SET status_code=_processingStatus WHERE job_id=_jobId AND status_code=_completeStatus;
 		UPDATE jobs SET post_processor = _procId WHERE id=_jobId;
 	END //
+	
+DROP PROCEDURE IF EXISTS GetWallclockTimeout;
+CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT wallclock 
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetCpuTimeout;
+CREATE PROCEDURE GetCpuTimeout(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT cpu
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
+	END //
 DELIMITER ; -- this should always be at the end of the file

@@ -3,6 +3,7 @@ package org.starexec.app;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
+import org.starexec.test.StarexecCommandTests;
 import org.starexec.test.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
@@ -233,4 +235,5 @@ public class Starexec implements ServletContextListener {
 		}	
 		
 	}
+	
 }

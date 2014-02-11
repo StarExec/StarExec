@@ -246,7 +246,37 @@ public class Connection {
 		return true;
 	}
 	
-	public int uploadBenchmarks(String filePath,Integer type,Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy,
+	/**
+	 * Uploads a set of benchmarks to Starexec. The benchmarks will be expanded in a full space hierarchy.
+	 * @param filePath The path to the archive containing the benchmarks
+	 * @param processorID The ID of the processor that should be used on the benchmarks. If there is no such processor, this 
+	 * can be null
+	 * @param spaceID The ID of the space to root the new hierarchy at
+	 * @param p The permission object representing permissions that should be applied to every space created when
+	 * these benchmarks are uploaded
+	 * @param downloadable Whether the benchmarks should be downloadable by other users.
+	 * @return 0 on success, and a negative error code otherwise.
+	 */
+	public int uploadBenchmarksToSpaceHierarchy(String filePath,Integer processorID, Integer spaceID,Permission p, Boolean downloadable) {
+		return uploadBenchmarks(filePath,processorID,spaceID,"local",p,null,downloadable,true,false,false,null);
+	}
+	
+	/**
+	 * Uploads a set of benchmarks to Starexec. The benchmarks will be expanded in a full space hierarchy.
+	 * @param filePath The path to the archive containing the benchmarks
+	 * @param processorID The ID of the processor that should be used on the benchmarks. If there is no such processor, this 
+	 * can be null
+	 * @param spaceID The ID of the space to put the benchmarks in
+	 * @param downloadable Whether the benchmarks should be downloadable by other users.
+	 * @return 0 on success, and a negative error code otherwise.
+	 */
+	public int uploadBenchmarksToSingleSpace(String filePath,Integer processorID, Integer spaceID,Boolean downloadable) {
+		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),null,downloadable,true,false,false,null);
+	}
+	
+	//TODO: Support dependencies for benchmarks
+	
+	protected int uploadBenchmarks(String filePath,Integer type,Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy,
 			Boolean dependency,Boolean linked, Integer depRoot) {		
 		try {
 			
@@ -452,17 +482,41 @@ public class Connection {
 	}
 	
 	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param desc The description of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param filePath the path to the solver archive to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolver(String name,String desc,Integer spaceID, String filePath, Boolean downloadable) {
+		return uploadSolver(name,desc,"text",spaceID,filePath,downloadable);
+	}
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param filePath the path to the solver archive to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolver(String name,Integer spaceID,String filePath,Boolean downloadable) {
+		return uploadSolver(name,null,"upload",spaceID,filePath,downloadable);
+	}
+	
+	/**
 	 * 
 	 * @param name The name of the solver
-	 * @param desc If the upload method is
+	 * @param desc If the upload method is "text", then this should be the description. If it is "file", it should
+	 * be a filepath to the needed description file. If it is "upload," it is not needed
 	 * @param descMethod Either "text", "upload", or "file"
-	 * @param spaceID
-	 * @param file
-	 * @param downloadable
-	 * @return
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param filePath The path to the solver archive to upload.
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	//TODO: Consider how to handle descriptions here
-	public int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable) {
+	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable) {
 		try {
 			
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
@@ -636,7 +690,6 @@ public class Connection {
 			return json.getAsInt();
 			
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}
@@ -1004,29 +1057,86 @@ public class Connection {
 		}
 	}
 	
-	public HashMap<Integer,String> getSolversInSpace(Integer spaceID, Integer limit) {
-		return getPrims(spaceID, limit, false, "solvers");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all solvers in the given
+	 * space
+	 * @param spaceID The ID of the space
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getSolversInSpace(Integer spaceID) {
+		return getPrims(spaceID, null, false, "solvers");
 	}
-	public HashMap<Integer,String> getBenchmarkssInSpace(Integer spaceID, Integer limit) {
-		return getPrims(spaceID, limit, false, "benchmarks");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all benchmarks in the given
+	 * space
+	 * @param spaceID The ID of the space
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getBenchmarksInSpace(Integer spaceID) {
+		return getPrims(spaceID, null, false, "benchmarks");
 	}
-	public HashMap<Integer,String> getJobsInSpace(Integer spaceID, Integer limit) {
-		return getPrims(spaceID, limit, false, "jobs");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs in the given
+	 * space
+	 * @param spaceID The ID of the space
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getJobsInSpace(Integer spaceID) {
+		return getPrims(spaceID, null, false, "jobs");
 	}
-	public HashMap<Integer,String> getUsersInSpace(Integer spaceID, Integer limit) {
-		return getPrims(spaceID, limit, false, "users");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all users in the given
+	 * space
+	 * @param spaceID The ID of the space
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getUsersInSpace(Integer spaceID) {
+		return getPrims(spaceID, null, false, "users");
 	}
-	public HashMap<Integer,String> getSpacesInSpace(Integer spaceID, Integer limit) {
-		return getPrims(spaceID, limit, false, "spaces");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all spaces in the given
+	 * space
+	 * @param spaceID The ID of the space
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getSpacesInSpace(Integer spaceID) {
+		return getPrims(spaceID, null, false, "spaces");
 	}
-	public HashMap<Integer,String> getSolversByUser(Integer userID, Integer limit) {
-		return getPrims(userID, limit, true, "solvers");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all solvers the current user owns
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getSolversByUser() {
+		return getPrims(null, null, true, "solvers");
 	}
-	public HashMap<Integer,String> getBenchmarksByUser(Integer userID, Integer limit) {
-		return getPrims(userID, limit, true, "benchmarks");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all benchmarks the current user owns
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	
+	public HashMap<Integer,String> getBenchmarksByUser() {
+		return getPrims(null, null, true, "benchmarks");
 	}
-	public HashMap<Integer,String> getJobsByUser(Integer userID, Integer limit) {
-		return getPrims(userID, limit, true, "jobs");
+	/**
+	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs the current user owns
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+	public HashMap<Integer,String> getJobsByUser() {
+		return getPrims(null, null, true, "jobs");
 	}
 
 	
@@ -1147,7 +1257,6 @@ public class Connection {
 			
 			return prims;
 		} catch (Exception e) {
-			e.printStackTrace();
 			errorMap.put(Status.ERROR_SERVER, null);
 			
 			return errorMap;
@@ -1392,7 +1501,6 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_SERVER;
 		}
