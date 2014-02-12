@@ -336,7 +336,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				timeout=results.getInt("wallclock");
+				timeout=results.getInt("clockTimeout");
 			}
 		} catch (Exception e) {
 			log.error("getWallclockTimeout says "+e.getMessage(),e);
@@ -360,7 +360,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				timeout=results.getInt("cpu");
+				timeout=results.getInt("cpuTimeout");
 			}
 		} catch (Exception e) {
 			log.error("getCpuTimeout says "+e.getMessage(),e);

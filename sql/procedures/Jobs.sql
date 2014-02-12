@@ -1058,14 +1058,14 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 DROP PROCEDURE IF EXISTS GetWallclockTimeout;
 CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT)
 	BEGIN
-		SELECT DISTINCT wallclock 
+		SELECT DISTINCT clockTimeout 
 		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
 	END //
 	
 DROP PROCEDURE IF EXISTS GetCpuTimeout;
 CREATE PROCEDURE GetCpuTimeout(IN _jobId INT)
 	BEGIN
-		SELECT DISTINCT cpu
+		SELECT DISTINCT cpuTimeout
 		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
 	END //
 DELIMITER ; -- this should always be at the end of the file
