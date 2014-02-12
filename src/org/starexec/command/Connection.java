@@ -258,7 +258,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code otherwise.
 	 */
 	public int uploadBenchmarksToSpaceHierarchy(String filePath,Integer processorID, Integer spaceID,Permission p, Boolean downloadable) {
-		return uploadBenchmarks(filePath,processorID,spaceID,"local",p,null,downloadable,true,false,false,null);
+		return uploadBenchmarks(filePath,processorID,spaceID,"local",p,"",downloadable,true,false,false,null);
 	}
 	
 	/**
@@ -271,7 +271,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code otherwise.
 	 */
 	public int uploadBenchmarksToSingleSpace(String filePath,Integer processorID, Integer spaceID,Boolean downloadable) {
-		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),null,downloadable,true,false,false,null);
+		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),"",downloadable,true,false,false,null);
 	}
 	
 	//TODO: Support dependencies for benchmarks
@@ -327,7 +327,7 @@ public class Connection {
 			//TODO: improve the error handling here
 			return 0;
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}
@@ -721,7 +721,9 @@ public class Connection {
 	
 	protected int setUserSetting(String setting,String val) {
 		try {	
-			HttpPost post=new HttpPost(baseURL+R.URL_USERSETTING+setting+"/"+val);
+			String url=baseURL+R.URL_USERSETTING+setting+"/"+val;
+			url=url.replace(" ", "%20"); //encodes white space, which can't be used in a URL
+			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
@@ -733,7 +735,7 @@ public class Connection {
 			
 			return 0;
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}

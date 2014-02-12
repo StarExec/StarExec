@@ -998,4 +998,8 @@ public class Users {
 		User u=Users.get(userId);
 		return u.getRole().equals("admin");
 	}
+	
+	public static User getTestUser() {
+		return Users.get(R.TEST_USER_ID);
+	}
 }

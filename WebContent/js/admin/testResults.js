@@ -3,7 +3,9 @@ var testTable;
 $(document).ready(function(){
 	initUI();
 	setInterval(function() {
-		testTable.fnReloadAjax();
+		//this makes it difficult to view the table, as upon refreshing any sorting / page turning the 
+		//user did is undone
+		//testTable.fnReloadAjax();
 		
 	},5000);
 });

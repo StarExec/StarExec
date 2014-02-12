@@ -256,4 +256,8 @@ public class Communities {
 		
 		return true;
 	}
+	
+	public static Space getTestCommunity() {
+		return Communities.getDetails(R.TEST_COMMUNITY_ID);
+	}
 }

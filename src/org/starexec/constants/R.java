@@ -102,6 +102,11 @@ public class R {
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
     public static String ADMIN_USER_PASSWORD = "admin";			
     
+    //Test info
+    public static int TEST_USER_ID=-1;
+    public static int TEST_COMMUNITY_ID=-1;
+    public static String TEST_USER_PASSWORD=null;
+    
     //Public user info
     public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login
