@@ -865,11 +865,11 @@ public class Download extends HttpServlet {
 
 			if (includeBenchmarks) {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
-				File benchmarkDir=new File(tempDir,"benchmarks");
-				benchmarkDir.mkdirs();
+				//File benchmarkDir=new File(tempDir,"benchmarks");
+				//benchmarkDir.mkdirs();
 				for(Benchmark b: benchList){
 					if(b.isDownloadable() || b.getUserId()==uid ){
-						FileUtils.copyFileToDirectory(new File(b.getPath()), benchmarkDir);
+						FileUtils.copyFileToDirectory(new File(b.getPath()), tempDir); // Was benchmarkDir
 					
 					}
 				}
