@@ -626,15 +626,11 @@ public class Download extends HttpServlet {
 			}
 			sb.append(pair.getStatus().toString());
 
-			if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) {
-				sb.append(",");
-				sb.append((pair.getWallclockTime()));
-				sb.append(",");
-				sb.append(pair.getStarexecResult());
-			}
-			else {
-				sb.append(",-,-");
-			}
+			sb.append(",");
+			sb.append((pair.getWallclockTime()));
+			sb.append(",");
+			sb.append(pair.getStarexecResult());
+
 			if (attrNames != null) {
 				// print out attributes for this job pair
 				Properties props = pair.getAttributes();
