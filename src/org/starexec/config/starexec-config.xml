@@ -59,7 +59,7 @@
    			<property key="PUBLIC_USER_ID" value="2" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
 	  		<property key="TEST_USER_ID" value="-1"/>
-			<property key="TEST_COMMUNITY_ID" value="-1"/>
+			<property key="TEST_COMMUNITY_ID" value="12007"/>
 			<property key="TEST_USER_PASSWORD" value="null"/>
 	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
@@ -152,9 +152,7 @@
    <!-- local development configurations should inherit from this -->
    <configuration name="local" inherit="stardev">
    		<class name="org.starexec.constants.R">   
-   				<property key="TEST_USER_ID" value="4"/>
-				<property key="TEST_COMMUNITY_ID" value="2"/>	
-				<property key="TEST_USER_PASSWORD" value="Starexec4ever"/>	
+   				
                 <property key="STAREXEC_SERVERNAME" value="localhost:8080" />
                 <property key="STAREXEC_APPNAME" value="starexec"/>
                 <property key="RUN_PERIODIC_SGE_TASKS" value="false"/>

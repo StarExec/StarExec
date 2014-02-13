@@ -2158,13 +2158,18 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 	 */
 	public static Set<Integer> getStickyLeaders(int spaceId) {
 		
-		if (Communities.isCommunity(spaceId)) {
+		if (spaceId==1) {
 			return new HashSet<Integer>();
 		}
 		return recGetStickyLeaders(Spaces.getParentSpace(spaceId));
 	}
 	private static Set<Integer> recGetStickyLeaders(int spaceId) {
 		HashSet<Integer> ids=new HashSet<Integer>();
+		//communities are not allowed to have the sticky leaders feature enabled, so if we've reached
+		//a community or the root, we can quit
+		if (Communities.isCommunity(spaceId) || spaceId==1) {
+			return ids;
+		}
 		Space s=Spaces.get(spaceId);
 		if (s.isStickyLeaders()) {
 			List<User> leaders=Spaces.getLeaders(spaceId);
@@ -2172,12 +2177,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 				ids.add(u.getId());
 			}
 		}
-		
-		if (Communities.isCommunity(spaceId)) {
-			return ids;
-		} else {
-			ids.addAll(recGetStickyLeaders(Spaces.getParentSpace(spaceId)));
-			return ids;
-		}
+		ids.addAll(recGetStickyLeaders(Spaces.getParentSpace(spaceId)));
+		return ids;
 	}
 }

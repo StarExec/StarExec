@@ -1,11 +1,13 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
 	try {		
 		
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
+		request.setAttribute("isRoot", spaceId==1);
 		request.setAttribute("space", Spaces.get(spaceId));
 		request.setAttribute("nameLength", R.SPACE_NAME_LEN);
 		request.setAttribute("descLength", R.SPACE_DESC_LEN);
@@ -87,13 +89,18 @@
 							<input type="radio" name="users" value="false"/> no
 						</td>
 					</tr>
-					<tr>
-						<td class="label"> <p>Sticky-Leaders</p> </td>
-						<td>
-							<input type="radio" name="sticky" value="true"/> yes
-							<input type="radio" name="sticky" value="false" checked="checked"/> no
-						</td>
-					</tr>
+					<c:if test="${!isRoot}">
+						<tr>
+							<td class="label"> <p>Sticky-Leaders</p> </td>
+							<td>
+								<input type="radio" name="sticky" value="true"/> yes
+								<input type="radio" name="sticky" value="false" checked="checked"/> no
+							</td>
+						</tr>
+					</c:if>
+					<c:if test="${isRoot}">
+						<input style="display:none" type="radio" name="sticky" value="false" checked="checked"/>
+					</c:if>
 					<tr>
 						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
 						<td colspan="1"><button id="btnCreate">create</button></td>

@@ -226,7 +226,7 @@
 							<td>wallclock timeout</td>
 							<td>${wallclock}</td>
 						</tr>		
-						<tr title="the wallclock timeout each pair in the job was subjected to">
+						<tr title="the cpu timeout each pair in the job was subjected to">
 							<td>cpu timeout</td>
 							<td>${cpu}</td>
 						</tr>		

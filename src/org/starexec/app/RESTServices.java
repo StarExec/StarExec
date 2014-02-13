@@ -1006,7 +1006,6 @@ public class RESTServices {
 				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("locked", request)
 				|| !Util.paramExists("sticky", request)){
-			System.out.println("here");
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
@@ -1015,7 +1014,6 @@ public class RESTServices {
 				|| !Validator.isValidPrimDescription(request.getParameter("description"))
 				|| !Validator.isValidBool(request.getParameter("locked"))
 				|| !Validator.isValidBool(request.getParameter("sticky"))){
-			System.out.println("here2");
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		Space os=Spaces.get(id);
@@ -1029,7 +1027,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		Permission perm = Permissions.get(userId, id);
 		if(perm == null || !perm.isLeader()){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Extract new space details from request and add them to a new space object
@@ -1040,6 +1038,10 @@ public class RESTServices {
 		s.setDescription(request.getParameter("description"));
 		s.setLocked(Boolean.parseBoolean(request.getParameter("locked")));
 		s.setStickyLeaders(Boolean.parseBoolean(request.getParameter("sticky")));
+		//communities are not allowed to have sticky leaders enabled
+		if (Communities.isCommunity(id) && s.isStickyLeaders()) {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
 		// Extract permission details from request and add them to a new permission object
 		// Then set the above space's permission to this new permission object
 		Permission p = new Permission();

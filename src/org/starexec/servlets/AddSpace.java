@@ -2,7 +2,6 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -163,6 +162,11 @@ public class AddSpace extends HttpServlet {
 			//sticky should also be a parsable boolean
 			String sticky = (String) spaceRequest.getParameter(stickyLeaders);
 			if (!sticky.equals("true") && ! sticky.equals("false")) {
+				return false;
+			}
+			
+			//subspaces of the root can not have sticky leaders enabled
+			if (spaceId==1 && sticky.equals("true")) {
 				return false;
 			}
 			

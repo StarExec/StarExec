@@ -874,7 +874,7 @@ public class Download extends HttpServlet {
 			if (includeSolvers) {
 				List<Solver> solverList=null;
 				//if we're getting a full hierarchy and the solver path is
-				//not yet set, we want to store all solvers now and then link them later
+				//not yet set, we want to store all solvers now 
 				if (solverPath==null && recursive) {
 					solverList=Solvers.getBySpaceHierarchy(space.getId(), uid);
 				} else{
@@ -895,15 +895,14 @@ public class Download extends HttpServlet {
 						}
 					}
 					solverPath=solverDir.getAbsolutePath();
-				} else {
-					for (Solver s : solverList) {
+				} //else {
+					//for (Solver s : solverList) {
 						//File existingSolver=new File(solverPath,s.getName()+s.getId());
 						//File linkDir=new File(solverDir,s.getName()+s.getId());
 						//not working currently, for now, just don't put solvers in the individual spaces
 						//Files.createSymbolicLink(Paths.get(linkDir.getAbsolutePath()), Paths.get(existingSolver.getAbsolutePath()));
-					}
-					
-				}
+					//}
+				//}
 				
 			}
 			//write the description of the current space to a file
