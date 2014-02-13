@@ -133,9 +133,12 @@ function copyDependencies {
 				#if the copy was successful
 				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
 					log "the solver was successfully copied into the cache"
-					mkdir "$SOLVER_CACHE_PATH/finished.lock"		
+					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
+					rm -r "$SOLVER_CACHE_PATH/lock.lock"
+				else
+					#if we failed to copy the solver, remove the cache entry for the solver
+					rm -r "$SOLVER_CACHE_PATH"	
 				fi
-				rm -r "$SOLVER_CACHE_PATH/lock.lock"
 			fi
 		fi		
 	fi
@@ -186,6 +189,8 @@ function verifyWorkspace {
 	# Make sure the configuration exists before we execute it
 	if ! [ -x "$CONFIG_PATH" ]; then
 		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
+		#get rid of the cache, as if we're here then something is probably wrong with it
+		rm -r "$SOLVER_CACHE_PATH"
 		sendStatus $ERROR_RUNSCRIPT
 	else
 		log "execution host solver configuration verified"	
