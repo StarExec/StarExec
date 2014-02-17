@@ -8,6 +8,12 @@ $(document).ready(function(){
 		}
     });
 	
+	$("#makeMember").button({
+		icons: {
+			primary: "ui-icon-pencil"
+		}
+    });
+	
 	$("#dialog-confirm-update").hide();
 	
 	$("#editPermissions").hide();
@@ -20,7 +26,7 @@ $(document).ready(function(){
 	    return vars;
 	}
 
-	var id = getUrlVars()["id"];
+	var user_id = getUrlVars()["id"];
 		
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = starexecRoot+"css/jstree/";
@@ -29,7 +35,11 @@ $(document).ready(function(){
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
-				"url" : starexecRoot+"services/space/userAssoc/"+id	// Where we will be getting json data from 				
+				"url" : starexecRoot+"services/space/subspaces",  // Where we will be getting json data from 
+				"data" : function (n) {
+					return { id : n.attr ? n.attr("id") : -1 };
+				}
+				
 			} 
 		}, 
 		"themes" : { 
@@ -45,7 +55,7 @@ $(document).ready(function(){
 				"space" : {
 					"valid_children" : [ "space" ],
 					"icon" : {
-						"image" : starexecRoot+"images/jstree/users.png"
+						"image" : starexecRoot+"images/jstree/db.png"
 					}
 				}
 			}
@@ -56,17 +66,17 @@ $(document).ready(function(){
 		// When a node is clicked, get its ID and display the info in the details pane		
 	   space_id = data.rslt.obj.attr("id");
 	   //updateActionId(id);
-	   getPermissionDetails(id, space_id);
-       initUI(id, space_id);
+	   getPermissionDetails(user_id, space_id);
+       initUI(user_id, space_id);
 
 	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
 	
 });
 
-function getPermissionDetails(id, space_id) {	
+function getPermissionDetails(user_id, space_id) {	
 	$.get(  
-		starexecRoot+"services/permissions/details/" + id + "/" + space_id,  
+		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
 		function(data){  			
 			populateDetails(data);			
 		},  
@@ -77,6 +87,13 @@ function getPermissionDetails(id, space_id) {
 }
 
 function populateDetails(data) {
+	if (data.perm == null) {
+		$('#fieldStep1').hide();
+		$('#fieldStep2').show();
+	} else {
+		$('#fieldStep2').hide();
+		$('#fieldStep1').show();
+	}
 	var addSolver = data.perm.addSolver;
 	var addBench = data.perm.addBenchmark;
 	var addUser = data.perm.addUser;
@@ -158,6 +175,45 @@ function initUI(userId, spaceId){
 										break;
 									case 7:
 										showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+			},
+			"cancel": function() {
+				log('user canceled StarExec restart');
+				$(this).dialog("close");
+			}
+			}
+		});
+	});
+	
+	
+	
+	$("#makeMember").click(function(){
+		$("#dialog-confirm-update-txt").text("are you sure you want to make the user a member of this space?");
+		
+		$("#dialog-confirm-update").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-confirm-update').dialog('close');
+					$.post(
+							starexecRoot+"services/space/" + spaceId + "/add/user/" + userId,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "user's successfully added to space", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "user failed to be added to space; please try again", 5000);
 										break;
 									default:
 										showMessage('error', "invalid parameters", 5000);

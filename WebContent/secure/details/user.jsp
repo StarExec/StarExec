@@ -6,7 +6,9 @@
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));	
 		User t_user = Users.get(id);
-		int userId = SessionUtil.getUserId(request);
+		int visiting_userId = SessionUtil.getUserId(request);
+		User visiting_user = Users.get(visiting_userId);
+		
 		
 
 		if(t_user != null) {
@@ -15,7 +17,7 @@
 			String userFullName = t_user.getFullName();
 			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
-			if(userId != id){
+			if( (visiting_userId != id) && (!visiting_user.getRole().equals("admin"))  ){
 				owner = false;
 			} else {
 				List<Job> jList = Jobs.getByUserId(t_user.getId());
