@@ -3,6 +3,8 @@ package org.starexec.test.resources;
 import java.io.File;
 import java.util.UUID;
 
+import javax.servlet.ServletContext;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
@@ -15,7 +17,6 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.servlets.UploadSolver;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 

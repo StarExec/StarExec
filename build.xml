@@ -18,6 +18,7 @@
 	<property name="build-dir" value="build" />
 	<property name="class-dir" value="${build-dir}/classes" />		
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
+	<property name="resource-dir" value="${class-dir}/org/starexec/test/resources" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
 	<property name="starcom-base" value="${source-dir}/org/starexec/command"/>
@@ -111,8 +112,14 @@
 			<fileset dir="${source-dir}/org/starexec/config">
 				<include name="**/*" />
 			</fileset>
-		</copy>		
-		
+		</copy>
+		<!--Copy over the resources directory from source to classes -->
+		<mkdir dir-="${resource-dir}" />
+		<copy todir="${resource-dir}">
+			<fileset dir="${source-dir}/org/starexec/test/resources">
+				<include name="**/*" />
+			</fileset>
+		</copy>
 	
                 <!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
