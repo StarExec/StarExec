@@ -198,7 +198,9 @@ public class StarexecCommandTests extends TestSequence {
 		//and drown out ours
 		
 		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
-		testUser=Users.getTestUser();
+		log.debug("the url is "+Util.url(""));
+		log.debug("the email address is "+testUser.getEmail());
+		log.debug("the password is "+R.TEST_USER_PASSWORD);
 		con=new Connection(testUser.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		int status = con.login();
 		Assert.assertEquals(0,status);
