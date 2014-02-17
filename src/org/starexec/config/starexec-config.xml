@@ -27,7 +27,8 @@
 			<property key="CACHED_FILE_DIR" value="/secure/cache"/>
 			<property key="JOBGRAPH_FILE_DIR" value="/secure/jobgraphs"/>
 			<property key="PICTURE_PATH" value="/home/starexec/pictures" /> 
-			<property key="BATCH_SPACE_XML_DIR" value="/home/starexec/batchSpace/uploads" /> 										
+			<property key="BATCH_SPACE_XML_DIR" value="/home/starexec/batchSpace/uploads" /> 	
+			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
@@ -61,7 +62,6 @@
 	  		<property key="TEST_USER_ID" value="-1"/>
 			<property key="TEST_COMMUNITY_ID" value="12007"/>
 			<property key="TEST_USER_PASSWORD" value="null"/>
-			<property key="STAREXEC_URL_PREFIX" value="https"/>
 	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
 			<property key="MAX_PAIR_VMEM" value="63488" /> <!-- in MB -->
