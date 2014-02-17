@@ -350,7 +350,7 @@ CREATE PROCEDURE UpdateEndDateToEarlierDate(IN _code VARCHAR(36), IN _startDate 
 DROP PROCEDURE IF EXISTS GetAllQueueReservations;
 CREATE PROCEDURE GetAllQueueReservations()
 	BEGIN
-		SELECT space_id, queue_id, MIN(node_count), MAX(node_count), MIN(reserve_date), MAX(reserve_date)
+		SELECT space_id, queue_id, MIN(node_count), MAX(node_count), MIN(reserve_date), MAX(reserve_date), message
 		FROM queue_reserved
 		GROUP BY space_id, queue_id;
 	END //
@@ -358,10 +358,10 @@ CREATE PROCEDURE GetAllQueueReservations()
 -- Adds an entry into reservation_history table
 -- Author: Wyatt Kaiser	
 DROP PROCEDURE IF EXISTS AddReservationToHistory;
-CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE)
+CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE, IN message TEXT)
 	BEGIN
 		INSERT INTO reservation_history
-		VALUES (_spaceId, _queueId, _nodeCount, _startDate, _endDate);
+		VALUES (_spaceId, _queueId, _nodeCount, _startDate, _endDate, message);
 	END //
 	
 -- Returns the nodeCount for a particular queue request on a particular date
@@ -397,7 +397,7 @@ CREATE PROCEDURE GetQueueRequestSpaceId ( IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetQueueRequestForReservation;
 CREATE PROCEDURE GetQueueRequestForReservation( IN _queueId INT)
 	BEGIN
-		SELECT space_id, queue_id, MAX(node_count), MIN(reserve_date), MAX(reserve_date)
+		SELECT space_id, queue_id, MAX(node_count), MIN(reserve_date), MAX(reserve_date), message
 		FROM queue_reserved
 		WHERE queue_id = _queueId;
 	END //

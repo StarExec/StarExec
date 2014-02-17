@@ -274,10 +274,10 @@ CREATE PROCEDURE GetLatestNodeDate()
 	END //
 	
 DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
-CREATE PROCEDURE UpdateReservedNodeCount(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _date DATE)
+CREATE PROCEDURE UpdateReservedNodeCount(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _date DATE, IN _message TEXT)
 	BEGIN
 		INSERT INTO queue_reserved
-		VALUES (_spaceId, _queueId, _nodeCount, _date)
+		VALUES (_spaceId, _queueId, _nodeCount, _date, _message)
 		ON DUPLICATE KEY UPDATE
 		node_count=_nodeCount;
 	END //

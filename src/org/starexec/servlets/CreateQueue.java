@@ -71,6 +71,7 @@ public class CreateQueue extends HttpServlet {
 		int queueSpaceId = req.getSpaceId();
 		Date start = req.getStartDate();
 		Date end = req.getEndDate();
+		String message = req.getMessage();
 	
 		// Make sure that the queue has a unique name
 		if(Queues.notUniquePrimitiveName(queue_name)) {
@@ -82,7 +83,7 @@ public class CreateQueue extends HttpServlet {
 		
 		//Add the queue, reserve the nodes, and approve the reservation
 		int newQueueId = Queues.add(queue_name + ".q");
-		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end);
+		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end, message);
 		Cluster.updateTempChanges();
 		boolean approved = Requests.approveQueueReservation(req, newQueueId);
 

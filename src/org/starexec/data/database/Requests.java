@@ -369,13 +369,14 @@ public class Requests {
 			String queueName = req.getQueueName();
 			int queueId = Queues.getIdByName(queueName);
 
-			procedureAddHistory = con.prepareCall("{CALL AddReservationToHistory(?,?,?,?,?)}");
+			procedureAddHistory = con.prepareCall("{CALL AddReservationToHistory(?,?,?,?,?,?)}");
 			procedureAddHistory.setInt(1, req.getSpaceId());
 			procedureAddHistory.setInt(2, queueId);
 			//req.getNodeCount() refers to the max node count
 			procedureAddHistory.setInt(3, req.getNodeCount());
 			procedureAddHistory.setDate(4, req.getStartDate());
 			procedureAddHistory.setDate(5, req.getEndDate());
+			procedureAddHistory.setString(6, req.getMessage());
 			procedureAddHistory.executeUpdate();
 			
 			procedureRemoveReservation = con.prepareCall("{CALL CancelQueueReservation(?)}");
@@ -423,6 +424,7 @@ public class Requests {
 				req.setNodeCount(max_nodeCount);
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
 				req.setEndDate(results.getDate("MAX(reserve_date)"));
+				req.setMessage(results.getString("message"));
 				
 				reservations.add(req);
 
@@ -1045,6 +1047,7 @@ public class Requests {
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
 				req.setEndDate(results.getDate("MAX(reserve_date)"));
 				req.setNodeCount(results.getInt("MAX(node_count)"));
+				req.setMessage(results.getString("message"));
 			}			
 
 			return req;			

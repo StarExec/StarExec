@@ -406,6 +406,7 @@ CREATE TABLE queue_reserved (
 	queue_id INT NOT NULL,
 	node_count INT NOT NULL,
 	reserve_date DATE NOT NULL,
+	message TEXT NOT NULL,
 	PRIMARY KEY (space_id, queue_id, reserve_date),
 	CONSTRAINT queue_reserved_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT queue_reserved_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
@@ -419,6 +420,7 @@ CREATE TABLE reservation_history (
 	node_count INT NOT NULL,
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
+	message TEXT NOT NULL,
 	PRIMARY KEY (queue_Id, start_date)
 );
 

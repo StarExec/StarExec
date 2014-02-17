@@ -416,7 +416,7 @@ public class Cluster {
 	}
 	
 
-	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date) {
+	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date, String message) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -426,11 +426,12 @@ public class Cluster {
 		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
 			
-			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?)}");
+			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?,?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, queueId);
 			procedure.setInt(3, nodeCount);
 			procedure.setDate(4, sqlDate);
+			procedure.setString(5, message);
 			procedure.executeUpdate();
 
 			log.debug("successfully updated NodeCount for queue " + queueId);
@@ -447,7 +448,7 @@ public class Cluster {
 	}
 
 
-	public static Boolean reserveNodes(int space_id, int queue_id, Date start, Date end) {
+	public static Boolean reserveNodes(int space_id, int queue_id, Date start, Date end, String message) {
 			
 		//Get all the dates between these two dates
 	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
@@ -469,7 +470,7 @@ public class Cluster {
 			String shortQueueName = split[0];
 			int node_count = Requests.GetNodeCountOnDate(shortQueueName, utilDate);
 			
-		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate);
+		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate, message);
 		    if (!result) {
 		    	return false;
 		    }
@@ -630,11 +631,7 @@ public class Cluster {
 		boolean success = true;
 		for (QueueRequest req : temp_changes) {
 			int queueId = Queues.getIdByName(req.getQueueName());
-			log.debug("spaceId = " + req.getSpaceId());
-			log.debug("nodeCount = " + req.getNodeCount());
-			log.debug("queueId = " + queueId);
-			log.debug("startDate = " + req.getStartDate());
-			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate());
+			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), req.getMessage());
 			if (! success) {
 				break;
 			}

@@ -169,17 +169,6 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a json string representing all the spaces that a certain user is a member of
-	 * @author Wyatt Kaiser
-	 */
-	@GET
-	@Path("/space/userAssoc/{userId}")
-	@Produces("application/json")	
-	public String getSpacesForUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {	
-		return gson.toJson(RESTHelpers.toCommunityList((Spaces.GetSpacesByUser(userId))));
-	}
-	
-	/**
 	 * @return a json string representing all public solvers of a community
 	 * @author Benton McCune and Ruoyu Zhang
 	 */
@@ -3231,7 +3220,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		if (usrId!=SessionUtil.getUserId(request)) {
+		User user=SessionUtil.getUser(request);
+		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of job pairs and return them to the user
@@ -3301,7 +3291,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		if (usrId!=SessionUtil.getUserId(request)) {
+		User user=SessionUtil.getUser(request);
+		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of solver pairs and return them to the user
@@ -3324,7 +3315,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		if (usrId!=SessionUtil.getUserId(request)) {
+		User user=SessionUtil.getUser(request);
+		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of solver pairs and return them to the user
@@ -3347,7 +3339,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrRecycledSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		if (usrId!=SessionUtil.getUserId(request)) {
+		User user=SessionUtil.getUser(request);
+		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -3369,7 +3362,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrRecycledBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		JsonObject nextDataTablesPage = null;
-		if (usrId!=SessionUtil.getUserId(request)) {
+		User user=SessionUtil.getUser(request);
+		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -3855,4 +3849,16 @@ public class RESTServices {
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	/**
+	 * Add a user to a space
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/space/{spaceId}/add/user/{userId}")
+	@Produces("application/json")
+	public String addUserToSpace(@PathParam("spaceId") int space_id, @PathParam("userId") int user_id) {
+		log.debug("begin addUserToSpace...");
+		boolean success = Users.associate(user_id, space_id);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
 }
