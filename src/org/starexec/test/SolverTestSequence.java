@@ -6,16 +6,19 @@ import java.util.List;
 import org.junit.Assert;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 
 public class SolverTestSequence extends TestSequence {
 	private Solver solver;
-	private Space space1, space2;
-	
+	private Space space1, space2, testCommunity;
+	User testUser;
 	
 	@Test
 	private void GetSolverTest() {
@@ -75,6 +78,8 @@ public class SolverTestSequence extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
+		testUser=Users.getTestUser();
+		testCommunity=Communities.getTestCommunity();
 		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), testCommunity.getId());
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());

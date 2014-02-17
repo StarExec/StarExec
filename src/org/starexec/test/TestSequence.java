@@ -21,8 +21,6 @@ public abstract class TestSequence {
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
-	protected Space testCommunity=null;
-	protected User testUser=null;
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
 	
@@ -30,8 +28,6 @@ public abstract class TestSequence {
 	public TestSequence() {
 		initTestResults();
 		name=getTestName(); //this method is implemented in every subclass
-		testUser=Users.getTestUser();
-		testCommunity=Communities.getTestCommunity();
 	}
 	
 	private final void initTestResults() {

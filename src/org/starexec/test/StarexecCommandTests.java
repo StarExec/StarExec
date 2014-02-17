@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -28,6 +29,7 @@ public class StarexecCommandTests extends TestSequence {
 	File benchmarkFile=null;
 	Solver solver=null;
 	User testUser=null;
+	Space testCommunity=null;
 	
 	@Test
 	private void GetIDTest() throws Exception {
@@ -196,7 +198,8 @@ public class StarexecCommandTests extends TestSequence {
 	protected void setup() throws Exception {
 		//this prevents the apache http libraries from logging things. Their logs are very prolific
 		//and drown out ours
-		
+		testUser=Users.getTestUser();
+		testCommunity=Communities.getTestCommunity();
 		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 		log.debug("the url is "+Util.url(""));
 		log.debug("the email address is "+testUser.getEmail());
