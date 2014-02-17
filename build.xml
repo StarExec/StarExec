@@ -114,7 +114,7 @@
 			</fileset>
 		</copy>
 		<!--Copy over the resources directory from source to classes -->
-		<mkdir dir-="${resource-dir}" />
+		<mkdir dir="${resource-dir}" />
 		<copy todir="${resource-dir}">
 			<fileset dir="${source-dir}/org/starexec/test/resources">
 				<include name="**/*" />
