@@ -1000,6 +1000,10 @@ public class Users {
 	}
 	
 	public static User getTestUser() {
-		return Users.get(R.TEST_USER_ID);
+		User u=Users.get(R.TEST_USER_ID);
+		if (u==null) {
+			log.warn("getTestUser could not find the test user. Please configure one");
+		}
+		return u;
 	}
 }

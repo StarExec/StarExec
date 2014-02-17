@@ -21,8 +21,8 @@ public abstract class TestSequence {
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
-	protected Space testCommunity=Communities.getTestCommunity();
-	protected User testUser=Users.getTestUser();
+	protected Space testCommunity=null;
+	protected User testUser=null;
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
 	
@@ -30,6 +30,8 @@ public abstract class TestSequence {
 	public TestSequence() {
 		initTestResults();
 		name=getTestName(); //this method is implemented in every subclass
+		testUser=Users.getTestUser();
+		testCommunity=Communities.getTestCommunity();
 	}
 	
 	private final void initTestResults() {
@@ -44,6 +46,8 @@ public abstract class TestSequence {
 	 * Clears the results of every test and sets the status of this sequence to "not run"
 	 */
 	protected final void clearResults() {
+		error=null; 
+		message="No Message";
 		status.setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
 		for (TestResult r : testResults.values()) {
 			r.clearMessages();

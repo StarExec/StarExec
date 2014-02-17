@@ -258,6 +258,10 @@ public class Communities {
 	}
 	
 	public static Space getTestCommunity() {
-		return Communities.getDetails(R.TEST_COMMUNITY_ID);
+		Space s=Communities.getDetails(R.TEST_COMMUNITY_ID);
+		if (s==null) {
+			log.warn("getTestCommunity could not retrieve the test community--please set one up in the configuration");
+		}
+		return s;
 	}
 }
