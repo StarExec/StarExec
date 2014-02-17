@@ -146,7 +146,8 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")	
+	
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			int[] returnArray = new int[2];
@@ -211,6 +212,7 @@ public class UploadSolver extends HttpServlet {
 			long allowedBytes=currentUser.getDiskQuota();
 			long usedBytes=Users.getDiskUsage(userId);
 			
+			//the user does not have enough disk quota to upload this solver
 			if (fileSize>allowedBytes-usedBytes) {
 				archiveFile.delete();
 				returnArray[0]=-4;

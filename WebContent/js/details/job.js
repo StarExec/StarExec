@@ -146,6 +146,7 @@ function initUI(){
 	$('#dialog-confirm-delete').hide();
 	$('#dialog-confirm-pause').hide();
 	$('#dialog-confirm-resume').hide();
+	$( "#dialog-warning").hide();
 	$("#dialog-return-ids").hide();
 	$("#dialog-solverComparison").hide();
 	$("#dialog-spaceOverview").hide();
@@ -162,6 +163,13 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	
+	$('#clearCache').button( {
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	});
+	
 	$("#postProcess").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
@@ -208,6 +216,36 @@ function initUI(){
 		}
 	});
 		
+	$("#clearCache").click(function(){
+			
+			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
+			$("#dialog-warning").dialog({
+				modal: true,
+				width: 380,
+				height: 165,
+				buttons: {
+					'clear cache': function() {
+						$(this).dialog("close");
+						$(".cacheType").each(function() {
+							
+							type=$(this).attr("value");
+							$.post(
+									starexecRoot+"services/cache/clear/"+jobId+"/"+type,
+									function(returnCode) {
+										if (returnCode<0) {
+											showMessage('error',"There was an error clearing the cache for this item",5000);
+										}		
+							});
+						});									
+					},
+					"cancel": function() {
+						$(this).dialog("close");
+					}
+				}
+			});
+	});
+	
+	
 	$("#deleteJob").click(function(){
 		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
 		

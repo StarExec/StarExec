@@ -12,8 +12,9 @@ public class TestUtil {
 	 */
 	public static String getRandomSpaceName() {
 		return getRandomAlphaString(R.SPACE_NAME_LEN-1);
-		
-			
+	}
+	public static String getRandomPassword() {
+		return getRandomAlphaString(R.PASSWORD_LEN-1);
 	}
 	
 	public static String getRandomSolverName() {

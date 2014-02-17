@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 
 public abstract class TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
@@ -17,12 +21,15 @@ public abstract class TestSequence {
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
+	protected Space testCommunity=Communities.getTestCommunity();
+	protected User testUser=Users.getTestUser();
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
 	
 	
 	public TestSequence() {
 		initTestResults();
+		name=getTestName(); //this method is implemented in every subclass
 	}
 	
 	private final void initTestResults() {
@@ -31,6 +38,18 @@ public abstract class TestSequence {
 			TestResult t=new TestResult();
 			t.setName(m.getName());
 			testResults.put(m.getName(), t);
+		}
+	}
+	/**
+	 * Clears the results of every test and sets the status of this sequence to "not run"
+	 */
+	protected final void clearResults() {
+		status.setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
+		for (TestResult r : testResults.values()) {
+			r.clearMessages();
+			r.addMessage("test not started");
+			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
+			r.setError(null); 
 		}
 	}
 	
@@ -44,13 +63,8 @@ public abstract class TestSequence {
 		try {
 		testsPassed=0;
 		testsFailed=0;
+		clearResults();
 		status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
-		for (TestResult r : testResults.values()) {
-			r.clearMessages();
-			r.addMessage("test not started");
-			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
-			r.setError(null); 
-		}
 			setup();
 			runTests();
 			teardown();
@@ -63,20 +77,22 @@ public abstract class TestSequence {
 			}
 			
 			return true;
-		} catch (AssertionError e) {
+		} catch (Throwable e) {
 			status.setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
 			setMessage(e.getMessage());
 			log.error(e.getMessage(),e);
 			error=e;
 			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
 		}
 		return false;
 	}
+	/**
+	 * Returns the name of this test sequence
+	 */
+	abstract protected String getTestName();
 	
 	/**
-	 * This function is called before the tests beloning to this sequence are run.
+	 * This function is called before the tests belonging to this sequence are run.
 	 * All initialization should be done here (creating spaces, solvers, etc. that are
 	 * used by the tests in this sequence).
 	 * @throws Exception
@@ -101,8 +117,8 @@ public abstract class TestSequence {
 					t.addMessage("test executed without errors");
 					testsPassed++;
 					
-				} catch (Exception error) {
-					Throwable e=error.getCause();
+				} catch (Throwable e) {
+					e=e.getCause();
 					testsFailed++;
 					t.setError(e);
 					t.addMessage(e.getMessage());

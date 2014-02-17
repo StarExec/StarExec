@@ -43,4 +43,19 @@ CREATE PROCEDURE InvalidateCache(IN _id INT, IN _cacheType INT)
 		DELETE FROM file_cache WHERE id=_id AND cache_type=_cacheType;
 	END //
 
+-- Removes all entries of the given type
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS DeleteCachePathsOfType;
+CREATE PROCEDURE DeleteCachePathsOfType(IN _type INT)
+	BEGIN
+		DELETE FROM file_cache WHERE cache_type=_type;
+	END //
+	
+-- Gets all cached entries of the given type
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetPathsOfType;
+CREATE PROCEDURE GetPathsOfType(IN _type INT) 
+	BEGIN
+		SELECT path FROM file_cache WHERE cache_type=_type;
+	END //
 DELIMITER ; -- This should always be at the end of this file

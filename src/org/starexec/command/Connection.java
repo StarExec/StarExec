@@ -271,7 +271,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code otherwise.
 	 */
 	public int uploadBenchmarksToSingleSpace(String filePath,Integer processorID, Integer spaceID,Boolean downloadable) {
-		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),"",downloadable,true,false,false,null);
+		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),"",downloadable,false,false,false,null);
 	}
 	
 	//TODO: Support dependencies for benchmarks
@@ -947,6 +947,7 @@ public class Connection {
 	public int copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
 		return copyOrLinkPrimitives(spaceIds,oldSpaceId,newSpaceId,true,hierarchy,"space");
 	}
+	
 	
 	
 	

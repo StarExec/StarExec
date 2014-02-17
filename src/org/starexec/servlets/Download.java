@@ -190,26 +190,19 @@ public class Download extends HttpServlet {
 		// If we can see this solver AND the solver is downloadable...
 
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
-				String cachedFileName=null;
+				String cachedFilePath=null;
 				if(!reupload) {
-					cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
+					cachedFilePath=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
 				} else {
-					cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD);
+					cachedFilePath=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD);
 				}
 				
-				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
+				//if the entry was in the cache, we can just return it.
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
 					
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(s.getId(),CacheType.CACHE_SOLVER);
-					}
+					log.debug("returning a cached file!");
+					return cachedFile;
 				}
 			
 			
@@ -309,19 +302,13 @@ public class Download extends HttpServlet {
 	private static File handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
 		// If we can see this benchmark AND the benchmark is downloadable...
 		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
-			String cachedFileName=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
+			String cachedFilePath=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
 			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				if (cachedFile.exists()) {
-					//it's there, so give back the name
-					log.debug("returning a cached file!");
-					return cachedFile;
-				} else {
-					log.warn("a cached file did not exist when it should have!");
-					Cache.invalidateCache(b.getId(),CacheType.CACHE_BENCHMARK);
-				}
+			if (cachedFilePath!=null) {
+				File cachedFile = new File(cachedFilePath);
+
+				return cachedFile;
+				
 			}
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
@@ -362,20 +349,15 @@ public class Download extends HttpServlet {
 		// If we can see this Space
 		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
 			
-				String cachedFileName=null;
-				cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
+				String cachedFilePath=null;
+				cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
 				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
+					
 						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE_XML);
-					}
+					
 				}
 			
 			log.debug("Permission to download XML granted");			
@@ -427,25 +409,16 @@ public class Download extends HttpServlet {
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			
-			String cachedFileName=null;
-			
-			cachedFileName=Cache.getCache(jp.getId(),CacheType.CACHE_JOB_PAIR);
+			String cachedFilePath=Cache.getCache(jp.getId(),CacheType.CACHE_JOB_PAIR);
 			
 			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+			if (cachedFilePath!=null) {
+				File cachedFile = new File(cachedFilePath);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				if (cachedFile.exists()) {
-					//it's there, so give back the name
-					log.debug("returning a cached file!");
-					return cachedFile;
-				} else {
-					log.warn("a cached file did not exist when it should have!");
-					Cache.invalidateCache(jp.getId(),CacheType.CACHE_SPACE);
-				}
+				log.debug("returning a cached file!");
+				return cachedFile;
+				
 			}
-			
-			
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
@@ -481,27 +454,19 @@ public class Download extends HttpServlet {
 		boolean jobComplete=Jobs.isJobComplete(jobId);
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			if (jobComplete && since==null) {
-				String cachedFileName = null;
+				String cachedFilePath = null;
 				if (returnIds) {
-					cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
+					cachedFilePath=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
 				} else {
-					cachedFileName=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
+					cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
 				}
-				if (cachedFileName!= null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
-					}
+				if (cachedFilePath!= null) {
+					File cachedFile = new File(cachedFilePath);
+					log.debug("returning a cached file!");
+					return cachedFile;
+					
 				}
 			}
-			
-
 			Job job;
 			if (since==null) {
 				job = Jobs.getDetailed(jobId);
@@ -671,20 +636,15 @@ public class Download extends HttpServlet {
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {
 			if (jobComplete && since==null) {
-				String cachedFileName=null;
-				cachedFileName=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+				String cachedFilePath=null;
+				cachedFilePath=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
 				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
-					}
+					log.debug("returning a cached file!");
+					return cachedFile;
+					
 				}
 			}
 
@@ -789,24 +749,18 @@ public class Download extends HttpServlet {
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
 			//we are only caching hierarchies with benchmarks + solvers so far
 			if (includeBenchmarks && includeSolvers) {
-				String cachedFileName=null;
+				String cachedFilePath=null;
 				if (hierarchy) {
-					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
+					cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
 				} else {
-					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
+					cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
 				}
-				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE);
-					}
+				//if the entry was in the cache, we can return it
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
+					log.debug("returning a cached file!");
+					return cachedFile;
+					
 				}
 			}
 			

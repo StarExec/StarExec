@@ -5,15 +5,14 @@ import java.util.List;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Space;
 import org.junit.Assert;
 
 public class SpacePropertiesTest extends TestSequence {
 	
 	private Space c;
-	public SpacePropertiesTest() {
-		setName("SpacePropertiesTest");
-	}
+	
 	@Test
 	private void leafTest() {
 		//the new community should be a leaf
@@ -64,7 +63,7 @@ public class SpacePropertiesTest extends TestSequence {
 		Space newCommunity = new Space();
 		newCommunity.setDescription("test desc");
 		newCommunity.setName(TestUtil.getRandomSpaceName());
-		int id=Spaces.add(newCommunity, 1, R.ADMIN_USER_ID);
+		int id=Spaces.add(newCommunity, 1, Users.getTestUser().getId());
 		Assert.assertNotEquals(-1,id);
 		c=newCommunity;
 		c.setId(id);
@@ -72,8 +71,12 @@ public class SpacePropertiesTest extends TestSequence {
 	
 	@Override
 	protected void teardown() {
-		boolean success=Spaces.removeSubspaces(c.getId(), 1, R.ADMIN_USER_ID);
+		boolean success=Spaces.removeSubspaces(c.getId(), 1, Users.getAdmins().get(0).getId());
 		Assert.assertTrue(success);
+	}
+	@Override
+	protected String getTestName() {
+		return "SpacePropertiesTest";
 	}
 
 }

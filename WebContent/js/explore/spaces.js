@@ -58,6 +58,7 @@ function initDialogs() {
 	$( "#dialog-confirm-copy" ).hide();
 	$( "#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
+	$( "#dialog-warning").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -161,6 +162,42 @@ function initButtonUI() {
 				},
 				"cancel": function() {
 					log('user canceled making public action');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$('#clearCache').button( {
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	});
+	
+	$("#clearCache").click(function(){
+		
+		$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
+		$("#dialog-warning").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'clear cache': function() {
+					$(this).dialog("close");
+					$(".cacheType").each(function() {
+						type=$(this).attr("value");
+						$.post(
+								starexecRoot+"services/cache/clear/"+spaceId+"/"+type,
+								function(returnCode) {
+									if (returnCode<0) {
+										showMessage('error',"There was an error clearing the cache for this item",5000);
+									}
+
+						});	
+					});
+						
+				},
+				"cancel": function() {
 					$(this).dialog("close");
 				}
 			}

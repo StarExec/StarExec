@@ -1616,6 +1616,11 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 	
 	
 	
+	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds,int rootSpaceId, int userId) {
+		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(rootSpaceId, userId, true));
+		return removeSolversFromHierarchy(solverIds,subspaces);
+	}
+	
 	/** 
 	 * Removes solvers from a space and it's hierarchy. Utilizes transactions so it's all or
 	 * nothing (all solvers from all spaces, or nothing)
@@ -1626,16 +1631,16 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 	 * 
 	 * @author Skylar Stark
 	 */
-	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds, List<Integer> subspaceIds) {
+	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds, List<Space> subspaces) {
 		Connection con = null;
 		
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 			
-			for (int spaceId : subspaceIds) {
-				Spaces.removeSolvers(solverIds, spaceId, con);
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+			for (Space space : subspaces) {
+				Spaces.removeSolvers(solverIds, space.getId(), con);
+				Cache.invalidateCache(space.getId(), CacheType.CACHE_SPACE);
 			}
 			
 			Common.endTransaction(con);

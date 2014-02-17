@@ -137,6 +137,7 @@ function copyDependencies {
 					rm -r "$SOLVER_CACHE_PATH/lock.lock"
 				else
 					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
 					rm -r "$SOLVER_CACHE_PATH"	
 				fi
 			fi

@@ -11,8 +11,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -26,6 +25,7 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cache;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
@@ -37,14 +37,15 @@ import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
-import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
+import org.starexec.data.security.CacheSecurity;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -97,7 +98,6 @@ public class RESTServices {
 	private static final int ERROR_CANT_EDIT_LEADER_PERMS=3;
 	private static final int ERROR_CANT_PROMOTE_SELF=3;
 	private static final int ERROR_CANT_PROMOTE_LEADER=3;
-	private static final int ERROR_JOB_NOT_PROCESSING=3;
 	
 	private static final int ERROR_NOT_IN_SPACE=4;
 	private static final int ERROR_CANT_REMOVE_LEADER=4;
@@ -814,13 +814,14 @@ public class RESTServices {
 	@POST
 	@Path("/edit/user/quota/{userId}/{val}")
 	@Produces("application/json")
-	//TODO: We need to do a permissions check to make sure only an admin can do this.
 	public String editUserDiskQuota(@PathParam("userId") int userId,@PathParam("val") long newQuota, @Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		return gson.toJson(ERROR_DATABASE);
-		//boolean success=Users.setDiskQuota(userId, newQuota);
+		if (!Users.isAdmin(u)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		boolean success=Users.setDiskQuota(userId, newQuota);
 		
-		//return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
@@ -2041,7 +2042,7 @@ public class RESTServices {
 	@Path("/remove/solver/{spaceId}")
 	@Produces("application/json")
 	public String removeSolversFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		int userIdOfRemover = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
@@ -2054,45 +2055,30 @@ public class RESTServices {
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canRemoveSolver()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}
-
-		// Passed validation, now remove solver(s) from space(s)
-
 		// If we are "cascade removing" the solver(s)...
-		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
-			int subspaceId;
-			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaces(spaceId, userIdOfRemover, true));
-			List<Integer> subspaceIds = new LinkedList<Integer>();
+		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {			
 			
-			// Add the destination space to the list of spaces remove the user from
-			subspaceIds.add(spaceId);
-			
-			// Iterate once through all subspaces of the destination space to ensure the user has removeSolver permissions in each
-			for(Space subspace : subspaces){
-				subspaceId = subspace.getId();
-				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
-				if (subspacePerm != null && !subspacePerm.canRemoveSolver()) { // Null if we don't belong to that space; that's ok! we skip it
-					return gson.toJson(ERROR_CANT_REMOVE_FROM_SUBSPACE);	
-				} 
-				
-				subspaceIds.add(subspaceId);
+			int status=SolverSecurity.canUserRemoveSolverFromHierarchy(spaceId,userId);
+			if (status<0) {
+				return gson.toJson(status);
 			}
-			
-			return Spaces.removeSolversFromHierarchy(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-
-		}
 		
-		// Otherwise...
-		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Spaces.removeSolversFromHierarchy(selectedSolvers, spaceId,userId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+		} else {
+			// Permissions check; ensures user has permisison to remove solver
+			int status=SolverSecurity.canUserRemoveSolver(spaceId, SessionUtil.getUserId(request));
+			if (status<0) {
+				return gson.toJson(status);
+			}
+			return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+		}		
 	}
 	
 	
 	/**
-	 * Deletes a list of solvers and removes them  from the given space
+	 * Recycles a list of solvers and removes them  from the given space
 	 * 
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
@@ -2103,12 +2089,14 @@ public class RESTServices {
 	@Path("/recycleandremove/solver/{spaceID}")
 	@Produces("application/json")
 	public String recycleAndRemoveSolvers(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
-		int userIdOfRemover = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
+		
+		int status=SolverSecurity.canUserRemoveSolver(spaceId, userId);
 		Permission perm = SessionUtil.getPermission(request, spaceId);		
 		if (!perm.canRemoveSolver()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -2118,13 +2106,12 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
-		User user = Users.get(userIdOfRemover);
 		for (int id : selectedSolvers) {
-			if (!user.getRole().equals("admin")) {
-				if (userIdOfRemover!=Solvers.get(id).getUserId()) {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);
-				}
+			status=SolverSecurity.canUserRecycleSolver(id, userId);
+			if (status<0) {
+				return gson.toJson(status);
 			}
+			
 			boolean success=Solvers.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
@@ -2135,7 +2122,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Deletes a list of solvers
+	 * Restores a list of solvers
 	 * 
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
@@ -2146,7 +2133,7 @@ public class RESTServices {
 	@Path("/restore/solver")
 	@Produces("application/json")
 	public String restoreSolvers(@Context HttpServletRequest request) {
-		int userIdOfRemover = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
@@ -2160,10 +2147,11 @@ public class RESTServices {
 		}
 		
 		for (int id : selectedSolvers) {
-			if (userIdOfRemover!=Solvers.getIncludeDeleted(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
 			
+			int status=SolverSecurity.canUserRestoreSolver(id, userId);
+			if (status<0) {
+				return gson.toJson(status);
+			}
 			boolean success=Solvers.restore(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
@@ -2184,7 +2172,7 @@ public class RESTServices {
 	@Path("/delete/solver")
 	@Produces("application/json")
 	public String deleteSolvers(@Context HttpServletRequest request) {
-		int userIdOfRemover = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
@@ -2198,8 +2186,9 @@ public class RESTServices {
 		}
 		
 		for (int id : selectedSolvers) {
-			if (userIdOfRemover!=Solvers.getIncludeDeleted(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			int status=SolverSecurity.canUserDeleteSolver(id, userId);
+			if (status<0) {
+				return gson.toJson(status);
 			}
 			
 			boolean success=Solvers.delete(id);
@@ -2222,7 +2211,7 @@ public class RESTServices {
 	@Path("/recycle/solver")
 	@Produces("application/json")
 	public String recycleSolvers(@Context HttpServletRequest request) {
-		int userIdOfRemover = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
@@ -2234,12 +2223,10 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
-		User user = Users.get(userIdOfRemover);
 		for (int id : selectedSolvers) {
-			if (!user.getRole().equals("admin")) {
-				if (userIdOfRemover!=Solvers.get(id).getUserId()) {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);
-				}
+			int status=SolverSecurity.canUserRecycleSolver(id, userId);
+			if (status<0) {
+				return gson.toJson(status);
 			}
 			
 			boolean success=Solvers.recycle(id);
@@ -2573,32 +2560,13 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny update request
 		int userId = SessionUtil.getUserId(request);
-		Solver solver = Solvers.get(solverId);
-		if(solver == null || solver.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		
-		
-		
-		// Extract new solver details from request
-		String name = request.getParameter("name");
-		//if the name is actually being changed
-		if (!solver.getName().equals(name)) {
-			int id=Solvers.isNameEditable(solverId);
-			if (id<0) {
-				return gson.toJson(ERROR_NAME_NOT_EDITABLE);
-			}
-			
-			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 1)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
-		}
-		
-		
-		
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
-		
+		String name = request.getParameter("name");
+		int status=SolverSecurity.canUserUpdateSolver(solverId, name, description, isDownloadable, userId);
+		if (status<0) {
+			return gson.toJson(status);
+		}
 		// Apply new solver details to database
 		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
@@ -2620,12 +2588,9 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		int userId = SessionUtil.getUserId(request);
-		Solver solver = Solvers.get(solverId);
-		User user = Users.get(userId);
-		if (!user.getRole().equals("admin") || solver == null) {
-			if(solver == null || solver.getUserId() != userId){
-				gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
+		int status=SolverSecurity.canUserRecycleSolver(solverId, userId);
+		if (status<0) {
+			return gson.toJson(status);
 		}
 		
 		return Solvers.recycle(solverId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -3296,7 +3261,6 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of solver pairs and return them to the user
-		log.debug(usrId);
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
@@ -3849,6 +3813,9 @@ public class RESTServices {
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	
+	//TODO: Need to secure all these functions that aren't checking for the user ID of the requester
+	
 	/**
 	 * Add a user to a space
 	 * @author Wyatt Kaiser
@@ -3861,4 +3828,45 @@ public class RESTServices {
 		boolean success = Users.associate(user_id, space_id);
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
+	
+	/**
+	 * Clears every entry from the cache
+	 * @param request
+	 * @return
+	 */
+	@POST
+	@Path("/cache/clearAll")
+	@Produces("application/json")
+	public String clearCache(@Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=CacheSecurity.canUserClearCache(userId);
+		if (status<0) {
+			return gson.toJson(status);
+		}
+		return Cache.deleteAllCache() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Clears the cache 
+	 * @param id The ID of the primitive
+	 * @param type The type of the primitive, as defined in CacheType
+	 * @param request
+	 * @return 
+	 */
+	
+	@POST
+	@Path("/cache/clear/{id}/{type}")
+	@Produces("application/json")
+	public String clearSolverCache(@PathParam("id") int id, @PathParam("type") int type, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=CacheSecurity.canUserClearCache(userId);
+		if (status<0) {
+			return gson.toJson(status);
+		}
+		CacheType t=CacheType.getType(type);
+
+		return Cache.invalidateCache(id, t) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	
 }

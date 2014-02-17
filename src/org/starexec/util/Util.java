@@ -409,18 +409,8 @@ public class Util {
 	 * @author Eric Burns
 	 */
 	public static void clearOldCachedFiles(int daysSinceLastAccess) {
-		log.debug("calling clearOldCachedFiles (periodic");
+		log.debug("calling clearOldCachedFiles (periodic)");
 		try {
-			
-			List<String> paths=Cache.getOldPaths(daysSinceLastAccess);
-			//first, remove the files on disk
-			for (String path : paths) {
-				File file=new File(path);
-				if (file.exists()) {
-					file.delete();
-				}
-			}
-			//now that the files are gone on disk, remove the entries in the database
 			Cache.deleteOldPaths(daysSinceLastAccess);
 		} catch (Exception e) {
 			log.error("clearOldCachedFiles says "+e.getMessage(),e);
@@ -469,7 +459,7 @@ public class Util {
     private static void initDocRootUrl() {
     	initDocRoot();
     	if (docRootUrl == null) {
-    		docRootUrl = "https://" + R.STAREXEC_SERVERNAME + docRoot;
+    		docRootUrl = R.STAREXEC_URL_PREFIX+"://" + R.STAREXEC_SERVERNAME + docRoot;
     	}
     }
     /**

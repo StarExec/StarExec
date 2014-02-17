@@ -19,6 +19,12 @@
 			request.setAttribute("sites", Websites.getAll(solverId, Websites.WebsiteType.SOLVER));
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
+			
+			//save the integer codes for solver-related cache items. This way, 
+			//if the admin decides to clear the cache for the item, we can query the server with the right code
+			request.setAttribute("cacheType1",CacheType.CACHE_SOLVER.getVal());
+			request.setAttribute("cacheType2",CacheType.CACHE_SOLVER_REUPLOAD.getVal());
+			request.setAttribute("isAdmin",Users.isAdmin(userId));
 			boolean downloadable=s.isDownloadable();
 			if (s.getUserId()==userId) {
 				downloadable=true;
@@ -159,6 +165,11 @@
 			
 			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 			<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
+		</c:if>
+		<c:if test="${isAdmin}">
+			<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
+			<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
+			<button type="button" id="clearCache">clear cache</button>
 		</c:if>
 	</fieldset>
 	

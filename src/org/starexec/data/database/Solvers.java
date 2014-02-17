@@ -1873,4 +1873,11 @@ public class Solvers {
 		return null;
 	}
 	
+	public static String getDefaultSolverPath(int userId,String solverName) {
+		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir, solverName);
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		return uniqueDir.getAbsolutePath();
+	}
+	
 }

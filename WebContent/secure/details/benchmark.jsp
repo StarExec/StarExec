@@ -21,7 +21,11 @@
 		if(b != null) {
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
-			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));			
+			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));		
+			//save the integer codes for benchmark-related cache items. This way, 
+			//if the admin decides to clear the cache for the item, we can query the server with the right code
+			request.setAttribute("cacheType",CacheType.CACHE_BENCHMARK.getVal());
+			request.setAttribute("isAdmin",Users.isAdmin(userId));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			if (s==null) {
 				s=new Space();
@@ -156,12 +160,6 @@
 		</table>					
 		</fieldset>							
 	</c:if>	
-	
-	<!-- <fieldset>
-		<legend>related jobs</legend>
-		<p>coming soon...</p>
-	</fieldset> -->		
-	
 
 	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
@@ -183,6 +181,13 @@
 			<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
 		
+		<c:if test="${isAdmin}">
+			<span id="cacheType" value="${cacheType}"></span>
+			<button type="button" id="clearCache">clear cache</button>
+		</c:if>
+		
 	</fieldset>
-	
+	<div id="dialog-warning" title="warning">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+	</div>		
 </star:template>

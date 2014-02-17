@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.starexec.test.security.SolverSecurityTests;
+
 
 public class TestManager {
 	
@@ -16,6 +18,7 @@ public class TestManager {
 		tests.add(new SolverTestSequence());
 		tests.add(new SpacePropertiesTest());
 		tests.add(new StarexecCommandTests());
+		tests.add(new SolverSecurityTests());
 	}
 	
 	/**
@@ -27,6 +30,11 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
+				//we want to clear all the results first, so it's obvious to the user what is left to be run
+				for (TestSequence t : tests) {
+					t.clearResults();
+				}
+				
 				for (TestSequence t : tests) {
 					t.execute();
 				}				
