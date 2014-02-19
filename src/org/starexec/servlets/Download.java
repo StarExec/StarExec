@@ -104,7 +104,7 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				shortName="Job"+jobId+"_CSV";
+				shortName="Job"+jobId+"_info"; // Changed from _CSV
 				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
@@ -113,7 +113,7 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				shortName="Job"+job.getId()+"_Output";
+				shortName="Job"+job.getId()+"_output"; // Changed from _Output
 				archive = handleJobOutputs(job, u.getId(), ".zip", response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
@@ -491,7 +491,7 @@ public class Download extends HttpServlet {
 				}
 			}
 
-			String fileName = UUID.randomUUID().toString() + format;
+			String fileName = "Job" + jobId.toString() + "_info" + format; //Previously UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			String jobFile = CreateJobCSV(job, returnIds);
