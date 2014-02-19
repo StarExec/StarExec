@@ -111,22 +111,22 @@
         <!-- MYSQL Configuration -->
 
          <property key="MYSQL_DATABASE" value="starexec_tsmith14" />
-         <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+         <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tsmith14?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
          <property key="PUBLIC_USER_ID" value="3" />
-         <property key="SPACE_XML_SCHEMA_LOC" value="/home/tsmith14/starexec_tsmith14_data/batchSpace/batchSpaceSchema.xsd" />
+         <property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/batchSpace/batchSpaceSchema.xsd" />
          <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
          <property key="STAREXEC_APPNAME" value="starexec_tsmith14"/>
-         <property key="BENCHMARK_PATH" value="/home/tsmith14/starexec_tsmith14_data/Benchmarks" />
-         <property key="SOLVER_PATH" value="/home/tsmith14/starexec_tsmith14_data/Solvers" />
-         <property key="PROCESSOR_DIR" value="/home/tsmith14/starexec_tsmith14_data/processor_scripts" />
-         <property key="STAREXEC_DATA_DIR" value="/home/tsmith14/starexec_tsmith14_data" />
-         <property key="JOB_INBOX_DIR" value="/home/tsmith14/starexec_tsmith14_data/jobin" />
-         <property key="JOB_OUTPUT_DIR" value="/home/tsmith14/starexec_tsmith14_data/jobout" />
-         <property key="NEW_JOB_OUTPUT_DIR" value="/home/tsmith14/starexec_tsmith14_data/joboutput"/>    ^M
-         <property key="JOB_LOG_DIR" value="/home/tsmith14/starexec_tsmith14_data/jobout/logs" />
-         <property key="PICTURE_PATH" value="/home/tsmith14/starexec_tsmith14_data/pictures" />
-         <property key="BATCH_SPACE_XML_DIR" value="/home/tsmith14/starexec_tsmith14_data/batchSpace/uploads" />
-         </class>^M
+         <property key="BENCHMARK_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/Benchmarks" />
+         <property key="SOLVER_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/Solvers" />
+         <property key="PROCESSOR_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/processor_scripts" />
+         <property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data" />
+         <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobin" />
+         <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobout" />
+         <property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/joboutput"/>    
+         <property key="JOB_LOG_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobout/logs" />
+         <property key="PICTURE_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/pictures" />
+         <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/batchSpace/uploads" />
+         </class>
     </configuration>
 
 	<configuration name="stardev_eaburns" inherit="stardev">
