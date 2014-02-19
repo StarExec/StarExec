@@ -1,4 +1,4 @@
 login addr=https://stardev.cs.uiowa.edu/starexec_tsmith14/ u=admin@uiowa.edu p=Starexec4ever
-pushbenchmarks id=2 f=clocksynchro.zip bt=1
+pushbenchmarks id=2 f=clock_synchro.zip bt=1
 logout
 exit
