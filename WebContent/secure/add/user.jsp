@@ -1,23 +1,27 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*;" session="false"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, java.util.UUID;"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
+
+	//String password = UUID.randomUUID().toString();
+	String password = "Password0410!!";
+
 	request.setAttribute("coms", Communities.getAll());
 	request.setAttribute("firstNameLen", R.USER_FIRST_LEN);
 	request.setAttribute("lastNameLen", R.USER_LAST_LEN);
 	request.setAttribute("institutionLen", R.INSTITUTION_LEN);
 	request.setAttribute("emailLen",R.EMAIL_LEN);
 	request.setAttribute("passwordLen",R.PASSWORD_LEN);
+	request.setAttribute("password", password);
 	request.setAttribute("msgLen", R.MSG_LEN);
 %>
 
-<star:template title="user registration" css="common/pass_strength_meter, accounts/registration" js="lib/jquery.validate.min, lib/jquery.validate.password, accounts/registration">	
+<star:template title="user registration" css="common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec" js="lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, add/user">	
 	<p class="registration">create a new user account</p>
-	<div id="javascriptDisabled">javascript is required for most features in StarExec, please enable it and reload this page</div>
-	<form method="POST" action="/${starexecRoot}/public/registration/manager" id="regForm" class="registration">	
-	<input type="hidden" name="adminCreated" value="false" />	
+	<form method="POST" action="/${starexecRoot}/public/registration/manager" class="add">
+	<input type="hidden" name="adminCreated" value="true" />	
 	<fieldset>			
-		<legend class="registration">user information</legend>
+		<legend>user information</legend>
 		<table class="shaded">
 			<thead>
 				<tr>
@@ -45,18 +49,8 @@
 				<tr>
 					<td class="label">password</td>
 					<td>
-						<input id="password" type="password" name="pwd" length="${passwordLen}"/>
-						<div class="password-meter" id="pwd-meter">
-							<div class="password-meter-message"> </div>
-							<div class="password-meter-bg">
-								<div class="password-meter-bar"></div>
-							</div>
-						</div>
+						<input id="password" type="password" name="pwd" length="${passwordLen}" readonly value="${password}"/>
 					</td>				
-				</tr>
-				<tr>
-					<td class="label">confirm password</td>
-					<td><input id="confirm_password" type="password" name="confirm_password"/></td>
 				</tr>
 			</tbody>
 		</table>		
@@ -81,11 +75,7 @@
 								</c:forEach>
 							</select>
 						</td>
-					</tr>
-					<tr>
-						<td class="label">reason for joining</td>
-						<td><textarea name="msg" id="reason" length="${msgLen}"></textarea></td>
-					</tr>		
+					</tr>	
 					<tr>
 						<td colspan="3"><button type="submit" id="submit" value="Submit">register</button></td>
 					</tr>
@@ -94,9 +84,9 @@
 	</fieldset>	
 	</form>
 	<c:if test="${not empty param.result and param.result == 'regSuccess'}">			
-		<div class='success message'>registration successful - an email was sent to you to activate your account</div>
+		<div class='success message'>User was created successfully</div>
 	</c:if>
 	<c:if test="${not empty param.result and param.result == 'regFail'}">			
-		<div class='error message'>registration unsuccessful - a user already exists under this email address</div>
+		<div class='error message'>User creation was unsuccessful -- please try again</div>
 	</c:if>	
 </star:template>

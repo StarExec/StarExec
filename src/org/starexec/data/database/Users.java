@@ -475,6 +475,7 @@ public class Users {
 	 */
 
 	public static boolean getUserByEmail(String email) {
+		log.debug("email = " + email);
 		Connection con = null;
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -721,6 +722,7 @@ public class Users {
 	 * @author Todd Elvers
 	 */
 	public static boolean register(User user, int communityId, String code, String message){
+		log.debug("begin register..");
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{
@@ -1005,5 +1007,72 @@ public class Users {
 			log.warn("getTestUser could not find the test user. Please configure one");
 		}
 		return u;
+	}
+
+	public static int add(User user) {
+		log.debug("beginning to add user...");
+		log.debug("pass = " + user.getPassword());
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+			Common.beginTransaction(con);
+			
+			String hashedPass = Hash.hashPassword(user.getPassword());
+			log.debug("hashedPass = " + hashedPass);
+			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?)}");
+			procedure.setString(1, user.getFirstName());
+			procedure.setString(2, user.getLastName());
+			procedure.setString(3, user.getEmail());
+			procedure.setString(4, user.getInstitution());
+			procedure.setString(5, hashedPass);
+			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			
+			// Register output of ID the user is inserted under
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
+			
+			// Add user to the users table and check to be sure 1 row was modified
+			procedure.executeUpdate();						
+			// Extract id from OUT parameter
+			user.setId(procedure.getInt(7));
+			log.debug("newid = " + user.getId());
+			
+			return procedure.getInt(7);
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return -1;
+	}
+
+	public static boolean addToCommunity(int userId, int communityId) {
+		log.debug("userid = " + userId);
+		log.debug("communityId " + communityId);
+		User user = Users.get(userId);
+		log.debug(user.getFirstName());
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+			Common.beginTransaction(con);
+						
+			procedure = con.prepareCall("{CALL AddUserToCommunity(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, communityId);
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
 	}
 }

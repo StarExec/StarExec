@@ -5,16 +5,46 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 -- Begins the registration process by adding a user to the USERS table
 -- Makes their role "unauthorized"
--- Author: Todd Elvers
+-- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS AddUser;
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, OUT _id INT)
+CREATE PROCEDURE AddUser(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT(20), OUT _id INT)
 	BEGIN		
-		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota)
-		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota);
+		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
+		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota);
+		
 		SELECT LAST_INSERT_ID() INTO _id;
 		
 		INSERT INTO user_roles(email, role)
 		VALUES (_email, 'unauthorized');
+	END //
+	
+DROP PROCEDURE IF EXISTS AddUserAuthorized;
+CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20), OUT _id INT)
+	BEGIN
+		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
+		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota);
+		SELECT LAST_INSERT_ID() INTO _id;
+		
+		INSERT INTO user_roles(email, role)
+		VALUES (_email, 'user');
+	END //
+
+-- Adds a user to a community directly (used through admin interface)
+-- Skips the community request stage
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS AddUserToCommunity;
+CREATE PROCEDURE AddUserToCommunity(IN _userId INT, IN _communityId INT)
+	BEGIN
+		DECLARE _newPermId INT;
+		DECLARE _pid INT;
+		
+		-- Copy the default permission for the community 					
+		SELECT default_permission FROM spaces WHERE id=_communityId INTO _pid;
+		CALL CopyPermissions(_pid, _newPermId);
+		
+		INSERT INTO user_assoc(user_id, space_id, permission)
+		VALUES(_userId, _communityId, _newPermId);
+		
 	END //
 
 -- Adds an association between a user and a space
