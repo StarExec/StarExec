@@ -28,9 +28,7 @@ public class TestManager {
 	 */
 	public static void executeAllTestSequences() {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-		
-		
+		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
