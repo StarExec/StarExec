@@ -368,11 +368,19 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(128), IN _
 DROP PROCEDURE IF EXISTS GetSpaceDefaultSettingsById;
 CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
 	BEGIN
-		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor, dependencies_enabled, default_benchmark
+		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor, dependencies_enabled, default_benchmark,maximum_memory
 		FROM space_default_settings AS settings
 		LEFT OUTER JOIN processors AS pros
 		ON settings.post_processor = pros.id
 		WHERE space_id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS SetSpaceMaximumMemorySetting;
+CREATE PROCEDURE SetSpaceMaximumMemorySetting(IN _spaceId INT, IN _bytes BIGINT)
+	BEGIN
+		UPDATE space_default_settings
+		SET maximum_memory=_bytes
+		WHERE space_id = _spaceId;
 	END //
 
 -- Set a default setting of a space given by id.
@@ -405,15 +413,16 @@ CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _settin
 		UPDATE space_default_settings
 		SET default_benchmark=_setting
 		WHERE space_id=_id;
+		
     END CASE;
 	END //
 
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS InitSpaceDefaultSettingsById;
-CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT)
+CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT)
 	BEGIN
-		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark) VALUES (_id, _pp, _cto, _clto, _dp, _db);
+		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory) VALUES (_id, _pp, _cto, _clto, _dp, _db,_dm);
 	END //
 
 -- Get the id of the community where the space belongs to

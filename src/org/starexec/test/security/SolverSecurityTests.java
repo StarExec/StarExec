@@ -53,16 +53,14 @@ public class SolverSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		admin=Users.getAdmins().get(0);
 		owner=Users.getTestUser();
-		regular=ResourceLoader.loadUserIntoDatabase("temp", "user");
-		System.out.println(regular);
-		System.out.println(regular.getId());
+		regular=ResourceLoader.loadUserIntoDatabase();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
 		solver2=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		
+		Users.deleteUser(regular.getId());
 	}
 
 	@Override

@@ -40,6 +40,7 @@ public class JobPair extends Identifiable {
 	private double pageFaults;
 	private double blockInput;
 	private double blockOutput;
+	private long maxMemory;		//maximum memory the pair can use, in bytes
 	private double voluntaryContextSwitches;
 	private double involuntaryContextSwitches;
 	private Configuration configuration = null;
@@ -518,6 +519,14 @@ public class JobPair extends Identifiable {
 
 	public String getJobSpaceName() {
 		return jobSpaceName;
+	}
+
+	public void setMaxMemory(long maxMemory) {
+		this.maxMemory = maxMemory;
+	}
+
+	public long getMaxMemory() {
+		return maxMemory;
 	}
 	
 }

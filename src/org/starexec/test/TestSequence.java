@@ -43,6 +43,8 @@ public abstract class TestSequence {
 	 */
 	protected final void clearResults() {
 		error=null; 
+		testsPassed=0;
+		testsFailed=0;
 		message="No Message";
 		status.setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
 		for (TestResult r : testResults.values()) {

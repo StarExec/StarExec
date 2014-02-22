@@ -30,6 +30,7 @@
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
+			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 			
 		}
 	} catch (NumberFormatException nfe) {
@@ -93,6 +94,12 @@
 						<td class="label"><p>cpu timeout</p></td>
 						<td>	
 							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
+						</td>
+					</tr>
+					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated">
+						<td class="label"><p>maximum memory</p></td>
+						<td>	
+							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
 						</td>
 					</tr>
 					<tr class="noHover" title="which queue should this job be submitted to?">

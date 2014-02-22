@@ -665,6 +665,14 @@ public class Benchmarks {
 		}
 		return false;
 	}
+	
+	public static List<Integer> copyBenchmarks(List<Benchmark> benchmarks,int userId, int spaceId) {
+		List<Integer> ids=new ArrayList<Integer>();
+		for (Benchmark b : benchmarks) {
+			ids.add(copyBenchmark(b,userId,spaceId));
+		}
+		return ids;
+	}
 
 	/**
 	 * Makes a deep copy of an existing benchmark, gives it a new user, and places it

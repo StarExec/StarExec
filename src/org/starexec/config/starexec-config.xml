@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="wyatt_dev_local">
+<starexec-configuration default="eric_dev">
         <!-- common settings across stardev and production -->
 	<configuration name="common_core">
 		<class name="org.starexec.constants.R">

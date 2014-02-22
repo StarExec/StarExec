@@ -36,6 +36,7 @@
 				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
 				int wallclock=Jobs.getWallclockTimeout(jobId);
 				int cpu=Jobs.getCpuTimeout(jobId);
+				long memory=Jobs.getMaximumMemory(jobId);
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
@@ -62,6 +63,7 @@
 				request.setAttribute("userId",userId);
 				request.setAttribute("cpu",cpu);
 				request.setAttribute("wallclock",wallclock);
+				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -238,6 +240,10 @@
 							<td>cpu timeout</td>
 							<td>${cpu}</td>
 						</tr>		
+						<tr title="the maximum memory each pair in the job was allowed to use, in gigabytes">
+							<td>max memory</td>
+							<td>${maxMemory}</td>
+						</tr>
 					</tbody>
 				</table>	
 			</fieldset>

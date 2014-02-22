@@ -221,7 +221,7 @@ function initUI(){
 	editable("desc");
 	editable("CpuTimeout");
 	editable("ClockTimeout");
-	
+	editable("MaxMem");
 	// Add toggles for the "add new" buttons and hide them by default	
 	$('#toggleWebsite').click(function() {
 		$('#newWebsite').slideToggle('fast');
@@ -387,6 +387,9 @@ function editable(attribute) {
 			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
 		} else if (attribute == "ClockTimeout"){
 			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+		} else if (attribute =="MaxMem") {
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+
 		}
 		
 		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
@@ -432,6 +435,8 @@ function saveChanges(obj, save, attr, old) {
 			newVal = $(obj).siblings('input:first').val();
 		} else if (attr == "DependenciesEnabled") {
 			newVal=obj;
+		} else if(attr = "MaxMem") {
+			newVal = $(obj).siblings('input:first').val();
 		}
 		
 		// Fixes 'session expired' bug that would occur if user inputed the empty String

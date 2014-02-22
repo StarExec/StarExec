@@ -37,6 +37,7 @@
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
+		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 		try {
 			Benchmark bench=Benchmarks.get(Integer.parseInt(listOfDefaultSettings.get(6)));
 			if (bench!=null) {
@@ -201,6 +202,10 @@
 			<tr>
 				<td>cpu timeout</td>
 				<td id="editCpuTimeout">${defaultCpuTimeout}</td>
+			</tr>
+			<tr>
+				<td>maximum memory</td>
+				<td id="editMaxMem">${defaultMaxMem}</td>
 			</tr>
 			<tr>
 				<td>dependencies enabled</td>

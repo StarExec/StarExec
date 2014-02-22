@@ -73,7 +73,7 @@ public class Communities {
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
-		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0");
+		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0","1073741824");
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -96,15 +96,17 @@ public class Communities {
 				listOfDefaultSettings.set(4, results.getString("post_processor"));
 				listOfDefaultSettings.set(5, results.getString("dependencies_enabled"));
 				listOfDefaultSettings.set(6, results.getString("default_benchmark"));
+				listOfDefaultSettings.set(7,results.getString("maximum_memory"));
 			}
 			else {
-				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?)}");
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?)}");
 				procedure.setInt(1, id);
 				procedure.setInt(2, 1);
 				procedure.setInt(3, 1);
 				procedure.setInt(4, 1);
 				procedure.setInt(5, 0);
 				procedure.setObject(6, null);
+				procedure.setLong(7,1073741824); //memory initialized to 1 gigabyte
 				procedure.executeUpdate();
 			}
 		} catch (Exception e){			
@@ -221,6 +223,27 @@ public class Communities {
 		return false;
 	}
 	
+	public static boolean setDefaultMaxMemory(int id, long bytes) {
+		Connection con = null;	
+		CallableStatement procedure= null;
+		try {			
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL SetSpaceMaximumMemorySetting(?, ?)}");
+			procedure.setInt(1, id);
+			procedure.setLong(2, bytes);
+
+			procedure.executeUpdate();
+		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Set the default settings for a community given by the id.
 	 * @param id The space id of the community
@@ -229,7 +252,7 @@ public class Communities {
 	 * @return True if the operation is successful
 	 * @author Ruoyu Zhang
 	 */
-	public static boolean setDefaultSettings(int id, int num, int setting) {
+	public static boolean setDefaultSettings(int id, int num, long setting) {
 		Connection con = null;	
 		CallableStatement procedure= null;
 		try {			
@@ -240,7 +263,12 @@ public class Communities {
 			if ((num==1 || num==5) && setting==-1) {
 				procedure.setObject(3,null);
 			} else {
-				procedure.setInt(3, setting);
+				//if we are setting the number of bytes, use a long
+				if (setting==6) {
+					procedure.setLong(3, setting);
+				} else {
+					procedure.setInt(3,(int)setting);
+				}
 			}
 			
 			

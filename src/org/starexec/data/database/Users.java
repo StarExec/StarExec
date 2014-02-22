@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
 
@@ -87,6 +88,25 @@ public class Users {
 		}
 		
 		return false;
+	}
+	
+	
+	public static boolean associate(List<Integer> userIds, int spaceId, boolean hierarchy, int requestUserId) {
+		if (!hierarchy) {
+			return associate(userIds, spaceId);
+		} else {
+			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces to associate the user(s) with
+			subspaceIds.add(spaceId);
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
+			for(Space subspace : subspaces){	
+				subspaceIds.add(subspace.getId());
+			}
+			return associate(userIds,subspaceIds);
+		}
 	}
 	
 	/**
@@ -992,6 +1012,29 @@ public class Users {
 		return false;
 	}
 	/**
+	 * Completely deletes a user from the database. Right now, this is only
+	 * being used to delete temporary users created during testing
+	 * @param userId The ID of the user to delete
+	 * @return True on success, false on error
+	 */
+	public static boolean deleteUser(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL DeleteUser(?)}");
+			procedure.setInt(1, userId);
+			procedure.executeQuery();
+			return true;
+		}catch (Exception e) {
+			log.error("deleteUser says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	/**
 	 * Checks to see whether the given user is an admin
 	 * @param userId
 	 * @return
@@ -1008,7 +1051,7 @@ public class Users {
 		}
 		return u;
 	}
-
+	
 	public static int add(User user) {
 		log.debug("beginning to add user...");
 		log.debug("pass = " + user.getPassword());

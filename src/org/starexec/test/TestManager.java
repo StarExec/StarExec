@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.starexec.test.security.SolverSecurityTests;
+import org.starexec.test.security.ValidatorTests;
 
 
 public class TestManager {
@@ -19,6 +20,7 @@ public class TestManager {
 		tests.add(new SpacePropertiesTest());
 		tests.add(new StarexecCommandTests());
 		tests.add(new SolverSecurityTests());
+		tests.add(new ValidatorTests());
 	}
 	
 	/**
@@ -27,6 +29,8 @@ public class TestManager {
 	public static void executeAllTestSequences() {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
+		
+		
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){

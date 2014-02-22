@@ -1055,17 +1055,35 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 		UPDATE jobs SET post_processor = _procId WHERE id=_jobId;
 	END //
 	
+	
+-- Gets the wallclock timeout for the given job
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetWallclockTimeout;
 CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT)
 	BEGIN
 		SELECT DISTINCT clockTimeout 
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
+		WHERE jobs.id=_jobId;
 	END //
 	
+-- Gets the cpu timeout for the given job
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetCpuTimeout;
 CREATE PROCEDURE GetCpuTimeout(IN _jobId INT)
 	BEGIN
 		SELECT DISTINCT cpuTimeout
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
+		WHERE jobs.id=_jobId;
 	END //
+
+-- Gets the maximum memory for the given job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetMaxMemory;
+CREATE PROCEDURE GetMaxMemory(IN _jobId INT) 
+	BEGIN
+		SELECT DISTINCT maximum_memory
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
+		WHERE jobs.id=_jobId;
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

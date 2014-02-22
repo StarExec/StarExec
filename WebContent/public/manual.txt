@@ -81,6 +81,8 @@ corresponds to a dependent bench space.
 
 "lock" -Sets a newly created subspace as locked.
 
+"mem" -Sets the maximum memory, in gigabytes, that each pair of a job is allowed to utilize.
+
 "n" -Specifies a name. When optional, the default is the date.
 
 "nosolve" -When downloading a space, indicates solvers should not be downloaded
@@ -410,7 +412,7 @@ varied set of parameters.
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
 REQUIRED: "id"  "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid"
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r'
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.

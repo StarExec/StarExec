@@ -391,5 +391,14 @@ CREATE PROCEDURE IsMemberOfCommunity(IN _userId INT, IN communityId INT)
 			JOIN user_assoc AS assoc ON assoc.space_id=descendant
 		WHERE assoc.user_id=_userId AND ancestor=communityId;
 	END //
+	
+	
+-- Deletes a user from the database. Right now, this is only used to get rid of temporary test users
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS DeleteUser;
+CREATE PROCEDURE DeleteUser(IN _userId INT)
+	BEGIN
+		DELETE FROM users WHERE id=_userId;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

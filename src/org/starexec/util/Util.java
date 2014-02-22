@@ -101,6 +101,16 @@ public class Util {
 		return Math.max(Math.min(value, max), min);
 	}
 	
+	public static long clamp(long min, long max, long value) {
+		if (value<min) {
+			return min;
+		}
+		if (value > max) {
+			return max;
+		}
+		return value;
+	}
+	
 	/**
 	 * Extracts the file extesion from a file path
 	 * @param s The file path
@@ -499,6 +509,19 @@ public class Util {
     	DecimalFormat df=new DecimalFormat("#.##");
     	
     	return df.format(b) +" "+suffix[suffixIndex];
+    }
+    /**
+     * Converts gigabytes to bytes.
+     * @param gigabytes
+     * @return
+     */
+    public static long gigabytesToBytes(double gigabytes) {
+    	long bytes=(long)(1073741824*gigabytes);
+    	return bytes;
+    }
+    
+    public static double bytesToGigabytes(long bytes) {
+    	return ((double)bytes/1073741824.0);
     }
     /**
      * Attempts to delete the directory specified the given path without

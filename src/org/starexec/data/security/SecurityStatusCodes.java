@@ -6,7 +6,6 @@ public class SecurityStatusCodes {
 	public static final int ERROR_EDIT_VAL_ABSENT=1;
 	public static final int ERROR_IDS_NOT_GIVEN=1;
 	public static final int ERROR_SPACE_ALREADY_PUBLIC=1;
-	public static final int ERROR_SPACE_ALREADY_public=1;
 	
 	public static final int ERROR_INVALID_PERMISSIONS=2;
 	public static final int ERROR_INVALID_PASSWORD=2;
@@ -38,7 +37,7 @@ public class SecurityStatusCodes {
 	public static final int ERROR_NAME_NOT_EDITABLE=9;
 	
 	public static final int ERROR_PRIM_ALREADY_DELETED=11;
-	
+	public static final int ERROR_PRIM_ALREADY_RECYCLED=11;
 	public static final int ERROR_TOO_MANY_JOB_PAIRS=13;
 	public static final int ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=12;
 }

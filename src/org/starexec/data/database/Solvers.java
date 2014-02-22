@@ -216,6 +216,32 @@ public class Solvers {
 		return false;
 	}
 	
+	public static boolean associate(List<Integer> solverIds, int rootSpaceId, boolean linkInSubspaces, int userId, boolean includeRoot) {
+		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
+		if (linkInSubspaces) {
+			
+			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(rootSpaceId, userId, true));
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces to associate the solvers with only
+			//if we aren't copying. If we're copying, we did this already
+			if (includeRoot) {
+				subspaceIds.add(rootSpaceId);
+			}
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
+			for(Space subspace : subspaces){
+				subspaceIds.add(subspace.getId());
+			}
+
+			// Add the solvers to the destination space and its subspaces
+			return Solvers.associate(solverIds, subspaceIds);
+		} else {
+			// Add the solvers to the destination space
+			return Solvers.associate(solverIds, rootSpaceId);
+		}
+	}
+	
 	/**
 	 * Adds an association between a list of solvers and a list of spaces, in an all-or-none fashion
 	 * 
@@ -270,6 +296,22 @@ public class Solvers {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+	/**
+	 * Copies a list of solvers into the given space, assigning the given user as the owner of each one
+	 * @param solvers A list of solves
+	 * @param userId The ID of the user who will own the new solvers
+	 * @param spaceId The ID of the space to put the solvers in
+	 * @return The IDs of the new solvers, in the same order that the solvers are in. Negative numbers indicate
+	 * errors associated with the corresponding solvers
+	 */
+	public static List<Integer> copySolvers(List<Solver> solvers, int userId, int spaceId) {
+		List<Integer> ids= new ArrayList<Integer>();
+		for (Solver s : solvers) {
+			ids.add(copySolver(s,userId,spaceId));
+			
+		}
+		return ids;
 	}
 	
 	/**

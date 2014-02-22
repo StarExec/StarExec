@@ -1,15 +1,11 @@
 package org.starexec.test.resources;
 
 import java.io.File;
-import java.util.UUID;
 
-import javax.servlet.ServletContext;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Requests;
+
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -76,18 +72,32 @@ public class ResourceLoader {
 			return null;
 		}
 	}
-	
-	public static User loadUserIntoDatabase(String fname, String lname) {
+	/**
+	 * Loads a user into the database, without any particular name, email, password, and so on. Useful for testing.
+	 * @return The user, with their ID and all parameters set, or null on error
+	 */
+	public static User loadUserIntoDatabase() {
+		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","user");
+	}
+	/**
+	 * Creates a user with the given attributes and adds them to the database
+	 * @param fname The first name for the user
+	 * @param lname The last name for the user
+	 * @param email The email of the user
+	 * @param password The plaintext password for the user
+	 * @param institution
+	 * @param role The role of the user-- should be either "user" or "admin"
+	 * @return The User on success, or null on error. Their ID will be set on success.
+	 */
+	public static User loadUserIntoDatabase(String fname, String lname, String email, String password, String institution, String role) {
 		User u=new User();
 		u.setFirstName(fname);
 		u.setLastName(lname);
-		u.setPassword(TestUtil.getRandomPassword());
-		u.setEmail(TestUtil.getRandomPassword());
-		u.setInstitution("The University of Iowa");
-		u.setRole("user");
-		String code=UUID.randomUUID().toString();
-		Users.register(u,Communities.getTestCommunity().getId(),code,"");
-		int id=Requests.redeemActivationCode(code); //required to "activate" the user
+		u.setPassword(password);
+		u.setEmail(email);
+		u.setInstitution(institution);
+		u.setRole(role);
+		int id=Users.add(u);
 		if (id>0) {
 			u.setId(id);
 			return u;

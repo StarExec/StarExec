@@ -39,8 +39,10 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
+import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.CacheSecurity;
 import org.starexec.data.security.SolverSecurity;
+import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
@@ -256,19 +258,16 @@ public class RESTServices {
 	@Path("/benchmarks/{id}/contents")
 	@Produces("text/plain")	
 	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
-		Benchmark b = Benchmarks.get(id);
 		int userId = SessionUtil.getUserId(request);
 		
-		if(b != null) {			
-			if(Permissions.canUserSeeBench(b.getId(), userId) && b.isDownloadable()) {				
-				String contents = Benchmarks.getContents(b, limit);
-				
-				if(!Util.isNullOrEmpty(contents)) {
-					return contents;
-				}				
-			}
+		if (BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId)==0) {
+			Benchmark b=Benchmarks.get(id);
+			String contents = Benchmarks.getContents(b, limit);
+			if(!Util.isNullOrEmpty(contents)) {
+				return contents;
+			}	
 		}
-		
+
 		return "not available";
 	}
 	
@@ -967,6 +966,10 @@ public class RESTServices {
 				success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
 			} else if (attribute.equals("defaultBenchmark")) {
 				success=Communities.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
+			} else if(attribute.equals("MaxMem")) {
+				double gigabytes=Double.parseDouble(request.getParameter("val"));
+				long bytes = Util.gigabytesToBytes(gigabytes); 
+				success=Communities.setDefaultMaxMemory(id, bytes);
 			}
 			
 			// Passed validation AND Database update successful
@@ -1447,16 +1450,21 @@ public class RESTServices {
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
+		//first, ensure the user has the correct permissions for every benchmark
 		for (int id : selectedBenches) {
-			
-			if(userId!=Benchmarks.get(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+			if(BenchmarkSecurity.canUserRecycleBench(id, userId)>0) {
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
 			}
+			
+		}
+		//then, only if the user had the right permissions, start recycling them
+		for (int id : selectedBenches) {
 			boolean success=Benchmarks.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
+		
 		return gson.toJson(0);
 	}
 	
@@ -1478,6 +1486,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_IDS_NOT_GIVEN);
 			}
 			
+			
 			// Extract the String bench id's and convert them to Integer
 			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
 			for(String id : request.getParameterValues("selectedIds[]")){
@@ -1485,10 +1494,12 @@ public class RESTServices {
 			}
 			int userId=SessionUtil.getUserId(request);
 			for (int id : selectedBenches) {
-				
-				if(userId!=Benchmarks.getIncludeDeletedAndRecycled(id,false).getUserId()) {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+				int status=BenchmarkSecurity.canUserDeleteBench(id, userId);
+				if (status>0) {
+					return gson.toJson(status);
 				}
+			}
+			for (int id : selectedBenches) {
 				boolean success=Benchmarks.delete(id);
 				if (!success) {
 					return gson.toJson(ERROR_DATABASE);
@@ -1518,10 +1529,13 @@ public class RESTServices {
 			}
 			int userId=SessionUtil.getUserId(request);
 			for (int id : selectedBenches) {
-				
-				if(userId!=Benchmarks.getIncludeDeletedAndRecycled(id,false).getUserId()) {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+				int status=BenchmarkSecurity.canUserRestoreBenchmark(id, userId);
+				if(status>0) {
+					return gson.toJson(status);	
 				}
+				
+			}
+			for (int id : selectedBenches) {
 				boolean success=Benchmarks.restore(id);
 				if (!success) {
 					return gson.toJson(ERROR_DATABASE);
@@ -1571,57 +1585,14 @@ public class RESTServices {
 		
 		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
-		
-		// Check permissions, the user must have add user permissions in the destination space
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canAddUser()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}
-		
-		// Verify the user can at least see the space they claim to be copying from
-		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(ERROR_NOT_IN_SPACE);
-		}			
-		
-		// And the space the user is being copied from must not be locked
-		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(ERROR_SPACE_LOCKED);
-		}
-		
-		// Convert the users to copy to a int list
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		for (int id : selectedUsers) {
-			if (!Users.isMemberOfSpace(id, fromSpace)) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
+
+		int status=SpaceSecurity.canCopyUserBetweenSpaces(fromSpace, spaceId, requestUserId, selectedUsers, copyToSubspaces);
+		if (status<0) {
+			return gson.toJson(status);
 		}
-		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
-		if (copyToSubspaces == true) {
-			int subspaceId;
-			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
-			List<Integer> subspaceIds = new LinkedList<Integer>();
-			
-			// Add the destination space to the list of spaces to associate the user(s) with
-			subspaceIds.add(spaceId);
-			
-			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
-			for(Space subspace : subspaces){
-				subspaceId = subspace.getId();
-				Permission subspacePerm = Permissions.get(requestUserId, subspaceId);	
-				if(subspacePerm == null || !subspacePerm.canAddUser()) {
-					return gson.toJson(ERROR_CANT_LINK_TO_SUBSPACE);	
-				}			
-				subspaceIds.add(subspaceId);
-			}
-			
-			
-			// Add the user(s) to the destination space and its subspaces
-			return Users.associate(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		} else {
-			// Add the user(s) to the destination space
-			
-			return Users.associate(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		}
+		return Users.associate(selectedUsers, spaceId,copyToSubspaces,requestUserId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	
 	}
 
 	/**
@@ -1672,97 +1643,20 @@ public class RESTServices {
 		// Convert the solvers to copy to an int list
 		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		
-		// Verify the space the solvers are being copied from is not locked
-		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(ERROR_SPACE_LOCKED);
-		}
-		
-		// Verify the user can at least see the space they claim to be copying from
-		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(ERROR_NOT_IN_SPACE);
-		}	
-
-		// Make sure the user can see the solver they're trying to copy
-		for (int id : selectedSolvers) {
-			if (!Permissions.canUserSeeSolver(id, requestUserId)) {
-				return gson.toJson(ERROR_NOT_IN_SPACE);
-			}
 			
-			if (Solvers.isSolverDeleted(id)) {
-				return gson.toJson(ERROR_PRIM_ALREADY_DELETED);
-			}
-			// Make sure that the solver has a unique name in the space.
-			if(Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), spaceId, 1)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
+		int status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
-		// Check permissions - the user must have add solver permissions in the destination space
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canAddSolver()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}			
-		
 		if (copy) {
 			List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-			//first, validate that the user has enough disk quota to copy all the selected solvers
-			//we don't copy any unless they have room for all of them
-			long userDiskUsage=Users.getDiskUsage(requestUserId);
-			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
-			userDiskQuota-=userDiskUsage;
-			for (Solver s : oldSolvers) {
-				userDiskQuota-=s.getDiskSize();
-			}
-			if (userDiskQuota<0) {
-				
-				return gson.toJson(ERROR_INSUFFICIENT_QUOTA);
-			}
-			
 			List<Integer>newSolverIds=new ArrayList<Integer>();
-			int newID;
-			for (Solver s : oldSolvers) {
-				newID=Solvers.copySolver(s, requestUserId, spaceId);
-				
-				if (newID==-1) {
-					log.error("Unable to copy solver "+s.getName());
-					return gson.toJson(ERROR_DATABASE);
-				} else {
-					newSolverIds.add(newID);
-				}
-			}
+			newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 			selectedSolvers=newSolverIds;
 		}
-		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
-		if (copyToSubspaces == true) {
-			int subspaceId;
-			
-			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
-			List<Integer> subspaceIds = new LinkedList<Integer>();
-			
-			// Add the destination space to the list of spaces to associate the solvers with only
-			//if we aren't copying. If we're copying, we did this already
-			if (!copy) {
-				subspaceIds.add(spaceId);
-			}
-			
-			
-			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
-			for(Space subspace : subspaces){
-				subspaceId = subspace.getId();
-				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);	
-				
-				if(subspacePerm == null || !subspacePerm.canAddSolver()) {
-					return gson.toJson(ERROR_CANT_LINK_TO_SUBSPACE);	
-				}			
-				subspaceIds.add(subspace.getId());
-			}
-
-			// Add the solvers to the destination space and its subspaces
-			return Solvers.associate(selectedSolvers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		} else {
-			// Add the solvers to the destination space
-			return Solvers.associate(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		}
+		//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
+		return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		
 	}
 	
 	/**
@@ -1800,69 +1694,22 @@ public class RESTServices {
 		// Get the space the benchmark is being copied from
 		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
-		// Check permissions, the user must have add benchmark permissions in the destination space
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canAddBenchmark()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}			
-		
-		// Verify the user can at least see the space they claim to be copying from
-		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(ERROR_NOT_IN_SPACE);
-		}			
-		
-		// And the space the solvers are being copied from must not be locked
-		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(ERROR_SPACE_LOCKED);
-		}
-		
+	
 		// Convert the benchmarks to copy to a int list
 		List<Integer> selectedBenchs= Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		
-		// Make sure the user can see the benchmarks they're trying to copy
-		for(int id : selectedBenchs) {
-			if(!Permissions.canUserSeeBench(id, requestUserId)) {
-				return gson.toJson(ERROR_NOT_IN_SPACE);
-			}
-			if (Benchmarks.isBenchmarkDeleted(id)) {
-				return gson.toJson(ERROR_PRIM_ALREADY_DELETED);
-			}
-			// Make sure that the benchmark has a unique name in the space.
-			if(Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), spaceId, 2)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
-		}
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
+
+		int status=SpaceSecurity.canCopyOrLinkBenchmarksBetweenSpaces(fromSpace, spaceId, requestUserId, selectedBenchs, copy);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		if (copy) {
 			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs,true);
-			long userDiskUsage=Users.getDiskUsage(requestUserId);
-			long userDiskQuota=Users.get(requestUserId).getDiskQuota();
-			userDiskQuota-=userDiskUsage;
-			for (Benchmark b :oldBenchs) {
-				userDiskQuota-=b.getDiskSize();
-			}
-			if (userDiskQuota<0) {
-				return gson.toJson(ERROR_INSUFFICIENT_QUOTA);
-			}
-			int benchId=-1;
-			for (Benchmark b : oldBenchs) {
-				benchId=Benchmarks.copyBenchmark(b,requestUserId,spaceId);
-				if (benchId<0) {
-					log.error("Benchmark "+b.getName()+" could not be copied successfully");
-					return gson.toJson(ERROR_DATABASE);
-				}
-				log.debug("Benchmark "+b.getName()+" copied successfully");
-			}
-			
-			
+			Benchmarks.copyBenchmarks(oldBenchs, requestUserId, spaceId);		
 			return gson.toJson(0);
-			
 		} else {
-			// Make the associations
-			boolean success = Benchmarks.associate(selectedBenchs, spaceId);
-			
 			// Return a value based on results from database operation
-			return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Benchmarks.associate(selectedBenchs, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
 	}
 	

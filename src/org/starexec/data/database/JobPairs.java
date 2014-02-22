@@ -775,7 +775,7 @@ public class JobPairs {
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
 		jp.setPath(result.getString("path"));
 		jp.setJobSpaceId(result.getInt("job_space_id"));
-		
+		jp.setMaxMemory(result.getLong("maximum_memory"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}

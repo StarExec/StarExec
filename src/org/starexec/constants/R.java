@@ -60,7 +60,8 @@ public class R {
     public static String PRIMITIVE_DESC_PATTERN="^.{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
     public static String PASSWORD_PATTERN="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$";
 	public static String DATE_PATTERN="[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]";
-	
+	public static String DOUBLE_PATTERN="^\\-?((\\d+(\\.\\d*)?)|(\\.\\d+))$";
+
     // Email properties
     public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
     public static int EMAIL_SMTP_PORT = 25;
@@ -169,7 +170,7 @@ public class R {
     public static int MAX_PAIR_RUNTIME = 86400;  							// The largest possible amount of time a job pair can run before being terminated (in seconds)
     public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
-    public static long MAX_PAIR_VMEM = 4194304;  							// The largest possible amount of memory (in kilobytes) a job pair is allowed to use
+    public static long MAX_PAIR_VMEM = 4194304 * 1024;  					// The largest possible amount of memory (in bytes) a job pair is allowed to use
     public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task

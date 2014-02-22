@@ -69,6 +69,7 @@ public class CreateJob extends HttpServlet {
 	private static final String clockTimeout = "wallclockTimeout";
 	private static final String spaceId = "sid";
 	private static final String traversal = "traversal";
+	private static final String maxMemory="maxMem";
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -89,9 +90,10 @@ public class CreateJob extends HttpServlet {
 
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
-
+		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : runLimit;
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
@@ -121,7 +123,7 @@ public class CreateJob extends HttpServlet {
 		String traversal2 = request.getParameter(traversal);
 		//Depending on our run selection, handle each case differently
 		if (selection.equals("runAllBenchInSpace")) {
-			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space, SP);
+			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, space, SP);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 
@@ -130,7 +132,7 @@ public class CreateJob extends HttpServlet {
 			spaces.add(0, Spaces.get(space));
 			if (traversal2.equals("depth")) {
 				for (Space s : spaces) {
-					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId(), SP);
+					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, s.getId(), SP);
 				}
 			} else {
 				log.debug("User Selected Round-Robin Search");
@@ -159,7 +161,7 @@ public class CreateJob extends HttpServlet {
 						BSC bsc = SpaceToBSC.get(s);
 							if (bsc.b.size() > i) {
 								log.debug("Calling addJobPairsRobin function: i= " + i);
-								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
+								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
 							}
 						}
 					}
@@ -177,7 +179,7 @@ public class CreateJob extends HttpServlet {
 			if (benchMethod.equals("runAllBenchInHierarchy")) {
 				if (traversal.equals("depth")) {
 					log.debug("User selected depth-first traversal");
-					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit, SP);
+					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit,memoryLimit, SP);
 				} else {
 					log.debug("User selected round-robin traversal");
 					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
@@ -203,7 +205,7 @@ public class CreateJob extends HttpServlet {
 							BSC bsc = SpaceToBSC.get(s);
 								if (bsc.b.size() > i) {
 									log.debug("Calling addJobPairsRobinSelected function: i = " + i);
-									JobManager.addJobPairsRobinSelected(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), solvers, SP);
+									JobManager.addJobPairsRobinSelected(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), solvers, SP);
 								}
 						}
 					}
@@ -224,7 +226,7 @@ public class CreateJob extends HttpServlet {
 					return;
 				}
 
-				JobManager.buildJob(j, userId, cpuLimit, runLimit, benchmarkIds, solverIds, configIds, space, SP);
+				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, solverIds, configIds, space, SP);
 			}
 		}
 
@@ -268,6 +270,10 @@ public class CreateJob extends HttpServlet {
 			}
 
 			if(!Validator.isValidInteger((String)request.getParameter(cpuTimeout))) {
+				return false;
+			}
+			
+			if(!Validator.isValidDouble((String)request.getParameter(maxMemory))) {
 				return false;
 			}
 

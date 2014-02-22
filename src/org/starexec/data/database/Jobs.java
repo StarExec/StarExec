@@ -1,6 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -14,7 +13,6 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -325,6 +323,13 @@ public class Jobs {
 		return get(jobId,false);
 	}
 	
+
+	/**
+	 * Gets the wallclock timeout for the given job
+	 * @param jobId The ID of the job in question
+	 * @return The wallclock timeout in seconds, or -1 on error
+	 */
+	
 	public static int getWallclockTimeout(int jobId) {
 		Connection con = null;
 		ResultSet results=null;
@@ -349,6 +354,12 @@ public class Jobs {
 		return timeout;
 	}
 	
+	/**
+	 * Gets the CPU timeout for the given job
+	 * @param jobId The ID of the job in question
+	 * @return The CPU timeout in seconds, or -1 on error
+	 */
+	
 	public static int getCpuTimeout(int jobId) {
 		Connection con = null;
 		ResultSet results=null;
@@ -372,6 +383,37 @@ public class Jobs {
 		}
 		return timeout;
 	}
+	
+	/**
+	 * Gets the maximum memory allowed for the given job in bytes
+	 * @param jobId The ID of the job in question
+	 * @return The maximum memory in bytes, or -1 on error
+	 */
+	
+	public static long getMaximumMemory(int jobId) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		long memory=-1;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetMaxMemory(?)}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				memory=results.getLong("maximum_memory");
+			}
+		} catch (Exception e) {
+			log.error("getCpuTimeout says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		
+		}
+		return memory;
+	}
+	
 	
 	
 	/**
