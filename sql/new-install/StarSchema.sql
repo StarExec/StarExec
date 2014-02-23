@@ -202,6 +202,7 @@ CREATE TABLE jobs (
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
+	paused_admin BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
 	primary_space INT,
 	PRIMARY KEY (id),
@@ -417,12 +418,12 @@ CREATE TABLE queue_reserved (
 -- Author: Wyatt Kaiser
 CREATE TABLE reservation_history (
 	space_id INT NOT NULL,
-	queue_id INT NOT NULL,
+	queue_name VARCHAR(64) NOT NULL,
 	node_count INT NOT NULL,
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
 	message TEXT NOT NULL,
-	PRIMARY KEY (queue_Id, start_date)
+	PRIMARY KEY (queue_name, start_date)
 );
 
 -- Includes temporary data when editing node_count information

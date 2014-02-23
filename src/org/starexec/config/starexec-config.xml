@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<starexec-configuration default="eric_dev">
+<starexec-configuration default="wyatt_dev_local">
         <!-- common settings across stardev and production -->
 	<configuration name="common_core">
 		<class name="org.starexec.constants.R">
@@ -153,8 +153,8 @@
 	        <configuration name="stardev_wkaiser" inherit="stardev">
                 <class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->
-                <property key="MYSQL_DATABSE" value="starexec_wkaiser" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_DATABASE" value="starexec_wkaiser" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_wkaiser?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
                 <property key="PUBLIC_USER_ID" value="3" />
                 <property key="SPACE_XML_SCHEMA_LOC" value="/home/wkaiser/starexec_wkaiser_data/batchSpace/batchSpaceSchema.xsd" />
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
@@ -205,7 +205,7 @@
 	  <property key="BATCH_SPACE_XML_DIR" value="/home/astump/lstarexec/batch/uploads" />  
  <!--   Misc. Configuration     --> 
 	  <property key="CONTACT_EMAIL" value="aaron.stump@gmail.com" />    
-	  <property key="PUBLIC_USER_ID" value="8" /> 
+	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 
   	</class>
   </configuration>
@@ -273,7 +273,7 @@
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="wyatt-kaiser@uiowa.edu" />    
-	  <property key="PUBLIC_USER_ID" value="8" /> 
+	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 
  <!--   SGE Configuration     --> 
 	  <property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -sql.txt" /> 

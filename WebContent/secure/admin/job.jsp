@@ -42,4 +42,7 @@
 				<li><button type="button" id="resumeAll">resume all</button></li>
 			</ul>
 	</fieldset>	
+	<div id="dialog-confirm-pause" title="confirm pause">
+				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
+	</div>
 </star:template>

@@ -2073,33 +2073,6 @@ public class Jobs {
 		return null;		
 	}
 		
-	/**
-	 * Gets the number of Running Jobs in the whole system
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	
-	public static int getRunningJobCount() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetRunningJobCount()}");
-			results = procedure.executeQuery();
-			
-			if (results.next()) {
-				return results.getInt("jobCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return 0;
-	}
 	
 	/**
 	 * Gets all job pairs that are  running for the given job
@@ -2675,6 +2648,65 @@ public class Jobs {
 		return false;
 	}
 	
+	
+	/**
+	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
+	 * @param jobs The jobs to pause
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static boolean pauseAll(List<Job> jobs) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall("{CALL PauseAll(?)}");
+
+			
+			if (jobs != null) {
+				for (Job j : jobs) {
+					procedure.setInt(1, j.getId());		
+					procedure.executeUpdate();
+					log.debug("Pausation of job id = " + j.getId() + " was successful");
+					
+					//Get the enqueued job pairs and remove them
+					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+					for (JobPair jp : jobPairsEnqueued) {
+						int sge_id = jp.getGridEngineId();
+						Util.executeCommand("qdel " + sge_id);
+						log.debug("enqueued: Just executed qdel " + sge_id);
+						JobPairs.UpdateStatus(jp.getId(), 20);
+					}
+					//Get the running job pairs and remove them
+					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(j.getId());
+					if (jobPairsRunning != null) {
+						for (JobPair jp: jobPairsRunning) {
+							int sge_id = jp.getGridEngineId();
+							Util.executeCommand("qdel " + sge_id);
+							log.debug("running: Just executed qdel " + sge_id);
+							JobPairs.UpdateStatus(jp.getId(), 20);
+						}
+					}
+					log.debug("Deletion of paused job pairs from queue was succesful");
+				}
+			}
+			
+			Common.endTransaction(con);
+		
+		
+			return true;
+		} catch (Exception e) {
+			log.error("Pause Job says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
 	public static boolean changeQueue(int jobId, int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -3226,5 +3258,64 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return 0;
+	}
+
+	/**
+	 * Gets the number of Running Jobs in the whole system
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static int getRunningJobCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetRunningJobCount()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
+	
+	public static List<Job> getRunningJobs() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetRunningJobs()}");
+			results = procedure.executeQuery();
+			
+			List<Job> jobs = new LinkedList<Job>();
+			if (results.next()) {
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));	
+				j.setPrimarySpace(results.getInt("primary_space"));
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));					
+				jobs.add(j);
+			}
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
 	}
 }

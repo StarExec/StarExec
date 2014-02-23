@@ -1819,10 +1819,6 @@ public class RESTHelpers {
 			sb.append("<input type=\"button\" onclick=\"editPermissions(" + user.getId() + ")\" value=\"Edit\"/>");
 			String permissionButton = sb.toString();
 			
-			sb = new StringBuilder();
-			sb.append("<input type=\"button\" onclick=\"suspendUser(" + user.getId() + ")\" value=\"Suspend\"/>");
-			String suspendButton = sb.toString();
-
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
@@ -1830,7 +1826,23 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(user.getInstitution()));
 			entry.add(new JsonPrimitive(emailLink));
 			entry.add(new JsonPrimitive(permissionButton));
+			
+			String suspendButton = "";
+			if (user.getId() == R.PUBLIC_USER_ID || user.getRole().equals("admin") || user.getRole().equals("unauthorized")) {
+				suspendButton = "N/A";
+			} else if (user.getRole().equals("suspended")) {
+				sb = new StringBuilder();
+				sb.append("<input type=\"button\" onclick=\"reinstateUser(" + user.getId() + ")\" value=\"Reinstate\"/>");
+				suspendButton = sb.toString();
+			} else if (user.getRole().equals("user")) {
+				sb = new StringBuilder();
+				sb.append("<input type=\"button\" onclick=\"suspendUser(" + user.getId() + ")\" value=\"Suspend\"/>");
+				suspendButton = sb.toString();
+			}
 			entry.add(new JsonPrimitive(suspendButton));
+
+
+
 
 			dataTablePageEntries.add(entry);
 		}
@@ -2389,6 +2401,39 @@ public class RESTHelpers {
 		return nextPage;
 	}
 	
+	public static JsonObject convertHistoricQueueRequestToJsonObject(List<QueueRequest> requests, int totalRecords, int syncValue, int currentUserId) {
+		JsonArray dataTablePageEntries = new JsonArray();
+		for (QueueRequest req : requests) {			
+			//Dates
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+			Date start = req.getStartDate();
+			Date end = req.getEndDate();
+			String start1 = sdf.format(start);
+			String end1 = sdf.format(end);
+			
+			//
+			// Create an object, and inject the above HTML, to represent an
+			// entry in the DataTable
+			JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(req.getQueueName()));
+			entry.add(new JsonPrimitive(req.getNodeCount()));
+			entry.add(new JsonPrimitive(start1));
+			entry.add(new JsonPrimitive(end1));
+			entry.add(new JsonPrimitive(req.getMessage()));
+
+			dataTablePageEntries.add(entry);
+		}
+		JsonObject nextPage = new JsonObject();
+		// Build the actual JSON response object and populated it with the
+		// created data
+		nextPage.addProperty(SYNC_VALUE, syncValue);
+		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecords);
+		nextPage.add("aaData", dataTablePageEntries);
+
+		// Return the next DataTable page
+		return nextPage;
+	}
 	
 	/**
 	 * Given a list of users, creates a JsonObject that can be used to populate
@@ -2776,11 +2821,9 @@ public class RESTHelpers {
 				attrMap.get(SYNC_VALUE), currentUserId, true);
 	}
 
-	public static JsonObject getNextDataTablesPageForQueueReservations(
-			HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageForQueueReservations(HttpServletRequest request) {
 		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers
-				.getAttrMapQueueReservation(request);
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
 		if (null == attrMap) {
 			return null;
 		}
@@ -2807,6 +2850,40 @@ public class RESTHelpers {
 		}
 		return convertQueueRequestsToJsonObject(requests, totalReservations,
 				attrMap.get(SYNC_VALUE), currentUserId, false);
+	}
+	
+	public static JsonObject getNextDataTablesPageForHistoricReservations(HttpServletRequest request) {
+		// Parameter Validation
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
+		if (null == attrMap) {
+			return null;
+		}
+
+		int currentUserId = SessionUtil.getUserId(request);
+		int totalHistoric = Requests.getHistoricCount();
+		List<QueueRequest> requests = Requests.getHistoricQueueReservations(
+				attrMap.get(STARTING_RECORD), // Record to start at
+				attrMap.get(RECORDS_PER_PAGE), // Number of records to return
+				attrMap.get(SORT_DIRECTION) == ASC? true : false,
+				attrMap.get(SORT_COLUMN),
+				request.getParameter(SEARCH_QUERY)
+				);
+
+		/**
+		 * Used to display the 'total entries' information at the bottom of the
+		 * DataTable; also indirectly controls whether or not the pagination
+		 * buttons are toggle-able
+		 */
+		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		if (attrMap.get(SEARCH_QUERY) == EMPTY) {
+			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalHistoric);
+		}
+		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+		else {
+			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
+		}
+		return convertHistoricQueueRequestToJsonObject(requests, totalHistoric,
+				attrMap.get(SYNC_VALUE), currentUserId);
 	}
 	
 	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest request) {

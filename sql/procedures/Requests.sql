@@ -203,30 +203,6 @@ CREATE PROCEDURE GetCommunityRequestCount()
 		FROM community_requests;
 	END //
 	
--- Gets the next page of data table for queue reservation requests
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfPendingQueueRequests;
-CREATE PROCEDURE GetNextPageOfPendingQueueRequests(IN _startingRecord INT, IN _recordsPerPage INT)
-	BEGIN
-		SELECT 	user_id, 
-				space_id, 
-				queue_name,
-				MAX(node_count),
-				MIN(reserve_date),
-				MAX(reserve_date),
-				message,
-				code,
-				created
-		FROM	queue_request
-		GROUP BY user_id, space_id, queue_name
-		ORDER BY 
-			created
-		 ASC
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
-	END //
-	
 -- Gets the number of queue reservations
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetQueueReservationCount;
@@ -236,17 +212,13 @@ CREATE PROCEDURE GetQueueReservationCount()
 		FROM comm_queue;
 	END //
 	
--- Gets the next page of data table for queue reservations
+-- Gets the number of historic queue reservations
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfQueueReservations;
-CREATE PROCEDURE GetNextPageOfQueueReservations(IN _startingRecord INT, IN _recordsPerPage INT)
+DROP PROCEDURE IF EXISTS GetHistoricReservationCount;
+CREATE PROCEDURE GetHistoricReservationCount()
 	BEGIN
-		SELECT 	space_id, queue_id, node_count, MIN(reserve_date), MAX(reserve_date)
-		FROM	queue_reserved
-		GROUP BY space_id, queue_id
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
+		SELECT count(*) AS reservationCount
+		FROM reservation_history;
 	END //
 	
 -- Deletes a queue reservation by removing it from comm_queue table
@@ -259,25 +231,6 @@ CREATE PROCEDURE CancelQueueReservation(IN _queueId INT)
 		
 		DELETE FROM queue_reserved
 		WHERE queue_id = _queueId;
-	END //
-
--- Gets the next page of data table for community requests
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfPendingCommunityRequests;
-CREATE PROCEDURE GetNextPageOfPendingCommunityRequests(IN _startingRecord INT, IN _recordsPerPage INT)
-	BEGIN
-		SELECT 	user_id, 
-				community, 
-				code,
-				message,
-				created
-		FROM	community_requests
-		ORDER BY 
-			created
-		 ASC
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
 	END //
 	
 -- Updates the queue name of a queue_request
@@ -358,10 +311,10 @@ CREATE PROCEDURE GetAllQueueReservations()
 -- Adds an entry into reservation_history table
 -- Author: Wyatt Kaiser	
 DROP PROCEDURE IF EXISTS AddReservationToHistory;
-CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE, IN message TEXT)
+CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueName VARCHAR(64), IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE, IN message TEXT)
 	BEGIN
 		INSERT INTO reservation_history
-		VALUES (_spaceId, _queueId, _nodeCount, _startDate, _endDate, message);
+		VALUES (_spaceId, _queueName, _nodeCount, _startDate, _endDate, message);
 	END //
 	
 -- Returns the nodeCount for a particular queue request on a particular date

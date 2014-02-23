@@ -1,7 +1,6 @@
 $(document).ready(function() {
 	initUI();
 	attachFormValidation();
-	
 });
 
 /**
@@ -20,8 +19,7 @@ function initUI(){
 /**
  * Attaches form validation to the user registration fields
  */
-function attachFormValidation(){
-	
+function attachFormValidation(){	
 	// Adds regular expression handling to jQuery Validator
 	$.validator.addMethod(
 			"regex", 
@@ -29,11 +27,7 @@ function attachFormValidation(){
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
-	
-	// Hide the password strength meter initially and display it when a password's
-	// strength has been calculated
-	$.validator.passwordStrengthMeter("#pwd-meter");
-	
+		
 	$("#regForm").validate({
 		rules : {
 			fn : {
@@ -98,11 +92,5 @@ function attachFormValidation(){
 				required 	: "select a community to join"
 			}
 		},
-		// Don't display an error for passwords, the password strength meter takes care of that
-		errorPlacement : function(error, element) {
-			if($(element).attr("id") != "password"){
-				error.insertAfter(element);
-			}
-		}
 	});
 }

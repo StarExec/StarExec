@@ -86,6 +86,7 @@ function initUI(){
 	editable("firstname");
 	editable("lastname");
 	editable("institution");
+	editable("diskquota");
 	
 	// If the client's picture is clicked on, pop it up in a JQuery modal window
 	$('#showPicture').click(function(event){
@@ -315,6 +316,9 @@ function editable(attribute) {
  * @param old the old values to apply if save = false
  */
 function saveChanges(obj, save, attr, old) {
+	
+	var userId = window.location.search.split('id=')[1]; 
+
 	if (true == save) {
 		var newVal = $(obj).siblings('input:first').val();
 		
@@ -322,7 +326,7 @@ function saveChanges(obj, save, attr, old) {
 		newVal = (newVal == "") ? "-1" : newVal;
 		
 		$.post(  
-				starexecRoot+"services/edit/user/" + attr + "/" + newVal,
+				starexecRoot+"services/edit/user/" + attr + "/" + userId + "/" + newVal,
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {
 			    		// Hide the input box and replace it with the table cell

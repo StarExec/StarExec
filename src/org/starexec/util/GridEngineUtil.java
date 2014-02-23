@@ -781,7 +781,7 @@ public class GridEngineUtil {
 			}
 		}
 		
-		//TODO: Send Email on either completion or all paused [COMPLETE]
+		//TODO: Send Email on either completion or all paused
 		/*
 		try {
 			log.debug("sending email...");
@@ -969,7 +969,6 @@ public class GridEngineUtil {
 					sb.append(shortName);
 					sb.append(" ");
 					
-					//TODO: remove the association with this node and the queue it is currently associated with
 					Queue queue = nodesAndQueues.get(n);
 					String name = queue.getName();
 					String[] split3 = name.split("\\.");

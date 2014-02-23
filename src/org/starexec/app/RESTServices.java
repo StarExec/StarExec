@@ -95,7 +95,6 @@ public class RESTServices {
 	
 	private static final int ERROR_JOB_INCOMPLETE=3;
 	private static final int ERROR_INVALID_PARAMS=3;
-	private static final int ERROR_CANT_REMOVE_FROM_SUBSPACE=3;
 	private static final int ERROR_PASSWORDS_NOT_EQUAL=3;
 	private static final int ERROR_CANT_EDIT_LEADER_PERMS=3;
 	private static final int ERROR_CANT_PROMOTE_SELF=3;
@@ -284,7 +283,7 @@ public class RESTServices {
 		
 		if(jp != null) {			
 			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
-				Job j = Jobs.getShallow(jp.getJobId());			
+				Jobs.getShallow(jp.getJobId());			
 				String stdout = GridEngineUtil.getStdOut(jp, limit);
 				
 				if(!Util.isNullOrEmpty(stdout)) {
@@ -811,19 +810,6 @@ public class RESTServices {
 	}
 	
 	@POST
-	@Path("/edit/user/quota/{userId}/{val}")
-	@Produces("application/json")
-	public String editUserDiskQuota(@PathParam("userId") int userId,@PathParam("val") long newQuota, @Context HttpServletRequest request) {
-		int u=SessionUtil.getUserId(request);
-		if (!Users.isAdmin(u)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		boolean success=Users.setDiskQuota(userId, newQuota);
-		
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}
-	
-	@POST
 	@Path("/test/runTests")
 	@Produces("appliation/json")
 	public String runTest(@Context HttpServletRequest request) {
@@ -877,10 +863,9 @@ public class RESTServices {
 	 * @author Skylar Stark
 	 */
 	@POST
-	@Path("/edit/user/{attr}/{val}")
+	@Path("/edit/user/{attr}/{userId}/{val}")
 	@Produces("application/json")
-	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("val") String newValue, @Context HttpServletRequest request) {	
-		int userId = SessionUtil.getUserId(request);
+	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request) {	
 		boolean success = false;
 		
 		// Go through all the cases, depending on what attribute we are changing.
@@ -889,25 +874,25 @@ public class RESTServices {
 		if (attribute.equals("firstname")) {
 			if (true == Validator.isValidUserName(newValue)) {
 				success = Users.updateFirstName(userId, newValue);
-				if (true == success) {
-					SessionUtil.getUser(request).setFirstName(newValue);
-				}
 			}
 		} else if (attribute.equals("lastname")) {
 			if (true == Validator.isValidUserName(newValue)) {
 				success = Users.updateLastName(userId, newValue);
-				if (true == success) {
-					SessionUtil.getUser(request).setLastName(newValue);
-				}
 			}
 		}  else if (attribute.equals("institution")) {
 			if (true == Validator.isValidInstitution(newValue)) {
 				success = Users.updateInstitution(userId, newValue);
-				if (true == success) {
-					SessionUtil.getUser(request).setInstitution(newValue);
-				}
 			}
+		} else if (attribute.equals("diskquota")) {
+				int u=SessionUtil.getUserId(request);
+				if (!Users.isAdmin(u)) {
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);
+				}
+				if (true == Validator.isValidInteger(newValue)) {
+					success=Users.setDiskQuota(userId, Integer.parseInt(newValue));
+				}
 		}
+
 		// Passed validation AND Database update successful
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
@@ -3241,14 +3226,6 @@ public class RESTServices {
 			return gson.toJson(0);
 	}
 	
-	/**
-	 * Returns the next page of entries in a given DataTable
-	 * @param request the object containing the DataTable information
-	 * @return a JSON object representing the next page of entries if successful,<br>
-	 * 		1 if the request fails parameter validation, <br>
-	 * @author Wyatt kaiser
-	 * @throws Exception
-	 */
 	@POST
 	@Path("/queues/pending/pagination/")
 	@Produces("application/json")
@@ -3265,15 +3242,7 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
-	
-	/**
-	 * Returns the next page of entries in a given DataTable
-	 * @param request the object containing the DataTable information
-	 * @return a JSON object representing the next page of entries if successful,<br>
-	 * 		1 if the request fails parameter validation, <br>
-	 * @author Wyatt kaiser
-	 * @throws Exception
-	 */
+
 	@POST
 	@Path("/queues/reserved/pagination/")
 	@Produces("application/json")
@@ -3287,6 +3256,23 @@ public class RESTServices {
 		
 		
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForQueueReservations(request);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+
+	@POST
+	@Path("/queues/historic/pagination/")
+	@Produces("application/json")
+	public String getAllHistoricReservations(@Context HttpServletRequest request) throws Exception {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		User u = Users.get(userId);
+		if (!u.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForHistoricReservations(request);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
@@ -3713,6 +3699,52 @@ public class RESTServices {
 		CacheType t=CacheType.getType(type);
 
 		return Cache.invalidateCache(id, t) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	@POST
+	@Path("/suspend/user/{userId}")
+	@Produces("application/json")
+	public String suspendUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		User user = Users.get(id);
+		if (!user.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		boolean success = Users.suspend(userId);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	@POST
+	@Path("/reinstate/user/{userId}")
+	@Produces("application/json")
+	public String reinstateUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		User user = Users.get(id);
+		if (!user.getRole().equals("admin")) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		boolean success = Users.reinstate(userId);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	@POST
+	@Path("/admin/pauseAll")
+	@Produces("application/json")
+	public String pauseAll(@Context HttpServletRequest request) {
+		// Permissions check; if user is NOT the owner of the job, deny pause request
+		int userId = SessionUtil.getUserId(request);
+		User user = Users.get(userId);  
+		if(!user.getRole().equals("admin")){
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		List<Job> jobs = new LinkedList<Job>();
+		jobs = Jobs.getRunningJobs();
+		return Jobs.pauseAll(jobs) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	

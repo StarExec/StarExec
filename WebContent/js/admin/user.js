@@ -59,5 +59,55 @@ function editPermissions(userId) {
 }
 
 function suspendUser(userId) {
-	alert("here");
+
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			starexecRoot+"services/suspend/user/" + userId,
+			function(nextDataTablePage){
+				switch(nextDataTablePage){
+				case 0: 
+					showMessage('success',"user(s) suspended successfully",5000);
+					setTimeout(function(){document.location.reload(true);}, 1000);
+				case 1:
+					showMessage('error', "failed to get the next page of results; please try again", 5000);
+					break;
+				case 2:
+					showMessage('error', "insufficient privileges; you must be an administrator to do that");
+					break;
+				default:
+					showMessage('error', "cannot suspend another administrator");
+					break;
+				}
+			},  
+			"json"
+	).error(function(){
+		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
+	});
+}
+
+function reinstateUser(userId) {
+
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			starexecRoot+"services/reinstate/user/" + userId,
+			function(nextDataTablePage){
+				switch(nextDataTablePage){
+				case 0: 
+					showMessage('success',"user(s) suspended successfully",5000);
+					setTimeout(function(){document.location.reload(true);}, 1000);
+				case 1:
+					showMessage('error', "failed to get the next page of results; please try again", 5000);
+					break;
+				case 2:
+					showMessage('error', "insufficient privileges; you must be an administrator to do that");
+					break;
+				default:
+					showMessage('error', "cannot suspend another administrator");
+					break;
+				}
+			},  
+			"json"
+	).error(function(){
+		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
+	});
 }

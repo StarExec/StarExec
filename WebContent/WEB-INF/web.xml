@@ -301,6 +301,9 @@
   <security-role>
   	<role-name>unauthorized</role-name>
   </security-role>
+  <security-role>
+  	<role-name>suspended</role-name>
+  </security-role>
   
   <!-- Form based authentication configuration -->
   <login-config>
@@ -342,6 +345,7 @@
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
 	  <role-name>unauthorized</role-name>
+	  <role-name>suspended</role-name>
     </auth-constraint>		
   </security-constraint>
 
@@ -354,6 +358,7 @@
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
 	  <role-name>unauthorized</role-name>
+	  <role-name>suspended</role-name>
     </auth-constraint>		
   </security-constraint>
   

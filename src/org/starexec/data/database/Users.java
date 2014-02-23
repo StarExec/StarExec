@@ -648,6 +648,7 @@ public class Users {
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
 				u.setEmail(results.getString("email"));
+				u.setRole(results.getString("role"));
 				
 				//Prevents public user from appearing in table.
 				users.add(u);
@@ -1059,7 +1060,6 @@ public class Users {
 		CallableStatement procedure= null;
 		try{
 			con = Common.getConnection();					
-			Common.beginTransaction(con);
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			log.debug("hashedPass = " + hashedPass);
@@ -1093,19 +1093,58 @@ public class Users {
 	}
 
 	public static boolean addToCommunity(int userId, int communityId) {
-		log.debug("userid = " + userId);
-		log.debug("communityId " + communityId);
-		User user = Users.get(userId);
-		log.debug(user.getFirstName());
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{
 			con = Common.getConnection();					
-			Common.beginTransaction(con);
 						
 			procedure = con.prepareCall("{CALL AddUserToCommunity(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, communityId);
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
+	}
+
+	public static boolean suspend(int userId) {
+		User user = Users.get(userId);
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+						
+			procedure = con.prepareCall("{CALL SuspendUser(?)}");
+			procedure.setString(1, user.getEmail());
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
+	}
+
+	public static boolean reinstate(int userId) {
+		User user = Users.get(userId);
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+						
+			procedure = con.prepareCall("{CALL ReinstateUser(?)}");
+			procedure.setString(1, user.getEmail());
 			procedure.executeUpdate();			
 
 			return true;

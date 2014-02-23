@@ -74,6 +74,20 @@
 				</thead>
 			</table>
 		</fieldset>
+		<fieldset id="historicField">
+			<legend class="expd" id="historicExpd"><span>0</span> historic queue reservations</legend>
+			<table id="qhistoric">
+				<thead>
+					<tr>
+						<th>queue</th>
+						<th>nodes</th>
+						<th>start</th>
+						<th>end</th>
+						<th>message</th>
+					</tr>
+				</thead>
+			</table>
+		</fieldset>
 	</div>	
 	<div id="dialog-confirm-remove" title="confirm removal">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-remove-txt"></span></p>

@@ -371,7 +371,7 @@ public class Requests {
 
 			procedureAddHistory = con.prepareCall("{CALL AddReservationToHistory(?,?,?,?,?,?)}");
 			procedureAddHistory.setInt(1, req.getSpaceId());
-			procedureAddHistory.setInt(2, queueId);
+			procedureAddHistory.setString(2, queueName);
 			//req.getNodeCount() refers to the max node count
 			procedureAddHistory.setInt(3, req.getNodeCount());
 			procedureAddHistory.setDate(4, req.getStartDate());
@@ -686,9 +686,7 @@ public class Requests {
 				QueueRequest req = new QueueRequest();
 				req.setSpaceId(results.getInt("space_id"));
 				int queue_id = results.getInt("queue_id");
-				log.debug("queue_id = " + queue_id);
 				Queue q = Queues.get(queue_id);
-				log.debug("q = " + q);
 				req.setQueueName(q.getName());
 				req.setNodeCount(results.getInt("node_count"));
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
@@ -706,9 +704,47 @@ public class Requests {
 		}
 		
 		return null;
-		}
+	}
 	
-
+	public static List<QueueRequest> getHistoricQueueReservations(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNextPageOfHistoricQueueReservations(?, ?, ?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, indexOfColumnSortedBy);
+			procedure.setBoolean(4, isSortedASC);
+			procedure.setString(5, searchQuery);
+			results = procedure.executeQuery();
+			
+			List<QueueRequest> requests = new LinkedList<QueueRequest>();
+			
+			while(results.next()){
+				QueueRequest req = new QueueRequest();
+				req.setQueueName(results.getString("queue_name"));
+				req.setNodeCount(results.getInt("node_count"));
+				req.setStartDate(results.getDate("start_date"));
+				req.setEndDate(results.getDate("end_date"));
+				req.setMessage(results.getString("message"));
+				requests.add(req);					
+			}	
+			
+			return requests;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Returns the number of queue_requests
 	 * @return the number of queue_requests
@@ -743,6 +779,29 @@ public class Requests {
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetQueueReservationCount()}");
+			ResultSet results = procedure.executeQuery();
+			int reservationCount= 0;
+			if (results.next()) {
+				reservationCount = results.getInt("reservationCount");
+			}		
+			return reservationCount;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return 0;
+	}
+	
+	public static int getHistoricCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {			
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetHistoricReservationCount()}");
 			ResultSet results = procedure.executeQuery();
 			int reservationCount= 0;
 			if (results.next()) {

@@ -81,9 +81,10 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
 						
-				FROM	users WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -101,8 +102,9 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users WHERE (id != _publicUserId)
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 				ORDER BY 
 				(CASE _colSortedOn
 					WHEN 0 THEN full_name
@@ -119,9 +121,10 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
 				
-				FROM	users WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 							
 				-- Exclude Users whose name and description don't contain the query string
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
@@ -144,8 +147,9 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users WHERE (id != _publicUserId)
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
 				OR		email								LIKE 	CONCAT('%', _query, '%'))
@@ -399,6 +403,26 @@ DROP PROCEDURE IF EXISTS DeleteUser;
 CREATE PROCEDURE DeleteUser(IN _userId INT)
 	BEGIN
 		DELETE FROM users WHERE id=_userId;
+	END //
+	
+-- Suspends a user
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS SuspendUser;
+CREATE PROCEDURE SuspendUser(IN _userEmail VARCHAR(64))
+	BEGIN
+		UPDATE user_roles
+		SET role = "suspended"
+		WHERE email = _userEmail;
+	END //
+	
+-- Suspends a suspended user
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS ReinstateUser;
+CREATE PROCEDURE ReinstateUser(IN _userEmail VARCHAR(64))
+	BEGIN
+		UPDATE user_roles
+		SET role = "user"
+		WHERE email = _userEmail;
 	END //
 
 DELIMITER ; -- This should always be at the end of this file

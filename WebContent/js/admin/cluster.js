@@ -121,6 +121,12 @@ function initUI(id){
 		$("#moveNodes").hide();
 	}
 	
+	//Make tables expandable/collapsable
+	$('#reservationField').expandable(false);
+	$('#reservedField').expandable(false);
+	$('#historicField').expandable(true);
+
+	
 
 
 }
@@ -146,18 +152,6 @@ function updateActionId(id, type, permanent) {
 	}
 	
 	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
-
-	/*
-	if (permanent=='true' || id == 1) {
-		$("#makePermanent").hide();
-		if (id != 1) {
-			$("#moveNodes").show();
-		}
-	} else {	
-		$("#makePermanent").show();
-		$("#moveNodes").hide();
-	}
-	*/
 	
 	
 	$("#makePermanent").click(function() {
@@ -258,6 +252,15 @@ function initDataTables(){
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler2
 	});
+	historic = $('#qhistoric').dataTable( {
+		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"iDisplayStart"	: 0,
+		"iDisplayLength": 10,
+		"bServerSide"	: true,
+		"sAjaxSource"	: starexecRoot+"services/",
+		"sServerMethod" : 'POST',
+		"fnServerData"	: fnPaginationHandler3
+	});
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback){
@@ -324,8 +327,34 @@ function fnPaginationHandler2(sSource, aoData, fnCallback){
 	});
 }
 
-function handleRequest(code) {
-	
+function fnPaginationHandler3(sSource, aoData, fnCallback){
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			sSource + "queues/historic/pagination",
+			aoData,
+			function(nextDataTablePage){
+				switch(nextDataTablePage){
+				case 1:
+					showMessage('error', "failed to get the next page of results; please try again", 5000);
+					break;
+				case 2:		
+					break;
+				default:	// Have to use the default case since this process returns JSON objects to the client
+
+					// Update the number displayed in this DataTable's fieldset
+					$('#historicExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
+				
+				// Replace the current page with the newly received page
+				fnCallback(nextDataTablePage);
+				
+
+				break;
+				}
+			},  
+			"json"
+	).error(function(){
+		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
+	});
 }
 
 
