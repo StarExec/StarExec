@@ -521,9 +521,10 @@ public class Download extends HttpServlet {
 		sb.delete(0, sb.length());
 		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
-		sb.append(job.getUserId());
-		sb.append("_");
-		sb.append(job.getId());
+		sb.append("Job")
+		sb.append(job.getId()); // Was job.getUserId(); 
+		sb.append("_info");
+		//sb.append(job.getId());
 		sb.append(".csv");
 		String filename = sb.toString();
 
@@ -650,7 +651,7 @@ public class Download extends HttpServlet {
 
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
-			String fileName = UUID.randomUUID().toString() + format;
+			String fileName = "Job" + j.getId() + "_output" + format; //UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 
 			uniqueDir.createNewFile();
