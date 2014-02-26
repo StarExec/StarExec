@@ -180,6 +180,9 @@
 			<fileset dir="upload-test">
 				<include name="**/*" />
 			</fileset>
+			<fileset dir="${starcom-build}">
+				<include name="StarexecCommand.jar" />
+			</fileset>
 		</copy>
 
 		<!-- Update the upload commands to use the correct app -->
