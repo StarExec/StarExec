@@ -521,7 +521,7 @@ public class Download extends HttpServlet {
 		sb.delete(0, sb.length());
 		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
-		sb.append("Job")
+		sb.append("Job");
 		sb.append(job.getId()); // Was job.getUserId(); 
 		sb.append("_info");
 		//sb.append(job.getId());
