@@ -705,9 +705,9 @@ public class Download extends HttpServlet {
 
 					}
 				}
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output_new",false);
 			} else {
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
+				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output",false);
 				if (jobComplete) {
 					Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}
