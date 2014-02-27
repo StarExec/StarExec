@@ -842,7 +842,6 @@ public class RESTHelpers {
 	}
 	
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
-		long a=System.currentTimeMillis();
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false,false);
 
@@ -1828,13 +1827,13 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(permissionButton));
 			
 			String suspendButton = "";
-			if (user.getId() == R.PUBLIC_USER_ID || user.getRole().equals("admin") || user.getRole().equals("unauthorized")) {
+			if (user.getId() == R.PUBLIC_USER_ID || Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
 				suspendButton = "N/A";
-			} else if (user.getRole().equals("suspended")) {
+			} else if (Users.isSuspended(user.getId())) {
 				sb = new StringBuilder();
 				sb.append("<input type=\"button\" onclick=\"reinstateUser(" + user.getId() + ")\" value=\"Reinstate\"/>");
 				suspendButton = sb.toString();
-			} else if (user.getRole().equals("user")) {
+			} else if (Users.isNormalUser(user.getId())) {
 				sb = new StringBuilder();
 				sb.append("<input type=\"button\" onclick=\"suspendUser(" + user.getId() + ")\" value=\"Suspend\"/>");
 				suspendButton = sb.toString();
@@ -2378,9 +2377,7 @@ public class RESTHelpers {
 	private static JsonObject convertNodesToJsonObject(List<WorkerNode> nodes, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
 		JsonArray dataTablePageEntries = new JsonArray();
 
-		for(WorkerNode n : nodes) {
-			StringBuilder sb = new StringBuilder();
-			
+		for(WorkerNode n : nodes) {			
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();

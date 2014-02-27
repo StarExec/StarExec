@@ -41,8 +41,13 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.CacheSecurity;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.JobSecurity;
+import org.starexec.data.security.ProcessorSecurity;
+import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
+import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
@@ -93,31 +98,13 @@ public class RESTServices {
 	private static final int ERROR_INVALID_PERMISSIONS=2;
 	private static final int ERROR_INVALID_PASSWORD=2;
 	
-	private static final int ERROR_JOB_INCOMPLETE=3;
 	private static final int ERROR_INVALID_PARAMS=3;
 	private static final int ERROR_PASSWORDS_NOT_EQUAL=3;
-	private static final int ERROR_CANT_EDIT_LEADER_PERMS=3;
 	private static final int ERROR_CANT_PROMOTE_SELF=3;
 	private static final int ERROR_CANT_PROMOTE_LEADER=3;
 	
-	private static final int ERROR_NOT_IN_SPACE=4;
-	private static final int ERROR_CANT_REMOVE_LEADER=4;
 	private static final int ERROR_NOT_ALL_DELETED=4;
-	private static final int ERROR_WRONG_PASSWORD=4; 
-	
-	private static final int ERROR_CANT_REMOVE_SELF=5;
-	private static final int ERROR_SPACE_LOCKED=5;
-	
-	private static final int ERROR_CANT_LINK_TO_SUBSPACE=6;
-	private static final int ERROR_CANT_REMOVE_LEADER_IN_SUBSPACE=6;
-	
-	private static final int ERROR_NOT_UNIQUE_NAME=7;
-	
-	private static final int ERROR_INSUFFICIENT_QUOTA=8;
-	
-	private static final int ERROR_NAME_NOT_EDITABLE=9;
-	
-	private static final int ERROR_PRIM_ALREADY_DELETED=11;
+	private static final int ERROR_WRONG_PASSWORD=4; 		
 	
 	private static final int ERROR_TOO_MANY_JOB_PAIRS=13;
 	private static final int ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=12;
@@ -136,19 +123,21 @@ public class RESTServices {
 		List<Space> subspaces=new ArrayList<Space>();
 		
 		//don't populate the subspaces if the user can't see the job
-		if (Permissions.canUserSeeJob(jobId, userId)) {
-			if (parentId>0) {
-				
-				subspaces=Spaces.getSubSpacesForJob(parentId,false);
-			} else {
-				//if the id given is 0, we want to get the root space
-				Job j=Jobs.get(jobId);
-				Space s=Spaces.getJobSpace(j.getPrimarySpace());
-				subspaces.add(s);
-			}
-		} else  {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
+		if (parentId>0) {
+			
+			subspaces=Spaces.getSubSpacesForJob(parentId,false);
+		} else {
+			//if the id given is 0, we want to get the root space
+			Job j=Jobs.get(jobId);
+			Space s=Spaces.getJobSpace(j.getPrimarySpace());
+			subspaces.add(s);
+		}
+		
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
 		return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
 	}
@@ -235,15 +224,17 @@ public class RESTServices {
 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
 		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
-		
+		int status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
+		if (status!=0) {
+			return "not available";
+		}
 		if(jp != null) {			
-			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 				String log = GridEngineUtil.getJobLog(jp.getId(), jp.getGridEngineId());
 				
 				if(!Util.isNullOrEmpty(log)) {
 					return log;
 				}
-			}
+			
 		}
 		
 		return "not available";
@@ -280,16 +271,19 @@ public class RESTServices {
 	public String getJobPairStdout(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
-		
+		int status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
+		if (status!=0) {
+			return "not available";
+		}
 		if(jp != null) {			
 			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 				Jobs.getShallow(jp.getJobId());			
 				String stdout = GridEngineUtil.getStdOut(jp, limit);
-				
 				if(!Util.isNullOrEmpty(stdout)) {
 					return stdout;
 				}				
-			}
+			
+		}
 		}
 		
 		return "not available";
@@ -375,7 +369,7 @@ public class RESTServices {
 		Space s = null;
 		Permission p = null;
 		
-		if(Permissions.canUserSeeSpace(spaceId, userId)) {
+		if(SpaceSecurity.canUserSeeSpace(spaceId, userId)==0) {
 			s = Spaces.get(spaceId); 
 			p = SessionUtil.getPermission(request, spaceId);
 		}					
@@ -399,10 +393,9 @@ public class RESTServices {
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		
-		// Ensure user can view the job they are requesting the pairs from
-		if(false == Permissions.canUserSeeJob(jobId, userId)){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
@@ -427,11 +420,11 @@ public class RESTServices {
 	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		
-		// Ensure user can view the job they are requesting the pairs from
-		if(false == Permissions.canUserSeeJob(jobId, userId)){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status = JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request);
 		if (nextDataTablesPage==null) {
@@ -457,9 +450,11 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from
-		if(false == Permissions.canUserSeeJob(jobId, userId)){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean logX=false;
 		boolean logY=false;
@@ -503,11 +498,10 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
-		// Ensure user can view the job they are requesting the pairs from
-		if(false == Permissions.canUserSeeJob(jobId, userId)){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status= JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
 		
 		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large);
 		if (chartPath==null) {
@@ -538,9 +532,11 @@ public class RESTServices {
 	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		//no restrictions for now, as now that we are caching results we should probably just see how far we can push that
 		//if (Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, true, true)>R.MAXIMUM_JOB_PAIRS) {
 		//	return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
@@ -596,8 +592,7 @@ public class RESTServices {
 	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
+		if (!Users.isAdmin(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -633,15 +628,17 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
-		if(false == Permissions.canUserSeeSpace(spaceId, userId)) {
-			log.debug("user "+userId+" requested to see a space they are not allowed to see");
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
+		if (status!=0) {
+			log.debug("attempted unauthorized access");
+			return gson.toJson(status);
 		}
 		
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
+			log.debug("getting next page of users");
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
 			
@@ -672,14 +669,13 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUserSpacePermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		User user = SessionUtil.getUser(request);
 		List<Space> communities = Communities.getAll();
 		for (Space s : communities) {
 			if (spaceId == s.getId()) {
-				if (user.getRole().equals("admin")) {
+				if (Users.isAdmin(userId)) {
 					return gson.toJson(Permissions.get(userId, spaceId));
 				} else {
-					return gson.toJson(1);
+					return gson.toJson(ERROR_INVALID_PERMISSIONS);
 				}
 			}
 		}
@@ -743,29 +739,33 @@ public class RESTServices {
 	@Produces("application/json")
 	public String addWebsite(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		boolean success = false;
-		
+		int userId = SessionUtil.getUserId(request);
+
 		if (type.equals("user")) {
-			int userId = SessionUtil.getUserId(request);
 			String name = request.getParameter("name");
 			String url = request.getParameter("url");			
 			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
-			Permission perm = SessionUtil.getPermission(request, id);
-			if(perm != null && perm.isLeader()) {
-				String name = request.getParameter("name");
-				String url = request.getParameter("url");		
-				log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
-				success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
+			int status=SpaceSecurity.canAssociateWebsite(id, userId);
+			if (status!=0) {
+				return gson.toJson(status);
 			}
+			String name = request.getParameter("name");
+			String url = request.getParameter("url");		
+			log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
+			success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
+			
 		} else if (type.equals("solver")) {
 			//Make sure this user is the solver owner
-			Solver s = Solvers.get(id);
-			if (s.getUserId() == SessionUtil.getUserId(request)) {
-				String name = request.getParameter("name");
-				String url = request.getParameter("url");
-				success = Websites.add(id, url, name, Websites.WebsiteType.SOLVER);
+			int status=SolverSecurity.canAssociateWebsite(id, userId);
+			if (status!=0) {
+				return gson.toJson(status);
 			}
+			String name = request.getParameter("name");
+			String url = request.getParameter("url");
+			success = Websites.add(id, url, name, Websites.WebsiteType.SOLVER);
+			
 		}
 		
 		// Passed validation AND Database update successful	
@@ -787,23 +787,26 @@ public class RESTServices {
 	@Path("/websites/delete/{type}/{id}/{websiteId}")
 	@Produces("application/json")
 	public String deleteWebsite(@PathParam("type") String type, @PathParam("id") int id, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
-		
+		int userId=SessionUtil.getUserId(request);
 		if(type.equals("user")){
 			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader
-			Permission perm = SessionUtil.getPermission(request, id);		
-			if(perm == null || !perm.isLeader()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+			int status=SpaceSecurity.canAssociateWebsite(id, userId);
+			if (status!=0) {
+				return gson.toJson(status);
 			}
 			
 			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("solver")) {
-			Solver s = Solvers.get(id);
-			if (s.getUserId() == SessionUtil.getUserId(request)) {
-				return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			
+			int status=SolverSecurity.canAssociateWebsite(id, userId);
+			if (status!=0) {
+				return gson.toJson(status);
 			}
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+			
+			return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			
 		} 
 		
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
@@ -814,22 +817,17 @@ public class RESTServices {
 	@Produces("appliation/json")
 	public String runTest(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		User user=Users.get(u);
 		
-		if (user.getRole().equals("admin")) {
+		if (Users.isAdmin(u)) {
 			final String[] testNames=request.getParameterValues("testNames[]");
 			if (testNames==null || testNames.length==0) {
 				return gson.toJson(ERROR_INVALID_PARAMS);
 			}
-			
-			
 		
 			for (String testName : testNames) {
 				TestManager.executeTest(testName);
 			}
-					
 				
-			
 			return gson.toJson(0);
 			
 		} else {
@@ -842,8 +840,7 @@ public class RESTServices {
 	@Produces("appliation/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		User user=Users.get(u);
-		if (user.getRole().equals("admin")) {
+		if (Users.isAdmin(u)) {
 			
 			TestManager.executeAllTestSequences();
 			
@@ -867,30 +864,36 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request) {	
 		boolean success = false;
+		int requestUserId=SessionUtil.getUserId(request);
+		int status=UserSecurity.canUpdateData(userId, requestUserId, attribute, newValue);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		
 		// Go through all the cases, depending on what attribute we are changing.
 		// First, validate that it is in legal form. Then, try to update the database.
 		// Finally, update the current session data
 		if (attribute.equals("firstname")) {
-			if (true == Validator.isValidUserName(newValue)) {
-				success = Users.updateFirstName(userId, newValue);
+			
+			success = Users.updateFirstName(userId, newValue);
+			if (success) {
+				SessionUtil.getUser(request).setFirstName(newValue);
 			}
 		} else if (attribute.equals("lastname")) {
-			if (true == Validator.isValidUserName(newValue)) {
-				success = Users.updateLastName(userId, newValue);
+			success = Users.updateLastName(userId, newValue);
+			if (success) {
+				SessionUtil.getUser(request).setLastName(newValue);
 			}
-		}  else if (attribute.equals("institution")) {
-			if (true == Validator.isValidInstitution(newValue)) {
-				success = Users.updateInstitution(userId, newValue);
+		} else if (attribute.equals("institution")) {
+			success = Users.updateInstitution(userId, newValue);
+			if (success) {
+				SessionUtil.getUser(request).setInstitution(newValue);
 			}
 		} else if (attribute.equals("diskquota")) {
-				int u=SessionUtil.getUserId(request);
-				if (!Users.isAdmin(u)) {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);
-				}
-				if (true == Validator.isValidInteger(newValue)) {
-					success=Users.setDiskQuota(userId, Integer.parseInt(newValue));
-				}
+			success=Users.setDiskQuota(userId, Integer.parseInt(newValue));
+			if (success) {
+				SessionUtil.getUser(request).setDiskQuota(Integer.parseInt(newValue));
+			}
 		}
 
 		// Passed validation AND Database update successful
@@ -911,36 +914,28 @@ public class RESTServices {
 	@Path("/edit/space/{attr}/{id}")
 	@Produces("application/json")
 	public String editSpaceDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
-		
-		
-		try {
-			Permission perm = SessionUtil.getPermission(request, id);		
-			if(perm == null || !perm.isLeader()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-			}
-			
+		int userId=SessionUtil.getUserId(request);
+		String newValue=(String)request.getParameter("val");
+		int status=SpaceSecurity.canUpdateSettings(id,attribute,newValue, userId);
+		if (status!=0) {
+			return gson.toJson(id);
+		}
+		try {			
 			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
 				return gson.toJson(ERROR_EDIT_VAL_ABSENT);
 			}
 			
 			boolean success = false;
-			Space s=Spaces.get(id);
 			// Go through all the cases, depending on what attribute we are changing.
 			if (attribute.equals("name")) {
 				String newName = (String)request.getParameter("val");
-				if (true == Validator.isValidPrimName(newName)) {
-					if (!s.getName().equals(newName)) {
-						if (Spaces.notUniquePrimitiveName(newName,id,4)) {
-							return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-						}
-					}
-					success = Spaces.updateName(id, newName);
-				}
+				
+				success = Spaces.updateName(id, newName);
+				
 			} else if (attribute.equals("description")) {
 				String newDesc = (String)request.getParameter("val");
-				if (true == Validator.isValidPrimDescription(newDesc)) {
-					success = Spaces.updateDescription(id, newDesc);				
-				}
+				success = Spaces.updateDescription(id, newDesc);				
+				
 			} else if (attribute.equals("PostProcess")) {
 				success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
 			}else if (attribute.equals("CpuTimeout")) {
@@ -986,27 +981,10 @@ public class RESTServices {
 				|| !Util.paramExists("sticky", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		
-		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(request.getParameter("name"))
-				|| !Validator.isValidPrimDescription(request.getParameter("description"))
-				|| !Validator.isValidBool(request.getParameter("locked"))
-				|| !Validator.isValidBool(request.getParameter("sticky"))){
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
-		Space os=Spaces.get(id);
-		if (!os.getName().equals(request.getParameter("name"))) {
-			if (Spaces.notUniquePrimitiveName(request.getParameter("name"),id,4)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
-		}
-		
+				
 		// Permissions check; if user is NOT a leader of the space, deny update request
 		int userId = SessionUtil.getUserId(request);
-		Permission perm = Permissions.get(userId, id);
-		if(perm == null || !perm.isLeader()){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		
 		
 		// Extract new space details from request and add them to a new space object
 		
@@ -1016,9 +994,9 @@ public class RESTServices {
 		s.setDescription(request.getParameter("description"));
 		s.setLocked(Boolean.parseBoolean(request.getParameter("locked")));
 		s.setStickyLeaders(Boolean.parseBoolean(request.getParameter("sticky")));
-		//communities are not allowed to have sticky leaders enabled
-		if (Communities.isCommunity(id) && s.isStickyLeaders()) {
-			return gson.toJson(ERROR_INVALID_PARAMS);
+		int status=SpaceSecurity.canUpdateProperties(id, userId, s.getName(), s.isStickyLeaders());
+		if(status!=0) {
+			return gson.toJson(status);
 		}
 		// Extract permission details from request and add them to a new permission object
 		// Then set the above space's permission to this new permission object
@@ -1052,47 +1030,15 @@ public class RESTServices {
 	public String postProcessJob(@PathParam("jobId") int jid, @PathParam("procId") int pid, @Context HttpServletRequest request) {
 		
 		int userId=SessionUtil.getUserId(request);
-		Job job=Jobs.get(jid);
-		if (job.getUserId()!=userId) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserPostProcessJob(jid, userId, pid);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		Processor p=Processors.get(pid);
-		if (!Users.isMemberOfCommunity(userId, p.getCommunityId())) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		if (!Jobs.canJobBePostProcessed(jid)) {
-			return gson.toJson(ERROR_JOB_INCOMPLETE);
-		}
+		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
 		return Jobs.prepareJobForPostProcessing(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
-	
-	/**
-	 * Post-processes an already-complete job with a new post processor
-	 * 
-	 * @return a json string with result status (0 for success, otherwise 1)
-	 * @author Eric Burns
-	 
-	@GET
-	@Path("/postprocess/job/{jobId}/cancel")
-	@Produces("application/json")
-	public String cancelOostProcessJob(@PathParam("jobId") int jid, @Context HttpServletRequest request) {
-		
-		int userId=SessionUtil.getUserId(request);
-		Job job=Jobs.get(jid);
-		if (job.getUserId()!=userId) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		if (Jobs.getJobStatusCode(jid).getCode()!=JobStatusCode.STATUS_PROCESSING) {
-			return gson.toJson(ERROR_JOB_NOT_PROCESSING);
-		}
-		
-		
-		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
-		
-		return Jobs.cancelPostProcessing(jid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}*/
 	
 	/**
 	 * Removes a benchmark type from a given space
@@ -1106,12 +1052,11 @@ public class RESTServices {
 	@Path("/delete/processor/{procId}")
 	@Produces("application/json")
 	public String deleteProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
-		Processor p = Processors.get(pid);
-		
+		int userId=SessionUtil.getUserId(request);
 		// Permissions check; ensures user is the leader of the community that owns the processor
-		Permission perm = SessionUtil.getPermission(request, p.getCommunityId());		
-		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		int status=ProcessorSecurity.canUserDeleteProcessor(pid, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		String answer= Processors.delete(pid) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -1152,7 +1097,7 @@ public class RESTServices {
 	@Path("/delete/processor")
 	@Produces("application/json")
 	public String deleteProcessors(@Context HttpServletRequest request) {
-		
+		int userId=SessionUtil.getUserId(request);
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -1163,23 +1108,17 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 		}
-		
+		int status=ProcessorSecurity.canUserDeleteProcessors(selectedProcessors, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		for (int id : selectedProcessors) {
-			Processor p = Processors.get(id);
-			
-			// Permissions check; ensures user is the leader of the community that owns the processor
-			Permission perm = SessionUtil.getPermission(request, p.getCommunityId());		
-			if(perm == null || !perm.isLeader()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-			}
-			
 			if (!Processors.delete(id)) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
 		return gson.toJson(0);
 	}
-	
 	
 	/**
 	 * Restores all recycled benchmarks a user has
@@ -1271,12 +1210,14 @@ public class RESTServices {
 	@Path("/edit/processor/{procId}")
 	@Produces("applicatoin/json")
 	public String editProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
-		Processor p=Processors.get(pid);
-		Permission perm= SessionUtil.getPermission(request, p.getCommunityId());
-		if (perm==null || !perm.isLeader()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int userId=SessionUtil.getUserId(request);
+		int status=ProcessorSecurity.canUserEditProcessor(pid, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
+		
+		Processor p=Processors.get(pid);
 		if(!Util.paramExists("name", request)
 				|| !Util.paramExists("desc", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -1319,12 +1260,12 @@ public class RESTServices {
 	@Produces("application/json")
 	public String leaveCommunity(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Permissions check; ensures user is apart of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		int userId=SessionUtil.getUserId(request);
+		int status=SpaceSecurity.canUserLeaveSpace(spaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
-		if(true == Communities.leave(SessionUtil.getUserId(request), spaceId)) {
+		if(Communities.leave(SessionUtil.getUserId(request), spaceId)) {
 			// Delete prior entry in user's permissions cache for this community
 			SessionUtil.removeCachePermission(request, spaceId);
 			return gson.toJson(0);
@@ -1347,9 +1288,16 @@ public class RESTServices {
 	@Path("/remove/benchmark/{spaceId}")
 	@Produces("application/json")
 	public String removeBenchmarksFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
+		}
+		
+		
+		int status=SpaceSecurity.canUserRemoveBenchmark(spaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		// Extract the String bench id's and convert them to Integer
@@ -1358,12 +1306,7 @@ public class RESTServices {
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canRemoveBench()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}
-
+		
 		// Remove the benchmark from the space
 		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
@@ -1384,32 +1327,26 @@ public class RESTServices {
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if (!perm.canRemoveBench()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		
 		// Extract the String bench id's and convert them to Integer
 		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
-		User user = Users.get(userId);
-		for (int id : selectedBenches) {
-			log.debug("user.getRole() = " + user.getRole());
-			if (!user.getRole().equals("admin")) {
-				if(userId!=Benchmarks.get(id).getUserId()) {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-				}
-			}
-			
-			boolean success=Benchmarks.recycle(id);
-			if (!success) {
+		
+		int status=SpaceSecurity.canUserRemoveAndRecycleBenchmarks(selectedBenches, spaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		for (int id : selectedBenches) {			
+			if (!Benchmarks.recycle(id)) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		Spaces.removeBenches(selectedBenches, spaceId);
-		return gson.toJson(0);
+		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		
 	}
 	
 	/**
@@ -1436,12 +1373,12 @@ public class RESTServices {
 		}
 		int userId=SessionUtil.getUserId(request);
 		//first, ensure the user has the correct permissions for every benchmark
-		for (int id : selectedBenches) {
-			if(BenchmarkSecurity.canUserRecycleBench(id, userId)>0) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
-			
+		int status=BenchmarkSecurity.canUserRecycleBenchmarks(selectedBenches,userId);
+		if(status!=0) {
+			return gson.toJson(status);
 		}
+			
+		
 		//then, only if the user had the right permissions, start recycling them
 		for (int id : selectedBenches) {
 			boolean success=Benchmarks.recycle(id);
@@ -1478,11 +1415,9 @@ public class RESTServices {
 				selectedBenches.add(Integer.parseInt(id));
 			}
 			int userId=SessionUtil.getUserId(request);
-			for (int id : selectedBenches) {
-				int status=BenchmarkSecurity.canUserDeleteBench(id, userId);
-				if (status>0) {
-					return gson.toJson(status);
-				}
+			int status=BenchmarkSecurity.canUserDeleteBenchmarks(selectedBenches, userId);
+			if (status!=0) {
+				return gson.toJson(status);
 			}
 			for (int id : selectedBenches) {
 				boolean success=Benchmarks.delete(id);
@@ -1513,13 +1448,11 @@ public class RESTServices {
 				selectedBenches.add(Integer.parseInt(id));
 			}
 			int userId=SessionUtil.getUserId(request);
-			for (int id : selectedBenches) {
-				int status=BenchmarkSecurity.canUserRestoreBenchmark(id, userId);
-				if(status>0) {
-					return gson.toJson(status);	
-				}
-				
+			int status=BenchmarkSecurity.canUserRestoreBenchmarks(selectedBenches, userId);
+			if(status>0) {
+				return gson.toJson(status);	
 			}
+	
 			for (int id : selectedBenches) {
 				boolean success=Benchmarks.restore(id);
 				if (!success) {
@@ -1573,7 +1506,7 @@ public class RESTServices {
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 
 		int status=SpaceSecurity.canCopyUserBetweenSpaces(fromSpace, spaceId, requestUserId, selectedUsers, copyToSubspaces);
-		if (status<0) {
+		if (status!=0) {
 			return gson.toJson(status);
 		}
 		return Users.associate(selectedUsers, spaceId,copyToSubspaces,requestUserId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -1718,47 +1651,20 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/add/job")
 	@Produces("application/json")
 	public String copyJobToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		
-		// Get the id of the user who initiated the request
-		int requestUserId = SessionUtil.getUserId(request);
-		
+				
 		// Get the space the benchmark is being copied from
 		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
-		
-		// Check permissions, the user must have add benchmark permissions in the destination space
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canAddJob()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}			
-		
-		// Verify the user can at least see the space they claim to be copying from
-		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(ERROR_NOT_IN_SPACE);
-		}			
-		
-		// And the space the solvers are being copied from must not be locked
-		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(ERROR_SPACE_LOCKED);
-		}
-		
-		// Convert the benchmarks to copy to a int list
+				
 		List<Integer> selectedJobs = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		
-		// Make sure the user can see the benchmarks they're trying to copy
-		for(int id : selectedJobs) {
-			if(!Permissions.canUserSeeJob(id, requestUserId)) {
-				return gson.toJson(ERROR_NOT_IN_SPACE);
-			}
-			
-			// Make sure that the job has a unique name in the space.
-			if(Spaces.notUniquePrimitiveName(Jobs.getDetailed(id).getName(), spaceId, 3)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
-		}		
+		int status=SpaceSecurity.canLinkJobsBetweenSpaces(fromSpace, spaceId, userId, selectedJobs);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		
 		// Make the associations
 		boolean success = Jobs.associate(selectedJobs, spaceId);
@@ -1790,46 +1696,19 @@ public class RESTServices {
 		
 		// Get the id of the user who initiated the removal
 		int userIdOfRemover = SessionUtil.getUserId(request);
-		User u = Users.get(userIdOfRemover);
 		
-		Permission perm = new Permission();
-		if (u.getRole().equals("admin")) {
-			log.debug("Returning admin user permissions");
-			perm=Permissions.getFullPermission();
-			perm.setId(userIdOfRemover);
-			
-		} else {
-			// Permissions check; ensures user is the leader of the community
-			perm = SessionUtil.getPermission(request, spaceId);
-		}
-		if(perm == null || !perm.canRemoveUser()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-		}
+		
 		
 		// Extract the String user id's and convert them to Integer
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
+		boolean hierarchy=Boolean.parseBoolean(request.getParameter("hierarchy"));
 		
-		if (!u.getRole().equals("admin")) {
-			// Validate the list of users to remove by:
-			// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
-			// 2 - Ensuring other leaders of the space aren't in the list of users to remove
-			for(int userId : selectedUsers){
-				if(userId == userIdOfRemover){
-					return gson.toJson(ERROR_CANT_REMOVE_SELF);
-				}
-				perm = Permissions.get(userId, spaceId);
-				if(perm.isLeader()){
-					return gson.toJson(ERROR_CANT_REMOVE_LEADER);
-				}
-			}
+		int status=SpaceSecurity.canRemoveUsersFromSpaces(selectedUsers, userIdOfRemover, spaceId, hierarchy);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-
-		
-		// If array of users to remove is valid, attempt to remove them from the space
-		
 		// If we are "cascade removing" the user(s)...
-		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
-			int subspaceId;
+		if (hierarchy) {
 			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaces(spaceId, userIdOfRemover, true));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
@@ -1837,22 +1716,10 @@ public class RESTServices {
 			subspaceIds.add(spaceId);
 			
 			// Iterate once through all subspaces of the destination space to ensure the user has removeUser permissions in each
-			for(Space subspace : subspaces) {
-				subspaceId = subspace.getId();
-				Permission subspacePerm = SessionUtil.getPermission(request, subspaceId);		
-				if (subspacePerm != null && !subspacePerm.canRemoveUser()) { // Null if we don't belong to that space; that's ok! we skip it
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);	
-				}
-				for (int userId : selectedUsers) {
-					// Make sure the users you are trying to remove are not leaders in this subspace
-					perm = Permissions.get(userId, subspace.getId());
-					if (perm != null && perm.isLeader()) {
-						return gson.toJson(ERROR_CANT_REMOVE_LEADER_IN_SUBSPACE);
-					}
-				subspaceIds.add(subspaceId);
-				}
+			for(Space subspace : subspaces) {		
+				subspaceIds.add(subspace.getId());
 			}
-			
+
 			// Remove the users from the space and its subspaces
 			return Spaces.removeUsersFromHierarchy(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		}
@@ -1891,7 +1758,7 @@ public class RESTServices {
 		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {			
 			
 			int status=SolverSecurity.canUserRemoveSolverFromHierarchy(spaceId,userId);
-			if (status<0) {
+			if (status!=0) {
 				return gson.toJson(status);
 			}
 		
@@ -1900,7 +1767,7 @@ public class RESTServices {
 		} else {
 			// Permissions check; ensures user has permisison to remove solver
 			int status=SolverSecurity.canUserRemoveSolver(spaceId, SessionUtil.getUserId(request));
-			if (status<0) {
+			if (status!=0) {
 				return gson.toJson(status);
 			}
 			return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -1928,29 +1795,25 @@ public class RESTServices {
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		
-		int status=SolverSecurity.canUserRemoveSolver(spaceId, userId);
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if (!perm.canRemoveSolver()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
 		// Extract the String solver id's and convert them to Integer
 		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
+		
+		int status=SpaceSecurity.canUserRemoveAndRecycleSolvers(selectedSolvers,spaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
 		for (int id : selectedSolvers) {
-			status=SolverSecurity.canUserRecycleSolver(id, userId);
-			if (status<0) {
-				return gson.toJson(status);
-			}
-			
 			boolean success=Solvers.recycle(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		Spaces.removeSolvers(selectedSolvers, spaceId);
-		return gson.toJson(0);
+		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		
 	}
 	
 	/**
@@ -1978,12 +1841,13 @@ public class RESTServices {
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
+		int status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
 		for (int id : selectedSolvers) {
 			
-			int status=SolverSecurity.canUserRestoreSolver(id, userId);
-			if (status<0) {
-				return gson.toJson(status);
-			}
 			boolean success=Solvers.restore(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
@@ -2017,12 +1881,13 @@ public class RESTServices {
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
+		int status=SolverSecurity.canUserDeleteSolvers(selectedSolvers, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		
 		for (int id : selectedSolvers) {
-			int status=SolverSecurity.canUserDeleteSolver(id, userId);
-			if (status<0) {
-				return gson.toJson(status);
-			}
-			
 			boolean success=Solvers.delete(id);
 			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
@@ -2055,14 +1920,15 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
+		
+		int status=SolverSecurity.canUserRecycleSolvers(selectedSolvers, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		
 		for (int id : selectedSolvers) {
-			int status=SolverSecurity.canUserRecycleSolver(id, userId);
-			if (status<0) {
-				return gson.toJson(status);
-			}
-			
-			boolean success=Solvers.recycle(id);
-			if (!success) {
+			if (!Solvers.recycle(id)) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
@@ -2091,7 +1957,10 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedConfigs.add(Integer.parseInt(id));
 		}
-		
+		int status=SolverSecurity.canUserDeleteConfigurations(selectedConfigs, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		for (int id : selectedConfigs) {
 			// Validate configuration id parameter
 			Configuration config = Solvers.getConfiguration(id);
@@ -2101,22 +1970,20 @@ public class RESTServices {
 			
 			// Permissions check; if user is NOT the owner of the configuration file's solver, deny deletion request
 			Solver solver = Solvers.get(config.getSolverId());
-			if(null == solver || solver.getUserId() != userId){
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
+			
 			
 			// Attempt to remove the configuration's physical file from disk
-			if(false == Solvers.deleteConfigurationFile(config)){
+			if(!Solvers.deleteConfigurationFile(config)){
 				return gson.toJson(ERROR_DATABASE);
 			}
 			
 			// Attempt to remove the configuration's entry in the database
-			if(false == Solvers.deleteConfiguration(id)){
+			if(!Solvers.deleteConfiguration(id)){
 				return gson.toJson(ERROR_DATABASE);
 			}
 			
 			// Attempt to update the disk_size of the parent solver to reflect the file deletion
-			if(false == Solvers.updateSolverDiskSize(solver)){
+			if(!Solvers.updateSolverDiskSize(solver)){
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
@@ -2138,6 +2005,7 @@ public class RESTServices {
 	@Path("/remove/job/{spaceId}")
 	@Produces("application/json")
 	public String removeJobsFromSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -2149,10 +2017,9 @@ public class RESTServices {
 			selectedJobs.add(Integer.parseInt(id));
 		}
 
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);
-		if (perm == null || !perm.canRemoveJob()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=SpaceSecurity.canUserRemoveJob(spaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 
 		// Remove the job from the space
@@ -2171,31 +2038,32 @@ public class RESTServices {
 	@Path("/deleteandremove/job/{spaceID}")
 	@Produces("application/json")
 	public String deleteAndRemoveJobs(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
+		int userId=SessionUtil.getUserId(request);
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		Permission perm=SessionUtil.getPermission(request, spaceId);
-		if  (!perm.canRemoveJob()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		
+		
 		// Extract the String job id's and convert them to Integer
 		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 			log.debug("adding id = "+id+" to selectedJobs");
 		}
-		int userId=SessionUtil.getUserId(request);
+		
+		int status=SpaceSecurity.canUserRemoveAndDeleteJobs(selectedJobs, spaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		
 		for (int id : selectedJobs) {
-			if (userId!=Jobs.get(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
+			
 			log.debug("the current job ID to remove = "+id);
-			//first kill a job, then delete it. Killing it first ensures no additional job pairs are run
-			//after the deletion
-			boolean success_kill = Jobs.kill(id);
+			
 			boolean success_delete = Jobs.delete(id);
-			if (!success_delete || !success_kill) {
+			if (!success_delete) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
@@ -2225,22 +2093,20 @@ public class RESTServices {
 			selectedJobs.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserDeleteJobs(selectedJobs, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		for (int id : selectedJobs) {
-			if (userId!=Jobs.get(id).getUserId()) {
-				return gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
-			//first kill a job, then delete it. Killing it first ensures no additional job pairs are run
-			//after the deletion
-			boolean success_kill = Jobs.kill(id);
 			boolean success_delete = Jobs.delete(id);
-			if (!success_delete || !success_kill) {
+			if (!success_delete) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
 	
 		return gson.toJson(0);
 	}
-	
+	//TODO: This needs to be handled
 	/**
 	 * Removes a subspace's association with a space, thereby removing the subspace
 	 * from the space
@@ -2323,7 +2189,7 @@ public class RESTServices {
 		}
 	}
 
-	
+	//TODO: Here
 	/**
 	 * Only removes a subspace's association with a space, thereby removing the subspace
 	 * from the space
@@ -2396,7 +2262,7 @@ public class RESTServices {
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		String name = request.getParameter("name");
 		int status=SolverSecurity.canUserUpdateSolver(solverId, name, description, isDownloadable, userId);
-		if (status<0) {
+		if (status!=0) {
 			return gson.toJson(status);
 		}
 		// Apply new solver details to database
@@ -2421,7 +2287,7 @@ public class RESTServices {
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		int userId = SessionUtil.getUserId(request);
 		int status=SolverSecurity.canUserRecycleSolver(solverId, userId);
-		if (status<0) {
+		if (status!=0) {
 			return gson.toJson(status);
 		}
 		
@@ -2445,11 +2311,10 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the job, deny deletion request
 		int userId = SessionUtil.getUserId(request);
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserDeleteJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
 		return Jobs.delete(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
@@ -2469,10 +2334,11 @@ public class RESTServices {
 	public String pauseJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserPauseJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		
 		return Jobs.pause(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
@@ -2493,9 +2359,9 @@ public class RESTServices {
 	public String resumeJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny resume request
 		int userId = SessionUtil.getUserId(request);
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canUserResumeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		return Jobs.resume(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -2517,9 +2383,9 @@ public class RESTServices {
 	public String changeQueueJob(@PathParam("id") int jobId, @PathParam("queueid") int queueId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny resume request
 		int userId = SessionUtil.getUserId(request);
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=JobSecurity.canChangeQueue(jobId, userId,queueId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		return Jobs.changeQueue(jobId, queueId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -2531,27 +2397,23 @@ public class RESTServices {
 	 * First checks if the parameters of the update are valid, then performs the
 	 * update.
 	 * 
-	 * @param id the id of the benchmark to update the details for
+	 * @param id the id of the benchmark to recycle
 	 * @return 	0: success,<br>
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	@POST
 	@Path("/recycle/benchmark/{id}")
 	@Produces("application/json")
 	public String recycleBenchmark(@PathParam("id") int benchId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
-		int userId = SessionUtil.getUserId(request);		
-		Benchmark bench = Benchmarks.get(benchId);
-		User user = Users.get(userId);
-		if (!user.getRole().equals("admin") || bench == null) {
-			if(bench == null || bench.getUserId() != userId){
-				gson.toJson(ERROR_INVALID_PERMISSIONS);
-			}
-		}
-		
-		// Delete the benchmark from the database
+		int userId = SessionUtil.getUserId(request);
+		int status=BenchmarkSecurity.canUserRecycleBench(benchId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}		
+		// mark the benchmark as recycled
 		return Benchmarks.recycle(benchId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
@@ -2598,35 +2460,24 @@ public class RESTServices {
 				|| !Validator.isValidBool(request.getParameter("downloadable"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		
-		// Permissions check; if user is NOT the owner of the benchmark, deny update request
 		int userId = SessionUtil.getUserId(request);
-		Benchmark bench = Benchmarks.get(benchId);
-		if(bench == null || bench.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		String name = request.getParameter("name");
 		
 		// Extract new benchmark details from request
-		String name = request.getParameter("name");
-		// Extract new solver details from request
-		if (!bench.getName().equals(name)) {
-			int id=Benchmarks.isNameEditable(benchId);
-			if (id<0) {
-				return gson.toJson(ERROR_NAME_NOT_EDITABLE);
-			}
-			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 2)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
-		}
+		
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
-		
+
+		int status=BenchmarkSecurity.canUserEditBenchmark(benchId,name,userId);
+		if (status<0) {
+			return gson.toJson(status);
+		}
 		// Apply new benchmark details to database
 		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
-	
+	//TODO: This probably needs to be changed to support an admin changing people's passwords
 	/**
 	 * Updates the current user's password. First verifies that it is in
 	 * the correct format, then hashes is and updates it to the database.
@@ -2685,18 +2536,10 @@ public class RESTServices {
 	public String editUserPermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
 		// Ensure the user attempting to edit permissions is a leader
 		int currentUserId = SessionUtil.getUserId(request);
-		User currentUser = Users.get(currentUserId);
-		Permission perm = SessionUtil.getPermission(request, spaceId);
-		if(perm == null || !perm.isLeader()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		int status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
-		// Ensure the user to edit the permissions of isn't themselves a leader
-		perm = Permissions.get(userId, spaceId);
-		if(perm.isLeader() && !currentUser.getRole().equals("admin") ){
-			return gson.toJson(ERROR_CANT_EDIT_LEADER_PERMS);
-		}		
-		
 		// Configure a new permission object
 		Permission newPerm = new Permission(false);
 		newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
@@ -2750,13 +2593,12 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the configuration file's solver, deny update request
 		int userId = SessionUtil.getUserId(request);
-		Configuration config = Solvers.getConfiguration(configId);
-		Solver solver = Solvers.get(config.getSolverId());
-		if(null == solver || solver.getUserId() != userId){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		
+		int status=SolverSecurity.canUserUpdateConfiguration(configId,userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
-		
+			
 		// Extract new configuration file details from request
 		String name = (String) request.getParameter("name");
 		String description = (String) request.getParameter("description");
@@ -2786,7 +2628,10 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteConfiguration(@PathParam("id") int configId, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-
+		int status=SolverSecurity.canUserDeleteConfiguration(configId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		// Validate configuration id parameter
 		Configuration config = Solvers.getConfiguration(configId);
 		if(null == config){
@@ -2795,9 +2640,6 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the configuration file's solver, deny deletion request
 		Solver solver = Solvers.get(config.getSolverId());
-		if(null == solver || solver.getUserId() != userId){
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
 		
 		// Attempt to remove the configuration's physical file from disk
 		if(false == Solvers.deleteConfigurationFile(config)){
@@ -2820,7 +2662,7 @@ public class RESTServices {
 	
 	
 
-	
+	//TODO: What are the requirements here?
 	/**
 	 * Make a list of users the leaders of a space
 	 * @param spaceId The Id of the space  
@@ -2871,6 +2713,8 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
+	
+	//TODO: What are the permissions here?
 	/**
 	 * Demotes a user from a leader to only a member in a community
 	 * @param spaceId The Id of the community  
@@ -2948,33 +2792,9 @@ public class RESTServices {
 		
 		// Convert the subSpaces to copy to an int list
 		List<Integer> selectedSubSpaces = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
-		
-		// Verify the space the subspaces are being copied from is not locked
-		if(Spaces.get(fromSpace).isLocked()) {
-			return gson.toJson(ERROR_SPACE_LOCKED);
-		}
-		
-		// Verify the user can at least see the space they claim to be copying from
-		if(!Permissions.canUserSeeSpace(fromSpace, requestUserId)) {
-			return gson.toJson(ERROR_NOT_IN_SPACE);
-		}	
-
-		// Make sure the user can see the subSpaces they're trying to copy
-		for (int id : selectedSubSpaces) {
-			if (!Permissions.canUserSeeSpace(id, requestUserId)) {
-				return gson.toJson(ERROR_NOT_IN_SPACE);
-			}
-			
-			// Make sure that the subspace has a unique name in the space.
-			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), spaceId, 4)) {
-				return gson.toJson(ERROR_NOT_UNIQUE_NAME);
-			}
-		}
-		
-		// Check permissions - the user must have add space permissions in the destination space
-		Permission perm = SessionUtil.getPermission(request, spaceId);		
-		if(perm == null || !perm.canAddSpace()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		int status=SpaceSecurity.canCopySpace(fromSpace, spaceId, requestUserId, selectedSubSpaces);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 
 		// Add the subSpaces to the destination space
@@ -2997,6 +2817,12 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
+	
+	/**
+	 * Gets the ID of the user making this request
+	 * @param request
+	 * @return The integer ID of the user as a Json string
+	 */
 	@GET
 	@Path("/users/getid")
 	@Produces("application/json")
@@ -3016,13 +2842,13 @@ public class RESTServices {
 	@Path("/users/{id}/jobs/pagination")
 	@Produces("application/json")	
 	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int requestUserId=SessionUtil.getUserId(request);
+		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3039,14 +2865,14 @@ public class RESTServices {
 	@Path("/tests/pagination")
 	@Produces("application/json")	
 	public String getTestsPaginated(@Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (!user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserSeeTestInformation(userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
 		List<TestSequence> tests=TestManager.getAllTestSequences();
-		nextDataTablesPage=RESTHelpers.convertTestSequencesToJsonObject(tests, tests.size(), tests.size(), -1);
+		JsonObject nextDataTablesPage=RESTHelpers.convertTestSequencesToJsonObject(tests, tests.size(), tests.size(), -1);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3063,14 +2889,15 @@ public class RESTServices {
 	@Path("/testResults/pagination/{name}")
 	@Produces("application/json")	
 	public String getTestResultssPaginated(@PathParam("name") String name, @Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (!user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserSeeTestInformation(userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		// Query for the next page of job pairs and return them to the user
 		List<TestResult> tests=TestManager.getAllTestResults(name);
-		nextDataTablesPage=RESTHelpers.convertTestResultsToJsonObject(tests, tests.size(), tests.size(), -1);
+		JsonObject nextDataTablesPage=RESTHelpers.convertTestResultsToJsonObject(tests, tests.size(), tests.size(), -1);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3087,13 +2914,13 @@ public class RESTServices {
 	@Path("/users/{id}/solvers/pagination/")
 	@Produces("application/json")	
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int requestUserId=SessionUtil.getUserId(request);
+		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		// Query for the next page of solver pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3110,13 +2937,12 @@ public class RESTServices {
 	@Path("/users/{id}/benchmarks/pagination")
 	@Produces("application/json")	
 	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		// Query for the next page of solver pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request,false);
+		int requestUserId=SessionUtil.getUserId(request);
+		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}		// Query for the next page of solver pairs and return them to the user
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3134,13 +2960,13 @@ public class RESTServices {
 	@Path("/users/{id}/rsolvers/pagination/")
 	@Produces("application/json")	
 	public String getUsrRecycledSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int requestUserId=SessionUtil.getUserId(request);
+		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3157,13 +2983,12 @@ public class RESTServices {
 	@Path("/users/{id}/rbenchmarks/pagination")
 	@Produces("application/json")	
 	public String getUsrRecycledBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
-		JsonObject nextDataTablesPage = null;
-		User user=SessionUtil.getUser(request);
-		if (usrId!=SessionUtil.getUserId(request) && !user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int requestUserId=SessionUtil.getUserId(request);
+		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request, true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request, true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3208,6 +3033,8 @@ public class RESTServices {
 			return gson.toJson(0);
 	}
 	
+	
+	
 	/**
 	 * Is a space public
 	 * @param spaceId the space to be check if public
@@ -3231,14 +3058,12 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllPendingQueueReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		int status=QueueSecurity.canUserSeeRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}	
 		
-		
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingQueueReservations(request);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingQueueReservations(request);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
@@ -3248,14 +3073,12 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllQueueReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		
-		
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForQueueReservations(request);
+		int status=QueueSecurity.canUserSeeRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}	
+			
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForQueueReservations(request);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
@@ -3265,14 +3088,12 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllHistoricReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
+		int status=QueueSecurity.canUserSeeRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}		
 		
-		
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForHistoricReservations(request);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForHistoricReservations(request);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
@@ -3291,7 +3112,11 @@ public class RESTServices {
 	@Path("/cancel/queueReservation/{spaceId}/{queueId}")
 	@Produces("application/json")
 	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
-		
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserCancelRequest(userId);
+		if(status!=0) {
+			return gson.toJson(status);
+		}
 		QueueRequest req = Requests.getRequestForReservation(queueId);
 
 		GridEngineUtil.cancelReservation(req);
@@ -3313,9 +3138,9 @@ public class RESTServices {
 	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=SpaceSecurity.canUserViewCommunityRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequests(request);
@@ -3334,12 +3159,11 @@ public class RESTServices {
 	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
 		log.debug("starting removeQueue");
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=QueueSecurity.canUserRemoveQueue(userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
-		
+	
 		if (!Queues.isQueuePermanent(queueId)) {
 			QueueRequest req = Requests.getRequestForReservation(queueId);
 			log.debug("req = " + req);
@@ -3353,10 +3177,17 @@ public class RESTServices {
 		}
 	}
 	
+	
+	//TODO: When was this written?
 	@POST
 	@Path("/restart/starexec")
 	@Produces("application/json")
 	public void restartStarExec(@Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserRestartStarexec(userId);
+		if (status!=0) {
+			return;
+		}
 		log.debug("restarting...");
 		Util.executeCommand("sudo /sbin/service tomcat7 restart");
 		log.debug("restarted");
@@ -3367,11 +3198,10 @@ public class RESTServices {
 	@Produces("application/json")
 	public String cancelQueueRequest(@PathParam("code") String code, @Context HttpServletRequest request) throws IOException {
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=QueueSecurity.canUserCancelRequest(userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
 		QueueRequest queueRequest = Requests.getQueueRequest(code);
 
 		
@@ -3388,7 +3218,7 @@ public class RESTServices {
 		
 	}
 	
-	
+	//TODO: Who can do this?
 	/**
 	 * Returns the paginated results of node assignments
 	 * For the manage_nodes page
@@ -3399,6 +3229,11 @@ public class RESTServices {
 	@Path("/nodes/dates/pagination")
 	@Produces("application/json")
 	public String nodeSchedule(@Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserSeeRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		//Get todays date
 		Date today = new Date();
 
@@ -3434,7 +3269,11 @@ public class RESTServices {
 	@Path("/nodes/dates/reservation/{code}/pagination")
 	@Produces("application/json")
 	public String nodeScheduleReservation(@PathParam("code") String code, @Context HttpServletRequest request) {
-		
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserSeeRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		//Get todays date
 		QueueRequest req = Requests.getQueueRequest(code);
 		Date today = new Date();
@@ -3482,11 +3321,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editQueueRequest(@PathParam("code") String code, @PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		log.debug("user name = " + u.getFirstName());
-		log.debug("user role = " + u.getRole());
-		if (!u.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=QueueSecurity.canUserUpdateRequest(userId,queueName);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		boolean success = false;
@@ -3505,14 +3342,8 @@ public class RESTServices {
 		log.debug(Validator.isValidDate(new_start));
 		log.debug(Validator.isValidDate(new_end));
 		
-		if (true == ( Validator.isValidPrimName(queueName) && Validator.isValidInteger(nodeCount) && Validator.isValidDate(new_start) && Validator.isValidDate(new_end)) ) {
+		if ((Validator.isValidInteger(nodeCount) && Validator.isValidDate(new_start) && Validator.isValidDate(new_end)) ) {
 			log.debug("validated");
-			
-			// Make sure that the queue has a unique name
-			if(Queues.notUniquePrimitiveName(queueName)) {
-				return gson.toJson(6);
-			}
-			
 			
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 		    java.sql.Date startDateSql = null;
@@ -3572,7 +3403,7 @@ public class RESTServices {
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
-	
+	//TODO: This seems to not do anything
 	/** 
 	 * Adds a queue_request to the database
 	 * 
@@ -3593,6 +3424,8 @@ public class RESTServices {
 		return gson.toJson(0);
 	}
 	
+	
+	//TODO: Who should be able to do this?
 	/**
 	 * Will delete all temporary changes that were made to node_counts
 	 * 
@@ -3607,6 +3440,9 @@ public class RESTServices {
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	
+	
+	//TODO: Who should be able to do this?
 	/**
 	 * Will update the database to reflect saved temp node_count changes
 	 * 
@@ -3629,7 +3465,12 @@ public class RESTServices {
 	@POST
 	@Path("/permanent/queue/{queueId}")
 	@Produces("application/json")
-	public String makeQueuePermanent(@PathParam("queueId") int queue_id) {
+	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserMakeQueuePermanent(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		QueueRequest req = Requests.getRequestForReservation(queue_id);
 		Queue q = Queues.get(queue_id);
 		boolean success = true;
@@ -3647,7 +3488,6 @@ public class RESTServices {
 	}
 	
 	
-	//TODO: Need to secure all these functions that aren't checking for the user ID of the requester
 	
 	/**
 	 * Add a user to a space
@@ -3656,8 +3496,12 @@ public class RESTServices {
 	@POST
 	@Path("/space/{spaceId}/add/user/{userId}")
 	@Produces("application/json")
-	public String addUserToSpace(@PathParam("spaceId") int space_id, @PathParam("userId") int user_id) {
-		log.debug("begin addUserToSpace...");
+	public String addUserToSpace(@PathParam("spaceId") int space_id, @PathParam("userId") int user_id, @Context HttpServletRequest request) {
+		int userIdMakingRequest=SessionUtil.getUserId(request);
+		int status=SpaceSecurity.canAddUserToSpace(space_id, userIdMakingRequest);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		boolean success = Users.associate(user_id, space_id);
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
@@ -3673,7 +3517,7 @@ public class RESTServices {
 	public String clearCache(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		int status=CacheSecurity.canUserClearCache(userId);
-		if (status<0) {
+		if (status!=0) {
 			return gson.toJson(status);
 		}
 		return Cache.deleteAllCache() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -3693,7 +3537,7 @@ public class RESTServices {
 	public String clearSolverCache(@PathParam("id") int id, @PathParam("type") int type, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		int status=CacheSecurity.canUserClearCache(userId);
-		if (status<0) {
+		if (status!=0) {
 			return gson.toJson(status);
 		}
 		CacheType t=CacheType.getType(type);
@@ -3706,9 +3550,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String suspendUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		User user = Users.get(id);
-		if (!user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		boolean success = Users.suspend(userId);
@@ -3721,9 +3565,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String reinstateUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		User user = Users.get(id);
-		if (!user.getRole().equals("admin")) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		boolean success = Users.reinstate(userId);
@@ -3737,14 +3581,12 @@ public class RESTServices {
 	public String pauseAll(@Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
-		User user = Users.get(userId);  
-		if(!user.getRole().equals("admin")){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
 		
-		List<Job> jobs = new LinkedList<Job>();
-		jobs = Jobs.getRunningJobs();
-		return Jobs.pauseAll(jobs) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		int status=JobSecurity.canUserPauseAllJobs(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		return Jobs.pauseAll() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	

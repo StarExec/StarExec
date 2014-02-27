@@ -272,6 +272,10 @@ public class Jobs {
 	 */
 	
 	public static boolean delete(int jobId) {
+		//we should kill jobs before deleting  them so no additional pairs are run
+		if (!Jobs.isJobComplete(jobId)) {
+			Jobs.kill(jobId);
+		}
 		Connection con=null;
 		try {
 			Jobs.invalidateJobRelatedCaches(jobId);
@@ -2648,6 +2652,11 @@ public class Jobs {
 		return false;
 	}
 	
+	public static boolean pauseAll() {
+		List<Job> jobs = new LinkedList<Job>();
+		jobs = Jobs.getRunningJobs();
+		return pauseAll(jobs);
+	}
 	
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 

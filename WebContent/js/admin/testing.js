@@ -134,7 +134,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						showMessage('error', "failed to get the next page of results; please try again", 5000);
 						break;
 					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
+						showMessage('error', "you do not have sufficient permissions to view these tests", 5000);
 						break;
 					default:
 						fnCallback(nextDataTablePage);						

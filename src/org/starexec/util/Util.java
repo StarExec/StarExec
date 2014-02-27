@@ -519,10 +519,20 @@ public class Util {
     	long bytes=(long)(1073741824*gigabytes);
     	return bytes;
     }
+    /**
+     * Converts bytes to megabytes, truncated to the nearest integer megabyte
+     * @param bytes
+     * @return
+     */
+    public static long bytesToMegabytes(long bytes) {
+    	return (bytes / (1024*1024));
+    }
+    
     
     public static double bytesToGigabytes(long bytes) {
     	return ((double)bytes/1073741824.0);
     }
+    
     /**
      * Attempts to delete the directory specified the given path without
      * throwing any errors

@@ -1045,6 +1045,37 @@ public class Users {
 		return u.getRole().equals("admin");
 	}
 	
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isUnauthorized(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("unauthorized");
+	}
+	
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isSuspended(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("suspended");
+	}
+	
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isNormalUser(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("user");
+	}
+	
+	
 	public static User getTestUser() {
 		User u=Users.get(R.TEST_USER_ID);
 		if (u==null) {
@@ -1079,7 +1110,6 @@ public class Users {
 			// Extract id from OUT parameter
 			user.setId(procedure.getInt(7));
 			log.debug("newid = " + user.getId());
-			
 			return procedure.getInt(7);
 		} catch (Exception e){	
 			log.error(e.getMessage(), e);
@@ -1157,4 +1187,6 @@ public class Users {
 		}		
 		return false;
 	}
+	
+	
 }

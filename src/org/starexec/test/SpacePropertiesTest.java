@@ -2,7 +2,6 @@ package org.starexec.test;
 
 import java.util.List;
 
-import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -14,6 +13,17 @@ public class SpacePropertiesTest extends TestSequence {
 	private Space c;
 	
 	@Test
+	private void getSpaceTest() {
+		Space test=Spaces.get(c.getId());
+		Assert.assertNotNull(test);
+		Assert.assertEquals(c.getId(), test.getId());
+		test=Communities.getDetails(c.getId());
+		Assert.assertNotNull(test);
+		Assert.assertEquals(c.getId(), test.getId());
+		
+	}
+	
+	@Test
 	private void leafTest() {
 		//the new community should be a leaf
 		Assert.assertTrue(Spaces.isLeaf(c.getId()));
@@ -23,6 +33,52 @@ public class SpacePropertiesTest extends TestSequence {
 		//of course, it should actually be a community
 		Assert.assertTrue(Communities.isCommunity(c.getId()));
 	}
+	
+	@Test
+	private void getDefaultCpuTimeoutTest() {
+		int timeout=Communities.getDefaultCpuTimeout(c.getId());
+		if (timeout<=0) {
+			Assert.fail("Timeout was not greater than 0");
+		}
+	}
+	@Test 
+	private void updateDefaultCpuTimeoutTest() {
+		int timeout=Communities.getDefaultCpuTimeout(c.getId());
+		Assert.assertTrue(Communities.setDefaultSettings(c.getId(), 2, timeout+1));
+		Assert.assertEquals(timeout+1, Communities.getDefaultCpuTimeout(c.getId()));
+		Assert.assertTrue(Communities.setDefaultSettings(c.getId(), 2, timeout));
+	}
+	@Test
+	private void getDefaultWallclockTimeoutTest() {
+		int timeout=Communities.getDefaultWallclockTimeout(c.getId());
+		if (timeout<=0) {
+			Assert.fail("Timeout was not greater than 0");
+		}
+	}
+	@Test
+	private void updateDefaultWallclockTimeoutTest() {
+		int timeout=Communities.getDefaultWallclockTimeout(c.getId());
+		Assert.assertTrue(Communities.setDefaultSettings(c.getId(), 3, timeout+1));
+		Assert.assertEquals(timeout+1, Communities.getDefaultWallclockTimeout(c.getId()));
+		Assert.assertTrue(Communities.setDefaultSettings(c.getId(), 3, timeout));
+	}
+	
+	@Test
+	private void getDefaultMemoryLimit() {
+		long limit=Communities.getDefaultMaxMemory(c.getId());
+		if (limit<=0) {
+			Assert.fail("Memory limit was not greater than 0");
+		}
+		
+	}
+	@Test
+	private void updateDefaultMemoryLimitTest() {
+		long memory=Communities.getDefaultMaxMemory(c.getId());
+		Assert.assertTrue(Communities.setDefaultMaxMemory(c.getId(), memory+1));
+		Assert.assertEquals(memory+1, Communities.getDefaultMaxMemory(c.getId()));
+		Assert.assertTrue(Communities.setDefaultMaxMemory(c.getId(), memory));
+	}
+	
 	@Test
 	private void inListOfCommunities() throws Exception {
 		List<Space> comms=Communities.getAll();

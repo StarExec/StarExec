@@ -30,6 +30,7 @@ public class StarexecCommandTests extends TestSequence {
 	Solver solver=null;
 	User testUser=null;
 	Space testCommunity=null;
+	String solverURL=null;
 	
 	@Test
 	private void GetIDTest() throws Exception {
@@ -53,7 +54,6 @@ public class StarexecCommandTests extends TestSequence {
 	}
 	@Test
 	private void ListUsersTest() {
-		
 		HashMap<Integer,String> mapping=con.getUsersInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
 	}
@@ -82,6 +82,22 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
 		int result=con.uploadSolver(name, space1.getId(), solverFile.getAbsolutePath(), true);
+		if (result>0) {
+			addMessage("solver seems to have been added successfully -- testing database recall");
+			Solver testSolver=Solvers.get(result);
+			Assert.assertEquals(testSolver.getName(), name);
+			
+		} else {
+			throw new Exception("an error code was returned "+result);
+		}
+	}
+	
+	@Test
+	private void uploadSolverFromURL() throws Exception {
+		addMessage("adding solver to space with id = "+space1.getId());
+		String name=TestUtil.getRandomSolverName();
+		
+		int result=con.uploadSolverFromURL(name, space1.getId(), solverURL, true);
 		if (result>0) {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
@@ -196,10 +212,10 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		//this prevents the apache http libraries from logging things. Their logs are very prolific
-		//and drown out ours
 		testUser=Users.getTestUser();
 		testCommunity=Communities.getTestCommunity();
+		//this prevents the apache http libraries from logging things. Their logs are very prolific
+		//and drown out ours
 		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 		log.debug("the url is "+Util.url(""));
 		log.debug("the email address is "+testUser.getEmail());
@@ -216,6 +232,9 @@ public class StarexecCommandTests extends TestSequence {
 		resourcesDir=solverFile.getParentFile();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());
 		Assert.assertNotNull(solver);
+		
+		solverURL=Util.url("public/resources/CVC4.zip");
+		log.debug("the solver URL is "+solverURL);
 	}
 
 	@Override

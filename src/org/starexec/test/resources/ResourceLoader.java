@@ -1,6 +1,7 @@
 package org.starexec.test.resources;
 
 import java.io.File;
+import java.util.List;
 
 
 import org.apache.commons.io.FileUtils;
@@ -11,6 +12,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
@@ -25,6 +27,15 @@ public class ResourceLoader {
 	public static File getResource(String name) {
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
+	
+	/*
+	public static List<Benchmark> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
+		File archive=getResource(archiveName);
+		
+		
+		
+	}*/
+	
 	public static Solver loadSolverIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			Solver s=new Solver();

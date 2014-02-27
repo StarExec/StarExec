@@ -5,7 +5,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.starexec.test.security.BenchmarkSecurityTests;
+import org.starexec.test.security.GeneralSecurityTests;
+import org.starexec.test.security.JobSecurityTests;
+import org.starexec.test.security.QueueSecurityTests;
 import org.starexec.test.security.SolverSecurityTests;
+import org.starexec.test.security.UserSecurityTests;
 import org.starexec.test.security.ValidatorTests;
 
 
@@ -21,6 +26,11 @@ public class TestManager {
 		tests.add(new StarexecCommandTests());
 		tests.add(new SolverSecurityTests());
 		tests.add(new ValidatorTests());
+		tests.add(new UserSecurityTests());
+		tests.add(new QueueSecurityTests());
+		tests.add(new GeneralSecurityTests());
+		tests.add(new JobSecurityTests());
+		tests.add(new BenchmarkSecurityTests());
 	}
 	
 	/**

@@ -94,7 +94,7 @@ public class BenchmarkUploader extends HttpServlet {
 					log.debug("upload status id is " + statusId);
 					
 					// Go ahead and process the request
-					this.handleUploadRequest(form, userId, statusId,request,response);
+					this.handleUploadRequest(form, userId, statusId);
 					//go to upload status page
 					response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
 				}
@@ -108,7 +108,7 @@ public class BenchmarkUploader extends HttpServlet {
 		}
 	}
 
-	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
 		//First extract all data from request
 		final int userId = uId;
 		

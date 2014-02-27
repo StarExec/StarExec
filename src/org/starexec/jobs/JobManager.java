@@ -325,7 +325,7 @@ public abstract class JobManager {
 		// Resource limits
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
-		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.clamp(1, R.MAX_PAIR_VMEM/1024, pair.getMaxMemory()/1024 )); //TODO: put memory in kilobytes?
+		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.clamp(1, Util.bytesToMegabytes(R.MAX_PAIR_VMEM), Util.bytesToMegabytes(pair.getMaxMemory())));
 		log.debug("The jobscript is: "+jobScript);
 
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));

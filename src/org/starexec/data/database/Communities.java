@@ -64,6 +64,27 @@ public class Communities {
 		return returnSpaces;
 	}
 	
+	public static int getDefaultCpuTimeout(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Integer.parseInt(settings.get(2)));
+	}
+	
+	public static int getDefaultWallclockTimeout(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Integer.parseInt(settings.get(3)));
+	}
+	
+	public static int getDefaultPostProcessorId(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Integer.parseInt(settings.get(4)));
+	}
+	
+	public static long getDefaultMaxMemory(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Long.parseLong(settings.get(7)));
+	}
+	
+	
 	/**
 	 * Get the default setting of the community given by the id.
 	 * 
@@ -248,6 +269,11 @@ public class Communities {
 	 * Set the default settings for a community given by the id.
 	 * @param id The space id of the community
 	 * @param num Indicates which attribute needs to be set
+	 * 1 = post_processor_id
+	 * 2 = cpu_timeout
+	 * 3 = wallclock_timeout
+	 * 4 = dependencies_enabled
+	 * 5 = default_benchmark_id
 	 * @param setting The new value of the setting
 	 * @return True if the operation is successful
 	 * @author Ruoyu Zhang
@@ -260,15 +286,13 @@ public class Communities {
 			procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
+			//if we are setting one of the IDs and it is -1, this means there is no setting
+			//and we should use null
 			if ((num==1 || num==5) && setting==-1) {
 				procedure.setObject(3,null);
 			} else {
-				//if we are setting the number of bytes, use a long
-				if (setting==6) {
-					procedure.setLong(3, setting);
-				} else {
 					procedure.setInt(3,(int)setting);
-				}
+				
 			}
 			
 			

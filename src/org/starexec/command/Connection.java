@@ -557,6 +557,30 @@ public class Connection {
 		}	
 	}
 	
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param desc The description of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param url The URL of the archived solver to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolverFromURL(String name,String desc,Integer spaceID, String url, Boolean downloadable) {
+		return uploadSolverFromURL(name,desc,"text",spaceID,url,downloadable);
+	}
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param url The URL of hte archived solver to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable) {
+		return uploadSolverFromURL(name,null,"upload",spaceID,url,downloadable);
+	}
+	
 	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable) {
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
@@ -721,7 +745,8 @@ public class Connection {
 	
 	protected int setUserSetting(String setting,String val) {
 		try {	
-			String url=baseURL+R.URL_USERSETTING+setting+"/"+val;
+			int userId=getUserID();
+			String url=baseURL+R.URL_USERSETTING+setting+"/"+userId+"/"+val;
 			url=url.replace(" ", "%20"); //encodes white space, which can't be used in a URL
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);

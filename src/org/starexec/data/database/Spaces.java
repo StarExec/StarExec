@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
@@ -1862,9 +1863,8 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		Permission perm=Permissions.get(usrId, spaceId);
-		//must be a leader to make a space public
-		if (perm == null || !perm.isLeader()){
+		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
+		if (status!=0){
 			return false;
 		}
 

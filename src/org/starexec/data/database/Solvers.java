@@ -1114,7 +1114,7 @@ public class Solvers {
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
-	public static Solver getSolverByConfig(int configId, boolean includeDeleted) throws Exception {			
+	public static Solver getSolverByConfig(int configId, boolean includeDeleted){			
 		Connection con = null;			
 		
 		try {			
