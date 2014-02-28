@@ -186,10 +186,10 @@ public class Benchmarks {
 	 * we are not introducing benchmark dependencies.
 	 * @param benchmarks The list of benchmarks to add
 	 * @param spaceId The space the benchmarks will belong to
-	 * @return True if the operation was a success, false otherwise
+	 * @return A list of IDs of the new benchmarks if true, and null otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(List<Benchmark> benchmarks, int spaceId, int statusId) {
+	public static List<Integer> add(List<Benchmark> benchmarks, int spaceId, int statusId) {
 		log.info("adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
@@ -207,11 +207,9 @@ public class Benchmarks {
 				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
 
 				// Next add them to the database (must happen AFTER they are processed);
-				//Benchmarks.add(con, benchmarks, spaceId);		
-				Benchmarks.addNoCon(benchmarks, spaceId, statusId);
-				//Common.endTransaction(con);
+				return Benchmarks.addNoCon(benchmarks, spaceId, statusId);
 
-				return true;
+				
 			} catch (Exception e){			
 				log.error(e.getMessage(), e);
 				Common.doRollback(con);
@@ -222,9 +220,9 @@ public class Benchmarks {
 		else
 		{
 			log.info("No benchmarks to add here for space " + spaceId);
-			return true;
+			return new ArrayList<Integer>();
 		}
-		return false;
+		return null;
 	}
 
 	
@@ -371,10 +369,12 @@ public class Benchmarks {
 	}	
 
 	
-	protected static void addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
+	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
+		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {
-			if(Benchmarks.add(b, spaceId)<0) {
+			int id=Benchmarks.add(b, spaceId);
+			if(id<0) {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setErrorMessage(statusId, message);
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
@@ -382,9 +382,11 @@ public class Benchmarks {
 			}
 			else{
 				Uploads.incrementCompletedBenchmarks(statusId);
+				benchmarkIds.add(id);
 			}
-		}		
+		}	
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+		return benchmarkIds;
 	}
 
 	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, Integer statusId) throws Exception {		
@@ -416,7 +418,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		if (benchmarks.size()>0){
 			try {			
@@ -442,8 +444,12 @@ public class Benchmarks {
 				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
 				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
-				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
-				return true;
+				List<Benchmark> benches=Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
+				List<Integer> ids=new ArrayList<Integer>();
+				for (Benchmark b : benches) {
+					ids.add(b.getId());
+				}
+				return ids;
 			} catch (Exception e){			
 				log.error("Need to roll back - addWithDeps says" + e.getMessage(), e);
 				Common.doRollback(con);
@@ -454,9 +460,9 @@ public class Benchmarks {
 		else
 		{
 			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
-			return true;
+			return new ArrayList<Integer>();
 		}
-		return false;
+		return null;
 	}
 	/**
 	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
@@ -467,10 +473,10 @@ public class Benchmarks {
 	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param userId the user's Id
-	 * @return True if the operation was a success, false otherwise
+	 * @return A list of the IDs of the new benchmarks on success, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		log.info("Going to add " + benchmarks.size() + "benchmarks (with dependencies) to space " + spaceId);
 		try {			
@@ -478,11 +484,11 @@ public class Benchmarks {
 
 			Common.beginTransaction(con);
 
-			Boolean value = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
+			List<Integer> values = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
 
 			Common.endTransaction(con);
 
-			return value;
+			return values;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
@@ -490,7 +496,7 @@ public class Benchmarks {
 			Common.safeClose(con);
 		}
 
-		return false;
+		return null;
 	}	
 
 	/**

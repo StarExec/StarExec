@@ -234,7 +234,6 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(solver);
 		
 		solverURL=Util.url("public/resources/CVC4.zip");
-		log.debug("the solver URL is "+solverURL);
 	}
 
 	@Override

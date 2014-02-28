@@ -7,14 +7,19 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 
@@ -28,13 +33,17 @@ public class ResourceLoader {
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
 	
-	/*
-	public static List<Benchmark> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
+	
+	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		File archive=getResource(archiveName);
+		Integer statusId = Uploads.createUploadStatus(parentSpaceId, userId);
+		Permission p=new Permission();
+		List<Integer> ids=BenchmarkUploader.handleUploadRequestAfterExtraction(archive, userId, parentSpaceId, 1, false, p, 
+				"dump", statusId, false, false, null);
+		return ids;
 		
 		
-		
-	}*/
+	}
 	
 	public static Solver loadSolverIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
