@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jfree.util.Log;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;

@@ -11,12 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.User;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;

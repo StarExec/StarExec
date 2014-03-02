@@ -1,6 +1,9 @@
 package org.starexec.test.security;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Users;
@@ -11,40 +14,102 @@ import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+
+//TODO: Write tests for configurations
 public class SolverSecurityTests extends TestSequence {
 	User admin=null;
 	User owner=null;
 	User regular=null;
+	
 	Solver solver=null;
 	Solver solver2=null;
-	
+	Solver solver3=null;
 	@Test
 	private void deleteSolverPermissionTest() {
-		Assert.assertTrue(SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserDeleteSolver(solver.getId(), admin.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserDeleteSolver(solver.getId(), regular.getId())>0);
+		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolver(solver.getId(), admin.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserDeleteSolver(solver.getId(), regular.getId()));
+	}
+	
+	@Test
+	private void canDeleteSolversTest() {
+		List<Integer> ids=new ArrayList<Integer>();
+		ids.add(solver.getId());
+		ids.add(solver2.getId());
+		
+		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
+		
+		ids.add(solver3.getId());
+		
+		Assert.assertNotEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
+		
+	}
+	
+	@Test
+	private void canRecycleSolversTest() {
+		List<Integer> ids=new ArrayList<Integer>();
+		ids.add(solver.getId());
+		ids.add(solver2.getId());
+		
+		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, admin.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
+		
+		ids.add(solver3.getId());
+		
+		Assert.assertNotEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, admin.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
+	}
+	
+	@Test
+	private void canRestoreSolversTest() {
+		List<Integer> ids=new ArrayList<Integer>();
+		ids.add(solver.getId());
+		ids.add(solver2.getId());
+		
+		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
+		
+		ids.add(solver3.getId());
+		
+		Assert.assertNotEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
+	}
+	
+	@Test
+	private void canAssociateWebsite() {
+		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId()));
+		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId()));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId()));
 	}
 	
 	@Test
 	private void recycleSolverPermissionTest() {
-		Assert.assertTrue(SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserRecycleSolver(solver.getId(), regular.getId())>0);
+		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserRecycleSolver(solver.getId(), regular.getId()));
 	}
 	@Test
 	private void restoreSolverPermissionTest() {
-		Assert.assertTrue(SolverSecurity.canUserRestoreSolver(solver.getId(), owner.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserRestoreSolver(solver.getId(), admin.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserRestoreSolver(solver.getId(), regular.getId())>0);
+		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolver(solver.getId(), owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolver(solver.getId(), admin.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserRestoreSolver(solver.getId(), regular.getId()));
 	}
 	
 	@Test
 	private void canUserUpdateSolver() {
-		Assert.assertTrue(SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId())==0);
-		Assert.assertTrue(SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId())>0);
+		Assert.assertEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()));
+		Assert.assertEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId()));
 		//make sure we can't change the name of solver1 to the same name as solver2, since names must be unique per space
-		Assert.assertTrue(SolverSecurity.canUserUpdateSolver(solver.getId(), solver2.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId())>0);
+		Assert.assertNotEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver2.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()));
 	}
 	
 	
@@ -56,6 +121,8 @@ public class SolverSecurityTests extends TestSequence {
 		regular=ResourceLoader.loadUserIntoDatabase();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
 		solver2=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
+		solver3=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), regular.getId());
+
 	}
 
 	@Override

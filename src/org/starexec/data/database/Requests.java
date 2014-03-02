@@ -1,30 +1,20 @@
 package org.starexec.data.database;
 
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
 import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.util.GridEngineUtil;
-import org.starexec.util.Mail;
 
 /**
  * Handles all database interaction for the various requests throughout the system. This includes

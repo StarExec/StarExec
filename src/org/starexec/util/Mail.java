@@ -13,7 +13,6 @@ import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
-import org.starexec.data.database.Queues;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;

@@ -2,11 +2,11 @@ package org.starexec.test;
 
 import java.util.List;
 
+import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Space;
-import org.junit.Assert;
 
 public class SpacePropertiesTest extends TestSequence {
 	

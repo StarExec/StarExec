@@ -22,7 +22,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
@@ -35,8 +34,8 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.WorkerNode;
 
 /**
  * Contains methods for interacting with the sun grid engine. This class is NOT operating system independent

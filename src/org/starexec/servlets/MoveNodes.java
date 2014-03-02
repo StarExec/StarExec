@@ -2,42 +2,23 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.GridEngineUtil;
-import org.starexec.util.Mail;
-import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 
 /**

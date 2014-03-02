@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;

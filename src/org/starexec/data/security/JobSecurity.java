@@ -13,18 +13,28 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 
 public class JobSecurity {
+	
+	
+	/**
+	 * Checks to see if the given user has permission to see the details of the given job
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserSeeJob(int jobId, int userId) {
-		
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
-		
-		
-		
 		return 0;
 	}
 	
-	
+	/**
+	 * Checks to see if the given user has permission to run a new post processor on the given job
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 * @param pid the ID of the post processor that would be used.
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserPostProcessJob(int jobId, int userId, int pid) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
@@ -47,6 +57,13 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	
+	/**
+	 * Checks to see if the given user has permission to pause the given job
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserPauseJob(int jobId, int userId) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
@@ -58,12 +75,29 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see if the given user has permission to resume of the given job
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	
 	public static int canUserResumeJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
+		
 		return 0;
 	}
+	
+	
+	/**
+	 * Checks to see if the given user has permission to delete all jobs in the given list of jobs
+	 * @param jobIds The IDs of the jobs being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 * If the user does not have the needed permissions for even one job, the error code will be returned
+	 */
 	
 	public static int canUserDeleteJobs(List<Integer> jobIds, int userId) {
 		for (Integer jid : jobIds) {
@@ -75,6 +109,12 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see if the given user has permission to the given job
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 */
 	public static int canUserDeleteJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
@@ -82,6 +122,12 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see if the given user has permission to change the queue the given job is running on
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 */
 	public static int canChangeQueue(int jobId, int userId, int queueId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
@@ -94,6 +140,11 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see if the given user either owns the given job or is an admin
+	 * @param jobId The ID of the job being checked
+	 * @param userId The ID of the user making the request
+	 */
 	private static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
 		Job j = Jobs.get(jobId);
 		
@@ -106,7 +157,12 @@ public class JobSecurity {
 		return true;
 	}
 	
-	
+	/**
+	 * Checks to see whether the given user is allowed to pause all jobs currently running
+	 * on the system
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 */
 	public static int canUserPauseAllJobs(int userId){
 		if (!Users.isAdmin(userId)){
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;

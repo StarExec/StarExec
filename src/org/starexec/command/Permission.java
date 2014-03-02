@@ -3,8 +3,6 @@ package org.starexec.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.annotations.Expose;
-
 /**
  * Represents a permission between a user and a space, or a default permission
  * on a space. All fields are false by default.

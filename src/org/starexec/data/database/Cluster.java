@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;

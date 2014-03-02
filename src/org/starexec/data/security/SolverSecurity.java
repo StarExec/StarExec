@@ -12,7 +12,12 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 
 public class SolverSecurity {
-	
+	/**
+	 * Checks to see whether the given user can add a new website to the given solver
+	 * @param solverId The ID of the solver being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
+	 */
 	public static int canAssociateWebsite(int solverId, int userId) {
 		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
@@ -130,6 +135,9 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
+	
+	
+	
 	public static int canUserRemoveSolverFromHierarchy(int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(rootSpaceId, userId, true));
 		for(Space s : subspaces) {
@@ -141,6 +149,12 @@ public class SolverSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see whether the given user can delete all of the given configuraitons
+	 * @param configIds The IDs of the configurations being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
+	 */
 	public static int canUserDeleteConfigurations(List<Integer> configIds, int userId) {
 		for (Integer cid : configIds) {
 			int status=canUserDeleteConfiguration(cid,userId);
@@ -150,7 +164,13 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
-	
+	/**
+	 * Checks to see whether the given user can delete the given configuraiton
+	 * @param configId The ID of the configuration being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
+	 */
+
 	public static int canUserDeleteConfiguration(int configId, int userId) {
 		Configuration config=Solvers.getConfiguration(configId);
 		

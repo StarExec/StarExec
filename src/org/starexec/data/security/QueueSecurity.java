@@ -5,6 +5,13 @@ import org.starexec.data.database.Users;
 import org.starexec.util.Validator;
 
 public class QueueSecurity {
+	
+	/**
+	 * Checks to see whether the given user is allowed to make a queue permanent
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status from SecurityStatusCodes if not
+	 */
+	
 	public static int canUserMakeQueuePermanent(int userId) {
 		if (!Users.isAdmin(userId)){
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
@@ -12,6 +19,12 @@ public class QueueSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see whether the given user is allowed to update a queue reservation request
+	 * @param userId The ID of the user making the request
+	 * @param queueName The name the new queue would be given
+	 * @return 0 if the operation is allowed and a status from SecurityStatusCodes if not
+	 */
 	public static int canUserUpdateRequest(int userId, String queueName) {
 		if (!Users.isAdmin(userId)){
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
@@ -29,12 +42,23 @@ public class QueueSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see whether the given user is allowed to view current queue requests
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status from SecurityStatusCodes if not
+	 */
+	
 	public static int canUserSeeRequests(int userId) {
 		if (!Users.isAdmin(userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
 		return 0;
 	}
+	/**
+	 * Checks to see whether the given user is allowed to cancel a queue request
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status from SecurityStatusCodes if not
+	 */
 	
 	public static int canUserCancelRequest(int userId) {
 		if (!Users.isAdmin(userId)) {
@@ -42,6 +66,13 @@ public class QueueSecurity {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see whether the given user is allowed to remove a queue
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status from SecurityStatusCodes if not
+	 */
+	
 	
 	public static int canUserRemoveQueue(int userId) {
 		if (!Users.isAdmin(userId)) {

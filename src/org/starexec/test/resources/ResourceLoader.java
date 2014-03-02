@@ -3,20 +3,15 @@ package org.starexec.test.resources;
 import java.io.File;
 import java.util.List;
 
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-
-import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.servlets.BenchmarkUploader;

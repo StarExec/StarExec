@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
 
 public abstract class TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	

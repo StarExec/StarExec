@@ -29,7 +29,7 @@ public class TestManager {
 		tests.add(new UserSecurityTests());
 		tests.add(new QueueSecurityTests());
 		tests.add(new GeneralSecurityTests());
-		tests.add(new JobSecurityTests());
+		//tests.add(new JobSecurityTests());
 		tests.add(new BenchmarkSecurityTests());
 	}
 	

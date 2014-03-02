@@ -14,7 +14,6 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
 
 public class SpaceSecurity {

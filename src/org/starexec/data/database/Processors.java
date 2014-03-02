@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 
