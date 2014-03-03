@@ -145,10 +145,9 @@ function updateActionId(id, type, permanent) {
 	} else {																// if permanent or all.q
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
-		$("#moveNodes").hide();
+		$("#moveNodes").show();
 		if ((type=="active_queue" || type=="inactive_queue") && (permanent == 'true')) {	
 			$("#makePermanent").hide();
-			$("#moveNodes").show();
 		}
 	}
 	
