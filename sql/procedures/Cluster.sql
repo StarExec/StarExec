@@ -123,7 +123,7 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 DROP PROCEDURE IF EXISTS GetAllQueuesForJob;
 CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT)
 	BEGIN
-		SELECT id, name, status
+		SELECT DISTINCT id, name, status
 		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
 		WHERE status = "ACTIVE" AND permanent = false;
 	END //
