@@ -3588,5 +3588,21 @@ public class RESTServices {
 		return Jobs.pauseAll() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	@POST
+	@Path("/admin/resumeAll")
+	@Produces("application/json")
+	public String resumeAll(@Context HttpServletRequest request) {
+		// Permissions check; if user is NOT the owner of the job, deny pause request
+		int userId = SessionUtil.getUserId(request);
+		User user = Users.get(userId);  
+		if(!user.getRole().equals("admin")){
+			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		List<Job> jobs = new LinkedList<Job>();
+		jobs = Jobs.getAdminPausedJobs();
+		return Jobs.resumeAll(jobs) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
 	
 }

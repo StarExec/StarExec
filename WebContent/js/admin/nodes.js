@@ -11,10 +11,6 @@ $(document).ready(function(){
 	initDataTables();
 
 	
-	$('#nodes tbody tr').live('click', function () {
-		   $(this).toggleClass( 'row_selected' );
-		} );
-	
 	updateButtonActions();
 	
 

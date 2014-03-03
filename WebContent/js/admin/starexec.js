@@ -25,7 +25,6 @@ function initUI(){
 				'OK': function() {
 					log('user confirmed starexec restart.');
 					$('#dialog-confirm-restart').dialog('close');
-					alert(starexecRoot);
 					$.post(
 							starexecRoot+"services/restart/starexec/",
 							function(returnCode) {

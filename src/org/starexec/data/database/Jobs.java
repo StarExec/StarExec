@@ -2671,7 +2671,6 @@ public class Jobs {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 			procedure = con.prepareCall("{CALL PauseAll(?)}");
-
 			
 			if (jobs != null) {
 				for (Job j : jobs) {
@@ -2681,11 +2680,13 @@ public class Jobs {
 					
 					//Get the enqueued job pairs and remove them
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
-					for (JobPair jp : jobPairsEnqueued) {
-						int sge_id = jp.getGridEngineId();
-						Util.executeCommand("qdel " + sge_id);
-						log.debug("enqueued: Just executed qdel " + sge_id);
-						JobPairs.UpdateStatus(jp.getId(), 20);
+					if (jobPairsEnqueued != null) {
+						for (JobPair jp : jobPairsEnqueued) {
+							int sge_id = jp.getGridEngineId();
+							Util.executeCommand("qdel " + sge_id);
+							log.debug("enqueued: Just executed qdel " + sge_id);
+							JobPairs.UpdateStatus(jp.getId(), 20);
+						}
 					}
 					//Get the running job pairs and remove them
 					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(j.getId());
@@ -2931,6 +2932,44 @@ public class Jobs {
 		}
 		return false;
 	}
+	
+	
+	/**
+	 * resume all admin paused jobs (via admin page), and also removes the paused & paused_admin flags in the database. 
+	 * @param jobs The jobs to resume
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static boolean resumeAll(List<Job> jobs) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall("{CALL ResumeAll(?)}");
+
+			
+			if (jobs != null) {
+				for (Job j : jobs) {
+					procedure.setInt(1, j.getId());		
+					procedure.executeUpdate();
+					log.debug("Resuming of job id = " + j.getId() + " was successful");
+				}
+			}
+			
+			Common.endTransaction(con);
+		
+		
+			return true;
+		} catch (Exception e) {
+			log.error("ResumeAll says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 	/*
 	 *Perhaps we will want to cancel  jobs in the future? 
 	 *
@@ -3305,7 +3344,38 @@ public class Jobs {
 			results = procedure.executeQuery();
 			
 			List<Job> jobs = new LinkedList<Job>();
-			if (results.next()) {
+			while (results.next()) {
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setUserId(results.getInt("user_id"));
+				j.setName(results.getString("name"));	
+				j.setPrimarySpace(results.getInt("primary_space"));
+				j.setDescription(results.getString("description"));				
+				j.setCreateTime(results.getTimestamp("created"));					
+				jobs.add(j);
+			}
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
+	public static List<Job> getAdminPausedJobs() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAdminPausedJobs()}");
+			results = procedure.executeQuery();
+			
+			List<Job> jobs = new LinkedList<Job>();
+			while (results.next()) {
 				Job j = new Job();
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));

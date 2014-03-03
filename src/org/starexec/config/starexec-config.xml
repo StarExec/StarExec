@@ -156,7 +156,7 @@
                 <property key="MYSQL_DATABASE" value="starexec_wkaiser" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_wkaiser?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
                 <property key="PUBLIC_USER_ID" value="3" />
-                <property key="SPACE_XML_SCHEMA_LOC" value="/home/wkaiser/starexec_wkaiser_data/batchSpace/batchSpaceSchema.xsd" />
+                <property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/starexec_wkaiser_data/batchSpace/batchSpaceSchema.xsd" />
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_wkaiser"/>
                 <property key="BENCHMARK_PATH" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/Benchmarks" />

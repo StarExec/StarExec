@@ -662,13 +662,15 @@ public class RESTHelpers {
 			int total = 0;
 			
 			//Get the total number of nodes that have been reserved
-			for (Queue q : queues) {
-				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
-				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-				if (temp_nodeCount != -1) {
-					node_count = temp_nodeCount;
+			if (queues != null) {
+				for (Queue q : queues) {
+					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					total = total + node_count;
 				}
-				total = total + node_count;
 			}
 			
 			//set the number for the default queue to be all leftovers
@@ -680,16 +682,18 @@ public class RESTHelpers {
 			}
 			
 			//Get the numbers for each respective queue
-			for (Queue q : queues) {
-				if (q.getId() == 1) {
-					continue;
+			if (queues!= null) {
+				for (Queue q : queues) {
+					if (q.getId() == 1) {
+						continue;
+					}
+					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					entry.add(new JsonPrimitive(node_count));
 				}
-				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
-				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-				if (temp_nodeCount != -1) {
-					node_count = temp_nodeCount;
-				}
-				entry.add(new JsonPrimitive(node_count));
 			}
 			
 			//Put the "total" at the end

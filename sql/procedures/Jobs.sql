@@ -414,6 +414,20 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		WHERE job_id = _jobId AND status_code = 20;
 	END //
 	
+-- Removes the "paused" and "paused_admin" flag of a job
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS ResumeAll;
+CREATE PROCEDURE ResumeAll(IN _jobId INT)
+	BEGIN
+		UPDATE jobs
+		SET paused=false,paused_admin=false
+		WHERE id = _jobId;
+		
+		UPDATE job_pairs
+		SET status_code = 1
+		WHERE job_id = _jobId AND status_code = 20;
+	END //
+	
 -- Sets the "killed" property of a job to true
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS KillJob;
@@ -669,6 +683,21 @@ CREATE PROCEDURE GetRunningJobs()
 				FROM	jobs
 				JOIN    job_pairs ON jobs.id = job_pairs.job_id
 				WHERE 	job_pairs.status_code < 7;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetAdminPausedJobs;
+CREATE PROCEDURE GetAdminPausedJobs()
+	BEGIN
+		SELECT
+			id,
+			name,
+			user_id,
+			created,
+			description,
+			deleted,
+			primary_space
+		FROM jobs
+		WHERE paused_admin = true;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file

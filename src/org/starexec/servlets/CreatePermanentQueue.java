@@ -75,7 +75,7 @@ public class CreatePermanentQueue extends HttpServlet {
 		
 		//GridEngine Changes
 		QueueRequest req = new QueueRequest();
-		req.setQueueName(queue_name);
+		req.setQueueName(queue_name + ".q");
 		GridEngineUtil.createPermanentQueue(req, true, NQ);
 		
 		//TODO: reduce the count of reservations for nodes that were removed from reservations
@@ -90,7 +90,7 @@ public class CreatePermanentQueue extends HttpServlet {
 		}
 		
 		//DatabaseChanges
-		boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
+		boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name + ".q"));
 		
 		if (!success) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");

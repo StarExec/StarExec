@@ -57,6 +57,40 @@ function initButton() {
 			}
 		});
 	});
+	
+	$("#resumeAll").click(function() {
+		$('#dialog-confirm-pause-txt').text('are you sure you want to resume all admin paused jobs?');
+	
+		$('#dialog-confirm-pause').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed to resume all admin paused jobs');
+					$('#dialog-confirm-pause').dialog('close');
+					$.post(
+							starexecRoot+"services/admin/resumeAll/",
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "all admin paused jobs have been resumed", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "jobs were not resumed; please try again", 5000);
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled resume all admin paused jobs');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
 }
 
 function initDataTables() {

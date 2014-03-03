@@ -907,7 +907,6 @@ public class Queues {
 	 */
 	public static boolean update(String name, HashMap<String, String> attributes) {
 		Connection con = null;	
-		CallableStatement procAddQueue = null;
 		CallableStatement procAddCol = null;
 		CallableStatement procUpdateAttr = null;
 		try {

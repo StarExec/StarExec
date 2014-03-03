@@ -132,7 +132,7 @@ function initUI(id){
 }
 
 function updateActionId(id, type, permanent) {
-	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {
+	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {		// if not all.q and not permanent
 		$("#removeQueue").show();
 		$("#makePermanent").show();
 		if (permanent == 'false') {
@@ -142,10 +142,11 @@ function updateActionId(id, type, permanent) {
 			$("#moveNodes").show();
 			$("#makePermanent").hide();
 		}
-	} else {
+	} else {																// if permanent or all.q
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
-		if ((type=="active_queue" || type=="inactive_queue") && (permanent == 'true')) {
+		$("#moveNodes").hide();
+		if ((type=="active_queue" || type=="inactive_queue") && (permanent == 'true')) {	
 			$("#makePermanent").hide();
 			$("#moveNodes").show();
 		}
