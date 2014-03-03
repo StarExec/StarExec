@@ -2418,15 +2418,26 @@ public class Jobs {
 	public static boolean isJobPaused(int jobId) {
 		return isJobPausedOrKilled(jobId)==1;
 	}
+	
+	/**
+	 * Determines whether the job with the given ID exists in the database with the column "paused_admin" set to true
+	 * @param jobId The ID of the job in question
+	 * @return True if the job is paused by the admin (i.e. the paused_admin flag is set to true), false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	public static boolean isJobAdminPaused(int jobId) {
+		return isJobPausedOrKilled(jobId)==3;
+	}
 
 	/**
-	 * Determines whether the given job is either paused or killed
+	 * Determines whether the given job is either paused, admin paused, or killed
 	 * @param con The open connection to make the query on 
 	 * @param jobId The ID of the job in question
 	 * @return
 	 * 0 if the job is neither paused nor killed
 	 * 1 if the job is paused
 	 * 2 if the job has been killed
+	 * 3 if the job has been admin paused
 	 * @author Eric Burns
 	 */
 	public static int isJobPausedOrKilled(Connection con, int jobId) {
@@ -2438,7 +2449,12 @@ public class Jobs {
 			 results = procedure.executeQuery();
 			boolean paused=false;
 			boolean killed=false;
+			boolean adminPaused=false;
 			if (results.next()) {
+				adminPaused=results.getBoolean("paused_admin");
+				if (adminPaused) {
+					return 3;
+				}
 				paused=results.getBoolean("paused");
 				if (paused) {
 					return 1;
@@ -2446,8 +2462,7 @@ public class Jobs {
 				killed=results.getBoolean("killed");
 				if (killed) {
 					return 2;
-				}
-				
+				}				
 			}
 			return 0;
 		} catch (Exception e) {

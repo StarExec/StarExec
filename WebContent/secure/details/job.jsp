@@ -14,9 +14,17 @@
 			j=Jobs.get(jobId);
 			
 			boolean queueExists = true;
+			boolean queueIsEmpty = false;
+
 			if (j.getQueue() == null) {
 				queueExists = false;
+			} else {
+				Queue q = j.getQueue();
+				if (q.getNodes() == null) {
+					queueIsEmpty = true;
+				}
 			}
+			
 			
 			int jobSpaceId=j.getPrimarySpace();
 			//this means it's an old job and we should run the backwards-compatibility routine
@@ -30,6 +38,7 @@
 				JobStatus status=Jobs.getJobStatusCode(jobId);
 				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
 				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
+				boolean isAdminPaused = Jobs.isJobAdminPaused(jobId);
 				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
 				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
 				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
@@ -53,6 +62,7 @@
 				request.setAttribute("jobspace",s);
 				request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 				request.setAttribute("isPaused", isPaused);
+				request.setAttribute("isAdminPaused", isAdminPaused);
 				request.setAttribute("isKilled", isKilled);
 				request.setAttribute("isRunning", isRunning);
 				request.setAttribute("isComplete", isComplete);
@@ -194,10 +204,13 @@
 							<c:if test="${isPaused}">
 								<td>paused</td>
 							</c:if>
+							<c:if test="${isAdminPaused}">
+								<td>Paused(admin)</td>
+							</c:if>
 							<c:if test="${isKilled}">
 								<td>killed</td>
 							</c:if>
-							<c:if test="${not isPaused && not isKilled}">	
+							<c:if test="${not isPaused && not isKilled && not isAdminPaused}">	
 								<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
 							</c:if>
 		
@@ -274,10 +287,10 @@
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
-						<c:if test="${isPaused and queueExists}">
+						<c:if test="${isPaused and queueExists and !queueIsEmpty}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
 						</c:if>
-						<c:if test="${isPaused}">
+						<c:if test="${isPaused or isAdminPaused}">
 							<li><button type="button" id="changeQueue">Change Queue</button></li>	
 						</c:if>
 						</c:if>

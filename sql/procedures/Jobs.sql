@@ -342,7 +342,7 @@ CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
 DROP PROCEDURE IF EXISTS IsJobPausedOrKilled;
 CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 	BEGIN
-		SELECT paused,killed
+		SELECT paused,killed, paused_admin
 		FROM jobs
 		WHERE id=_jobId;
 	END //
