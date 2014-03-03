@@ -1,6 +1,7 @@
 var reserved;
 var requests;
 var type;
+var defaultQueueId;
 
 $(document).ready(function(){
 	
@@ -62,6 +63,7 @@ $(document).ready(function(){
 	   id = data.rslt.obj.attr("id");
 	   window['type'] = data.rslt.obj.attr("rel");
 	   var permanent = data.rslt.obj.attr("permanent");
+	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
 	   updateActionId(id, type, permanent);
 	   //getCommunityDetails(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
@@ -132,7 +134,7 @@ function initUI(id){
 }
 
 function updateActionId(id, type, permanent) {
-	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {		// if not all.q and not permanent
+	if (id != defaultQueueId && (type=="active_queue" || type=="inactive_queue")) {		// if not all.q and not permanent
 		$("#removeQueue").show();
 		$("#makePermanent").show();
 		if (permanent == 'false') {
@@ -145,8 +147,10 @@ function updateActionId(id, type, permanent) {
 	} else {																// if permanent or all.q
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
-		$("#moveNodes").show();
-		if ((type=="active_queue" || type=="inactive_queue") && (permanent == 'true')) {	
+		$("#moveNodes").hide();
+
+		if (( (type=="active_queue" || type=="inactive_queue") && (permanent == 'true') ) || id == defaultQueueId) {	
+			$("#moveNodes").show();
 			$("#makePermanent").hide();
 		}
 	}

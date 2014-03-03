@@ -113,7 +113,8 @@ public class Cluster {
 		CallableStatement procedure = null;
 		try {		
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount()}");
+			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount(?)}");
+			procedure.setInt(1, Cluster.getDefaultQueueId());
 			ResultSet results = procedure.executeQuery();	
 			
 			
@@ -923,5 +924,31 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return null;
+	}
+	
+	public static int getDefaultQueueId() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetDefaultQueueId(?)}");
+			procedure.setString(1, R.DEFAULT_QUEUE_NAME);
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("id");
+			}
+			
+			return -1;
+			
+		} catch (Exception e) {
+			log.error("GetDefaultQueueId says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
 	}
 }

@@ -15,6 +15,7 @@
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} else {
 			request.setAttribute("queues", queues);
+			request.setAttribute("defaultQueueName", R.DEFAULT_QUEUE_NAME);
 		}		
 		
 	} catch (NumberFormatException nfe) {
@@ -41,6 +42,7 @@
 			<thead>
 				<tr>
 					<th style="width: 100px;">date</th>
+					<th style="width: 100px">${defaultQueueName}</th>
 					<c:forEach items="${queues}" var="queue"> 
 						<th style="width: 100px">${queue.name}</th>
 					</c:forEach>

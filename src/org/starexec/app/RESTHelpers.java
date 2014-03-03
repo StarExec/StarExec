@@ -241,6 +241,7 @@ public class RESTHelpers {
 		private int id;
 		private String rel;
 		private boolean permanent;
+		private int defaultQueueId;
 
 		public JSTreeAttribute(int id, String type) {
 			this.id = id;
@@ -248,6 +249,7 @@ public class RESTHelpers {
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
 				this.permanent = Queues.isQueuePermanent(id);
 			}
+			this.defaultQueueId = Cluster.getDefaultQueueId();
 		}
 	}
 
@@ -660,11 +662,13 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(date1));
 			List<Queue> queues = Queues.getAllNonPermanent();
 			int total = 0;
+			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
+			total = total + node_count;
 			
 			//Get the total number of nodes that have been reserved
 			if (queues != null) {
 				for (Queue q : queues) {
-					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					node_count = Queues.getNodeCountOnDate(q.getId(), date);
 					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 					if (temp_nodeCount != -1) {
 						node_count = temp_nodeCount;
@@ -684,10 +688,10 @@ public class RESTHelpers {
 			//Get the numbers for each respective queue
 			if (queues!= null) {
 				for (Queue q : queues) {
-					if (q.getId() == 1) {
+					if (q.getId() == Cluster.getDefaultQueueId()) {
 						continue;
 					}
-					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					node_count = Queues.getNodeCountOnDate(q.getId(), date);
 					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 					if (temp_nodeCount != -1) {
 						node_count = temp_nodeCount;

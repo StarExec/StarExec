@@ -3169,7 +3169,6 @@ public class RESTServices {
 			GridEngineUtil.cancelReservation(req);
 			return gson.toJson(0);
 		} else {
-			//TODO: permanent Queue Delete
 			GridEngineUtil.removePermanentQueue(queueId);
 			return gson.toJson(0);
 			

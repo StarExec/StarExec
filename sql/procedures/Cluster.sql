@@ -254,7 +254,7 @@ CREATE PROCEDURE GetActiveNodeCount()
 	END //
 	
 DROP PROCEDURE IF EXISTS GetNonPermanentNodeCount;
-CREATE PROCEDURE GetNonPermanentNodeCount()
+CREATE PROCEDURE GetNonPermanentNodeCount(IN _defaultQueueId INT)
 	BEGIN
 		SELECT Count(*)
 		AS nodeCount
@@ -262,7 +262,7 @@ CREATE PROCEDURE GetNonPermanentNodeCount()
 		WHERE nodes.id = queue_assoc.node_id
 				AND nodes.status = "ACTIVE" 
 				AND queue_assoc.queue_id = queues.id
-				AND queues.permanent = false;
+				AND (queues.permanent = false || queues.id = _defaultQueueId);
 	END //
 	
 -- Returns the node count for a particular date for a particular queue
@@ -436,6 +436,16 @@ CREATE PROCEDURE GetNodeNameById(IN _nodeId INT)
 		SELECT name
 		FROM nodes
 		WHERE id = _nodeId;
+	END //
+	
+-- Get the id of the default queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetDefaultQueueId;
+CREATE PROCEDURE GetDefaultQueueId(IN _queueName VARCHAR(64))
+	BEGIN
+		SELECT id
+		FROM queues
+		WHERE name = _queueName;
 	END //
 	
 	

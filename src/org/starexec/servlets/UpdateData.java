@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
@@ -59,11 +60,11 @@ public class UpdateData extends HttpServlet {
 		//Row #
 		//int rowId = Integer.parseInt(request.getParameter("rowId"));
 		
-		
+		int defaultQueueId = Cluster.getDefaultQueueId();
 		
 		int value = 0;
 		//Updated value
-		if (queueId == 1 || columnName.equals("date") || columnName.equals("total") || columnName.equals("conflict")) {
+		if (queueId == defaultQueueId || columnName.equals("date") || columnName.equals("total") || columnName.equals("conflict")) {
 			response.getWriter().print("error - not editable");
 			return;
 		} else {

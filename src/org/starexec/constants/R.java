@@ -102,6 +102,7 @@ public class R {
     //Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
     public static String ADMIN_USER_PASSWORD = "admin";			
+    public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue
     
     //Test info
     public static int TEST_USER_ID=-1;
