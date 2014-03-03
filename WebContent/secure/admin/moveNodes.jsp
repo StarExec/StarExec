@@ -7,7 +7,8 @@ try {
 	int userId = SessionUtil.getUserId(request);
 	int id = Integer.parseInt(request.getParameter("id"));	
 	Queue q = Queues.get(id);
-	List<WorkerNode> nodes = Cluster.getAllNodes();
+	
+	List<WorkerNode> nodes = Cluster.getNonAttachedNodes(id);
 	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
 	request.setAttribute("queueName", q.getName());
 	request.setAttribute("nodes", nodes);

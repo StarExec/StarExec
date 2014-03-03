@@ -350,6 +350,16 @@ CREATE PROCEDURE GetAllNodes ()
 		WHERE status = "ACTIVE";
 	END //
 	
+-- Returns all the nodes in the system that are active and not associated with the queue already
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNonAttachedNodes;
+CREATE PROCEDURE GetNonAttachedNodes(IN _queueId INT)
+	BEGIN
+		SELECT DISTINCT *
+		FROM nodes JOIN queue_assoc on nodes.id = queue_assoc.node_id 
+		WHERE status = "ACTIVE" AND queue_assoc.queue_id = _queueId;
+	END //
+	
 -- Returns all the nodes in the system that are active and not associated w/ permanent queue
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetAllNonPermanentNodes;

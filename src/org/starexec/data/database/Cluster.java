@@ -789,6 +789,36 @@ public class Cluster {
 		return null;
 	}
 	
+	public static List<WorkerNode> getNonAttachedNodes(int queueId) {
+		log.debug("Starting getNonAttachedNodes...");
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNonAttachedNodes(?)}");
+			procedure.setInt(1, queueId);
+			results = procedure.executeQuery();
+			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			while (results.next()){
+				WorkerNode n = new WorkerNode();
+				n.setId(results.getInt("id"));
+				n.setName(results.getString("name"));
+				n.setStatus(results.getString("status"));
+				nodes.add(n);
+			}
+			return nodes;
+		} catch (Exception e) {
+			log.error("GetAllNodes says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
 	public static List<WorkerNode> getAllNonPermanentNodes() {
 		log.debug("Starting getAllNonPermanentNodes...");
 		Connection con = null;
