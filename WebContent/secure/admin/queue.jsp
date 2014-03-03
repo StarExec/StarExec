@@ -25,6 +25,7 @@ try {
 		String end1 = sdf.format(end);
 
 		request.setAttribute("queueName", req.getQueueName());
+		request.setAttribute("defaultQueueName", R.DEFAULT_QUEUE_NAME);
 		request.setAttribute("message", req.getMessage());
 		request.setAttribute("code", req.getCode());
 		request.setAttribute("userId", req.getUserId());
@@ -100,6 +101,7 @@ try {
 			<thead>
 				<tr>				
 					<th style="width: 100px;">date</th>
+					<th style="width: 100px;">${defaultQueueName}</th>
 					<c:forEach items="${queues}" var="queue"> 
 						<th style="width: 100px;">${queue.name}</th>
 					</c:forEach>

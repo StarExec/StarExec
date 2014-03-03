@@ -739,10 +739,12 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(date1));
 			List<Queue> queues = Queues.getAllNonPermanent();
 			int total = 0;
+			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
+			total = total + node_count;
 			
 			//Get the total number of nodes that have been reserved
 			for (Queue q : queues) {
-				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				node_count = Queues.getNodeCountOnDate(q.getId(), date);
 				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 				if (temp_nodeCount != -1) {
 					node_count = temp_nodeCount;
@@ -769,10 +771,10 @@ public class RESTHelpers {
 			
 			//Get the numbers for each respective queue
 			for (Queue q : queues) {
-				if (q.getId() == 1) {
+				if (q.getId() == Cluster.getDefaultQueueId()) {
 					continue;
 				}
-				int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				node_count = Queues.getNodeCountOnDate(q.getId(), date);
 				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 				if (temp_nodeCount != -1) {
 					node_count = temp_nodeCount;
