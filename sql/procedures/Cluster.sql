@@ -118,6 +118,17 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 		ORDER BY name;	
 	END //
 	
+-- Gets the id, name, and status of all queues that are available for a job (non-permanent & not empty)
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetAllQueuesForJob;
+CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT)
+	BEGIN
+		SELECT id, name, status
+		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
+		WHERE status = "ACTIVE" AND permanent = false;
+	END //
+		
+	
 -- Gets the id, name and status of all queues in the cluster that are active and the user can use and are unreserved
 -- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
 -- Author: Benton McCune

@@ -709,6 +709,40 @@ public class Queues {
 		return null;
 	}
 	
+	public static List<Queue> getQueuesForJob(int userId, int spaceId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllQueuesForJob(?,?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, spaceId);
+
+			results = procedure.executeQuery();
+			List<Queue> queues = new LinkedList<Queue>();
+			
+			while(results.next()){
+				Queue q = new Queue();
+				q.setName(results.getString("name"));
+				q.setId(results.getInt("id"));	
+				q.setStatus(results.getString("status"));
+				queues.add(q);
+			}			
+						
+			return queues;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
+	
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
