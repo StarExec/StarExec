@@ -630,7 +630,7 @@ public class Cluster {
 		List<QueueRequest> temp_changes = Cluster.getTempChanges();
 		boolean success = true;
 		for (QueueRequest req : temp_changes) {
-			int queueId = Queues.getIdByName(req.getQueueName());
+			int queueId = Queues.getIdByName(req.getQueueName() + ".q");
 			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), "");
 			if (! success) {
 				break;
