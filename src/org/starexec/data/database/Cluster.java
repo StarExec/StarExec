@@ -631,7 +631,7 @@ public class Cluster {
 		boolean success = true;
 		for (QueueRequest req : temp_changes) {
 			int queueId = Queues.getIdByName(req.getQueueName());
-			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), req.getMessage());
+			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), "");
 			if (! success) {
 				break;
 			}
