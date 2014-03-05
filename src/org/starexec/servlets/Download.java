@@ -32,6 +32,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Statistics;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Job;
@@ -39,6 +40,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
@@ -102,7 +104,7 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				shortName="Job"+jobId+"_info"; // Changed from _CSV
+				shortName="Job"+jobId+"_info";
 				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
@@ -111,7 +113,7 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				shortName="Job"+job.getId()+"_output"; // Changed from _Output
+				shortName="Job"+job.getId()+"_output";
 				archive = handleJobOutputs(job, u.getId(), ".zip", response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
@@ -489,7 +491,7 @@ public class Download extends HttpServlet {
 				}
 			}
 
-			String fileName = "Job" + jobId.toString() + "_info" + format; //Previously UUID.randomUUID().toString() + format;
+			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 			String jobFile = CreateJobCSV(job, returnIds);
@@ -519,10 +521,9 @@ public class Download extends HttpServlet {
 		sb.delete(0, sb.length());
 		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
-		sb.append("Job");
-		sb.append(job.getId()); // Was job.getUserId(); 
-		sb.append("_info");
-		//sb.append(job.getId());
+		sb.append(job.getUserId());
+		sb.append("_");
+		sb.append(job.getId());
 		sb.append(".csv");
 		String filename = sb.toString();
 
@@ -649,7 +650,7 @@ public class Download extends HttpServlet {
 
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
-			String fileName = "Job" + j.getId() + "_output" + format; //UUID.randomUUID().toString() + format;
+			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 
 			uniqueDir.createNewFile();
@@ -703,9 +704,9 @@ public class Download extends HttpServlet {
 
 					}
 				}
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output_new",false);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
 			} else {
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output",false);
+				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
 				if (jobComplete) {
 					Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}
