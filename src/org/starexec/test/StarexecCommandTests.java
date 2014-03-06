@@ -420,9 +420,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
-		
-		
+		user=Users.getTestUser();
 		
 		testCommunity=Communities.getTestCommunity();
 		
@@ -455,8 +453,6 @@ public class StarexecCommandTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		con.logout();
-		
-		
 		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), user.getId());
 		Spaces.removeSubspaces(space2.getId(), testCommunity.getId(), user.getId());
 		Solvers.delete(solver.getId());
@@ -465,8 +461,6 @@ public class StarexecCommandTests extends TestSequence {
 			Benchmarks.delete(i);
 		}
 		
-		FileUtils.deleteDirectory(downloadDir);
-
 	}
 	
 	private boolean isErrorMap(HashMap<Integer,String> mapping) {

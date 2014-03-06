@@ -22,10 +22,10 @@ public class BenchmarkSecurityTests extends TestSequence {
 	User user2=null;
 	User user3=null;
 	
-	Space space=null;
-	
-	List<Integer> benchmarkIds=null;
-	List<Integer> benchmarkIds2=null;
+	Space space=null;    //user2 is the owner and only member of these two spaces
+	Space space2=null;
+	List<Integer> benchmarkIds=null; //these are benchmarks owned by user1 and placed in space
+	List<Integer> benchmarkIds2=null; //these are benchmarks owned by user2 and placed in space2
 	
 	@Test
 	private void CanDeleteBenchTest() {
@@ -133,12 +133,14 @@ public class BenchmarkSecurityTests extends TestSequence {
 	}
 	
 	@Test
-	private void canViewBenchmarkTest() {
+	private void canViewBenchmarkContentsTest() {
 		Benchmark b=Benchmarks.get(benchmarkIds.get(0));
 		//first, do the test with "downloadable" set to false
 		Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), false, b.getType().getId());
 		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user1.getId()));
 		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), admin.getId()));
+		
+		//user2 is in the same space, but they still are not allowed to see the contents
 		Assert.assertNotEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user2.getId()));
 		Assert.assertNotEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()));
 
@@ -168,11 +170,11 @@ public class BenchmarkSecurityTests extends TestSequence {
 		
 		Users.associate(user2.getId(), Communities.getTestCommunity().getId());
 		
-		Space space=ResourceLoader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
-		
+		space=ResourceLoader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
+		space2=ResourceLoader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		admin=Users.getAdmins().get(0);
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
-		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user2.getId());
+		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);	
 		Assert.assertNotNull(benchmarkIds2);
 	}
