@@ -464,9 +464,8 @@ public class Spaces {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userId, false);
+		if (Users.isAdmin(userId)) {
+			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userId, hierarchy);
 			return subspaces.size();
 		}
 		
@@ -558,6 +557,7 @@ public class Spaces {
 		return null;
 	}
 	
+	//TODO: This can't work, since spaces do not have unique names
 	public static int getIdByName(String spaceName) {
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -993,7 +993,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 		ResultSet results = null;
 		
 		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
 			procedure.setInt(1, spaceId);
 		} else {

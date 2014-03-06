@@ -22,6 +22,10 @@ public class TestUtil {
 		return getRandomAlphaString(R.SOLVER_NAME_LEN-1);
 	}
 	
+	public static String getRandomUserName() {
+		return getRandomAlphaString(R.USER_FIRST_LEN-1);
+	}
+	
 	private static String getRandomAlphaString(int length) {
 		String name="";
 		while (length>0) {

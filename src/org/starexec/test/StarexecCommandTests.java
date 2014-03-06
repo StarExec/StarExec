@@ -272,7 +272,6 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	
 	@Test
 	private void createSubspaceTest() throws Exception {
 		String name=TestUtil.getRandomSpaceName();

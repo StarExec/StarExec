@@ -1,6 +1,7 @@
 package org.starexec.test.resources;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -25,7 +26,16 @@ public class ResourceLoader {
 		return ResourceLoader.class.getResource("/org/starexec/test/resources").getFile();
 	}
 	public static File getResource(String name) {
+		URL url=ResourceLoader.class.getResource("/org/starexec/test/resources/"+"CVC4.zip");
+		System.out.println(url);
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
+	}
+	
+	public static File getDownloadDirectory() {
+		String filePath=getResourcePath();
+		File file=new File(filePath,"downloads");
+		file.mkdir();
+		return file;
 	}
 	
 	

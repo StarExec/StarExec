@@ -204,7 +204,7 @@ public class RESTServices {
 	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
-		if(id <= 0 && u.getRole().equals("admin")) {
+		if(id <= 0 && Users.isAdmin(userId)) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllAdmin()));
 		} else if (id <= 0) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAll()));
@@ -2686,7 +2686,7 @@ public class RESTServices {
 		int userIdOfPromotion = SessionUtil.getUserId(request);
 		User user = Users.get(userIdOfPromotion);
 		// Permissions check; ensure the user an admin
-		if (!user.getRole().equals("admin")) {
+		if (!Users.isAdmin(user.getId())) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -3415,7 +3415,7 @@ public class RESTServices {
 	public String addQueueRequest(@PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
+		if (!Users.isAdmin(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -3522,6 +3522,30 @@ public class RESTServices {
 	}
 	
 	/**
+	 * 
+	 */
+	@POST
+	@Path("/cache/clearTypes")
+	@Produces("application/json")
+	public String clearCacheTypes(@Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=CacheSecurity.canUserClearCache(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		
+		List<Integer> types=Util.toIntegerList(request.getParameterValues("selectedTypes[]"));		
+		boolean success=true;
+		for (Integer i : types) {
+			success= success && Cache.deleteCacheOfType(CacheType.getType(i));
+		}
+		
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	
+	/**
 	 * Clears the cache 
 	 * @param id The ID of the primitive
 	 * @param type The type of the primitive, as defined in CacheType
@@ -3532,7 +3556,7 @@ public class RESTServices {
 	@POST
 	@Path("/cache/clear/{id}/{type}")
 	@Produces("application/json")
-	public String clearSolverCache(@PathParam("id") int id, @PathParam("type") int type, @Context HttpServletRequest request) {
+	public String clearPrimCache(@PathParam("id") int id, @PathParam("type") int type, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		int status=CacheSecurity.canUserClearCache(userId);
 		if (status!=0) {
@@ -3593,8 +3617,7 @@ public class RESTServices {
 	public String resumeAll(@Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
-		User user = Users.get(userId);  
-		if(!user.getRole().equals("admin")){
+		if(!Users.isAdmin(userId)){
 			gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		

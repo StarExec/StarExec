@@ -52,6 +52,16 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 SANDBOX=1;
 
 
+#TODO: Make sure this is working properly
+MAX_MEM=$$MAX_MEM$$
+
+NODE_MEM=vmstat -s | head -1 | sed 's/total memory//'
+NODE_MEM=$NODE_MEM/(2 * 1024)
+if [ $MAX_MEM -gt $NODE_MEM ]
+then
+MAX_MEM=$NODE_MEM
+
+fi
 
 if [ $SANDBOX -eq 1 ]
 then

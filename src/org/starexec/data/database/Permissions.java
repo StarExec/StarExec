@@ -48,26 +48,26 @@ public class Permissions {
 			Common.safeClose(procDefaultPerm);
 		}
 		return -1;
-	}	
-
+	}
+	
 	/**
 	 * Checks to see if the user has access to the benchmark in some way. More specifically,
 	 * this checks if the user belongs to any space the benchmark belongs to.
 	 * @param benchId The benchmark to check if the user can see
-	 * @param userId The user that is requesting to view the given benchmark	 * 
+	 * @param userId The user that is requesting to view the given benchmark
+	 * @param con The open connection to make the query on 
 	 * @return True if the user can somehow see the benchmark, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeBench(int benchId, int userId) {
+	
+	private static boolean canUserSeeBench(int benchId, int userId, Connection con) {
 		if (Benchmarks.isPublic(benchId)){
 			return true;
 		}	
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return true;
 		}
 
-		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -83,9 +83,31 @@ public class Permissions {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+
+		return false;	
+	}
+
+	/**
+	 * Checks to see if the user has access to the benchmark in some way. More specifically,
+	 * this checks if the user belongs to any space the benchmark belongs to.
+	 * @param benchId The benchmark to check if the user can see
+	 * @param userId The user that is requesting to view the given benchmark	 * 
+	 * @return True if the user can somehow see the benchmark, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean canUserSeeBench(int benchId, int userId) {
+		Connection con = null;			
+		try {
+			con = Common.getConnection();		
+			return canUserSeeBench(benchId, userId, con);
+		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
 		}
 
 		return false;				
@@ -101,36 +123,22 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeBenchs(List<Integer> benchIds, int userId) {
 		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return true;
 		}
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
-
+			//check the permissions for every benchmark
 			for(int id : benchIds) {
-				procedure.setInt(1, id);					
-				procedure.setInt(2, userId);
-				 results = procedure.executeQuery();
-
-				if(results.first()) {
-					if(false == results.getBoolean(1)) {
-						return false;
-					}
+				if (!canUserSeeBench(id,userId,con)) {
+					return false;
 				}
-				Common.safeClose(results);
 			}			
-
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
 		}
 
 		return false;				
@@ -153,8 +161,7 @@ public class Permissions {
 			if (Jobs.isPublic(jobId)){
 				return true;
 			}
-			User user = Users.get(userId);
-			if (user.getRole().equals("admin")) {
+			if (Users.isAdmin(userId)) {
 				return true;
 			}
 			con = Common.getConnection();		
@@ -176,25 +183,24 @@ public class Permissions {
 
 		return false;		
 	}
-
 	/**
 	 * Checks to see if the user has access to the solver in some way. More specifically,
 	 * this checks if the user belongs to any space the solver belongs to.
 	 * @param solverId The solver to check if the user can see
 	 * @param userId The user that is requesting to view the given solver	
+	 * @param con The open connection to query on
 	 * @return True if the user can somehow see the solver, false otherwise
 	 * @author Tyler Jensen
+	 * 
 	 */
-	public static boolean canUserSeeSolver(int solverId, int userId) {
+	private static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
 		if (Solvers.isPublic(solverId)){
 			return true;
 		}
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return true;
 		}
 
-		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -210,9 +216,31 @@ public class Permissions {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks to see if the user has access to the solver in some way. More specifically,
+	 * this checks if the user belongs to any space the solver belongs to.
+	 * @param solverId The solver to check if the user can see
+	 * @param userId The user that is requesting to view the given solver	
+	 * @return True if the user can somehow see the solver, false otherwise
+	 * @author Tyler Jensen
+	 */
+	public static boolean canUserSeeSolver(int solverId, int userId) {
+		Connection con = null;			
+		try {
+			con = Common.getConnection();	
+			return canUserSeeSolver(solverId,userId,con);
+			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
 		}
 
 		return false;		
@@ -228,35 +256,22 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeSolvers(List<Integer> solverIds, int userId) {
 		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return true;
 		}
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
-
-			for(int id : solverIds) {				
-				procedure.setInt(1, id);					
-				procedure.setInt(2, userId);
-				results = procedure.executeQuery();
-
-				if(results.first()) {
-					if(false == results.getBoolean(1)) {
-						return false;
-					}
+			con = Common.getConnection();
+			//do the check for every solver
+			for(int id : solverIds) {	
+				if (!canUserSeeSolver(id,userId,con)) {
+					return false;
 				}
 			}
-
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
 
 		return false;		
@@ -279,7 +294,7 @@ public class Permissions {
 			return true;
 		}
 		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return true;
 		}
 		Connection con = null;			
@@ -318,8 +333,7 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return true;
 		}
 		try {

@@ -13,6 +13,12 @@ function initUI(){
 		}
     });
 	
+	$("#manageCache").button( {
+		icons: {
+			primary: "ui-icon-document"
+		}
+	});
+	
 		
 	$("#restartStarExec").click(function(){
 		$('#dialog-confirm-restart-txt').text('are you sure you want to restart StarExec?');

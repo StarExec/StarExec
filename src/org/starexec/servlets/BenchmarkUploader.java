@@ -207,8 +207,6 @@ public class BenchmarkUploader extends HttpServlet {
 		
 	}
 	
-	
-
 	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
 		//First extract all data from request
 		final int userId = uId;

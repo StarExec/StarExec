@@ -1074,6 +1074,61 @@ public class Benchmarks {
 	}	
 
 	/**
+	 * Returns a list of benchmarks owned by a given user
+	 * 
+	 * @param userId the id of the user who is the owner of the benchmarks we are to retrieve
+	 * @return a list of benchmarks owned by a given user, may be empty
+	 * @author Todd Elvers
+	 */
+	public static List<Benchmark> getByOwner(int userId) {
+		Connection con = null;			
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
+			procedure.setInt(1, userId);					
+			 results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			
+			
+			while(results.next()){
+				Benchmark b = resultToBenchmark(results,"bench");
+
+				Processor t = new Processor();
+				//if the ID is null, 0 is returned here
+				t.setId(results.getInt("types.id"));
+				t.setCommunityId(results.getInt("types.community"));
+				t.setDescription(results.getString("types.description"));
+				t.setName(results.getString("types.name"));
+				t.setFilePath(results.getString("types.path"));
+				t.setDiskSize(results.getLong("types.disk_size"));
+
+				b.setType(t);
+					
+				
+				// Add benchmark object to list
+				benchmarks.add(b);
+			}			
+			
+			log.debug(String.format("%d benchmarks were returned as being owned by user %d.", benchmarks.size(), userId));
+			
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
+		return null;
+	}
+	
+	
+	
+	/**
 	 * Gets the IDs of every space that is associated with the given benchmark
 	 * @param benchId The benchmark in question
 	 * @return A list of space IDs that are associated with this benchmark

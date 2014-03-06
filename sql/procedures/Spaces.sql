@@ -527,6 +527,8 @@ BEGIN
 	AND space_id = _spaceId;
 END //
 
+
+-- TODO: Spaces do not have unique names, so this will not always work
 -- Get the id of a space given its name
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetIdBySpaceName;

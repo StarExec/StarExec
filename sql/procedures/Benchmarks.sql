@@ -486,4 +486,14 @@ CREATE PROCEDURE ClearBenchAttributes(IN _benchId INT)
 		WHERE _benchId=bench_id;
 	END //
 	
+-- Retrieves the benchmarks owned by a given user id
+-- Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchmarksByOwner;
+CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
+	BEGIN
+		SELECT *
+		FROM benchmarks
+		WHERE user_id = _userId and deleted=false AND recycled=false;
+	END //	
+	
 DELIMITER ; -- This should always be at the end of this file

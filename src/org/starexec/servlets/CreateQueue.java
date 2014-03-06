@@ -77,12 +77,12 @@ public class CreateQueue extends HttpServlet {
 
 		
 		User u = Users.get(queueUserId);
-		if(approved && !u.getRole().equals("admin")) {
+		if(approved && !Users.isAdmin(u.getId())) {
 			// Notify user they've been approved	
 			Mail.sendReservationResults(req, true);
 			log.info(String.format("User [%s] has finished the approval process.", Users.get(req.getUserId()).getFullName()));
 			
-		} else if (approved && u.getRole().equals("admin")) {
+		} else if (approved && Users.isAdmin(u.getId())) {
 			log.info(String.format("Admin has finished the add queue process."));
 			
 		} else {

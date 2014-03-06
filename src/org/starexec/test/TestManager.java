@@ -5,7 +5,16 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
+import org.jfree.util.Log;
+import org.starexec.data.database.Communities;
+import org.starexec.test.StateTests.IntroStateTests;
+import org.starexec.test.database.PermissionsTests;
+import org.starexec.test.database.SolverTests;
+import org.starexec.test.database.SpaceTests;
+import org.starexec.test.database.UserTests;
 import org.starexec.test.security.BenchmarkSecurityTests;
+import org.starexec.test.security.CacheSecurityTests;
 import org.starexec.test.security.GeneralSecurityTests;
 import org.starexec.test.security.JobSecurityTests;
 import org.starexec.test.security.QueueSecurityTests;
@@ -15,14 +24,15 @@ import org.starexec.test.security.ValidatorTests;
 
 
 public class TestManager {
-	
+	private static final Logger log = Logger.getLogger(TestManager.class);
+
 	//this should never be modified outside of the initializeTests method
 	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
-	
+	private static boolean isRunning=false;
 	//all test sequences need to be initialized here
 	public static void initializeTests() {
-		tests.add(new SolverTestSequence());
-		tests.add(new SpacePropertiesTest());
+		tests.add(new SolverTests());
+		tests.add(new SpaceTests());
 		tests.add(new StarexecCommandTests());
 		tests.add(new SolverSecurityTests());
 		tests.add(new ValidatorTests());
@@ -31,6 +41,10 @@ public class TestManager {
 		tests.add(new GeneralSecurityTests());
 		//tests.add(new JobSecurityTests());
 		tests.add(new BenchmarkSecurityTests());
+		tests.add(new CacheSecurityTests());
+		tests.add(new UserTests());
+		tests.add(new PermissionsTests());
+		tests.add(new IntroStateTests());
 	}
 	
 	/**
@@ -42,6 +56,12 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
+				//don't do anything if the tests are already running
+				//TODO: it's possible two threads could hit this at exactly the same time. What should the solution be?
+				if (isRunning) {
+					return;
+				}
+				isRunning=true;
 				//we want to clear all the results first, so it's obvious to the user what is left to be run
 				for (TestSequence t : tests) {
 					t.clearResults();
@@ -49,7 +69,8 @@ public class TestManager {
 				
 				for (TestSequence t : tests) {
 					t.execute();
-				}				
+				}
+				isRunning=false;
 			}
 		});	
 		
@@ -74,10 +95,15 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
+				if (isRunning) {
+					return;
+				}
+				isRunning=true;
+				
 				TestSequence test = getTestSequence(t);
 				
 				executeTest(test);
-				
+				isRunning=false;
 			}
 		});	
 		

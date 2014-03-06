@@ -10,6 +10,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
@@ -859,6 +861,8 @@ public class Users {
 		
 		return false;
 	}
+	
+	//We should not be using this right now, since our login setup can't handle changing email
 	/**
 	 * Updates the email address of a user in the database with the 
 	 * given user ID
@@ -866,7 +870,7 @@ public class Users {
 	 * @param newValue what the email address will be updated to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
-	 */
+	 *
 	public static boolean updateEmail(int userId, String newValue){
 		Connection con = null;			
 		CallableStatement procedure= null;
@@ -887,7 +891,7 @@ public class Users {
 		}
 		
 		return false;
-	}
+	}*/
 	
 	/**
 	 * Updates the first name of a user in the database with the 
@@ -1022,6 +1026,16 @@ public class Users {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
+			
+			List<Solver> solvers=Solvers.getByOwner(userId);
+			for (Solver s  : solvers) {
+				Solvers.delete(s.getId());
+			}
+			List<Benchmark> benchmarks=Benchmarks.getByOwner(userId);
+			for (Benchmark b : benchmarks) {
+				Benchmarks.delete(b.getId());
+			}
+			
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteUser(?)}");
 			procedure.setInt(1, userId);

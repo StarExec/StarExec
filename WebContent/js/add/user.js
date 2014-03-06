@@ -91,6 +91,6 @@ function attachFormValidation(){
 			cm : {
 				required 	: "select a community to join"
 			}
-		},
+		}
 	});
 }
