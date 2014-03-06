@@ -412,9 +412,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(space2);
 		
 		
-		downloadDir=solverFile.getParentFile();
-		downloadDir=new File(downloadDir,"downloads");
-		downloadDir.mkdir();
+		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("bemchmarks.zip", testCommunity.getId(), testUser.getId());
 		Assert.assertNotNull(solver);

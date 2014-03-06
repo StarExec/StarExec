@@ -3,6 +3,7 @@ package org.starexec.test.resources;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -39,13 +40,25 @@ public class ResourceLoader {
 	}
 	
 	
+	
+	
 	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
-		File archive=getResource(archiveName);
-		Integer statusId = Uploads.createUploadStatus(parentSpaceId, userId);
-		Permission p=new Permission();
-		List<Integer> ids=BenchmarkUploader.handleUploadRequestAfterExtraction(archive, userId, parentSpaceId, 1, false, p, 
-				"dump", statusId, false, false, null);
-		return ids;
+		try {
+			File archive=getResource(archiveName);
+			
+			//make a copy of the archive, because the benchmark extraction function will delete the archive
+			File archiveCopy=new File(getDownloadDirectory(),UUID.randomUUID()+archive.getName());
+			FileUtils.copyFile(archive, archiveCopy);
+			Integer statusId = Uploads.createUploadStatus(parentSpaceId, userId);
+			Permission p=new Permission();
+			List<Integer> ids=BenchmarkUploader.handleUploadRequestAfterExtraction(archiveCopy, userId, parentSpaceId, 1, false, p, 
+					"dump", statusId, false, false, null);
+			return ids;
+		} catch (Exception e) {
+			log.error("loadBenchmarksIntoDatabase says "+e.getMessage(),e);
+		}
+		return null;
+		
 		
 		
 	}
