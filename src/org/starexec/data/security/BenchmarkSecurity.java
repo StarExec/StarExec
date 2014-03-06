@@ -25,7 +25,7 @@ public class BenchmarkSecurity {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}
 		//the benchmark doesn't need to be downloadable if this is the owner
-		if (b.getUserId()==userId) {
+		if (b.getUserId()==userId || Users.isAdmin(userId)) {
 			return 0;
 		}
 		

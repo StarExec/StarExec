@@ -1,17 +1,25 @@
 package org.starexec.test.StateTests;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Assert;
 
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
+import org.starexec.util.Util;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 public class IntroStateTests extends TestSequence {
-
+	User admin=null;
 	@Override
 	protected String getTestName() {
 		return "IntroStateTests";
@@ -25,16 +33,68 @@ public class IntroStateTests extends TestSequence {
 			Assert.assertFalse(Permissions.getSpaceDefault(s.getId()).isLeader());
 		}
 	}
+	
+	@Test 
+	private void UniqueBenchmarkNamesTest() {
+		List<Space> spaces=Spaces.GetAllSpaces();
+		for (Space s : spaces) {
+			Space current=Spaces.getDetails(s.getId(), admin.getId());
+			HashSet<String> names=new HashSet<String>();
+			for (Benchmark b : current.getBenchmarks()) {
+				Assert.assertFalse(names.contains(b.getName()));
+				names.add(b.getName());
+			}
+		}
+	}
+	
+	@Test 
+	private void UniqueSolverNamesTest() {
+		List<Space> spaces=Spaces.GetAllSpaces();
+		for (Space s : spaces) {
+			Space current=Spaces.getDetails(s.getId(), admin.getId());
+			HashSet<String> names=new HashSet<String>();
+			for (Solver solver : current.getSolvers()) {
+				Assert.assertFalse(names.contains(solver.getName()));
+				names.add(solver.getName());
+			}
+		}
+	}
+	
+	@Test 
+	private void UniqueJobNamesTest() {
+		List<Space> spaces=Spaces.GetAllSpaces();
+		for (Space s : spaces) {
+			Space current=Spaces.getDetails(s.getId(), admin.getId());
+			HashSet<String> names=new HashSet<String>();
+			for (Job j : current.getJobs()) {
+				Assert.assertFalse(names.contains(j.getName()));
+				names.add(j.getName());
+			}
+		}
+	}
+	
+	@Test 
+	private void UniqueSubspaceNamesTest() {
+		List<Space> spaces=Spaces.GetAllSpaces();
+		for (Space s : spaces) {
+			Space current=Spaces.getDetails(s.getId(), admin.getId());
+			HashSet<String> names=new HashSet<String>();
+			for (Space sub : current.getSubspaces()) {
+				Assert.assertFalse(names.contains(sub.getName()));
+				names.add(sub.getName());
+			}
+		}
+	}
+
 
 	@Override
 	protected void setup() throws Exception {
-		// TODO Auto-generated method stub
+		admin=Users.getAdmins().get(0);
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		// TODO Auto-generated method stub
 		
 	}
 

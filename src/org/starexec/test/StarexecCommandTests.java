@@ -443,7 +443,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("bemchmarks.zip", space1.getId(), user.getId());
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 		Assert.assertNotNull(solver);
 		
 		Assert.assertNotNull(benchmarkIds);
