@@ -39,9 +39,19 @@ public class BenchmarkSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanRestoreBenchTest() {
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(benchmarkIds.get(0), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(benchmarkIds.get(0), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(benchmarkIds.get(0), user2.getId()));
+		Benchmark b=Benchmarks.get(benchmarkIds.get(0));
+		//benchmarks can be restored only if they were actually recycled to begin with
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user1.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), admin.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user2.getId()));
+		
+		Assert.assertTrue(Benchmarks.recycle(b.getId()));
+		
+		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user1.getId()));
+		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), admin.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user2.getId()));
+		
+		Assert.assertTrue(Benchmarks.restore(b.getId()));
 	}
 	
 	@Test
@@ -72,15 +82,36 @@ public class BenchmarkSecurityTests extends TestSequence {
 	
 	@Test
 	private void canRestoreBenchesTest() {
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()));
+		
+		for (Integer i : benchmarkIds) {
+			Assert.assertTrue(Benchmarks.recycle(i));
+		}
+		
+		for (Integer i : benchmarkIds2) {
+			Assert.assertTrue(Benchmarks.recycle(i));
+		}
+		
 		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()));
 		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()));
 		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()));
+		
+		
 		List<Integer> temp=new ArrayList<Integer>();
 		temp.addAll(benchmarkIds);
 		temp.addAll(benchmarkIds2);
+		//because there are benchmarks by both owners in temp, neither owner should be able to restore them.
+		//only the admin should be able to
 		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(temp, user1.getId()));
 		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(temp, user2.getId()));
 		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(temp, admin.getId()));
+		
+		
+		for (Integer i : temp) {
+			Assert.assertTrue(Benchmarks.restore(i));
+		}
 	}
 	
 	
@@ -137,11 +168,14 @@ public class BenchmarkSecurityTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", Communities.getTestCommunity().getId(), user1.getId());
 		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", Communities.getTestCommunity().getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);	
+		Assert.assertNotNull(benchmarkIds2);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
 		Users.deleteUser(user1.getId());
+		Users.deleteUser(user2.getId());
+		Users.deleteUser(user3.getId());
 	}
 
 }
