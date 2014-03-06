@@ -39,8 +39,9 @@ public class SpaceTests extends TestSequence {
 	
 	@Test
 	private void leafTest() {
-		//the new community should be a leaf
-		Assert.assertTrue(Spaces.isLeaf(community.getId()));
+		Assert.assertFalse(Spaces.isLeaf(community.getId()));
+		Assert.assertTrue(Spaces.isLeaf(subspace.getId()));
+
 	}
 	
 	@Test

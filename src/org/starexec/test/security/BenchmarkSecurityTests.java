@@ -10,6 +10,7 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
@@ -20,6 +21,9 @@ public class BenchmarkSecurityTests extends TestSequence {
 	User admin=null;
 	User user2=null;
 	User user3=null;
+	
+	Space space=null;
+	
 	List<Integer> benchmarkIds=null;
 	List<Integer> benchmarkIds2=null;
 	
@@ -164,18 +168,30 @@ public class BenchmarkSecurityTests extends TestSequence {
 		
 		Users.associate(user2.getId(), Communities.getTestCommunity().getId());
 		
+		Space space=ResourceLoader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
+		
 		admin=Users.getAdmins().get(0);
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", Communities.getTestCommunity().getId(), user1.getId());
-		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", Communities.getTestCommunity().getId(), user2.getId());
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
+		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);	
 		Assert.assertNotNull(benchmarkIds2);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
+		for (Integer i : benchmarkIds) {
+			Benchmarks.delete(i);
+		}
+		for (Integer i : benchmarkIds2) {
+			Benchmarks.delete(i);
+		}
+		
 		Users.deleteUser(user1.getId());
 		Users.deleteUser(user2.getId());
 		Users.deleteUser(user3.getId());
+		
+		
+		
 	}
 
 }

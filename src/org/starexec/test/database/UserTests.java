@@ -191,7 +191,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(0,Users.getDiskUsage(user1.getId()));
 		Solver solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user1.getId());
 		
-		long size=solver.getDiskSize();
+		long size=Solvers.get(solver.getId()).getDiskSize();
 		List<Integer> benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user1.getId());
 		for (Integer i : benchmarkIds) {
 			size+=Benchmarks.get(i).getDiskSize();

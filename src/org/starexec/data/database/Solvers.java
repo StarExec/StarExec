@@ -45,7 +45,7 @@ public class Solvers {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
+			long diskUsage=FileUtils.sizeOf(new File(s.getPath()));
 			// Add the solver
 			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, s.getUserId());
@@ -54,7 +54,7 @@ public class Solvers {
 			procedure.setString(4, s.getPath());
 			procedure.setString(5, s.getDescription());
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
-			procedure.setLong(7, FileUtils.sizeOf(new File(s.getPath())));
+			procedure.setLong(7, diskUsage);
 			
 			procedure.executeUpdate();
 			
