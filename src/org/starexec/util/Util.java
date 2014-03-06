@@ -111,6 +111,40 @@ public class Util {
 		return value;
 	}
 	
+	public static void initializeDataDirectories() {
+		File file=new File(R.STAREXEC_DATA_DIR);
+		file.mkdir();
+		
+		file=new File(R.JOB_INBOX_DIR);
+		file.mkdir();
+		file=new File(R.JOB_LOG_DIR);
+		file.mkdir();
+		file=new File(R.JOB_OUTPUT_DIR);
+		file.mkdir();
+		file=new File(R.JOB_OUTPUT_DIR);
+		file.mkdir();
+		file=new File(R.JOBPAIR_INPUT_DIR);
+		file.mkdir();
+		file=new File(R.BENCHMARK_PATH);
+		file.mkdir();
+		file=new File(R.SOLVER_PATH);
+		file.mkdir();
+		file=new File(R.PROCESSOR_DIR);
+		file.mkdir();
+		file=new File(R.NEW_JOB_OUTPUT_DIR);
+		file.mkdir();
+		file=new File(R.PICTURE_PATH);
+		file.mkdir();
+		
+		
+		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
+		downloadDir.mkdirs();
+		File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
+		cacheDir.mkdirs();
+		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
+		graphDir.mkdirs();
+	}
+	
 	/**
 	 * Extracts the file extesion from a file path
 	 * @param s The file path

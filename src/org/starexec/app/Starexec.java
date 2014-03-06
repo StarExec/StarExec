@@ -197,12 +197,8 @@ public class Starexec implements ServletContextListener {
 		};
 		
 		//created directories expected by the system to exist
-		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
-		downloadDir.mkdirs();
-		File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
-		cacheDir.mkdirs();
-		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
-		graphDir.mkdirs();
+		Util.initializeDataDirectories();
+
 		TestManager.initializeTests();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
