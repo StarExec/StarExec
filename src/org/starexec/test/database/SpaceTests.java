@@ -56,13 +56,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(subspace.getName(),Spaces.getName(subspace.getId()));
 		Assert.assertNotEquals(community.getName(),Spaces.getName(subspace.getId()));
 		
-	}
-	
-	@Test
-	private void GetIdByName() {
-		Spaces.getIdByName(community.getName());
-	}
-	
+	}	
 	
 	
 	@Test

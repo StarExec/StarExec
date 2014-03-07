@@ -34,7 +34,7 @@ try {
 						<td>
 							<select name="spaceName" id="spaces">
        							<c:forEach var="space" items="${spaces}">
-           							 <option value="${space.name}">${space.name}</option>
+           							 <option value="${space.id},${space.name}">${space.name}</option>
         						</c:forEach>
     						</select>
     					</td>

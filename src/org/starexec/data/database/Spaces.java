@@ -556,36 +556,6 @@ public class Spaces {
 		
 		return null;
 	}
-	
-	//TODO: This can't work, since spaces do not have unique names
-	public static int getIdByName(String spaceName) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetIdBySpaceName(?)}");
-			procedure.setString(1, spaceName);
-			
-			
-			results = procedure.executeQuery();
-
-			while(results.next()){
-				return results.getInt("id");
-			}			
-
-			return -1;			
-			
-		} catch (Exception e){			
-			log.error("getIdBySpaceName says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-			return -1;				
-	}
 
 	
 	/**

@@ -528,18 +528,6 @@ BEGIN
 END //
 
 
--- TODO: Spaces do not have unique names, so this will not always work
--- Get the id of a space given its name
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetIdBySpaceName;
-CREATE PROCEDURE GetIdBySpaceName(IN _spaceName varchar(128))
-BEGIN
-	SELECT id
-	FROM spaces
-	WHERE name = _spaceName;
-END //
-
-
 -- Sets the "sticky_leader" flag for a given space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS SetStickyLeader;

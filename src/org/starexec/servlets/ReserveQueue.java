@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Requests;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
@@ -97,15 +96,13 @@ public class ReserveQueue extends HttpServlet {
 			int space_id;
 			if (message == null) {
 				String space_Name = request.getParameter(spaceName);
-				space_id = Spaces.getIdByName(space_Name);
-				
-				log.debug("1.) message = " + message + " , space_Name = " + space_Name + ", space_id = " + space_id);
+				// space_name = {spaceId},{spaceName}
+				String[] split;
+				split = space_Name.split(",");
+				space_id = Integer.parseInt(split[0]);
 			} else {
 				space_id = Integer.parseInt((String)request.getParameter(sid));
-				log.debug("2.) message = " + message + " , space_id = " + space_id);
-
 			}
-			log.debug("space_id = " + space_id);
 			int node_count = Integer.parseInt((String)request.getParameter(node));
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String start_date = request.getParameter(start);
