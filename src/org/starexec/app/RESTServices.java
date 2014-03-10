@@ -114,6 +114,42 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@GET
+	@Path("/space/{jobid}/jobspaces")
+	@Produces("application/json")	
+	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
+		int userId = SessionUtil.getUserId(request);
+		
+		List<Space> subspaces=new ArrayList<Space>();
+		log.debug("getting job spaces for panels");
+		//don't populate the subspaces if the user can't see the job
+		int status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		log.debug("got a request for parent space = "+parentId);
+		if (parentId>0) {
+			
+			subspaces=Spaces.getSubSpacesForJob(parentId,false);
+			
+			
+		} else {
+			//if the id given is 0, we want to get the root space
+			Job j=Jobs.get(jobId);
+			Space s=Spaces.getJobSpace(j.getPrimarySpace());
+			subspaces.add(s);
+		}
+		
+		log.debug("making next tree layer with "+subspaces.size()+" spaces");
+		return gson.toJson(subspaces);
+	}
+	
+	
+	/**
+	 * @return a json string representing all the subspaces of the job space
+	 * with the given id
+	 * @author Eric Burns
+	 */
+	@GET
 	@Path("/space/{jobid}/subspaces")
 	@Produces("application/json")	
 	public String getSubSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
@@ -126,10 +162,11 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-		
+		log.debug("got a request for parent space = "+parentId);
 		if (parentId>0) {
 			
 			subspaces=Spaces.getSubSpacesForJob(parentId,false);
+			
 		} else {
 			//if the id given is 0, we want to get the root space
 			Job j=Jobs.get(jobId);
@@ -526,9 +563,9 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}")
+	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		int status=JobSecurity.canUserSeeJob(jobId, userId);
@@ -536,12 +573,9 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		//no restrictions for now, as now that we are caching results we should probably just see how far we can push that
-		//if (Jobs.getJobPairCountInJobSpace(jobId, jobSpaceId, true, true)>R.MAXIMUM_JOB_PAIRS) {
-		//	return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
-		//}
+		
 		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId);
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,shortFormat);
 
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		

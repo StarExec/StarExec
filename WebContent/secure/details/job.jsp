@@ -112,6 +112,12 @@
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
 			</fieldset>
+						 
+			<fieldset id="subspaceSummaryField">
+				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
+				
+			</fieldset>
+			
 			<fieldset id="solverSummaryField">
 			<legend>solver summary</legend>
 				<table id="solveTbl" class="shaded">

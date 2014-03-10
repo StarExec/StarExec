@@ -139,3 +139,26 @@ margin-top:5px;
 	margin-right:auto;
 	margin-left:auto;	
 }
+
+#subspaceSummaryField .dataTables_wrapper {
+	max-width:47%;
+	width:47%;
+	border-style:solid;
+	border-width:1px;
+	border-color:black;
+	float:left;
+	clear:none;
+	margin-right:10px;
+	margin-bottom:10px;
+	padding:3px;
+}
+
+#subspaceSummaryField table.panel {
+	font-size:70%;
+	
+}
+
+tr.panelHeader {
+	text-align:center;
+	font-size: 140%;
+}

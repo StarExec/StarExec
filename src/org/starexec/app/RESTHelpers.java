@@ -2222,7 +2222,7 @@ public class RESTHelpers {
 
 	public static JsonObject convertSolverStatsToJsonObject(
 			List<SolverStats> stats, int totalRecords,
-			int totalRecordsAfterQuery, int syncValue, int spaceId, int jobId) {
+			int totalRecordsAfterQuery, int syncValue, int spaceId, int jobId, boolean shortFormat) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2242,7 +2242,8 @@ public class RESTHelpers {
 			sb.append(js.getSolver().getName());
 			RESTHelpers.addImg(sb);
 			String solverLink = sb.toString();
-
+			
+			// create the configuraiton link
 			sb = new StringBuilder();
 			sb.append("<a title=\"");
 			sb.append(js.getConfiguration().getName());
@@ -2255,29 +2256,41 @@ public class RESTHelpers {
 			sb.append(js.getConfiguration().getName());
 			RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
-
-			sb = new StringBuilder();
-			sb.append("<a href=\""
-					+ Util.docRoot("secure/details/pairsInSpace.jsp?sid="
-							+ spaceId + "&configid="
-							+ js.getConfiguration().getId() + "&id=" + jobId));
-			sb.append("\" target=\"_blank\" >");
-			sb.append("view pairs");
-			RESTHelpers.addImg(sb);
-			String pairsInSpaceLink = sb.toString();
-			// Create an object, and inject the above HTML, to represent an
-			// entry in the DataTable
-			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(solverLink));
-			entry.add(new JsonPrimitive(configLink));
-			entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
-			entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
-			entry.add(new JsonPrimitive(js.getCorrectJobPairs()));
-			entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
-			entry.add(new JsonPrimitive(js.getFailedJobPairs()));
-			entry.add(new JsonPrimitive(js.getTime()));
-			entry.add(new JsonPrimitive(pairsInSpaceLink));
-			dataTablePageEntries.add(entry);
+			if (!shortFormat) {
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append("view pairs");
+				RESTHelpers.addImg(sb);
+				String pairsInSpaceLink = sb.toString();
+				// Create an object, and inject the above HTML, to represent an
+				// entry in the DataTable
+				JsonArray entry = new JsonArray();
+				entry.add(new JsonPrimitive(solverLink));
+				entry.add(new JsonPrimitive(configLink));
+				entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
+				entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+				entry.add(new JsonPrimitive(js.getCorrectJobPairs()));
+				entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
+				entry.add(new JsonPrimitive(js.getFailedJobPairs()));
+				entry.add(new JsonPrimitive(js.getTime()));
+				entry.add(new JsonPrimitive(pairsInSpaceLink));
+				dataTablePageEntries.add(entry);
+			} else {
+				
+				// Create an object, and inject the above HTML, to represent an
+				// entry in the DataTable
+				JsonArray entry = new JsonArray();
+				entry.add(new JsonPrimitive(solverLink));
+				entry.add(new JsonPrimitive(configLink));
+				entry.add(new JsonPrimitive((js.getCompleteJobPairs() +js.getCorrectJobPairs()) +" / "+js.getTotalJobPairs() ));
+				entry.add(new JsonPrimitive(js.getTime()));
+				dataTablePageEntries.add(entry);
+			}
+			
 		}
 
 		JsonObject nextPage = new JsonObject();

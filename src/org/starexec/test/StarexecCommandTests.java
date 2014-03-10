@@ -239,9 +239,11 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Test 
 	private void  copyBenchmarkTest() {
-		Integer[] benchArr=new Integer[2];
-		benchArr[0]=benchmarkIds.get(0);
-		benchArr[1]=benchmarkIds.get(1);
+		Integer[] benchArr=new Integer[benchmarkIds.size()];
+		for (int index=0;index<benchArr.length;index++) {
+			benchArr[index]=benchmarkIds.get(index);
+		}
+		
 		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
 
@@ -249,7 +251,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0, status);
 		
 		HashMap<Integer,String> benches=con.getBenchmarksInSpace(space2.getId());
-		
+		Assert.assertFalse(isErrorMap(benches));
 		//the name is very long and random, so the only way the given benchmark name will be in the 
 		//second space will be if it was copied successfully
 		Assert.assertTrue(benches.containsValue(b1.getName()));
@@ -327,17 +329,20 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Test
 	private void deleteBenchmarksTest() {
-		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",testCommunity.getId(),user.getId());
-		Assert.assertNotNull(Benchmarks.get(ids.get(0)));
-		Assert.assertNotNull(Benchmarks.get(ids.get(1)));
+		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
+		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",tempSpace.getId(),user.getId());
+		Integer[] idArr=new Integer[ids.size()];
+		int index=0;
+		for (Integer i : ids) {
+			Assert.assertNotNull(Benchmarks.get(i));
+			idArr[index]=i;
+			index++;
+		}
 		
-		Integer[] idArr=new Integer[2];
-		idArr[0]=ids.get(0);
-		idArr[1]=ids.get(1);
 		Assert.assertEquals(0,con.deleteBenchmarks(idArr));
-		
-		Assert.assertNull(Benchmarks.get(ids.get(0)));
-		Assert.assertNull(Benchmarks.get(ids.get(1)));
+		for (Integer i :ids) {
+			Assert.assertNull(Benchmarks.get(i));
+		}
 		
 	}
 	
