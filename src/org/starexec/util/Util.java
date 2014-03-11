@@ -155,22 +155,13 @@ public class Util {
 	}
 	
 	/**
-	 * @return The platform-dependant line separator
+	 * @return The platform-dependent line separator
 	 */
 	public static String getLineSeparator(){
 		return System.getProperty("line.separator");
 	}
 	
-	/**
-	 * Extracts the file name from an absolute path
-	 * @param path The path of the file to extract the name from
-	 * @return The file's name, not including its extension
-	 */
-	public static String getFileNameOnly(String path){
-		int lastSep = path.lastIndexOf(File.separator);
-		int lastDot = path.lastIndexOf('.');
-		return path.substring(lastSep + 1, lastDot);
-	}
+	
 	
 	public static boolean paramExists(String name, HttpServletRequest request){
 		return !isNullOrEmpty(request.getParameter(name));
@@ -181,7 +172,8 @@ public class Util {
 	}	
 	
 	/**
-	 * Generates a temporary password consisting of 4 letters, 1 digit and 1 special
+	 * Generates a temporary password of between 6-20 characters, with at least 4 letters,
+	 * 1 number, and 1 special character
 	 * character
 	 * 
 	 * @return a temporary password

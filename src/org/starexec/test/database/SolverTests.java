@@ -95,8 +95,8 @@ public class SolverTests extends TestSequence {
 	@Override
 	protected void teardown() {
 		Solvers.delete(solver.getId());
-		Spaces.removeSubspaces(space1.getId(),Spaces.getParentSpace(space1.getId()),R.ADMIN_USER_ID);
-		Spaces.removeSubspaces(space2.getId(),Spaces.getParentSpace(space2.getId()),R.ADMIN_USER_ID);		
+		Spaces.removeSubspaces(space1.getId(),Spaces.getParentSpace(space1.getId()),testUser.getId());
+		Spaces.removeSubspaces(space2.getId(),Spaces.getParentSpace(space2.getId()),testUser.getId());		
 	}
 		
 	

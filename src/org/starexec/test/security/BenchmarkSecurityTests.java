@@ -7,6 +7,7 @@ import org.junit.Assert;
 
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.to.Benchmark;
@@ -187,11 +188,13 @@ public class BenchmarkSecurityTests extends TestSequence {
 		for (Integer i : benchmarkIds2) {
 			Benchmarks.delete(i);
 		}
-		
+		User testUser=Users.getTestUser();
 		Users.deleteUser(user1.getId());
 		Users.deleteUser(user2.getId());
 		Users.deleteUser(user3.getId());
-		
+		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), testUser.getId());
+		Spaces.removeSubspaces(space2.getId(), Communities.getTestCommunity().getId(), testUser.getId());
+
 		
 		
 	}

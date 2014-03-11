@@ -45,6 +45,7 @@ public class TestManager {
 		tests.add(new UserTests());
 		tests.add(new PermissionsTests());
 		tests.add(new IntroStateTests());
+		tests.add(new UtilTests());
 	}
 	
 	/**

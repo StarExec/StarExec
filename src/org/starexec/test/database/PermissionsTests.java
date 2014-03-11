@@ -142,6 +142,7 @@ public class PermissionsTests extends TestSequence {
 		
 		Spaces.removeSubspaces(space.getId(),Communities.getTestCommunity().getId(), testUser.getId());
 		Solvers.delete(solver.getId());
+		Solvers.delete(solver2.getId());
 		for (Integer i : benchmarks) {
 			Benchmarks.delete(i);
 		}

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Solver;
@@ -127,7 +128,11 @@ public class SolverSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
+		Solvers.delete(solver.getId());
+		Solvers.delete(solver2.getId());
+		Solvers.delete(solver3.getId());
 		Users.deleteUser(regular.getId());
+	
 	}
 
 	@Override

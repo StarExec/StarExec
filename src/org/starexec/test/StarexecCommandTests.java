@@ -239,66 +239,65 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Test 
 	private void  copyBenchmarkTest() {
+		Space toCopy=ResourceLoader.loadSpaceIntoDatabase(user.getId(),space1.getId());
 		Integer[] benchArr=new Integer[benchmarkIds.size()];
 		for (int index=0;index<benchArr.length;index++) {
 			benchArr[index]=benchmarkIds.get(index);
 		}
 		
-		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
-		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
-
-		int status=con.copyBenchmarks(benchArr, space1.getId(), space2.getId());
+		int status=con.copyBenchmarks(benchArr, space1.getId(), toCopy.getId());
 		Assert.assertEquals(0, status);
 		
-		HashMap<Integer,String> benches=con.getBenchmarksInSpace(space2.getId());
+		HashMap<Integer,String> benches=con.getBenchmarksInSpace(toCopy.getId());
 		Assert.assertFalse(isErrorMap(benches));
 		//the name is very long and random, so the only way the given benchmark name will be in the 
 		//second space will be if it was copied successfully
-		Assert.assertTrue(benches.containsValue(b1.getName()));
-		Assert.assertTrue(benches.containsValue(b2.getName()));
-		
-		Assert.assertFalse(benches.containsKey(b1.getId())); //the ID should NOT be the same, since the copy should be new
-		Assert.assertFalse(benches.containsKey(b2.getId())); 
-		
+		for (Integer bid : benchArr) {
+			Benchmark b=Benchmarks.get(bid);
+			Assert.assertTrue(benches.containsValue(b.getName()));
+			Assert.assertFalse(benches.containsKey(bid)); //the ID should NOT be the same, since the copy should be new
+		}
 		
 		//remove all the solvers from space2 to ensure they don't interfere with upcoming tests
 		List<Integer> benchIds =new ArrayList<Integer>();
 		benchIds.addAll(benches.keySet());
 		
-		Assert.assertTrue(Spaces.removeBenches(benchIds, space2.getId()));
+		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
 		for (Integer i : benchIds) {
 			Assert.assertTrue(Benchmarks.delete(i));
 		}
-		
+		Spaces.removeSubspaces(toCopy.getId(), space.getId(), user.getId());		
 	}
 	
 	@Test 
 	private void  linkBenchmarkTest() {
-		Integer[] benchArr=new Integer[2];
-		benchArr[0]=benchmarkIds.get(0);
-		benchArr[1]=benchmarkIds.get(1);
-		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
-		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
-
-		int status=con.copyBenchmarks(benchArr, space1.getId(), space2.getId());
+		Space toCopy=ResourceLoader.loadSpaceIntoDatabase(user.getId(),space1.getId());
+		Integer[] benchArr=new Integer[benchmarkIds.size()];
+		for (int index=0;index<benchArr.length;index++) {
+			benchArr[index]=benchmarkIds.get(index);
+		}
+		
+		int status=con.copyBenchmarks(benchArr, space1.getId(), toCopy.getId());
 		Assert.assertEquals(0, status);
 		
-		HashMap<Integer,String> benches=con.getBenchmarksInSpace(space2.getId());
+		HashMap<Integer,String> benches=con.getBenchmarksInSpace(toCopy.getId());
 		
 		//the name is very long and random, so the only way the given benchmark name will be in the 
 		//second space will be if it was copied successfully
-		Assert.assertTrue(benches.containsValue(b1.getName()));
-		Assert.assertTrue(benches.containsValue(b2.getName()));
+		Assert.assertEquals(benches.size(), benchArr.length);
+		for (Integer bid : benchmarkIds) {
+			Assert.assertTrue(benches.containsValue(Benchmarks.get(bid).getName()));
+			Assert.assertTrue(benches.containsKey(bid)); 
+		}
 		
-		Assert.assertTrue(benches.containsKey(b1.getId())); 
-		Assert.assertTrue(benches.containsKey(b2.getId())); 
 		
 		
 		//remove all the solvers from space2 to ensure they don't interfere with upcoming tests
 		List<Integer> benchIds =new ArrayList<Integer>();
 		benchIds.addAll(benches.keySet());
 		
-		Assert.assertTrue(Spaces.removeBenches(benchIds, space2.getId()));
+		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
+		Spaces.removeSubspaces(toCopy.getId(), space.getId(), user.getId());
 		
 	}
 	
