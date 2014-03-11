@@ -12,6 +12,7 @@ import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -56,41 +57,51 @@ public class StarexecCommandTests extends TestSequence {
 	private void ListSolversTest() {
 		HashMap<Integer,String> mapping=con.getSolversInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getSolvers().size());
 	}
 	@Test
 	private void ListBenchmarksTest() {
 		HashMap<Integer,String> mapping=con.getBenchmarksInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getBenchmarks().size());
+
 	}
 	@Test
 	private void ListJobsTest() {
 		HashMap<Integer,String> mapping=con.getJobsInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getJobs().size());
+
 	}
 	@Test
 	private void ListUsersTest() {
 		HashMap<Integer,String> mapping=con.getUsersInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getUsers().size());
 	}
 	@Test
 	private void ListSpacesTest() {
 		HashMap<Integer,String> mapping=con.getSpacesInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getSubspaces().size());
 	}
 	@Test
 	private void ListSolversByUser() {
 		HashMap<Integer,String> mapping=con.getSolversByUser();
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Solvers.getSolverCountByUser(user.getId()));
 	}
 	@Test
 	private void ListJobsByUser() {
 		HashMap<Integer,String> mapping=con.getJobsByUser();
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(), Jobs.getJobCountByUser(user.getId()));
 	}
 	@Test
 	private void ListBenchmarksByUser() {
 		HashMap<Integer,String> mapping=con.getBenchmarksByUser();
 		Assert.assertFalse(isErrorMap(mapping));
+		Assert.assertEquals(mapping.size(),Benchmarks.getBenchmarkCountByUser(user.getId()));
 	}
 	@Test
 	private void uploadSolver() throws Exception {
@@ -282,10 +293,11 @@ public class StarexecCommandTests extends TestSequence {
 		
 		HashMap<Integer,String> benches=con.getBenchmarksInSpace(toCopy.getId());
 		
-		//the name is very long and random, so the only way the given benchmark name will be in the 
-		//second space will be if it was copied successfully
+	
 		Assert.assertEquals(benches.size(), benchArr.length);
 		for (Integer bid : benchmarkIds) {
+			//the name is very long and random, so the only way the given benchmark name will be in the 
+			//second space will be if it was copied successfully
 			Assert.assertTrue(benches.containsValue(Benchmarks.get(bid).getName()));
 			Assert.assertTrue(benches.containsKey(bid)); 
 		}
