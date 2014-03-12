@@ -296,6 +296,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 		Assert.assertEquals(benches.size(), benchArr.length);
 		for (Integer bid : benchmarkIds) {
+			log.debug("attempting to get back benchmark "+bid);
 			//the name is very long and random, so the only way the given benchmark name will be in the 
 			//second space will be if it was copied successfully
 			Assert.assertTrue(benches.containsValue(Benchmarks.get(bid).getName()));
@@ -413,6 +414,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Assert.assertEquals(0, con.removeBenchmarks(id, tempSpace.getId()));
 		Assert.assertNotNull(Benchmarks.get(ids.get(0)));
+		
 		Assert.assertFalse(Benchmarks.getAssociatedSpaceIds(ids.get(0)).contains(tempSpace.getId()));
 		
 		for (Integer i : ids) {
@@ -448,7 +450,7 @@ public class StarexecCommandTests extends TestSequence {
 		int status = con.login();
 		Assert.assertEquals(0,status);
 		
-		//space1 will contain solvers and becnhmarks
+		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());		
 		solverFile=ResourceLoader.getResource("CVC4.zip");
@@ -460,6 +462,9 @@ public class StarexecCommandTests extends TestSequence {
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		
+		 
+		
 		Assert.assertNotNull(solver);
 		
 		Assert.assertNotNull(benchmarkIds);
