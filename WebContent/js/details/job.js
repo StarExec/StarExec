@@ -5,7 +5,6 @@ var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray=null;
 $(document).ready(function(){
-	curSpaceId=$("#spaceId").attr("value");
 	jobId=$("#jobId").attr("value");
 	
 	
@@ -25,7 +24,7 @@ $(document).ready(function(){
 	},5000);
 	
 	//puts data into the data tables
-	reloadTables(curSpaceId);
+	reloadTables($("#spaceId").attr("value"));
 });
 
 function createDownloadRequest(item,type,returnIds) {
@@ -92,6 +91,9 @@ function initSpaceExplorer() {
 }
 
 function clearPanels() {
+	if (panelArray==null)  {
+		return;
+	}
 	for (i=0;i<panelArray.length;i++) {
 		panelArray[i].fnDestroy();
 		$(panelArray[i]).remove();
@@ -764,8 +766,6 @@ function initDataTables(){
 	
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
-	
-	initializePanels();
 	
 }
 
