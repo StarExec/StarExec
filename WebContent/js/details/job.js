@@ -20,9 +20,9 @@ $(document).ready(function(){
 	setInterval(function() {
 		pairTable.fnDraw(false);
 		for (i=0;i<panelArray.length;i++) {
-			panelArray[i].fnDraw(false);
+			panelArray[i].fnReloadAjax(null,null,true,curSpaceId,false);
 		}
-	},10000);
+	},5000);
 	
 	//puts data into the data tables
 	reloadTables(curSpaceId);
@@ -129,7 +129,6 @@ function reloadTables(id) {
 function updateGraphs() {
 	
 	summaryTable.fnProcessingIndicator(false);
-	subspaceTable.fnProcessingIndicator(false);
 
 	rows = $("#solveTbl tbody tr");	
 	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
@@ -698,7 +697,7 @@ function initializePanels() {
 			
 			child=getPanelTable(space);
 			$("#subspaceSummaryField").append(child);
-			panelArray[i]=$("#panel"+spaceId).dataTable( {
+			panelArray[i]=$("#panel"+spaceId).dataTable({
 		        "sDom"			: 'rt<"bottom"flpi><"clear">',
 		        "iDisplayStart"	: 0,
 		        "iDisplayLength": 50,
@@ -735,26 +734,6 @@ function initDataTables(){
         "fnServerData" : fnStatsPaginationHandler
     });
 	
-	subspaceTable=$('#tempSubspaceTable').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
-        "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
-        "bSort": true,
-        "bPaginate": true,
-        "sAjaxSource"	: starexecRoot+"services/jobs/",
-        "sServerMethod" : "POST",
-        "fnServerData" : fnShortStatsPaginationHandler
-    });
-	
-	
-	
-	$(".subspaceTable").dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-        "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
-        "bSort": true,
-        "bPaginate": true
-	});
 	// Job pairs table
 	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -883,7 +862,7 @@ function extendDataTableFunctions(){
 	};
 }
 
-function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {	
+function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(  
 			sSource,
 			aoData,
