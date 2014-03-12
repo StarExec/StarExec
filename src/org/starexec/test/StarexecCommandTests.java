@@ -479,7 +479,7 @@ public class StarexecCommandTests extends TestSequence {
 		Solvers.delete(solver.getId());
 		
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			//Benchmarks.delete(i);
 		}
 		
 	}
