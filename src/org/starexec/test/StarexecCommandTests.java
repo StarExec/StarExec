@@ -247,7 +247,7 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertTrue(Solvers.delete(i));
 		}
 	}
-	
+	/*
 	@Test 
 	private void  copyBenchmarkTest() {
 		Space toCopy=ResourceLoader.loadSpaceIntoDatabase(user.getId(),space1.getId());
@@ -278,7 +278,7 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertTrue(Benchmarks.delete(i));
 		}
 		Spaces.removeSubspaces(toCopy.getId(), space.getId(), user.getId());		
-	}
+	}*/
 	
 	@Test 
 	private void  linkBenchmarkTest() {
@@ -338,7 +338,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,con.deleteSolvers(ids));
 		Assert.assertNull(Solvers.get(tempSolver.getId()));
 	}
-	
+	/*
 	@Test
 	private void deleteBenchmarksTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
@@ -356,7 +356,7 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertNull(Benchmarks.get(i));
 		}
 		
-	}
+	}*/
 	
 	@Test
 	private void copySpaceTest() {
@@ -403,7 +403,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertFalse(Solvers.getAssociatedSpaceIds(temp.getId()).contains(testCommunity.getId()));
 		Solvers.delete(temp.getId());
 	}
-	
+	/*
 	@Test
 	private void removeBenchmarksTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
@@ -421,7 +421,7 @@ public class StarexecCommandTests extends TestSequence {
 			Benchmarks.delete(i);
 		}
 		Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId());
-	}
+	}*/
 	
 	@Test
 	private void removeSpacesTest() {
