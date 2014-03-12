@@ -288,7 +288,7 @@ public class StarexecCommandTests extends TestSequence {
 			benchArr[index]=benchmarkIds.get(index);
 		}
 		
-		int status=con.copyBenchmarks(benchArr, space1.getId(), toCopy.getId());
+		int status=con.linkBenchmarks(benchArr, space1.getId(), toCopy.getId());
 		Assert.assertEquals(0, status);
 		
 		HashMap<Integer,String> benches=con.getBenchmarksInSpace(toCopy.getId());

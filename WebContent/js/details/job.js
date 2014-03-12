@@ -528,6 +528,7 @@ function initUI(){
 	$("#pairTblField").expandable(false);
 	$("#graphField").expandable(false);
 	$("#errorField").expandable(false);
+	$("#subspaceSummaryField").expandable(false);
 	$("#statsErrorField").expandable(false);
 	$("#optionField").expandable(true);
 	$("#detailField").expandable(true);
