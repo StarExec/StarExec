@@ -1097,7 +1097,7 @@ public class Benchmarks {
 			
 			
 			while(results.next()){
-				Benchmark b = resultToBenchmark(results,"bench");
+				Benchmark b = resultToBenchmark(results,"");
 
 				Processor t = new Processor();
 				//if the ID is null, 0 is returned here

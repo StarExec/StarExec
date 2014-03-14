@@ -1035,14 +1035,8 @@ public class Users {
 			if (!Users.isTestUser(userIdToDelete)) {
 				return false; //we only want to delete test users for now
 			}
-			List<Solver> solvers=Solvers.getByOwner(userIdToDelete);
-			for (Solver s  : solvers) {
-				Solvers.delete(s.getId());
-			}
-			List<Benchmark> benchmarks=Benchmarks.getByOwner(userIdToDelete);
-			for (Benchmark b : benchmarks) {
-				Benchmarks.delete(b.getId());
-			}
+			
+			
 			
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteUser(?)}");
