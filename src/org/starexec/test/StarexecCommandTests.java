@@ -464,8 +464,8 @@ public class StarexecCommandTests extends TestSequence {
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		Assert.assertNotNull(solver);
 
-		//benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
-		//Assert.assertNotNull(benchmarkIds);
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		Assert.assertNotNull(benchmarkIds);
 
 		
 		solverURL=Util.url("public/resources/CVC4.zip");
