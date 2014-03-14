@@ -819,6 +819,10 @@ public class Solvers {
 		return null;		
 	}
 	
+	public static boolean isTestSolver(int solverId) {
+		return Users.isTestUser(Solvers.get(solverId).getUserId());
+	}
+
 	
 	/**
 	 * Gets a particular Configuration on a connection

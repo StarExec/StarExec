@@ -293,7 +293,6 @@ public class Permissions {
 		if (Spaces.isPublicSpace(spaceId)){
 			return true;
 		}
-		User u = Users.get(userId);
 		if (Users.isAdmin(userId)) {
 			return true;
 		}
@@ -472,6 +471,27 @@ public class Permissions {
 		return p;
 	}
 	
+	/**
+	 * Returns a permissions object with every permission set to false. The ID is not set
+	 * @return 
+	 * @author Eric Burns
+	 */
+	
+	public static Permission getEmptyPermission() {
+		Permission p = new Permission();
+		p.setAddBenchmark(false);
+		p.setAddSolver(false);
+		p.setAddSpace(false);
+		p.setAddUser(false);
+		p.setAddJob(false);
+		p.setRemoveBench(false);
+		p.setRemoveSolver(false);
+		p.setRemoveSpace(false);
+		p.setRemoveUser(false);
+		p.setRemoveJob(false);
+		p.setLeader(false);
+		return p;
+	}
 
 
 	/**

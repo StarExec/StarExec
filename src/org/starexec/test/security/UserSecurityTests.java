@@ -22,6 +22,16 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertNotEquals(0, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "firstname","test"));
 	}
 	
+	@Test
+	private void CanDeleteUserTest() {
+		Assert.assertEquals(0,UserSecurity.canDeleteUser(user1.getId(), admin.getId()));
+		Assert.assertEquals(0,UserSecurity.canDeleteUser(user2.getId(), admin.getId()));
+
+		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(user1.getId(), user1.getId()));
+		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(admin.getId(), user1.getId()));
+		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(admin.getId(), admin.getId()));
+		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(user1.getId(), user2.getId()));
+	}
 
 	@Test
 	private void canUpdateLastNameTest() {
@@ -74,6 +84,7 @@ public class UserSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		user1=ResourceLoader.loadUserIntoDatabase();
 		user2=ResourceLoader.loadUserIntoDatabase();
+
 		admin=Users.getAdmins().get(0);
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
@@ -82,8 +93,8 @@ public class UserSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId());
-		Users.deleteUser(user2.getId());
+		Users.deleteUser(user1.getId(),admin.getId());
+		Users.deleteUser(user2.getId(),admin.getId());
 	}
 
 }

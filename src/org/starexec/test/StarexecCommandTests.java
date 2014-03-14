@@ -42,7 +42,6 @@ public class StarexecCommandTests extends TestSequence {
 	
 	User user=null;
 	Space testCommunity=null;
-	Space space=null;
 	
 	
 	String solverURL=null;
@@ -143,7 +142,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,result);
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
 	}
-	/*
+	
 	@Test
 	private void uploadBenchmarksFromURL() {
 		
@@ -155,7 +154,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
 
-	}*/
+	}
 	
 	@Test 
 	private void downloadSpaceXML() {
@@ -261,7 +260,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		HashMap<Integer,String> benches=con.getBenchmarksInSpace(toCopy.getId());
 		
-                Assert.assertFalse(isErrorMap(benches));
+        Assert.assertFalse(isErrorMap(benches));
 		//the name is very long and random, so the only way the given benchmark name will be in the 
 		//second space will be if it was copied successfully
 		for (Integer bid : benchArr) {
@@ -356,6 +355,7 @@ public class StarexecCommandTests extends TestSequence {
 		for (Integer i :ids) {
 			Assert.assertNull(Benchmarks.get(i));
 		}
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
 		
 	}
 	
@@ -455,26 +455,25 @@ public class StarexecCommandTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());		
 		solverFile=ResourceLoader.getResource("CVC4.zip");
-		benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
+		//benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
 		Assert.assertNotNull(space1);
 		Assert.assertNotNull(space2);
 		
 		
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
-		
-		 
-		
 		Assert.assertNotNull(solver);
+
+		//benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		//Assert.assertNotNull(benchmarkIds);
+
 		
-		Assert.assertNotNull(benchmarkIds);
 		solverURL=Util.url("public/resources/CVC4.zip");
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		con.logout();
+		
 		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), user.getId());
 		Spaces.removeSubspaces(space2.getId(), testCommunity.getId(), user.getId());
 		Solvers.delete(solver.getId());

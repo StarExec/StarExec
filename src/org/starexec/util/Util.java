@@ -33,7 +33,18 @@ import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cache;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
@@ -406,6 +417,48 @@ public class Util {
 			FileUtils.deleteQuietly(temp);
 			IOUtils.closeQuietly(bufferIn);
 			IOUtils.closeQuietly(bufferOut);
+		}
+	}
+
+	/**
+	 * Deletes all the solvers, benchmarks, users, and jobs that exist in any subspace of
+	 * the test community. Items in the test community itself are not deleted, and only items
+	 * owned by a test user are deleted.
+	 */
+	public static void clearTestCommunity() {
+		Space testCom=Communities.getTestCommunity();
+		User admin=Users.getAdmins().get(0);
+		List<Space> subspaces=Spaces.getSubSpaces(testCom.getId(), admin.getId(), true);
+		for (Space s : subspaces) {
+			Space space=Spaces.getDetails(s.getId(), admin.getId());
+			
+			for (Solver solver : space.getSolvers()) {
+				if (Solvers.isTestSolver(solver.getId())) {
+					Solvers.delete(solver.getId());
+				}
+			}
+			
+			for (Benchmark b : space.getBenchmarks()) {
+				if (Benchmarks.isTestBenchmark(b.getId())) {
+					Benchmarks.delete(b.getId());
+				}
+			}
+			
+			for (Job j : space.getJobs()) {
+				if (Jobs.isTestJob(j.getId())) {
+					Jobs.delete(j.getId());
+				}
+			}
+			
+			for (User u : space.getUsers()) {
+				if (Users.isTestUser(u.getId())) {
+					Users.deleteUser(u.getId(),admin.getId());
+				}
+			}
+		}
+		
+		for (Space s : subspaces) {
+			Spaces.removeSubspaces(s.getId(), testCom.getId(), admin.getId());
 		}
 	}
 	

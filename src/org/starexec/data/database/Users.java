@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -1019,26 +1020,33 @@ public class Users {
 	/**
 	 * Completely deletes a user from the database. Right now, this is only
 	 * being used to delete temporary users created during testing
-	 * @param userId The ID of the user to delete
+	 * @param userIdToDelete The ID of the user to delete
 	 * @return True on success, false on error
 	 */
-	public static boolean deleteUser(int userId) {
+	public static boolean deleteUser(int userIdToDelete, int userIdMakingRequest) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
 			
-			List<Solver> solvers=Solvers.getByOwner(userId);
+			//Only allow the deletion of test users, and only if the admin is asking
+			if (UserSecurity.canDeleteUser(userIdToDelete, userIdMakingRequest)!=0) {
+				return false;
+			}
+			if (!Users.isTestUser(userIdToDelete)) {
+				return false; //we only want to delete test users for now
+			}
+			List<Solver> solvers=Solvers.getByOwner(userIdToDelete);
 			for (Solver s  : solvers) {
 				Solvers.delete(s.getId());
 			}
-			List<Benchmark> benchmarks=Benchmarks.getByOwner(userId);
+			List<Benchmark> benchmarks=Benchmarks.getByOwner(userIdToDelete);
 			for (Benchmark b : benchmarks) {
 				Benchmarks.delete(b.getId());
 			}
 			
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteUser(?)}");
-			procedure.setInt(1, userId);
+			procedure.setInt(1, userIdToDelete);
 			procedure.executeQuery();
 			return true;
 		}catch (Exception e) {
@@ -1057,6 +1065,17 @@ public class Users {
 	public static boolean isAdmin(int userId) {
 		User u=Users.get(userId);
 		return u.getRole().equals("admin");
+	}
+	
+	
+	/**
+	 * Checks to see whether the given user is a test user
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isTestUser(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("test");
 	}
 	
 	/**
@@ -1108,23 +1127,24 @@ public class Users {
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			log.debug("hashedPass = " + hashedPass);
-			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
 			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
-			
+			procedure.setString(7,user.getRole());
+
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
+			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();						
 			// Extract id from OUT parameter
-			user.setId(procedure.getInt(7));
+			user.setId(procedure.getInt(8));
 			log.debug("newid = " + user.getId());
-			return procedure.getInt(7);
+			return user.getId();
 		} catch (Exception e){	
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);						

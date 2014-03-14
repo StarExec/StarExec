@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
+import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.PermissionsTests;
@@ -19,6 +20,7 @@ import org.starexec.test.security.GeneralSecurityTests;
 import org.starexec.test.security.JobSecurityTests;
 import org.starexec.test.security.QueueSecurityTests;
 import org.starexec.test.security.SolverSecurityTests;
+import org.starexec.test.security.SpaceSecurityTests;
 import org.starexec.test.security.UserSecurityTests;
 import org.starexec.test.security.ValidatorTests;
 
@@ -46,6 +48,7 @@ public class TestManager {
 		tests.add(new PermissionsTests());
 		tests.add(new IntroStateTests());
 		tests.add(new UtilTests());
+		tests.add(new SpaceSecurityTests());
 	}
 	
 	/**
@@ -53,6 +56,9 @@ public class TestManager {
 	 */
 	public static void executeAllTestSequences() {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		if (R.STAREXEC_SERVERNAME.equals("www.starexec.org")) {
+			return; //right now, don't run anything on production
+		}
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
 		threadPool.execute(new Runnable() {
 			@Override
@@ -90,6 +96,9 @@ public class TestManager {
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTest(String testName) {
+		if (R.STAREXEC_SERVERNAME.equals("www.starexec.org")) {
+			return false; //right now, don't run anything on production
+		}
 		final String t=testName;
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread

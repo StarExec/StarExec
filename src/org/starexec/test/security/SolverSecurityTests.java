@@ -131,7 +131,7 @@ public class SolverSecurityTests extends TestSequence {
 		Solvers.delete(solver.getId());
 		Solvers.delete(solver2.getId());
 		Solvers.delete(solver3.getId());
-		Users.deleteUser(regular.getId());
+		Users.deleteUser(regular.getId(),admin.getId());
 	
 	}
 

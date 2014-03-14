@@ -28,7 +28,6 @@ public class ResourceLoader {
 	}
 	public static File getResource(String name) {
 		URL url=ResourceLoader.class.getResource("/org/starexec/test/resources/"+"CVC4.zip");
-		System.out.println(url);
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
 	
@@ -39,9 +38,7 @@ public class ResourceLoader {
 		return file;
 	}
 	
-	
-	
-	
+
 	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			File archive=getResource(archiveName);
@@ -58,9 +55,7 @@ public class ResourceLoader {
 			log.error("loadBenchmarksIntoDatabase says "+e.getMessage(),e);
 		}
 		return null;
-		
-		
-		
+
 	}
 	
 	public static Solver loadSolverIntoDatabase(String archiveName, int parentSpaceId, int userId) {
@@ -115,7 +110,7 @@ public class ResourceLoader {
 	 * @return The user, with their ID and all parameters set, or null on error
 	 */
 	public static User loadUserIntoDatabase() {
-		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","user");
+		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","test");
 	}
 	/**
 	 * Creates a user with the given attributes and adds them to the database

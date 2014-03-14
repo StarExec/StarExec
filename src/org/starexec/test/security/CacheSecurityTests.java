@@ -32,7 +32,7 @@ public class CacheSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId());
+		Users.deleteUser(user1.getId(),admin.getId());
 		
 	}
 	

@@ -899,12 +899,10 @@ public class Download extends HttpServlet {
 		try {
 			if (!Util.paramExists("type", request)
 					|| !Util.paramExists("id", request)) {
-				System.out.println("here1");
 				return false;
 			}
 
 			if (!Validator.isValidInteger(request.getParameter("id"))) {
-				System.out.println("here2");
 
 				return false;
 			}
@@ -918,7 +916,6 @@ public class Download extends HttpServlet {
 					request.getParameter("type").equals("j_outputs") ||
 					request.getParameter("type").equals("space") ||
 					request.getParameter("type").equals("proc"))) {
-				System.out.println("here3");
 
 				return false;
 			}

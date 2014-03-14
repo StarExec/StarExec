@@ -136,9 +136,9 @@ public class PermissionsTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(owner.getId());
-		Users.deleteUser(spaceMember.getId());
-		Users.deleteUser(noPerms.getId());
+		Users.deleteUser(owner.getId(),admin.getId());
+		Users.deleteUser(spaceMember.getId(),admin.getId());
+		Users.deleteUser(noPerms.getId(),admin.getId());
 		
 		Spaces.removeSubspaces(space.getId(),Communities.getTestCommunity().getId(), testUser.getId());
 		Solvers.delete(solver.getId());

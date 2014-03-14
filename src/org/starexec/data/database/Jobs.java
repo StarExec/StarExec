@@ -2665,6 +2665,10 @@ public class Jobs {
 		return false;
 	}
 	
+	public static boolean isTestJob(int jobId) {
+		return Users.isTestUser(Jobs.get(jobId).getUserId());
+	}
+	
 	public static boolean pauseAll() {
 		List<Job> jobs = new LinkedList<Job>();
 		jobs = Jobs.getRunningJobs();

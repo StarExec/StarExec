@@ -26,7 +26,7 @@ public class UserTests extends TestSequence {
 	User user1=null;
 	User user2=null;
 	User user3=null;
-	
+	User admin=null;
 	Space space=null;
 	Space subspace=null;
 	
@@ -125,7 +125,7 @@ public class UserTests extends TestSequence {
 	private void deleteUserTest() {
 		User temp=ResourceLoader.loadUserIntoDatabase();
 		Assert.assertNotNull(Users.get(temp.getId()));
-		Assert.assertTrue(Users.deleteUser(temp.getId()));
+		Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
 		Assert.assertNull(Users.get(temp.getId()));
 		
 	}
@@ -175,7 +175,7 @@ public class UserTests extends TestSequence {
 		//this might fail if another user is added to the system at exactly this time,
 		//but that would be atypical, and failure is not highly costly
 		Assert.assertEquals(count+1,Users.getCount());
-		Users.deleteUser(temp.getId());
+		Users.deleteUser(temp.getId(),admin.getId());
 	}
 	
 	
@@ -286,6 +286,7 @@ public class UserTests extends TestSequence {
 		user2=ResourceLoader.loadUserIntoDatabase();
 		user3=ResourceLoader.loadUserIntoDatabase();
 		testUser=Users.getTestUser();
+		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), Communities.getTestCommunity().getId());
 		subspace=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space.getId());
 		
@@ -293,9 +294,9 @@ public class UserTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId());
-		Users.deleteUser(user2.getId());
-		Users.deleteUser(user3.getId());
+		Users.deleteUser(user1.getId(),admin.getId());
+		Users.deleteUser(user2.getId(),admin.getId());
+		Users.deleteUser(user3.getId(),admin.getId());
 		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), testUser.getId());
 		
 	}

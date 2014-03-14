@@ -23,7 +23,6 @@ public class SpaceSecurity {
 		if (p==null || !p.isLeader()) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
-		
 		return 0;
 	}
 	
@@ -123,9 +122,8 @@ public class SpaceSecurity {
 	}
 	
 	public static int canUserLeaveSpace(int spaceId, int userId){
-		Permission perm = Permissions.get(userId, spaceId);
 		//the user can leave if they are in the space
-		if(perm == null) {
+		if(!Users.isMemberOfSpace(userId, spaceId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
 		}
 		return 0;

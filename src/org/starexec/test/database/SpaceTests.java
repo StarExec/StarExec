@@ -156,7 +156,7 @@ public class SpaceTests extends TestSequence {
 	
 	@Override
 	protected void teardown() {
-		Users.deleteUser(leader.getId());
+		Users.deleteUser(leader.getId(),admin.getId());
 		
 		boolean success=Spaces.removeSubspaces(community.getId(), 1, Users.getAdmins().get(0).getId());
 		Assert.assertTrue(success);

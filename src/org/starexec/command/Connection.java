@@ -1517,7 +1517,6 @@ public class Connection {
 					this.setJobOutCompletion(Integer.parseInt(urlParams.get("id")), lastSeen);
 				}
 				
-				//System.out.println("Maximum completion ID found= "+String.valueOf(lastSeen));
 			}
 			if (done!=null) {
 				return R.SUCCESS_JOBDONE;

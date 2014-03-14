@@ -256,7 +256,6 @@ public abstract class TestSequence {
 	protected final void addMessage(String message) {
 		try {
 			String methodName=Thread.currentThread().getStackTrace()[2].getMethodName();
-			System.out.println(methodName+"\n\n");
 			this.getTestResult(methodName).addMessage(message);
 		} catch (Exception e) {
 			log.error("addMessage says "+e.getMessage(),e);

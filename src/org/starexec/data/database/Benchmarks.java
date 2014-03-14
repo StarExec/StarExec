@@ -1042,6 +1042,10 @@ public class Benchmarks {
 		return get(benchIds,false);
 	}
 	
+	public static boolean isTestBenchmark(int benchId) {
+		return Users.isTestUser(Benchmarks.get(benchId).getUserId());
+	}
+	
 	/**
 	 * @param benchIds A list of ids to get benchmarks for
 	 * @return A list of benchmark object representing the benchmarks with the given IDs

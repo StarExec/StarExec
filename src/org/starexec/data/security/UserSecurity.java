@@ -3,6 +3,18 @@ package org.starexec.data.security;
 import org.starexec.data.database.Users;
 import org.starexec.util.Validator;
 public class UserSecurity {
+	
+	
+	//TODO: For now, not even the admin is allowed to delete users. Possibly change in the future?
+	public static int canDeleteUser(int userIdBeingDeleted, int userIdMakingRequest) {
+		if (!Users.isAdmin(userIdMakingRequest) || !Users.isTestUser(userIdBeingDeleted)){
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		
+		return 0;
+		
+	}
+	
 	private static int canUpdateName(String name) {
 		if (!Validator.isValidUserName(name)) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
