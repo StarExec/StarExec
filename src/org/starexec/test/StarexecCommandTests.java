@@ -455,7 +455,7 @@ public class StarexecCommandTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());		
 		solverFile=ResourceLoader.getResource("CVC4.zip");
-		//benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
+		benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
 		Assert.assertNotNull(space1);
 		Assert.assertNotNull(space2);
 		

@@ -44,6 +44,7 @@ import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.QueueSecurity;
+import org.starexec.data.security.SecurityStatusCodes;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
@@ -240,7 +241,6 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
 		if(id <= 0 && Users.isAdmin(userId)) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllAdmin()));
 		} else if (id <= 0) {
@@ -946,7 +946,7 @@ public class RESTServices {
 	@POST
 	@Path("/edit/space/{attr}/{id}")
 	@Produces("application/json")
-	public String editSpaceDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
+	public String editCommunityDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
 		int status=SpaceSecurity.canUpdateSettings(id,attribute,newValue, userId);
@@ -2139,7 +2139,6 @@ public class RESTServices {
 	
 		return gson.toJson(0);
 	}
-	//TODO: This needs to be handled
 	/**
 	 * Removes a subspace's association with a space, thereby removing the subspace
 	 * from the space
@@ -2155,7 +2154,9 @@ public class RESTServices {
 	@Path("/remove/subspace/{spaceId}")
 	@Produces("application/json")
 	public String removeSubspacesFromSpace(@PathParam("spaceId") int parentSpaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
 		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+				
 		try{
 			// Extract the String subspace id's and convert them to Integers
 			for(String id : request.getParameterValues("selectedIds[]")){
@@ -2164,12 +2165,11 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		
-		// Permissions check; ensures user is the leader of the space
-		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
-		if(null == perm || !perm.isLeader()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		int status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		boolean recycleAllAllowed=false;
 		if (Util.paramExists("deletePrims", request)) {
 			if (Boolean.parseBoolean(request.getParameter("deletePrims"))) {
@@ -2180,7 +2180,6 @@ public class RESTServices {
 		}
 		Set<Solver> solvers=new HashSet<Solver>();
 		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
-		int userId=SessionUtil.getUserId(request);
 		if (recycleAllAllowed) {
 			for (int sid : selectedSubspaces) {
 				solvers.addAll(Solvers.getBySpace(sid));
@@ -2188,30 +2187,14 @@ public class RESTServices {
 			}
 		}
 		// Remove the subspaces from the space
-		boolean deletionFailed=false;
+		boolean success=true;
 		if (Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request))) {
 			if (recycleAllAllowed) {
-				log.debug("Space removed successfully, deleting primitives");
-				for (Solver s : solvers) {
-					if (s.getUserId()==userId) {
-						if (!Solvers.recycle(s.getId())) {
-							log.error("Failed to recycle solver with id = "+s.getId());
-							deletionFailed=true;
-						}
-					}
-				}
-				
-				for (Benchmark b : benchmarks) {
-					if (b.getUserId()==userId) {
-						if (!Benchmarks.recycle(b.getId())) {
-							log.error("Failed to recycle benchmark with id = "+b.getId());
-							deletionFailed=true;
-						}
-					}
-				}
-				
+				log.debug("Space removed successfully, recycling primitives");
+				success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
+				success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
 			}
-			if (!deletionFailed) {
+			if (success) {
 				return gson.toJson(0);
 			} else {
 				return gson.toJson(ERROR_NOT_ALL_DELETED);
@@ -2222,7 +2205,7 @@ public class RESTServices {
 		}
 	}
 
-	//TODO: Here
+	
 	/**
 	 * Only removes a subspace's association with a space, thereby removing the subspace
 	 * from the space
@@ -2238,6 +2221,7 @@ public class RESTServices {
 	@Path("/quickRemove/subspace/{spaceId}")
 	@Produces("application/json")
 	public String quickRemoveSubspacesFromSpace(@PathParam("spaceId") int parentSpaceId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
 		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
 		log.debug("quickRemove called from " + parentSpaceId);
 		try{
@@ -2248,13 +2232,11 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, parentSpaceId);		
-		if(null == perm || !perm.isLeader()) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+		int status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
-		
+
 		// Remove the associations
 		
 		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -2760,14 +2742,14 @@ public class RESTServices {
 	@POST
 	@Path("/demoteLeader/{spaceId}/{userId}")
 	@Produces("application/json")
-	public String demoteLeader(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {		
-				
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = SessionUtil.getPermission(request, spaceId);	
-		log.debug("perm = " + perm);
-		if(perm == null) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);	
+	public String demoteLeader(@PathParam("spaceId") int spaceId, @PathParam("userId") int userIdBeingDemoted, @Context HttpServletRequest request) {		
+		
+		int userIdDoingDemoting=SessionUtil.getUserId(request);
+		int status=SpaceSecurity.canDemoteLeader(spaceId, userIdBeingDemoted, userIdDoingDemoting);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+		
 		
 		
 		Permission p = new Permission();
@@ -2783,11 +2765,9 @@ public class RESTServices {
 		p.setRemoveUser(true);
 		p.setLeader(false);
 		
-		log.debug(userId);
-		log.debug(spaceId);
 		
-		Permissions.set(userId, spaceId, p);
-		return gson.toJson(0);
+		return Permissions.set(userIdBeingDemoted, spaceId, p) ? gson.toJson(0) : gson.toJson(SecurityStatusCodes.ERROR_DATABASE);
+		
 	}
 	
 	/**
@@ -3208,9 +3188,7 @@ public class RESTServices {
 			
 		}
 	}
-	
-	
-	//TODO: When was this written?
+		
 	@POST
 	@Path("/restart/starexec")
 	@Produces("application/json")
@@ -3448,7 +3426,6 @@ public class RESTServices {
 	@Produces("application/json")
 	public String addQueueRequest(@PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
 		if (!Users.isAdmin(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}

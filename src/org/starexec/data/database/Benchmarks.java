@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -86,6 +87,17 @@ public class Benchmarks {
 			log.debug("Add called on invalid benchmark, no additions will be made to the database");
 		}
 		return -1;
+	}
+	
+	
+	public static boolean recycleAllOwnedByUser(Collection<Benchmark> benchmarks, int userId) {
+		boolean success=true;
+		for (Benchmark b : benchmarks) {
+			if (b.getUserId()==userId) {
+				success=success && Benchmarks.recycle(b.getId());
+			}
+		}
+		return success;
 	}
 
 	

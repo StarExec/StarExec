@@ -24,6 +24,15 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
+	/**
+	 * Checks to see whether the user can update a solver with the given attributes
+	 * @param solverId The ID of the solver that would be updated
+	 * @param name The new name that would be given the solver
+	 * @param description The description that would be given the solver
+	 * @param isDownloadable The boolean value for "downloadable" that would be given the solver
+	 * @param userId The ID of the solver making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	
 	public static int canUserUpdateSolver(int solverId, String name, String description, boolean isDownloadable, int userId) {
 		Solver solver = Solvers.get(solverId);
@@ -48,7 +57,12 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
-	
+	/**
+	 * Checks to see whether the given user can update the given configuration.
+	 * @param configId The ID of the config that would be updated
+	 * @param userId The ID of the user making the request
+	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserUpdateConfiguration(int configId, int userId) {
 		Solver solver = Solvers.getSolverByConfig(configId,false);
 		if (solver==null) {
@@ -59,7 +73,12 @@ public class SolverSecurity {
 		}		
 		return 0;
 	}
-	
+	/**
+	 * Checks to see whether the given user can delete all of the given solvers
+	 * @param solverId The ID of the solver to check
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserDeleteSolvers(List<Integer> solverIds, int userId) {
 		for (Integer sid : solverIds) {
 			int status=canUserDeleteSolver(sid,userId);
@@ -69,6 +88,13 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see whether the given user can restore all of the given solvers
+	 * @param solverId The ID of the solver to check
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserRestoreSolvers(List<Integer> solverIds, int userId) {
 		for (Integer sid : solverIds) {
 			int status=canUserRestoreSolver(sid,userId);
@@ -78,6 +104,12 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
+	/**
+	 * Checks to see whether the given user can recycle all of the given solvers
+	 * @param solverId The ID of the solver to check
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserRecycleSolvers(List<Integer> solverIds, int userId) {
 		for (Integer sid : solverIds) {
 			int status=canUserRecycleSolver(sid,userId);
@@ -88,6 +120,12 @@ public class SolverSecurity {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see whether the given user can delete the given solver
+	 * @param solverId The ID of the solver to check
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserDeleteSolver(int solverId, int userId) {
 		Solver solver = Solvers.get(solverId);
 		if (solver==null) {
@@ -99,7 +137,12 @@ public class SolverSecurity {
 		return 0;
 	}
 
-	
+	/**
+	 * Checks to see whether the given user can recycle the given solver
+	 * @param solverId The ID of the solver to check
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserRecycleSolver(int solverId, int userId) {
 		Solver solver = Solvers.get(solverId);
 		if (solver==null) {
@@ -110,7 +153,12 @@ public class SolverSecurity {
 		}
 		return 0;
 	}
-	
+	/**
+	 * Checks to see whether the given user can restore the given solver
+	 * @param solverId The ID of the solver to check
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserRestoreSolver(int solverId, int userId) {
 		Solver solver = Solvers.get(solverId);
 		if (solver==null) {
@@ -123,11 +171,21 @@ public class SolverSecurity {
 	}
 	
 
-	
+	/**
+	 * Checks to see if the given user either owns the given solver or is an admin
+	 * @param solver
+	 * @param userId
+	 * @return True if the user owns the solver OR is an admin, and false otherwise
+	 */
 	public static boolean userOwnsSolverOrIsAdmin(Solver solver,int userId) {
 		return (solver.getUserId()==userId || Users.isAdmin(userId));
 	}
-	
+	/**
+	 * Checks whether a user can remove a solver from a space
+	 * @param spaceId The ID of the space in question
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserRemoveSolver(int spaceId, int userId) {
 		Permission perm=Permissions.get(userId, spaceId);
 		if(perm == null || !perm.canRemoveSolver()) {
@@ -137,7 +195,12 @@ public class SolverSecurity {
 	}
 	
 	
-	
+	/**
+	 * Checks to see whether a user is allowed to remove a solver from a space hierarchy
+	 * @param rootSpaceId The ID of the space at the root of the hierarchy in question
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
 	public static int canUserRemoveSolverFromHierarchy(int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(rootSpaceId, userId, true));
 		for(Space s : subspaces) {

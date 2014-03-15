@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -1533,6 +1534,17 @@ public class Solvers {
 	
 	public static boolean recycle(int id) {
 		return setRecycledState(id,true);
+	}
+	
+	public static boolean recycleSolversOwnedByUser(Collection<Solver> solvers, int userId) {
+		boolean success=true;
+		for (Solver s : solvers) {
+			if (s.getUserId()==userId) {
+				success=success && Solvers.recycle(s.getId());
+			}
+		}
+		
+		return success;
 	}
 	
 	/**
