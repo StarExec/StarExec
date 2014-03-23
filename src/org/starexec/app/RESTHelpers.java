@@ -242,13 +242,16 @@ public class RESTHelpers {
 		private int id;
 		private String rel;
 		private boolean permanent;
+		private boolean global;
 		private int defaultQueueId;
+		
 
 		public JSTreeAttribute(int id, String type) {
 			this.id = id;
 			this.rel = type;
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
 				this.permanent = Queues.isQueuePermanent(id);
+				this.global = Queues.isQueueGlobal(id);
 			}
 			this.defaultQueueId = Cluster.getDefaultQueueId();
 		}

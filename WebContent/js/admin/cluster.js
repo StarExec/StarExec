@@ -63,8 +63,9 @@ $(document).ready(function(){
 	   id = data.rslt.obj.attr("id");
 	   window['type'] = data.rslt.obj.attr("rel");
 	   var permanent = data.rslt.obj.attr("permanent");
+	   var global = data.rslt.obj.attr("global");
 	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
-	   updateActionId(id, type, permanent);
+	   updateActionId(id, type, permanent, global);
 	   //getCommunityDetails(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
@@ -128,14 +129,12 @@ function initUI(id){
 		}
 	});
 	
-	if (id == -1) {
-		$("#reserveQueue").hide();
-		$("#removeQueue").hide();
-		$("#makePermanent").hide();
-		$("#moveNodes").hide();
-		$("#CommunityAssoc").hide();
-		$("#makeGlobal").hide();
-	}
+	$("#removeGlobal").button({
+		icons: {
+			primary: "ui-icon-locked"
+		}
+	});
+	
 	
 	//Make tables expandable/collapsable
 	$('#reservationField').expandable(false);
@@ -147,35 +146,65 @@ function initUI(id){
 
 }
 
-function updateActionId(id, type, permanent) {
-	if (id != defaultQueueId && (type=="active_queue" || type=="inactive_queue")) {		// if a queue & not all.q
-		$("#removeQueue").show();
-		$("#makePermanent").show();
-		if (permanent == 'false') {
-			$("#makePermanent").show();
-			$("#moveNodes").hide();
-			$("CommunityAssoc").hide();
-			$("makeGlobal").hide();
-		} else {
-			$("#moveNodes").show();
-			$("#makePermanent").hide();
-			$("#CommunityAssoc").show();
-			$("#makeGlobal").show();
-		}
-	} else {																
+function updateActionId(id, type, permanent, global) {
+	$("#removeQueue").hide();
+	$("#makePermanent").hide();
+	$("#moveNodes").hide();
+	$("#CommunityAssoc").hide();
+	$("#makeGlobal").hide();
+	$("#removeGlobal").hide();
+	
+	if (id == -1) {
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
 		$("#moveNodes").hide();
-		$("CommunityAssoc").hide();
-		$("makeGlobal").hide();
-
-		if (( (type=="active_queue" || type=="inactive_queue") && (permanent == 'true') )) {	// if permanent or all.q
-			$("#moveNodes").show();
-			$("#makePermanent").hide();
-			$("CommunityAssoc").hide();
-			$("makeGlobal").hide();
-		}
+		$("#CommunityAssoc").hide();
+		$("#makeGlobal").hide();
+		$("#removeGlobal").hide();
 	}
+	
+	if (type == "active_queue" || type=="inactive_queue") {
+		if (id == defaultQueueId) {
+			$("#removeQueue").hide();
+			$("#makePermanent").hide();
+			$("#moveNodes").show();
+			$("#CommunityAssoc").hide();
+			$("#makeGlobal").hide();
+			$("#removeGlobal").hide();
+		} else {
+			$("#removeQueue").show();
+
+			if (permanent == 'false') {
+				$("#makePermanent").hide();
+				$("#moveNodes").show();
+				$("#CommunityAssoc").show();
+
+				if (global == 'true') {
+					$("#makeGlobal").hide();
+					$("#removeGlobal").show();
+				} else {
+					$("#makeGlobal").show();
+					$("#removeGlobal").hide();
+				}
+				
+			} else {
+				$("#makePermanent").show();
+				$("#moveNodes").hide();
+				$("#CommunityAssoc").hide();
+				$("#makeGlobal").hide();
+				$("#removeGlobal").hide();
+			}
+			
+		}
+	} else {
+		$("#removeQueue").hide();
+		$("#makePermanent").hide();
+		$("#moveNodes").hide();
+		$("#CommunityAssoc").hide();
+		$("#makeGlobal").hide();
+		$("#removeGlobal").hide();
+	}
+	
 	
 	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
 	$('#CommunityAssoc').attr('href', starexecRoot + "secure/admin/assocCommunity.jsp?id=" + id);
@@ -294,6 +323,47 @@ function updateActionId(id, type, permanent) {
 				},
 				"cancel": function() {
 					log('user canceled giving global access');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});	
+	
+	$("#removeGlobal").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to remove global access from this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed removing global access.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+							starexecRoot+"services/queue/global/remove/" + id,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "successfully removed global access", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "global access was not removed; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the admin can remove global access from this queue", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled removing global access');
 					$(this).dialog("close");
 				}
 			}

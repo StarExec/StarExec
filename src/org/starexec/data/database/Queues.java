@@ -1146,6 +1146,32 @@ public class Queues {
 		}
 		return false;
 	}
+	
+	public static boolean isQueueGlobal(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL IsQueueGlobal(?)}");
+			procedure.setInt(1, queue_id);
+			
+			results = procedure.executeQuery();
+			boolean global = false;
+			while(results.next()) {
+				global = results.getBoolean("global_access");
+			}
+			return global;
+		} catch (Exception e) {
+			log.error("IsQueueGlobal says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
 
 	public static void delete(int queueId) {
 		Connection con = null;
@@ -1171,6 +1197,25 @@ public class Queues {
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL MakeQueueGlobal(?)}");
+			procedure.setInt(1, queue_id);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	public static boolean removeGlobal(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL RemoveQueueGlobal(?)}");
 			procedure.setInt(1, queue_id);
 			procedure.executeUpdate();
 			

@@ -3656,5 +3656,20 @@ public class RESTServices {
 		return Queues.makeGlobal(queue_id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	@POST
+	@Path("/queue/global/remove/{queueId}")
+	@Produces("application/json")
+	public String removeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
+		int userId = SessionUtil.getUserId(request);
+		
+		int status=QueueSecurity.canUserRemoveQueueGlobal(userId);
+		
+		
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		return Queues.removeGlobal(queue_id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
 	
 }

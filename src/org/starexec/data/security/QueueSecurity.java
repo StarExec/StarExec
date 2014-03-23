@@ -92,4 +92,16 @@ public class QueueSecurity {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see whether the given user is allowed to remove global access from a permanent queue
+	 * @param userId the ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	public static int canUserRemoveQueueGlobal(int userId) {
+		if (!Users.isAdmin(userId)){
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
 }

@@ -122,6 +122,16 @@ CREATE PROCEDURE MakeQueuePermanent (IN _queueId INT)
 		SET permanent = true
 		WHERE id = _queueId;
 	END //
+
+-- Determines if the queue has global access
+-- Author: Wyatt kaiser
+DROP PROCEDURE IF EXISTS IsQueueGlobal;
+CREATE PROCEDURE IsQueueGlobal (IN _queueId INT)
+	BEGIN
+		SELECT global_access
+		FROM queues
+		WHERE id = _queueId;
+	END //
 	
 -- Removes a queue's association with a space
 -- Author: Wyatt Kaiser
@@ -139,7 +149,19 @@ CREATE PROCEDURE MakeQueueGlobal(IN _queueId INT)
 	BEGIN
 		UPDATE queues
 		SET global_access = true
-		WHERE _queueId = _queueId;
+		WHERE id = _queueId;
+		
+		DELETE FROM comm_queue
+		WHERE queue_id = _queueId;
 	END //
 		
+-- remove global access from a permanent queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS RemoveQueueGlobal;
+CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
+	BEGIN
+		UPDATE queues
+		SET global_access = false
+		WHERE _queueId = _queueId;
+	END //
 DELIMITER ; -- This should always be at the end of this file
