@@ -131,5 +131,15 @@ CREATE PROCEDURE RemoveQueueAssociation(IN _queueId INT)
 		DELETE FROM comm_queue
 		WHERE queue_id = _queueId;
 	END //
+	
+-- Make a permanent queue have global access
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS MakeQueueGlobal;
+CREATE PROCEDURE MakeQueueGlobal(IN _queueId INT)
+	BEGIN
+		UPDATE queues
+		SET global_access = true
+		WHERE _queueId = _queueId;
+	END //
 		
 DELIMITER ; -- This should always be at the end of this file

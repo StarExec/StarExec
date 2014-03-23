@@ -169,4 +169,16 @@ public class JobSecurity {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see whether the given user is allowed to resume all jobs that the admin has paused
+	 * @param userId the ID of the user making the request
+	 * @return 0 if the operation is allowed and the status code from SecurityStatusCodes otherwise.
+	 */
+	public static int canUserResumeAllJobs(int userId){
+		if (!Users.isAdmin(userId)){
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
 }

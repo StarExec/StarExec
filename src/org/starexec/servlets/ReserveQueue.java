@@ -26,7 +26,7 @@ public class ReserveQueue extends HttpServlet {
 	private static final Logger log = Logger.getLogger(ReserveQueue.class);	
 	
 	// Param strings for processing
-	private static final String spaceName = "spaceName";
+	private static final String spaceId = "spaceName";
 	private static final String name = "name";
 	private static final String msg = "msg";
 	private static final String sid = "sid";
@@ -95,11 +95,7 @@ public class ReserveQueue extends HttpServlet {
 			int user_id = SessionUtil.getUserId(request);
 			int space_id;
 			if (message == null) {
-				String space_Name = request.getParameter(spaceName);
-				// space_name = {spaceId},{spaceName}
-				String[] split;
-				split = space_Name.split(",");
-				space_id = Integer.parseInt(split[0]);
+				space_id = Integer.parseInt(request.getParameter(spaceId));
 			} else {
 				space_id = Integer.parseInt((String)request.getParameter(sid));
 			}

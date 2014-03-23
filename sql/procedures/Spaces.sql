@@ -536,4 +536,16 @@ BEGIN
 	UPDATE spaces SET sticky_leader =  _val WHERE id=_spaceID;
 END //
 
+-- Get all the communities that are not already attached to a queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNonAttachedCommunities;
+CREATE PROCEDURE GetNonAttachedCommunities(IN _queueId INT)
+	BEGIN
+		SELECT DISTINCT spaces.id, spaces.name
+		FROM spaces JOIN set_assoc ON spaces.id = set_assoc.child_id
+		WHERE set_assoc.space_id = 1
+		AND spaces.id NOT IN 
+			(SELECT space_id FROM comm_queue WHERE queue_id = _queueId );
+	END //
+
 DELIMITER ; -- This should always be at the end of this file

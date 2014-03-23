@@ -2129,6 +2129,42 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 		
 		return false;
 	}
+	
+	/**
+	 * Return all the communities that are not already associated with a queue
+	 */
+	public static List<Space> getNonAttachedCommunities(int queue_id) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL GetNonAttachedCommunities(?)}");
+			procedure.setInt(1, queue_id);					
+			results = procedure.executeQuery();			
+			
+			List<Space> spaces = new LinkedList<Space>();
+			
+			while (results.next()) {
+				Space s = new Space();
+				s.setId(results.getInt("id"));
+				s.setName(results.getString("name"));
+				
+				spaces.add(s);
+			}
+			
+			return spaces;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
+	
 	/**
 	 * For a given space, gets the IDs of every person that should be a leader in that
 	 * space due to being sticky leaders in some ancestor space

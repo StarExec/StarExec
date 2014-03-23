@@ -3628,13 +3628,32 @@ public class RESTServices {
 	public String resumeAll(@Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
-		if(!Users.isAdmin(userId)){
-			gson.toJson(ERROR_INVALID_PERMISSIONS);
+		
+		int status=JobSecurity.canUserResumeAllJobs(userId);
+
+		if (status!=0) {
+			return gson.toJson(status);
 		}
 		
 		List<Job> jobs = new LinkedList<Job>();
 		jobs = Jobs.getAdminPausedJobs();
 		return Jobs.resumeAll(jobs) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	@POST
+	@Path("/queue/global/{queueId}")
+	@Produces("application/json")
+	public String makeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
+		int userId = SessionUtil.getUserId(request);
+		
+		int status=QueueSecurity.canUserMakeQueueGlobal(userId);
+		
+		
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		return Queues.makeGlobal(queue_id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	

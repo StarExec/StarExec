@@ -448,6 +448,15 @@ CREATE PROCEDURE GetDefaultQueueId(IN _queueName VARCHAR(64))
 		WHERE name = _queueName;
 	END //
 	
+-- Give the community (leaders) Access to a permanent queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS SetPermQueueCommunityAccess;
+CREATE PROCEDURE SetPermQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
+	BEGIN
+		INSERT INTO comm_queue
+		VALUES (_communityId, _queueId);
+	END //
+	 
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)

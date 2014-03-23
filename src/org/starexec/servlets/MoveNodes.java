@@ -70,19 +70,15 @@ public class MoveNodes extends HttpServlet {
 		
 		GridEngineUtil.moveNodes(req, NQ);
 		
-		//TODO: reduce the count of reservations for nodes that were removed from reservations
 		Collection<Queue> queues = NQ.values();
 		for (Queue q : queues) {
 			// if the queue is not all.q and it is not a permanent queue
 			// i.e. it is a reserved queue
 			if (q.getId() != 1 && !q.getPermanent()) {
-				//TODO: reduce the count of the reservation
 				Requests.DecreaseNodeCount(q.getId());
 			}
 		}
 		
-		//DatabaseChanges
-		//boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
 		response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 		}
 	}

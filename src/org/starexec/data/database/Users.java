@@ -1214,7 +1214,6 @@ public class Users {
 			Common.safeClose(procedure);
 		}		
 		return false;
-	}
-	
+	}	
 	
 }

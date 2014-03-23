@@ -951,4 +951,39 @@ public class Cluster {
 		}
 		return -1;
 	}
+
+
+	public static boolean setPermQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
+		log.debug("SetPermQueueCommunityAccess beginning...");
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			if (community_ids != null) {
+				for (int id : community_ids) {
+					procedure = con.prepareCall("{CALL SetPermQueueCommunityAccess(?, ?)}");
+					procedure.setInt(1, id);
+					procedure.setInt(2, queue_id);
+					
+					procedure.executeUpdate();
+				}
+			}
+			
+			Common.endTransaction(con);
+			
+			return true;
+			
+		} catch (Exception e) {
+			log.error("SetPermQueueCommunityAccess says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+		
+	}
 }

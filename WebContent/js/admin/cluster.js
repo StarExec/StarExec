@@ -116,11 +116,25 @@ function initUI(id){
 		}
 	});
 	
+	$("#CommunityAssoc").button({
+		icons: {
+			primary: "ui-icon-clipboard"
+		}
+	});
+	
+	$("#makeGlobal").button({
+		icons: {
+			primary: "ui-icon-unlocked"
+		}
+	});
+	
 	if (id == -1) {
 		$("#reserveQueue").hide();
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
 		$("#moveNodes").hide();
+		$("#CommunityAssoc").hide();
+		$("#makeGlobal").hide();
 	}
 	
 	//Make tables expandable/collapsable
@@ -140,22 +154,31 @@ function updateActionId(id, type, permanent) {
 		if (permanent == 'false') {
 			$("#makePermanent").show();
 			$("#moveNodes").hide();
+			$("CommunityAssoc").hide();
+			$("makeGlobal").hide();
 		} else {
 			$("#moveNodes").show();
 			$("#makePermanent").hide();
+			$("#CommunityAssoc").show();
+			$("#makeGlobal").show();
 		}
 	} else {																
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
 		$("#moveNodes").hide();
+		$("CommunityAssoc").hide();
+		$("makeGlobal").hide();
 
 		if (( (type=="active_queue" || type=="inactive_queue") && (permanent == 'true') )) {	// if permanent or all.q
 			$("#moveNodes").show();
 			$("#makePermanent").hide();
+			$("CommunityAssoc").hide();
+			$("makeGlobal").hide();
 		}
 	}
 	
 	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
+	$('#CommunityAssoc').attr('href', starexecRoot + "secure/admin/assocCommunity.jsp?id=" + id);
 	
 	
 	$("#makePermanent").click(function() {
@@ -229,6 +252,48 @@ function updateActionId(id, type, permanent) {
 				},
 				"cancel": function() {
 					log('user canceled queue removal');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});	
+	
+	$("#makeGlobal").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to give global access to this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed giving global access.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+							starexecRoot+"services/queue/global/" + id,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "the queue was successfully given global acccess", 5000);
+										//window.location = starexecRoot+'secure/admin/cluster.jsp';
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "queue was not given global access; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the admin can give global access to this queue", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled giving global access');
 					$(this).dialog("close");
 				}
 			}

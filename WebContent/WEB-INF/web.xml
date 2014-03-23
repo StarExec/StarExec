@@ -104,6 +104,15 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>AssocCommunities</servlet-name>
+    <servlet-class>org.starexec.servlets.AssocCommunities</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AssocCommunities</servlet-name>
+    <url-pattern>/secure/assoc/communities</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>Verify</servlet-name>
     <servlet-class>org.starexec.servlets.Verify</servlet-class>
   </servlet>

@@ -1164,5 +1164,24 @@ public class Queues {
 			Common.safeClose(procedure);
 		}
 	}
+	
+	public static boolean makeGlobal(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL MakeQueueGlobal(?)}");
+			procedure.setInt(1, queue_id);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
 
 }

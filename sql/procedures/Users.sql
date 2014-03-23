@@ -424,5 +424,6 @@ CREATE PROCEDURE ReinstateUser(IN _userEmail VARCHAR(64))
 		SET role = "user"
 		WHERE email = _userEmail;
 	END //
+	
 
 DELIMITER ; -- This should always be at the end of this file
