@@ -174,7 +174,7 @@ function updateActionId(id, type, permanent, global) {
 		} else {
 			$("#removeQueue").show();
 
-			if (permanent == 'false') {
+			if (permanent == 'true') {
 				$("#makePermanent").hide();
 				$("#moveNodes").show();
 				$("#CommunityAssoc").show();
