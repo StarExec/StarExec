@@ -121,7 +121,7 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 -- Gets the id, name, and status of all queues that are available for a job (non-permanent & not empty)
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetAllQueuesForJob;
-CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT)
+CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT, IN _defaultQueueId)
 	BEGIN
 		SELECT DISTINCT id, name, status
 		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id

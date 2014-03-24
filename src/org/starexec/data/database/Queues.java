@@ -725,9 +725,10 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetAllQueuesForJob(?,?)}");
+			procedure = con.prepareCall("{CALL GetAllQueuesForJob(?,?,?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, spaceId);
+			procedure.setInt(3, Cluster.getDefaultQueueId());
 
 			results = procedure.executeQuery();
 			List<Queue> queues = new LinkedList<Queue>();
