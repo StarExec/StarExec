@@ -9,6 +9,7 @@
 		int userId = SessionUtil.getUserId(request);
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
+		
 				
 		if(!p.canAddJob()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");

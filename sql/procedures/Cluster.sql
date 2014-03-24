@@ -125,7 +125,21 @@ CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT)
 	BEGIN
 		SELECT DISTINCT id, name, status
 		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
-		WHERE status = "ACTIVE" AND permanent = false;
+		WHERE status = "ACTIVE" 
+		AND 
+			-- If the queue is default queue
+			(id = _defaultQueueId)
+				OR
+			-- If the queue is reserved for this space...
+			(id IN (select queue_id from comm_queue WHERE space_id = _spaceId))
+				OR
+			-- If the queue is permanent and has given access to a specified community that the user is leader of
+			(id IN  
+				(SELECT queues.id
+				FROM comm_queue JOIN queues ON queues.id = comm_queue.queue_id
+				WHERE queues.permanent = true
+				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))));
+			
 	END //
 		
 	

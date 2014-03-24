@@ -14,6 +14,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -710,6 +711,15 @@ public class Queues {
 	}
 	
 	public static List<Queue> getQueuesForJob(int userId, int spaceId) {
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return getQueues(0);
+		} else {
+			return getQueuesForUser(userId, spaceId);
+		}
+	}
+	
+	private static List<Queue> getQueuesForUser(int userId, int spaceId) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;

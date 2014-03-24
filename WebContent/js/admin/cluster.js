@@ -177,14 +177,15 @@ function updateActionId(id, type, permanent, global) {
 			if (permanent == 'true') {
 				$("#makePermanent").hide();
 				$("#moveNodes").show();
-				$("#CommunityAssoc").show();
 
 				if (global == 'true') {
 					$("#makeGlobal").hide();
 					$("#removeGlobal").show();
+					$("#CommunityAssoc").hide();
 				} else {
 					$("#makeGlobal").show();
 					$("#removeGlobal").hide();
+					$("#CommunityAssoc").show();
 				}
 				
 			} else {
