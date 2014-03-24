@@ -131,7 +131,7 @@ CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT, IN _default
 			(id = _defaultQueueId)
 				OR
 			-- If the queue is reserved for this space...
-			(id IN (select queue_id from comm_queue WHERE space_id = _spaceId))
+			(id IN (select queue_id from comm_queue WHERE queues.permanent = false AND space_id = _spaceId))
 				OR
 			-- If the queue is permanent and has given access to a specified community that the user is leader of
 			(id IN  
