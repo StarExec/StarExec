@@ -32,7 +32,6 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Job;
@@ -40,7 +39,6 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
@@ -363,7 +361,6 @@ public class Download extends HttpServlet {
 			log.debug("Permission to download XML granted");			
 			BatchUtil butil = new BatchUtil();
 			File file = null;
-
 			file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
 			String baseFileName=space.getName()+"_XML";
 			String fileNamewoFormat = baseFileName+"_("+ UUID.randomUUID().toString()+")";
@@ -521,9 +518,11 @@ public class Download extends HttpServlet {
 		sb.delete(0, sb.length());
 		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
-		sb.append(job.getUserId());
-		sb.append("_");
+		//sb.append(job.getUserId());
+		
+		sb.append("Job");
 		sb.append(job.getId());
+		sb.append("_info");
 		sb.append(".csv");
 		String filename = sb.toString();
 
@@ -704,9 +703,9 @@ public class Download extends HttpServlet {
 
 					}
 				}
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output_new",false);
 			} else {
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
+				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output",false);
 				if (jobComplete) {
 					Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}

@@ -134,6 +134,12 @@ public class BatchUtil {
 		name.setValue(space.getName());
 		spaceElement.setAttributeNode(name);
 		
+		// Add the new attributes to space xml elements here
+		Attr stickyLeaders = doc.createAttribute("sticky-leaders");
+		stickyLeaders.setValue(Boolean.toString(space.isStickyLeaders()));
+		spaceElement.setAttributeNode(stickyLeaders);
+		// -------------------------------------------------
+		
 		for (Benchmark benchmark:space.getBenchmarks()){
 			Element benchElement = doc.createElement("Benchmark");	
 			benchElement.setAttribute("id", Integer.toString(benchmark.getId()));
@@ -237,6 +243,7 @@ public class BatchUtil {
 					errorMessage = name + "is not a valid name.  It must have two characters.";
 					return false;
 				}
+				
 			}
 			else{
 				log.warn("Space Node should be an element, but isn't");
@@ -310,6 +317,14 @@ public class BatchUtil {
 		space.setPermission(permission);
 		Random rand=new Random();
 		String baseSpaceName=space.getName();
+		
+		// Look for a sticky leaders attribute. If it's there, set sticky leaders
+		String sl = spaceElement.getAttribute("sticky-leaders");
+		if (!sl.equals("") && !sl.equals(null)) {
+			Boolean stickyLeaders = Boolean.valueOf(sl);
+			space.setStickyLeaders(stickyLeaders);
+		}
+		//------------------------------------------------------------------------
 		
 		//Is appending a random number to the name what we want?
 		//Also, this will hang if there are too many spaces with the given name
