@@ -30,6 +30,7 @@
     		</element>
     	</sequence>
     	 <attribute name="id" type="int" use="optional"></attribute>
+    	 <attribute name="sticky-leaders" type="boolean" use="optional"></attribute>
     	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
     </complexType>
 
