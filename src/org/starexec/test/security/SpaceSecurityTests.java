@@ -6,6 +6,8 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Websites;
+import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
@@ -26,15 +28,31 @@ public class SpaceSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanAssociateWebsiteTest() {
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId()));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new"));
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId()));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId(),"new"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId(),"new"));
 		
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"<script>"));
+	}
 	
+	@Test
+	private void CanDeleteWebsiteTest() {
+		Websites.add(space1.getId(), "https://www.fake.edu", "new", WebsiteType.SPACE);
+		int websiteId=Websites.getAll(space1.getId(), WebsiteType.SPACE).get(0).getId();
+		Assert.assertEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, owner.getId()));
+		Assert.assertEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, admin.getId()));
+
+		Assert.assertNotEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, nonOwner.getId()));
+		
+		Assert.assertNotEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, owner.getId()));
+		Assert.assertNotEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, admin.getId()));
 	}
 	
 	@Test

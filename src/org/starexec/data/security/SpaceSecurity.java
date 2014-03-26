@@ -10,10 +10,13 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Websites;
+import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Website;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
 
@@ -23,15 +26,50 @@ public class SpaceSecurity {
 	 * Checks to see whether the given user is allowed to associate a website with a space
 	 * @param spaceId The ID of the space that would be given a website
 	 * @param userId The ID of the user making the request
+	 * @param name The name to be given the new website
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canAssociateWebsite(int spaceId,int userId){
+	public static int canAssociateWebsite(int spaceId,int userId, String name){
 		Permission p=Permissions.get(userId, spaceId);
 		if (p==null || !p.isLeader()) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
+		
+		if (!Validator.isValidPrimName(name)) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
 		return 0;
 	}
+	
+	/**
+	 * Checks to see whether the given user is allowed to delete a website associated with a space
+	 * @param spaceId The ID of the space that contains the site to be deleted
+	 * @param websiteId The ID of the website to be deleted
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	public static int canDeleteWebsite(int spaceId,int websiteId,int userId){
+		Permission p=Permissions.get(userId, spaceId);
+		if (p==null || !p.isLeader()) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		List<Website> websites=Websites.getAllForJavascript(spaceId,WebsiteType.SPACE);
+		boolean websiteInSpace=false;
+		for (Website w : websites) {
+			if (w.getId()==websiteId) {
+				websiteInSpace=true;
+				break;
+			}
+		}
+		
+		if (!websiteInSpace) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
+		return 0;
+	}
+	
 	/**
 	 * Checks to see whether a user can update the properties of a space (such as default permissions, sticky leaders,
 	 * and so on)

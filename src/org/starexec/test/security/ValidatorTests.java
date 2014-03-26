@@ -8,6 +8,35 @@ import org.starexec.util.Validator;
 public class ValidatorTests extends TestSequence {
 	
 	
+	@Test
+	private void DescriptionRegexTest() {
+		Assert.assertTrue(Validator.isValidPrimDescription(""));
+		Assert.assertTrue(Validator.isValidPrimDescription("hello world"));
+		Assert.assertTrue(Validator.isValidPrimDescription("This is a sentence, and it has some punctuation."));
+		Assert.assertTrue(Validator.isValidPrimDescription("293md03 32idiu"));		
+		
+		Assert.assertFalse(Validator.isValidPrimDescription(null));
+		Assert.assertFalse(Validator.isValidPrimDescription("\"\""));
+		Assert.assertFalse(Validator.isValidPrimDescription("<script>"));
+	}
+	
+	@Test
+	private void WebsiteRegexTest() {
+		
+	}
+	
+	@Test
+	private void NameRegexTest() {
+		Assert.assertTrue(Validator.isValidPrimName("hello world"));
+		Assert.assertTrue(Validator.isValidPrimName("Mark"));
+		Assert.assertTrue(Validator.isValidPrimName("293md03 32idiu"));		
+
+		Assert.assertFalse(Validator.isValidPrimName(""));
+		Assert.assertFalse(Validator.isValidPrimName(null));
+		Assert.assertFalse(Validator.isValidPrimName("\"\""));
+		Assert.assertFalse(Validator.isValidPrimName("<script>"));
+		
+	}
 	
 	@Test
 	private void BoolRegexTest() {
@@ -20,6 +49,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidBool("adsfc"));
 		Assert.assertFalse(Validator.isValidBool("4ks"));
 		Assert.assertFalse(Validator.isValidBool(null));
+		
 	}
 	
 	@Test 
@@ -35,6 +65,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidInstitution(""));
 		Assert.assertFalse(Validator.isValidInstitution(null));
 		Assert.assertFalse(Validator.isValidInstitution("The University @ Iowa"));
+		Assert.assertFalse(Validator.isValidInstitution("<script>"));
 	}
 	
 	@Test
@@ -62,6 +93,8 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidArchiveType(""));
 		Assert.assertFalse(Validator.isValidArchiveType("."));
 		Assert.assertFalse(Validator.isValidArchiveType(null));
+		Assert.assertFalse(Validator.isValidArchiveType("<script>"));
+
 	}
 	@Test
 	private void DoubleRegexTest() {
@@ -87,6 +120,8 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidEmail("testuiowa.com"));
 		Assert.assertFalse(Validator.isValidEmail("test@uiowanet"));
 		Assert.assertFalse(Validator.isValidEmail(null));
+		Assert.assertFalse(Validator.isValidEmail("<script>"));
+
 
 	}
 	@Test
@@ -98,7 +133,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidIntegerList(new String[]{"3kd"}));
 		Assert.assertFalse(Validator.isValidIntegerList(new String[]{"0","132929","3492","d"}));
 		Assert.assertFalse(Validator.isValidIntegerList(null));
-
+		
 
 	}
 	

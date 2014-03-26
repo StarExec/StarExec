@@ -229,7 +229,7 @@ function attachWebsiteMonitor(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/websites/recycle/solver/" + getParameterByName("id") + "/" + id,
+							starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
 							function(returnData){
 								if (returnData == 0) {
 									parent.remove();
@@ -264,7 +264,8 @@ function attachWebsiteMonitor(){
 		} else if (url.trim().length <= 12) {
 			showMessage('error', 'the given url is not long enough', 6000);
 			return;
-		}	
+		}
+		
 		
 		var data = {name: name, url: url};
 		$.post(

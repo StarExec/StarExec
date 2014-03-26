@@ -16,7 +16,7 @@
 		if(s != null) {
 			request.setAttribute("usr", Users.get(s.getUserId()));
 			request.setAttribute("solver", s);
-			request.setAttribute("sites", Websites.getAll(solverId, Websites.WebsiteType.SOLVER));
+			request.setAttribute("sites", Websites.getAllForHTML(solverId, Websites.WebsiteType.SOLVER));
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
 			

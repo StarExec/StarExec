@@ -8,7 +8,10 @@ import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Websites;
+import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.security.SolverSecurity;
+import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
 import org.starexec.test.Test;
@@ -86,10 +89,27 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@Test
 	private void canAssociateWebsite() {
-		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId()));
-		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId()));
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId()));
+		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new"));
+		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new"));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new"));
+		
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>"));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>"));
 	}
+	
+	@Test
+	private void CanDeleteWebsiteTest() {
+		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
+		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SPACE).get(0).getId();
+		Assert.assertEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, owner.getId()));
+		Assert.assertEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, admin.getId()));
+
+		Assert.assertNotEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, regular.getId()));
+		
+		Assert.assertNotEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), -1, owner.getId()));
+		Assert.assertNotEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), -1, admin.getId()));
+	}
+	
 	
 	@Test
 	private void recycleSolverPermissionTest() {

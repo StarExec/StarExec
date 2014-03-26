@@ -198,7 +198,7 @@ public class Starexec implements ServletContextListener {
 		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
-
+		
 		TestManager.initializeTests();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {

@@ -362,7 +362,7 @@ public class RESTServices {
 			community.setUsers(Spaces.getUsers(id));
 			Permission p = SessionUtil.getPermission(request, id);
 			List<User> leaders = Spaces.getLeaders(id);
-			List<Website> sites = Websites.getAll(id, Websites.WebsiteType.SPACE);
+			List<Website> sites = Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE);
 			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites));
 		}
 		
@@ -751,11 +751,11 @@ public class RESTServices {
 	public String getWebsites(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
-			return gson.toJson(Websites.getAll(userId, Websites.WebsiteType.USER));
+			return gson.toJson(Websites.getAllForJavascript(userId, Websites.WebsiteType.USER));
 		} else if(type.equals("space")){
-			return gson.toJson(Websites.getAll(id, Websites.WebsiteType.SPACE));
+			return gson.toJson(Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE));
 		} else if (type.equals("solver")) {
-			return gson.toJson(Websites.getAll(id, Websites.WebsiteType.SOLVER));
+			return gson.toJson(Websites.getAllForJavascript(id, Websites.WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
@@ -773,30 +773,28 @@ public class RESTServices {
 	public String addWebsite(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		boolean success = false;
 		int userId = SessionUtil.getUserId(request);
-
+		String name = request.getParameter("name");
+		String url = request.getParameter("url");	
 		if (type.equals("user")) {
-			String name = request.getParameter("name");
-			String url = request.getParameter("url");			
+					
 			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
-			int status=SpaceSecurity.canAssociateWebsite(id, userId);
+			int status=SpaceSecurity.canAssociateWebsite(id, userId,name);
 			if (status!=0) {
 				return gson.toJson(status);
 			}
-			String name = request.getParameter("name");
-			String url = request.getParameter("url");		
+					
 			log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
 			success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
 			
 		} else if (type.equals("solver")) {
 			//Make sure this user is the solver owner
-			int status=SolverSecurity.canAssociateWebsite(id, userId);
+			int status=SolverSecurity.canAssociateWebsite(id, userId,name);
 			if (status!=0) {
 				return gson.toJson(status);
 			}
-			String name = request.getParameter("name");
-			String url = request.getParameter("url");
+			
 			success = Websites.add(id, url, name, Websites.WebsiteType.SOLVER);
 			
 		}
@@ -825,7 +823,7 @@ public class RESTServices {
 			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader
-			int status=SpaceSecurity.canAssociateWebsite(id, userId);
+			int status=SpaceSecurity.canDeleteWebsite(id,websiteId, userId);
 			if (status!=0) {
 				return gson.toJson(status);
 			}
@@ -833,7 +831,7 @@ public class RESTServices {
 			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("solver")) {
 			
-			int status=SolverSecurity.canAssociateWebsite(id, userId);
+			int status=SolverSecurity.canDeleteWebsite(id,websiteId, userId);
 			if (status!=0) {
 				return gson.toJson(status);
 			}

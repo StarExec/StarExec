@@ -2,28 +2,64 @@ package org.starexec.data.security;
 
 import java.util.List;
 
+import org.starexec.command.Validator;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Websites;
+import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Website;
 
 public class SolverSecurity {
 	/**
 	 * Checks to see whether the given user can add a new website to the given solver
 	 * @param solverId The ID of the solver being checked
 	 * @param userId The ID of the user making the request
+	 * @param name The name to be given the new website
 	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
 	 */
-	public static int canAssociateWebsite(int solverId, int userId) {
+	public static int canAssociateWebsite(int solverId, int userId,String name) {
 		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
+		
+		if (!Validator.isValidPrimName(name)) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see whether the given user is allowed to delete a website associated with a solver
+	 * @param spaceId The ID of the solver that contains the site to be deleted
+	 * @param websiteId The ID of the website to be deleted
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	public static int canDeleteWebsite(int solverId,int websiteId,int userId){
+		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		List<Website> websites=Websites.getAllForJavascript(solverId,WebsiteType.SOLVER);
+		boolean websiteInSolver=false;
+		for (Website w : websites) {
+			if (w.getId()==websiteId) {
+				websiteInSolver=true;
+				break;
+			}
+		}
+		if (!websiteInSolver) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
+		return 0;
+	}
+	
 	/**
 	 * Checks to see whether the user can update a solver with the given attributes
 	 * @param solverId The ID of the solver that would be updated

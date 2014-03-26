@@ -28,8 +28,8 @@ function attachFormValidation(){
 			},
 			desc: {
 				required: false,
-				maxlength: $("#txtDesc").attr("length")
-				//regex: getPrimDescRegex()
+				maxlength: $("#txtDesc").attr("length"),
+				regex: getPrimDescRegex()
 			}
 		},
 		messages: {
@@ -40,8 +40,8 @@ function attachFormValidation(){
 			},
 			desc: {
 				required: "description required",
-				maxlength: $("#txtDesc").attr("length") + " characters maximum"
-				//regex: "invalid character(s)"
+				maxlength: $("#txtDesc").attr("length") + " characters maximum",
+				regex: "invalid character(s)"
 			}
 		}
 	});

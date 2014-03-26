@@ -15,7 +15,7 @@
 			request.setAttribute("t_user", t_user);
 			boolean owner = true;
 			String userFullName = t_user.getFullName();
-			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
+			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
 			if( (visiting_userId != id) && (!visiting_user.getRole().equals("admin"))  ){
 				owner = false;
