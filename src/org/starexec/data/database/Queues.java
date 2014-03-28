@@ -424,7 +424,8 @@ public class Queues {
 			
 			results = procedure.executeQuery();
 
-			while(results.next()){
+			log.debug("id = " + results.getInt("id"));
+			if(results.next()){
 				return results.getInt("id");
 			}			
 
