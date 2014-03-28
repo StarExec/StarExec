@@ -687,8 +687,8 @@ public class RESTHelpers {
 			}
 		}		
 		
-		boolean conflict = false;
 		for (java.util.Date date : dates ) {
+			boolean conflict = false;
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String date1 = sdf.format(date);
 			
