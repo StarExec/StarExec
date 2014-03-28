@@ -659,6 +659,7 @@ public class RESTHelpers {
 		
 		//This hashmap tells us at what date did a queue experience its first non-zero date
 		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
+		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
 		List<Queue> queues = Queues.getAllNonPermanent();
 
 		for (java.util.Date date : dates) {
@@ -676,6 +677,10 @@ public class RESTHelpers {
 					if (node_count > 0) {
 						if (!(nonzero_date.containsKey(q.getId()) )  ) {
 							nonzero_date.put(q.getId(), date);
+						}
+					} else {
+						if (nonzero_date.containsKey(q.getId())) {
+							last_date.put(q.getId(), date);
 						}
 					}
 				}
@@ -759,7 +764,7 @@ public class RESTHelpers {
 				conflict = false;
 			}
 			//Mark if conflicted
-			if (conflict) {
+			if (leftover_nodes < 0 || conflict == true) {
 				entry.add(new JsonPrimitive("CONFLICT"));
 			} else {
 				entry.add(new JsonPrimitive("clear"));
