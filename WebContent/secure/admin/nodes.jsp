@@ -31,6 +31,7 @@
 		.statusClear {color : green; }
 		.statusZero {color : yellow; }
 		.statusNeutral { color : black; }
+		
 	</style>
 	<div id="actionBar">
 			<button type="button" class="round" id="btnBack">cancel</button>
