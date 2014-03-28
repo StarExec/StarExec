@@ -29,6 +29,7 @@
 	<style>
 		.statusConflict { color: red; }
 		.statusClear {color : green; }
+		.statusZero {color : yellow; }
 		.statusNeutral { color : black; }
 	</style>
 	<div id="actionBar">
