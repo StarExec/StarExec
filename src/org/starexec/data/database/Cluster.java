@@ -506,9 +506,12 @@ public class Cluster {
 		log.debug("value = " + value);
 		log.debug("reserve_date = " + reserve_date);
 		Date earliestEndDate = Requests.getEarliestEndDate();
+		log.debug("earliest end date = " + earliestEndDate);
 		if (earliestEndDate == null) {
 			earliestEndDate = reserve_date;
 		}
+		log.debug("earliest end date = " + earliestEndDate);
+
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -530,6 +533,7 @@ public class Cluster {
 				
 			    if (dates != null) {
 					for (java.util.Date d : dates) {
+						log.debug("date = " + d);
 					    java.sql.Date sqlDate = new java.sql.Date(d.getTime());
 						procedure = con.prepareCall("{CALL AddTempNodeChange(?,?,?,?)}");
 						procedure.setInt(1, spaceId);

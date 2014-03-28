@@ -757,7 +757,6 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(total_node_count)); //default total #
 			}
 			//Mark if conflicted
-			log.debug("leftover_nodes = " + leftover_nodes);
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive("CONFLICT"));
 			} else if (leftover_nodes == 0 || conflict == true) {
