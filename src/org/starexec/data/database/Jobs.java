@@ -3046,6 +3046,7 @@ public class Jobs {
 	 */	
 	public static boolean saveStats(int jobId, int jobSpaceId,List<SolverStats> stats) {
 		if (!isJobComplete(jobId)) {
+			log.debug("stats for job with id = "+jobId+" were not saved because the job is incomplete");
 			return false; //don't save stats if the job is not complete
 		}
 		Connection con=null;
