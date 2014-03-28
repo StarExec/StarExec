@@ -744,8 +744,19 @@ public class RESTHelpers {
 						if (date.after(earliest_nonZero_date)) {
 							log.debug("date after earliest nonZero date");
 							log.debug("node Count = " + node_count);
-							if (node_count == 0) {
-								conflict = true;
+							
+							
+							if(last_date.containsKey(q.getId())) {
+								java.util.Date latest_date = last_date.get(q.getId());
+								if (date.before(latest_date)) {
+									if (node_count == 0) {
+										conflict = true;
+									}
+								}
+							} else {
+								if (node_count == 0) {
+									conflict = true;
+								}
 							}
 						}
 					}				
