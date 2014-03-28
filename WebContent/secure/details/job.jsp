@@ -20,9 +20,11 @@
 				queueExists = false;
 			} else {
 				Queue q = j.getQueue();
-				if (q.getNodes() == null) {
+				List<WorkerNode> nodes = Cluster.getNodesForQueue(q.getId());
+				if (nodes.size() == 0) {
 					queueIsEmpty = true;
 				}
+
 			}
 			
 			
