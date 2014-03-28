@@ -656,15 +656,39 @@ public class RESTHelpers {
 	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.util.Date> dates, HttpServletRequest request) {		
 		JsonArray dataTablePageEntries = new JsonArray();
 		int total_node_count = Cluster.getNonPermanentNodeCount();
+		
+		//This hashmap tells us at what date did a queue experience its first non-zero date
+		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
+		List<Queue> queues = Queues.getAllNonPermanent();
 
+		for (java.util.Date date : dates) {
+			if (queues!= null) {
+				for (Queue q : queues) {
+					if (q.getId() == Cluster.getDefaultQueueId()) {
+						continue;
+					}
+					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					
+					if (node_count > 0) {
+						if (!(nonzero_date.containsKey(q.getId()) )  ) {
+							nonzero_date.put(q.getId(), date);
+						}
+					}
+				}
+			}
+		}
+		
+		boolean conflict = false;
 		for (java.util.Date date : dates ) {
-			
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String date1 = sdf.format(date);
 			
 	    	JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(date1));
-			List<Queue> queues = Queues.getAllNonPermanent();
 			int total = 0;
 			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
 			total = total + node_count;
@@ -700,6 +724,24 @@ public class RESTHelpers {
 					if (temp_nodeCount != -1) {
 						node_count = temp_nodeCount;
 					}
+					
+					
+					QueueRequest req = Requests.getRequestForReservation(q.getId());
+					
+					if (nonzero_date.containsKey(q.getId())) {
+						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+						if (date.after(earliest_nonZero_date)) {
+							if (node_count == 0) {
+								conflict = true;
+							}
+						}
+					}
+					//if queue exists in in hashmap
+						// retrieve its earliest non zero date
+						// if the current date is after the non-zero date --> don't allow 0
+					
+					
+					
 					entry.add(new JsonPrimitive(node_count));
 				}
 			}
@@ -707,11 +749,13 @@ public class RESTHelpers {
 			//Put the "total" at the end
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive (total)); // conflict #
+				conflict = true;
 			} else {
 				entry.add(new JsonPrimitive(total_node_count)); //default total #
+				conflict = false;
 			}
 			//Mark if conflicted
-			if (leftover_nodes < 0) {
+			if (conflict) {
 				entry.add(new JsonPrimitive("CONFLICT"));
 			} else {
 				entry.add(new JsonPrimitive("clear"));
