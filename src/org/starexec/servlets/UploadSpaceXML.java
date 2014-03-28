@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,6 +17,9 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
@@ -35,6 +39,7 @@ public class UploadSpaceXML extends HttpServlet {
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
+	private static final String users = "users";
 
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -52,6 +57,23 @@ public class UploadSpaceXML extends HttpServlet {
 				
 				BatchUtil result = this.handleXMLFile(userId, form);				
 			
+				
+				//TODO: Inherit Users
+				/*
+				boolean inherit = Boolean.parseBoolean((String)request.getParameter(users));
+				log.debug("inherit = " + inherit);
+				if (inherit) {
+					log.debug("Adding inherited users");
+					List<User> users = Spaces.getUsers(spaceId);
+					log.debug("parent users = " + users);
+					for (User u : users) {
+						log.debug("users = " + u.getFirstName());
+						int tempId = u.getId();
+						Users.associate(tempId, newSpaceId);
+					}
+				}
+				*/
+				
 				// Redirect based on success/failure
 				if(result.getSpaceCreationSuccess()) {
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	

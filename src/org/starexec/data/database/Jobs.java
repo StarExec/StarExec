@@ -2699,6 +2699,7 @@ public class Jobs {
 					
 					//Get the enqueued job pairs and remove them
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+					log.debug("JPE = " + jobPairsEnqueued);
 					if (jobPairsEnqueued != null) {
 						for (JobPair jp : jobPairsEnqueued) {
 							int sge_id = jp.getGridEngineId();
@@ -2709,6 +2710,7 @@ public class Jobs {
 					}
 					//Get the running job pairs and remove them
 					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(j.getId());
+					log.debug("JPR = " + jobPairsRunning);
 					if (jobPairsRunning != null) {
 						for (JobPair jp: jobPairsRunning) {
 							int sge_id = jp.getGridEngineId();
@@ -2728,6 +2730,7 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error("Pause Job says "+e.getMessage(),e);
 		} finally {
+			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		return false;
