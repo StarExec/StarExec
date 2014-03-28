@@ -685,11 +685,7 @@ public class RESTHelpers {
 					}
 				}
 			}
-		}
-		
-		log.debug("nonzero_date = " + nonzero_date);
-		log.debug("resrvation queue earliest non zero date = " + nonzero_date.get(632));
-		
+		}		
 		
 		boolean conflict = false;
 		for (java.util.Date date : dates ) {
@@ -734,32 +730,20 @@ public class RESTHelpers {
 						node_count = temp_nodeCount;
 					}
 					
-					
-					log.debug("start new code");
-					if (nonzero_date.containsKey(q.getId())) {
-						log.debug("queue " + q.getId() + " exists in hasmap");
+					if (last_date.containsKey(q.getId())) {
 						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-						log.debug("earliest non zero date = " + earliest_nonZero_date);
-						log.debug("date = " + date);
-						if (date.after(earliest_nonZero_date)) {
-							log.debug("date after earliest nonZero date");
-							log.debug("node Count = " + node_count);
-							
-							
-							if(last_date.containsKey(q.getId())) {
-								java.util.Date latest_date = last_date.get(q.getId());
-								if (date.before(latest_date)) {
-									if (node_count == 0) {
-										conflict = true;
-									}
-								}
-							} else {
-								if (node_count == 0) {
-									conflict = true;
-								}
-							}
+						java.util.Date latest_date = last_date.get(q.getId());
+						
+						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
+							if (node_count == 0) { conflict = true; }
 						}
-					}				
+					} else if (nonzero_date.containsKey(q.getId())) {
+						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+						
+						if (date.after(earliest_nonZero_date)) {
+							if (node_count == 0) { conflict = true; }
+						}
+					}		
 					
 					
 					entry.add(new JsonPrimitive(node_count));
