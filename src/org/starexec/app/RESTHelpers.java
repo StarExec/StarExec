@@ -1720,8 +1720,7 @@ public class RESTHelpers {
 			sb.append(hiddenJobId);
 			String jobLink = sb.toString();
 
-			String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete"
-					: "complete";
+			String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
 			if (Jobs.isJobPaused(job.getId())) {
 				status = "paused";
 			}

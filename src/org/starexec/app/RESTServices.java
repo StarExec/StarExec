@@ -3190,15 +3190,16 @@ public class RESTServices {
 	@POST
 	@Path("/restart/starexec")
 	@Produces("application/json")
-	public void restartStarExec(@Context HttpServletRequest request) throws Exception {
+	public String restartStarExec(@Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
 		int status=GeneralSecurity.canUserRestartStarexec(userId);
 		if (status!=0) {
-			return;
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("restarting...");
 		Util.executeCommand("sudo /sbin/service tomcat7 restart");
 		log.debug("restarted");
+		return gson.toJson(0);
 	}
 	
 	@POST
