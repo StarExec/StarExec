@@ -425,7 +425,7 @@ public class Cluster {
 			
 		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
-			
+			log.debug("queueId = " + queueId);
 			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?,?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, queueId);
