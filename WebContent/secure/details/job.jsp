@@ -66,6 +66,7 @@
 				request.setAttribute("isKilled", isKilled);
 				request.setAttribute("isRunning", isRunning);
 				request.setAttribute("isComplete", isComplete);
+				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("queues", Queues.getUserQueues(userId));
