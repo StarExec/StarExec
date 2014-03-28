@@ -678,6 +678,11 @@ public class RESTHelpers {
 						if (!(nonzero_date.containsKey(q.getId()) )  ) {
 							nonzero_date.put(q.getId(), date);
 						}
+						if (last_date.containsKey(q.getId())) {
+							if (date.after(last_date.get(q.getId()))) {
+								last_date.remove(q.getId());
+							}
+						}
 					} else {
 						if (nonzero_date.containsKey(q.getId())) {
 							if (!(last_date.containsKey(q.getId()))) {
@@ -802,6 +807,11 @@ public class RESTHelpers {
 					if (node_count > 0) {
 						if (!(nonzero_date.containsKey(q.getId()) )  ) {
 							nonzero_date.put(q.getId(), date);
+						}
+						if (last_date.containsKey(q.getId())) {
+							if (date.after(last_date.get(q.getId()))) {
+								last_date.remove(q.getId());
+							}
 						}
 					} else {
 						if (nonzero_date.containsKey(q.getId())) {
