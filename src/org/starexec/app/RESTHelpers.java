@@ -758,10 +758,8 @@ public class RESTHelpers {
 			//Put the "total" at the end
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive (total)); // conflict #
-				conflict = true;
 			} else {
 				entry.add(new JsonPrimitive(total_node_count)); //default total #
-				conflict = false;
 			}
 			//Mark if conflicted
 			if (leftover_nodes < 0 || conflict == true) {
