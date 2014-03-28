@@ -294,7 +294,7 @@
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
-						<c:if test="${isPaused and queueExists and !queueIsEmpty}">
+						<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
 						</c:if>
 						<c:if test="${isPaused or isAdminPaused}">
