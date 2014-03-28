@@ -734,7 +734,7 @@ public class RESTHelpers {
 						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
 						java.util.Date latest_date = last_date.get(q.getId());
 						
-						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
+						if (date.after(earliest_nonZero_date) && (date.before(latest_date) || date.equals(latest_date))) {
 							if (node_count == 0) { conflict = true; }
 						}
 					} else if (nonzero_date.containsKey(q.getId())) {
