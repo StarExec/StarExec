@@ -193,6 +193,8 @@ function initDataTables() {
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
 			nodeTable.fnDraw();
+			nodeTable.fnDraw();
+			nodeTable.fnDraw();
 		}
 	  });
 
