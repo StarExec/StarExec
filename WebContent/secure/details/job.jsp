@@ -71,7 +71,7 @@
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
-				request.setAttribute("queues", Queues.getUserQueues(userId));
+				request.setAttribute("queues", Queues.getQueuesForJob(userId, j.getPrimarySpace()));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
 				request.setAttribute("cpu",cpu);
