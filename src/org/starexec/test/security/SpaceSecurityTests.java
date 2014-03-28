@@ -28,18 +28,23 @@ public class SpaceSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanAssociateWebsiteTest() {
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new"));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new"));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new"));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","http://www.fake.com"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","http://www.fake.com"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","http://www.fake.com"));
+		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","http://www.fake.com"));
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId(),"new"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId(),"new"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId(),"new","http://www.fake.com"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId(),"new","http://www.fake.com"));
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"<script>"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"<script>"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"<script>"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"<script>","http://www.fake.com"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"<script>","http://www.fake.com"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"<script>","http://www.fake.com"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"<script>","http://www.fake.com"));
+		
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","<script>"));
+		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","<script>"));
 	}
 	
 	@Test

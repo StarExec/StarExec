@@ -32,7 +32,9 @@
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 				}
 			}
-			request.setAttribute("owner", owner);			
+			request.setAttribute("owner", owner);	
+			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
+
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}

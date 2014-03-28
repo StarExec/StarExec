@@ -161,4 +161,5 @@ margin-top:5px;
 tr.panelHeader {
 	text-align:center;
 	font-size: 140%;
+	cursor:pointer;
 }

@@ -150,7 +150,7 @@ function updateGraphs() {
 		//select first five solver/ configuration pairs
 		$("#spaceOverviewSelections").children("option:lt(5)").prop("selected",true);
 		lastValidSelectOption = $("#spaceOverviewSelections").val();
-		updateSpaceOverviewGraphGraph();
+		updateSpaceOverviewGraph();
 		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
 			$("#solverComparison").show();
 			$("#solverComparisonOptionField").show();
@@ -204,6 +204,13 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-n"
 		}
 	});
+	
+	$("#popoutPanels").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+	});
+	
 	$("#spaceOverviewUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
@@ -244,7 +251,11 @@ function initUI(){
 			secondary: "ui-icon-transferthick-e-w"
 		}
 	});
-		
+	
+	$("#popoutPanels").click(function() {
+		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId);
+	});
+	
 	$("#clearCache").click(function(){
 			
 			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
@@ -536,7 +547,7 @@ function initUI(){
 	
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
 	$("#spaceOverviewUpdate").click(function() {
-	  	updateSpaceOverviewGraphGraph();
+	  	updateSpaceOverviewGraph();
 	});
 	$("#solverComparisonUpdate").click(function() {
 		updateSolverComparison(false);
@@ -567,7 +578,7 @@ function initUI(){
 	});
 }
 
-function updateSpaceOverviewGraphGraph() {
+function updateSpaceOverviewGraph() {
 	var configs = new Array();
 	$("#spaceOverviewSelections option:selected").each(function() {
 		configs.push($(this).attr("value"));
@@ -698,11 +709,11 @@ function initializePanels() {
 			spaceId=parseInt(space.attr("id"));
 			
 			child=getPanelTable(space);
-			$("#subspaceSummaryField").append(child);
+			$("#subspaceExpd").after(child);
 			panelArray[i]=$("#panel"+spaceId).dataTable({
-		        "sDom"			: 'rt<"bottom"flpi><"clear">',
+		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
-		        "iDisplayLength": 50,
+		        "iDisplayLength": 1000, // make sure we show every entry
 		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true",
 		        "sServerMethod" : "POST",
 		        "fnServerData" : fnShortStatsPaginationHandler

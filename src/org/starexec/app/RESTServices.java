@@ -119,7 +119,7 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
-		
+		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
 		List<Space> subspaces=new ArrayList<Space>();
 		log.debug("getting job spaces for panels");
 		//don't populate the subspaces if the user can't see the job
@@ -753,6 +753,7 @@ public class RESTServices {
 		if(type.equals("user")){
 			return gson.toJson(Websites.getAllForJavascript(userId, Websites.WebsiteType.USER));
 		} else if(type.equals("space")){
+			//SolverSecurity.canAssociateWebsite(solverId, userId, name)
 			return gson.toJson(Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE));
 		} else if (type.equals("solver")) {
 			return gson.toJson(Websites.getAllForJavascript(id, Websites.WebsiteType.SOLVER));
@@ -776,11 +777,14 @@ public class RESTServices {
 		String name = request.getParameter("name");
 		String url = request.getParameter("url");	
 		if (type.equals("user")) {
-					
+			int status=UserSecurity.canAssociateWebsite(name, url);
+			if (status!=0) {
+				return gson.toJson(status);
+			}
 			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
-			int status=SpaceSecurity.canAssociateWebsite(id, userId,name);
+			int status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
 			if (status!=0) {
 				return gson.toJson(status);
 			}
@@ -790,7 +794,7 @@ public class RESTServices {
 			
 		} else if (type.equals("solver")) {
 			//Make sure this user is the solver owner
-			int status=SolverSecurity.canAssociateWebsite(id, userId,name);
+			int status=SolverSecurity.canAssociateWebsite(id, userId,name,url);
 			if (status!=0) {
 				return gson.toJson(status);
 			}
@@ -820,6 +824,10 @@ public class RESTServices {
 	public String deleteWebsite(@PathParam("type") String type, @PathParam("id") int id, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if(type.equals("user")){
+			int status=UserSecurity.canDeleteWebsite(userId, websiteId);
+			if (status!=0) {
+				return gson.toJson(status);
+			}
 			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader

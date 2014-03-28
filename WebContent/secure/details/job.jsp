@@ -115,7 +115,7 @@
 						 
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
-				
+				<button id="popoutPanels">Popout</button>
 			</fieldset>
 			
 			<fieldset id="solverSummaryField">

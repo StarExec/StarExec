@@ -1,0 +1,26 @@
+#subspaceSummaryField {
+	width:98%;
+	margin-right:10px;
+}
+#subspaceSummaryField .dataTables_wrapper {
+	max-width:31.9%;
+	width:31.9%;
+	border-style:solid;
+	border-width:1px;
+	border-color:black;
+	float:left;
+	clear:none;
+	margin-right:5px;
+	margin-bottom:10px;
+	padding:3px;
+}
+
+#subspaceSummaryField table.panel {
+	font-size:80%;	
+}
+
+tr.panelHeader {
+	text-align:center;
+	font-size: 140%;
+	cursor:pointer;
+}

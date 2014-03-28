@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.owasp.esapi.ESAPI;
 import org.starexec.data.to.Website;
+import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for user-defined websites
@@ -88,11 +89,11 @@ public class Websites {
 	 * @return A new, identical website with javascript-safe attributes
 	 */
 	public static Website processWebsiteForHTML(Website site) {
-		 boolean isValidURL = ESAPI.validator().isValidInput("URLContext", site.getUrl(), "URL", 255, false); 
+		
+		 boolean isValidURL = Validator.isValidWebsite(site.getUrl());
 		 if (isValidURL) {  
 			 Website newSite=new Website();
 				newSite.setId(site.getId());
-			
 				newSite.setUrl(ESAPI.encoder().encodeForHTMLAttribute(site.getUrl()));
 				newSite.setName(ESAPI.encoder().encodeForHTML(site.getName()));
 				return newSite;

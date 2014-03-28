@@ -29,6 +29,7 @@
 			if (s.getUserId()==userId) {
 				downloadable=true;
 			}
+		
 			request.setAttribute("downloadable",downloadable);
 		} else {
 			if (Solvers.isSolverDeleted(solverId)) {

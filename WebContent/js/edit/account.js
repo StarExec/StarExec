@@ -3,7 +3,6 @@ $(document).ready(function(){
 	attachFormValidation();
 	attachPasswordMonitor();
 	attachWebsiteMonitor();
-	refreshUserWebsites();
 });
 
 
@@ -253,9 +252,12 @@ function initButtonIcons(){
  * Queries the server for the user's websites and displays them on the page
  */
 function refreshUserWebsites(){
+	location.reload();
+	//we should NOT do this, because it leaves us vulnerable to XSS attacks
+	/*
 	$.getJSON(starexecRoot+'services/websites/user/-1', processWebsiteData).error(function(){
 		showMessage('error',"Internal error displaying user websites",5000);
-	});
+	});*/
 }
 
 /**
@@ -272,7 +274,7 @@ function togglePlusMinus(addSiteButton){
 
 /**
  * Extracts, formats, and injects the websites returned from the server into the client's DOM 
- */
+ 
 function processWebsiteData(jsonData) {
 	// Ensures the websites table is empty
 	$('#websites tbody tr').remove();
@@ -281,7 +283,7 @@ function processWebsiteData(jsonData) {
 	$.each(jsonData, function(i, site) {
 		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-}
+}*/
 
 /**
  * Allows for a given field to be editable

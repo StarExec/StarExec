@@ -22,7 +22,14 @@ public class ValidatorTests extends TestSequence {
 	
 	@Test
 	private void WebsiteRegexTest() {
+		Assert.assertTrue(Validator.isValidWebsite("http://www.uiowa.edu"));
+		Assert.assertTrue(Validator.isValidWebsite("https://cs.starexec.uiowa.edu"));
+		Assert.assertTrue(Validator.isValidWebsite("http://www.google.com"));
 		
+		Assert.assertFalse(Validator.isValidWebsite(null));
+		Assert.assertFalse(Validator.isValidWebsite("google.com"));
+		Assert.assertFalse(Validator.isValidWebsite("<script></script>"));
+
 	}
 	
 	@Test
@@ -48,6 +55,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidBool("94"));
 		Assert.assertFalse(Validator.isValidBool("adsfc"));
 		Assert.assertFalse(Validator.isValidBool("4ks"));
+		Assert.assertFalse(Validator.isValidBool("itisfalsethatthisshouldreturntrue"));
 		Assert.assertFalse(Validator.isValidBool(null));
 		
 	}

@@ -27,16 +27,31 @@ public class SpaceSecurity {
 	 * @param spaceId The ID of the space that would be given a website
 	 * @param userId The ID of the user making the request
 	 * @param name The name to be given the new website
+	 * @param URL The URL of the new website
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canAssociateWebsite(int spaceId,int userId, String name){
+	public static int canAssociateWebsite(int spaceId,int userId, String name, String URL){
 		Permission p=Permissions.get(userId, spaceId);
 		if (p==null || !p.isLeader()) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
 		
-		if (!Validator.isValidPrimName(name)) {
+		if (!Validator.isValidPrimName(name)  || !Validator.isValidWebsite(URL)) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		return 0;
+	}
+	
+	/**
+	 * Checks to see whether the given user can view websites associated with the given space
+	 * @param spaceId The ID of the space being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
+	 */
+	public static int canViewWebsites(int spaceId, int userId) {
+		
+		if(!Permissions.canUserSeeSpace(spaceId, userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
 		
 		return 0;

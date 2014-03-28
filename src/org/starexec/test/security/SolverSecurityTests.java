@@ -89,12 +89,15 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@Test
 	private void canAssociateWebsite() {
-		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new"));
-		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new"));
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new"));
+		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","http://www.test.url"));
+		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","http://www.test.url"));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new","http://www.test.url"));
 		
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>"));
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>"));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>","http://www.test.url"));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>","http://www.test.url"));
+		
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","<script>"));
+		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","<script>"));
 	}
 	
 	@Test

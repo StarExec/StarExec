@@ -21,6 +21,7 @@
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
+				request.setAttribute("sites", Websites.getAllForHTML(userId, Websites.WebsiteType.USER));
 			}
 			if (visiting_user.getRole().equals("admin")) {
 				isadmin = true;
@@ -112,6 +113,12 @@
 				</tr>
 			</thead>
 			<tbody>
+			<c:forEach items="${sites}" var="s">
+				<tr>
+					<td><a href="${s.url}">${s.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a class="delWebsite" id="${s.id}">delete</a></td>
+				</tr>
+			</c:forEach>
 			</tbody>
 		</table>
 		

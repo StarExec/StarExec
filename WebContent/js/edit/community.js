@@ -24,7 +24,6 @@ $(document).ready(function(){
 			showMessage('error',"Internal error getting community details",5000);
 		});
 	
-	refreshSpaceWebsites();
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
@@ -358,21 +357,22 @@ function attachFormValidation(){
  * then re-populating the DOM with the new data
  */
 function refreshSpaceWebsites(){
-	$.getJSON(starexecRoot+'services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
+	location.reload();
+	/*$.getJSON(starexecRoot+'services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
 		showMessage('error',"Internal error getting websites",5000);
-	});
+	});*/
 }
 
 /**
  * Processes website data by adding a delete button to the HTML and inject that into the DOM
- */
+ 
 function processWebsiteData(jsonData) {
 	// Injects the clickable delete button that's always present
 	$('#websiteTable tr').remove();
 	$.each(jsonData, function(i, site) {
 		$('#websiteTable').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src=starexecRoot+"images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-}
+}*/
 
 
 function editable(attribute) {

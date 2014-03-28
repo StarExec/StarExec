@@ -2,7 +2,7 @@ package org.starexec.data.security;
 
 import java.util.List;
 
-import org.starexec.command.Validator;
+import org.starexec.util.Validator;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -21,16 +21,34 @@ public class SolverSecurity {
 	 * @param solverId The ID of the solver being checked
 	 * @param userId The ID of the user making the request
 	 * @param name The name to be given the new website
+	 * @param URL The URL of the new website
 	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
 	 */
-	public static int canAssociateWebsite(int solverId, int userId,String name) {
+	public static int canAssociateWebsite(int solverId, int userId,String name, String URL) {
 		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
 		
-		if (!Validator.isValidPrimName(name)) {
+		if (!Validator.isValidPrimName(name) || !Validator.isValidWebsite(URL)) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}
+		
+		
+		return 0;
+	}
+	
+	/**
+	 * Checks to see whether the given user can add a new website to the given solver
+	 * @param solverId The ID of the solver being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
+	 */
+	public static int canViewWebsites(int solverId, int userId) {
+		
+		if(!Permissions.canUserSeeSolver(solverId, userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		
 		return 0;
 	}
 	
