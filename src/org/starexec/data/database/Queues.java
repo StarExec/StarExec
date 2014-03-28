@@ -424,11 +424,10 @@ public class Queues {
 			
 			results = procedure.executeQuery();
 
-			if(results.next()){
-				return results.getInt("id");
-			}		
+			if (results.next()) {
+				return results.getInt("id");	
+			}
 			
-			log.debug("no results");
 			
 		} catch (Exception e){			
 			log.error("getIdByName says " + e.getMessage(), e);		
