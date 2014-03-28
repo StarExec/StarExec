@@ -424,14 +424,11 @@ public class Queues {
 			
 			results = procedure.executeQuery();
 
-			int id = -1;
 			if(results.next()){
-				id = results.getInt("id");
-			}	
+				return results.getInt("id");
+			}		
 			
-			log.debug("id = " + id);
-
-			return id;			
+			log.debug("no results");
 			
 		} catch (Exception e){			
 			log.error("getIdByName says " + e.getMessage(), e);		
@@ -440,7 +437,7 @@ public class Queues {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-			return -1;				
+			return -2;				
 	}
 	
 	/**
