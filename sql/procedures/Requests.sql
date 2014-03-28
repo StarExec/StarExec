@@ -382,7 +382,8 @@ CREATE PROCEDURE DecreaseNodeCount(IN _queueId INT)
 	BEGIN
 		UPDATE queue_reserved
 		SET node_count = node_count - 1
-		WHERE queue_id = _queueId;
+		WHERE queue_id = _queueId
+		AND node_count > 0;
 	END //
 	
 	

@@ -76,10 +76,7 @@ public class MoveNodes extends HttpServlet {
 			// if the queue is not all.q and it is not a permanent queue
 			// i.e. it is a reserved queue
 			if (!q.getName().equals(R.DEFAULT_QUEUE_NAME) && !q.getPermanent()) {
-				int node_count = Cluster.getMinNodeCount(q.getId());
-				if (node_count > 0) {
-					Requests.DecreaseNodeCount(q.getId()); // decrease the node count of the reservation by 1
-				}
+				Requests.DecreaseNodeCount(q.getId()); // decrease the node count of the reservation by 1
 			}
 		}
 		
