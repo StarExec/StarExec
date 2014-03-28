@@ -22,7 +22,7 @@ CREATE PROCEDURE RemoveQueue(IN _queueId INT)
 -- Retrieves the id of a queue given its name
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetIdByName;
-CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(126))
+CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 	BEGIN
 		SELECT id
 		FROM queues
