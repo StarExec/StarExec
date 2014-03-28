@@ -118,7 +118,12 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 		ORDER BY name;	
 	END //
 	
--- Gets the id, name, and status of all queues that are available for a job (non-permanent & not empty)
+-- Gets the id, name, and status of all queues that are available for a job
+-- Default Queue
+-- Reserved for space
+-- permanent and has given access to specified community that the user is a leader of
+-- permanent and global
+-- In all situations, the queue must not be empty
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetAllQueuesForJob;
 CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT, IN _defaultQueueId INT)
@@ -138,7 +143,13 @@ CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT, IN _default
 				(SELECT queues.id
 				FROM comm_queue JOIN queues ON queues.id = comm_queue.queue_id
 				WHERE queues.permanent = true
-				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))));
+				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))))
+				OR
+			-- the queue has global access
+			(id IN
+				(SELECT queues.id
+				FROM queues
+				WHERE global_access = true));
 			
 	END //
 		
