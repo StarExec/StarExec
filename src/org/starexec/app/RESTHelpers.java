@@ -682,6 +682,10 @@ public class RESTHelpers {
 			}
 		}
 		
+		log.debug("nonzero_date = " + nonzero_date);
+		log.debug("resrvation queue earliest non zero date = " + nonzero_date.get(632));
+		
+		
 		boolean conflict = false;
 		for (java.util.Date date : dates ) {
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
@@ -726,20 +730,20 @@ public class RESTHelpers {
 					}
 					
 					
-					QueueRequest req = Requests.getRequestForReservation(q.getId());
-					
+					log.debug("start new code");
 					if (nonzero_date.containsKey(q.getId())) {
+						log.debug("queue " + q.getId() + " exists in hasmap");
 						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+						log.debug("earliest non zero date = " + earliest_nonZero_date);
+						log.debug("date = " + date);
 						if (date.after(earliest_nonZero_date)) {
+							log.debug("date after earliest nonZero date");
+							log.debug("node Count = " + node_count);
 							if (node_count == 0) {
 								conflict = true;
 							}
 						}
-					}
-					//if queue exists in in hashmap
-						// retrieve its earliest non zero date
-						// if the current date is after the non-zero date --> don't allow 0
-					
+					}				
 					
 					
 					entry.add(new JsonPrimitive(node_count));
