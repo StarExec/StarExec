@@ -417,7 +417,8 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 		SELECT DISTINCT
 			jobs.id, 
 			jobs.name, 
-			jobs.user_id, 
+			jobs.user_id,
+			jobs.queue_id,
 			jobs.created, 
 			jobs.description, 
 			jobs.deleted,
