@@ -47,6 +47,7 @@ try {
 	<style>
 		.statusConflict { color: red; }
 		.statusClear {color : green; }
+		.statusZero {color : yellow; }
 		.statusNeutral { color : black; }
 	</style>
 	<form id="addForm" method="POST" action="/${starexecRoot}/secure/add/queue" class="queue">	

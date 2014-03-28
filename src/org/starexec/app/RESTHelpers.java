@@ -757,6 +757,7 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(total_node_count)); //default total #
 			}
 			//Mark if conflicted
+			log.debug("leftover_nodes = " + leftover_nodes);
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive("CONFLICT"));
 			} else if (leftover_nodes == 0 || conflict == true) {
@@ -780,7 +781,39 @@ public class RESTHelpers {
 		Date reqStartDate = req.getStartDate();
 		Date reqEndDate = req.getEndDate();
 
+		//This hashmap tells us at what date did a queue experience its first non-zero date
+		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
+		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
+		List<Queue> queues = Queues.getAllNonPermanent();
+
+		for (java.util.Date date : dates) {
+			if (queues!= null) {
+				for (Queue q : queues) {
+					if (q.getId() == Cluster.getDefaultQueueId()) {
+						continue;
+					}
+					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					
+					if (node_count > 0) {
+						if (!(nonzero_date.containsKey(q.getId()) )  ) {
+							nonzero_date.put(q.getId(), date);
+						}
+					} else {
+						if (nonzero_date.containsKey(q.getId())) {
+							last_date.put(q.getId(), date);
+						}
+					}
+				}
+			}
+		}
+		
+		
 		for (java.util.Date d : dates ) {
+			boolean conflict = false;
 
 			Date date = new Date(d.getTime());
 			
@@ -789,7 +822,6 @@ public class RESTHelpers {
 			
 	    	JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(date1));
-			List<Queue> queues = Queues.getAllNonPermanent();
 			int total = 0;
 			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
 			total = total + node_count;
@@ -831,6 +863,22 @@ public class RESTHelpers {
 				if (temp_nodeCount != -1) {
 					node_count = temp_nodeCount;
 				}
+				
+				if (last_date.containsKey(q.getId())) {
+					java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+					java.util.Date latest_date = last_date.get(q.getId());
+					
+					if (date.after(earliest_nonZero_date) && (date.before(latest_date) || date.equals(latest_date))) {
+						if (node_count == 0) { conflict = true; }
+					}
+				} else if (nonzero_date.containsKey(q.getId())) {
+					java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+					
+					if (date.after(earliest_nonZero_date)) {
+						if (node_count == 0) { conflict = true; }
+					}
+				}		
+				
 				entry.add(new JsonPrimitive(node_count));
 			}
 			//if date is between the requested dates
@@ -839,6 +887,8 @@ public class RESTHelpers {
 			} else {
 				entry.add(new JsonPrimitive (0));
 			}
+	
+			
 			//Put the "total" at the end
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive (total)); // conflict #
@@ -848,6 +898,8 @@ public class RESTHelpers {
 			//Mark if conflicted
 			if (leftover_nodes < 0) {
 				entry.add(new JsonPrimitive("CONFLICT"));
+			} else if (leftover_nodes == 0 || conflict == true) {
+				entry.add(new JsonPrimitive("ZERO"));
 			} else {
 				entry.add(new JsonPrimitive("clear"));
 			}

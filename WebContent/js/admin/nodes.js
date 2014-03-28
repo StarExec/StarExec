@@ -102,7 +102,6 @@ function initDataTables() {
 				var columnNumber = nodeTable.fnGetData(0).length;
 				var conflict = oSettings.aoData[i]._aData[columnNumber-1];
 				var colorCSS = 'statusNeutral';
-				alert('conflict = ' + conflict);
 				if(conflict === 'clear') {
 					colorCSS = 'statusClear';
 				} else if(conflict === 'CONFLICT') {
@@ -131,7 +130,6 @@ function initDataTables() {
 		},
 	  });
 	
-	//new FixedColumns( nodeTable );
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {

@@ -175,6 +175,9 @@ function initDataTables() {
 				} else if(conflict === 'CONFLICT') {
 					colorCSS = 'statusConflict';
 					conflictNumber = conflictNumber + 1;
+				} else if(conflict === 'ZERO') {
+					colorCSS = 'statusZero';
+					conflictNumber = conflictNumber + 1;
 				}
 			oSettings.aoData[i].nTr.className += " "+ colorCSS;
 			}
