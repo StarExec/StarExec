@@ -727,7 +727,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
-
+		log.debug("getEnqueuePairs2 beginning...");
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 try {
@@ -765,6 +765,7 @@ public class Jobs {
 				jp.setStatus(s);
 				returnList.add(jp);
 			}			
+			log.debug("returnList = " + returnList);
 			return returnList;
 		} catch (Exception e) {
 			log.error("getEnqueuedPairs says "+e.getMessage(),e);
@@ -784,6 +785,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	public static List<JobPair> getEnqueuedPairs(int jobId) {
+		log.debug("getEnqueuedPairs beginning...");
 		Connection con = null;			
 
 		try {			
@@ -2670,8 +2672,11 @@ public class Jobs {
 	}
 	
 	public static boolean pauseAll() {
+		log.debug("pauseAll beginning...");
 		List<Job> jobs = new LinkedList<Job>();
+		log.debug("jobs = " + jobs);
 		jobs = Jobs.getRunningJobs();
+		log.debug("jobs = " + jobs);
 		return pauseAll(jobs);
 	}
 	
@@ -2684,14 +2689,17 @@ public class Jobs {
 	 */
 	
 	public static boolean pauseAll(List<Job> jobs) {
+		log.debug("pauseAll2 beginning...");
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL PauseAll(?)}");
-			
+			log.debug("jobs = " + jobs);
 			if (jobs != null) {
+				log.debug("not null");
 				for (Job j : jobs) {
+					log.debug("j = " + j);
 					procedure.setInt(1, j.getId());		
 					procedure.executeUpdate();
 					log.debug("Pausation of job id = " + j.getId() + " was successful");
