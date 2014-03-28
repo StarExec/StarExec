@@ -2688,7 +2688,6 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			Common.beginTransaction(con);
 			procedure = con.prepareCall("{CALL PauseAll(?)}");
 			
 			if (jobs != null) {
@@ -2722,9 +2721,7 @@ public class Jobs {
 					log.debug("Deletion of paused job pairs from queue was succesful");
 				}
 			}
-			
-			Common.endTransaction(con);
-		
+					
 		
 			return true;
 		} catch (Exception e) {
