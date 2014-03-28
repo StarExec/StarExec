@@ -707,7 +707,7 @@ public class GridEngineUtil {
 				String shortQueueName = split[0];
 
 
-				/**The Following code if for when the node count is changing throughout the reservation**/
+				/**The Following code is for when the node count is changing throughout the reservation**/
 				//When the node count is decreasing for this reservation on this day
 				//Need to move a certain number of nodes back to all.q
 				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
@@ -748,6 +748,7 @@ public class GridEngineUtil {
 		List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
 
 		if (actualNodeCount < nodeCount) {
+			
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
 			for (int i = 0; i < (nodeCount - actualNodeCount); i++) {
 				transferNodes.add(AllQueueNodes.get(i));
@@ -780,17 +781,6 @@ public class GridEngineUtil {
 			}
 		}
 		
-		//TODO: Send Email on either completion or all paused
-		/*
-		try {
-			log.debug("sending email...");
-			Mail.sendReservationEnding(req);
-			log.debug("email sent");
-		} catch (IOException e) {
-			log.debug("ERROR");
-			e.printStackTrace();
-		}
-		*/
 
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
@@ -1155,6 +1145,17 @@ public class GridEngineUtil {
 				
 				//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
 				Queue queue = NQ.get(n);
+				
+				//if this is going to make the queue empty...... need to pause all jobs first
+				if (Cluster.getNodesForQueue(queue.getId()).size() == 1 ) {
+					List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
+					if (jobs != null) {
+						for (Job j : jobs) {
+							Jobs.pause(j.getId());
+						}
+					}
+				}
+				
 				String name = queue.getName();
 				String[] split3 = name.split("\\.");
 				String shortQName = split3[0];

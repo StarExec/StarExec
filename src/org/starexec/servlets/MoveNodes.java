@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Requests;
 import org.starexec.data.to.Queue;
@@ -74,8 +75,11 @@ public class MoveNodes extends HttpServlet {
 		for (Queue q : queues) {
 			// if the queue is not all.q and it is not a permanent queue
 			// i.e. it is a reserved queue
-			if (q.getId() != 1 && !q.getPermanent()) {
-				Requests.DecreaseNodeCount(q.getId());
+			if (!q.getName().equals(R.DEFAULT_QUEUE_NAME) && !q.getPermanent()) {
+				int node_count = Cluster.getMinNodeCount(q.getId());
+				if (node_count > 0) {
+					Requests.DecreaseNodeCount(q.getId()); // decrease the node count of the reservation by 1
+				}
 			}
 		}
 		
