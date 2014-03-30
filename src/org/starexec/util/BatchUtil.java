@@ -94,19 +94,19 @@ public class BatchUtil {
 	log.debug("Generating Space XML for space " + space.getId());
 	//stardev also needs to point to starexec here-- we don't want it to use Util.url
 	Element spacesElement=null;
-	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-		spacesElement = doc.createElementNS("https://www.starexec.org/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
-		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		
-		spacesElement.setAttribute("xsi:schemaLocation", 
-					   "https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
-	} else {
+//	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
+//		spacesElement = doc.createElementNS("https://www.starexec.org/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
+//		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+//		
+//		spacesElement.setAttribute("xsi:schemaLocation", 
+//					   "https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
+//	} else {
 		spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
 		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
 		spacesElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
-	}
+//	}
 	
 		
 	Element rootSpaceElement = generateSpaceXML(space, userId);
@@ -323,6 +323,17 @@ public class BatchUtil {
 		if (!sl.equals("") && !sl.equals(null)) {
 			Boolean stickyLeaders = Boolean.valueOf(sl);
 			space.setStickyLeaders(stickyLeaders);
+			// What else might need to happen here to initiate sticky leaders when this is true?
+		}
+		//------------------------------------------------------------------------
+		
+		// Check for inherit users attribute. If it is true, make the users the same as the parent
+		String iu = spaceElement.getAttribute("inherit-users");
+		if (!iu.equals("") && !iu.equals(null)){
+			Boolean inheritUsers = Boolean.valueOf(iu);
+			if (inheritUsers){
+				space.setUsers(Spaces.getUsers(parentId));
+			}
 		}
 		//------------------------------------------------------------------------
 		
