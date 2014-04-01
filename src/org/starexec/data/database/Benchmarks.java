@@ -1546,7 +1546,7 @@ public class Benchmarks {
 	/**
 	 * Retrieves the contents of a benchmark file from disk as a string
 	 * @param b The benchmark to get the contents of (must have a valid path)
-	 * @param limit the maximum number of lines to return
+	 * @param limit the maximum number of lines to return, or no limit if less than 0
 	 * @return The file contents as a string
 	 */
 	public static String getContents(Benchmark b, int limit) {

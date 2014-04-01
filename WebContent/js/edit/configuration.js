@@ -86,7 +86,6 @@ function attachFormValidation(){
 				regex 	 : getPrimNameRegex()
 			},
 			description : {
-				required : true,
 				maxlength: $("#description").attr("length"),
 				regex	 : getPrimDescRegex()
 			},

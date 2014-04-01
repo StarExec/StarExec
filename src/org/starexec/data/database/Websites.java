@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.owasp.esapi.ESAPI;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Website;
 import org.starexec.util.Validator;
 
@@ -77,8 +78,8 @@ public class Websites {
 		
 		Website newSite=new Website();
 		newSite.setId(site.getId());
-		newSite.setUrl(ESAPI.encoder().encodeForJavaScript(site.getUrl()));
-		newSite.setName(ESAPI.encoder().encodeForJavaScript(site.getName()));
+		newSite.setUrl(GeneralSecurity.getJavascriptSafeString(site.getUrl()));
+		newSite.setName(GeneralSecurity.getJavascriptSafeString(site.getName()));
 		return newSite;
 	}
 	
@@ -89,19 +90,12 @@ public class Websites {
 	 * @return A new, identical website with javascript-safe attributes
 	 */
 	public static Website processWebsiteForHTML(Website site) {
-		
-		 boolean isValidURL = Validator.isValidWebsite(site.getUrl());
-		 if (isValidURL) {  
-			 Website newSite=new Website();
-				newSite.setId(site.getId());
-				newSite.setUrl(ESAPI.encoder().encodeForHTMLAttribute(site.getUrl()));
-				newSite.setName(ESAPI.encoder().encodeForHTML(site.getName()));
-				return newSite;
-		 } else {
-			 log.debug("received an invalid URL");
-			 return null;
-		 }
-		
+			Website newSite=new Website();
+			newSite.setId(site.getId());
+			newSite.setUrl(GeneralSecurity.getHTMLAttributeSafeString(site.getUrl()));
+			newSite.setName(GeneralSecurity.getHTMLSafeString(site.getName()));
+			return newSite;
+
 	}
 	
 	/**

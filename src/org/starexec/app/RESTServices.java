@@ -2600,7 +2600,6 @@ public class RESTServices {
 		
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
-				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("contents", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
@@ -2622,7 +2621,10 @@ public class RESTServices {
 			
 		// Extract new configuration file details from request
 		String name = (String) request.getParameter("name");
-		String description = (String) request.getParameter("description");
+		String description="";
+		if (Util.paramExists("description", request)) {
+			description = (String) request.getParameter("description");
+		}
 		String contents = (String) request.getParameter("contents");
 		
 		// Apply new solver details to database

@@ -6,20 +6,8 @@ $(document).ready(function(){
 	$('#fieldAttributes').expandable(true);
 	$('#fieldDepends').expandable(true);
 	$( "#dialog-warning").hide();
-	$('#fieldContents').expandable(true, function() {
-		if($(this).data('requested') == undefined) {
-			$(this).data('requested', true);
-			
-			$('#fieldContents legend img').show();
-			$.get(starexecRoot+'services/benchmarks/' + bid + '/contents?limit=100', function(data) {
-				$('#benchContent').text(data);
-				$('#fieldContents legend img').hide();
-			}).error(function(){				
-				$('#benchContent').text('unavailable');
-				$('#fieldContents legend img').hide();
-			});
-		}
-	});
+	
+	$('#fieldContents').expandable(true);
 	$('#actions').expandable(true);
 	
 	$('#clearCache').button( {
