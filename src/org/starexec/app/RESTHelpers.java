@@ -666,18 +666,13 @@ public class RESTHelpers {
 		
 		List<Queue> queues = Queues.getAllNonPermanent();
 
-		int dateCount = 0;
 		for (java.util.Date date : dates) {
-			dateCount += 1;
 			if (queues!= null) {
 				for (Queue q : queues) {
 					if (q.getId() == Cluster.getDefaultQueueId()) {
 						continue;
 					}
 					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					if (dateCount == 1 && node_count > 0) {
-						starts_nonEmpty.add(q.getId());
-					}
 					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 					if (temp_nodeCount != -1) {
 						node_count = temp_nodeCount;
@@ -703,7 +698,9 @@ public class RESTHelpers {
 			}
 		}		
 		
+		int dateCount = 0;
 		for (java.util.Date date : dates ) {
+			dateCount += 1;
 			boolean conflict = false;
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String date1 = sdf.format(date);
@@ -741,12 +738,13 @@ public class RESTHelpers {
 						continue;
 					}
 					node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
 					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 					if (temp_nodeCount != -1) {
 						node_count = temp_nodeCount;
 					}
 					
-					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) ) { conflict = true; }
+					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
 					
 					if (last_date.containsKey(q.getId())) {
 						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId()); // this is the date that the queue first had a non-zero node count
