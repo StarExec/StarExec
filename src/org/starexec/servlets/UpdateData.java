@@ -52,7 +52,7 @@ public class UpdateData extends HttpServlet {
 		QueueRequest req = null;
 		String queueName = null;
 		int queueId = Queues.getIdByName(columnName);
-		if (queueId == -1) {
+		if (queueId == -2) {
 			req = Requests.getQueueRequest(code);
 			isNewQueue = true;
 		}

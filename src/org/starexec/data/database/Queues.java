@@ -181,6 +181,7 @@ public class Queues {
 	 */
 	protected static Queue get(Connection con, int qid) throws Exception {	
 		log.debug("starting get");
+		log.debug("id = " + qid);
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		
