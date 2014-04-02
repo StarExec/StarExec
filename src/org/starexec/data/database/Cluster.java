@@ -640,8 +640,30 @@ public class Cluster {
 			}
 		}
 		
+		if (success) { success = Cluster.removeEmptyNodeCounts(); }
 		
 		return success ? true : false;
+	}
+
+
+	private static boolean removeEmptyNodeCounts() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL RemoveEmptyNodeCounts()}");	
+			
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("RemoveEmptyNodeCounts() says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}			
+		return false;
 	}
 
 

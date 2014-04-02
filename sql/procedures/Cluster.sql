@@ -483,6 +483,13 @@ CREATE PROCEDURE SetPermQueueCommunityAccess(IN _communityId INT, IN _queueId IN
 		VALUES (_communityId, _queueId);
 	END //
 	 
+DROP PROCEDURE IF EXISTS RemoveEmptyNodeCounts;
+CREATE PROCEDURE RemoveEmptyNodeCounts()
+	BEGIN
+		DELETE FROM queue_reserved
+		WHERE node_count = 0
+		AND queue_id IN (SELECT DISTINCT queue_id FROM queue_reserved where node_count != 0);
+	END //
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
