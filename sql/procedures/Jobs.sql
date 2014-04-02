@@ -412,7 +412,7 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 -- sets the global paused flag to false
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS ResumeAll;
-CREATE PROCEDURE ResumeAll(IN _jobId INT)
+CREATE PROCEDURE ResumeAll()
 	BEGIN
 		UPDATE system_flags
 		SET paused=false;

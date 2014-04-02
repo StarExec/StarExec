@@ -2658,6 +2658,7 @@ public class Jobs {
 	public static boolean pauseAll() {
 		List<Job> jobs = new LinkedList<Job>();
 		jobs = Jobs.getRunningJobs();
+		
 		return pauseAll(jobs);
 	}
 	
