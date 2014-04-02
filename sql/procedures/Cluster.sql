@@ -488,7 +488,7 @@ CREATE PROCEDURE RemoveEmptyNodeCounts()
 	BEGIN
 		DELETE FROM queue_reserved
 		WHERE node_count = 0
-		AND queue_id IN (SELECT DISTINCT queue_id FROM queue_reserved where node_count != 0);
+		AND queue_id IN (SELECT DISTINCT queue_id FROM (SELECT DISTINCT queue_id FROM queue_reserved where node_count != 0) AS QueuesToDeleteFrom);
 	END //
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
