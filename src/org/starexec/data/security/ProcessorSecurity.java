@@ -6,6 +6,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
+import org.starexec.util.Validator;
 
 public class ProcessorSecurity {
 	
@@ -51,12 +52,18 @@ public class ProcessorSecurity {
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canUserEditProcessor(int procId, int userId) {
+	public static int canUserEditProcessor(int procId, int userId, String name, String desc) {
 		Processor p=Processors.get(procId);
 		Permission perm= Permissions.get(userId,p.getCommunityId());
 		if (perm==null || !perm.isLeader()) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
+		if(!Validator.isValidPrimName(name)
+				|| !Validator.isValidPrimDescription(desc)){
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
+		
 		return 0;
 	}
 }

@@ -89,6 +89,12 @@ public class SolverSecurity {
 	 */
 	
 	public static int canUserUpdateSolver(int solverId, String name, String description, boolean isDownloadable, int userId) {
+		// Ensure the parameters are valid
+		if(!Validator.isValidPrimName(name)
+				|| !Validator.isValidPrimDescription(description)){
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
 		Solver solver = Solvers.get(solverId);
 		if (solver==null) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
@@ -117,7 +123,14 @@ public class SolverSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserUpdateConfiguration(int configId, int userId) {
+	public static int canUserUpdateConfiguration(int configId, int userId, String name, String description,String contents) {
+		// Ensure the parameters are valid
+		if(!Validator.isValidPrimName(name)
+				|| !Validator.isValidPrimDescription(description)
+				||  contents.isEmpty()){
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
 		Solver solver = Solvers.getSolverByConfig(configId,false);
 		if (solver==null) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;

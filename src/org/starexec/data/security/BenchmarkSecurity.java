@@ -7,6 +7,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
+import org.starexec.util.Validator;
 
 public class BenchmarkSecurity {
 	
@@ -159,7 +160,13 @@ public class BenchmarkSecurity {
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not allowed.
 	 */
 	
-	public static int canUserEditBenchmark(int benchId, String name, int userId) {
+	public static int canUserEditBenchmark(int benchId, String name,String desc, int userId) {
+		// Ensure the parameters are valid
+		if(!Validator.isValidPrimName(name)
+				|| !Validator.isValidPrimDescription(desc)) { 
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
 		Benchmark bench = Benchmarks.getIncludeDeletedAndRecycled(benchId,false);
 		if (bench==null) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;

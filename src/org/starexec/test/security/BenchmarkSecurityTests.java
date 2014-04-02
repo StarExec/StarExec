@@ -124,13 +124,13 @@ public class BenchmarkSecurityTests extends TestSequence {
 	private void canEditBenchmarkTest() {
 		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(), admin.getId()));
+		Assert.assertEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), user1.getId()));
+		Assert.assertEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), admin.getId()));
 		
 		//we can't change the name to the same name as b2 because the names cannot be the same
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(), user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(), user2.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), user1.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), admin.getId()));
+		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(), user2.getId()));
 	}
 	
 	@Test

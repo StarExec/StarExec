@@ -1250,24 +1250,24 @@ public class RESTServices {
 	@Produces("applicatoin/json")
 	public String editProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=ProcessorSecurity.canUserEditProcessor(pid, userId);
+		
+		
+		
+		Processor p=Processors.get(pid);
+		if(!Util.paramExists("name", request)){
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		String name=request.getParameter("name");
+		String desc="";
+		// Ensure the parameters are valid
+		if (Util.paramExists("desc", request)) {
+			desc=request.getParameter("desc");
+		}
+		int status=ProcessorSecurity.canUserEditProcessor(pid, userId,name,desc);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
 		
-		
-		Processor p=Processors.get(pid);
-		if(!Util.paramExists("name", request)
-				|| !Util.paramExists("desc", request)){
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
-		String name=request.getParameter("name");
-		String desc=request.getParameter("desc");
-		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(name)
-				|| !Validator.isValidPrimDescription(desc)){
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
 		
 		if (!p.getName().equals(name)) {
 			boolean x=Processors.updateName(pid, name);
@@ -2270,9 +2270,7 @@ public class RESTServices {
 		}
 		
 		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(request.getParameter("name"))
-				|| !Validator.isValidPrimDescription(request.getParameter("description"))
-				|| !Validator.isValidBool(request.getParameter("downloadable"))){
+		if(!Validator.isValidBool(request.getParameter("downloadable"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
@@ -2479,9 +2477,7 @@ public class RESTServices {
 		}
 		
 		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(request.getParameter("name"))
-				|| !Validator.isValidPrimDescription(request.getParameter("description"))
-				|| !Validator.isValidBool(request.getParameter("downloadable"))){
+		if(!Validator.isValidBool(request.getParameter("downloadable"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		int userId = SessionUtil.getUserId(request);
@@ -2492,7 +2488,7 @@ public class RESTServices {
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 
-		int status=BenchmarkSecurity.canUserEditBenchmark(benchId,name,userId);
+		int status=BenchmarkSecurity.canUserEditBenchmark(benchId,name,description,userId);
 		if (status<0) {
 			return gson.toJson(status);
 		}
@@ -2512,6 +2508,8 @@ public class RESTServices {
 	 * did not match the password in the database.
 	 * @author Skylar Stark
 	 */
+	
+	//TODO: Change this method of validation
 	@POST
 	@Path("/edit/user/password/")
 	@Produces("application/json")
@@ -2607,20 +2605,10 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
-		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(request.getParameter("name"))
-				|| !Validator.isValidPrimDescription(request.getParameter("description"))
-				||  request.getParameter("contents").isEmpty()){
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
-		
 		// Permissions check; if user is NOT the owner of the configuration file's solver, deny update request
 		int userId = SessionUtil.getUserId(request);
 		
-		int status=SolverSecurity.canUserUpdateConfiguration(configId,userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
+		
 			
 		// Extract new configuration file details from request
 		String name = (String) request.getParameter("name");
@@ -2629,7 +2617,10 @@ public class RESTServices {
 			description = (String) request.getParameter("description");
 		}
 		String contents = (String) request.getParameter("contents");
-		
+		int status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description,contents);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
 		// Apply new solver details to database
 		return Solvers.updateConfigDetails(configId, name, description, contents) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
