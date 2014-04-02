@@ -30,6 +30,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -135,9 +136,35 @@ public class BatchUtil {
 		spaceElement.setAttributeNode(name);
 		
 		// Add the new attributes to space xml elements here
+		
+		// Sticky leaders attribute : sticky-leaders
 		Attr stickyLeaders = doc.createAttribute("sticky-leaders");
 		stickyLeaders.setValue(Boolean.toString(space.isStickyLeaders()));
 		spaceElement.setAttributeNode(stickyLeaders);
+		
+		// Find out if the users from the parent space are inherited (inherit-users)
+		Attr inheritUsers = doc.createAttribute("inherit-users");
+		List<User> parentUsers = Spaces.getUsers(space.getParentSpace());
+		List<User> spaceUsers = space.getUsers();
+		Boolean iu = true;
+		if (parentUsers != null && spaceUsers != null) {
+			// Check that the current space has all users present in the parent space
+			for (User u:parentUsers){
+				if (!spaceUsers.contains(u)){
+					iu = false;
+					break;
+				}
+			}
+			
+		}
+		inheritUsers.setValue(iu.toString());
+		spaceElement.setAttributeNode(inheritUsers);
+		
+		// Locked attribute
+		Attr locked = doc.createAttribute("locked");
+		locked.setValue(Boolean.toString(space.isLocked()));
+		spaceElement.setAttributeNode(locked);
+		
 		// -------------------------------------------------
 		
 		for (Benchmark benchmark:space.getBenchmarks()){
@@ -334,9 +361,7 @@ public class BatchUtil {
 		if (!sl.equals("") && !sl.equals(null)) {
 			Boolean stickyLeaders = Boolean.valueOf(sl);
 			space.setStickyLeaders(stickyLeaders);
-			// What else might need to happen here to initiate sticky leaders when this is true?
 		}
-		//------------------------------------------------------------------------
 		
 		// Check for inherit users attribute. If it is true, make the users the same as the parent
 		String iu = spaceElement.getAttribute("inherit-users");
@@ -345,6 +370,13 @@ public class BatchUtil {
 			if (inheritUsers){
 				space.setUsers(Spaces.getUsers(parentId));
 			}
+		}
+		
+		// Check for the locked attribute
+		String locked = spaceElement.getAttribute("locked");
+		if (!locked.equals("") && !locked.equals(null)) {
+			Boolean isLocked = Boolean.valueOf(locked);
+			space.setLocked(isLocked);
 		}
 		//------------------------------------------------------------------------
 		
