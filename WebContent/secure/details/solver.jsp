@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.Util, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.util.Util, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -16,7 +16,20 @@
 		if(s != null) {
 			request.setAttribute("usr", Users.get(s.getUserId()));
 			request.setAttribute("solver", s);
-			request.setAttribute("sites", Websites.getAllForHTML(solverId, Websites.WebsiteType.SOLVER));
+			List<Website> sites=Websites.getAll(solverId,Websites.WebsiteType.SOLVER);
+			//we need two versions of every website URL-- one for insertion into an attribute and
+			//one for insertion into the HTML body. This data structure represents every site with 3 strings
+			//first the name, then the attribute URL, then the body URL
+			List<String[]> formattedSites=new ArrayList<String[]>();
+			for (Website site : sites) {
+				String[] formattedSite=new String[3];
+				formattedSite[0]=GeneralSecurity.getHTMLSafeString(site.getName());
+				formattedSite[1]=GeneralSecurity.getHTMLAttributeSafeString(site.getUrl());
+				formattedSite[2]=GeneralSecurity.getHTMLSafeString(site.getUrl());
+				formattedSites.add(formattedSite);
+			}
+			
+			request.setAttribute("sites", formattedSites);
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
 			
@@ -132,12 +145,17 @@
 		<table class="shaded">
 			<thead>
 				<tr>
-					<th>link(s)</th>					
+					<th>link</th>
+					<th>url</th>				
 				</tr>
 			</thead>
 			<tbody>
 				<c:forEach var="site" items="${sites}">
-					<tr><td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td></tr>
+					<tr>
+						<td>${site[0]}</td>
+						<td><a href="${site[1]}">${site[2]}</a><img class="extLink" src="/${starexecRoot}/images/external.png"/></td>
+					
+					</tr>
 				</c:forEach>			
 			</tbody>				
 		</table>	

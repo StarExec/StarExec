@@ -229,6 +229,8 @@ CREATE TABLE configurations (
 
 -- Table which contains specific information about a job pair
 -- When changing to using runsolver, wallclock changed from bigint to double
+-- note: while some data is redundant in this table (solver_name, config_name, and so on), 
+-- it is essential for speeding up queries.
 CREATE TABLE job_pairs (
 	id INT NOT NULL AUTO_INCREMENT,	
 	job_id INT NOT NULL,

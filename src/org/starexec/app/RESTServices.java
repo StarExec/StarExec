@@ -2265,7 +2265,6 @@ public class RESTServices {
 	public String editSolverDetails(@PathParam("id") int solverId, @Context HttpServletRequest request) {
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
-				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("downloadable", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
@@ -2279,7 +2278,11 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny update request
 		int userId = SessionUtil.getUserId(request);
-		String description = request.getParameter("description");
+		String description="";
+		if (Util.paramExists("description", request)) {
+			description = request.getParameter("description");
+
+		}
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		String name = request.getParameter("name");
 		int status=SolverSecurity.canUserUpdateSolver(solverId, name, description, isDownloadable, userId);

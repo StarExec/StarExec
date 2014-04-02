@@ -130,7 +130,11 @@
 		<tbody>
 		
 			<c:forEach var="site" items="${sites}">
-				<tr><td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td></tr>
+				<tr>
+					<td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a class="delWebsite" id="${site.id}">delete</a></td>
+				</tr>
+			
 			</c:forEach>	
 		</tbody>
 		

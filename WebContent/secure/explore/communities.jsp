@@ -13,12 +13,12 @@
 		<h3 id="commName"></h3>
 		<p id="commDesc" class="accent"></p>
 						
-		<fieldset id="websiteField">
+		<!--<fieldset id="websiteField">
 			<legend><span>0</span> website(s)</legend>						
 			<div id="webDiv">				
 				<ul id="websites" class="horizontal"></ul>
 			</div>		
-		</fieldset>
+		</fieldset>-->
 					
 		<fieldset id="leaderField">
 			<legend class="expd"><span>0</span> leaders</legend>

@@ -210,8 +210,8 @@ public class Statistics {
 			}
 			log.debug("making solver comparison chart");
 			
-			String solver1=pairs1.get(0).getSolver().getName();
-			String solver2=pairs2.get(0).getSolver().getName();
+			String xAxisName=pairs1.get(0).getSolver().getName()+"/"+pairs1.get(0).getConfiguration().getName() +" time(s)";
+			String yAxisName=pairs2.get(0).getSolver().getName() +"/"+pairs2.get(0).getConfiguration().getName()+" time(s)";
 			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
 			
 			//data in these hashmaps is needed to create the image map
@@ -261,7 +261,7 @@ public class Statistics {
 			}
 			dataset.addSeries(d);
 			
-			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",solver1 + "time (s)", solver2 + "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
+			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
 			

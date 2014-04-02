@@ -491,6 +491,7 @@ public class Download extends HttpServlet {
 			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
+			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
 			String jobFile = CreateJobCSV(job, returnIds);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
 			if (returnIds && jobComplete) {
@@ -582,10 +583,10 @@ public class Download extends HttpServlet {
 				sb.append(pair.getSolver().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getSolver().getConfigurations().get(0).getName());
+			sb.append(pair.getConfiguration().getName());
 			sb.append(",");
 			if (returnIds) {
-				sb.append(pair.getSolver().getConfigurations().get(0).getId());
+				sb.append(pair.getConfiguration().getId());
 				sb.append(",");
 			}
 			sb.append(pair.getStatus().toString());
