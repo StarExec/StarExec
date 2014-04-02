@@ -127,8 +127,9 @@ function initDataTables() {
 		"fnStartProcessingMode": function() {
 			needToConfirm = true;
 			nodeTable.fnDraw();
-			nodeTable.fnDraw();
-			nodeTable.fnDraw();
+
+			setTimeout(function(){nodeTable.fnDraw();}, 1000);
+
 		},
 	  });
 	
