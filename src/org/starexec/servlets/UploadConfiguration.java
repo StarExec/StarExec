@@ -152,17 +152,23 @@ public class UploadConfiguration extends HttpServlet {
 			// Ensure the map contains all relevant keys
 			if (!configAttrMap.containsKey(UPLOAD_FILE) ||
 					!configAttrMap.containsKey(SOLVER_ID) ||
-					!configAttrMap.containsKey(CONFIG_NAME) || 
-					!configAttrMap.containsKey(CONFIG_DESC)) {
+					!configAttrMap.containsKey(CONFIG_NAME)) {
 				return false;
 			}
 			
 			// Ensure the parent solver id is valid
 			Integer.parseInt((String)configAttrMap.get(SOLVER_ID));
 			
+			
+			if (configAttrMap.containsKey(CONFIG_DESC)) {
+				if (!Validator.isValidPrimDescription((String)configAttrMap.get(CONFIG_DESC))) {
+
+					return false;
+				}
+			}
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidPrimName((String)configAttrMap.get(CONFIG_NAME)) || 
-					!Validator.isValidPrimDescription((String)configAttrMap.get(CONFIG_DESC))) {
+			if(!Validator.isValidPrimName((String)configAttrMap.get(CONFIG_NAME))) {
+
 				return false;
 			}
 			

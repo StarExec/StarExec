@@ -122,6 +122,7 @@ public class JobPairs {
 		return false;
 	}
 	
+	//TODO: Is this secure? What permissions does this script have?
 	/**
 	 * Runs the given post processor on the given pair and returns the properties that were obtained
 	 * @param pairId The ID of the pair in question

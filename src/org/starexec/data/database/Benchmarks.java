@@ -591,7 +591,7 @@ public class Benchmarks {
 		}
 		return true;
 	}
-
+	//TODO: Is it secure to run benchmark processors in this way?
 	/**
 	 * Given a set of benchmarks and a processor, this method runs each benchmark through
 	 * the processor and adds a hashmap of attributes to the benchmark that are given from
