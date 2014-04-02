@@ -103,7 +103,7 @@ public class SolverSecurityTests extends TestSequence {
 	@Test
 	private void CanDeleteWebsiteTest() {
 		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
-		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SPACE).get(0).getId();
+		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0).getId();
 		Assert.assertEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, owner.getId()));
 		Assert.assertEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, admin.getId()));
 
