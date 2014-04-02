@@ -95,7 +95,7 @@ public class BatchUtil {
 	//stardev also needs to point to starexec here-- we don't want it to use Util.url
 	Element spacesElement=null;
 	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-		spacesElement = doc.createElementNS("public/stardevSpaceSchema.xsd", "tns:Spaces");
+		spacesElement = doc.createElementNS(Util.url("public/stardevSpaceSchema.xsd"), "tns:Spaces");
 		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
 		spacesElement.setAttribute("xsi:schemaLocation", 
