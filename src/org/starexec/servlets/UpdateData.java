@@ -71,10 +71,6 @@ public class UpdateData extends HttpServlet {
 			value = Integer.parseInt(request.getParameter("value"));
 		}
 
-		
-		
-
-		
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		Date reserve_date = null;
 		try {
