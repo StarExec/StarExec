@@ -796,9 +796,13 @@ public class RESTHelpers {
 		Date reqStartDate = req.getStartDate();
 		Date reqEndDate = req.getEndDate();
 
-		//This hashmap tells us at what date did a queue experience its first non-zero date
+		//This hashmap tells us at what date did a queue experience its first non-zero count
 		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
+		//This hashmap tells us at what date did we experience the last non-zero count
 		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
+		//This hashmap tells us if the request had a non-zero count on TODAY's date
+		List<Integer> starts_nonEmpty = new LinkedList<Integer>();
+		
 		List<Queue> queues = Queues.getAllNonPermanent();
 
 		for (java.util.Date date : dates) {
@@ -857,7 +861,9 @@ public class RESTHelpers {
 		}
 		
 		
+		int dateCount = 0;
 		for (java.util.Date d : dates ) {
+			dateCount += 1;
 			boolean conflict = false;
 
 			Date date = new Date(d.getTime());
@@ -904,10 +910,14 @@ public class RESTHelpers {
 					continue;
 				}
 				node_count = Queues.getNodeCountOnDate(q.getId(), date);
+				if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
+
 				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
 				if (temp_nodeCount != -1) {
 					node_count = temp_nodeCount;
 				}
+				
+				if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
 				
 				if (last_date.containsKey(q.getId())) {
 					java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
