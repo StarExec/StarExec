@@ -94,19 +94,19 @@ public class BatchUtil {
 	log.debug("Generating Space XML for space " + space.getId());
 	//stardev also needs to point to starexec here-- we don't want it to use Util.url
 	Element spacesElement=null;
-//	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-//		spacesElement = doc.createElementNS("https://www.starexec.org/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
-//		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-//		
-//		spacesElement.setAttribute("xsi:schemaLocation", 
-//					   "https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
-//	} else {
+	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
+		spacesElement = doc.createElementNS("public/stardevSpaceSchema.xsd", "tns:Spaces");
+		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		
+		spacesElement.setAttribute("xsi:schemaLocation", 
+					   Util.url("public/stardevSpaceSchema.xsd stardevSpaceSchema.xsd"));
+	} else {
 		spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
 		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
 		spacesElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
-//	}
+	}
 	
 		
 	Element rootSpaceElement = generateSpaceXML(space, userId);
@@ -176,7 +176,13 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(R.SPACE_XML_SCHEMA_LOC)}));
+			String schemaLoc = "";
+			if (R.STAREXEC_SERVERNAME.contains("stardev")) {
+				schemaLoc = Util.url("public/stardevSpaceSchema.xsd");
+			} else {
+				schemaLoc = R.SPACE_XML_SCHEMA_LOC;
+			}
+			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 //			builder.setErrorHandler(new SAXErrorHandler());
@@ -237,6 +243,11 @@ public class BatchUtil {
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
 				name = spaceElement.getAttribute("name");
+				if (name == null) {
+					log.debug("Name not found");
+					errorMessage = "Space elements must include a 'name' attribute.";
+					return false;
+				}
 				log.debug("Space Name = " + name);
 				if (name.length()<2){
 					log.debug("Name was not long enough");
