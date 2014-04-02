@@ -831,6 +831,29 @@ public class RESTHelpers {
 					}
 				}
 			}
+			//Do the same for the newly request queue
+			int reqNodeCount = Requests.GetNodeCountOnDate(req.getQueueName(), date);
+			int temp_reqNodeCount = Cluster.getTempNodeCountOnDate(req.getQueueName(), date);
+			if (temp_reqNodeCount != -1) {
+				reqNodeCount = temp_reqNodeCount;
+			}
+			if (reqNodeCount > 0) {
+				if (!(nonzero_date.containsKey(Queues.getIdByName(req.getQueueName())))) {
+					nonzero_date.put(Queues.getIdByName(req.getQueueName()), date);
+				}
+				if (last_date.containsKey(Queues.getIdByName(req.getQueueName()))) {
+					if (date.after(last_date.get(Queues.getIdByName(req.getQueueName())))) {
+						last_date.remove(Queues.getIdByName(req.getQueueName()));
+					}
+				}
+			} else {
+				if (nonzero_date.containsKey(Queues.getIdByName(req.getQueueName()))) {
+					if (!(last_date.containsKey(Queues.getIdByName(req.getQueueName())))) {
+						last_date.put(Queues.getIdByName(req.getQueueName()), date);
+					}
+				}
+			}
+			
 		}
 		
 		
