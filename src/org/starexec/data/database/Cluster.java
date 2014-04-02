@@ -504,7 +504,7 @@ public class Cluster {
 		log.debug("queueName = " + queueName);
 		log.debug("value = " + value);
 		log.debug("reserve_date = " + reserve_date);
-		Date earliestEndDate = Requests.getEarliestEndDate();
+		Date earliestEndDate = Requests.getEarliestEndDate(reserve_date);
 		log.debug("earliest end date = " + earliestEndDate);
 		if (earliestEndDate == null) {
 			earliestEndDate = reserve_date;

@@ -1112,14 +1112,15 @@ public class Requests {
 		
 	}
 
-	public static Date getEarliestEndDate() {
+	public static Date getEarliestEndDate(Date reserve_date) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL GetEarliestEndDate()}");			
+			procedure = con.prepareCall("{CALL GetEarliestEndDate(?)}");	
+			procedure.setDate(1, reserve_date);
 			results = procedure.executeQuery();
 
 			while(results.next()){
