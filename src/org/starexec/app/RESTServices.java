@@ -3638,9 +3638,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		List<Job> jobs = new LinkedList<Job>();
-		jobs = Jobs.getAdminPausedJobs();
-		return Jobs.resumeAll(jobs) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.resumeAll() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST

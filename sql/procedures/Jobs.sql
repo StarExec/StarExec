@@ -342,7 +342,7 @@ CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
 DROP PROCEDURE IF EXISTS IsJobPausedOrKilled;
 CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 	BEGIN
-		SELECT paused,killed, paused_admin
+		SELECT paused,killed
 		FROM jobs
 		WHERE id=_jobId;
 	END //
@@ -389,15 +389,10 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 -- Sets the "paused" and "paused_admin property of a job to true
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS PauseAll;
-CREATE PROCEDURE PauseAll(IN _jobId INT)
+CREATE PROCEDURE PauseAll()
 	BEGIN
-		UPDATE jobs
-		SET paused=true,paused_admin=true
-		WHERE id = _jobId;
-		
-		UPDATE job_pairs
-		SET status_code = 20
-		WHERE job_id = _jobId AND status_code = 1;
+		UPDATE system_flags
+		SET paused=true;
 	END //
 	
 -- Sets the "paused" property of a job to false
@@ -414,18 +409,13 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		WHERE job_id = _jobId AND status_code = 20;
 	END //
 	
--- Removes the "paused" and "paused_admin" flag of a job
+-- sets the global paused flag to false
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS ResumeAll;
 CREATE PROCEDURE ResumeAll(IN _jobId INT)
 	BEGIN
-		UPDATE jobs
-		SET paused=false,paused_admin=false
-		WHERE id = _jobId;
-		
-		UPDATE job_pairs
-		SET status_code = 1
-		WHERE job_id = _jobId AND status_code = 20;
+		UPDATE system_flags
+		SET paused=false;
 	END //
 	
 -- Sets the "killed" property of a job to true
@@ -685,19 +675,11 @@ CREATE PROCEDURE GetRunningJobs()
 				WHERE 	job_pairs.status_code < 7;
 	END //
 	
-DROP PROCEDURE IF EXISTS GetAdminPausedJobs;
-CREATE PROCEDURE GetAdminPausedJobs()
+DROP PROCEDURE IF EXISTS IsSystemPaused;
+CREATE PROCEDURE IsSystemPaused()
 	BEGIN
-		SELECT
-			id,
-			name,
-			user_id,
-			created,
-			description,
-			deleted,
-			primary_space
-		FROM jobs
-		WHERE paused_admin = true;
+		SELECT paused
+		FROM system_flags;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file

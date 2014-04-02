@@ -1876,6 +1876,9 @@ public class RESTHelpers {
 			String jobLink = sb.toString();
 
 			String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
+			if (Jobs.isSystemPaused()) {
+				status = "global pause";
+			}
 			if (Jobs.isJobPaused(job.getId())) {
 				status = "paused";
 			}

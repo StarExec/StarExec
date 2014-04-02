@@ -53,6 +53,10 @@ public abstract class JobManager {
 	}
 
     public synchronized static boolean checkPendingJobs(){
+    if (Jobs.isSystemPaused()) { 
+    	log.info("Not adding more job pairs to any queues, as the system is paused");
+    	return false;
+    }
 	List<Queue> queues = Queues.getAll();
 	for (Queue q : queues) {
 	    int qId = q.getId();

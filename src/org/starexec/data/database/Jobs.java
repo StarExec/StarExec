@@ -2419,16 +2419,6 @@ public class Jobs {
 	public static boolean isJobPaused(int jobId) {
 		return (isJobPausedOrKilled(jobId)==1 || isJobPausedOrKilled(jobId)==3);
 	}
-	
-	/**
-	 * Determines whether the job with the given ID exists in the database with the column "paused_admin" set to true
-	 * @param jobId The ID of the job in question
-	 * @return True if the job is paused by the admin (i.e. the paused_admin flag is set to true), false otherwise
-	 * @author Wyatt Kaiser
-	 */
-	public static boolean isJobAdminPaused(int jobId) {
-		return isJobPausedOrKilled(jobId)==3;
-	}
 
 	/**
 	 * Determines whether the given job is either paused, admin paused, or killed
@@ -2450,12 +2440,7 @@ public class Jobs {
 			 results = procedure.executeQuery();
 			boolean paused=false;
 			boolean killed=false;
-			boolean adminPaused=false;
 			if (results.next()) {
-				adminPaused=results.getBoolean("paused_admin");
-				if (adminPaused) {
-					return 3;
-				}
 				paused=results.getBoolean("paused");
 				if (paused) {
 					return 1;
@@ -2689,13 +2674,12 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL PauseAll(?)}");
+			procedure = con.prepareCall("{CALL PauseAll()}");
+			procedure.executeUpdate();
+			log.debug("Pausation of system was successful");
+			
 			if (jobs != null) {
 				for (Job j : jobs) {
-					procedure.setInt(1, j.getId());		
-					procedure.executeUpdate();
-					log.debug("Pausation of job id = " + j.getId() + " was successful");
-					
 					//Get the enqueued job pairs and remove them
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 					if (jobPairsEnqueued != null) {
@@ -2703,7 +2687,7 @@ public class Jobs {
 							int sge_id = jp.getGridEngineId();
 							Util.executeCommand("qdel " + sge_id);
 							log.debug("enqueued: Just executed qdel " + sge_id);
-							JobPairs.UpdateStatus(jp.getId(), 20);
+							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
 					//Get the running job pairs and remove them
@@ -2714,7 +2698,7 @@ public class Jobs {
 							int sge_id = jp.getGridEngineId();
 							Util.executeCommand("qdel " + sge_id);
 							log.debug("running: Just executed qdel " + sge_id);
-							JobPairs.UpdateStatus(jp.getId(), 20);
+							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
 					log.debug("Deletion of paused job pairs from queue was succesful");
@@ -2951,34 +2935,18 @@ public class Jobs {
 		return false;
 	}
 	
-	
 	/**
-	 * resume all admin paused jobs (via admin page), and also removes the paused & paused_admin flags in the database. 
-	 * @param jobs The jobs to resume
-	 * @return True on success, false otherwise
+	 * resumeAll sets global pause to false, which allows job pairs to be sent to the grid engine again
 	 * @author Wyatt Kaiser
 	 */
-	
-	public static boolean resumeAll(List<Job> jobs) {
+	public static boolean resumeAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			Common.beginTransaction(con);
-			procedure = con.prepareCall("{CALL ResumeAll(?)}");
-
+			procedure = con.prepareCall("{CALL ResumeAll()}");
+			procedure.executeUpdate();
 			
-			if (jobs != null) {
-				for (Job j : jobs) {
-					procedure.setInt(1, j.getId());		
-					procedure.executeUpdate();
-					log.debug("Resuming of job id = " + j.getId() + " was successful");
-				}
-			}
-			
-			Common.endTransaction(con);
-		
-		
 			return true;
 		} catch (Exception e) {
 			log.error("ResumeAll says "+e.getMessage(),e);
@@ -2987,6 +2955,7 @@ public class Jobs {
 		}
 		return false;
 	}
+	
 	
 	/*
 	 *Perhaps we will want to cancel  jobs in the future? 
@@ -3384,27 +3353,18 @@ public class Jobs {
 		return null;
 	}
 
-	public static List<Job> getAdminPausedJobs() {
+	public static boolean isSystemPaused() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetAdminPausedJobs()}");
+			procedure = con.prepareCall("{CALL IsSystemPaused()}");
 			results = procedure.executeQuery();
 			
-			List<Job> jobs = new LinkedList<Job>();
-			while (results.next()) {
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));	
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));					
-				jobs.add(j);
+			if (results.next()) {
+				return results.getBoolean("paused");
 			}
-			return jobs;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -3412,6 +3372,6 @@ public class Jobs {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		return null;
+		return false;
 	}
 }

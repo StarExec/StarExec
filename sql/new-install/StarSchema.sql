@@ -203,7 +203,6 @@ CREATE TABLE jobs (
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
-	paused_admin BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
 	primary_space INT,
 	PRIMARY KEY (id),
@@ -556,4 +555,11 @@ CREATE TABLE file_cache (
 	cache_type INT NOT NULL,
 	last_access TIMESTAMP NOT NULL,
 	PRIMARY KEY (id,cache_type)
+);
+
+-- Table that contains some global flags
+-- Author: Wyatt Kaiser
+CREATE TABLE system_flags (
+	paused BOOLEAN DEFAULT FALSE,
+	PRIMARY KEY (paused)
 );
