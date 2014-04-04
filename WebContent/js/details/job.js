@@ -113,8 +113,8 @@ function reloadTables(id) {
 		$("#solverChoice1").empty();
 		$("#solverChoice2").empty();
 		$("#spaceOverviewSelections").empty();
-		$("#spaceOverview").attr("src",starexecRoot+"/images/emptyGraph.png");
-		$("#solverComparison").attr("src",starexecRoot+"/images/emptyGraph.png");
+		$("#spaceOverview").attr("src",starexecRoot+"/images/loadingGraph.png");
+		$("#solverComparison").attr("src",starexecRoot+"/images/loadingGraph.png");
 		
 		//tell the tables to display a "loading" indicator
 		summaryTable.fnProcessingIndicator(true);
@@ -597,15 +597,19 @@ function updateSpaceOverviewGraph() {
 				
 				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;
 				case "2":
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;	
 				case "12":
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;
 				case "13":
 					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;
 				default:
 					
@@ -642,15 +646,23 @@ function updateSolverComparison(big) {
 				
 				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				case "2":
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job",5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				case "12":
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				case "13":
 					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				default:
 					jsonObject=$.parseJSON(returnCode);

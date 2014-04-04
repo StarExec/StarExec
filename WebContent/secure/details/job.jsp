@@ -145,9 +145,9 @@
 			
 				<fieldset id="graphField">
 			<legend>graphs</legend> 
-			<img id="spaceOverview" src="/${starexecRoot}/images/emptyGraph.png" width="300" height="300" /> 
+			<img id="spaceOverview" src="/${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
 				
-				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/emptyGraph.png" usemap="#solverComparisonMap" />
+				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
 				<fieldset id="optionField">
 				<legend>options</legend> 
 					<fieldset id="spaceOverviewOptionField">

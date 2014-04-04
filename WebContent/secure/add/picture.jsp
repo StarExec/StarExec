@@ -8,10 +8,15 @@
 		
 		String type = request.getParameter("type").toString();
 		String Id =  request.getParameter("Id").toString();
-	
-		request.setAttribute("userId", userId);
-		request.setAttribute("Id", Id);
-		request.setAttribute("type", type);
+		
+		if (Validator.isValidPictureType(type) && Validator.isValidInteger(Id)) {
+			request.setAttribute("userId", userId);
+			request.setAttribute("Id", Id);
+			request.setAttribute("type", type);
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The image parameters were invalid");
+		}
+		
 
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

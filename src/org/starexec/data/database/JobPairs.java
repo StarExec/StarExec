@@ -137,8 +137,10 @@ public class JobPairs {
 			// Run the processor on the benchmark file
 			String [] procCmd = new String[2];
 			procCmd[0] = p.getFilePath();
-	
-			procCmd[1] = JobPairs.getFilePath(pairId);
+			JobPair pair=JobPairs.getPair(pairId);
+			procCmd[1] = JobPairs.getFilePath(pair);
+			
+			procCmd[2] = Benchmarks.get(pair.getId()).getPath();
 			reader = Util.executeCommand(procCmd,null);
 			
 			// Load results into a properties file

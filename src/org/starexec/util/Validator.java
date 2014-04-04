@@ -205,6 +205,10 @@ public class Validator {
     	return true;
     }
     
+    public static boolean isValidPictureType(String type) {
+    	return (type.equals("user") || type.equals("benchmark") || type.equals("solver"));
+    }
+    
     /**
      * Validates an archive type. Archives must be either .zip, .tar, or .tar.gz/.tgz
      * @param format the archive type to check
