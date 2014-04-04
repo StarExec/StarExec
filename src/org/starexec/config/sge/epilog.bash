@@ -42,6 +42,12 @@ LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
+# The benchmark's name
+BENCH_NAME="${BENCH_PATH##*/}"
+
+# The path to the benchmark on the execution host
+LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
+
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
 
@@ -80,7 +86,7 @@ function copyOutput {
 	log "getting postprocessor"
 	cp $POST_PROCESSOR_PATH $STAREXEC_OUT_DIR/postProcessor
 	log "executing post processor"
-	$STAREXEC_OUT_DIR/postProcessor $STAREXEC_OUT_DIR/stdout.txt > "$STAREXEC_OUT_DIR"/attributes.txt
+	$STAREXEC_OUT_DIR/postProcessor $STAREXEC_OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$STAREXEC_OUT_DIR"/attributes.txt
 	log "processing attributes"
 	#cat $STAREXEC_OUT_DIR/attributes.txt
 	processAttributes $STAREXEC_OUT_DIR/attributes.txt

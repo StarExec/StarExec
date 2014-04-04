@@ -1713,17 +1713,16 @@ public class Solvers {
 	 * @param configId the id of the configuration to update
 	 * @param name the new name to update the configuration with (this will also affect the filename on disk)
 	 * @param description the new description to update the configuration with
-	 * @param contents the new configuration file contents to update the file contents on disk with
 	 * @return true iff the configuration file is successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean updateConfigDetails(int configId, String name, String description, String contents) {
+	public static boolean updateConfigDetails(int configId, String name, String description) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
 			
 			// Try and update the configuration file's name and/or contents
-			if(Solvers.updateConfigFile(configId, name, contents)){
+			if(Solvers.updateConfigFile(configId, name)){
 				
 				// If the physical configuration file was successfully renamed, update the database too
 				con = Common.getConnection();
@@ -1754,13 +1753,12 @@ public class Solvers {
 	 *
 	 * @param configId the id of the configuration whose file is to be updated
 	 * @param newConfigName the new configuration filename
-	 * @param contents the new configuration file contents
 	 * @return true iff the configuration file was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean updateConfigFile(int configId, String newConfigName, String contents){
+	public static boolean updateConfigFile(int configId, String newConfigName){
 		try {
-			if(configId < 0 || Util.isNullOrEmpty(newConfigName) || Util.isNullOrEmpty(contents)){
+			if(configId < 0 || Util.isNullOrEmpty(newConfigName)){
 				log.warn("The configuration file parameters to update with are invalid.");
 				return false;
 			}
@@ -1784,23 +1782,11 @@ public class Solvers {
 				}
 			}
 			
-			// IF the contents aren't the same between oldConfig and newConfig THEN
-			if (!contents.equals(FileUtils.readFileToString(oldConfig))) {
-				// Rewrite the file, changing the name if necessary
-				if (true == isConfigNameUnchanged) {
-					FileUtils.writeByteArrayToFile(oldConfig, contents.getBytes(), false);
-				} else {
-					FileUtils.writeByteArrayToFile(newConfig, contents.getBytes());
-					oldConfig.delete();
-				}
+			// Rename the file if necessary
+			if (!isConfigNameUnchanged){
+				FileUtils.moveFile(oldConfig, newConfig);
 			}
-			// OTHERWISE contents are the same
-			else { 
-				// Rename the file if necessary
-				if (false == isConfigNameUnchanged){
-					FileUtils.moveFile(oldConfig, newConfig);
-				}
-			}
+			
 			
 			return true;
 		} catch (Exception e){

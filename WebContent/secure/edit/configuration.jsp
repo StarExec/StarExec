@@ -64,7 +64,7 @@ try {
 				</tr>
 				<tr>
 					<td>contents</td>
-					<td><textarea id="contents" name="contents">${contents}</textarea></td>
+					<td><textarea id="contents" name="contents" readonly>${contents}</textarea></td>
 				</tr>
 			</tbody>	
 		</table>

@@ -2600,8 +2600,7 @@ public class RESTServices {
 	public String editConfigurationDetails(@PathParam("id") int configId, @Context HttpServletRequest request) {
 		
 		// Ensure the parameters exist
-		if(!Util.paramExists("name", request)
-				|| !Util.paramExists("contents", request)){
+		if(!Util.paramExists("name", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		
@@ -2616,13 +2615,13 @@ public class RESTServices {
 		if (Util.paramExists("description", request)) {
 			description = (String) request.getParameter("description");
 		}
-		String contents = (String) request.getParameter("contents");
-		int status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description,contents);
+		
+		int status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
 		// Apply new solver details to database
-		return Solvers.updateConfigDetails(configId, name, description, contents) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Solvers.updateConfigDetails(configId, name, description) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	

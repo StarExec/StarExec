@@ -123,11 +123,10 @@ public class SolverSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserUpdateConfiguration(int configId, int userId, String name, String description,String contents) {
+	public static int canUserUpdateConfiguration(int configId, int userId, String name, String description) {
 		// Ensure the parameters are valid
 		if(!Validator.isValidPrimName(name)
-				|| !Validator.isValidPrimDescription(description)
-				||  contents.isEmpty()){
+				|| !Validator.isValidPrimDescription(description)){
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}
 		

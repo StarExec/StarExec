@@ -4,6 +4,8 @@ var panelArray=null;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");	
 	jobSpaceId=$("#spaceId").attr("value");
+	$("#pageHeader").hide();
+	$("#pageFooter").hide();
 	//update the tables every 5 seconds
 	setInterval(function() {
 		for (i=0;i<panelArray.length;i++) {
