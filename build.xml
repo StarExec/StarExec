@@ -18,6 +18,7 @@
 	<property name="build-dir" value="build" />
 	<property name="class-dir" value="${build-dir}/classes" />		
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
+	<property name="esapi-dir" value="${class-dir}/esapi"/>
 	<property name="resource-dir" value="${class-dir}/org/starexec/test/resources" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
@@ -120,7 +121,12 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>
-	
+	        <mkdir dir="${esapi-dir}" />
+	        <copy todir="${esapi-dir}">
+			<fileset dir="${source-dir}/esapi">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
                 <!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
                 <copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
