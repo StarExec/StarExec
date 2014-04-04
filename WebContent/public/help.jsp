@@ -28,10 +28,10 @@
 		</li>
 
 		<li>
-			<a href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Feedback">give feedback</a>
+			<a href="http://starexec.wordpress.com">StarExec blog</a>, for upcoming features and current issues
 		</li>
 		<li>
-			<a href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Bug Report">report bug</a>
+			<a href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Feedback">give feedback or report bug</a>
 		</li>
 		<br/><br/>
 		<p>this build was last updated on ${buildDate}</p>
