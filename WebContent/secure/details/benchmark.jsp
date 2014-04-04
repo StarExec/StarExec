@@ -39,7 +39,7 @@
 				down=true;
 			}
 			request.setAttribute("downloadable",down);
-			String content=GeneralSecurity.getHTMLSafeString(Benchmarks.getContents(b,-1));
+			String content=GeneralSecurity.getHTMLSafeString(Benchmarks.getContents(b,100));
 			request.setAttribute("content",content);
 		} else {
 			if (Benchmarks.isBenchmarkDeleted(benchId)) {
@@ -168,7 +168,7 @@
 			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> contents</legend>
 			<textarea class="contentTextarea" id="benchContent" readonly="readonly" >${content}</textarea>	
 			<a href="/${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
-			<p class="caption">'popout' for larger text window.</p>
+			<p class="caption">content may be truncated. 'popout' for larger text window.</p>
 		</fieldset>			
 	</c:if> 
 

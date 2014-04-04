@@ -15,7 +15,7 @@
 			Job j = Jobs.getShallow(jp.getJobId());
 			
 			User u = Users.get(j.getUserId());
-			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,-1));
+			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,100));
 			String log=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getJobLog(jp));
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
