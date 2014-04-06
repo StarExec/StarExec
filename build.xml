@@ -193,7 +193,7 @@
 
 		<!-- Update the upload commands to use the correct app -->
 		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/" 
-				replace="login addr=https://stardev.cs.uiowa.edu/${appname}/" byline="false" />
+				replace="login addr=https://${server-name}/${appname}/" byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
 		<!-- Update the schema to use the currect stardev app -->
@@ -204,9 +204,9 @@
 			</fileset>
 		</copy>
 		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
-				replace="stardev.cs.uiowa.edu/${appname}/" byline="false" />
+				replace="${server-name}/${appname}/" byline="false" />
 		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
-				replace="stardev.cs.uiowa.edu/${appname}/" byline="false" />
+				replace="${server-name}/${appname}/" byline="false" />
 
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
