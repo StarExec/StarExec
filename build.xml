@@ -196,6 +196,18 @@
 				replace="login addr=https://stardev.cs.uiowa.edu/${appname}/" byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
+		<!-- Update the schema to use the currect stardev app -->
+		<delete file="WebContent/public/batchSpaceSchema.xsd" />
+		<copy todir="WebContent/public/">
+			<fileset dir="batch-space-schema">
+				<include name="batchSpaceSchema.xsd" />
+			</fileset>
+		</copy>
+		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="stardev.cs.uiowa.edu/${appname}/" byline="false" />
+		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="stardev.cs.uiowa.edu/${appname}/" byline="false" />
+
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>

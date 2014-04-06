@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_tsmith14/public/batchSpaceSchema.xsd" targetNamespace="https://stardev.cs.uiowa.edu/starexec_tsmith14/public/batchSpaceSchema.xsd">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://www.starexec.org/starexec/public/batchSpaceSchema.xsd" targetNamespace="https://www.starexec.org/starexec/public/batchSpaceSchema.xsd">
     
     <annotation>
     	<documentation>

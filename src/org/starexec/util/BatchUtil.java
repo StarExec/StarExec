@@ -93,21 +93,20 @@ public class BatchUtil {
      */	
     public Element generateSpacesXML(Space space, int userId){		
 	log.debug("Generating Space XML for space " + space.getId());
-	//stardev also needs to point to starexec here-- we don't want it to use Util.url
 	Element spacesElement=null;
-	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-		spacesElement = doc.createElementNS(Util.url("public/stardevSpaceSchema.xsd"), "tns:Spaces");
-		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+	//if (R.STAREXEC_SERVERNAME.contains("stardev")) {
+	//	spacesElement = doc.createElementNS(Util.url("public/stardevSpaceSchema.xsd"), "tns:Spaces");
+	//	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
-		spacesElement.setAttribute("xsi:schemaLocation", 
-					   Util.url("public/stardevSpaceSchema.xsd stardevSpaceSchema.xsd"));
-	} else {
-		spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
-		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+	//	spacesElement.setAttribute("xsi:schemaLocation", 
+	//				   Util.url("public/stardevSpaceSchema.xsd stardevSpaceSchema.xsd"));
+	//} else {
+	spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
+	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
-		spacesElement.setAttribute("xsi:schemaLocation", 
+	spacesElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
-	}
+	//}
 	
 		
 	Element rootSpaceElement = generateSpaceXML(space, userId);
@@ -144,19 +143,19 @@ public class BatchUtil {
 		
 		// Find out if the users from the parent space are inherited (inherit-users)
 		Attr inheritUsers = doc.createAttribute("inherit-users");
-		List<User> parentUsers = Spaces.getUsers(space.getParentSpace());
-		List<User> spaceUsers = space.getUsers();
-		Boolean iu = true;
-		if (parentUsers != null && spaceUsers != null) {
-			// Check that the current space has all users present in the parent space
-			for (User u:parentUsers){
-				if (!spaceUsers.contains(u)){
-					iu = false;
-					break;
-				}
-			}
-			
-		}
+//		List<User> parentUsers = Spaces.getUsers(space.getParentSpace());
+//		List<User> spaceUsers = space.getUsers();
+		Boolean iu = false;
+//		if (parentUsers != null && spaceUsers != null) {
+//			// Check that the current space has all users present in the parent space
+//			for (User u:parentUsers){
+//				if (!spaceUsers.contains(u)){
+//					iu = false;
+//					break;
+//				}
+//			}
+//			
+//		}
 		inheritUsers.setValue(iu.toString());
 		spaceElement.setAttributeNode(inheritUsers);
 		
@@ -203,12 +202,12 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			String schemaLoc = "";
-			if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-				schemaLoc = Util.url("public/stardevSpaceSchema.xsd");
-			} else {
-				schemaLoc = R.SPACE_XML_SCHEMA_LOC;
-			}
+			//String schemaLoc = "";
+			//if (R.STAREXEC_SERVERNAME.contains("stardev")) {
+			//	schemaLoc = Util.url("public/stardevSpaceSchema.xsd");
+			//} else {
+			String schemaLoc = R.SPACE_XML_SCHEMA_LOC;
+			//}
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
