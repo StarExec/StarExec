@@ -3366,6 +3366,8 @@ public class Jobs {
 			if (results.next()) {
 				return results.getBoolean("paused");
 			}
+			//if no results exist, the system is not globally paused
+			return false;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {

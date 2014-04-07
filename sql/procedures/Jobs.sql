@@ -386,13 +386,14 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 		WHERE job_id = _jobId AND status_code = 1;
 	END //
 	
--- Sets the "paused" and "paused_admin property of a job to true
+-- Sets the global paused flag to true
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS PauseAll;
 CREATE PROCEDURE PauseAll()
 	BEGIN
-		UPDATE system_flags
-		SET paused=true;
+		INSERT INTO system_flags (integrity_keeper, paused)
+		VALUES ('', true)
+		ON DUPLICATE KEY UPDATE paused = true;
 	END //
 	
 -- Sets the "paused" property of a job to false
@@ -414,8 +415,9 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 DROP PROCEDURE IF EXISTS ResumeAll;
 CREATE PROCEDURE ResumeAll()
 	BEGIN
-		UPDATE system_flags
-		SET paused=false;
+		INSERT INTO system_flags (integrity_keeper, paused)
+		VALUES ('', false)
+		ON DUPLICATE KEY UPDATE paused = false;
 	END //
 	
 -- Sets the "killed" property of a job to true
