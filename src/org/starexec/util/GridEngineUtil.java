@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -681,11 +682,16 @@ public class GridEngineUtil {
 			for (QueueRequest req : queueReservations) {
 				SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
 				
+		        Calendar cal = Calendar.getInstance();
+		        cal.setTime(today);
+		        cal.add(Calendar.DATE, -1);
+		        java.util.Date yesterday = cal.getTime();
+				
 				/**
-				 * If today is when the reservation is ending
+				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
 				 */
-				boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
-				if (end_is_today) {
+				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
+				if (end_was_yesterday) {
 					cancelReservation(req);
 				}
 				
@@ -766,7 +772,6 @@ public class GridEngineUtil {
 
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
-		log.debug("req.getQueueName() = " + req.getQueueName());
 		String queueName = req.getQueueName();
 		String[] split = queueName.split("\\.");
 		String shortQueueName = split[0];
