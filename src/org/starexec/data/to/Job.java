@@ -32,6 +32,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	private Processor preProcessor;
 	private Processor postProcessor;	
 	private boolean deleted;
+	private boolean paused;
 	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
@@ -223,6 +224,15 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 
 	public boolean isDeleted() {
 		return deleted;
+	}
+
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
+	}
+
+	public boolean isPaused() {
+		return paused;
 	}
 
 	

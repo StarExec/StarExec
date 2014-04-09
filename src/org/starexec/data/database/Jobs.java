@@ -3377,4 +3377,35 @@ public class Jobs {
 		}
 		return false;
 	}
+
+	public static List<Job> getUnRunnableJobs() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetUnRunnabelJobs()}");
+			results = procedure.executeQuery();
+			
+			List<Job> jobs = new LinkedList<Job>();
+			while (results.next()) {
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setName(results.getString("name"));
+				j.setDeleted(results.getBoolean("deleted"));
+				j.setPaused(results.getBoolean("paused"));
+				j.setQueue(Queues.get(results.getInt("queue_id")));
+				jobs.add(j);
+			}
+			//if no results exist, the system is not globally paused
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
 }
