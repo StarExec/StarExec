@@ -744,7 +744,7 @@ public class RESTHelpers {
 						node_count = temp_nodeCount;
 					}
 					
-					//if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
+					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
 					
 					if (last_date.containsKey(q.getId())) {
 						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId()); // this is the date that the queue first had a non-zero node count
