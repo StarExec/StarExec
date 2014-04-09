@@ -167,6 +167,7 @@ public class BatchUtil {
 		
 		
 		Permission perm = space.getPermission();
+		
 		//Permissions attributes - only set when false since default is all true
 		if (!perm.canAddBenchmark()) {
 			Attr addBenchPerm = doc.createAttribute("add-benchmark-perm");
@@ -266,12 +267,7 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			//String schemaLoc = "";
-			//if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-			//	schemaLoc = Util.url("public/stardevSpaceSchema.xsd");
-			//} else {
 			String schemaLoc = R.SPACE_XML_SCHEMA_LOC;
-			//}
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -415,12 +411,55 @@ public class BatchUtil {
 		Space space = new Space();
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
+		
+		// Check for permission attributes in XML and set permissions accordingly
+		String perm = spaceElement.getAttribute("add-benchmark-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddBenchmark(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-job-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddJob(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-solver-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddSolver(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-space-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddSpace(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-user-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddUser(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-benchmark-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveBench(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-job-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveJob(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-solver-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveSolver(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-space-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveSpace(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-user-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveUser(Boolean.valueOf(perm));
+		
 		space.setPermission(permission);
+		
 		Random rand=new Random();
 		String baseSpaceName=space.getName();
 		
 		// Look for a sticky leaders attribute. If it's there, set sticky leaders
-		String sl = spaceElement.getAttribute("sticky-leaders");
+		String sl = spaceElement.getAttribute("sticky-leaders");		
 		if (!sl.equals("") && !sl.equals(null)) {
 			Boolean stickyLeaders = Boolean.valueOf(sl);
 			space.setStickyLeaders(stickyLeaders);
@@ -431,6 +470,7 @@ public class BatchUtil {
 		if (!iu.equals("") && !iu.equals(null)){
 			Boolean inheritUsers = Boolean.valueOf(iu);
 			if (inheritUsers){
+				// This does not appear to work
 				space.setUsers(Spaces.getUsers(parentId));
 			}
 		}
@@ -441,6 +481,7 @@ public class BatchUtil {
 			Boolean isLocked = Boolean.valueOf(locked);
 			space.setLocked(isLocked);
 		}
+		
 		//------------------------------------------------------------------------
 		
 		//Is appending a random number to the name what we want?
