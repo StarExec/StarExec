@@ -134,7 +134,8 @@ public class BatchUtil {
 		name.setValue(space.getName());
 		spaceElement.setAttributeNode(name);
 		
-		// Add the new attributes to space xml elements here
+		// New attributes to space XML elements
+		// @author Tim Smith
 		
 		// Sticky leaders attribute : sticky-leaders
 		Attr stickyLeaders = doc.createAttribute("sticky-leaders");
@@ -163,6 +164,69 @@ public class BatchUtil {
 		Attr locked = doc.createAttribute("locked");
 		locked.setValue(Boolean.toString(space.isLocked()));
 		spaceElement.setAttributeNode(locked);
+		
+		
+		Permission perm = space.getPermission();
+		//Permissions attributes - only set when false since default is all true
+		if (!perm.canAddBenchmark()) {
+			Attr addBenchPerm = doc.createAttribute("add-benchmark-perm");
+			addBenchPerm.setValue("false");
+			spaceElement.setAttributeNode(addBenchPerm);
+		}
+		
+		if (!perm.canAddJob()) {
+			Attr addJobPerm = doc.createAttribute("add-job-perm");
+			addJobPerm.setValue("false");
+			spaceElement.setAttributeNode(addJobPerm);
+		}
+		
+		if (!perm.canAddSolver()){
+			Attr addSolverPerm = doc.createAttribute("add-solver-perm");
+			addSolverPerm.setValue("false");
+			spaceElement.setAttributeNode(addSolverPerm);
+		}
+		
+		if (!perm.canAddSpace()){
+			Attr addSpacePerm = doc.createAttribute("add-space-perm");
+			addSpacePerm.setValue("false");
+			spaceElement.setAttributeNode(addSpacePerm);
+		}
+		
+		if (!perm.canAddUser()){
+			Attr addUserPerm = doc.createAttribute("add-user-perm");
+			addUserPerm.setValue("false");
+			spaceElement.setAttributeNode(addUserPerm);
+		}
+		
+		if (!perm.canRemoveBench()) {
+			Attr remBenchmarkPerm = doc.createAttribute("rem-benchmark-perm");
+			remBenchmarkPerm.setValue("false");
+			spaceElement.setAttributeNode(remBenchmarkPerm);
+		}
+		
+		if (!perm.canRemoveJob()) {
+			Attr remJobPerm = doc.createAttribute("rem-job-perm");
+			remJobPerm.setValue("false");
+			spaceElement.setAttributeNode(remJobPerm);
+		}
+		
+		if (!perm.canRemoveSolver()) {
+			Attr remSolverPerm = doc.createAttribute("rem-solver-perm");
+			remSolverPerm.setValue("false");
+			spaceElement.setAttributeNode(remSolverPerm);
+		}
+		
+		if (!perm.canRemoveSpace()) {
+			Attr remSpacePerm = doc.createAttribute("rem-space-perm");
+			remSpacePerm.setValue("false");
+			spaceElement.setAttributeNode(remSpacePerm);
+		}
+		
+		if (!perm.canRemoveUser()) {
+			Attr remUserPerm = doc.createAttribute("rem-user-perm");
+			remUserPerm.setValue("false");
+			spaceElement.setAttributeNode(remUserPerm);
+		}
 		
 		// -------------------------------------------------
 		
