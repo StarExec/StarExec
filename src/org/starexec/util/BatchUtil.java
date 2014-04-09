@@ -3,6 +3,7 @@ package org.starexec.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -470,8 +471,18 @@ public class BatchUtil {
 		if (!iu.equals("") && !iu.equals(null)){
 			Boolean inheritUsers = Boolean.valueOf(iu);
 			if (inheritUsers){
+				space.setUsers(new LinkedList<User>());
+				Space parent = Spaces.getDetails(parentId, userId);
+				try {
+					for (User u : parent.getUsers()) {
+						space.addUser(u);
+					}
+				} catch (Exception e) {
+					log.debug("Failed to get users from parent: " + e.getMessage());
+				}
+				
 				// This does not appear to work
-				space.setUsers(Spaces.getUsers(parentId));
+				//space.setUsers(Spaces.getUsers(parentId));
 			}
 		}
 		
