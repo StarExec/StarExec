@@ -684,4 +684,14 @@ CREATE PROCEDURE IsSystemPaused()
 		FROM system_flags;
 	END //
 	
+DROP PROCEDURE IF EXISTS GetUnRunnableJobs;
+CREATE PROCEDURE GetUnRunnableJobs()
+	BEGIN
+		SELECT DISTINCT *
+		FROM jobs
+		WHERE queue_id = null
+		OR id NOT IN (SELECT jobs.id 
+					FROM jobs JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id);
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

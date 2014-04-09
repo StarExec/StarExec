@@ -57,6 +57,17 @@ public abstract class JobManager {
     	log.info("Not adding more job pairs to any queues, as the system is paused");
     	return false;
     }
+    
+    //If a job's queue is null or the queue is empty,
+    //pause the job if it is not already deleted or paused
+    List<Job> jobs = Jobs.getUnRunnableJobs();
+    if (jobs != null) {
+    	for (Job j : jobs) {
+    		if (! (j.isDeleted() || j.isPaused() )) {
+    			Jobs.pause(j.getId());
+    		}
+    	}
+    }
 	List<Queue> queues = Queues.getAll();
 	for (Queue q : queues) {
 	    int qId = q.getId();
