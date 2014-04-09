@@ -3384,7 +3384,7 @@ public class Jobs {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetUnRunnabelJobs()}");
+			procedure = con.prepareCall("{CALL GetUnRunnableJobs()}");
 			results = procedure.executeQuery();
 			
 			List<Job> jobs = new LinkedList<Job>();
