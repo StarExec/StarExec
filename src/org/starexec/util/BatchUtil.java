@@ -467,25 +467,7 @@ public class BatchUtil {
 			space.setStickyLeaders(stickyLeaders);
 		}
 		
-		// Check for inherit users attribute. If it is true, make the users the same as the parent
-		String iu = spaceElement.getAttribute("inherit-users");
-		if (!iu.equals("") && !iu.equals(null)){
-			Boolean inheritUsers = Boolean.valueOf(iu);
-			if (inheritUsers){
-				space.setUsers(new LinkedList<User>());
-				Space parent = Spaces.getDetails(parentId, userId);
-				try {
-					for (User u : parent.getUsers()) {
-						Users.associate(u.getId(), space.getId());
-					}
-				} catch (Exception e) {
-					log.debug("Failed to get users from parent: " + e.getMessage());
-				}
-				
-				// This does not appear to work
-				//space.setUsers(Spaces.getUsers(parentId));
-			}
-		}
+	
 		
 		// Check for the locked attribute
 		String locked = spaceElement.getAttribute("locked");
@@ -510,6 +492,23 @@ public class BatchUtil {
 			attempt++;
 		}
 		Integer spaceId = Spaces.add(space, parentId, userId);
+		
+		// Check for inherit users attribute. If it is true, make the users the same as the parent
+		String iu = spaceElement.getAttribute("inherit-users");
+		if (!iu.equals("") && !iu.equals(null)){
+			Boolean inheritUsers = Boolean.valueOf(iu);
+			log.debug("inherit = " + inheritUsers);
+			if (inheritUsers) {
+				log.debug("Adding inherited users");
+				List<User> users = Spaces.getUsers(parentId);
+				log.debug("parent users = " + users);
+				for (User u : users) {
+					log.debug("users = " + u.getFirstName());
+					int tempId = u.getId();
+					Users.associate(tempId, spaceId);
+				}
+			}
+		}
 		
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();
