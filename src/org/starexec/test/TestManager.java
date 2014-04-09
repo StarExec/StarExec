@@ -14,6 +14,7 @@ import org.starexec.test.database.PermissionsTests;
 import org.starexec.test.database.SolverTests;
 import org.starexec.test.database.SpaceTests;
 import org.starexec.test.database.UserTests;
+import org.starexec.test.database.WebsiteTests;
 import org.starexec.test.security.BenchmarkSecurityTests;
 import org.starexec.test.security.CacheSecurityTests;
 import org.starexec.test.security.GeneralSecurityTests;
@@ -49,6 +50,7 @@ public class TestManager {
 		tests.add(new IntroStateTests());
 		tests.add(new UtilTests());
 		tests.add(new SpaceSecurityTests());
+		tests.add(new WebsiteTests());
 	}
 	
 	/**
