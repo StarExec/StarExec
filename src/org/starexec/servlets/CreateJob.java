@@ -69,6 +69,7 @@ public class CreateJob extends HttpServlet {
 	private static final String clockTimeout = "wallclockTimeout";
 	private static final String spaceId = "sid";
 	private static final String traversal = "traversal";
+	private static final String pause = "pause";
 	private static final String maxMemory="maxMem";
 
 	/**
@@ -239,7 +240,15 @@ public class CreateJob extends HttpServlet {
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
-		JobManager.checkPendingJobs(); // to start this job running if it is not
+		String start_paused = request.getParameter(pause);
+
+		//if the user chose to immediately pause the job
+		if (start_paused.equals("yes")) {
+			Jobs.pause(j.getId());
+		} else {
+			JobManager.checkPendingJobs(); // to start this job running if it is not	
+		}
+		
 		if(submitSuccess) {
 		    // If the submission was successful, send back to space explorer
 			response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));

@@ -40,7 +40,7 @@
 				JobStatus status=Jobs.getJobStatusCode(jobId);
 				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
 				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
-				boolean isAdminPaused = Jobs.isJobAdminPaused(jobId);
+				boolean isAdminPaused = Jobs.isSystemPaused();
 				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
 				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
 				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);

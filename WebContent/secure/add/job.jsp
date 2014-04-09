@@ -124,7 +124,14 @@
 							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/> 	
 							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>	
 						</td>
-					</tr>								
+					</tr>	
+					<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
+						<td class="label"><p>Pause Job</p></td>
+						<td>
+							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
+							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
+						</td>
+					</tr>							
 				</tbody>					
 			</table>
 		</fieldset>

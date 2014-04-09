@@ -21,6 +21,7 @@ $(document).ready(function(){
 	attachFormValidation();
 	
 	$('#radioDepth').attr('checked','checked');
+	$('#radioNoPause').attr('checked','checked');
 
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {
