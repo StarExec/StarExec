@@ -27,6 +27,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
@@ -475,7 +476,7 @@ public class BatchUtil {
 				Space parent = Spaces.getDetails(parentId, userId);
 				try {
 					for (User u : parent.getUsers()) {
-						space.addUser(u);
+						Users.associate(u.getId(), space.getId());
 					}
 				} catch (Exception e) {
 					log.debug("Failed to get users from parent: " + e.getMessage());
