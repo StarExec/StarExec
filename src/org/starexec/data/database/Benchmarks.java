@@ -2069,7 +2069,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean setRecycledState(int id, boolean state){
+	private static boolean setRecycledState(int id, boolean state){
 		Connection con = null;			
 		CallableStatement procedure=null;
 		
