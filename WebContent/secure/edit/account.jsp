@@ -131,7 +131,7 @@
 	</fieldset>
 	<fieldset>
 		<legend>password</legend>
-		<form id="changePassForm">
+		<form id="changePassForm" method="post">
 			<table id="passwordTable" class="shaded">
 				<thead>
 					<tr>

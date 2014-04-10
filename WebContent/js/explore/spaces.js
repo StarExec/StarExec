@@ -1753,7 +1753,7 @@ function initDataTables(){
 
 
 	// Set all fieldsets as expandable (except for action fieldset)
-	$('fieldset:not(:#actions)').expandable(true);
+	$('fieldset:not(#actions)').expandable(true);
 
 	// Set the DataTable filters to only query the server when the user finishes typing
 	jobTable.fnFilterOnDoneTyping();
