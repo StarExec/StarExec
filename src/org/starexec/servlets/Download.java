@@ -533,9 +533,9 @@ public class Download extends HttpServlet {
 		/* generate the table header */
 		sb.delete(0, sb.length());
 		if (!returnIds) {
-			sb.append("benchmark,solver,configuration,status,time(s),result");
+			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,result");
 		} else {
-			sb.append("pair id, benchmark,benchmark id, solver,solver id,configuration,configuration id,status,time(s),result");
+			sb.append("pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time,wallclock time,result");
 		}
 		
 
@@ -592,7 +592,11 @@ public class Download extends HttpServlet {
 			sb.append(pair.getStatus().toString());
 
 			sb.append(",");
+			sb.append((pair.getCpuTime()));
+
+			sb.append(",");
 			sb.append((pair.getWallclockTime()));
+
 			sb.append(",");
 			sb.append(pair.getStarexecResult());
 
