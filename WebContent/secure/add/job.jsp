@@ -126,7 +126,7 @@
 						</td>
 					</tr>	
 					<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
-						<td class="label"><p>Pause Job</p></td>
+						<td class="label"><p>Create Paused</p></td>
 						<td>
 							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
 							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
