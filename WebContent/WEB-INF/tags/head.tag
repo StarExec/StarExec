@@ -25,7 +25,7 @@
 	<![endif]-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>	
 	
-	<script src="/${starexecRoot}/js/lib/jquery-ui-1.10.4.custom.min.js"></script>
+	<script src="/${starexecRoot}/js/lib/jquery-ui-1.8.16.custom.min.js"></script>
 	
 	<script src="/${starexecRoot}/js/master.js"></script>
 	<c:if test="${not empty js}">	
