@@ -836,28 +836,29 @@ public class RESTHelpers {
 				}
 			}
 			//Do the same for the newly request queue
+			int req_queue_id = Queues.getIdByName(req.getQueueName());
 			int reqNodeCount = Requests.GetNodeCountOnDate(req.getQueueName(), date);
 			int temp_reqNodeCount = Cluster.getTempNodeCountOnDate(req.getQueueName(), date);
 			if (temp_reqNodeCount != -1) {
 				reqNodeCount = temp_reqNodeCount;
 			}
+			
 			if (reqNodeCount > 0) {
-				if (!(nonzero_date.containsKey(Queues.getIdByName(req.getQueueName())))) {
-					nonzero_date.put(Queues.getIdByName(req.getQueueName()), date);
+				if (!(nonzero_date.containsKey(req_queue_id))) {
+					nonzero_date.put(req_queue_id, date);
 				}
-				if (last_date.containsKey(Queues.getIdByName(req.getQueueName()))) {
-					if (date.after(last_date.get(Queues.getIdByName(req.getQueueName())))) {
-						last_date.remove(Queues.getIdByName(req.getQueueName()));
+				if (last_date.containsKey(req_queue_id)) {
+					if (date.after(last_date.get(req_queue_id))) {
+						last_date.remove(req_queue_id);
 					}
 				}
 			} else {
-				if (nonzero_date.containsKey(Queues.getIdByName(req.getQueueName()))) {
-					if (!(last_date.containsKey(Queues.getIdByName(req.getQueueName())))) {
-						last_date.put(Queues.getIdByName(req.getQueueName()), date);
+				if (nonzero_date.containsKey(req_queue_id)) {
+					if (!(last_date.containsKey(req_queue_id))) {
+						last_date.put(req_queue_id, date);
 					}
 				}
-			}
-			
+			}			
 		}
 		
 		
@@ -878,23 +879,26 @@ public class RESTHelpers {
 			total = total + node_count;
 			
 			//Get the total number of nodes that have been reserved
-			for (Queue q : queues) {
-				node_count = Queues.getNodeCountOnDate(q.getId(), date);
-				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-				if (temp_nodeCount != -1) {
-					node_count = temp_nodeCount;
+			if (queues != null) {
+				for (Queue q : queues) {
+					node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					total = total + node_count;
 				}
-				total = total + node_count;
 			}
-			//if date is between the requested dates
+			
 			int reqNodeCount = Requests.GetNodeCountOnDate(req.getQueueName(), d);
 			int temp_reqNodeCount = Cluster.getTempNodeCountOnDate(req.getQueueName(), d);
 			if (temp_reqNodeCount != -1) {
 				reqNodeCount = temp_reqNodeCount;
 			}
-			if (!date.before(reqStartDate) && ( !date.after(reqEndDate) || date.toString().equals(reqEndDate.toString()) )) {
-				total = total + reqNodeCount;
-			} 
+			if (reqNodeCount == -1) {
+				reqNodeCount = 0;
+			}
+			total = total + reqNodeCount;
 			
 			//set the number for the default queue to be all leftovers
 			int leftover_nodes = total_node_count - total;
@@ -905,42 +909,39 @@ public class RESTHelpers {
 			}
 			
 			//Get the numbers for each respective queue
-			for (Queue q : queues) {
-				if (q.getId() == Cluster.getDefaultQueueId()) {
-					continue;
-				}
-				node_count = Queues.getNodeCountOnDate(q.getId(), date);
-				if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
-
-				int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-				if (temp_nodeCount != -1) {
-					node_count = temp_nodeCount;
-				}
-				
-				if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
-				
-				if (last_date.containsKey(q.getId())) {
-					java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-					java.util.Date latest_date = last_date.get(q.getId());
-					
-					if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
-						if (node_count == 0) { conflict = true; }
+			if (queues != null) {
+				for (Queue q : queues) {
+					if (q.getId() == Cluster.getDefaultQueueId()) {
+						continue;
 					}
-				} else if (nonzero_date.containsKey(q.getId())) {
-					java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-					
-					if (date.after(earliest_nonZero_date)) {
-						if (node_count == 0) { conflict = true; }
+					node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
+	
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
 					}
-				}		
-				
-				entry.add(new JsonPrimitive(node_count));
-			}
-			//if date is between the requested dates
-			if (!date.before(reqStartDate) && ( !date.after(reqEndDate) || date.toString().equals(reqEndDate.toString()) ) ) {
+					
+					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
+					
+					if (last_date.containsKey(q.getId())) {
+						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+						java.util.Date latest_date = last_date.get(q.getId());
+						
+						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
+							if (node_count == 0) { conflict = true; }
+						}
+					} else if (nonzero_date.containsKey(q.getId())) {
+						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+						
+						if (date.after(earliest_nonZero_date)) {
+							if (node_count == 0) { conflict = true; }
+						}
+					}		
+					
+					entry.add(new JsonPrimitive(node_count));
+				}
 				entry.add(new JsonPrimitive (reqNodeCount));
-			} else {
-				entry.add(new JsonPrimitive (0));
 			}
 	
 			

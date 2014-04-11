@@ -632,11 +632,15 @@ public class Cluster {
 	public static boolean updateTempChanges() {
 		List<QueueRequest> temp_changes = Cluster.getTempChanges();
 		boolean success = true;
-		for (QueueRequest req : temp_changes) {
-			int queueId = Queues.getIdByName(req.getQueueName());
-			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), "");
-			if (! success) {
-				break;
+		if (temp_changes != null) {
+			for (QueueRequest req : temp_changes) {
+				int queueId = Queues.getIdByName(req.getQueueName());
+				if (queueId == -2) { queueId = Queues.getIdByName(req.getQueueName() + ".q"); } //if its a new queue
+
+				success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), "");
+				if (! success) {
+					break;
+				}
 			}
 		}
 		

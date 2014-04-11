@@ -72,8 +72,8 @@ public class CreateQueue extends HttpServlet {
 		//Add the queue, reserve the nodes, and approve the reservation
 		int newQueueId = Queues.add(queue_name + ".q");
 		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end, message);
-		Cluster.updateTempChanges();
 		boolean approved = Requests.approveQueueReservation(req, newQueueId);
+		Cluster.updateTempChanges();
 
 		
 		User u = Users.get(queueUserId);

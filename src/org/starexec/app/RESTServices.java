@@ -3272,7 +3272,7 @@ public class RESTServices {
 	
 	/**
 	 * Returns the paginated results of node assignments
-	 * For the approve/deny requests page
+	 * For the approve/deny queue requests page
 	 * @param code the code of the queue_request
 	 * 
 	 * @author Wyatt Kaiser
