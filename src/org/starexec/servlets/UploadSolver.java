@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -137,6 +139,14 @@ public class UploadSolver extends HttpServlet {
     		log.error(e.getMessage(), e);
     	}	
 	}
+    /**
+     * Checks to see whether the given directory contains a solver build script in the top level
+     * @param dir The directory to look inside of
+     * @return True if the build script is there, and false otherwise
+     */
+    public boolean containsBuildScript(File dir) {
+    	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
+    }
     
 	/**
 	 * This method is responsible for uploading a solver to
@@ -219,7 +229,18 @@ public class UploadSolver extends HttpServlet {
 				return returnArray;
 			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-
+			
+			//TODO: Implement this 
+			/*
+			if (containsBuildScript(uniqueDir)) {
+				List<File> authorized=new ArrayList<File>();
+				authorized.add(uniqueDir);
+				String[] command=new String[3];
+				command[0]="su";
+				command[1]="-c";
+				command[2]="./"+R.SOLVER_BUILD_SCRIPT;
+				Util.executeSandboxedCommand(command, null, authorized);
+			}*/
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
 				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));

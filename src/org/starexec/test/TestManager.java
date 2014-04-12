@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
@@ -29,10 +30,9 @@ import org.starexec.test.security.ValidatorTests;
 
 public class TestManager {
 	private static final Logger log = Logger.getLogger(TestManager.class);
-
+	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method
 	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
-	private static boolean isRunning=false;
 	//all test sequences need to be initialized here
 	public static void initializeTests() {
 		tests.add(new SolverTests());
@@ -60,7 +60,7 @@ public class TestManager {
 	 */
 	public static void executeAllTestSequences() {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		if (R.STAREXEC_SERVERNAME.equals("www.starexec.org")) {
+		if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
 			return; //right now, don't run anything on production
 		}
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
@@ -68,11 +68,9 @@ public class TestManager {
 			@Override
 			public void run(){
 				//don't do anything if the tests are already running
-				//TODO: it's possible two threads could hit this at exactly the same time. What should the solution be?
-				if (isRunning) {
+				if (!isRunning.compareAndSet(false, true)) {
 					return;
 				}
-				isRunning=true;
 				//we want to clear all the results first, so it's obvious to the user what is left to be run
 				for (TestSequence t : tests) {
 					t.clearResults();
@@ -81,7 +79,7 @@ public class TestManager {
 				for (TestSequence t : tests) {
 					t.execute();
 				}
-				isRunning=false;
+				isRunning.set(false);
 			}
 		});	
 		
@@ -96,7 +94,7 @@ public class TestManager {
 	/**
 	 * Executes the test that has the given name. If no such test exists, 
 	 * returns false
-	 * @param testName
+	 * @param testName The name of the test that should be run
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTest(String testName) {
@@ -109,15 +107,15 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
-				if (isRunning) {
+				//don't run anything if we are already going
+				if (!isRunning.compareAndSet(false, true)) {
 					return;
 				}
-				isRunning=true;
 				
 				TestSequence test = getTestSequence(t);
 				
 				executeTest(test);
-				isRunning=false;
+				isRunning.set(false);
 			}
 		});	
 		

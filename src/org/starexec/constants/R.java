@@ -146,6 +146,7 @@ public class R {
 	public static String CONFIGURATION_PREFIX = "starexec_run_";            // The prefix for a file in the solver bin directory to be considered a configuration
 	public static String EXPECTED_RESULT = "starexec-expected-result";    // key for key value pair in benchmark attributes
 	public static String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description
+	public static String SOLVER_BUILD_SCRIPT="starexec_build";
 	public static String BENCHMARK_DESC_PATH = "starexec_description.txt";	// File that can be included within the archive solver file to include the description
 	public static String DESC_PATH = "starexec_description.txt";
 	

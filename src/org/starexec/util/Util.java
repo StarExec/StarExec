@@ -243,6 +243,57 @@ public class Util {
 		return form;
 	}
 	
+	//TODO: Run this command as the sandboxed user with permissions only granted recursively to everything in authorizedDirs
+	public static BufferedReader executeSandboxedCommand(String[] command, String[] envp, List<File> authorizedDirs) {
+		Runtime r = Runtime.getRuntime();
+		
+		BufferedReader reader = null;		
+		//
+		try {					
+		    Process p;
+		    if (command.length == 1) {
+			log.info("Executing the following command: " + command[0]);
+			p = r.exec(command[0], envp);
+		    }
+		    else {
+			StringBuilder b = new StringBuilder();
+			b.append("Executing the following command:\n");
+			for (int i = 0; i < command.length; i++) {
+			    b.append("  ");
+			    b.append(command[i]);
+			}
+
+			log.info(b.toString());
+			    
+			p = r.exec(command, envp);
+		    }
+		    InputStream in = p.getInputStream();
+		    BufferedInputStream buf = new BufferedInputStream(in);
+		    InputStreamReader inread = new InputStreamReader(buf);
+		    reader = new BufferedReader(inread);		
+			
+		    //Also handle error stream
+		    InputStream err = p.getErrorStream();
+		    BufferedInputStream bufErr = new BufferedInputStream(err);
+		    InputStreamReader inreadErr = new InputStreamReader(bufErr);
+		    BufferedReader errReader = new BufferedReader(inreadErr);
+		    String errLine = null;
+		    while ((errLine = errReader.readLine()) != null){
+			log.error("stdErr = " + errLine);
+		    }
+		    errReader.close();
+		    //This will hang indefinitely if the stream is too large.  TODO: fix increase size?
+		    if (p.waitFor() != 0) {
+			log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
+		    }
+		    return reader;
+		} catch (Exception e) {
+			log.warn("execute command says " + e.getMessage(), e);		
+		}
+		
+		return null;
+	}
+	
 	public static BufferedReader executeCommand(String command) {
 		String[] cmd = new String[1];
 		cmd[0] = command;
