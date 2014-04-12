@@ -1110,19 +1110,6 @@ public class Benchmarks {
 			
 			while(results.next()){
 				Benchmark b = resultToBenchmark(results,"");
-
-				Processor t = new Processor();
-				//if the ID is null, 0 is returned here
-				t.setId(results.getInt("types.id"));
-				t.setCommunityId(results.getInt("types.community"));
-				t.setDescription(results.getString("types.description"));
-				t.setName(results.getString("types.name"));
-				t.setFilePath(results.getString("types.path"));
-				t.setDiskSize(results.getLong("types.disk_size"));
-
-				b.setType(t);
-					
-				
 				// Add benchmark object to list
 				benchmarks.add(b);
 			}			
