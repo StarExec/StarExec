@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -1881,18 +1882,59 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 		
 		return false;		
 	}
+	/**
+	 * Given a list of spaces, generates a HashMap maping spaceIds to the path for each space,
+	 * rooted at the given rootSpaceId. 
+	 * @param userId The ID of the user making the request
+	 * @param spaces The list of spaces, all of which must be subspaces of the rootSpaceId
+	 * @param rootSpaceId The ID of the space to root the paths at
+	 */
+	public static HashMap<Integer,String> spacePathCreate(int userId, List<Space> spaces, int rootSpaceId) {
+		Space space=Spaces.get(rootSpaceId);
+		HashMap<Integer,String> paths=new HashMap<Integer,String>();
+		paths.put(space.getId(), space.getName());
+		for (Space s : spaces) {
+			if (!Users.isMemberOfSpace(userId,s.getId())) {
+				continue;
+			}
+			int parentId=Spaces.getParentSpace(s.getId());
+			if (paths.containsKey(parentId)){
+				paths.put(s.getId(), paths.get(parentId)+File.separator+s.getName());
+			} else {
+				//we'll keep searching until we get to something in the paths
+				Stack<String> names=new Stack<String>();
+				names.push(s.getName());
+				names.push(Spaces.getName(parentId));
+				while (parentId>=1) {
+					parentId=Spaces.getParentSpace(parentId);
+					if (paths.containsKey(parentId)) {
+						StringBuilder path=new StringBuilder();
+						path.append(paths.get(parentId));
+						while (!names.isEmpty()) {
+							path.append(File.separator);
+							path.append(names.pop());
+						}
+						paths.put(s.getId(), path.toString());
+					} else {
+						names.push(Spaces.getName(parentId));
+					}
+				}
+			}
+		}
+		
+		return paths;
+	}
 
 	/**
 	 * Given a list of spaces, creates a HashMap to map spaceId to path
 	 * @param userId the id of the user creating the job
 	 * @param spaces the list of spaces to add job pairs from
 	 * @param SP the hashmap the contains the mappings of id's to paths
-	 * @param space the 
 	 * 
 	 * @author Wyatt Kaiser
-	 */
+	 
 		
-		public static void spacePathCreate(int userId, List<Space> spaces, HashMap<Integer, String> SP, int space) {
+		public static void spacePathCreate(int userId, List<Space> spaces, HashMap<Integer, String> SP) {
 			Iterator<Space> iter = spaces.iterator();
 					
 			while (iter.hasNext()) {
@@ -1905,7 +1947,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 				int parent = getParentSpace(s.getId());
 				SP.put(s.getId(), SP.get(parent) + File.separator + s.getName());
 			}
-		}
+		}*/
 
 	protected static List<Integer> traverse(Space space, int parentId, int userId, int statusId) throws Exception {
 		// Add the new space to the database and get it's ID		

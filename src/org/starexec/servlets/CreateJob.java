@@ -114,9 +114,8 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(workerQueue)));
 		j.setPrimarySpace(space);
 		//Create the HashMap to be used for creating job-pair path
-		HashMap<Integer, String> SP = new HashMap<Integer, String>();
-		SP.put(space, Spaces.get(space).getName());
-		Spaces.spacePathCreate(userId, Spaces.getSubSpaces(space, userId, true), SP, space);
+		
+		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaces(space, userId, true), space);
 		log.debug("HASHMAP = " + SP);
 
 		String selection = request.getParameter(run);

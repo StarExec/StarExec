@@ -467,6 +467,7 @@ public abstract class JobManager {
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
 	 */
+	//TODO: We should think about changing this so we don't need to send in independently sorted lists of solver and benchmark IDs
 	public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout,long memoryLimit, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId, HashMap<Integer, String> SP) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
@@ -490,7 +491,7 @@ public abstract class JobManager {
 				j.addJobPair(pair);
 				pairCount++;
 				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
 					return;	
 				}
 			}
@@ -541,7 +542,7 @@ public abstract class JobManager {
 
 				pairCount++;
 				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
 					return;
 				}
 			}
@@ -594,7 +595,7 @@ public abstract class JobManager {
 
 					pairCount++;
 					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+					if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
 						return;
 					}
 				}
@@ -634,7 +635,7 @@ public abstract class JobManager {
 				j.addJobPair(pair);
 				pairCount++;
 				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
 					return;
 				}	
 			}
@@ -660,7 +661,7 @@ public abstract class JobManager {
 					j.addJobPair(pair);
 					pairCount++;
 					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT && (userId != 20)){//backdoor for ben to run bigger jobs
+					if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
 						return;
 					}	
 				}

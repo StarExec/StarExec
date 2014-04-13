@@ -2,23 +2,32 @@ package org.starexec.test.resources;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.jobs.JobManager;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
+import org.starexec.util.Util;
 
 public class ResourceLoader {
 	private static final Logger log = Logger.getLogger(ResourceLoader.class);	
@@ -38,7 +47,39 @@ public class ResourceLoader {
 		return file;
 	}
 	
-
+	/**
+	 * This will load a job with the given solvers and benchmarks into the database, after which it should
+	 * be picked up by the periodic task and started running. It is soemwhat primitive right now-- for every solver
+	 * a single configuration will be picked randomly to be added to the job, and the job will be added to a random
+	 * queue that the given user owns
+	 * @param spaceId The ID of the space to put the job in
+	 * @param userId The ID of the user who will own the job
+	 * @param solvers The solverIds that will be matched to every benchmark
+	 * @param benchmarks The benchmarkIDs to run
+	 * @return The job object
+	 */
+	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds) {
+		
+		Space space=Spaces.get(spaceId);
+		String name=TestUtil.getRandomSpaceName();
+		Queue q=Queues.getUserQueues(userId).get(0);
+		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId());
+		
+		
+		List<Integer> configIds=new ArrayList<Integer>();
+		for (Integer i : solverIds) {
+			configIds.add(Solvers.getConfigsForSolver(i).get(0).getId());
+		}
+		List<Space> spaces=new ArrayList<Space>();
+		spaces.add(Spaces.get(spaceId));
+		HashMap<Integer,String> SP = new HashMap<Integer,String>();
+		SP.put(spaceId, Spaces.get(spaceId).getName());
+		JobManager.buildJob(job, userId, 100, 100, Util.gigabytesToBytes(1), benchmarkIds, solverIds, configIds, spaceId, SP);
+		Jobs.add(job, spaceId);
+		return job;
+	}
+	
+	
 	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			File archive=getResource(archiveName);

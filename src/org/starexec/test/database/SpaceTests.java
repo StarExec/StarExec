@@ -1,5 +1,8 @@
 package org.starexec.test.database;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -41,7 +44,31 @@ public class SpaceTests extends TestSequence {
 	private void leafTest() {
 		Assert.assertFalse(Spaces.isLeaf(community.getId()));
 		Assert.assertTrue(Spaces.isLeaf(subspace.getId()));
+	}
+	
+	@Test
+	private void SpacePathCreateTest() {
+		Space space1=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		String space1Path=community.getName()+File.separator+space1.getName();
+		Space space2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
+		String space2Path=space1Path+File.separator+space2.getName();
+		
+		List<Space> spaceList=new ArrayList<Space>();
+		spaceList.add(space1);
+		spaceList.add(space2);
+		HashMap<Integer,String> SP =Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
+		Assert.assertEquals(space1Path, SP.get(space1.getId()));
+		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 
+		//same test as above, but making the list in the opposite order
+		spaceList=new ArrayList<Space>();
+		spaceList.add(space2);
+		spaceList.add(space1);
+		SP=Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
+		Assert.assertEquals(space1Path, SP.get(space1.getId()));
+		Assert.assertEquals(space2Path, SP.get(space2.getId()));
+		
+		Spaces.removeSubspaces(space1.getId(), community.getId(), leader.getId());
 	}
 	
 	@Test
