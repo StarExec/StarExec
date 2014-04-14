@@ -9,6 +9,7 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -19,6 +20,7 @@ import org.starexec.test.resources.ResourceLoader;
 
 public class SolverTests extends TestSequence {
 	private Solver solver;
+	private Configuration config;
 	private Space space1, space2, testCommunity;
 	User testUser;
 	
@@ -59,6 +61,65 @@ public class SolverTests extends TestSequence {
 	}
 	
 	@Test
+	private void getConfigTest() {
+		Configuration c=Solvers.getConfiguration(config.getId());
+		Assert.assertNotNull(c);
+		Assert.assertEquals(config.getName(),c.getName());
+	}
+	
+	@Test
+	private void getConfigsBySolver() {
+		List<Configuration> configs=Solvers.getConfigsForSolver(solver.getId());
+		Assert.assertNotNull(configs);
+		Assert.assertTrue(configs.size()>=1);
+		boolean foundConfig=false;
+		for (Configuration c : configs) {
+			if (c.getId()==config.getId()) {
+				foundConfig=true;
+				break;
+			}
+		}
+		Assert.assertTrue(foundConfig);
+	}
+	
+	@Test
+	private void getWithConfig() {
+		Solver s=Solvers.getWithConfig(solver.getId(), config.getId());
+		Assert.assertNotNull(s);
+		Assert.assertEquals(1,s.getConfigurations().size());
+		Configuration c=s.getConfigurations().get(0);
+		Assert.assertEquals(config.getName(),c.getName());
+		
+	}
+	
+	@Test 
+	private void updateConfigName() {
+		String oldName=config.getName();
+		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getName(),oldName);
+		String newName=TestUtil.getRandomSolverName();
+		Assert.assertTrue(Solvers.updateConfigDetails(config.getId(), newName, ""));
+		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getName(),newName);
+		
+	}
+	
+	@Test
+	private void updateConfigDescription() {
+		String oldDesc=config.getDescription();
+		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getDescription(),oldDesc);
+		String newDesc=TestUtil.getRandomSolverName();
+		Assert.assertTrue(Solvers.updateConfigDetails(config.getId(), config.getName(), newDesc));
+		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getDescription(),newDesc);
+	}
+	@Test 
+	private void deleteConfigTest() {
+		Configuration c=ResourceLoader.loadConfigurationIntoDatabase("CVC4Config", solver.getId());
+		Assert.assertNotNull(c);
+		Assert.assertNotNull(Solvers.getConfiguration(c.getId()));
+		Assert.assertTrue(Solvers.deleteConfiguration(c.getId()));
+		Assert.assertNull(Solvers.getConfiguration(c.getId()));
+	}
+	
+	@Test
 	private void changeDescTest() {
 		String curDesc=solver.getDescription();
 		Solver cs=Solvers.get(solver.getId());
@@ -89,6 +150,7 @@ public class SolverTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), testCommunity.getId());
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());
+		config=ResourceLoader.loadConfigurationIntoDatabase("CVC4Config.txt", solver.getId());
 
 	}
 

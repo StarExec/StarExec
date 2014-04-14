@@ -79,6 +79,49 @@ public class ResourceLoader {
 		return job;
 	}
 	
+	public static Configuration loadConfigurationIntoDatabase(File contentFile, int solverId)  {
+		try {
+			return loadConfigurationIntoDatabase(FileUtils.readFileToString(contentFile), solverId);
+
+		} catch(Exception e) {
+			log.error("loadConfigurationIntoDatabase says "+e.getMessage(),e);
+		}
+		return null;
+	}
+	
+	public static Configuration loadConfigurationIntoDatabase(String contents,int solverId)  {
+		try {
+			Configuration c=new Configuration();
+			c.setName(TestUtil.getRandomSolverName());
+			c.setSolverId(solverId);
+			Solver solver=Solvers.get(solverId);
+			// Build a path to the appropriate solver bin directory and ensure the file pointed to by newConfigFile doesn't already exist
+			File newConfigFile = new File(Util.getSolverConfigPath(solver.getPath(), c.getName()));
+			// If a configuration file exists on disk with the same name, just throw an error. This really should never
+			//happen because we are given the configs long, random names, so we have a problem if this occurs
+			if(newConfigFile.exists()){
+				return null;
+			}
+			FileUtils.writeStringToFile(newConfigFile, contents);
+			
+			// Make sure the configuration has the right line endings
+			Util.normalizeFile(newConfigFile);
+			
+			//Makes executable
+			newConfigFile.setExecutable(true);
+			int id=Solvers.addConfiguration(solver, c);
+			if (id>0) {
+				c.setId(id);
+				return c;
+			}
+	 		
+			return null;
+		} catch (Exception e){
+			log.error("loadConfigurationIntoDatabase says "+e.getMessage(),e);
+		}
+		return null;
+	}
+	
 	
 	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
