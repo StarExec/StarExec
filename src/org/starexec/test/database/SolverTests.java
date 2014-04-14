@@ -99,7 +99,7 @@ public class SolverTests extends TestSequence {
 		String newName=TestUtil.getRandomSolverName();
 		Assert.assertTrue(Solvers.updateConfigDetails(config.getId(), newName, ""));
 		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getName(),newName);
-		
+		config.setName(newName);
 	}
 	
 	@Test
@@ -109,6 +109,7 @@ public class SolverTests extends TestSequence {
 		String newDesc=TestUtil.getRandomSolverName();
 		Assert.assertTrue(Solvers.updateConfigDetails(config.getId(), config.getName(), newDesc));
 		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getDescription(),newDesc);
+		config.setDescription(newDesc);
 	}
 	@Test 
 	private void deleteConfigTest() {

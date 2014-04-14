@@ -9,7 +9,9 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -19,12 +21,15 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
 import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
@@ -45,6 +50,36 @@ public class ResourceLoader {
 		File file=new File(filePath,"downloads");
 		file.mkdir();
 		return file;
+	}
+	
+	public static Processor loadProcessorIntoDatabase(String fileName,ProcessorType type, int communityId) {
+		try {
+			File file=new File(fileName);
+			Processor p=new Processor();
+			p.setName(TestUtil.getRandomSolverName());
+			p.setCommunityId(communityId);
+			p.setType(type);
+			
+			File newFile = ProcessorManager.getProcessorFilePath(communityId, p.getName());
+			File processorFile=getResource(fileName);
+			FileUtils.copyFile(processorFile, newFile);
+			
+			if (!newFile.setExecutable(true, false)) {			
+				log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
+			}
+			p.setFilePath(newFile.getAbsolutePath());			
+
+			int id=Processors.add(p);
+			if (id>0) {
+				p.setId(id);
+				return p;
+			}
+			
+		} catch (Exception e) {
+			log.error("loadProcessorIntoDatabase says "+e.getMessage(),e);
+		}
+		return null;
+		
 	}
 	
 	/**
@@ -79,9 +114,10 @@ public class ResourceLoader {
 		return job;
 	}
 	
-	public static Configuration loadConfigurationIntoDatabase(File contentFile, int solverId)  {
+	public static Configuration loadConfigurationFileIntoDatabase(String fileName, int solverId)  {
 		try {
-			return loadConfigurationIntoDatabase(FileUtils.readFileToString(contentFile), solverId);
+			File file=getResource(fileName);
+			return loadConfigurationIntoDatabase(FileUtils.readFileToString(file), solverId);
 
 		} catch(Exception e) {
 			log.error("loadConfigurationIntoDatabase says "+e.getMessage(),e);

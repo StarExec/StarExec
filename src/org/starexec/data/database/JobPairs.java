@@ -295,8 +295,8 @@ public class JobPairs {
 				str2=jp2.getStatus().getStatus();
 			}
 			else if (sortIndex==3) {
-				str1=jp1.getAttributes().getProperty("starexec-result");
-				str2=jp2.getAttributes().getProperty("starexec-result");
+				str1=jp1.getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=jp2.getAttributes().getProperty(R.STAREXEC_RESULT);
 			} else {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();

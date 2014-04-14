@@ -36,7 +36,7 @@ public class ProcessorManager extends HttpServlet {
 	private static final Logger log = Logger.getLogger(ProcessorManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
-	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	
 	// Request attributes
 	private static final String PROCESSOR_NAME = "name";
@@ -139,7 +139,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Save the uploaded file to disk
 			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
-			File newFile = this.getProcessorFilePath(newProc.getCommunityId(), processorFile.getName());
+			File newFile = ProcessorManager.getProcessorFilePath(newProc.getCommunityId(), processorFile.getName());
 			processorFile.write(newFile);
 			
 			if (!newFile.setExecutable(true, false)) {			
@@ -185,7 +185,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @param fileName The name of the file to create in the unique directory
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
-	private File getProcessorFilePath(int communityId, String fileName) {
+	public static File getProcessorFilePath(int communityId, String fileName) {
 		// Get the base benchmark type directory and add community ID
 		File saveDir = new File(R.PROCESSOR_DIR, "" + communityId);			
 		
