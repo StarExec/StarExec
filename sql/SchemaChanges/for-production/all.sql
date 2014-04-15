@@ -1,3 +1,3 @@
-source stickyLeaders.sql
-
+source PermanentQueues.sql
 source QueueReservation.sql
+source AddMaximumMemoryColumns.sql
