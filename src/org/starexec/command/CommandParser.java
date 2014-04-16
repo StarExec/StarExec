@@ -6,6 +6,7 @@ package org.starexec.command;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -551,6 +552,15 @@ class CommandParser {
 			answer[x]=Integer.parseInt(ids[x]);
 		}
 		
+		return answer;
+	}
+	
+	protected static List<Integer> convertToIntList(String str) {
+		String[] ids=str.split(",");
+		List<Integer> answer=new ArrayList<Integer>();
+		for (String s : ids) {
+			answer.add(Integer.parseInt(s));
+		}
 		return answer;
 	}
 	

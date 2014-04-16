@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.command.Connection;
@@ -13,10 +12,15 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -26,19 +30,24 @@ import org.starexec.util.Util;
 
 /*TODO:
 	CreateJobTest
-	Delete[jobs, processors, configurations]
-	Download[jobs, processors]
+	Delete[jobs]
+	Download[new job info, new job output]
 */
 public class StarexecCommandTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
 	private Connection con;
 	private Space space1=null;
 	private Space space2=null;
+	private Job job=null;
 	File solverFile=null;
 	File downloadDir=null;
 	File benchmarkFile=null;
+	File configFile=null;
+	File processorFile=null;
 	Solver solver=null;
 	List<Integer> benchmarkIds=null;
+	Configuration config=null;
+	Processor proc=null;
 	
 	User user=null;
 	Space testCommunity=null;
@@ -102,6 +111,74 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(),Benchmarks.getBenchmarkCountByUser(user.getId()));
 	}
+	
+	@Test
+	private void uploadConfiguration() {
+		String name=TestUtil.getRandomSolverName();
+		int result=con.uploadConfiguration(name, "", configFile.getAbsolutePath(), solver.getId());
+		Assert.assertTrue(result>0);
+		Configuration testConfig=Solvers.getConfiguration(result);
+		Assert.assertEquals(name,testConfig.getName());
+		Assert.assertEquals(solver.getId(),testConfig.getSolverId());
+	}
+	
+	@Test
+	private void deleteConfiguration() {
+		Configuration testConfig=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		Assert.assertNotNull(testConfig);
+		Assert.assertNotNull(Solvers.getConfiguration(testConfig.getId()));
+		List<Integer> configs=new ArrayList<Integer>();
+		configs.add(testConfig.getId());
+		Assert.assertEquals(0,con.deleteConfigurations(configs));
+		Assert.assertNull(Solvers.getConfiguration(testConfig.getId()));
+	}
+	
+	@Test
+	private void deleteProcessor() {
+		Processor testProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, testCommunity.getId());
+		Assert.assertNotNull(testProc);
+		Assert.assertNotNull(Processors.get(testProc.getId()));
+		List<Integer> procs=new ArrayList<Integer>();
+		procs.add(testProc.getId());
+		
+		Assert.assertEquals(0,con.deleteProcessors(procs));
+		Assert.assertNull(Processors.get(testProc.getId()));
+		
+	}
+	
+	@Test
+	private void uploadPostProcessor() {
+		String name=TestUtil.getRandomSolverName();
+		int result=con.uploadPostProc(solverURL, "", processorFile.getAbsolutePath(), testCommunity.getId());
+		Assert.assertTrue(result>0);
+		Processor testProc=Processors.get(result);
+		Assert.assertEquals(name,testProc.getName());
+		Assert.assertEquals(testCommunity.getId(),testProc.getCommunityId());
+		Assert.assertEquals(ProcessorType.POST,testProc.getType());
+		Processors.delete(testProc.getId());
+	}
+	@Test
+	private void uploadPreProcessor() {
+		String name=TestUtil.getRandomSolverName();
+		int result=con.uploadPreProc(solverURL, "", processorFile.getAbsolutePath(), testCommunity.getId());
+		Assert.assertTrue(result>0);
+		Processor testProc=Processors.get(result);
+		Assert.assertEquals(name,testProc.getName());
+		Assert.assertEquals(testCommunity.getId(),testProc.getCommunityId());
+		Assert.assertEquals(ProcessorType.PRE,testProc.getType());
+		Processors.delete(testProc.getId());
+	}
+	@Test
+	private void uploadBenchProcessor() {
+		String name=TestUtil.getRandomSolverName();
+		int result=con.uploadBenchProc(solverURL, "", processorFile.getAbsolutePath(), testCommunity.getId());
+		Assert.assertTrue(result>0);
+		Processor testProc=Processors.get(result);
+		Assert.assertEquals(name,testProc.getName());
+		Assert.assertEquals(testCommunity.getId(),testProc.getCommunityId());
+		Assert.assertEquals(ProcessorType.BENCH,testProc.getType());
+		Processors.delete(testProc.getId());
+	}
 	@Test
 	private void uploadSolver() throws Exception {
 		addMessage("adding solver to space with id = "+space1.getId());
@@ -111,6 +188,7 @@ public class StarexecCommandTests extends TestSequence {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
 			Assert.assertEquals(testSolver.getName(), name);
+			Solvers.delete(testSolver.getId());
 			
 		} else {
 			throw new Exception("an error code was returned "+result);
@@ -127,6 +205,7 @@ public class StarexecCommandTests extends TestSequence {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
 			Assert.assertEquals(testSolver.getName(), name);
+			Solvers.delete(testSolver.getId());
 			
 		} else {
 			throw new Exception("an error code was returned "+result);
@@ -140,6 +219,7 @@ public class StarexecCommandTests extends TestSequence {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertEquals(0,result);
+		
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
 	}
 	
@@ -333,25 +413,32 @@ public class StarexecCommandTests extends TestSequence {
 	private void deleteSolversTest() {
 		Solver tempSolver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", testCommunity.getId(), user.getId());
 		Assert.assertNotNull(Solvers.get(tempSolver.getId()));
-		Integer[] ids=new Integer[1];
-		ids[0]=tempSolver.getId();
+		List<Integer> ids=new ArrayList<Integer>();
+		ids.add(tempSolver.getId());
 		Assert.assertEquals(0,con.deleteSolvers(ids));
 		Assert.assertNull(Solvers.get(tempSolver.getId()));
+	}
+	
+	@Test
+	private void deleteJobsTest() {
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
+		Job tempJob=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds);
+		List<Integer> ids= new ArrayList<Integer>();
+		ids.add(tempJob.getId());
+		Assert.assertNotNull(Jobs.get(tempJob.getId()));
+		Assert.assertEquals(0,con.deleteJobs(ids));
+		Assert.assertNull(Jobs.get(tempJob.getId()));
+
 	}
 	
 	@Test
 	private void deleteBenchmarksTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",tempSpace.getId(),user.getId());
-		Integer[] idArr=new Integer[ids.size()];
-		int index=0;
-		for (Integer i : ids) {
-			Assert.assertNotNull(Benchmarks.get(i));
-			idArr[index]=i;
-			index++;
-		}
+
 		
-		Assert.assertEquals(0,con.deleteBenchmarks(idArr));
+		Assert.assertEquals(0,con.deleteBenchmarks(ids));
 		for (Integer i :ids) {
 			Assert.assertNull(Benchmarks.get(i));
 		}
@@ -372,9 +459,37 @@ public class StarexecCommandTests extends TestSequence {
 	}
 	
 	@Test
+	private void downloadJobCSV() {
+		String fileName=TestUtil.getRandomSolverName()+".zip";
+		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
+		Assert.assertFalse(downloadDir.exists());
+		Assert.assertEquals(0,con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true));
+		Assert.assertTrue(downloadDir.exists());
+	}
+	
+	@Test
+	private void downloadJobOutput() {
+		String fileName=TestUtil.getRandomSolverName()+".zip";
+		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
+		Assert.assertFalse(downloadDir.exists());
+		
+		Assert.assertEquals(0,con.downloadJobOutput(job.getId(), downloadDir.getAbsolutePath()));
+		Assert.assertTrue(downloadDir.exists());
+	}
+	
+	@Test
+	private void downloadProcessorTest() {
+		String fileName=TestUtil.getRandomSolverName()+".zip";
+		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
+		Assert.assertFalse(downloadDir.exists());
+		Assert.assertEquals(0,con.downloadPostProcessor(proc.getId(), downloadDir.getAbsolutePath()));
+		Assert.assertTrue(downloadDir.exists());
+	}
+	
+	@Test
 	private void downloadSolverTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
-		File downloadDir=new File(ResourceLoader.getResourcePath(),fileName);
+		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
 		int status=con.downloadSolver(solver.getId(), downloadDir.getAbsolutePath());
 		Assert.assertEquals(0, status);
 		Assert.assertTrue(downloadDir.exists());
@@ -383,7 +498,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void downloadBenchmarkTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
-		File downloadDir=new File(ResourceLoader.getResourcePath(),fileName);
+		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
 		int status=con.downloadBenchmark(benchmarkIds.get(0), downloadDir.getAbsolutePath());
 		Assert.assertEquals(0, status);
 		Assert.assertTrue(downloadDir.exists());
@@ -394,8 +509,8 @@ public class StarexecCommandTests extends TestSequence {
 		Solver temp=ResourceLoader.loadSolverIntoDatabase("CVC4.zip",testCommunity.getId(),user.getId());
 		Assert.assertTrue(Solvers.getAssociatedSpaceIds(temp.getId()).contains(testCommunity.getId()));
 		
-		Integer[] id=new Integer[1];
-		id[0]=temp.getId();
+		List<Integer> id=new ArrayList<Integer>();
+		id.add(temp.getId());
 		Assert.assertEquals(0,con.removeSolvers(id, testCommunity.getId()));
 		
 		//first, ensure the solver is still there. It should NOT have been deleted
@@ -410,8 +525,8 @@ public class StarexecCommandTests extends TestSequence {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", tempSpace.getId(), user.getId());
 		Assert.assertTrue(Benchmarks.getAssociatedSpaceIds(ids.get(0)).contains(tempSpace.getId()));
-		Integer[] id=new Integer[1];
-		id[0]=ids.get(0);
+		List<Integer> id=new ArrayList<Integer>();
+		id.add(ids.get(0));
 		
 		Assert.assertEquals(0, con.removeBenchmarks(id, tempSpace.getId()));
 		Assert.assertNotNull(Benchmarks.get(ids.get(0)));
@@ -425,11 +540,23 @@ public class StarexecCommandTests extends TestSequence {
 	}
 	
 	@Test
+	private void removeJobsTest() {
+		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
+		Assert.assertNotNull(job);
+		List<Integer> jobIds=new ArrayList<Integer>();
+		jobIds.add(job.getId());
+		Assert.assertEquals(0,con.removeJobs(jobIds, tempSpace.getId()));
+		Assert.assertNotNull(Jobs.getDirectory(job.getId())); //we do not want to have deleted the job
+		
+		Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId());
+	}
+	
+	@Test
 	private void removeSpacesTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 
-		Integer[] id= new Integer[1];
-		id[0]=tempSpace.getId();
+		List<Integer> id=new ArrayList<Integer>();
+		id.add(tempSpace.getId());
 		Assert.assertNotNull(Spaces.getName(tempSpace.getId()));
 		Assert.assertEquals(0,con.removeSubspace(id,testCommunity.getId(),false));
 		Assert.assertNull(Spaces.getName(tempSpace.getId()));
@@ -456,20 +583,30 @@ public class StarexecCommandTests extends TestSequence {
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());		
 		solverFile=ResourceLoader.getResource("CVC4.zip");
 		benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
+		configFile=ResourceLoader.getResource("CVC4Config.txt");
+		processorFile=ResourceLoader.getResource("postproc.sh");
 		Assert.assertNotNull(space1);
 		Assert.assertNotNull(space2);
 		
 		
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
+		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, testCommunity.getId());
 		Assert.assertNotNull(solver);
 
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
+		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds);
+
 		Assert.assertNotNull(benchmarkIds);
 
 		
 		solverURL=Util.url("public/resources/CVC4.zip");
 	}
+	
+	
 
 	@Override
 	protected void teardown() throws Exception {

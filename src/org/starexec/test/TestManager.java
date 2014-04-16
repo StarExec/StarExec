@@ -28,7 +28,13 @@ import org.starexec.test.security.SpaceSecurityTests;
 import org.starexec.test.security.UserSecurityTests;
 import org.starexec.test.security.ValidatorTests;
 
-
+/**
+ * This class maintains a list of all TestSequences and handles requests
+ * for running those sequences. It prevents multiple instances of the same
+ * TestSequence from being run simultaneously.
+ * @author Eric Burns
+ *
+ */
 public class TestManager {
 	private static final Logger log = Logger.getLogger(TestManager.class);
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
@@ -44,7 +50,7 @@ public class TestManager {
 		tests.add(new UserSecurityTests());
 		tests.add(new QueueSecurityTests());
 		tests.add(new GeneralSecurityTests());
-		//tests.add(new JobSecurityTests());
+		tests.add(new JobSecurityTests());
 		tests.add(new BenchmarkSecurityTests());
 		tests.add(new CacheSecurityTests());
 		tests.add(new UserTests());
@@ -132,6 +138,10 @@ public class TestManager {
 		test.execute();
 	}
 	
+	/**
+	 * Returns the names of all TestSequences known to the manager
+	 * @return
+	 */
 	public static List<String> getTestNames() {
 		List<String> names=new ArrayList<String>();
 		for (TestSequence t : tests) {
@@ -140,6 +150,11 @@ public class TestManager {
 		return names;
 	}
 	
+	/**
+	 * Gets the status of a TestSequence given its name
+	 * @param testName The name of the TestSequence of interest
+	 * @return
+	 */
 	public static TestStatus getTestStatus(String testName) {
 		TestSequence t = getTestSequence(testName);
 		if (t==null) {
@@ -148,6 +163,11 @@ public class TestManager {
 		return t.getStatus();
 	}
 	
+	/**
+	 * Gets back the message contained by a given TestSequence
+	 * @param testName
+	 * @return
+	 */
 	public static String getTestMessage(String testName) {
 		TestSequence t = getTestSequence(testName);
 		if (t==null) {
@@ -156,6 +176,11 @@ public class TestManager {
 		return t.getMessage();
 	}
 	
+	/**
+	 * Returns a TestSequence object 
+	 * @param name
+	 * @return
+	 */
 	private static TestSequence getTestSequence(String name) {		
 		for (TestSequence t : tests) {
 			if (t.getName().equals(name)) {

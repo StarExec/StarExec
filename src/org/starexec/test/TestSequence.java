@@ -210,7 +210,7 @@ public abstract class TestSequence {
 	}
 	
 	/**
-	 * Retrieves a list of all methods decared in the current class that have the
+	 * Retrieves a list of all methods declared in the current class that have the
 	 * @test annotation
 	 * @return
 	 */
@@ -253,6 +253,11 @@ public abstract class TestSequence {
 		return a.annotationType().equals(Test.class);
 	}
 	
+	/**
+	 * This appends the given message to the log of an individual test. It uses
+	 * reflection to figure out which test called it.
+	 * @param message
+	 */
 	protected final void addMessage(String message) {
 		try {
 			String methodName=Thread.currentThread().getStackTrace()[2].getMethodName();

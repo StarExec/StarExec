@@ -1,7 +1,6 @@
 package org.starexec.test.resources;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
@@ -17,7 +15,6 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
@@ -34,17 +31,42 @@ import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
 
+
+/**
+ * This file contains functions for loading test objects into the database.
+ * Test objects are created with random names to avoid getting repeat
+ * names when running tests multiple times.
+ * @author Eric Burns
+ *
+ */
+
 public class ResourceLoader {
 	private static final Logger log = Logger.getLogger(ResourceLoader.class);	
 	
+	
+	/**
+	 * Returns the path to the resource directory, which is where we are storing files like solvers
+	 * and benchmarks that are used during processing
+	 * @return The absolute file path
+	 */
 	public static String getResourcePath() {
 		return ResourceLoader.class.getResource("/org/starexec/test/resources").getFile();
 	}
+	
+	/**
+	 * Returns a File object representing the file with the given name from the resource directory
+	 * @param name The name of the file, which must be present in the resource directory
+	 * @return 
+	 */
 	public static File getResource(String name) {
-		URL url=ResourceLoader.class.getResource("/org/starexec/test/resources/"+"CVC4.zip");
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
 	
+	/**
+	 * Returns a File object representing the directory where all downloads performed during testing
+	 * should be placed. For example, StarexecCommand tests use this downloads directory.
+	 * @return
+	 */
 	public static File getDownloadDirectory() {
 		String filePath=getResourcePath();
 		File file=new File(filePath,"downloads");
@@ -52,6 +74,13 @@ public class ResourceLoader {
 		return file;
 	}
 	
+	/**
+	 * Loads a processor into the database
+	 * @param fileName The name of the file in the resource directory
+	 * @param type Either post, bench, or pre processor
+	 * @param communityId The ID of the community to place the processor in
+	 * @return The Processor object, with all of its attributes set (name, ID, etc.)
+	 */
 	public static Processor loadProcessorIntoDatabase(String fileName,ProcessorType type, int communityId) {
 		try {
 			File file=new File(fileName);
@@ -114,6 +143,13 @@ public class ResourceLoader {
 		return job;
 	}
 	
+	/**
+	 * Loads a configuration for a solver into the database
+	 * @param fileName The name of the file in the resource directory
+	 * @param solverId The ID of the solver to give the configuration to
+	 * @return The Configuration object with all of its fields set (name, ID, etc.)
+	 */
+	
 	public static Configuration loadConfigurationFileIntoDatabase(String fileName, int solverId)  {
 		try {
 			File file=getResource(fileName);
@@ -124,6 +160,13 @@ public class ResourceLoader {
 		}
 		return null;
 	}
+	
+	/**
+	 * Loads a configuration for a solver into the database
+	 * @param contents The actual String configuration to give to the solver
+	 * @param solverId The ID of the solver to give the configuration to
+	 * @return The Configuration object with all of its fields set (name, ID, etc.)
+	 */
 	
 	public static Configuration loadConfigurationIntoDatabase(String contents,int solverId)  {
 		try {
@@ -158,7 +201,14 @@ public class ResourceLoader {
 		return null;
 	}
 	
-	
+	/**
+	 * Loads an archive of benchmarks into the database
+	 * @param archiveName The name of the archive containing the benchmarks in the Resource directory
+	 * @param parentSpaceId The ID of the space to place the benchmarks in. Benchmarks will
+	 * not be made into a hierarchy-- they will all be placed into the given space
+	 * @param userId The ID of the owner of the benchmarks
+	 * @return
+	 */
 	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			File archive=getResource(archiveName);
@@ -177,7 +227,13 @@ public class ResourceLoader {
 		return null;
 
 	}
-	
+	/**
+	 * Loads a solver into the database
+	 * @param archiveName The name of the archive containing the solver in the Resource directory
+	 * @param parentSpaceId The ID of the parent space for the solver
+	 * @param userId The ID of the user that will own the solver
+	 * @return The Solver object will all of its fields set.
+	 */
 	public static Solver loadSolverIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			Solver s=new Solver();
@@ -213,6 +269,12 @@ public class ResourceLoader {
 		return null;	
 	}
 	
+	/**
+	 * Loads a new space into the database
+	 * @param userId The ID of the user who is creating the space
+	 * @param parentSpaceId The ID of the parent space for the new subspace
+	 * @return The Space object with all of its fields set.
+	 */
 	public static Space loadSpaceIntoDatabase(int userId, int parentSpaceId) {
 		Space space=new Space();
 		space.setName(TestUtil.getRandomSpaceName());

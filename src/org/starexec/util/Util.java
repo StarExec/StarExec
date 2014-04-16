@@ -244,18 +244,23 @@ public class Util {
 	}
 	
 	//TODO: Run this command as the sandboxed user with permissions only granted recursively to everything in authorizedDirs
-	public static BufferedReader executeSandboxedCommand(String[] command, String[] envp, List<File> authorizedDirs) {
+	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
 		Runtime r = Runtime.getRuntime();
+		
+		String[] command=new String[c.length+3];
+		command[0]="sudo";
+		command[1]="-u";
+		command[2]="sandbox";
+		for (int index=3;index<command.length;index++) {
+			command[index]=c[index=3];
+		}
 		
 		BufferedReader reader = null;		
 		//
 		try {					
 		    Process p;
-		    if (command.length == 1) {
-			log.info("Executing the following command: " + command[0]);
-			p = r.exec(command[0], envp);
-		    }
-		    else {
+		  
+		    
 			StringBuilder b = new StringBuilder();
 			b.append("Executing the following command:\n");
 			for (int i = 0; i < command.length; i++) {
@@ -266,7 +271,7 @@ public class Util {
 			log.info(b.toString());
 			    
 			p = r.exec(command, envp);
-		    }
+		    
 		    InputStream in = p.getInputStream();
 		    BufferedInputStream buf = new BufferedInputStream(in);
 		    InputStreamReader inread = new InputStreamReader(buf);

@@ -10,6 +10,7 @@ package org.starexec.command;
 import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 class ArgumentParser {
 	
@@ -267,7 +268,7 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			Integer [] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 			return con.removePrimitives(ids, Integer.parseInt(commandParams.get(R.PARAM_FROM)), type, commandParams.containsKey(R.PARAM_DELETE_PRIMS));
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
@@ -328,7 +329,7 @@ class ArgumentParser {
 				return valid;
 			}
 			
-			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 			return con.deletePrimitives(ids, type);
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;

@@ -366,12 +366,14 @@ public class Connection {
 	}
 	
 	/**
-	 * This method takes in a HashMap mapping String keys to String values
-	 * and creates and HTTP POST request that pushes a processor to Starexec
-	 * 
-	 * @param commandParams The parameters from the command line. A file and an ID are required.
-	 * @return The new processor ID on success, or a negative error code on failure
-	 * @author Eric Burns
+	 * Uploads a processor to starexec 
+	 * @param name The name to give the processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @param type Must be "post" "pre" or "bench"
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
 	
 	protected int uploadProcessor(String name, String desc, String filePath,Integer communityID,String type) {
@@ -410,39 +412,42 @@ public class Connection {
 		
 	}
 	
+
 	/**
-	 * Handles requests for uploading post-processors.
-	 * @param commandParams The key/value pairs given by the user at the command line. A file and an ID are required
-	 * @return 0 on success and a negative error code otherwise
-	 * @author Eric Burns
+	 * Uploads a post processor to starexec 
+	 * @param name The name to give the post processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
-	
 	public int uploadPostProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name,desc,filePath,communityID, "post");
 	}
 	
 	/**
-	 * Handles requests for uploading benchmark processors 
-	 * @param name The name to be given to the new benchmark processor.
-	 * @param desc A description of the benchmark processor
-	 * @param filePath The path to the zip archive containing the processor
-	 * @param communityID The ID of the community to add the processor to
-	 * @return A status code corresponding to Status.java
+	 * Uploads a benchmark processor to starexec 
+	 * @param name The name to give the benchmark processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
-	
 	public int uploadBenchProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name,desc,filePath,communityID, "bench");
 	}
 	
 	/**
-	 * Handles requests for uploading preprocessors 
-	 * @param name The name to be given to the new pre processor.
-	 * @param desc A description of the pre processor
-	 * @param filePath The path to the zip archive containing the processor
-	 * @param communityID The ID of the community to add the processor to
-	 * @return A status code corresponding to Status.java
+	 * Uploads a pre processor to starexec 
+	 * @param name The name to give the pre processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
-	
 	public int uploadPreProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name,desc,filePath,communityID, "pre");
 	}
@@ -652,27 +657,27 @@ public class Connection {
 		return this.setUserSetting("institution",inst);
 	}
 	
-	public int deleteSolvers(Integer[] ids) {
+	public int deleteSolvers(List<Integer> ids) {
 		return deletePrimitives(ids,"solver");
 	}
 	
-	public int deleteBenchmarks(Integer[] ids) {
+	public int deleteBenchmarks(List<Integer> ids) {
 		return deletePrimitives(ids,"benchmark");
 	}
 	
-	public int deleteProcessors(Integer[] ids) {
+	public int deleteProcessors(List<Integer> ids) {
 		return deletePrimitives(ids,"processor");
 	}
 	
-	public int deleteConfigurations(Integer[] ids) {
+	public int deleteConfigurations(List<Integer> ids) {
 		return deletePrimitives(ids,"configuration");
 	}
-	public int deleteJobs(Integer[] ids) {
+	public int deleteJobs(List<Integer> ids) {
 		return deletePrimitives(ids,"job");
 	}
 	
 	
-	protected int deletePrimitives(Integer[] ids, String type) {
+	protected int deletePrimitives(List<Integer> ids, String type) {
 		try {
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type);
@@ -808,23 +813,57 @@ public class Connection {
 		}
 	}
 	
-	public int removeSolvers(Integer[] solverIds, Integer spaceID) {
+	/**
+	 * Removes the given solvers from the given space. The solvers are NOT deleted.
+	 * @param solverIds The IDs of the solvers to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	public int removeSolvers(List<Integer> solverIds, Integer spaceID) {
 		return removePrimitives(solverIds,spaceID,"solver",false);
 	}
 	
-	public int removeJobs(Integer[] jobIds, Integer spaceID) {
+	/**
+	 * Removes the given jobs from the given space. The jobs are NOT deleted.
+	 * @param jobIds The IDs of the jobs to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeJobs(List<Integer> jobIds, Integer spaceID) {
 		return removePrimitives(jobIds,spaceID, "job",false);
 	}
 	
-	public int removeUsers(Integer[] userIds, Integer spaceID) {
+	/**
+	 * Removes the given users from the given space. The users are NOT deleted.
+	 * @param userIds The IDs of the users to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeUsers(List<Integer> userIds, Integer spaceID) {
 		return removePrimitives(userIds,spaceID, "user",false);
 	}
 	
-	public int removeBenchmarks(Integer[] benchmarkIds, Integer spaceID) {
+	/**
+	 * Removes the given benchmarks from the given space. The benchmarks are NOT deleted.
+	 * @param benchmarkIds The IDs of the benchmarks to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeBenchmarks(List<Integer> benchmarkIds, Integer spaceID) {
 		return removePrimitives(benchmarkIds, spaceID, "benchmark",false);
 	}
 	
-	public int removeSubspace(Integer[] subspaceIds, Integer spaceID, Boolean deletePrims) {
+	/**
+	 * Removes the given subspaces from the given space.
+	 * @param subspaceIds The IDs of the subspaces to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeSubspace(List<Integer> subspaceIds, Integer spaceID, Boolean deletePrims) {
 		return removePrimitives(subspaceIds, spaceID,"subspace", deletePrims);
 	}
 	
@@ -835,7 +874,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
 	 */
-	protected int removePrimitives(Integer[] primIDs,Integer spaceID,String type, Boolean deletePrims) {
+	protected int removePrimitives(List<Integer> primIDs,Integer spaceID,String type, Boolean deletePrims) {
 		try {
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
