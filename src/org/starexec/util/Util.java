@@ -246,17 +246,26 @@ public class Util {
 	//TODO: Run this command as the sandboxed user with permissions only granted recursively to everything in authorizedDirs
 	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
 		Runtime r = Runtime.getRuntime();
+		//the final, empty string should be the directory to apply the command to
+		String[] chownCommand = {"sudo","chown", "-R", "sandbox", ""};
+		
+		//first, give the sandbox user ownership of every given directory
+		for (File f : authorizedDirs) {
+			chownCommand[4]=f.getAbsolutePath();
+			Util.executeCommand(chownCommand,envp);
+		}
+		
 		
 		String[] command=new String[c.length+3];
 		command[0]="sudo";
 		command[1]="-u";
 		command[2]="sandbox";
 		for (int index=3;index<command.length;index++) {
-			command[index]=c[index=3];
+			command[index]=c[index-3];
 		}
 		
 		BufferedReader reader = null;		
-		//
+		
 		try {					
 		    Process p;
 		  
@@ -288,9 +297,18 @@ public class Util {
 		    }
 		    errReader.close();
 		    //This will hang indefinitely if the stream is too large.  TODO: fix increase size?
+		    
 		    if (p.waitFor() != 0) {
 			log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
 		    }
+		    
+		    //give back ownership of everything to tomcat
+		    chownCommand =new String[] {"sudo","chown", "-R", "tomcat", ""};
+		    
+		    for (File f : authorizedDirs) {
+				chownCommand[4]=f.getAbsolutePath();
+				Util.executeCommand(chownCommand,envp);
+			}
 		    return reader;
 		} catch (Exception e) {
 			log.warn("execute command says " + e.getMessage(), e);		
@@ -540,7 +558,7 @@ public class Util {
 			
 			// Get all of the outdated files
 			Collection<File> outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-			
+			log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 			// Remove them all
 			for(File f : outdatedFiles) {
 				FileUtils.deleteQuietly(f);

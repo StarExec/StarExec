@@ -230,17 +230,13 @@ public class UploadSolver extends HttpServlet {
 			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			
-			//TODO: Implement this 
-			/*
 			if (containsBuildScript(uniqueDir)) {
 				List<File> authorized=new ArrayList<File>();
 				authorized.add(uniqueDir);
-				String[] command=new String[3];
-				command[0]="su";
-				command[1]="-c";
-				command[2]="./"+R.SOLVER_BUILD_SCRIPT;
+				String[] command=new String[1];
+				command[0]="./"+R.SOLVER_BUILD_SCRIPT;
 				Util.executeSandboxedCommand(command, null, authorized);
-			}*/
+			}
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
 				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
