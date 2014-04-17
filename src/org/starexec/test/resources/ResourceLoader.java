@@ -139,6 +139,7 @@ public class ResourceLoader {
 		HashMap<Integer,String> SP = new HashMap<Integer,String>();
 		SP.put(spaceId, Spaces.get(spaceId).getName());
 		JobManager.buildJob(job, userId, 100, 100, Util.gigabytesToBytes(1), benchmarkIds, solverIds, configIds, spaceId, SP);
+		
 		Jobs.add(job, spaceId);
 		return job;
 	}

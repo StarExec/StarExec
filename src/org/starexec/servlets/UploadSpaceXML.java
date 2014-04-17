@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -110,7 +111,7 @@ public class UploadSpaceXML extends HttpServlet {
 			
 			//Process the archive file and extract
 		
-			File archiveFile = new File(uniqueDir,  item.getName());
+			File archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());

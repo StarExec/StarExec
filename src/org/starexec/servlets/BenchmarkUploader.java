@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
@@ -260,7 +261,7 @@ public class BenchmarkUploader extends HttpServlet {
 					
 					File archiveFile=null;
 					if (localOrUrl.equals("local")) {
-						archiveFile = new File(uniqueDir,  fileToUpload.getName());
+						archiveFile = new File(uniqueDir,  FilenameUtils.getName(fileToUpload.getName()));
 						fileToUpload.write(archiveFile);
 					} else {
 						archiveFile=new File(uniqueDir,name);

@@ -310,6 +310,9 @@ public class SpaceSecurity {
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	private static int canCopyPrimFromSpace(int spaceId, int userIdDoingCopying) {
+		if (Users.isAdmin(userIdDoingCopying)) {
+			return 0;
+		}
 		// And the space the user is being copied from must not be locked
 		if(Spaces.get(spaceId).isLocked()) {
 			return SecurityStatusCodes.ERROR_SPACE_LOCKED;

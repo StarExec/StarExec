@@ -204,7 +204,7 @@ CREATE TABLE jobs (
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
-	primary_space INT,
+	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,

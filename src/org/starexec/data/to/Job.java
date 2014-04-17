@@ -23,16 +23,16 @@ import com.google.gson.annotations.Expose;
 public class Job extends Identifiable implements Iterable<JobPair> {
 	private int userId = -1;		
 	@Expose private String name;
-	@Expose private String description = "no description";
+	@Expose private String description = "no description"; 
 	private Queue queue = null;
 	@Expose private Timestamp createTime;
-	@Expose private int primarySpace;
+	@Expose private int primarySpace; // this is the root JOB SPACE for this job. It is NOT a space from the spaces table.
 	private List<JobPair> jobPairs;
 	private HashMap<String, Integer> liteJobPairStats;
 	private Processor preProcessor;
 	private Processor postProcessor;	
-	private boolean deleted;
-	private boolean paused;
+	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
+	private boolean paused; // if true, this job is currently paused
 	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();

@@ -128,11 +128,15 @@ public class JobSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
 	 */
+	
+	//TODO: We need to make sure the user actually has access to this queue.
 	public static int canChangeQueue(int jobId, int userId, int queueId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
+		Job j=Jobs.get(jobId);
 		Queue q=Queues.get(queueId);
+
 		if (q==null){
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}

@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -168,7 +169,7 @@ public class UploadSolver extends HttpServlet {
 			String name=null;
 			URL url=null;
 			if (upMethod.equals("local")) {
-				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);		
+				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
 			} else {
 				try {
 					url=new URL((String)form.get(UploadSolver.FILE_URL));
@@ -206,15 +207,14 @@ public class UploadSolver extends HttpServlet {
 			File archiveFile=null;
 			//String FileName=null;
 			if (upMethod.equals("local")) {
-				archiveFile = new File(uniqueDir,  item.getName());
+				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
+				archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
-				//FileName = item.getName().split("\\.")[0];
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				FileUtils.copyURLToFile(url, archiveFile);
-				//FileName=name.split("\\.")[0];
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
@@ -324,9 +324,7 @@ public class UploadSolver extends HttpServlet {
 			
 			Integer.parseInt((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
-			//FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 
-			//String item_desc_file = ArchiveUtil.extractArchiveDesc(SOLVER_NAME);
 			
 			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) ||
 					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	

@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -139,7 +140,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Save the uploaded file to disk
 			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
-			File newFile = ProcessorManager.getProcessorFilePath(newProc.getCommunityId(), processorFile.getName());
+			File newFile = ProcessorManager.getProcessorFilePath(newProc.getCommunityId(), FilenameUtils.getName(processorFile.getName()));
 			processorFile.write(newFile);
 			
 			if (!newFile.setExecutable(true, false)) {			
