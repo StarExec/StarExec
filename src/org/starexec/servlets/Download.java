@@ -110,6 +110,7 @@ public class Download extends HttpServlet {
 				Integer since=null;
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
+					System.out.println("found since = "+lastSeen);
 				}
 				shortName="Job"+job.getId()+"_output";
 				archive = handleJobOutputs(job, u.getId(), ".zip", response,since);
@@ -167,8 +168,9 @@ public class Download extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
 			}									
 		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			
 		}
 	}	
 
@@ -228,7 +230,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
 		}
 
 		return null;
@@ -318,7 +320,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
 		}
 
 		return null;
@@ -386,7 +388,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
 		}
 
 		return null;
@@ -429,7 +431,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
 		return null;
@@ -500,7 +502,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
 		return null;
@@ -728,7 +730,8 @@ public class Download extends HttpServlet {
 		}
 
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+			log.debug("reached this point in the code");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
 		return null;
@@ -790,7 +793,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
 		}
 		return null;
 	}

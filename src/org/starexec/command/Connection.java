@@ -1562,6 +1562,7 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
+			e.printStackTrace();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_SERVER;
 		}
