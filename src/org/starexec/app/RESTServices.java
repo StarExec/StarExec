@@ -3238,9 +3238,9 @@ public class RESTServices {
 	 * @author Wyatt Kaiser
 	 */
 	@POST
-	@Path("/nodes/dates/pagination")
+	@Path("/nodes/dates/pagination/{string_date}")
 	@Produces("application/json")
-	public String nodeSchedule(@Context HttpServletRequest request) {
+	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		int status=QueueSecurity.canUserSeeRequests(userId);
 		if (status!=0) {
@@ -3249,9 +3249,38 @@ public class RESTServices {
 		//Get todays date
 		Date today = new Date();
 
+		//Get the passed in date
+		String start_month = date.substring(0,2);
+		String start_day = date.substring(2, 4);
+		String start_year = date.substring(4, 8);
+		String new_date = start_month + "/" + start_day + "/" + start_year;
+		
 		//Get the latest date that a node is reserved for
 		Date latest = Cluster.getLatestNodeDate();
+		java.util.Date newDateJava = null;
 		
+		if (Validator.isValidDate(new_date)) {
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+			java.sql.Date newDateSql = null;
+			java.sql.Date latestSql = null;
+			try {
+				newDateJava = format.parse(new_date);
+				newDateSql = new java.sql.Date(newDateJava.getTime());
+				
+				latestSql = new java.sql.Date(latest.getTime());
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			}
+			
+			if (newDateSql.before(latestSql)) {
+				return gson.toJson(4);
+			}
+			
+		} else {
+			return gson.toJson(2);
+		}
+	
+		latest = newDateJava;
 		//Get all the dates between these two dates
 	    List<Date> dates = new ArrayList<Date>();
 	    Calendar calendar = new GregorianCalendar();

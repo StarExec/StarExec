@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, java.text.SimpleDateFormat,java.util.Date, org.starexec.constants.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -11,11 +11,16 @@
 		//List<Queue> queues = Queues.getAllAdmin();
 		List<Queue> queues = Queues.getAllNonPermanent();
 		
+		Date latest = Cluster.getLatestNodeDate();
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+		String date1 = sdf.format(latest);
+		
 		if (!u.getRole().equals("admin")) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} else {
 			request.setAttribute("queues", queues);
 			request.setAttribute("defaultQueueName", R.DEFAULT_QUEUE_NAME);
+			request.setAttribute("latest", date1);
 		}		
 		
 	} catch (NumberFormatException nfe) {
@@ -38,6 +43,26 @@
 			<button type="button" class="update" id="btnUpdate">update</button>			
 	</div>
 	<div style="width: 100%; overflow: auto;">
+			<fieldset id="fieldStep1">
+			<legend>Adjust Dates</legend>
+			<table id="tblConfig" class="shaded contentTbl">
+				<thead>
+					<tr>
+						<th>attribute</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="noHover" title="view to this date: ">
+						<td class="label"><p>View to this date:</p></td>
+						<td><input id="last" name="last" type="text" value="${latest}"/> </td>											
+					</tr>		
+				</tbody>
+			</table>
+			<div>
+				<button type="button" class="update" id="btnDateChange">update</button>
+			</div>
+	</fieldset>
 	<fieldset  id="nodeField">
 		<legend class="expd" id="nodeExpd">nodes</legend>
 		<table id="nodes" class="manage">
