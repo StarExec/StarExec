@@ -53,8 +53,15 @@ public class Starexec implements ServletContextListener {
 			log.debug("Releasing grid engine util threadpool...");
 			GridEngineUtil.shutdown();
 			
-			log.debug("Shutting down the session..." + session);
-			GridEngineUtil.destroySession(session);
+			String[] split = session.toString().split(".");
+			log.debug(split);
+			log.debug(split[3]);
+			
+			if (!split[3].equals("drmaa")) {
+			
+				log.debug("Shutting down the session..." + session);
+				GridEngineUtil.destroySession(session);
+			}
 
 			// Wait for the task scheduler to finish
 			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
