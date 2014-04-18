@@ -53,6 +53,8 @@ public class Starexec implements ServletContextListener {
 			log.debug("Releasing grid engine util threadpool...");
 			GridEngineUtil.shutdown();
 			
+			log.debug("session = " + session);
+			log.debug("session 2 = " + session.toString());
 			String[] split = session.toString().split(".");
 			log.debug(split);
 			log.debug(split[3]);
