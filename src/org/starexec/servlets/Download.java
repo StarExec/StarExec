@@ -105,15 +105,16 @@ public class Download extends HttpServlet {
 				shortName="Job"+jobId+"_info";
 				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
 			} else if (request.getParameter("type").equals("j_outputs")) {
-				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+				int jobId=Integer.parseInt(request.getParameter("id"));
+				
 				String lastSeen=request.getParameter("since");
 				Integer since=null;
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 					System.out.println("found since = "+lastSeen);
 				}
-				shortName="Job"+job.getId()+"_output";
-				archive = handleJobOutputs(job, u.getId(), ".zip", response,since);
+				shortName="Job"+jobId+"_output";
+				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
@@ -637,14 +638,14 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static File handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
+	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
 		
 		// If the user can actually see the job the pair is apart of
-		if (Permissions.canUserSeeJob(j.getId(), userId)) {
-			boolean jobComplete=Jobs.isJobComplete(j.getId());
+		if (Permissions.canUserSeeJob(jobId, userId)) {
+			boolean jobComplete=Jobs.isJobComplete(jobId);
 			if (jobComplete && since==null) { //there is no cache for partial results
 				String cachedFilePath=null;
-				cachedFilePath=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+				cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_OUTPUT);
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFilePath!=null) {
 					File cachedFile = new File(cachedFilePath);
@@ -670,7 +671,7 @@ public class Download extends HttpServlet {
 				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
 				tempDir.mkdir();
 				log.debug("Getting incremental job output results");
-				pairs=Jobs.getNewCompletedPairsShallow(j.getId(), since);
+				pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
 				for (JobPair x : pairs) {
@@ -711,11 +712,11 @@ public class Download extends HttpServlet {
 
 					}
 				}
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output_new",false);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
 			} else {
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"Job"+String.valueOf(j.getId())+"_output",false);
+				ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
 				if (jobComplete) {
-					Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
+					Cache.setCache(jobId,CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}
 			}
 
