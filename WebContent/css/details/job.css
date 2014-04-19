@@ -141,15 +141,9 @@ margin-top:5px;
 }
 
 #subspaceSummaryField .dataTables_wrapper {
-	max-width:47%;
-	width:47%;
-	border-style:solid;
-	border-width:1px;
-	border-color:black;
 	float:left;
 	clear:none;
-	margin-right:10px;
-	margin-bottom:10px;
+	
 	padding:3px;
 }
 
@@ -158,8 +152,40 @@ margin-top:5px;
 	
 }
 
-tr.panelHeader {
+#subspaceSummaryField .panelField {
+    max-width:47%;
+	width:47%;
+    float: left;
+    padding-right: 1px ;
+    border: 1px;
+    border-color: #000000;
+    border-style: solid;
+    clear: none;
+    margin-right:3px;
+	margin-bottom:2px;
+	margin-right:5px;
+	margin-top:5px;
+	border-radius:0px;
+	padding-left:0px;
+}
+#subspaceSummaryField #panelActions {
+	width:97%;
+	border-color: black;
+	border-style: none none solid;
+	border-width: 0px 0px 5px;
+	margin-top:0px;
+	padding-top:0px;
+}
+
+tr.viewSubspace {
 	text-align:center;
 	font-size: 140%;
 	cursor:pointer;
+}
+
+table.panel .configHead, table.panel .solverHead {
+	width: 30%;
+}
+table.panel .solvedHead, table.panel .timeHead {
+	width: 20%;	
 }

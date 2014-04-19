@@ -1502,6 +1502,21 @@ public class Connection {
 			String done=null;
 			setSessionIDIfExists(response.getAllHeaders());
 			
+			
+			
+			boolean fileFound=false;
+			for (Header x : response.getAllHeaders()) {
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound=true;
+					break;
+				}
+			}
+			
+			if (!fileFound) {
+				response.getEntity().getContent().close();
+				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			}
+			
 			//if we're sending 'since,' it means this is a request for new job data
 			if (urlParams.containsKey(R.FORMPARAM_SINCE)) {
 				
@@ -1521,19 +1536,6 @@ public class Connection {
 					//don't save a empty files
 					return R.SUCCESS_NOFILE;
 				}
-			}
-			
-			boolean fileFound=false;
-			for (Header x : response.getAllHeaders()) {
-				if (x.getName().equals("Content-Disposition")) {
-					fileFound=true;
-					break;
-				}
-			}
-			
-			if (!fileFound) {
-				response.getEntity().getContent().close();
-				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			
 			//copy file from the HTTPResponse to an output stream

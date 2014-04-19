@@ -4,29 +4,65 @@ var panelArray=null;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");	
 	jobSpaceId=$("#spaceId").attr("value");
-	$("#pageHeader").hide();
-	$("#pageFooter").hide();
+
 	//update the tables every 5 seconds
 	setInterval(function() {
 		for (i=0;i<panelArray.length;i++) {
 			panelArray[i].fnReloadAjax(null,null,true);
 		}
 	},5000);
-	
+	initUI();
 	initializePanels();
 });
+
+function initUI() {
+	$("#collapsePanels").button( {
+		icons: {
+			primary: "ui-icon-folder-collapsed"
+		}
+	}) ;
+	$("#openPanels").button( {
+		icons: {
+			primary: "ui-icon-folder-open"
+		}
+	}) ;
+	$("#pageHeader").hide();
+	$("#pageFooter").hide();
+	$("#collapsePanels").click(function() {
+		$(".panelField").each(function() {
+			legend = $(this).children('legend:first');
+			isOpen = $(legend).data('open');
+			if (isOpen) {
+				$(legend).trigger("click");
+			}
+		});
+	});
+	$("#openPanels").click(function() {
+		$(".panelField").each(function() {
+			legend = $(this).children('legend:first');
+			isOpen = $(legend).data('open');
+			
+			if (!isOpen) {
+				$(legend).trigger("click");
+			}
+		});
+	});
+}
 
 function getPanelTable(space) {
 	spaceName=space.attr("name");
 	spaceId=parseInt(space.attr("id"));
 	
-	table="<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
-			"<tr class=\"panelHeader\"><th  colspan=\"4\">"+spaceName+"</th> </tr>" +
+	table="<fieldset class=\"panelField\">" +
+			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
+			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
+					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
 			"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
 			"<th class=\"solvedHead\">solved</th> <th class=\"timeHead\">time</th> </tr>" +
 			"</thead>" +
-			"<tbody></tbody> </table>";
+			"<tbody></tbody> </table></fieldset>";
 	return table;
+	
 }
 
 function initializePanels() {
@@ -49,14 +85,17 @@ function initializePanels() {
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });
 		}
-		$(".panelHeader").each(function() {
+		$(".viewSubspace").each(function() {
 			$(this).click(function() {
 				spaceId=$(this).parents("table.panel").attr("spaceId");
 				window.location=starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+spaceId;
 			});
 			
 		});
+		$(".panelField").expandable();
 	});
+	
+
 	
 }
 

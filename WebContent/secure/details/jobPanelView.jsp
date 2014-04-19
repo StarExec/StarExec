@@ -34,14 +34,17 @@
 %>
 
 <star:template title="${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/jobPanelView, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/jobPanelView">			
-	<p id="displayJobID" class="accent">id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
 	<div id="mainPanel">
 					 
 		<fieldset id="subspaceSummaryField">
-			<legend class="expd" id="subspaceExpd">subspace summaries</legend>
-		</fieldset>
+				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
+				<fieldset id="panelActions">
+				<button id="collapsePanels">Collapse All</button>
+				<button id="openPanels">Open All</button>
+				</fieldset>
+			</fieldset>
 					
 	</div>
 </star:template>

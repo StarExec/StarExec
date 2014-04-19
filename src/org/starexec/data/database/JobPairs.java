@@ -495,17 +495,20 @@ public class JobPairs {
 			for (String space : pathSpaces) {
 				file=new File(file,space);
 			}
-			File testFile=new File(file,pair.getSolver().getName());
-			testFile=new File(testFile,pair.getConfiguration().getName());
-			
+
 			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
 
 			file=new File(file,pair.getBench().getName());
-			testFile=new File(testFile,pair.getBench().getName());
+			
 			if (!file.exists()) {	    // if the job output could not be found
+				File testFile=new File(file,pair.getSolver().getName());
+				testFile=new File(testFile,pair.getConfiguration().getName());
+				testFile=new File(testFile,pair.getBench().getName());
 				if (testFile.exists()) {  //check the alternate path some pairs are still stored at
 					FileUtils.copyFile(testFile, file);
-					testFile.delete();
+					if (file.exists()) {
+						testFile.delete();
+					}
 				}
 			}
 			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");

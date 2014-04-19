@@ -272,7 +272,7 @@ CREATE TABLE job_pairs (
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
-	KEY (job_id, status_code), 
+	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index
 	CONSTRAINT job_pairs_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL -- not used as an index

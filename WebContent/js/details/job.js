@@ -207,9 +207,19 @@ function initUI(){
 	
 	$("#popoutPanels").button({
 		icons: {
-			primary: "ui-icon-arrowthick-1-n"
+			primary: "ui-icon-extlink"
 		}
 	});
+	$("#collapsePanels").button( {
+		icons: {
+			primary: "ui-icon-folder-collapsed"
+		}
+	}) ;
+	$("#openPanels").button( {
+		icons: {
+			primary: "ui-icon-folder-open"
+		}
+	}) ;
 	
 	$("#spaceOverviewUpdate").button({
 		icons: {
@@ -254,6 +264,25 @@ function initUI(){
 	
 	$("#popoutPanels").click(function() {
 		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId);
+	});
+	$("#collapsePanels").click(function() {
+		$(".panelField").each(function() {
+			legend = $(this).children('legend:first');
+			isOpen = $(legend).data('open');
+			if (isOpen) {
+				$(legend).trigger("click");
+			}
+		});
+	});
+	$("#openPanels").click(function() {
+		$(".panelField").each(function() {
+			legend = $(this).children('legend:first');
+			isOpen = $(legend).data('open');
+			
+			if (!isOpen) {
+				$(legend).trigger("click");
+			}
+		});
 	});
 	
 	$("#clearCache").click(function(){
@@ -696,12 +725,14 @@ function getPanelTable(space) {
 	spaceName=space.attr("name");
 	spaceId=parseInt(space.attr("id"));
 	
-	table="<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
-			"<tr class=\"panelHeader\"><th  colspan=\"4\">"+spaceName+"</th> </tr>" +
+	table="<fieldset class=\"panelField\">" +
+			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
+			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
+					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
 			"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
 			"<th class=\"solvedHead\">solved</th> <th class=\"timeHead\">time</th> </tr>" +
 			"</thead>" +
-			"<tbody></tbody> </table>";
+			"<tbody></tbody> </table></fieldset>";
 	return table;
 	
 }
@@ -710,6 +741,11 @@ function initializePanels() {
 	sentSpaceId=curSpaceId;
 	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+sentSpaceId,function(spaces) {
 		panelArray=new Array();		
+		if (spaces.length==0) {
+			$("#subspaceSummaryField").hide();
+		}else {
+			$("#subspaceSummaryField").show();
+		}
 		for (i=0;i<spaces.length;i++) {
 			//if the user has changed spaces since this request was sent, we don't want to continue
 			//generating panels for the old space.
@@ -721,7 +757,7 @@ function initializePanels() {
 			spaceId=parseInt(space.attr("id"));
 			
 			child=getPanelTable(space);
-			$("#subspaceExpd").after(child);
+			$("#panelActions").after(child); //put the table after the panelActions fieldset
 			panelArray[i]=$("#panel"+spaceId).dataTable({
 		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
@@ -731,13 +767,14 @@ function initializePanels() {
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });
 		}
-		$(".panelHeader").each(function() {
+		$(".viewSubspace").each(function() {
 			$(this).click(function() {
 				spaceId=$(this).parents("table.panel").attr("spaceId");
 				openSpace(spaceId);	
 			});
 			
 		});
+		$(".panelField").expandable();
 	});
 	
 }

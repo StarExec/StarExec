@@ -1854,8 +1854,10 @@ public class Jobs {
 			for (Integer i =0; i < pairs.size(); i++){
 				JobPair jp = pairs.get(i);
 				if (props.containsKey(jp.getId())) {
+					log.debug("got attributes for a pair");
 					jp.setAttributes(props.get(jp.getId()));
 				} else {
+					log.debug("forced to get attributes for a single pair");
 					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
 				}
 			}

@@ -638,10 +638,11 @@ public class Download extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	private static File handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
-		boolean jobComplete=Jobs.isJobComplete(j.getId());
+		
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(j.getId(), userId)) {
-			if (jobComplete && since==null) {
+			boolean jobComplete=Jobs.isJobComplete(j.getId());
+			if (jobComplete && since==null) { //there is no cache for partial results
 				String cachedFilePath=null;
 				cachedFilePath=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
 				//if the entry was in the cache, make sure the file actually exists
@@ -685,7 +686,7 @@ public class Download extends HttpServlet {
 					if (file.exists()) {
 						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
 
-						//store in the old format becaues the pair has no path
+						//store in the old format because the pair has no path
 						if (jp.getPath()==null) {
 							dir=new File(tempDir,jp.getSolver().getName());
 							dir.mkdir();
