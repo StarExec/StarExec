@@ -37,6 +37,17 @@ public class SolverSecurity {
 		return 0;
 	}
 	
+	public static int canUserAddConfiguration(int solverId, int userId) {
+		Solver s=Solvers.get(solverId);
+		if (s==null) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		if (!Users.isAdmin(userId) && !(s.getUserId()==userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
+	
 	/**
 	 * Checks to see whether the given user can add a new website to the given solver
 	 * @param solverId The ID of the solver being checked

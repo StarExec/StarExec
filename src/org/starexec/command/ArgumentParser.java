@@ -374,7 +374,6 @@ class ArgumentParser {
 					hierarchy,procClass);
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 		
@@ -426,7 +425,6 @@ class ArgumentParser {
 			
 		
 		} catch (Exception e) {
-			e.printStackTrace();
 			errorMap.put(Status.ERROR_SERVER, null);
 			
 			return errorMap;

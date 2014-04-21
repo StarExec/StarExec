@@ -30,7 +30,7 @@ public class R {
 	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space";
-	public static String URL_UPLOADCONFIG="secure/upload/configruations";
+	public static String URL_UPLOADCONFIG="secure/upload/configurations";
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";

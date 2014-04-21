@@ -322,7 +322,6 @@ public class Connection {
 			//TODO: improve the error handling here
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}
@@ -337,29 +336,32 @@ public class Connection {
 	public int uploadConfiguration(String name, String desc, String filePath, Integer solverID) {
 		try {
 			
-			
 			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADCONFIG);
-			post=(HttpPost) setHeaders(post);
+			if (desc==null) {
+				desc="";
+			}
 			
 			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("solverID",new StringBody(solverID.toString(),utf8));
-			entity.addPart("uploadConfigDesc",new StringBody(name,utf8));
-			entity.addPart("uploadConfigName",new StringBody(desc,utf8));
+			entity.addPart("solverId",new StringBody(solverID.toString(),utf8));
+			entity.addPart("uploadConfigDesc",new StringBody(desc,utf8));
+			entity.addPart("uploadConfigName",new StringBody(name,utf8));
 			
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("file", fileBody);
-			
+			post=(HttpPost) setHeaders(post);
+
+			post.setEntity(entity);
 			
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			//we're expecting a redirect to the configuration
-			if (response.getStatusLine().getStatusCode()!=302) {
-				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
+			if (id==null) {
+				return Status.ERROR_SERVER;
 			}
-			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
-			return newID;
+			
+			return Integer.parseInt(id);
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}
@@ -1564,7 +1566,6 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_SERVER;
 		}

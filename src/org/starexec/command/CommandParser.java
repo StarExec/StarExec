@@ -75,6 +75,8 @@ class CommandParser {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
 				serverStatus=parser.uploadSpaceXML(commandParams);
+			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
+				serverStatus=parser.uploadConfiguration(commandParams);
 			}
 			else {
 				return Status.ERROR_BAD_COMMAND;
