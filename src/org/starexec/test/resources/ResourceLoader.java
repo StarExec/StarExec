@@ -125,7 +125,7 @@ public class ResourceLoader {
 	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds) {
 		
 		Space space=Spaces.get(spaceId);
-		String name=TestUtil.getRandomSpaceName();
+		String name=TestUtil.getRandomJobName();
 		Queue q=Queues.getUserQueues(userId).get(0);
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId());
 		
