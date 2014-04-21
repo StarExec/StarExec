@@ -645,8 +645,8 @@ CREATE PROCEDURE GetNextPageOfUSerJobs(IN _startingRecord INT, IN _recordsPerPag
 -- This services the DataTable object by supporting filtering by a query, 
 -- ordering results by a column, and sorting results in ASC or DESC order.  
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfRunningJobsAdmin;
-CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
+DROP PROCEDURE IF EXISTS GetNextPageOfAllJobs;
+CREATE PROCEDURE GetNextPageOfAllJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
 	BEGIN
 		-- If _query is empty, get next page of Jobs without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
@@ -666,8 +666,6 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 						GetErrorPairs(jobs.id) 		AS errorPairs
 				
 				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -697,9 +695,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 						GetPendingPairs(jobs.id) 	AS pendingPairs,
 						GetErrorPairs(jobs.id) 		AS errorPairs
 				
-				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20				
+				FROM	jobs			
 				
 				ORDER BY 
 					 (CASE _colSortedOn
@@ -731,9 +727,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 						GetErrorPairs(jobs.id) 		AS errorPairs
 				
 				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20
-				AND
+				WHERE
 				
 				-- Exclude Jobs whose name and status don't contain the query string
 						(name				LIKE	CONCAT('%', _query, '%')
@@ -768,9 +762,8 @@ CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recor
 						GetPendingPairs(jobs.id) 	AS pendingPairs,
 						GetErrorPairs(jobs.id) 		AS errorPairs
 				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20 
-				AND
+
+				WHERE
 					 	(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
 

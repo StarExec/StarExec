@@ -1536,7 +1536,7 @@ public class Jobs {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobsAdmin(?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfAllJobs(?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
@@ -1548,39 +1548,41 @@ public class Jobs {
 			
 			while(results.next()){
 
-				// Grab the relevant job pair statistics; this prevents a secondary set of queries
-				// to the database in RESTHelpers.java
-				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
-				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
-				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
-				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
-				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
-
-				Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
-				liteJobPairStats.put("completionPercentage", completionPercentage);
-
-				Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
-				liteJobPairStats.put("errorPercentage", errorPercentage);
-
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));	
-				if (results.getBoolean("deleted")) {
-					j.setName(j.getName()+" (deleted)");
+				if (results.getString("status").equals("incomplete")) {
+					// Grab the relevant job pair statistics; this prevents a secondary set of queries
+					// to the database in RESTHelpers.java
+					HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
+					liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
+					liteJobPairStats.put("completePairs", results.getInt("completePairs"));
+					liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
+					liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
+	
+					Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
+					liteJobPairStats.put("completionPercentage", completionPercentage);
+	
+					Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
+					liteJobPairStats.put("errorPercentage", errorPercentage);
+	
+					Job j = new Job();
+					j.setId(results.getInt("id"));
+					j.setPrimarySpace(results.getInt("primary_space"));
+					j.setUserId(results.getInt("user_id"));
+					j.setName(results.getString("name"));	
+					if (results.getBoolean("deleted")) {
+						j.setName(j.getName()+" (deleted)");
+					}
+					j.setDescription(results.getString("description"));				
+					j.setCreateTime(results.getTimestamp("created"));
+					j.setLiteJobPairStats(liteJobPairStats);
+					jobs.add(j);	
 				}
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setLiteJobPairStats(liteJobPairStats);
-				jobs.add(j);	
 				
 							
 			}	
 			
 			return jobs;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);
+			log.error("GetNextPageOfRunningJobsAdmin says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -2656,14 +2658,7 @@ public class Jobs {
 	public static boolean isTestJob(int jobId) {
 		return Users.isTestUser(Jobs.get(jobId).getUserId());
 	}
-	
-	public static boolean pauseAll() {
-		List<Job> jobs = new LinkedList<Job>();
-		jobs = Jobs.getRunningJobs();
-		
-		return pauseAll(jobs);
-	}
-	
+
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
 	 * @param jobs The jobs to pause
@@ -2672,7 +2667,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	
-	public static boolean pauseAll(List<Job> jobs) {
+	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -2681,6 +2676,9 @@ public class Jobs {
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
 			
+			List<Job> jobs = new LinkedList<Job>();		
+			jobs = Jobs.getRunningJobs();
+
 			if (jobs != null) {
 				for (Job j : jobs) {
 					//Get the enqueued job pairs and remove them
@@ -2711,7 +2709,7 @@ public class Jobs {
 		
 			return true;
 		} catch (Exception e) {
-			log.error("Pause Job says "+e.getMessage(),e);
+			log.error("PauseAll Jobs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -3326,19 +3324,21 @@ public class Jobs {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetRunningJobs()}");
+			procedure = con.prepareCall("{CALL GetAllJobs()}");
 			results = procedure.executeQuery();
 			
 			List<Job> jobs = new LinkedList<Job>();
 			while (results.next()) {
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));	
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));					
-				jobs.add(j);
+				if (results.getString("status").equals("incomplete")) {
+					Job j = new Job();
+					j.setId(results.getInt("id"));
+					j.setUserId(results.getInt("user_id"));
+					j.setName(results.getString("name"));	
+					j.setPrimarySpace(results.getInt("primary_space"));
+					j.setDescription(results.getString("description"));				
+					j.setCreateTime(results.getTimestamp("created"));					
+					jobs.add(j);
+				}
 			}
 			return jobs;
 		} catch (Exception e) {

@@ -654,27 +654,26 @@ CREATE PROCEDURE GetMaxMemory(IN _jobId INT)
 		WHERE jobs.id=_jobId;
 	END //
 	
-	
-DROP PROCEDURE IF EXISTS GetRunningJobs;
-CREATE PROCEDURE GetRunningJobs()
+DROP PROCEDURE IF EXISTS GetAllJobs;
+CREATE PROCEDURE GetAllJobs()
 	BEGIN
-		SELECT DISTINCT
-						jobs.id, 
-						jobs.name, 
-						jobs.user_id, 
-						jobs.created, 
-						jobs.description, 
-						jobs.deleted,
-						jobs.primary_space,
-						GetJobStatus(jobs.id)		AS status,
-						GetTotalPairs(jobs.id) 		AS totalPairs,
-						GetCompletePairs(jobs.id) 	AS completePairs,
-						GetPendingPairs(jobs.id) 	AS pendingPairs,
-						GetErrorPairs(jobs.id) 		AS errorPairs
+		SELECT 	id,
+				user_id,
+				name,
+				queue_id,
+				created,
+				description,
+				deleted,
+				paused,
+				killed,
+				primary_space,
+				GetJobStatus(id) 		AS status,
+				GetTotalPairs(id) 		AS totalPairs,
+				GetCompletePairs(id)	AS completePairs,
+				GetPendingPairs(id)		AS pendingPairs,
+				GetErrorPairs(id)		AS errorPairs
 				
-				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7;
+		FROM jobs;
 	END //
 	
 DROP PROCEDURE IF EXISTS IsSystemPaused;
