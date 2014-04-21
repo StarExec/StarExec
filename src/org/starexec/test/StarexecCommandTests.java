@@ -149,7 +149,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void uploadPostProcessor() {
 		String name=TestUtil.getRandomSolverName();
-		int result=con.uploadPostProc(solverURL, "", processorFile.getAbsolutePath(), testCommunity.getId());
+		int result=con.uploadPostProc(name, "", processorFile.getAbsolutePath(), testCommunity.getId());
 		Assert.assertTrue(result>0);
 		Processor testProc=Processors.get(result);
 		Assert.assertEquals(name,testProc.getName());
@@ -160,7 +160,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void uploadPreProcessor() {
 		String name=TestUtil.getRandomSolverName();
-		int result=con.uploadPreProc(solverURL, "", processorFile.getAbsolutePath(), testCommunity.getId());
+		int result=con.uploadPreProc(name, "", processorFile.getAbsolutePath(), testCommunity.getId());
 		Assert.assertTrue(result>0);
 		Processor testProc=Processors.get(result);
 		Assert.assertEquals(name,testProc.getName());
@@ -171,7 +171,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void uploadBenchProcessor() {
 		String name=TestUtil.getRandomSolverName();
-		int result=con.uploadBenchProc(solverURL, "", processorFile.getAbsolutePath(), testCommunity.getId());
+		int result=con.uploadBenchProc(name, "", processorFile.getAbsolutePath(), testCommunity.getId());
 		Assert.assertTrue(result>0);
 		Processor testProc=Processors.get(result);
 		Assert.assertEquals(name,testProc.getName());

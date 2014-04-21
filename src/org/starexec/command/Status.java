@@ -41,14 +41,14 @@ public class Status {
 	public static int ERROR_BAD_TRAVERSAL_TYPE=-30;
 	public static int ERROR_ID_AND_USER=-31;
 	public static int ERROR_NO_USER_PRIMS=-32;
-	
+	public static int ERROR_INTERNAL=33;
 	//error messages
 	private static HashMap<Integer,String> messages=new HashMap<Integer,String>();
 	static {
 		messages=new HashMap<Integer,String>();
 		messages.put(STATUS_SUCCESS, "Execution was successful");
 		messages.put(ERROR_BAD_COMMAND, "Unrecognized command");
-		messages.put(ERROR_BAD_ARGS, "Parameters must be in the form {key}={value}");
+		messages.put(ERROR_BAD_ARGS, "Parameters must be in the form {key}={value} and there may be no duplicates");
 		messages.put(ERROR_SERVER,"Error communicating with server");
 		messages.put(ERROR_BAD_ARCHIVETYPE,"Bad archive type-- only zip files are supported");
 		messages.put(ERROR_FILE_AND_URL,"An upload should contain either a url or a local file, not both");
@@ -78,6 +78,7 @@ public class Status {
 		messages.put(ERROR_BAD_TRAVERSAL_TYPE, "The traversal must be either depth-first ("+R.ARG_DEPTHFIRST+") or round-robin ("+R.ARG_ROUNDROBIN+")");
 		messages.put(ERROR_ID_AND_USER, "Only one of "+R.PARAM_ID+" and "+R.PARAM_USER+" is allowed");
 		messages.put(ERROR_NO_USER_PRIMS,"User primitives can only be obtained for jobs, solvers, and benchmarks");
+		messages.put(ERROR_INTERNAL, "Internal error while handling command");
 	}
 	
 	public static String getStatusMessage(int code) {

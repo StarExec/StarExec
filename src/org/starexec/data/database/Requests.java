@@ -381,6 +381,7 @@ public class Requests {
 			return true;
 			
 		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 			e.printStackTrace();
 			return false;
 		} finally {

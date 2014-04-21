@@ -267,7 +267,7 @@ public class Validator {
 	 * @return 0  if the upload request has all the basic requirements, and a negative error code otherwise.
 	 * @author Eric Burns
 	 */
-	private static int isValidUploadRequest(HashMap<String,String> commandParams) {
+	private static int isValidUploadRequest(HashMap<String,String> commandParams, boolean archiveRequired) {
 		
 		//an ID and either a URL or a file is required for every upload
 		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
@@ -302,7 +302,7 @@ public class Validator {
 					break;
 				}
 			}
-			if (!archiveGood) {
+			if (!archiveGood && archiveRequired) {
 				return Status.ERROR_BAD_ARCHIVETYPE;
 			}
 		}
@@ -339,8 +339,8 @@ public class Validator {
 	 * @author Eric Burns
 	 */
 	
-	private static int isValidUploadRequestNoURL(HashMap<String,String> commandParams) {
-		int valid=isValidUploadRequest(commandParams);
+	private static int isValidUploadRequestNoURL(HashMap<String,String> commandParams, boolean archiveRequired) {
+		int valid=isValidUploadRequest(commandParams, archiveRequired);
 		if (valid<0) {
 			return valid;
 		}
@@ -360,7 +360,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadBenchmarkRequest(HashMap<String,String> commandParams) {
-		int valid=isValidUploadRequest(commandParams);
+		int valid=isValidUploadRequest(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
@@ -379,7 +379,7 @@ public class Validator {
 	 * @author Eric Burns
 	 */
 	public static int isValidSolverUploadRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequest(commandParams);
+		int valid= isValidUploadRequest(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
@@ -393,9 +393,9 @@ public class Validator {
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	
+	//TODO: Do we need an archive here?
 	public static int isValidUploadSpaceXMLRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequestNoURL(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
@@ -411,7 +411,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadConfigRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequestNoURL(commandParams,false);
 		if (valid<0) {
 			return valid;
 		}
@@ -427,7 +427,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadProcessorRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequestNoURL(commandParams,false);
 		if (valid<0) {
 			return valid;
 		}

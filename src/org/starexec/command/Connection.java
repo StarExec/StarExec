@@ -356,7 +356,7 @@ public class Connection {
 			response.getEntity().getContent().close();
 			//we're expecting a redirect to the configuration
 			if (response.getStatusLine().getStatusCode()!=302) {
-				return Status.ERROR_BAD_ARGS;
+				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return newID;
@@ -400,8 +400,9 @@ public class Connection {
 			
 			response.getEntity().getContent().close();
 			
-			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_BAD_ARGS;
+			//we are expecting to be redirected to the page for the processor
+			if (response.getStatusLine().getStatusCode()!=302) {
+				return Status.ERROR_SERVER;
 			}
 			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return id;
@@ -472,7 +473,7 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_BAD_ARGS;
+				return Status.ERROR_SERVER;
 			}
 			
 			return 0;
@@ -755,12 +756,11 @@ public class Connection {
 			response.getEntity().getContent().close();
 			
 			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_BAD_ARGS;
+				return Status.ERROR_SERVER;
 			}
 			
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}

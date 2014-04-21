@@ -92,17 +92,17 @@ public class ProcessorManager extends HttpServlet {
 	private void handleAddRequest(HashMap<String, Object> form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 			// If we're dealing with an upload request...
-				
 			// Make sure the request is valid
 			if(!isValidCreateRequest(form)) {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark type request was malformed");
+
 				return;
 			}
-			
 			// Make sure this user has the ability to add type to the space
 			int community = Integer.parseInt((String)form.get(OWNING_COMMUNITY));
 			if(!SessionUtil.getPermission(request, community).isLeader()) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can add types to their communities");
+
 				return;
 			}
 			
@@ -114,11 +114,13 @@ public class ProcessorManager extends HttpServlet {
 				response.addCookie(new Cookie("New_ID",String.valueOf(result.getId())));
 			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));	
 			} else {
+
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
 			}									
 		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			
 		}	
 	}
 	
@@ -219,14 +221,17 @@ public class ProcessorManager extends HttpServlet {
 			}
 										
 			if(!Validator.isValidPrimName((String)form.get(PROCESSOR_NAME))) {
+
 				return false;
 			}
 																	
 			if(!Validator.isValidPrimDescription((String)form.get(PROCESSOR_DESC))) {
+
 				return false;
 			}
 			
 			if(!Validator.isValidInteger((String)form.get(OWNING_COMMUNITY))) {
+
 				return false;
 			}
 			
@@ -234,9 +239,9 @@ public class ProcessorManager extends HttpServlet {
 			if(!procType.equals(POST_PROCESS_TYPE) && 
 			   !procType.equals(PRE_PROCESS_TYPE) && 
 			   !procType.equals(BENCH_TYPE)) {
+
 					return false;
 			}
-			
 			// Passed all checks, return true
 			return true;
 		} catch (Exception e) {

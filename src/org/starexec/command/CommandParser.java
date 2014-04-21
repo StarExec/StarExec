@@ -49,7 +49,7 @@ class CommandParser {
 			return serverStatus;
 		} catch (Exception e ) {
 			//likely a null pointer because we are missing an important argument
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -87,8 +87,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
-			e.printStackTrace();
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -152,7 +151,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -191,7 +190,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -225,7 +224,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -258,7 +257,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -345,7 +344,7 @@ class CommandParser {
 			
 			return 0;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -729,7 +728,7 @@ class CommandParser {
 				
 			}
 			else {
-				return Status.ERROR_BAD_COMMAND;
+				return Status.ERROR_SERVER;
 			}
 			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {
@@ -737,7 +736,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 
