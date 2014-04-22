@@ -1667,11 +1667,13 @@ public class Jobs {
 			results = procedure.executeQuery();
 			List<JobPair> pairs= getPairsDetailed(jobId,con,results,true);
 			HashMap<Integer,Properties> props=Jobs.getNewJobAttributes(con,jobId,since);
+			
 			for (Integer i =0; i < pairs.size(); i++){
 				JobPair jp = pairs.get(i);
 				if (props.containsKey(jp.getId())) {
 					jp.setAttributes(props.get(jp.getId()));
 				} else {
+					log.debug("forced to get attributes for a single job pair");
 					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
 				}
 			}
@@ -1733,7 +1735,7 @@ public class Jobs {
 	protected static HashMap<Integer,Properties> getNewJobAttributes(Connection con, int jobId,Integer completionId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		log.debug("Getting all attributes for job with ID = "+jobId);
+		log.debug("Getting all new attributes for job with ID = "+jobId);
 		 try {
 			procedure=con.prepareCall("{CALL GetNewJobAttrs(?, ?)}");
 			procedure.setInt(1,jobId);
