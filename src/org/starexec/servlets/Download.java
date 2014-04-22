@@ -732,7 +732,6 @@ public class Download extends HttpServlet {
 		}
 
 		else {
-			log.debug("reached this point in the code");
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 

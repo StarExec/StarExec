@@ -158,12 +158,14 @@ public class Permissions {
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
-			if (Jobs.isPublic(jobId)){
+			if (Jobs.isJobDeleted(jobId)) {
+				return false;
+			}
+			if (Jobs.isPublic(jobId) || Users.isAdmin(userId) ){
 				return true;
 			}
-			if (Users.isAdmin(userId)) {
-				return true;
-			}
+			
+			//if there was no special case, check to see if the user shares a space with the job
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
 			procedure.setInt(1, jobId);					

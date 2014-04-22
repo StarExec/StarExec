@@ -681,17 +681,17 @@ public class Jobs {
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
 			}
 			else{
-				j=null;
+				return null;
 			}
 			
-			if (j != null){
-				if (since==null) {
-					j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
-				} else  {
-					j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
-				}
-				
+			
+			if (since==null) {
+				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+			} else  {
+				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
 			}
+				
+			
 			return j;
 
 		} catch (Exception e){			
@@ -1660,7 +1660,7 @@ public class Jobs {
 			con = Common.getConnection();	
 			
 			log.info("getting detailed pairs for job " + jobId );
-			//otherwise, just get the completed ones that were completed later than lastSeen
+			
 			 procedure = con.prepareCall("{CALL GetNewCompletedJobPairsByJob(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
@@ -1688,6 +1688,13 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * For a given job, gets every job pair with the minimal amount of information required
+	 * to find the job pair output on disk
+	 * @param jobId The ID of the job to get pairs for
+	 * @param since Only gets pairs that were finished after "completion ID"
+	 * @return A list of JobPair objects
+	 */
 	public static List<JobPair> getNewCompletedPairsShallow(int jobId, int since) {
 		Connection con = null;	
 		
