@@ -8,6 +8,7 @@ $(document).ready(function() {
  * Initializes the user-interface
  */
 function initUI(){
+	checkForJavascript('#javascriptDisabled', '.registration');
 	monitorTextarea("#reason", "describe your motivation for joining this community");
 
 	$('#submit').button({
@@ -22,6 +23,17 @@ function initUI(){
 			$("#reason").val("");
 	    }
 	});
+}
+
+/**
+ * How this works:
+ * By default an error is show on the page and the desired element(s) have their visibility set to hidden.
+ * This function, when called, hides the error element and displays the desired element(s) via javascript.
+ * Therefore, users without javascript enabled will only ever see the error and never see the desired element(s).
+ */
+function checkForJavascript(errorElementToHide, desiredElementToShow){
+	$(errorElementToHide).hide();
+	$(desiredElementToShow).css('visibility','visible');
 }
 
 /**
