@@ -132,6 +132,7 @@
 				<li><a class="btnRun" id="addJob" href="/${starexecRoot}/secure/add/job.jsp">create job</a></li>
 				<li><a class="btnDown" id="downloadXML" href="/${starexecRoot}/secure/download">download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
+				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
 				<li><a class="btnRun" id="makePublic">make public</a></li>
 				<li><a class="btnRun" id="makePrivate">make private</a></li>

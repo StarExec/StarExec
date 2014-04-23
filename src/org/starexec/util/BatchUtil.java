@@ -3,7 +3,6 @@ package org.starexec.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -82,7 +81,7 @@ public class BatchUtil {
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
 		
-		validateAgainstSchema(file);//Not really necessary, but a good check to have in the event of future code changes
+		validateAgainstSchema(file);
 		return file;
 	}
 	
@@ -96,20 +95,12 @@ public class BatchUtil {
     public Element generateSpacesXML(Space space, int userId){		
 	log.debug("Generating Space XML for space " + space.getId());
 	Element spacesElement=null;
-	//if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-	//	spacesElement = doc.createElementNS(Util.url("public/stardevSpaceSchema.xsd"), "tns:Spaces");
-	//	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		
-	//	spacesElement.setAttribute("xsi:schemaLocation", 
-	//				   Util.url("public/stardevSpaceSchema.xsd stardevSpaceSchema.xsd"));
-	//} else {
+
 	spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
 	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
 	spacesElement.setAttribute("xsi:schemaLocation", 
-					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
-	//}
-	
+					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
 		
 	Element rootSpaceElement = generateSpaceXML(space, userId);
 	spacesElement.appendChild(rootSpaceElement);
@@ -144,21 +135,10 @@ public class BatchUtil {
 		stickyLeaders.setValue(Boolean.toString(space.isStickyLeaders()));
 		spaceElement.setAttributeNode(stickyLeaders);
 		
-		// Find out if the users from the parent space are inherited (inherit-users)
+		// TODO: Find out if the users from the parent space are inherited (inherit-users)
 		Attr inheritUsers = doc.createAttribute("inherit-users");
-//		List<User> parentUsers = Spaces.getUsers(space.getParentSpace());
-//		List<User> spaceUsers = space.getUsers();
 		Boolean iu = false;
-//		if (parentUsers != null && spaceUsers != null) {
-//			// Check that the current space has all users present in the parent space
-//			for (User u:parentUsers){
-//				if (!spaceUsers.contains(u)){
-//					iu = false;
-//					break;
-//				}
-//			}
-//			
-//		}
+		// Cheap implementation, just assume false
 		inheritUsers.setValue(iu.toString());
 		spaceElement.setAttributeNode(inheritUsers);
 		

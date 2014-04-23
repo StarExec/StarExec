@@ -149,6 +149,15 @@
   </servlet-mapping>
   
   <servlet>
+  	<servlet-name>JobXML</servlet-name>
+  	<servlet-class>org.starexec.servlets.UploadJobXML</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobXML</servlet-name>
+    <url-pattern>/secure/upload/jobXML</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>InvalidPath</servlet-name>
     <servlet-class>org.starexec.servlets.InvalidPath</servlet-class>
   </servlet>
