@@ -149,11 +149,11 @@
   </servlet-mapping>
   
   <servlet>
-  	<servlet-name>JobXML</servlet-name>
+  	<servlet-name>JobXMLUploader</servlet-name>
   	<servlet-class>org.starexec.servlets.UploadJobXML</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>JobXML</servlet-name>
+    <servlet-name>JobXMLUploader</servlet-name>
     <url-pattern>/secure/upload/jobXML</url-pattern>
   </servlet-mapping>
   

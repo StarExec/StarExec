@@ -2075,7 +2075,7 @@ function updateButtonIds(id) {
 		destroyOnReturn(token);
 	});
 	
-	
+	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
 	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		
