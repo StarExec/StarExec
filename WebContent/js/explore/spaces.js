@@ -2039,9 +2039,11 @@ function checkPermissions(perms, id) {
 	}
 
 	if(perms.addJob) {
-		$('#addJob').fadeIn('fast');		
+		$('#addJob').fadeIn('fast');
+		$('#uploadJobXML').fadeIn('fast');
 	} else {
 		$('#addJob').fadeOut('fast');
+		$('#uploadJobXML').fadeOut('fast');
 	}
 
 
