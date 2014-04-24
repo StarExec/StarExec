@@ -639,18 +639,21 @@ public class Download extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
-		
+		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jobId, userId)) {
+			log.debug("confirmed user can download job = "+jobId);
 			boolean jobComplete=Jobs.isJobComplete(jobId);
 			if (jobComplete && since==null) { //there is no cache for partial results
 				String cachedFilePath=null;
 				cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_OUTPUT);
+				log.debug("checked in cache for job = "+jobId);
+
 				//if the entry was in the cache, make sure the file actually exists
 				if (cachedFilePath!=null) {
 					File cachedFile = new File(cachedFilePath);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					log.debug("returning a cached file!");
+					log.debug("returning a cached file for job = "+jobId);
 					return cachedFile;
 					
 				}
@@ -714,7 +717,11 @@ public class Download extends HttpServlet {
 				}
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
 			} else {
+				log.debug("preparing to create archive for job = "+jobId);
+
 				ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
+				log.debug("archive created for job = "+jobId);
+
 				if (jobComplete) {
 					Cache.setCache(jobId,CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}

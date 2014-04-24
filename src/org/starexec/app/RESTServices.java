@@ -191,7 +191,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		log.debug("parentId = " + parentId);
 		log.debug("userId = " + userId);
-		log.debug("test = " + Spaces.getSubSpaces(parentId, userId, false));
+		
 		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false),userId));
 	}
 	

@@ -462,13 +462,15 @@ public class Spaces {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
 		if (Users.isAdmin(userId)) {
 			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userId, hierarchy);
 			return subspaces.size();
 		}
+		
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
 		
 		try {
 			con = Common.getConnection();

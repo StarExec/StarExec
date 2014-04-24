@@ -151,7 +151,6 @@ CREATE PROCEDURE GETSubSpacesAdmin(IN _spaceId INT)
 		ELSE 
 			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM set_assoc
-				JOIN closure ON set_assoc.child_id=closure.ancestor
 				JOIN spaces ON spaces.id=set_assoc.child_id
 				WHERE set_assoc.space_id=_spaceId
 			ORDER BY name;

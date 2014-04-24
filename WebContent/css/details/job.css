@@ -152,6 +152,10 @@ margin-top:5px;
 	
 }
 
+#subspaceSummaryField legend {
+	max-width:47%;	
+}
+
 #subspaceSummaryField .panelField {
     max-width:47%;
 	width:47%;
