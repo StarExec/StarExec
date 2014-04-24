@@ -26,11 +26,11 @@ public class StressTest {
 	private static final Logger log = Logger.getLogger(StressTest.class);
 
 	//These values specify how many primitives the stress test will produce.
-	private static int USER_COUNT=1000;
-	private static int SPACE_COUNT=2000;
+	private static int USER_COUNT=2000;
+	private static int SPACE_COUNT=10000;
 	
-	private static int JOB_SPACE_COUNT=1;
-	private static int JOB_COUNT=2;
+	private static int JOB_SPACE_COUNT=250;
+	private static int JOB_COUNT=10;
 	private static String SOLVER_NAME="CVC4.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
 	
@@ -41,7 +41,7 @@ public class StressTest {
 		try {
 			File f=new File(JobPairs.getFilePath(pair));
 			f.getParentFile().mkdirs();
-			String randomOutput=TestUtil.getRandomAlphaString(500);
+			String randomOutput=TestUtil.getRandomAlphaString(1000);
 			FileUtils.writeStringToFile(f, randomOutput);
 			
 		} catch (Exception e) {
