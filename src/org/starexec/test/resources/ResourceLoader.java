@@ -113,7 +113,7 @@ public class ResourceLoader {
 	
 	/**
 	 * This will load a job with the given solvers and benchmarks into the database, after which it should
-	 * be picked up by the periodic task and started running. It is soemwhat primitive right now-- for every solver
+	 * be picked up by the periodic task and started running. It is somewhat primitive right now-- for every solver
 	 * a single configuration will be picked randomly to be added to the job, and the job will be added to a random
 	 * queue that the given user owns
 	 * @param spaceId The ID of the space to put the job in
@@ -141,6 +141,29 @@ public class ResourceLoader {
 		JobManager.buildJob(job, userId, 100, 100, Util.gigabytesToBytes(1), benchmarkIds, solverIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
+		return job;
+	}
+	/**
+	 * 
+	 * @param rootSpaceId
+	 * @param userId
+	 * @param preProcessorId
+	 * @param postProcessorId
+	 * @return
+	 */
+	public static Job loadJobHierarchyIntoDatabase(int rootSpaceId, int userId, int preProcessorId, int postProcessorId) {
+		List<Space> spaces = Spaces.getSubSpaces(rootSpaceId, userId, true); 
+		String name=TestUtil.getRandomJobName();
+		Queue q=Queues.getUserQueues(userId).get(0);
+
+		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId());
+
+		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
+
+		for (Space s : spaces) {
+			JobManager.addJobPairsFromSpace(job, userId, 100, 100,Util.gigabytesToBytes(1), s.getId(), SP);
+		}
+		Jobs.add(job, rootSpaceId);
 		return job;
 	}
 	
@@ -270,15 +293,9 @@ public class ResourceLoader {
 		return null;	
 	}
 	
-	/**
-	 * Loads a new space into the database
-	 * @param userId The ID of the user who is creating the space
-	 * @param parentSpaceId The ID of the parent space for the new subspace
-	 * @return The Space object with all of its fields set.
-	 */
-	public static Space loadSpaceIntoDatabase(int userId, int parentSpaceId) {
+	public static Space loadSpaceIntoDatabase(int userId, int parentSpaceId, String name) {
 		Space space=new Space();
-		space.setName(TestUtil.getRandomSpaceName());
+		space.setName(name);
 		space.setDescription("test desc");
 		int id=Spaces.add(space, parentSpaceId, userId);
 		if (id>0) {
@@ -287,6 +304,17 @@ public class ResourceLoader {
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Loads a new space into the database
+	 * @param userId The ID of the user who is creating the space
+	 * @param parentSpaceId The ID of the parent space for the new subspace
+	 * @return The Space object with all of its fields set.
+	 */
+	public static Space loadSpaceIntoDatabase(int userId, int parentSpaceId) {
+		return loadSpaceIntoDatabase(userId, parentSpaceId,TestUtil.getRandomSpaceName() );
+		
 	}
 	/**
 	 * Loads a user into the database, without any particular name, email, password, and so on. Useful for testing.

@@ -24,6 +24,11 @@ function initUI(){
 			primary: "ui-icon-check"
 		}
 	});
+	$("#runStress").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
 	
 	$("#runAll").click(function() {
 		$.post(
@@ -59,6 +64,20 @@ function initUI(){
 			"json"
 		);
 		unselectAllRows(testTable);
+	});
+	$("#runStress").click(function() {
+		$.post(
+				starexecRoot+"services/test/runStressTest",
+				{},
+				function(returnCode) {
+					if (returnCode=="0") {
+						showMessage("success","stress testing started succesfully",5000);
+					} else {
+						showMessage("error","There was an error while starting the stress testing",5000);
+					}
+				}
+		),
+		"json"
 	});
 	
 	extendDataTableFunctions();

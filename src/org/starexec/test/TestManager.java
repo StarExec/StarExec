@@ -27,6 +27,7 @@ import org.starexec.test.security.SolverSecurityTests;
 import org.starexec.test.security.SpaceSecurityTests;
 import org.starexec.test.security.UserSecurityTests;
 import org.starexec.test.security.ValidatorTests;
+import org.starexec.util.Util;
 
 /**
  * This class maintains a list of all TestSequences and handles requests
@@ -38,6 +39,7 @@ import org.starexec.test.security.ValidatorTests;
 public class TestManager {
 	private static final Logger log = Logger.getLogger(TestManager.class);
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
+	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method
 	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
 	//all test sequences need to be initialized here
@@ -65,20 +67,24 @@ public class TestManager {
 	
 	/**
 	 * Executes every test sequence in tests
+	 * @return True if the tests were started, and false if they were not for some reason
 	 */
-	public static void executeAllTestSequences() {
-		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
-			return; //right now, don't run anything on production
+	public static boolean executeAllTestSequences() {
+		if (Util.isProduction()) {
+			return false; //right now, don't run anything on production
 		}
+		//don't do anything if the tests are already running
+		if (!isRunning.compareAndSet(false, true)) {
+			return false;
+		}
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		
+		
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
-				//don't do anything if the tests are already running
-				if (!isRunning.compareAndSet(false, true)) {
-					return;
-				}
+				
 				//we want to clear all the results first, so it's obvious to the user what is left to be run
 				for (TestSequence t : tests) {
 					t.clearResults();
@@ -90,7 +96,7 @@ public class TestManager {
 				isRunning.set(false);
 			}
 		});	
-		
+		return true;
 	}
 	
 	public static List<TestSequence> getAllTestSequences() {
@@ -106,8 +112,12 @@ public class TestManager {
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTest(String testName) {
-		if (R.STAREXEC_SERVERNAME.equals("www.starexec.org")) {
+		if (Util.isProduction()) {
 			return false; //right now, don't run anything on production
+		}
+		//don't run anything if we are already going
+		if (!isRunning.compareAndSet(false, true)) {
+			return false;
 		}
 		final String t=testName;
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -115,15 +125,35 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
-				//don't run anything if we are already going
-				if (!isRunning.compareAndSet(false, true)) {
-					return;
-				}
+				
 				
 				TestSequence test = getTestSequence(t);
 				
 				executeTest(test);
 				isRunning.set(false);
+			}
+		});	
+		
+		return true;
+	}
+	
+	public static boolean executeStressTest() {
+		if (Util.isProduction()) {
+			return false; //right now, don't run anything on production
+		}
+		//don't run anything if we are already going
+		if (!isRunningStress.compareAndSet(false, true)) {
+			return false;
+		}
+		
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
+		threadPool.execute(new Runnable() {
+			@Override
+			public void run(){
+				
+				StressTest.execute();
+				isRunningStress.set(false);
 			}
 		});	
 		

@@ -99,6 +99,16 @@ public class Util {
 		
 		return null;
 	}
+	/**
+	 * Determines whether we are currently running on production.
+	 * @return
+	 */
+	public static boolean isProduction() {
+		if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
+			return true; 
+		}
+		return false;
+	}
 	
 	/**
 	 * Ensures a number is within a given range

@@ -28,6 +28,19 @@ public class GeneralSecurity {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see if the given user has permission to execute tests
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+
+	public static int canUserRunTests(int userId) {
+		if (!Users.isAdmin(userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
 	/**
 	 * Given a string, returns the same string in an HTML safe format
 	 * Do NOT use this for HTML attributes! Use the function specifically for attributes

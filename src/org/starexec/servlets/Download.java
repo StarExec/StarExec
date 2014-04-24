@@ -666,8 +666,8 @@ public class Download extends HttpServlet {
 			File file, dir;
 			
 			//if we only want the new job pairs
-			List<JobPair> pairs;
 			if (since!=null) {
+				List<JobPair> pairs;
 				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
 				tempDir.mkdir();
 				log.debug("Getting incremental job output results");

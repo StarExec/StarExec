@@ -875,18 +875,33 @@ public class RESTServices {
 	}
 	
 	@POST
+	@Path("/test/runStressTest")
+	@Produces("application/json")
+	public String runStressTest(@Context HttpServletRequest request) {
+		int u=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserRunTests(u);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		boolean success=TestManager.executeStressTest();
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	@POST
 	@Path("/test/runAllTests")
 	@Produces("appliation/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		if (Users.isAdmin(u)) {
-			
-			TestManager.executeAllTestSequences();
-			
-			return gson.toJson(0);
-		} else {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		int status=GeneralSecurity.canUserRunTests(u);
+		if (status!=0) {
+			return gson.toJson(status);
 		}
+			
+		boolean success=TestManager.executeAllTestSequences();
+			
+		return success ?  gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		
 	}
 
 	/** 
