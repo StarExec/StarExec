@@ -55,6 +55,8 @@ public class Jobs {
 			HashMap<Integer,String> idsToNames=new HashMap<Integer,String>();
 			
 			idsToNames.put(job.getPrimarySpace(), Spaces.getName(job.getPrimarySpace()));
+			
+			//maps a normal space ID to its corresponding job space ID
 			HashMap<Integer,Integer> idMap= new HashMap<Integer,Integer>();
 			con = Common.getConnection();
 			
@@ -77,12 +79,14 @@ public class Jobs {
 				}
 			}
 			
-			log.debug("finished adding spaces, starting to get job space associations");
 			
+			//add all the job spaces that we need into the database
 			for (int id : idsToNames.keySet()) {
 				int jobSpaceId=Spaces.addJobSpace(idsToNames.get(id),con);
 				idMap.put(id, jobSpaceId);
 			}
+			
+			//next, use the current hierarchy information to create a job space heirarchy
 			for (int id : idMap.keySet()) {
 				log.debug("getting subspaces for space = "+id);
 				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
@@ -99,6 +103,8 @@ public class Jobs {
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
 			Jobs.addJob(con, job);
+			
+			//put the job in the space it was created in
 			Jobs.associate(con, job.getId(), spaceId);
 			
 			log.debug("adding job pairs");
