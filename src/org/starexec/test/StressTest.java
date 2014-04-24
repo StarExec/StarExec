@@ -25,10 +25,10 @@ public class StressTest {
 	private static final Logger log = Logger.getLogger(StressTest.class);
 
 	//These values specify how many primitives the stress test will produce.
-	private static int USER_COUNT=10;
-	private static int SPACE_COUNT=10;
+	private static int USER_COUNT=1000;
+	private static int SPACE_COUNT=2000;
 	
-	private static int JOB_SPACE_COUNT=1;
+	private static int JOB_SPACE_COUNT=200;
 	
 	private static String SOLVER_NAME="CVC4.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks

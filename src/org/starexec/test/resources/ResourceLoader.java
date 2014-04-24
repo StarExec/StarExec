@@ -155,6 +155,7 @@ public class ResourceLoader {
 	 */
 	public static Job loadJobHierarchyIntoDatabase(int rootSpaceId, int userId, int preProcessorId, int postProcessorId) {
 		List<Space> spaces = Spaces.getSubSpaces(rootSpaceId, userId, true); 
+		spaces.add(Spaces.get(rootSpaceId));
 		log.debug("loading this number of spaces into the job ="+spaces.size());
 		String name=TestUtil.getRandomJobName();
 		Queue q=Queues.getUserQueues(userId).get(0);
