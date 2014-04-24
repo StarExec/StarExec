@@ -265,14 +265,13 @@ public class ResourceLoader {
 			s.setDescription("solver coming from here");
 			s.setUserId(userId);
 			File archive=getResource(archiveName);
+			File archiveCopy=new File(archive.getParent(),TestUtil.getRandomAlphaString(20)+".zip");
+			FileUtils.copyFile(archive, archiveCopy);
 			String filePath=Solvers.getDefaultSolverPath(userId, s.getName());
 			s.setPath(filePath);
 			File solverDir=new File(filePath);
 			solverDir.mkdirs();
-			
-			FileUtils.copyFileToDirectory(archive, solverDir);
-			File archiveFile=new File(solverDir,s.getName());
-			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
+			ArchiveUtil.extractArchive(archiveCopy.getAbsolutePath(), solverDir.getAbsolutePath());
 			
 			//Find configurations from the top-level "bin" directory
 			for(Configuration c : Solvers.findConfigs(solverDir.getAbsolutePath())) {

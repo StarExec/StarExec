@@ -467,8 +467,9 @@ public class Solvers {
 		
 		List<Configuration> returnList = new ArrayList<Configuration>();
 		
-		for(File f : binDir.listFiles()){			
+		for(File f : binDir.listFiles()){	
 			if(f.isFile() && f.getName().startsWith(CONFIG_PREFIX)){
+
 				Configuration c = new Configuration();								
 				c.setName(f.getName().substring(CONFIG_PREFIX.length()));
 				returnList.add(c);

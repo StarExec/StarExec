@@ -25,10 +25,10 @@ public class StressTest {
 	private static final Logger log = Logger.getLogger(StressTest.class);
 
 	//These values specify how many primitives the stress test will produce.
-	private static int USER_COUNT=100;
-	private static int SPACE_COUNT=100;
+	private static int USER_COUNT=10;
+	private static int SPACE_COUNT=10;
 	
-	private static int JOB_SPACE_COUNT=5;
+	private static int JOB_SPACE_COUNT=1;
 	
 	private static String SOLVER_NAME="CVC4.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
@@ -51,7 +51,7 @@ public class StressTest {
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName) {
 		String name="aaaaJobSpace";
 		Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(ownerId, parentSpaceId, name);
-		Users.setDiskQuota(ownerId, Util.gigabytesToBytes(100)); //make sure we have the quota
+		Users.setDiskQuota(ownerId, Util.gigabytesToBytes(1000)); //make sure we have the quota
 		List<User> owner=new ArrayList<User>();
 		owner.add(Users.get(ownerId));
 		List<Space> spaces=loadSpaces(owner,jobRootSpace.getId(),spaceCount);
