@@ -17,6 +17,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -28,8 +29,8 @@ public class StressTest {
 	private static int USER_COUNT=1000;
 	private static int SPACE_COUNT=2000;
 	
-	private static int JOB_SPACE_COUNT=200;
-	
+	private static int JOB_SPACE_COUNT=1;
+	private static int JOB_COUNT=2;
 	private static String SOLVER_NAME="CVC4.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
 	
@@ -49,25 +50,26 @@ public class StressTest {
 	}
 	
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName) {
-		String name="aaaaJobSpace";
-		Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(ownerId, parentSpaceId, name);
+		
 		Users.setDiskQuota(ownerId, Util.gigabytesToBytes(1000)); //make sure we have the quota
 		List<User> owner=new ArrayList<User>();
 		owner.add(Users.get(ownerId));
-		List<Space> spaces=loadSpaces(owner,jobRootSpace.getId(),spaceCount);
+		List<Space> spaces=loadSpaces(owner,parentSpaceId,spaceCount);
 		
 		for (Space s : spaces) {
 			ResourceLoader.loadSolverIntoDatabase(solverName, s.getId(), ownerId);
 			ResourceLoader.loadBenchmarksIntoDatabase(benchmarkName, s.getId(), ownerId);
 		}
 		Processor postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, Spaces.GetCommunityOfSpace(parentSpaceId));
-		Job job=ResourceLoader.loadJobHierarchyIntoDatabase(jobRootSpace.getId(), ownerId, 1, postProc.getId());
+		Job job=ResourceLoader.loadJobHierarchyIntoDatabase(parentSpaceId, ownerId, 1, postProc.getId());
 		
 		Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
 		
 		for (JobPair pair : job.getJobPairs()) {
 			writeFakeJobPairOutput(pair);
+			JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
+		Jobs.resume(job.getId());
 		
 		
 		
@@ -165,8 +167,10 @@ public class StressTest {
 		List<Space> spaces=loadSpaces(users,community.getId(), SPACE_COUNT);
 		associateUsers(spaces,users,2,5);
 		List<Solver> solvers=addSolvers(spaces,users,2,3,SOLVER_NAME);
-		
-		
-		Job job=StressTest.loadBigJob(spaces.get(0).getId(), users.get(0).getId(), JOB_SPACE_COUNT, SOLVER_NAME, BENCHMARK_NAME);
+		String name="aaaaJobSpace";
+		Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
+		for (int x=0;x<JOB_COUNT;x++) {
+			Job job=StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), JOB_SPACE_COUNT, SOLVER_NAME, BENCHMARK_NAME);
+		}
 	}
 }
