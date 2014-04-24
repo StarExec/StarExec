@@ -532,6 +532,8 @@ public abstract class JobManager {
 				pair = new JobPair();
 				pair.setBench(b);
 				pair.setSolver(clone);
+				pair.setConfiguration(config);
+
 				pair.setCpuTimeout(cpuTimeout);
 				pair.setWallclockTimeout(clockTimeout);
 				pair.setMaxMemory(memoryLimit);
@@ -585,6 +587,7 @@ public abstract class JobManager {
 					pair = new JobPair();
 					pair.setBench(b);
 					pair.setSolver(clone);
+					pair.setConfiguration(c);
 					pair.setCpuTimeout(cpuTimeout);
 					pair.setMaxMemory(memoryLimit);
 					pair.setWallclockTimeout(clockTimeout);

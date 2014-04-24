@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Jobs;
@@ -164,6 +166,10 @@ public class ResourceLoader {
 			JobManager.addJobPairsFromSpace(job, userId, 100, 100,Util.gigabytesToBytes(1), s.getId(), SP);
 		}
 		Jobs.add(job, rootSpaceId);
+		if (job.getId()<=0) {
+			log.error("could not load a job hierarchy into the database");
+			return null;
+		}
 		return job;
 	}
 	
