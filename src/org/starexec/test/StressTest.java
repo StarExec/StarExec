@@ -54,7 +54,7 @@ public class StressTest {
 		Users.setDiskQuota(ownerId, Util.gigabytesToBytes(100)); //make sure we have the quota
 		List<User> owner=new ArrayList<User>();
 		owner.add(Users.get(ownerId));
-		List<Space> spaces=loadSpaces(owner,spaceCount);
+		List<Space> spaces=loadSpaces(owner,jobRootSpace.getId(),spaceCount);
 		
 		for (Space s : spaces) {
 			ResourceLoader.loadSolverIntoDatabase(solverName, s.getId(), ownerId);
@@ -88,18 +88,16 @@ public class StressTest {
 	}
 	
 	/**
-	 * Creates a new community for this stress test and populates it with the given 
-	 * number of spaces. Non-leaf spaces will have between 1 and 5 subspaces.
+	 * Populates the database with the given number of spaces, with a root at
+	 * root space id.  Non-leaf spaces will have between 1 and 5 subspaces.
 	 * @param owners A list of users, which will be sampled randomly to assign leaders
 	 * to the spaces
 	 * @param count The number of spaces to make
 	 * @return
 	 */
-	private static List<Space> loadSpaces(List<User> owners, int count) {
+	private static List<Space> loadSpaces(List<User> owners, int rootSpaceId, int count) {
 		List<Space> spaces=new ArrayList<Space> ();
-		int communityLeaderId=owners.get(rand.nextInt(owners.size())).getId();
-		Space community=ResourceLoader.loadSpaceIntoDatabase(communityLeaderId, 1);
-		spaces.add(community);
+		spaces.add(Spaces.get(rootSpaceId));
 		int parentSpaceIndex=0;
 		while (count>0) {
 			
@@ -162,7 +160,9 @@ public class StressTest {
 	
 	public static void execute() {
 		List<User> users=loadUsers(USER_COUNT);
-		List<Space> spaces=loadSpaces(users, SPACE_COUNT);
+		int communityLeaderId=users.get(rand.nextInt(users.size())).getId();
+		Space community=ResourceLoader.loadSpaceIntoDatabase(communityLeaderId, 1);
+		List<Space> spaces=loadSpaces(users,community.getId(), SPACE_COUNT);
 		associateUsers(spaces,users,2,5);
 		List<Solver> solvers=addSolvers(spaces,users,2,3,SOLVER_NAME);
 		
