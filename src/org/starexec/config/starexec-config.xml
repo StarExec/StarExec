@@ -19,7 +19,7 @@
 			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />
 			<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/joboutput"/>	
 			<property key="JOBPAIR_INPUT_DIR" value="/home/starexec/jobpairs"/>
-			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
+			<property key="JOB_LOG_DIR" value="/home/starexec/joboutput/logs" />
 			<property key="NODE_WORKING_DIR" value="/export/starexec/sandbox/" />
 			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
@@ -101,7 +101,7 @@
                 <property key="JOB_INBOX_DIR" value="/home/astump/starexec_astump_data/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/jobout" />     
 		<property key="NEW_JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/jobout/logs" />
+                <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/astump/starexec_astump_data/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/astump/starexec_astump_data/batchSpace/uploads" />           
 		</class>
@@ -123,7 +123,7 @@
          <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobin" />
          <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobout" />
          <property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/joboutput"/>    
-         <property key="JOB_LOG_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobout/logs" />
+         <property key="JOB_LOG_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/joboutput/logs" />
          <property key="PICTURE_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/pictures" />
          <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/batchSpace/uploads" />
          </class>
@@ -145,7 +145,7 @@
                 <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobout" />     
 		<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobout/logs" />
+                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_eaburns/data_dir/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/starexec/starexec_eaburns/data_dir/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_eaburns/data_dir/batchSpace/uploads" />           
 		</class>
@@ -166,7 +166,7 @@
                 <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/jobout" />
                 <property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/joboutput"/>
-                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/jobout/logs" />
+                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/batchSpace/uploads" />
                 </class>

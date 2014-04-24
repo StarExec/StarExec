@@ -718,6 +718,12 @@ public class Jobs {
 		return file.getAbsolutePath();
 	}
 	
+	public static String getLogDirectory(int jobId) {
+		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
+		File file=new File(R.JOB_LOG_DIR,String.valueOf(jobId));
+		return file.getAbsolutePath();
+	}
+	
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)

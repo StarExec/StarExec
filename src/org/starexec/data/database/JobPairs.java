@@ -480,6 +480,28 @@ public class JobPairs {
 		return null;
 	}
 	
+	public static String getLogFilePath(JobPair pair) {
+		try {
+			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
+			String[] pathSpaces=pair.getPath().split("/");
+			for (String space : pathSpaces) {
+				file=new File(file,space);
+			}
+
+			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
+
+			file=new File(file,pair.getBench().getName());
+			
+			
+			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
+			return file.getAbsolutePath();
+		} catch(Exception e) {
+			log.error("getFilePath says "+e.getMessage(),e);
+		}
+		return null;
+		
+	}
+	
 	/**
 	 * Gets the path to the output file  for this pair. Requires that the 
 	 * jobId, path, solver name, config name, and bench names be populated

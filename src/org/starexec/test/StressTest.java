@@ -167,6 +167,6 @@ public class StressTest {
 		List<Solver> solvers=addSolvers(spaces,users,2,3,SOLVER_NAME);
 		
 		
-		//Job job=StressTest.loadBigJob(spaces.get(0).getId(), users.get(0).getId(), JOB_SPACE_COUNT, SOLVER_NAME, BENCHMARK_NAME);
+		Job job=StressTest.loadBigJob(spaces.get(0).getId(), users.get(0).getId(), JOB_SPACE_COUNT, SOLVER_NAME, BENCHMARK_NAME);
 	}
 }
