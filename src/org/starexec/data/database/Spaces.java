@@ -451,7 +451,37 @@ public class Spaces {
 
 		return 0;
 	}
-	
+	/**
+	 * Returns a count of the number of subspaces that exist in the hierarchy rooted at spaceId
+	 * @param spaceId
+	 * @return
+	 */
+	public static int getCountInSpaceHierarchy(int spaceId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetTotalSubspaceCountBySpaceIdInHierarchy(?)}");
+			
+			procedure.setInt(1, spaceId);
+			 results = procedure.executeQuery();
+
+			if (results.next()) {
+				return results.getInt("spaceCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return 0;
+	}
 	
 	/**
 	 * Gets the number of Spaces in a given space
@@ -462,9 +492,9 @@ public class Spaces {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
+		//the admin can see every space, so we don't need to worry about finding only spaces some user can see
 		if (Users.isAdmin(userId)) {
-			List<Space> subspaces = Spaces.getSubSpaces(spaceId, userId, hierarchy);
-			return subspaces.size();
+			return getCountInSpaceHierarchy(spaceId);
 		}
 		
 		Connection con = null;
@@ -961,11 +991,12 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 	 * @throws Exception
 	 * @author Todd Elvers & Skylar Stark & Benton McCune & Wyatt Kaiser
 	 */
+	
+	//TODO: This is too slow-- we should just be using the closure table to get the recursive subspaces
 	protected static List<Space> getSubSpaces(int spaceId, int userId, boolean isRecursive, Connection con) throws Exception{
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
-		User u = Users.get(userId);
 		if (Users.isAdmin(userId)) {
 			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
 			procedure.setInt(1, spaceId);

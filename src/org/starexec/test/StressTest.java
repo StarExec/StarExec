@@ -168,8 +168,9 @@ public class StressTest {
 		associateUsers(spaces,users,2,5);
 		List<Solver> solvers=addSolvers(spaces,users,2,3,SOLVER_NAME);
 		String name="aaaaJobSpace";
-		Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 		for (int x=0;x<JOB_COUNT;x++) {
+			name=name+"a";
+			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 			Job job=StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), JOB_SPACE_COUNT, SOLVER_NAME, BENCHMARK_NAME);
 		}
 	}

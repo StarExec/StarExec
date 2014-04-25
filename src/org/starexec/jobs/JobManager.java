@@ -279,7 +279,9 @@ public abstract class JobManager {
 			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
 
 			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)
-			sgeTemplate.setOutputPath(":" + R.JOB_LOG_DIR);
+			
+			//TODO: Make sure this works
+			sgeTemplate.setOutputPath(":" + JobPairs.getLogFilePath(pair));
 			//log.debug("submitScript - Set Output Path for  " + pair.getId());
 
 			// Tell the job where the script to be executed is

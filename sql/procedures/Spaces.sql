@@ -256,7 +256,14 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userI
 
 		WHERE ancestor=_spaceId AND ancestor!=descendant;
 	END //
-	
+
+DROP PROCEDURE IF EXISTS GetTotalSubspaceCountBySpaceIdInHierarchy;
+CREATE PROCEDURE GetTotalSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) AS spaceCount
+		FROM closure
+		WHERE ancestor=_spaceId AND ancestor!=descendant;
+	END //
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
