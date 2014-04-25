@@ -16,7 +16,7 @@
 			
 			User u = Users.get(j.getUserId());
 			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,100));
-			String log=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getJobLog(jp));
+			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);

@@ -636,40 +636,8 @@ public class GridEngineUtil {
     	return (new File(stdoutPath));	
     }
 
-    /**
-     * Returns the log of a job pair by reading
-     * in the physical log file into a string.
-     * @param pair The pair to get the log for (must have a valid id and sge id)
-     * @return The log of the job run
-     */
-    public static String getJobLog(JobPair pair) {
-    	return GridEngineUtil.getJobLog(pair.getId(), pair.getGridEngineId());
-    }
 
-    /**
-     * Returns the log of a job pair by reading
-     * in the physical log file into a string.
-     * @param pairId The id of the pair to get the log for
-     * @param sgeId The SGE id of the pair
-     * @return The log of the job run
-     */
-    public static String getJobLog(int pairId, int sgeId) {
-    	try {
-    		// Find the path to the job log. It's in the job log directory
-    		// in the format job_1.bash.o2 where 1 is the pair id and 2 is the sge id
-    		String logPath = String.format("%s/job_%d.bash.o%d", R.JOB_LOG_DIR, pairId, sgeId);			
-    		log.debug("getJobLog(): checking existence of log file "+logPath);
-    		File logFile = new File(logPath);
 
-    		if(logFile.exists()) {
-    			return FileUtils.readFileToString(logFile);
-    		}
-    	} catch (Exception e) {
-    		log.warn(e.getMessage(), e);
-    	}
-
-    	return null;
-    }
     
     /**
      * Cancels/Ends a reservation

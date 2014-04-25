@@ -346,6 +346,7 @@ public abstract class JobManager {
 		log.debug("The jobscript is: "+jobScript);
 
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
+
 		File f = new File(scriptPath);
 
 		f.delete();		
@@ -360,6 +361,7 @@ public abstract class JobManager {
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
 		out.close();
+		jobScript = jobScript.replace("$$SCRIPT_PATH$$",f.getAbsolutePath());
 		return scriptPath;
 	}	
 

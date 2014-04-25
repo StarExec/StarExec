@@ -258,20 +258,19 @@ public class RESTServices {
 	@Path("/jobs/pairs/{id}/log")
 	@Produces("text/plain")		
 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
-		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
+		int status=JobSecurity.canUserSeeJob(id, userId);
 		if (status!=0) {
 			return "not available";
 		}
-		if(jp != null) {			
-				String log = GridEngineUtil.getJobLog(jp.getId(), jp.getGridEngineId());
+					
+			String log = JobPairs.getJobLog(id);
 				
-				if(!Util.isNullOrEmpty(log)) {
-					return log;
-				}
+			if(!Util.isNullOrEmpty(log)) {
+				return log;
+			}
 			
-		}
+		
 		
 		return "not available";
 	}

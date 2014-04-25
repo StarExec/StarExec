@@ -480,6 +480,34 @@ public class JobPairs {
 		return null;
 	}
 	
+	/**
+     * Returns the log of a job pair by reading
+     * in the physical log file into a string.
+     * @param pairId The id of the pair to get the log for
+     * @param sgeId The SGE id of the pair
+     * @return The log of the job run
+     */
+    public static String getJobLog(int pairId) {
+    	try {
+    		
+    		String logPath = getLogFilePath(JobPairs.getPair(pairId));	
+    	
+    		File logFile = new File(logPath);
+
+    		if(logFile.exists()) {
+    			return FileUtils.readFileToString(logFile);
+    		}
+    	} catch (Exception e) {
+    		log.warn(e.getMessage(), e);
+    	}
+
+    	return null;
+    }
+	/**
+	 * Returns the absolute path to where the log for a pair is stored given the pair.
+	 * @param pair
+	 * @return
+	 */
 	public static String getLogFilePath(JobPair pair) {
 		try {
 			File file=new File(Jobs.getLogDirectory(pair.getJobId()));

@@ -57,13 +57,17 @@ function cleanWorkspace {
 
 	# Clear the output directory	
 	safeRm output-directory "$STAREXEC_OUT_DIR"
-
+	
+	
+	
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
 
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
-
+	
+	rm "$SCRIPT_PATH"
+	
 	log "execution host $HOSTNAME cleaned"
 	return $?
 }
