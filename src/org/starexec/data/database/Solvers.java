@@ -68,7 +68,7 @@ public class Solvers {
 				c.setSolverId(solverId);
 				addConfiguration(con, c);
 			}
-			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return solverId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -128,7 +128,7 @@ public class Solvers {
 			Solvers.updateSolverDiskSize(con, s);
 			//invalidate the cache of any spaces with this solver
 			Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
-			Cache.invalidateCache(c.getSolverId(), CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(c.getSolverId(), CacheType.CACHE_SOLVER);
 			
 			return newConfigId;						
 		} catch (Exception e){			
@@ -157,7 +157,7 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
-			Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
@@ -368,8 +368,8 @@ public class Solvers {
 		CallableStatement procedure = null;
 		try {
 			Cache.invalidateSpacesAssociatedWithSolver(id);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
-			Cache.invalidateCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL SetSolverToDeletedById(?, ?)}");
@@ -416,8 +416,8 @@ public class Solvers {
 			
 			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
 			Cache.invalidateSpacesAssociatedWithSolver(solverId);
-			Cache.invalidateCache(solverId, CacheType.CACHE_SOLVER);
-			Cache.invalidateCache(solverId,CacheType.CACHE_SOLVER_REUPLOAD);
+			Cache.invalidateAndDeleteCache(solverId, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(solverId,CacheType.CACHE_SOLVER_REUPLOAD);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1692,7 +1692,7 @@ public class Solvers {
 		
 		try {
 			Cache.invalidateSpacesAssociatedWithSolver(id);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetSolverRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -1820,8 +1820,8 @@ public class Solvers {
 			procedure.executeUpdate();						
 			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
 			Cache.invalidateSpacesAssociatedWithSolver(id);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER_REUPLOAD);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER_REUPLOAD);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

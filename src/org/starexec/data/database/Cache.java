@@ -185,7 +185,7 @@ public class Cache {
 					return cachedFile.getAbsolutePath();
 				} else {
 					//file did not exist, so we should invalidate this part of the cache and return null
-					Cache.invalidateCache(id, type);
+					Cache.invalidateCache(id, type,con);
 					return null;
 				}
 							
@@ -242,7 +242,7 @@ public class Cache {
 	 * @return True if the invalidation was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean invalidateCache(int id, CacheType type) {
+	public static boolean invalidateAndDeleteCache(int id, CacheType type) {
 		log.debug("invalidating cache for id = "+id+" type = "+type.toString());
 		Connection con=null;
 		Cache.deleteCacheFile(id, type);
@@ -258,7 +258,7 @@ public class Cache {
 				int spaceId=id;
 				//invalidate up to the root space
 				while (spaceId>1) {
-					Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE_HIERARCHY);
+					Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE_HIERARCHY);
 					int ancestorSpaceId=Spaces.getParentSpace(spaceId);
 					if (ancestorSpaceId==spaceId) {
 						break;
@@ -315,7 +315,7 @@ public class Cache {
 		try {
 			List<Integer> spaceIds=Benchmarks.getAssociatedSpaceIds(benchId);
 			for (int spaceId : spaceIds) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			}
 			return true;
 		} catch (Exception e) {
@@ -334,7 +334,7 @@ public class Cache {
 		try {
 			List<Integer> spaceIds=Solvers.getAssociatedSpaceIds(solverId);
 			for (int spaceId : spaceIds) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			}
 			return true;
 		} catch (Exception e) {

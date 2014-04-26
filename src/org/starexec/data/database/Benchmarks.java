@@ -81,7 +81,7 @@ public class Benchmarks {
 
 			} finally {
 				Common.safeClose(con);
-				Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			}
 		} else {
 			log.debug("Add called on invalid benchmark, no additions will be made to the database");
@@ -532,7 +532,7 @@ public class Benchmarks {
 			}			
 
 			Common.endTransaction(con);
-			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -763,7 +763,7 @@ public class Benchmarks {
 		
 		try {
 			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL SetBenchmarkToDeletedById(?, ?)}");
@@ -2062,7 +2062,7 @@ public class Benchmarks {
 		
 		try {
 			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetBenchmarkRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -2104,7 +2104,7 @@ public class Benchmarks {
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
 			//invalidate the cache of every space associated with this benchmark
 			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

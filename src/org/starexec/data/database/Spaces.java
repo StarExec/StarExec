@@ -88,7 +88,7 @@ public class Spaces {
 			//Do we necessarily want to end the transaction here?  I don't think we do.
 			//Common.endTransaction(con);
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
-			Cache.invalidateCache(parentId, CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(parentId, CacheType.CACHE_SPACE);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("Spaces.add says "+e.getMessage(),e);
@@ -1358,7 +1358,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 				procedure.setInt(1, subspaceId);
 				procedure.setInt(2, parentSpaceId);
 				procedure.executeUpdate();		
-				Cache.invalidateCache(subspaceId,CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(subspaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -1437,7 +1437,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 			
 			// Commit changes to database
 			Common.endTransaction(con);
-			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -1572,7 +1572,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 			Common.beginTransaction(con);
 			Spaces.removeSolvers(solverIds, spaceId, con);
 			Common.endTransaction(con);
-			Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -1646,7 +1646,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 			
 			for (Space space : subspaces) {
 				Spaces.removeSolvers(solverIds, space.getId(), con);
-				Cache.invalidateCache(space.getId(), CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(space.getId(), CacheType.CACHE_SPACE);
 			}
 			
 			Common.endTransaction(con);
@@ -1892,7 +1892,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
 			if (!pbc) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2128,7 +2128,7 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 			}
 			
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
-			Cache.invalidateCache(s.getId(), CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(s.getId(), CacheType.CACHE_SPACE);
 			return success;		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
