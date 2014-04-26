@@ -389,7 +389,44 @@ public class ArchiveUtil {
 	 */
 	public static void createZip(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
 		//log.debug("creating zip, path = " + path + ", dest = " + destination);
-
+		String[] zipCommand;
+		if (!removeTopLevel) {
+			zipCommand=new String[5];
+			zipCommand[0]="zip";
+			zipCommand[1]="-r";
+			zipCommand[2]="-q";
+			zipCommand[3]=destination.getAbsolutePath();
+			zipCommand[4]=path.getAbsolutePath();
+		} else {
+			File[] children=path.listFiles();
+			zipCommand=new String[4+children.length];
+			zipCommand[0]="zip";
+			zipCommand[1]="-r";
+			zipCommand[2]="-q";
+			zipCommand[3]=destination.getAbsolutePath();
+			int index=4;
+			for (File file : children) {
+				zipCommand[index]=file.getAbsolutePath();
+				index++;
+			}
+		}
+		
+		Util.executeCommand(zipCommand);
+		//rename the top level if it exists and we have a name for it
+		if (baseName!=null && baseName.length()>0 && !removeTopLevel) {
+			String[] renameCommand=new String[6];
+			renameCommand[0]="printf";
+			renameCommand[1]="\"@ "+path.getName()+"\n@="+baseName+"\n\"";
+			renameCommand[2]="|";
+			renameCommand[3]="zipnote";
+			renameCommand[4]="-w";
+			renameCommand[5]=destination.getAbsolutePath();
+			Util.executeCommand(renameCommand);
+		}
+		
+		log.debug("the newly created archive exists = "+destination.exists());
+		
+		/*
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -405,7 +442,7 @@ public class ArchiveUtil {
 			zOut.close();
 			bOut.close();
 			fOut.close();
-		}
+		}*/
 	}
 	
 	/**

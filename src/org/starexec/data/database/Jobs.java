@@ -1258,7 +1258,6 @@ public class Jobs {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
-		log.debug("Getting pairs for job = "+jobId+" in space = "+jobSpaceId);
 		try {
 			con=Common.getConnection();
 			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?)}");
@@ -2769,7 +2768,6 @@ public class Jobs {
 	 */
 	private static HashMap<Integer,Properties> processAttrResults(ResultSet results) {
 		try {
-			log.debug("result set obtained");
 			HashMap<Integer,Properties> props=new HashMap<Integer,Properties>();
 			int id;
 			
@@ -2869,7 +2867,6 @@ public class Jobs {
 	 */
 	
 	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
-		log.debug("Processing stat results for job = "+jobId);
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
