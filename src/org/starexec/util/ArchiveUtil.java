@@ -390,12 +390,17 @@ public class ArchiveUtil {
 	public static void createZip(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
 		//log.debug("creating zip, path = " + path + ", dest = " + destination);
 		String[] zipCommand;
+		
+		//for some reason, zip fails if the name has dashes. We need to remove them, zip the file, then rename it
+		String destName=destination.getName();
+		String newDestName=destName.replace("-", "");
+		File tempDest=new File(destination.getParentFile(),newDestName);
 		if (!removeTopLevel) {
 			zipCommand=new String[5];
 			zipCommand[0]="zip";
 			zipCommand[1]="-r";
 			zipCommand[2]="-q";
-			zipCommand[3]=destination.getAbsolutePath();
+			zipCommand[3]=tempDest.getAbsolutePath();
 			zipCommand[4]=path.getAbsolutePath();
 		} else {
 			File[] children=path.listFiles();
@@ -403,15 +408,25 @@ public class ArchiveUtil {
 			zipCommand[0]="zip";
 			zipCommand[1]="-r";
 			zipCommand[2]="-q";
-			zipCommand[3]=destination.getAbsolutePath();
+			zipCommand[3]=tempDest.getAbsolutePath();
 			int index=4;
 			for (File file : children) {
 				zipCommand[index]=file.getAbsolutePath();
 				index++;
 			}
 		}
-		
 		Util.executeCommand(zipCommand);
+		
+		if (!destName.equals(newDestName)) {
+			String[] renameArchiveCommand=new String[3];
+			renameArchiveCommand[0]="mv";
+			renameArchiveCommand[1]=tempDest.getAbsolutePath();
+			renameArchiveCommand[2]=destination.getAbsolutePath();
+			Util.executeCommand(renameArchiveCommand);
+		}
+		
+		
+		
 		//rename the top level if it exists and we have a name for it
 		if (baseName!=null && baseName.length()>0 && !removeTopLevel) {
 			String[] renameCommand=new String[6];
