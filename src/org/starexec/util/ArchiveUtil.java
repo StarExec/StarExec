@@ -403,7 +403,7 @@ public class ArchiveUtil {
 			zipCommand[1]="-r";
 			zipCommand[2]="-q";
 			zipCommand[3]=tempDest.getAbsolutePath();
-			zipCommand[4]=path.getAbsolutePath();
+			zipCommand[4]=path.getName(); //we are trying to run this command in the required directory, so an absolute path is not needed
 		} else {
 			cd=path;
 			zipCommand=new String[5];
