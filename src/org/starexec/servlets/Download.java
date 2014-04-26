@@ -213,15 +213,15 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 
-			String path = s.getPath();
-			int index = path.lastIndexOf(File.separator);
-			String tempdest = path.substring(index);
+			//String path = s.getPath();
+			//int index = path.lastIndexOf(File.separator);
+			//String tempdest = path.substring(index);
 
-			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
-			tempDir.mkdirs();
-			copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
+			//File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
+			//tempDir.mkdirs();
+			//copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
 
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseName, reupload);
+			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, baseName, reupload);
 			if (!reupload) {
 				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,uniqueDir,fileName);
 			} else {
