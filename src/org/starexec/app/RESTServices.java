@@ -3620,7 +3620,7 @@ public class RESTServices {
 		}
 		CacheType t=CacheType.getType(type);
 
-		return Cache.invalidateCache(id, t) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Cache.invalidateAndDeleteCache(id, t) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
