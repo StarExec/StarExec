@@ -395,30 +395,27 @@ public class ArchiveUtil {
 		String destName=destination.getName();
 		String newDestName=destName.replace("-", "");
 		File tempDest=new File(destination.getParentFile(),newDestName);
-		
+		File cd;
 		if (!removeTopLevel) {
-			File cd=path.getParentFile();
-			zipCommand=new String[7];
-			zipCommand[0]="cd";
-			zipCommand[1]=cd.getAbsolutePath()+";";
-			zipCommand[2]="zip";
-			zipCommand[3]="-r";
-			zipCommand[4]="-q";
-			zipCommand[5]=tempDest.getAbsolutePath();
-			zipCommand[6]=path.getAbsolutePath();
+			cd=path.getParentFile();
+			zipCommand=new String[5];
+			zipCommand[0]="zip";
+			zipCommand[1]="-r";
+			zipCommand[2]="-q";
+			zipCommand[3]=tempDest.getAbsolutePath();
+			zipCommand[4]=path.getAbsolutePath();
 		} else {
-			zipCommand=new String[7];
-			zipCommand[0]="cd";
-			zipCommand[1]=path.getAbsolutePath()+";";
-			zipCommand[2]="zip";
-			zipCommand[3]="-r";
-			zipCommand[4]="-q";
-			zipCommand[5]=tempDest.getAbsolutePath();
-			zipCommand[6]="*";
+			cd=path;
+			zipCommand=new String[5];
+			zipCommand[0]="zip";
+			zipCommand[1]="-r";
+			zipCommand[2]="-q";
+			zipCommand[3]=tempDest.getAbsolutePath();
+			zipCommand[4]="*";
 			
 			
 		}
-		Util.executeCommand(zipCommand);
+		Util.executeCommandInDirectory(zipCommand,null,cd);
 		
 		if (!destName.equals(newDestName)) {
 			String[] renameArchiveCommand=new String[3];
