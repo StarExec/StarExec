@@ -93,7 +93,7 @@ public class UserSecurity {
 			if (!admin) {
 				return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 			}
-			if (!Validator.isValidInteger(newVal)) {
+			if (!Validator.isValidLong(newVal)) {
 				return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 			}
 

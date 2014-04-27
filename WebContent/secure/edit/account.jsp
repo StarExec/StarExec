@@ -28,6 +28,7 @@
 			}
 			request.setAttribute("owner", owner);
 			request.setAttribute("isadmin", isadmin);
+			request.setAttribute("user", t_user);
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

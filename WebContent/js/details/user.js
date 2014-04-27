@@ -19,7 +19,7 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-pencil"
 		}
-	})
+	});
 	
 	$('img').click(function(event){
 		PopUp($(this).attr('enlarge'));

@@ -918,10 +918,14 @@ public class RESTServices {
 	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request) {	
 		boolean success = false;
 		int requestUserId=SessionUtil.getUserId(request);
+		log.debug("requestUserId" + requestUserId);
 		int status=UserSecurity.canUpdateData(userId, requestUserId, attribute, newValue);
+		log.debug("status = " + status);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
+		
+		log.debug("begin");
 		
 		// Go through all the cases, depending on what attribute we are changing.
 		// First, validate that it is in legal form. Then, try to update the database.
@@ -943,9 +947,11 @@ public class RESTServices {
 				SessionUtil.getUser(request).setInstitution(newValue);
 			}
 		} else if (attribute.equals("diskquota")) {
-			success=Users.setDiskQuota(userId, Integer.parseInt(newValue));
+			log.debug("diskquota");
+			success=Users.setDiskQuota(userId, Long.parseLong(newValue));
+			log.debug("success = " + success);
 			if (success) {
-				SessionUtil.getUser(request).setDiskQuota(Integer.parseInt(newValue));
+				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 			}
 		}
 

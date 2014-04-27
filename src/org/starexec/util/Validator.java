@@ -179,6 +179,20 @@ public class Validator {
     }
     
     /**
+     * Validates a string to ensure it can be treated as a long 
+     * @param s The string to validate as a long
+     * @return True if the string is numeric, false otherwise
+     */
+    public static boolean isValidLong(String s) {
+    	try {
+    		Long.parseLong(s);
+    		return true;
+    	} catch(Exception e) {
+    		return false;
+    	}
+    }
+    
+    /**
      * Validates a string to ensure it can be treated as a date
      * @param s The string to validate as a date
      * @return True if the string is in the date format, false otherwise
