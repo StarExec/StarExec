@@ -170,9 +170,10 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 DROP PROCEDURE IF EXISTS GetQueuesForSpace;
 CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
 	BEGIN
-		SELECT queue_id
+		SELECT DISTINCT queue_id
 		FROM comm_queue
-		WHERE space_id = _spaceId AND status = "ACTIVE";
+		JOIN queues ON comm_queue.queue_id = queues.id
+		WHERE comm_queue.space_id = _spaceId AND queues.status = "ACTIVE";
 	END //
 	
 DROP PROCEDURE IF EXISTS GetGlobalQueues;
