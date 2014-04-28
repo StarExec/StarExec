@@ -745,7 +745,8 @@ public class Queues {
 				}
 				
 				//Next add all global_access permanent queues
-				queues.addAll(Queues.getGlobalQueues());
+				//queues.addAll(Queues.getGlobalQueues());
+				queues.addAll(Queues.getPermanentQueuesForUser(userId));
 				
 				
 				
@@ -760,13 +761,14 @@ public class Queues {
 		return null;
 	}
 	
-	private static List<Queue> getGlobalQueues() {
+	private static List<Queue> getPermanentQueuesForUser(int userId) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetGlobalQueues()}");
+			procedure = con.prepareCall("{CALL GetPermanentQueuesForUser(?)}");
+			procedure.setInt(1, userId);
 			results = procedure.executeQuery();
 			List<Queue> queues = new LinkedList<Queue>();
 			
@@ -781,7 +783,7 @@ public class Queues {
 			}
 			return queues;
 		} catch (Exception e) {
-			log.error("GetGlobalQueues says " + e.getMessage(), e);
+			log.error("GetPermanentQueuesForUser says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
