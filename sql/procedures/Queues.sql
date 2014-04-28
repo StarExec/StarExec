@@ -164,4 +164,23 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 		SET global_access = false
 		WHERE _queueId = _queueId;
 	END //
+	
+-- Get the active queues that have been reserved for a particular space
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueuesForSpace;
+CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
+	BEGIN
+		SELECT queue_id
+		FROM comm_queue
+		WHERE space_id = _spaceId AND status = "ACTIVE";
+	END //
+	
+DROP PROCEDURE IF EXISTS GetGlobalQueues;
+CREATE PROCEDURE GetGlobalQueues()
+	BEGIN
+		SELECT *
+		FROM queues
+		WHERE permanent = true AND global_access = true AND status = "ACTIVE";
+	END //
+	
 DELIMITER ; -- This should always be at the end of this file

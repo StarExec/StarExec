@@ -925,6 +925,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		return null;
 	}
 	
+	
 /**
  * Gets the ids of all the subspaces of a given space (non recursive)
  * @param spaceId The id of the space to get subspaces of
@@ -1038,6 +1039,78 @@ public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws E
 		}
 		return null;
 	}
+	
+	
+	/**
+	 * Gets the superSpaces of a given spaceId (RECURSIVE)
+	 * @param spaceId
+	 * @return
+	 */
+	public static List<Space> getSuperSpaces(int spaceId) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return Spaces.getSuperSpaces(spaceId, con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Helper fcn: Gets the SuperSpaces of a given spaceId (RECURSIVE)
+	 * @param spaceId The id of the space to get the subspaces of
+	 * @param con the database connection to use
+	 * @return the list of subspaces of the given space
+	 * @throws Exception
+	 * @author Wyatt Kaiser
+	 */
+	
+	protected static List<Space> getSuperSpaces(int spaceId, Connection con) throws Exception{
+		CallableStatement procedure = null;
+
+		ResultSet results = null;
+		
+		
+		try {
+			procedure = con.prepareCall("{CALL GetSuperSpacesById(?)}");
+			procedure.setInt(1, spaceId);
+			
+			results = procedure.executeQuery();
+			List<Space> superSpaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = Spaces.get(results.getInt("id"));
+				superSpaces.add(s);
+			}
+			
+			List<Space> additionalSuperSpaces = new LinkedList<Space>();
+				
+			for(Space s : superSpaces){
+				//if its  not the root space, get the superspaces of it as well
+				if (s.getId() != 1) {
+					additionalSuperSpaces.addAll(Spaces.getSuperSpaces(s.getId(), con));
+				}
+			}
+			
+			log.debug("Found an additional " + additionalSuperSpaces.size() + " superSpaces via recursion");
+			superSpaces.addAll(additionalSuperSpaces);
+			log.debug("Returning from adding superSpaces");
+			return superSpaces;
+		} catch (Exception e) {
+			log.error("getSuperSpacesById says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	
 	/**
 	 * Gets all the subspaces of the given space that are used by the given job
 	 * 

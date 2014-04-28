@@ -20,7 +20,7 @@
 			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.PRE);
-			request.setAttribute("queues", Queues.getQueuesForJob(userId, spaceId));
+			request.setAttribute("queues", Queues.getQueuesForUser(userId));
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
