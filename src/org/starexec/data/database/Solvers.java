@@ -221,7 +221,7 @@ public class Solvers {
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (linkInSubspaces) {
 			
-			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(rootSpaceId, userId, true));
+			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Add the destination space to the list of spaces to associate the solvers with only
@@ -767,7 +767,7 @@ public class Solvers {
 	public static List<Solver> getBySpaceHierarchy(int spaceId, int userId) {
 		List<Solver> solvers=new ArrayList<Solver>();
 		solvers.addAll(Solvers.getBySpace(spaceId));
-		List<Space> spaceIds=Spaces.getSubSpaces(spaceId, userId, true);
+		List<Space> spaceIds=Spaces.getSubSpaceHierarchy(spaceId, userId);
 		for (Space s: spaceIds) {
 			solvers.addAll(Solvers.getBySpace(s.getId()));
 		}

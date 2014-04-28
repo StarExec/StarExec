@@ -889,7 +889,7 @@ public class Download extends HttpServlet {
 			}
 
 
-			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid, false);
+			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid);
 			if(subspaceList ==  null || subspaceList.size() == 0){
 				return;
 			}

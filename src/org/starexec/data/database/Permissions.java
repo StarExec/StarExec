@@ -374,7 +374,7 @@ public class Permissions {
 				}
 			}
 			//check all descendants of each subspace
-			List<Space> subSpaces = Spaces.getSubSpaces(subSpaceId, userId, true);
+			List<Space> subSpaces = Spaces.getSubSpaceHierarchy(subSpaceId, userId);
 			for (Space descendant:subSpaces){
 				if (Permissions.canUserSeeSpace(descendant.getId(), userId) == false){
 					return false;

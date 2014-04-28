@@ -2310,7 +2310,7 @@ public class Benchmarks {
 				}	
 			}
 			if (hierarchy) {
-				List<Space> spaces=Spaces.getSubSpaces(spaceId, userId, true);
+				List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
 				for (Space s : spaces) {
 					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId);
 				}

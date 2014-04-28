@@ -449,11 +449,11 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void copySpaceTest() {
 		Integer[] spaceArr=new Integer[1];
-		List<Space> before=Spaces.getSubSpaces(space2.getId(), user.getId(), false);
+		List<Space> before=Spaces.getSubSpaces(space2.getId(), user.getId());
 		spaceArr[0]=space1.getId();
 		int status=con.copySpaces(spaceArr, Spaces.getParentSpace(space1.getId()), space2.getId(), false);
 		Assert.assertEquals(0, status);
-		List<Space> after=Spaces.getSubSpaces(space2.getId(), user.getId(), false);
+		List<Space> after=Spaces.getSubSpaces(space2.getId(), user.getId());
 		Assert.assertTrue(after.size()>before.size());
 		
 	}

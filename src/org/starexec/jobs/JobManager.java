@@ -649,7 +649,7 @@ public abstract class JobManager {
 		}
 
 		// Now, recursively add from the subspaces 
-		List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(spaceId, userId, true));
+		List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 
 		int space;
 

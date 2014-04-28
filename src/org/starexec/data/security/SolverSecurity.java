@@ -279,7 +279,7 @@ public class SolverSecurity {
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	public static int canUserRemoveSolverFromHierarchy(int rootSpaceId, int userId) {
-		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(rootSpaceId, userId, true));
+		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
 		for(Space s : subspaces) {
 			int status=canUserRemoveSolver(s.getId(),userId);
 			if (status<0) {

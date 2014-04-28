@@ -52,6 +52,7 @@ CREATE PROCEDURE GetEnqueuedJobs(IN _queueId INT)
 	
 -- Retrieves the number of jobs with pending job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
+-- TODO: This might be slow. Think about a possible index on queueId?
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
 CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	BEGIN

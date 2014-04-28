@@ -2863,7 +2863,7 @@ public class RESTHelpers {
 		if (newSpaceId == 0) {
 			return 0;
 		} else {
-			List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId, false);
+			List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
 			if (subSpaces == null) {
 				return newSpaceId;
 			} else {

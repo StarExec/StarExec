@@ -192,7 +192,7 @@ public class RESTServices {
 		log.debug("parentId = " + parentId);
 		log.debug("userId = " + userId);
 		
-		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId, false),userId));
+		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId),userId));
 	}
 	
 	/**
@@ -1768,7 +1768,7 @@ public class RESTServices {
 		}
 		// If we are "cascade removing" the user(s)...
 		if (hierarchy) {
-			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaces(spaceId, userIdOfRemover, true));
+			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaceHierarchy(spaceId, userIdOfRemover));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Add the destination space to the list of spaces remove the user from

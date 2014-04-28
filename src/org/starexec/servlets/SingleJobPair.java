@@ -153,7 +153,7 @@ public class SingleJobPair extends HttpServlet {
 				List<Integer> configIds = Solvers.getDefaultConfigForSolver(solverId);
 				
 				
-				HashMap<Integer, String> SP = Spaces.spacePathCreate(R.PUBLIC_USER_ID, Spaces.getSubSpaces(R.PUBLIC_SPACE_ID, R.PUBLIC_USER_ID, true), Spaces.get(R.PUBLIC_SPACE_ID).getId());
+				HashMap<Integer, String> SP = Spaces.spacePathCreate(R.PUBLIC_USER_ID, Spaces.getSubSpaceHierarchy(R.PUBLIC_SPACE_ID, R.PUBLIC_USER_ID), Spaces.get(R.PUBLIC_SPACE_ID).getId());
 				log.debug("HASHMAP = " + SP);
 				
 				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, maxMemory, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID, SP);

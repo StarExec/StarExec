@@ -611,7 +611,7 @@ public class SpaceSecurity {
 		
 		//if we are checking the hierarchy, we must first get every space in it
 		if (hierarchy) {
-			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(toSpaceId, userId, true));
+			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(toSpaceId, userId));
 			for (Space s : subspaces) {
 				spaceIds.add(s.getId());
 			}
@@ -654,7 +654,7 @@ public class SpaceSecurity {
 		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		if (hierarchy) {
-			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingCopying, Spaces.getSubSpaces(toSpaceId, userIdDoingCopying, true));
+			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingCopying, Spaces.getSubSpaceHierarchy(toSpaceId, userIdDoingCopying));
 			for (Space s : subspaces) {
 				spaceIds.add(s.getId());
 			}
@@ -785,7 +785,7 @@ public class SpaceSecurity {
 			}
 		}
 		if (hierarchy) {
-			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingRemoval, Spaces.getSubSpaces(rootSpaceId, userIdDoingRemoval, true));
+			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingRemoval, Spaces.getSubSpaceHierarchy(rootSpaceId, userIdDoingRemoval));
 			// Iterate once through all subspaces of the destination space to ensure the user has removeUser permissions in each
 			for(Space subspace : subspaces) {
 				int status=canRemoveUsersFromSpaces(userIdsBeingRemoved,userIdDoingRemoval,subspace.getId(),false);

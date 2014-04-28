@@ -117,7 +117,7 @@ public class CreateJob extends HttpServlet {
 		j.setPrimarySpace(space);
 		//Create the HashMap to be used for creating job-pair path
 		
-		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaces(space, userId, true), space);
+		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 		log.debug("HASHMAP = " + SP);
 
 		String selection = request.getParameter(run);
@@ -129,7 +129,7 @@ public class CreateJob extends HttpServlet {
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 
-			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true)); //Remove spaces the user is not a member of
+			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
 								
 			spaces.add(0, Spaces.get(space));
 			if (traversal2.equals("depth")) {
@@ -184,7 +184,7 @@ public class CreateJob extends HttpServlet {
 					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit,memoryLimit, SP);
 				} else {
 					log.debug("User selected round-robin traversal");
-					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
+					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId));
 					spaces.add(0,Spaces.get(space));
 					HashMap<Space, BSC> SpaceToBSC = new HashMap<Space, BSC>();
 					int max = 0;

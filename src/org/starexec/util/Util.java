@@ -564,7 +564,7 @@ public class Util {
 	public static void clearTestCommunity() {
 		Space testCom=Communities.getTestCommunity();
 		User admin=Users.getAdmins().get(0);
-		List<Space> subspaces=Spaces.getSubSpaces(testCom.getId(), admin.getId(), true);
+		List<Space> subspaces=Spaces.getSubSpaceHierarchy(testCom.getId(), admin.getId());
 		for (Space s : subspaces) {
 			Space space=Spaces.getDetails(s.getId(), admin.getId());
 			

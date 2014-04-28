@@ -98,7 +98,7 @@ public class Users {
 		if (!hierarchy) {
 			return associate(userIds, spaceId);
 		} else {
-			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaces(spaceId, requestUserId, true));
+			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaceHierarchy(spaceId, requestUserId));
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Add the destination space to the list of spaces to associate the user(s) with

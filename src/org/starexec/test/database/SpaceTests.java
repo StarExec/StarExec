@@ -37,7 +37,7 @@ public class SpaceTests extends TestSequence {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		Assert.assertNotNull(spaces);
 		//add two because the root space itself and the public space are not counted otherwise
-		Assert.assertEquals(Spaces.getSubSpaces(1, admin.getId(), true).size()+2, spaces.size());
+		Assert.assertEquals(Spaces.getSubSpaceHierarchy(1, admin.getId()).size()+2, spaces.size());
 	}
 	
 	@Test
