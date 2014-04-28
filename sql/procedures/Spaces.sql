@@ -209,7 +209,7 @@ CREATE PROCEDURE GetSubSpaceHierarchyAdmin(IN _spaceId INT)
 			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM closure
 				JOIN spaces ON spaces.id=closure.descendant
-				WHERE closure.ancestor=_spaceId and closure.ancestor!=ancestor.descendant;
+				WHERE closure.ancestor=_spaceId and closure.ancestor!=closure.descendant;
 		END IF;
 	END //
 
