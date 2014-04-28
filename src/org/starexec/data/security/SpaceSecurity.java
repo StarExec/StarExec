@@ -580,7 +580,7 @@ public class SpaceSecurity {
 		
 		//benchmark names must be unique in each space
 		for (Integer benchId : benchmarkIdsBeingCopied) { 
-			if(Spaces.notUniquePrimitiveName(Benchmarks.get(benchId).getName(), toSpaceId, 1)) {
+			if(Spaces.notUniquePrimitiveName(Benchmarks.get(benchId).getName(), toSpaceId, 2)) {
 				return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
 			}
 		}

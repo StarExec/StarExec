@@ -186,7 +186,7 @@ public class Download extends HttpServlet {
 	 */
 	private static File handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
-		String description = s.getDescription();
+		
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
 
