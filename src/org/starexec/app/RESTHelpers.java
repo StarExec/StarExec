@@ -2123,6 +2123,7 @@ public class RESTHelpers {
 			//replacing newlines with HTML line breaks
 			entry.add(new JsonPrimitive(test.getAllMessages().replace("\n", "<br/>")));
 			entry.add(new JsonPrimitive(test.getErrorTrace()));
+			entry.add(new JsonPrimitive(test.getTime()));
 			dataTablePageEntries.add(entry);
 		}
 		JsonObject nextPage = new JsonObject();

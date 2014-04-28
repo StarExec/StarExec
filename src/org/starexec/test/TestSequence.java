@@ -48,6 +48,7 @@ public abstract class TestSequence {
 			r.addMessage("test not started");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
 			r.setError(null); 
+			r.setTime(0);
 		}
 	}
 	
@@ -108,14 +109,17 @@ public abstract class TestSequence {
 			for (Method m : tests) {
 				TestResult t=testResults.get(m.getName());
 				t.clearMessages();
+				double a=System.currentTimeMillis();
 				try {
 					m.setAccessible(true);
 					m.invoke(this, null);
 					t.getStatus().setCode(TestStatus.TestStatusCode.STATUS_SUCCESS.getVal());
+					t.setTime(System.currentTimeMillis()-a);
 					t.addMessage("test executed without errors");
 					testsPassed++;
 					
 				} catch (Throwable e) {
+					t.setTime(System.currentTimeMillis()-a);
 					e=e.getCause();
 					testsFailed++;
 					t.setError(e);

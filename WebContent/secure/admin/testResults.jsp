@@ -17,6 +17,7 @@
 						<th>status</th>
 						<th>message</th>
 						<th id="errorHead">error trace</th>
+						<th>time(ms)</th>
 					</tr>
 				</thead>
 				<tbody>

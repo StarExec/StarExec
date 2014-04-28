@@ -8,6 +8,7 @@ public class TestResult {
 	private TestStatus status=new TestStatus();
 	private List<String> messages=new ArrayList<String>();
 	private Throwable error=null;
+	private double time=0.0;
 	public TestResult() {
 		status.setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
 	}
@@ -60,6 +61,14 @@ public class TestResult {
 	}
 	public String getErrorTrace() {
 		return TestUtil.getErrorTrace(error);
+	}
+
+	public void setTime(double time) {
+		this.time = time;
+	}
+
+	public double getTime() {
+		return time;
 	}
 	
 }
