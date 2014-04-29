@@ -176,6 +176,7 @@ class HTMLParser {
 		for (Header x : headers) {
 			if (x.getName().equals("Set-Cookie")) {
 				String value=x.getValue().trim();
+				System.out.println(value);
 				if (value.contains(cookieName)) {
 					int begin=value.indexOf(cookieName);
 					

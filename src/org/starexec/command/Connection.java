@@ -1622,7 +1622,7 @@ public class Connection {
 			
 			String line=br.readLine();
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
-			String cpuTime=null,wallclockTime=null;
+			String cpuTime=null,wallclockTime=null, mem=null;
 			
 			while (line!=null) {
 				
@@ -1636,16 +1636,22 @@ public class Connection {
 						cpuTime=keyValue.getValue();
 					} else if (keyValue.getName().equals("wallclockTimeout")) {
 						wallclockTime=keyValue.getValue();
-					} 
+					} else if (keyValue.getName().equals("maxMem")) {
+						mem=keyValue.getValue();
+					}
 				}
 				
 				line=br.readLine();
 			}
+			//use the user given values if they are specified
 			if (cpu!=null) {
 				cpuTime=String.valueOf(cpu);
 			}
 			if (wallclock!=null) {
 				wallclockTime=String.valueOf(wallclock);
+			}
+			if (maxMemory!=null) {
+				mem=String.valueOf(maxMemory);
 			}
 			
 			
@@ -1669,7 +1675,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
-			params.add(new BasicNameValuePair("maxMem",maxMemory.toString()));
+			params.add(new BasicNameValuePair("maxMem",mem));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
@@ -1677,12 +1683,15 @@ public class Connection {
 			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			if (response.getStatusLine().getStatusCode()!=302) {
-				return Status.ERROR_SERVER;
+
+			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
+			System.out.println(id);
+			if (Validator.isValidPosInteger(id)) {
+				return Integer.parseInt(id);
 			}
-			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
-			return id;
+			return Status.ERROR_SERVER;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}

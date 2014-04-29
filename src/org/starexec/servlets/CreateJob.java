@@ -105,7 +105,7 @@ public class CreateJob extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
 			return;
 		}
-		
+		log.debug("confirmed the new job has a unique name");
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -116,10 +116,10 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(workerQueue)));
 		j.setPrimarySpace(space);
 		//Create the HashMap to be used for creating job-pair path
-		
+		log.debug("started building the new job");
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 		log.debug("HASHMAP = " + SP);
-
+		log.debug("got the space paths for the new job");
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversal2 = request.getParameter(traversal);
@@ -130,7 +130,7 @@ public class CreateJob extends HttpServlet {
 			log.debug("User selected keepHierarchy");
 
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
-								
+			log.debug("got all the subspaces for the job");		
 			spaces.add(0, Spaces.get(space));
 			if (traversal2.equals("depth")) {
 				for (Space s : spaces) {
