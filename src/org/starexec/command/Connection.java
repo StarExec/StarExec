@@ -1604,7 +1604,7 @@ public class Connection {
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @return
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused) {
 		try {
 			
 			
@@ -1677,7 +1677,11 @@ public class Connection {
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			params.add(new BasicNameValuePair("maxMem",mem));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
-			
+			if (startPaused) {
+				params.add(new BasicNameValuePair("pause","yes"));
+			} else {
+				params.add(new BasicNameValuePair("pause","no"));
+			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			response=client.execute(post);
@@ -1685,13 +1689,12 @@ public class Connection {
 			response.getEntity().getContent().close();
 
 			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
-			System.out.println(id);
+			
 			if (Validator.isValidPosInteger(id)) {
 				return Integer.parseInt(id);
 			}
 			return Status.ERROR_SERVER;
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}

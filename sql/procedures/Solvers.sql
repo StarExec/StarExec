@@ -117,17 +117,14 @@ CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
 
 	
 -- Retrieves all solvers belonging to a space
--- Author: Tyler Jensen
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSpaceSolversById;
 CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM solvers
-		WHERE deleted=false AND recycled=false AND id IN
-				(SELECT solver_id
-				FROM solver_assoc
-				WHERE space_id = _id)
-		ORDER BY name;
+		JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
+		WHERE deleted=false AND recycled=false AND solver_assoc.space_id=_id;
 	END //	
 	
 -- Retrieves the solver associated with the configuration with the given id

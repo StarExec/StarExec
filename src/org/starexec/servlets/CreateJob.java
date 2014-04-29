@@ -119,7 +119,7 @@ public class CreateJob extends HttpServlet {
 		log.debug("started building the new job");
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 		log.debug("HASHMAP = " + SP);
-		log.debug("got the space paths for the new job");
+		
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversal2 = request.getParameter(traversal);
@@ -232,19 +232,18 @@ public class CreateJob extends HttpServlet {
 				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, solverIds, configIds, space, SP);
 			}
 		}
-		log.debug("now searching for job pairs");
+		
 		if (j.getJobPairs().size() == 0) {
 			// No pairs in the job means something went wrong; error out
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");
 			return;
 		}
-		log.debug("confirmed at least some job pairs exist");
+		
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
-		log.debug("added the job to the database, and the success was "+submitSuccess);
-		log.debug(j.getId());
+
 		//if the user chose to immediately pause the job
 		if (start_paused.equals("yes")) {
 			Jobs.pause(j.getId());
@@ -256,7 +255,7 @@ public class CreateJob extends HttpServlet {
 		
 		if(submitSuccess) {
 		    // If the submission was successful, send back to space explorer
-			log.debug("submission was a success");
+
 			response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
 		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 		}else  {

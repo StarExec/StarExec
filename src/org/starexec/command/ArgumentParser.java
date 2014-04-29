@@ -183,9 +183,13 @@ class ArgumentParser {
 			if (commandParams.containsKey(R.PARAM_DESC)) {
 				desc=commandParams.get(R.PARAM_DESC);
 			}
+			boolean startPaused=false;
+			if (commandParams.containsKey(R.PARAM_PAUSED)) {
+				startPaused=true;
+			}
 			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc, 
 					Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),
-					wallclock, cpu,useDepthFirst,maxMemory);
+					wallclock, cpu,useDepthFirst,maxMemory,startPaused);
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
