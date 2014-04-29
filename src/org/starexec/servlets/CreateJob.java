@@ -136,6 +136,7 @@ public class CreateJob extends HttpServlet {
 				for (Space s : spaces) {
 					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, s.getId(), SP);
 				}
+				log.debug("added all the job pairs from every space");
 			} else {
 				log.debug("User Selected Round-Robin Search");
 				int max = 0;
@@ -161,13 +162,13 @@ public class CreateJob extends HttpServlet {
 				for(int i=0; i < max; i++) {
 					for (Space s : spaces) {
 						BSC bsc = SpaceToBSC.get(s);
-							if (bsc.b.size() > i) {
-								log.debug("Calling addJobPairsRobin function: i= " + i);
-								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
-							}
+						if (bsc.b.size() > i) {
+							log.debug("Calling addJobPairsRobin function: i= " + i);
+							JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
 						}
 					}
 				}
+			}
 		} else { //hierarchy OR choice
 			List<Integer> solverIds = Util.toIntegerList(request.getParameterValues(solvers));
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
@@ -231,18 +232,18 @@ public class CreateJob extends HttpServlet {
 				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, solverIds, configIds, space, SP);
 			}
 		}
-
+		log.debug("now searching for job pairs");
 		if (j.getJobPairs().size() == 0) {
 			// No pairs in the job means something went wrong; error out
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");
 			return;
 		}
-
+		log.debug("confirmed at least some job pairs exist");
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
-
+		log.debug("added the job to the database, and the success was "+submitSuccess);
 		//if the user chose to immediately pause the job
 		if (start_paused.equals("yes")) {
 			Jobs.pause(j.getId());
