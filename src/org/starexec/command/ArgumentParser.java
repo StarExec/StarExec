@@ -149,11 +149,15 @@ class ArgumentParser {
 			}			
 			Integer wallclock=null;
 			Integer cpu=null;
+			Double maxMemory=null;
 			if (commandParams.containsKey(R.PARAM_WALLCLOCKTIMEOUT)) {
 				wallclock=Integer.parseInt(commandParams.get(R.PARAM_WALLCLOCKTIMEOUT));
 			}
 			if (commandParams.containsKey(R.PARAM_CPUTIMEOUT)) {
 				cpu=Integer.parseInt(commandParams.get(R.PARAM_CPUTIMEOUT));
+			}
+			if (commandParams.containsKey(R.PARAM_MEMORY)) {
+				maxMemory=Double.parseDouble(commandParams.get(R.PARAM_MEMORY));
 			}
 			Boolean useDepthFirst=true;
 			if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
@@ -181,7 +185,7 @@ class ArgumentParser {
 			}
 			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc, 
 					Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),
-					wallclock, cpu,useDepthFirst);
+					wallclock, cpu,useDepthFirst,maxMemory);
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;

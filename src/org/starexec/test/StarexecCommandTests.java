@@ -13,6 +13,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -29,14 +30,13 @@ import org.starexec.util.Util;
 
 
 /*TODO:
-	CreateJobTest
 	Delete[jobs]
 	Download[new job info, new job output]
 */
 public class StarexecCommandTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
 	private Connection con;
-	private Space space1=null;
+	private Space space1=null; //will contain both solvers and benchmarks
 	private Space space2=null;
 	private Job job=null;
 	File solverFile=null;
@@ -56,7 +56,22 @@ public class StarexecCommandTests extends TestSequence {
 	String solverURL=null;
 	
 	@Test
-	private void GetIDTest() throws Exception {
+	private void CreateJobTest() {
+		String jobName=TestUtil.getRandomJobName();
+		int qid=Queues.getQueuesForSpace(space1.getId()).get(0).getId();
+		int jobId=con.createJob(space1.getId(), jobName, "", proc.getId(), -1, qid, 100, 100, true,1.0);
+		Assert.assertTrue(jobId>0);
+		Job job=Jobs.get(jobId);
+		Assert.assertNotNull(job);
+		Assert.assertEquals(jobName,job.getName());
+		
+		
+		Assert.assertTrue(Jobs.delete(jobId));
+		
+	}
+	
+	@Test
+	private void GetIDTest() {
 		int id=con.getUserID();
 		Assert.assertEquals(user.getId(), id);
 		
@@ -580,7 +595,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());		
+		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());	
 		solverFile=ResourceLoader.getResource("CVC4.zip");
 		benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
 		configFile=ResourceLoader.getResource("CVC4Config.txt");

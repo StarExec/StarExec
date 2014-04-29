@@ -1601,9 +1601,10 @@ public class Connection {
 	 * @param cpu The cpu timeout for job pairs. If null, the default for the space will be used.
 	 * @param useDepthFirst If true, job pairs will be run in a depth-first fashion in the space hierarchy.
 	 * If false, they will be run in a round-robin fashion.
+	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @return
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory) {
 		try {
 			
 			
@@ -1668,7 +1669,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
-			
+			params.add(new BasicNameValuePair("maxMem",maxMemory.toString()));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
