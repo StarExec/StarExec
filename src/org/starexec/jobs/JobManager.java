@@ -53,35 +53,40 @@ public abstract class JobManager {
 	}
 
     public synchronized static boolean checkPendingJobs(){
-    if (Jobs.isSystemPaused()) { 
-    	log.info("Not adding more job pairs to any queues, as the system is paused");
-    	return false;
-    }
-    
-    //If a job's queue is null or the queue is empty,
-    //pause the job if it is not already deleted or paused
-    List<Job> jobs = Jobs.getUnRunnableJobs();
-    if (jobs != null) {
-    	for (Job j : jobs) {
-    		if (! (j.isDeleted() || j.isPaused() )) {
-    			Jobs.pause(j.getId());
+    	try {
+    		if (Jobs.isSystemPaused()) { 
+    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
+    	    	return false;
+    	    }
+        
+    	    //If a job's queue is null or the queue is empty,
+    	    //pause the job if it is not already deleted or paused
+    	    List<Job> jobs = Jobs.getUnRunnableJobs();
+    	    if (jobs != null) {
+    	    	for (Job j : jobs) {
+    	    		if (! (j.isDeleted() || j.isPaused() )) {
+    	    			Jobs.pause(j.getId());
+    	    		}
+    	    	}
+    	    }
+    		List<Queue> queues = Queues.getAll();
+    		for (Queue q : queues) {
+    		    int qId = q.getId();
+    		    String qname = q.getName();
+    			int queueSize = Queues.getSizeOfQueue(qId);
+    			if (queueSize < R.NUM_JOB_SCRIPTS) {
+    				List<Job> joblist = Queues.getPendingJobs(qId);
+    				if (joblist.size() > 0) {
+    					submitJobs(joblist, q, queueSize);
+    				}
+    			} else {
+    				log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
+    			}
     		}
+    	} catch (Exception e) {
+    		log.error(e.getMessage(),e);
     	}
-    }
-	List<Queue> queues = Queues.getAll();
-	for (Queue q : queues) {
-	    int qId = q.getId();
-	    String qname = q.getName();
-			int queueSize = Queues.getSizeOfQueue(qId);
-			if (queueSize < R.NUM_JOB_SCRIPTS) {
-				List<Job> joblist = Queues.getPendingJobs(qId);
-				if (joblist.size() > 0) {
-					submitJobs(joblist, q, queueSize);
-				}
-			} else {
-				log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
-			}
-		}
+	    
 		return false;
 	}
     
