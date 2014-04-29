@@ -249,7 +249,9 @@ public class CreateJob extends HttpServlet {
 		if (start_paused.equals("yes")) {
 			Jobs.pause(j.getId());
 		} else {
-			JobManager.checkPendingJobs(); // to start this job running if it is not	
+			//TODO: Why are we doing this here? The periodic task can handle this, and it interferes with 
+			//sending back a response to the user.
+			//JobManager.checkPendingJobs(); // to start this job running if it is not	
 		}
 		
 		if(submitSuccess) {
