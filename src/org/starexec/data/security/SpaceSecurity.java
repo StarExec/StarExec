@@ -16,6 +16,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
@@ -197,11 +198,17 @@ public class SpaceSecurity {
 		return 0;
 	}
 	
-	//TODO: Is this really right? Why can one leader demote another?
+	/**
+	 * Checks whether the user demoting is the administrator 
+	 * @param spaceId
+	 * @param userIdBeingDemoted
+	 * @param userIdDoingDemoting
+	 * @return
+	 */
 	public static int canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
-		// Permissions check; ensures user is the leader of the community
-		Permission perm = Permissions.get(spaceId,userIdDoingDemoting);
-		if(perm == null || !perm.isLeader()) {
+		// Permissions check; ensures user is the leader of the community or is an admin
+		User userDemoting = Users.get(userIdDoingDemoting);
+		if(!userDemoting.getRole().equals("admin")) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
 		}
 		return 0;

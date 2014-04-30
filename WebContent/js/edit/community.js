@@ -29,10 +29,9 @@ $(document).ready(function(){
 	attachWebsiteMonitor();
 });
 
-function populateDetails(jsonData) {
+function populateDetails(jsonData) {	
 	var id = $('#comId').val();
 
-	
 	// Populate leaders table
 	$('#leaderField legend').children('span:first-child').text(jsonData.leaders.length);
 	leaderTable.fnClearTable();	
@@ -40,7 +39,7 @@ function populateDetails(jsonData) {
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
 		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
-		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ')" value="X"/>';
+		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ', ' + id + ')" value="X"/>';
 		var demoteUser = '<input type="button" onclick="demoteUser(' + user.id + ', ' + id + ')" value="Demote"/>';
 		
 		leaderTable.fnAddData([userLink, user.institution, emailLink, deleteUser, demoteUser]);
@@ -64,6 +63,7 @@ function populateDetails(jsonData) {
 }
 
 function removeUser(userid, id) {
+	alert("id inside = " + id);
 	var idArray = new Array();
 	idArray.push(userid);
 	$.post(  
