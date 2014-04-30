@@ -15,6 +15,9 @@ import javax.xml.validation.Validator;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class JobUtil {
@@ -23,15 +26,66 @@ public class JobUtil {
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
 	
-	public Boolean createJobFromFile(File file, int userId, Integer spaceId) throws Exception {
+	/**
+	 * Creates jobs from the xml file.
+	 * @author Tim Smith
+	 * @param file the xml file we wish to create jobs from
+	 * @param userId the userId of the user making the request
+	 * @param spaceId the space that will serve as the root for jobs to run under
+	 * @return Boolean true if the jobs are successfully created
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 */
+	public Boolean createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
 		if (!validateAgainstSchema(file)){
 			log.warn("File from User " + userId + " is not Schema valid.");
 			return false;
 		}
 		
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+        Document doc = docBuilder.parse(file);
+        Element jobsElement = doc.getDocumentElement();
+		NodeList listOfJobElements = jobsElement.getChildNodes();
+		
+        //Check Jobs and Job Pairs
+        NodeList listOfJobs = doc.getElementsByTagName("Job");
+		log.info("# of Jobs = " + listOfJobs.getLength());
+        NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
+		log.info("# of JobPairs = " + listOfJobPairs.getLength());
+		
+		String name = "";//name variable to check
+		
+		// Make sure jobs are named
+		for (int i = 0; i < listOfJobs.getLength(); i++){
+			Node jobNode = listOfJobs.item(i);
+			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
+				Element jobElement = (Element)jobNode;
+				name = jobElement.getAttribute("name");
+				if (name == null) {
+					log.debug("Name not found");
+					errorMessage = "Job elements must include a 'name' attribute.";
+					return false;
+				}
+				log.debug("Space Name = " + name);
+				if (name.length()<2){
+					log.debug("Name was not long enough");
+					errorMessage = name + "is not a valid name.  It must have two characters.";
+					return false;
+				}
+				
+			}
+			else{
+				log.warn("Job Node should be an element, but isn't");
+			}
+		}
+		
+		// Verify the user has access to the benchmarks and solvers for the JobPair elements
+		
 		// TODO Create job pairs from an XML configuration file
 		
-		return null;
+		return true;
 	}
 	
 	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
@@ -46,7 +100,6 @@ public class JobUtil {
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
-//			builder.setErrorHandler(new SAXErrorHandler());
 			Document document = builder.parse(file);
 			Validator validator = schema.newValidator();
 			DOMSource source = new DOMSource(document);
@@ -55,8 +108,6 @@ public class JobUtil {
             return true;
         } catch (SAXException ex) {
             log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-            //log.warn("The file located at [" + file.getParentFile().getAbsolutePath() + "] has been removed since an error occured while parsing.");
-            //FileUtils.deleteDirectory(file.getParentFile());
             errorMessage = "File is not valid because: \"" + ex.getMessage() + "\"";
             this.jobCreationSuccess = false;
             return false;

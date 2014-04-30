@@ -96,7 +96,7 @@ public class UploadJobXML extends HttpServlet {
 			Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 			for (File file:uniqueDir.listFiles())
 			{
-				result = jobUtil.createJobFromFile(file, userId, spaceId);		
+				result = jobUtil.createJobsFromFile(file, userId, spaceId);		
 			}
 
 			return jobUtil;
