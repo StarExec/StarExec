@@ -174,7 +174,7 @@ CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
 		SELECT DISTINCT queue_id
 		FROM comm_queue
 		JOIN queues ON comm_queue.queue_id = queues.id
-		WHERE comm_queue.space_id = _spaceId AND queues.status = "ACTIVE";
+		WHERE comm_queue.space_id = _spaceId AND queues.status = "ACTIVE" AND permanent = false;
 	END //
 	
 DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
