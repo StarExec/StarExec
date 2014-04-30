@@ -17,6 +17,9 @@
     	</sequence>
     	
     	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    	<!-- Note: Timeouts are in seconds -->
+    	<attribute name="cpu-timeout" type="int"></attribute>
+    	<attribute name="wallclock-timeout" type="int"></attribute>
     </complexType>
     
     <complexType name="JobPair">
