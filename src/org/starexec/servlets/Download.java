@@ -536,9 +536,9 @@ public class Download extends HttpServlet {
 		/* generate the table header */
 		sb.delete(0, sb.length());
 		if (!returnIds) {
-			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,result");
+			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,max virt (kb),max res (kb),result");
 		} else {
-			sb.append("pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time,wallclock time,result");
+			sb.append("pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time,wallclock time,max virt (kb),max res (kb),result");
 		}
 		
 
@@ -592,13 +592,19 @@ public class Download extends HttpServlet {
 				sb.append(pair.getConfiguration().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getStatus().toString());
+			sb.append(pair.getStatus());
 
 			sb.append(",");
-			sb.append((pair.getCpuTime()));
+			sb.append(pair.getCpuTime());
 
 			sb.append(",");
-			sb.append((pair.getWallclockTime()));
+			sb.append(pair.getWallclockTime());
+
+			sb.append(",");
+			sb.append(pair.getMaxVirtualMemory() / 1028);
+
+			sb.append(",");
+			sb.append(pair.getMaxResidenceSetSize());
 
 			sb.append(",");
 			sb.append(pair.getStarexecResult());
