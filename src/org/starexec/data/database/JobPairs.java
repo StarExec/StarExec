@@ -442,6 +442,46 @@ public class JobPairs {
 
 		return null;
 	}
+	
+	/**
+	 * Gets the path to the output file  for this pair.
+	 * @param pairId The id of the pair to get the filepath for
+	 * @return The string path, or null on failure
+	 * @author Eric Burns
+	 */
+	
+	public static String getLogPath(int pairId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL getJobPairFilePathInfo(?)}");
+			procedure.setInt(1,pairId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				JobPair pair=new JobPair();
+				Solver s= pair.getSolver();
+				s.setName(results.getString("solver_name"));
+				Benchmark b=pair.getBench();
+				b.setName(results.getString("bench_name"));
+				Configuration c=pair.getConfiguration();
+				c.setName(results.getString("config_name"));
+				pair.setJobId(results.getInt("job_id"));
+				pair.setPath(results.getString("path"));
+				return JobPairs.getLogFilePath(pair);
+				
+			}
+		} catch (Exception e) {
+			log.debug("getFilePath says "+e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
 	/**
 	 * Gets the path to the output file  for this pair.
 	 * @param pairId The id of the pair to get the filepath for
@@ -490,7 +530,7 @@ public class JobPairs {
     public static String getJobLog(int pairId) {
     	try {
     		
-    		String logPath = getLogFilePath(JobPairs.getPair(pairId));	
+    		String logPath = JobPairs.getLogPath(pairId);
     	
     		File logFile = new File(logPath);
 
