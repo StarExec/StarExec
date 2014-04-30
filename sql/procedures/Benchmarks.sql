@@ -456,6 +456,8 @@ CREATE PROCEDURE GetRecycledBenchmarkIds(IN _userId INT)
 
 -- Removes all benchmarks in the database that are deleted and also orphaned. Runs periodically.
 -- Author: Eric Burns
+
+-- TODO: This runs too slowly. It needs to be sped up somehow
 DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedBenchmarks;
 CREATE PROCEDURE RemoveDeletedOrphanedBenchmarks()
 	BEGIN

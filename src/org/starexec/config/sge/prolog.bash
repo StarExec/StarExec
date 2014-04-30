@@ -256,4 +256,18 @@ if [ "$JOB_ERROR" = "" ]; then
 	sendStatus $STATUS_RUNNING
 fi
 
+NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
+#first, get half the memory
+NODE_MEM=$(($NODE_MEM/2))
+
+#then, convert kb to mb
+NODE_MEM=$(($NODE_MEM/1024))
+if [ $MAX_MEM -gt $NODE_MEM ]
+then
+MAX_MEM=$NODE_MEM
+
+fi
+
+log "max memory in megabytes = $MAX_MEM"
+
 exit 0
