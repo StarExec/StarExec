@@ -7,5 +7,28 @@
     	</documentation>
     </annotation>
     
+    <element name="Job" type="tns:Job"></element>
+    
+    <complexType name="Job">
+    	<sequence>
+    		<element name="JobPair" type="tns:JobPair" minOccurs="1"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    	
+    	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    </complexType>
+    
+    <complexType name="JobPair">
+    	<attribute name="benchmark-id" type="int" use="required"></attribute>
+    	<attribute name="solver-id" type="int" use="required"></attribute>
+    	<attribute name="configuration-id" type="int" use="required"></attribute>
+    </complexType>
+    
+    <simpleType name="PrimitiveName">
+  		<restriction base="string">
+    		<pattern value="[_\w\-\. ]{1,64}"/>
+  		</restriction>
+	</simpleType>
     
 </schema>
