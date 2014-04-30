@@ -54,17 +54,7 @@ SANDBOX=1;
 
 
 
-NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
-#first, get half the memory
-NODE_MEM=$(($NODE_MEM/2))
 
-#then, convert kb to mb
-NODE_MEM=$(($NODE_MEM/1024))
-if [ $MAX_MEM -gt $NODE_MEM ]
-then
-MAX_MEM=$NODE_MEM
-
-fi
 
 if [ $SANDBOX -eq 1 ]
 then
