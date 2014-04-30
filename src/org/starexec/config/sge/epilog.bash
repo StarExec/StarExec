@@ -116,7 +116,7 @@ grep 'cores:' $WATCHFILE
 # cleared below if no error
 JOB_ERROR="1";
 
-if ( grep 'job error:' $SGE_STDOUT_PATH ) then
+if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
   true 
 elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
   log "epilog detects wall clock time exceeded"

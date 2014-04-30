@@ -248,7 +248,7 @@ verifyWorkspace
 sandboxWorkspace
 
 # Determine if there were errors in the job setup
-JOB_ERROR=`grep 'job error:' $SGE_STDOUT_PATH`
+JOB_ERROR=`grep 'job error:' "$SGE_STDOUT_PATH"`
 
 # If there was no error...
 if [ "$JOB_ERROR" = "" ]; then
