@@ -73,7 +73,7 @@
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				
 				//TODO: I don't think this is right. The primary space is a JOB SPACE, and we just want a space
-				request.setAttribute("queues", Queues.getQueuesForJob(userId, j.getPrimarySpace()));
+				request.setAttribute("queues", Queues.getQueuesForUser(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
 				request.setAttribute("cpu",cpu);
