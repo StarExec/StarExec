@@ -511,6 +511,7 @@ public class JobPairs {
 	public static String getLogFilePath(JobPair pair) {
 		try {
 			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
+			log.debug("trying to find log at path = "+file.getAbsolutePath());
 			String[] pathSpaces=pair.getPath().split("/");
 			for (String space : pathSpaces) {
 				file=new File(file,space);
