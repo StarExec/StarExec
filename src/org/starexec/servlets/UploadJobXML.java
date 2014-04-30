@@ -34,6 +34,7 @@ public class UploadJobXML extends HttpServlet {
 	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);
 	private static final String UPLOAD_FILE = "f";
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	private static final String SPACE_ID = "space";
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -49,9 +50,7 @@ public class UploadJobXML extends HttpServlet {
 					return;
 				} 
 				
-				JobUtil result = this.handleXMLFile(userId, form);				
-			
-				// Note: Inherit users is handled in BatchUtil's createSpaceFromElement(...)
+				JobUtil result = this.handleXMLFile(userId, form);
 				
 				// Redirect based on success/failure
 				if(result.getJobCreationSuccess()) {
@@ -109,7 +108,25 @@ public class UploadJobXML extends HttpServlet {
 	}
 
 	private boolean isValidRequest(HashMap<String, Object> form) {
-		// TODO Implement validation using the batch job schema
+		try {
+			if (!form.containsKey(UploadJobXML.UPLOAD_FILE) ||
+					!form.containsKey(SPACE_ID) ){
+				return false;
+			}
+			
+			Integer.parseInt((String)form.get(SPACE_ID));
+			
+			String fileName = ((FileItem)form.get(UploadJobXML.UPLOAD_FILE)).getName();
+			for(String ext : UploadJobXML.extensions) {
+				if(fileName.endsWith(ext)) {
+					return true;
+				}
+			}			
+			return false;
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+		
 		return false;
 	}
 

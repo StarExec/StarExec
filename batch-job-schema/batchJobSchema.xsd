@@ -7,7 +7,15 @@
     	</documentation>
     </annotation>
     
-    <element name="Job" type="tns:Job"></element>
+    <element name="Jobs" type="tns:Jobs"></element>
+    
+    <complexType name="Jobs">
+    	<sequence>
+    		<element name="Job" type="tns:Job" minOccurs="1" 
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
     
     <complexType name="Job">
     	<sequence>
