@@ -213,6 +213,19 @@
 				<include name="batchSpaceSchema.xsd"/>
 			</fileset>
 		</copy>
+
+		<!-- Update the job schema to use the current server and app -->
+		<delete file="WebContent/public/batchJobSchema.xsd" />
+		<copy todir="WebContent/public/">
+			<fileset dir="batch-job-schema">
+				<include name="batchJobSchema.xsd" />
+			</fileset>
+		</copy>
+		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
