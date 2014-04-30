@@ -42,7 +42,7 @@ public class JobUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			String schemaLoc = "public/batchJobSchema.xsd";
+			String schemaLoc = Util.url("public/batchJobSchema.xsd");
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();

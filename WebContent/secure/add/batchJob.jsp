@@ -10,7 +10,7 @@
 		// Verify this user can add spaces to this space
 		Permission userPerm = SessionUtil.getPermission(request, spaceId);
 		if(userPerm.canAddJob()) {
-			request.setAttribute("space", Spaces.get(spaceId));
+			request.setAttribute("space", Spaces.get(2));
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create jobs here");
 		}
