@@ -107,6 +107,9 @@ public class Communities {
 				procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
 				procedure.setInt(1, results.getInt("community"));
 				results = procedure.executeQuery();
+			} else {
+				log.error("We were unable to find the community for the space ="+id);
+				return null;
 			}
 			
 			if(results.next()){

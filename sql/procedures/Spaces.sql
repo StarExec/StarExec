@@ -171,7 +171,8 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 				JOIN closure ON set_assoc.child_id=closure.ancestor 
 				JOIN spaces ON spaces.id=set_assoc.child_id
 				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
-				WHERE set_assoc.space_id=_spaceId;
+				WHERE set_assoc.space_id=_spaceId
+				ORDER BY name;
 		END IF;
 	END //
 	
@@ -190,7 +191,8 @@ CREATE PROCEDURE GetSubSpacesAdmin(IN _spaceId INT)
 			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM set_assoc
 				JOIN spaces ON spaces.id=set_assoc.child_id
-				WHERE set_assoc.space_id=_spaceId;
+				WHERE set_assoc.space_id=_spaceId
+				ORDER BY name;
 		END IF;
 	END //
 	
