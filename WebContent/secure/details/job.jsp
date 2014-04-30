@@ -290,7 +290,7 @@
 						<button type="button" id="clearCache">clear cache</button>
 					</c:if>
 					
-					<c:if test="${job.userId == userId}"> 
+					<c:if test="${job.userId == userId or isAdmin}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
 						<c:if test="${pairStats.pendingPairs > 0}">
 							<c:if test="${isRunning}">
