@@ -231,6 +231,7 @@ public class UploadSolver extends HttpServlet {
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			
 			if (containsBuildScript(uniqueDir)) {
+				log.debug("the uploaded solver did contain a build script");
 				List<File> authorized=new ArrayList<File>();
 				authorized.add(uniqueDir);
 				String[] command=new String[1];
