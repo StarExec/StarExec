@@ -50,7 +50,7 @@ public class JobPairs {
 			procedure.setString(10,pair.getSolver().getName());
 			procedure.setString(11,pair.getBench().getName());
 			procedure.setInt(12,pair.getSolver().getId());
-			procedure.setLong(13, Util.clamp(1, Util.bytesToMegabytes(R.MAX_PAIR_VMEM), Util.bytesToMegabytes(pair.getMaxMemory())));
+			procedure.setLong(13, pair.getMaxMemory());
 			// The procedure will return the pair's new ID in this parameter
 			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
