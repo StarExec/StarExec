@@ -47,10 +47,19 @@
     </complexType>
 
     <complexType name="Benchmark">
+        <sequence>
+  	  <element name="Attribute" type="tns:Attribute" minOccurs="0" maxOccurs="unbounded">
+    	  </element>
+        </sequence>
     	<attribute name="id" type="int"></attribute>
     	<attribute name="name" type="string" use="optional"></attribute>
     </complexType>
     
+    <complexType name="Attribute">
+    	<attribute name="name" type="string"></attribute>
+    	<attribute name="value" type="string"></attribute>
+    </complexType>
+
     <complexType name="Solver">
     	<attribute name="id" type="int"></attribute>
     	<attribute name="name" type="string" use="optional"></attribute>
