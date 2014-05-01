@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 
 <%		
@@ -9,7 +11,7 @@
 		if (!user.getRole().equals("admin")) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} else {
-			
+			request.setAttribute("isSystemPaused", Jobs.isSystemPaused());
 		}		
 		
 	} catch (NumberFormatException nfe) {
@@ -40,8 +42,12 @@
 	<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
-				<li><button type="button" id="pauseAll">pause all</button></li>
-				<li><button type="button" id="resumeAll">resume all</button></li>
+				<c:if test="${isSystemPaused}">
+					<li><button type="button" id="resumeAll">resume all</button></li>
+				</c:if>
+				<c:if test="${not isSystemPaused}">
+					<li><button type="button" id="pauseAll">pause all</button></li>
+				</c:if>
 			</ul>
 	</fieldset>	
 	<div id="dialog-confirm-pause" title="confirm pause">
