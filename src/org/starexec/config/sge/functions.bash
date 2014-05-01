@@ -66,7 +66,7 @@ function cleanWorkspace {
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
-	rm "$SCRIPT_PATH"
+	rm -f "$SCRIPT_PATH"
 	
 	log "execution host $HOSTNAME cleaned"
 	return $?
