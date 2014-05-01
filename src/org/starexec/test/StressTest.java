@@ -29,8 +29,8 @@ public class StressTest {
 	private static int USER_COUNT=2000;
 	private static int SPACE_COUNT=10000;
 	
-	private static int JOB_SPACE_COUNT=250;
-	private static int JOB_COUNT=10;
+	private static int JOB_SPACE_COUNT=100;
+	private static int JOB_COUNT=4;
 	private static String SOLVER_NAME="CVC4.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
 	
@@ -63,13 +63,13 @@ public class StressTest {
 		Processor postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, Spaces.GetCommunityOfSpace(parentSpaceId));
 		Job job=ResourceLoader.loadJobHierarchyIntoDatabase(parentSpaceId, ownerId, 1, postProc.getId());
 		
-		Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
+		//Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
 		
-		for (JobPair pair : job.getJobPairs()) {
-			writeFakeJobPairOutput(pair);
-			JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
-		}
-		Jobs.resume(job.getId());
+		//for (JobPair pair : job.getJobPairs()) {
+	//		writeFakeJobPairOutput(pair);
+		//	JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	//	}
+	//	Jobs.resume(job.getId());
 		
 		
 		
@@ -167,11 +167,18 @@ public class StressTest {
 		List<Space> spaces=loadSpaces(users,community.getId(), SPACE_COUNT);
 		associateUsers(spaces,users,2,5);
 		List<Solver> solvers=addSolvers(spaces,users,2,3,SOLVER_NAME);
-		String name="aaaaJobSpace";
+		String name=null;
+		for (int x=0;x<1000;x++) {
+			name=TestUtil.getRandomJobName().substring(0,30);
+			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(),spaces.get(0).getId(),name);
+			Job job=StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), 1, SOLVER_NAME, BENCHMARK_NAME);
+		}
+		name="aaaaJobSpace";
 		for (int x=0;x<JOB_COUNT;x++) {
 			name=name+"a";
 			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 			Job job=StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), JOB_SPACE_COUNT, SOLVER_NAME, BENCHMARK_NAME);
 		}
+		
 	}
 }
