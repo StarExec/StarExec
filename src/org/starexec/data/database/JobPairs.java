@@ -37,7 +37,7 @@ public class JobPairs {
 	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
@@ -50,12 +50,13 @@ public class JobPairs {
 			procedure.setString(10,pair.getSolver().getName());
 			procedure.setString(11,pair.getBench().getName());
 			procedure.setInt(12,pair.getSolver().getId());
+			procedure.setLong(13, Util.clamp(1, Util.bytesToMegabytes(R.MAX_PAIR_VMEM), Util.bytesToMegabytes(pair.getMaxMemory())));
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(13));
+			pair.setId(procedure.getInt(14));
 
 			return true;
 		} catch (Exception e) {

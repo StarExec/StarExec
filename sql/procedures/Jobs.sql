@@ -452,10 +452,10 @@ CREATE PROCEDURE ChangeQueue(IN _jobId INT, IN _queueId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), IN _solverId INT, OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), IN _solverId INT, IN _mem BIGINT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName, _solverId);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id, maximum_memory)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName, _solverId, _mem);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 

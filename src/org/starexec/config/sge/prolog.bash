@@ -257,7 +257,7 @@ if [ "$JOB_ERROR" = "" ]; then
 fi
 
 NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
-log "max memory before calculations = $MAX_MEM"
+
 log "node memory in kilobytes =$NODE_MEM"
 #first, get half the memory
 NODE_MEM=$(($NODE_MEM/2))
