@@ -92,11 +92,13 @@ public class CreateJob extends HttpServlet {
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
 		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
+		
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
 		
 		//memory is in units of bytes
 		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
+		log.debug("memoryLimit = 0"+memoryLimit);
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 

@@ -351,6 +351,7 @@ public abstract class JobManager {
 		// Resource limits
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
+		log.debug("the current job pair has a memory = "+pair.getMaxMemory());
 		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.clamp(1, Util.bytesToMegabytes(R.MAX_PAIR_VMEM), Util.bytesToMegabytes(pair.getMaxMemory())));
 		log.debug("The jobscript is: "+jobScript);
 
@@ -603,6 +604,7 @@ public abstract class JobManager {
 					pair.setSolver(clone);
 					pair.setConfiguration(c);
 					pair.setCpuTimeout(cpuTimeout);
+					log.debug("adding a max memory of "+memoryLimit +" bytes to a job pair");
 					pair.setMaxMemory(memoryLimit);
 					pair.setWallclockTimeout(clockTimeout);
 					pair.setSpace(space);
