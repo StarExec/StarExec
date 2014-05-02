@@ -104,9 +104,11 @@ public class Communities {
 			results = procedure.executeQuery();
 			
 			if (results.next()) {
-				procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
-				procedure.setInt(1, results.getInt("community"));
-				results = procedure.executeQuery();
+			    Common.safeClose(procedure);
+			    procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
+			    procedure.setInt(1, results.getInt("community"));
+			    Common.safeClose(results);
+			    results = procedure.executeQuery();
 			} else {
 				log.error("We were unable to find the community for the space ="+id);
 				return null;
@@ -123,6 +125,7 @@ public class Communities {
 				listOfDefaultSettings.set(7,results.getString("maximum_memory"));
 			}
 			else {
+			        Common.safeClose(procedure);
 				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?)}");
 				procedure.setInt(1, id);
 				procedure.setInt(2, 1);

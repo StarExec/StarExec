@@ -747,11 +747,12 @@ public class Requests {
 	public static int getRequestCount() {
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {			
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetQueueRequestCount()}");
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			int reservationCount= 0;
 			if (results.next()) {
 				reservationCount = results.getInt("requestCount");
@@ -761,6 +762,7 @@ public class Requests {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		
@@ -770,11 +772,12 @@ public class Requests {
 	public static int getReservationCount() {
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {			
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetQueueReservationCount()}");
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			int reservationCount= 0;
 			if (results.next()) {
 				reservationCount = results.getInt("reservationCount");
@@ -784,6 +787,7 @@ public class Requests {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		

@@ -87,45 +87,51 @@ public class Cluster {
 		log.debug("Calling GetNodeCount");
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
+		int ret = 0;
 		try {		
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetActiveNodeCount()}");
-			ResultSet results = procedure.executeQuery();	
+			results = procedure.executeQuery();	
 			
 			
-			while(results.next()){
-				return results.getInt("nodeCount");
+			if (results.next()){
+				ret = results.getInt("nodeCount");
 			}						
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}	
-		return 0;
+		return ret;
 	}	
 	
 	public static int getNonPermanentNodeCount() {
 		log.debug("Calling GetNonPermanentNodeCount");
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
+		int ret = 0;
 		try {		
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount(?)}");
 			procedure.setInt(1, Cluster.getDefaultQueueId());
-			ResultSet results = procedure.executeQuery();	
+			results = procedure.executeQuery();	
 			
 			
-			while(results.next()){
-				return results.getInt("nodeCount");
+			if(results.next()){
+				ret = results.getInt("nodeCount");
 			}						
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}	
-		return 0;
+		return ret;
 	}
 	
 	/**
