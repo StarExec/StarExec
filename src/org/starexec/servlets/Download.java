@@ -600,13 +600,13 @@ public class Download extends HttpServlet {
 			sb.append(",");
 			sb.append(pair.getWallclockTime());
 
-			sb.append(",");
+			/*			sb.append(",");
 			sb.append(pair.getMaxVirtualMemory() / 1028);
 
 			sb.append(",");
-			sb.append(pair.getMaxResidenceSetSize());
+			sb.append(pair.getMaxResidenceSetSize()); */
 
-			sb.append(",");
+			sb.append(",-,-,");
 			sb.append(pair.getStarexecResult());
 
 			if (attrNames != null) {
