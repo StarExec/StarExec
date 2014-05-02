@@ -31,7 +31,6 @@ public class Cluster {
 	public static void associateNodes(int queueId, List<Integer> nodeIds) {
 		log.debug("Calling AssociateQueue");
 		Connection con = null;
-		CallableStatement procedure = null;
 		try {		
 			con = Common.getConnection();
 			// Adds the nodes as associated with the queue
@@ -45,7 +44,6 @@ public class Cluster {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}		
 	}
 	
@@ -270,9 +268,9 @@ public class Cluster {
 	public static List<WorkerNode> getUnReservedNodes(Date start, Date end) {
 		Connection con = null;			
 		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			ResultSet results=null;
 
 			log.debug("start = " + start);
 			procedure = con.prepareCall("{CALL GetUnReservedNodes(?, ?)}");
@@ -297,6 +295,7 @@ public class Cluster {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -324,8 +323,6 @@ public class Cluster {
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = null;
 			
 			if(name == null) {
 				// If no name was supplied, apply to all nodes
@@ -419,7 +416,6 @@ public class Cluster {
 	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date, String message) {
 		Connection con = null;			
 		CallableStatement procedure= null;
-		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
@@ -439,7 +435,6 @@ public class Cluster {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		

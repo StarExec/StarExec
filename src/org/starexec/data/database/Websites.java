@@ -110,8 +110,7 @@ public class Websites {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
-			con = Common.getConnection();		
-			 procedure = null;			
+			con = Common.getConnection(); 			
 			
 			switch(webType) {
 				case USER:
@@ -179,7 +178,6 @@ public class Websites {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = null;
 			
 			switch(webType) {
 				case USER:

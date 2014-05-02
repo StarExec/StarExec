@@ -2367,6 +2367,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;

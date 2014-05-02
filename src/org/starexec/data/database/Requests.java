@@ -388,13 +388,14 @@ public class Requests {
 			Common.safeClose(con);
 			Common.safeClose(procedureAddHistory);
 			Common.safeClose(procedureDelete);
+			Common.safeClose(procedureRemoveReservation);
 		}
 	}
 	
 	public static List<QueueRequest> getAllQueueReservations() {
 		Connection con = null;
 		CallableStatement procedure = null;
-		ResultSet results;
+		ResultSet results = null;
 		
 		try {
 			con = Common.getConnection();
@@ -427,6 +428,7 @@ public class Requests {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -511,11 +513,12 @@ public class Requests {
 	public static int getCommunityRequestCount() {
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {			
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityRequestCount()}");
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			int reservationCount= 0;
 			if (results.next()) {
 				reservationCount = results.getInt("requestCount");
@@ -525,6 +528,7 @@ public class Requests {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		

@@ -117,7 +117,6 @@ public class Solvers {
 	 */
 	public static int addConfiguration(Solver s, Configuration c) {
 		Connection con = null;
-		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			c.setSolverId(s.getId());
@@ -135,7 +134,6 @@ public class Solvers {
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}		
 		
 		return -1;

@@ -525,7 +525,6 @@ public class Jobs {
 				j.setCreateTime(results.getTimestamp("created"));					
 				jobs.add(j);				
 			}			
-			Common.safeClose(results);			
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -597,7 +596,6 @@ public class Jobs {
 			if (results.next()) {
 				jobCount = results.getInt("jobCount");
 			}
-			Common.safeClose(results);
 			return jobCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -631,7 +629,6 @@ public class Jobs {
 			if (results.next()) {
 				jobCount = results.getInt("jobCount");
 			}
-			Common.safeClose(results);
 			return jobCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -1232,7 +1229,6 @@ public class Jobs {
 				solver.addConfiguration(config);
 				jobPairs.add(jp);		
 			}	
-			Common.safeClose(results);
 			
 			return jobPairs;
 		} catch (Exception e){			
@@ -1515,7 +1511,6 @@ public class Jobs {
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
-			Common.safeClose(results);
 			return jobs;
 		} catch (Exception e){			
 			log.error("getJobsForNextPageSays " + e.getMessage(), e);
@@ -2205,7 +2200,6 @@ public class Jobs {
 			while(results.next()){
 				ids.add(results.getInt("sge_id"));
 			}	
-			Common.safeClose(results);
 			
 			return ids;
 		} catch (Exception e){			
@@ -2970,6 +2964,7 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error("ResumeAll says "+e.getMessage(),e);
 		} finally {
+			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		return false;
@@ -3015,6 +3010,7 @@ public class Jobs {
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		return false;
 	}

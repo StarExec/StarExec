@@ -206,7 +206,6 @@ public class Permissions {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
 			procedure.setInt(1, solverId);					
 			procedure.setInt(2, userId);
