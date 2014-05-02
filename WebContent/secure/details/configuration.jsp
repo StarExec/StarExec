@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -24,10 +24,12 @@ try {
 		
 		// Ensure the configuration file exists on disk before assigning attributes
 		if(configFile.exists()){
+			con.setDescription(GeneralSecurity.getHTMLSafeString(con.getDescription()));
+			String contents=GeneralSecurity.getHTMLSafeString(FileUtils.readFileToString(configFile));
 			request.setAttribute("ownerId", solver.getUserId());
 			request.setAttribute("config", con);
 			request.setAttribute("solver", solver);
-			request.setAttribute("contents", FileUtils.readFileToString(configFile));
+			request.setAttribute("contents", contents);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "the configuration file path points to a location that does not exist on disk");
 		}
@@ -35,6 +37,7 @@ try {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "the configuration does not exist or is restricted");
 	}
 } catch (Exception e) {
+	e.printStackTrace();
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 }
 %>

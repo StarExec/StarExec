@@ -52,7 +52,7 @@ public class SingleJobPair extends HttpServlet {
     private Integer postProcessorId = 0;
     private Integer cpuLimit = R.PUBLIC_CPU_LIMIT;
     private Integer clockTimeout = R.PUBLIC_CLOCK_TIMEOUT;
-    
+    private long maxMemory=R.MAX_PAIR_VMEM;
     
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -152,12 +152,11 @@ public class SingleJobPair extends HttpServlet {
 				solverIds.add(solverId);
 				List<Integer> configIds = Solvers.getDefaultConfigForSolver(solverId);
 				
-				HashMap<Integer, String> SP = new HashMap<Integer, String>();
-				SP.put(R.PUBLIC_SPACE_ID, Spaces.get(R.PUBLIC_SPACE_ID).getName());
-				Spaces.spacePathCreate(R.PUBLIC_USER_ID, Spaces.getSubSpaces(R.PUBLIC_SPACE_ID, R.PUBLIC_USER_ID, true), SP, R.PUBLIC_SPACE_ID);
+				
+				HashMap<Integer, String> SP = Spaces.spacePathCreate(R.PUBLIC_USER_ID, Spaces.getSubSpaceHierarchy(R.PUBLIC_SPACE_ID, R.PUBLIC_USER_ID), Spaces.get(R.PUBLIC_SPACE_ID).getId());
 				log.debug("HASHMAP = " + SP);
 				
-				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID, SP);
+				JobManager.buildJob(j, R.PUBLIC_USER_ID, cpuLimit, clockTimeout, maxMemory, benchmarkIds, solverIds, configIds, R.PUBLIC_SPACE_ID, SP);
 				if (!Jobs.add(j, R.PUBLIC_SPACE_ID))
 				    return -1;
 				return j.getId();

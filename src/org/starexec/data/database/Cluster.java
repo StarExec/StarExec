@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
@@ -32,7 +31,6 @@ public class Cluster {
 	public static void associateNodes(int queueId, List<Integer> nodeIds) {
 		log.debug("Calling AssociateQueue");
 		Connection con = null;
-		CallableStatement procedure = null;
 		try {		
 			con = Common.getConnection();
 			// Adds the nodes as associated with the queue
@@ -46,7 +44,6 @@ public class Cluster {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}		
 	}
 	
@@ -90,44 +87,51 @@ public class Cluster {
 		log.debug("Calling GetNodeCount");
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
+		int ret = 0;
 		try {		
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetActiveNodeCount()}");
-			ResultSet results = procedure.executeQuery();	
+			results = procedure.executeQuery();	
 			
 			
-			while(results.next()){
-				return results.getInt("nodeCount");
+			if (results.next()){
+				ret = results.getInt("nodeCount");
 			}						
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}	
-		return 0;
+		return ret;
 	}	
 	
 	public static int getNonPermanentNodeCount() {
 		log.debug("Calling GetNonPermanentNodeCount");
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results = null;
+		int ret = 0;
 		try {		
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount()}");
-			ResultSet results = procedure.executeQuery();	
+			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount(?)}");
+			procedure.setInt(1, Cluster.getDefaultQueueId());
+			results = procedure.executeQuery();	
 			
 			
-			while(results.next()){
-				return results.getInt("nodeCount");
+			if(results.next()){
+				ret = results.getInt("nodeCount");
 			}						
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}	
-		return 0;
+		return ret;
 	}
 	
 	/**
@@ -270,9 +274,9 @@ public class Cluster {
 	public static List<WorkerNode> getUnReservedNodes(Date start, Date end) {
 		Connection con = null;			
 		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			ResultSet results=null;
 
 			log.debug("start = " + start);
 			procedure = con.prepareCall("{CALL GetUnReservedNodes(?, ?)}");
@@ -297,6 +301,7 @@ public class Cluster {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return null;
@@ -324,8 +329,6 @@ public class Cluster {
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = null;
 			
 			if(name == null) {
 				// If no name was supplied, apply to all nodes
@@ -416,21 +419,20 @@ public class Cluster {
 	}
 	
 
-	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date) {
+	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date, String message) {
 		Connection con = null;			
 		CallableStatement procedure= null;
-		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
 		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
-			
-			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?)}");
+			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?,?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, queueId);
 			procedure.setInt(3, nodeCount);
 			procedure.setDate(4, sqlDate);
+			procedure.setString(5, message);
 			procedure.executeUpdate();
 
 			log.debug("successfully updated NodeCount for queue " + queueId);
@@ -439,7 +441,6 @@ public class Cluster {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		
@@ -447,7 +448,7 @@ public class Cluster {
 	}
 
 
-	public static Boolean reserveNodes(int space_id, int queue_id, Date start, Date end) {
+	public static Boolean reserveNodes(int space_id, int queue_id, Date start, Date end, String message) {
 			
 		//Get all the dates between these two dates
 	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
@@ -469,7 +470,7 @@ public class Cluster {
 			String shortQueueName = split[0];
 			int node_count = Requests.GetNodeCountOnDate(shortQueueName, utilDate);
 			
-		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate);
+		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate, message);
 		    if (!result) {
 		    	return false;
 		    }
@@ -504,10 +505,13 @@ public class Cluster {
 		log.debug("queueName = " + queueName);
 		log.debug("value = " + value);
 		log.debug("reserve_date = " + reserve_date);
-		Date earliestEndDate = Requests.getEarliestEndDate();
+		Date earliestEndDate = Requests.getEarliestEndDate(reserve_date);
+		log.debug("earliest end date = " + earliestEndDate);
 		if (earliestEndDate == null) {
 			earliestEndDate = reserve_date;
 		}
+		log.debug("earliest end date = " + earliestEndDate);
+
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -529,6 +533,7 @@ public class Cluster {
 				
 			    if (dates != null) {
 					for (java.util.Date d : dates) {
+						log.debug("date = " + d);
 					    java.sql.Date sqlDate = new java.sql.Date(d.getTime());
 						procedure = con.prepareCall("{CALL AddTempNodeChange(?,?,?,?)}");
 						procedure.setInt(1, spaceId);
@@ -628,18 +633,42 @@ public class Cluster {
 	public static boolean updateTempChanges() {
 		List<QueueRequest> temp_changes = Cluster.getTempChanges();
 		boolean success = true;
-		for (QueueRequest req : temp_changes) {
-			int queueId = Queues.getIdByName(req.getQueueName());
-			log.debug("spaceId = " + req.getSpaceId());
-			log.debug("nodeCount = " + req.getNodeCount());
-			log.debug("queueId = " + queueId);
-			log.debug("startDate = " + req.getStartDate());
-			success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate());
-			if (! success) {
-				break;
+		if (temp_changes != null) {
+			for (QueueRequest req : temp_changes) {
+				int queueId = Queues.getIdByName(req.getQueueName());
+				if (queueId == -2) { queueId = Queues.getIdByName(req.getQueueName() + ".q"); } //if its a new queue
+
+				success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), "");
+				if (! success) {
+					break;
+				}
 			}
 		}
+		
+		if (success) { success = Cluster.removeEmptyNodeCounts(); }
+		
 		return success ? true : false;
+	}
+
+
+	private static boolean removeEmptyNodeCounts() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {			
+			con = Common.getConnection();	
+			
+			procedure = con.prepareCall("{CALL RemoveEmptyNodeCounts()}");	
+			
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("RemoveEmptyNodeCounts() says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}			
+		return false;
 	}
 
 
@@ -793,6 +822,36 @@ public class Cluster {
 		return null;
 	}
 	
+	public static List<WorkerNode> getNonAttachedNodes(int queueId) {
+		log.debug("Starting getNonAttachedNodes...");
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL GetNonAttachedNodes(?)}");
+			procedure.setInt(1, queueId);
+			results = procedure.executeQuery();
+			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			while (results.next()){
+				WorkerNode n = new WorkerNode();
+				n.setId(results.getInt("id"));
+				n.setName(results.getString("name"));
+				n.setStatus(results.getString("status"));
+				nodes.add(n);
+			}
+			return nodes;
+		} catch (Exception e) {
+			log.error("GetAllNodes says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
 	public static List<WorkerNode> getAllNonPermanentNodes() {
 		log.debug("Starting getAllNonPermanentNodes...");
 		Connection con = null;
@@ -897,5 +956,66 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return null;
+	}
+	
+	public static int getDefaultQueueId() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetDefaultQueueId(?)}");
+			procedure.setString(1, R.DEFAULT_QUEUE_NAME);
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("id");
+			}
+			
+			return -1;
+			
+		} catch (Exception e) {
+			log.error("GetDefaultQueueId says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+	}
+
+
+	public static boolean setPermQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
+		log.debug("SetPermQueueCommunityAccess beginning...");
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			if (community_ids != null) {
+				for (int id : community_ids) {
+					procedure = con.prepareCall("{CALL SetPermQueueCommunityAccess(?, ?)}");
+					procedure.setInt(1, id);
+					procedure.setInt(2, queue_id);
+					
+					procedure.executeUpdate();
+				}
+			}
+			
+			Common.endTransaction(con);
+			
+			return true;
+			
+		} catch (Exception e) {
+			log.error("SetPermQueueCommunityAccess says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+		
 	}
 }

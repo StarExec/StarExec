@@ -2,19 +2,11 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,22 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.GridEngineUtil;
-import org.starexec.util.Mail;
-import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 
 /**
@@ -89,19 +71,15 @@ public class MoveNodes extends HttpServlet {
 		
 		GridEngineUtil.moveNodes(req, NQ);
 		
-		//TODO: reduce the count of reservations for nodes that were removed from reservations
 		Collection<Queue> queues = NQ.values();
 		for (Queue q : queues) {
 			// if the queue is not all.q and it is not a permanent queue
 			// i.e. it is a reserved queue
-			if (q.getId() != 1 && !q.getPermanent()) {
-				//TODO: reduce the count of the reservation
-				Requests.DecreaseNodeCount(q.getId());
+			if (!q.getName().equals(R.DEFAULT_QUEUE_NAME) && !q.getPermanent()) {
+				Requests.DecreaseNodeCount(q.getId()); // decrease the node count of the reservation by 1
 			}
 		}
 		
-		//DatabaseChanges
-		//boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name));
 		response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 		}
 	}

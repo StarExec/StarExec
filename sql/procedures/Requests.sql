@@ -203,30 +203,6 @@ CREATE PROCEDURE GetCommunityRequestCount()
 		FROM community_requests;
 	END //
 	
--- Gets the next page of data table for queue reservation requests
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfPendingQueueRequests;
-CREATE PROCEDURE GetNextPageOfPendingQueueRequests(IN _startingRecord INT, IN _recordsPerPage INT)
-	BEGIN
-		SELECT 	user_id, 
-				space_id, 
-				queue_name,
-				MAX(node_count),
-				MIN(reserve_date),
-				MAX(reserve_date),
-				message,
-				code,
-				created
-		FROM	queue_request
-		GROUP BY user_id, space_id, queue_name
-		ORDER BY 
-			created
-		 ASC
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
-	END //
-	
 -- Gets the number of queue reservations
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetQueueReservationCount;
@@ -236,17 +212,13 @@ CREATE PROCEDURE GetQueueReservationCount()
 		FROM comm_queue;
 	END //
 	
--- Gets the next page of data table for queue reservations
+-- Gets the number of historic queue reservations
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfQueueReservations;
-CREATE PROCEDURE GetNextPageOfQueueReservations(IN _startingRecord INT, IN _recordsPerPage INT)
+DROP PROCEDURE IF EXISTS GetHistoricReservationCount;
+CREATE PROCEDURE GetHistoricReservationCount()
 	BEGIN
-		SELECT 	space_id, queue_id, node_count, MIN(reserve_date), MAX(reserve_date)
-		FROM	queue_reserved
-		GROUP BY space_id, queue_id
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
+		SELECT count(*) AS reservationCount
+		FROM reservation_history;
 	END //
 	
 -- Deletes a queue reservation by removing it from comm_queue table
@@ -259,25 +231,6 @@ CREATE PROCEDURE CancelQueueReservation(IN _queueId INT)
 		
 		DELETE FROM queue_reserved
 		WHERE queue_id = _queueId;
-	END //
-
--- Gets the next page of data table for community requests
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfPendingCommunityRequests;
-CREATE PROCEDURE GetNextPageOfPendingCommunityRequests(IN _startingRecord INT, IN _recordsPerPage INT)
-	BEGIN
-		SELECT 	user_id, 
-				community, 
-				code,
-				message,
-				created
-		FROM	community_requests
-		ORDER BY 
-			created
-		 ASC
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
 	END //
 	
 -- Updates the queue name of a queue_request
@@ -350,7 +303,7 @@ CREATE PROCEDURE UpdateEndDateToEarlierDate(IN _code VARCHAR(36), IN _startDate 
 DROP PROCEDURE IF EXISTS GetAllQueueReservations;
 CREATE PROCEDURE GetAllQueueReservations()
 	BEGIN
-		SELECT space_id, queue_id, MIN(node_count), MAX(node_count), MIN(reserve_date), MAX(reserve_date)
+		SELECT space_id, queue_id, MIN(node_count), MAX(node_count), MIN(reserve_date), MAX(reserve_date), message
 		FROM queue_reserved
 		GROUP BY space_id, queue_id;
 	END //
@@ -358,10 +311,10 @@ CREATE PROCEDURE GetAllQueueReservations()
 -- Adds an entry into reservation_history table
 -- Author: Wyatt Kaiser	
 DROP PROCEDURE IF EXISTS AddReservationToHistory;
-CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE)
+CREATE PROCEDURE AddReservationToHistory(IN _spaceId INT, IN _queueName VARCHAR(64), IN _nodeCount INT, IN _startDate DATE, IN _endDate DATE, IN message TEXT)
 	BEGIN
 		INSERT INTO reservation_history
-		VALUES (_spaceId, _queueId, _nodeCount, _startDate, _endDate);
+		VALUES (_spaceId, _queueName, _nodeCount, _startDate, _endDate, message);
 	END //
 	
 -- Returns the nodeCount for a particular queue request on a particular date
@@ -397,7 +350,7 @@ CREATE PROCEDURE GetQueueRequestSpaceId ( IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetQueueRequestForReservation;
 CREATE PROCEDURE GetQueueRequestForReservation( IN _queueId INT)
 	BEGIN
-		SELECT space_id, queue_id, MAX(node_count), MIN(reserve_date), MAX(reserve_date)
+		SELECT space_id, queue_id, MAX(node_count), MIN(reserve_date), MAX(reserve_date), message
 		FROM queue_reserved
 		WHERE queue_id = _queueId;
 	END //
@@ -405,12 +358,13 @@ CREATE PROCEDURE GetQueueRequestForReservation( IN _queueId INT)
 -- Gets the earliest end date of all reserved queues
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetEarliestEndDate;
-CREATE PROCEDURE GetEarliestEndDate()
+CREATE PROCEDURE GetEarliestEndDate(IN _date DATE)
 	BEGIN
 		SELECT min(endDate)
 		FROM (
 			SELECT MAX(reserve_date) AS endDate
 			FROM queue_reserved
+			WHERE reserve_date >= _date
 			GROUP BY queue_id
 		) AS allEndDates;
 	END //
@@ -429,7 +383,8 @@ CREATE PROCEDURE DecreaseNodeCount(IN _queueId INT)
 	BEGIN
 		UPDATE queue_reserved
 		SET node_count = node_count - 1
-		WHERE queue_id = _queueId;
+		WHERE queue_id = _queueId
+		AND node_count > 0;
 	END //
 	
 	

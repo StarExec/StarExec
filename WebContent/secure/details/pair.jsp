@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -15,9 +15,13 @@
 			Job j = Jobs.getShallow(jp.getJobId());
 			
 			User u = Users.get(j.getUserId());
+			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,100));
+			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
+			request.setAttribute("output",output);
+			request.setAttribute("log",log);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to view this job pair");
 		}
@@ -199,14 +203,14 @@
 	
 	<fieldset id="fieldOutput">		
 			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
-			<textarea class=contentTextarea id="jpStdout" readonly="readonly"></textarea>	
+			<textarea class=contentTextarea id="jpStdout" readonly="readonly">${output}</textarea>	
 			<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">output may be truncated. 'popout' for the full output.</p>
 	</fieldset>
 	
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			
-		<textarea class=contentTextarea id="jpLog" readonly="readonly"></textarea>
+		<textarea class=contentTextarea id="jpLog" readonly="readonly">${log}</textarea>
 		<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
 	</fieldset>
 	<fieldset id="fieldActions">

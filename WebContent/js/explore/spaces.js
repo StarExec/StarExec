@@ -58,6 +58,7 @@ function initDialogs() {
 	$( "#dialog-confirm-copy" ).hide();
 	$( "#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
+	$( "#dialog-warning").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -161,6 +162,42 @@ function initButtonUI() {
 				},
 				"cancel": function() {
 					log('user canceled making public action');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$('#clearCache').button( {
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	});
+	
+	$("#clearCache").click(function(){
+		
+		$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
+		$("#dialog-warning").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'clear cache': function() {
+					$(this).dialog("close");
+					$(".cacheType").each(function() {
+						type=$(this).attr("value");
+						$.post(
+								starexecRoot+"services/cache/clear/"+spaceId+"/"+type,
+								function(returnCode) {
+									if (returnCode<0) {
+										showMessage('error',"There was an error clearing the cache for this item",5000);
+									}
+
+						});	
+					});
+						
+				},
+				"cancel": function() {
 					$(this).dialog("close");
 				}
 			}
@@ -1716,7 +1753,7 @@ function initDataTables(){
 
 
 	// Set all fieldsets as expandable (except for action fieldset)
-	$('fieldset:not(:#actions)').expandable(true);
+	$('fieldset:not(#actions)').expandable(true);
 
 	// Set the DataTable filters to only query the server when the user finishes typing
 	jobTable.fnFilterOnDoneTyping();
@@ -2002,9 +2039,11 @@ function checkPermissions(perms, id) {
 	}
 
 	if(perms.addJob) {
-		$('#addJob').fadeIn('fast');		
+		$('#addJob').fadeIn('fast');
+		$('#uploadJobXML').fadeIn('fast');
 	} else {
 		$('#addJob').fadeOut('fast');
+		$('#uploadJobXML').fadeOut('fast');
 	}
 
 
@@ -2038,7 +2077,7 @@ function updateButtonIds(id) {
 		destroyOnReturn(token);
 	});
 	
-	
+	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
 	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		

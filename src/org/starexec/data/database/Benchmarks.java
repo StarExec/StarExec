@@ -14,15 +14,16 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -33,8 +34,6 @@ import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.util.ArchiveUtil;
 import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -82,12 +81,23 @@ public class Benchmarks {
 
 			} finally {
 				Common.safeClose(con);
-				Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			}
 		} else {
 			log.debug("Add called on invalid benchmark, no additions will be made to the database");
 		}
 		return -1;
+	}
+	
+	
+	public static boolean recycleAllOwnedByUser(Collection<Benchmark> benchmarks, int userId) {
+		boolean success=true;
+		for (Benchmark b : benchmarks) {
+			if (b.getUserId()==userId) {
+				success=success && Benchmarks.recycle(b.getId());
+			}
+		}
+		return success;
 	}
 
 	
@@ -186,10 +196,10 @@ public class Benchmarks {
 	 * we are not introducing benchmark dependencies.
 	 * @param benchmarks The list of benchmarks to add
 	 * @param spaceId The space the benchmarks will belong to
-	 * @return True if the operation was a success, false otherwise
+	 * @return A list of IDs of the new benchmarks if true, and null otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean add(List<Benchmark> benchmarks, int spaceId, int statusId) {
+	public static List<Integer> add(List<Benchmark> benchmarks, int spaceId, int statusId) {
 		log.info("adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
@@ -207,11 +217,9 @@ public class Benchmarks {
 				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
 
 				// Next add them to the database (must happen AFTER they are processed);
-				//Benchmarks.add(con, benchmarks, spaceId);		
-				Benchmarks.addNoCon(benchmarks, spaceId, statusId);
-				//Common.endTransaction(con);
+				return Benchmarks.addNoCon(benchmarks, spaceId, statusId);
 
-				return true;
+				
 			} catch (Exception e){			
 				log.error(e.getMessage(), e);
 				Common.doRollback(con);
@@ -222,9 +230,9 @@ public class Benchmarks {
 		else
 		{
 			log.info("No benchmarks to add here for space " + spaceId);
-			return true;
+			return new ArrayList<Integer>();
 		}
-		return false;
+		return null;
 	}
 
 	
@@ -371,10 +379,12 @@ public class Benchmarks {
 	}	
 
 	
-	protected static void addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
+	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
+		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {
-			if(Benchmarks.add(b, spaceId)<0) {
+			int id=Benchmarks.add(b, spaceId);
+			if(id<0) {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setErrorMessage(statusId, message);
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
@@ -382,9 +392,11 @@ public class Benchmarks {
 			}
 			else{
 				Uploads.incrementCompletedBenchmarks(statusId);
+				benchmarkIds.add(id);
 			}
-		}		
+		}	
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+		return benchmarkIds;
 	}
 
 	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, Integer statusId) throws Exception {		
@@ -416,7 +428,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		if (benchmarks.size()>0){
 			try {			
@@ -442,8 +454,12 @@ public class Benchmarks {
 				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
 				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
-				Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
-				return true;
+				List<Benchmark> benches=Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
+				List<Integer> ids=new ArrayList<Integer>();
+				for (Benchmark b : benches) {
+					ids.add(b.getId());
+				}
+				return ids;
 			} catch (Exception e){			
 				log.error("Need to roll back - addWithDeps says" + e.getMessage(), e);
 				Common.doRollback(con);
@@ -454,9 +470,9 @@ public class Benchmarks {
 		else
 		{
 			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
-			return true;
+			return new ArrayList<Integer>();
 		}
-		return false;
+		return null;
 	}
 	/**
 	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
@@ -467,10 +483,10 @@ public class Benchmarks {
 	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param userId the user's Id
-	 * @return True if the operation was a success, false otherwise
+	 * @return A list of the IDs of the new benchmarks on success, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		Connection con = null;			
 		log.info("Going to add " + benchmarks.size() + "benchmarks (with dependencies) to space " + spaceId);
 		try {			
@@ -478,11 +494,11 @@ public class Benchmarks {
 
 			Common.beginTransaction(con);
 
-			Boolean value = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
+			List<Integer> values = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
 
 			Common.endTransaction(con);
 
-			return value;
+			return values;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
@@ -490,7 +506,7 @@ public class Benchmarks {
 			Common.safeClose(con);
 		}
 
-		return false;
+		return null;
 	}	
 
 	/**
@@ -516,7 +532,7 @@ public class Benchmarks {
 			}			
 
 			Common.endTransaction(con);
-			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -575,7 +591,7 @@ public class Benchmarks {
 		}
 		return true;
 	}
-
+	//TODO: Is it secure to run benchmark processors in this way?
 	/**
 	 * Given a set of benchmarks and a processor, this method runs each benchmark through
 	 * the processor and adds a hashmap of attributes to the benchmark that are given from
@@ -665,6 +681,14 @@ public class Benchmarks {
 		}
 		return false;
 	}
+	
+	public static List<Integer> copyBenchmarks(List<Benchmark> benchmarks,int userId, int spaceId) {
+		List<Integer> ids=new ArrayList<Integer>();
+		for (Benchmark b : benchmarks) {
+			ids.add(copyBenchmark(b,userId,spaceId));
+		}
+		return ids;
+	}
 
 	/**
 	 * Makes a deep copy of an existing benchmark, gives it a new user, and places it
@@ -739,7 +763,7 @@ public class Benchmarks {
 		
 		try {
 			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL SetBenchmarkToDeletedById(?, ?)}");
@@ -1030,6 +1054,10 @@ public class Benchmarks {
 		return get(benchIds,false);
 	}
 	
+	public static boolean isTestBenchmark(int benchId) {
+		return Users.isTestUser(Benchmarks.get(benchId).getUserId());
+	}
+	
 	/**
 	 * @param benchIds A list of ids to get benchmarks for
 	 * @return A list of benchmark object representing the benchmarks with the given IDs
@@ -1061,6 +1089,48 @@ public class Benchmarks {
 		return null;
 	}	
 
+	/**
+	 * Returns a list of benchmarks owned by a given user
+	 * 
+	 * @param userId the id of the user who is the owner of the benchmarks we are to retrieve
+	 * @return a list of benchmarks owned by a given user, may be empty
+	 * @author Todd Elvers
+	 */
+	public static List<Benchmark> getByOwner(int userId) {
+		Connection con = null;			
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
+			procedure.setInt(1, userId);					
+			 results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			
+			
+			while(results.next()){
+				Benchmark b = resultToBenchmark(results,"");
+				// Add benchmark object to list
+				benchmarks.add(b);
+			}			
+			
+			log.debug(String.format("%d benchmarks were returned as being owned by user %d.", benchmarks.size(), userId));
+			
+			return benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
+		return null;
+	}
+	
+	
+	
 	/**
 	 * Gets the IDs of every space that is associated with the given benchmark
 	 * @param benchId The benchmark in question
@@ -1463,7 +1533,7 @@ public class Benchmarks {
 	/**
 	 * Retrieves the contents of a benchmark file from disk as a string
 	 * @param b The benchmark to get the contents of (must have a valid path)
-	 * @param limit the maximum number of lines to return
+	 * @param limit the maximum number of lines to return, or no limit if less than 0
 	 * @return The file contents as a string
 	 */
 	public static String getContents(Benchmark b, int limit) {
@@ -1986,13 +2056,13 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean setRecycledState(int id, boolean state){
+	private static boolean setRecycledState(int id, boolean state){
 		Connection con = null;			
 		CallableStatement procedure=null;
 		
 		try {
 			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetBenchmarkRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -2034,7 +2104,7 @@ public class Benchmarks {
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
 			//invalidate the cache of every space associated with this benchmark
 			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateCache(id, CacheType.CACHE_BENCHMARK);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2240,7 +2310,7 @@ public class Benchmarks {
 				}	
 			}
 			if (hierarchy) {
-				List<Space> spaces=Spaces.getSubSpaces(spaceId, userId, true);
+				List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
 				for (Space s : spaces) {
 					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId);
 				}

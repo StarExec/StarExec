@@ -13,7 +13,6 @@ import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
-import org.starexec.data.database.Queues;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;
@@ -291,6 +290,19 @@ public class Mail {
 		Mail.mail(email, "STAREXEC - Reservation for queue " + req.getQueueName() + " has ended", new String[] { user.getEmail() });
 		
 		Log.info(String.format("Notification email sent to user [%s] - their request to reserve queue %s for space %s was approved", user.getFullName(), req.getQueueName(), Spaces.getName((req.getSpaceId()))));
+	}
+	
+	public static void sendPassword(User user, String password) throws IOException {
+    	
+		// Configure pre-built message
+		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/new_user_password.txt"));
+		email = email.replace("$$USER$$", user.getFullName());
+		email = email.replace("$$PASS$$", password);
+		
+		// Send email
+		Mail.mail(email, "STAREXEC - new user password", new String[] { user.getEmail() });
+		
+		log.info(String.format("Password reset email sent to user [%s].", user.getFullName()));
 	}
     
     

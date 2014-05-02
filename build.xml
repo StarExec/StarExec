@@ -18,6 +18,8 @@
 	<property name="build-dir" value="build" />
 	<property name="class-dir" value="${build-dir}/classes" />		
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
+	<property name="esapi-dir" value="${class-dir}/esapi"/>
+	<property name="resource-dir" value="${class-dir}/org/starexec/test/resources" />
 	<property name="web-inf" value="WebContent/WEB-INF" />		
 	<property name="meta-inf" value="WebContent/META-INF" />		
 	<property name="starcom-base" value="${source-dir}/org/starexec/command"/>
@@ -111,9 +113,20 @@
 			<fileset dir="${source-dir}/org/starexec/config">
 				<include name="**/*" />
 			</fileset>
-		</copy>		
-		
-	
+		</copy>
+		<!--Copy over the resources directory from source to classes -->
+		<mkdir dir="${resource-dir}" />
+		<copy todir="${resource-dir}">
+			<fileset dir="${source-dir}/org/starexec/test/resources">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+	        <mkdir dir="${esapi-dir}" />
+	        <copy todir="${esapi-dir}">
+			<fileset dir="${source-dir}/esapi">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
                 <!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
                 <copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
@@ -166,6 +179,53 @@
 		<replaceregexp file="deployed-sql/NewInstall.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
 		<replaceregexp file="deployed-sql/NewInstall.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
 		
+		<!-- Copy over files to upload for testing purposes. -->
+		<delete dir="deployed-upload-test" />
+		<mkdir dir="deployed-upload-test" />
+		<copy todir="deployed-upload-test">
+			<fileset dir="upload-test">
+				<include name="**/*" />
+			</fileset>
+			<fileset dir="${starcom-build}">
+				<include name="StarexecCommand.jar" />
+			</fileset>
+		</copy>
+
+		<!-- Update the upload commands to use the correct app -->
+		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/" 
+				replace="login addr=https://${server-name}/${appname}/" byline="false" />
+		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
+
+		<!-- Update the schema to use the currect server and app -->
+		<delete file="WebContent/public/batchSpaceSchema.xsd" />
+		<copy todir="WebContent/public/">
+			<fileset dir="batch-space-schema">
+				<include name="batchSpaceSchema.xsd" />
+			</fileset>
+		</copy>
+		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+
+		<copy todir="starexec_res/batch/">
+			<fileset dir ="WebContent/public/">
+				<include name="batchSpaceSchema.xsd"/>
+			</fileset>
+		</copy>
+
+		<!-- Update the job schema to use the current server and app -->
+		<delete file="WebContent/public/batchJobSchema.xsd" />
+		<copy todir="WebContent/public/">
+			<fileset dir="batch-job-schema">
+				<include name="batchJobSchema.xsd" />
+			</fileset>
+		</copy>
+		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>

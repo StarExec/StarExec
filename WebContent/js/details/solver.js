@@ -26,6 +26,11 @@ function initUI(){
 		icons: {
 			secondary: "ui-icon-arrowthick-1-s"
     }});
+	$('#clearCache').button( {
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	});
 	$('#fieldSites').expandable(true);
 	$('#actions').expandable(true);
 	
@@ -73,7 +78,42 @@ function initUI(){
 	}
 }
 
+
 function attachButtonActions() {
+	$("#clearCache").click(function(){
+		
+		$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
+		$("#dialog-warning").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'clear cache': function() {
+					$(this).dialog("close");
+					$(".cacheType").each(function() {
+						id=$("#solverId").attr("value");
+						type=$(this).attr("value");
+						$.post(
+								starexecRoot+"services/cache/clear/"+id+"/"+type,
+								function(returnCode) {
+									if (returnCode<0) {
+										showMessage('error',"There was an error clearing the cache for this item",5000);
+									}
+						});
+					});
+								
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+		
+		
+		
+		
+		
+	});
 	$("#downLink3").click(function(){
 		$('#dialog-confirm-copy-txt').text('How would you like to download the solver?');		
 		$('#dialog-confirm-copy').dialog({

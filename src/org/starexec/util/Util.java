@@ -33,7 +33,18 @@ import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cache;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 
 public class Util {	
 	private static final Logger log = Logger.getLogger(Util.class);
@@ -88,6 +99,16 @@ public class Util {
 		
 		return null;
 	}
+	/**
+	 * Determines whether we are currently running on production.
+	 * @return
+	 */
+	public static boolean isProduction() {
+		if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
+			return true; 
+		}
+		return false;
+	}
 	
 	/**
 	 * Ensures a number is within a given range
@@ -101,6 +122,50 @@ public class Util {
 		return Math.max(Math.min(value, max), min);
 	}
 	
+	public static long clamp(long min, long max, long value) {
+		if (value<min) {
+			return min;
+		}
+		if (value > max) {
+			return max;
+		}
+		return value;
+	}
+	
+	public static void initializeDataDirectories() {
+		File file=new File(R.STAREXEC_DATA_DIR);
+		file.mkdir();
+		
+		file=new File(R.JOB_INBOX_DIR);
+		file.mkdir();
+		file=new File(R.JOB_LOG_DIR);
+		file.mkdir();
+		file=new File(R.JOB_OUTPUT_DIR);
+		file.mkdir();
+		file=new File(R.JOB_OUTPUT_DIR);
+		file.mkdir();
+		file=new File(R.JOBPAIR_INPUT_DIR);
+		file.mkdir();
+		file=new File(R.BENCHMARK_PATH);
+		file.mkdir();
+		file=new File(R.SOLVER_PATH);
+		file.mkdir();
+		file=new File(R.PROCESSOR_DIR);
+		file.mkdir();
+		file=new File(R.NEW_JOB_OUTPUT_DIR);
+		file.mkdir();
+		file=new File(R.PICTURE_PATH);
+		file.mkdir();
+		
+		
+		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
+		downloadDir.mkdirs();
+		File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
+		cacheDir.mkdirs();
+		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
+		graphDir.mkdirs();
+	}
+	
 	/**
 	 * Extracts the file extesion from a file path
 	 * @param s The file path
@@ -111,22 +176,13 @@ public class Util {
 	}
 	
 	/**
-	 * @return The platform-dependant line separator
+	 * @return The platform-dependent line separator
 	 */
 	public static String getLineSeparator(){
 		return System.getProperty("line.separator");
 	}
 	
-	/**
-	 * Extracts the file name from an absolute path
-	 * @param path The path of the file to extract the name from
-	 * @return The file's name, not including its extension
-	 */
-	public static String getFileNameOnly(String path){
-		int lastSep = path.lastIndexOf(File.separator);
-		int lastDot = path.lastIndexOf('.');
-		return path.substring(lastSep + 1, lastDot);
-	}
+	
 	
 	public static boolean paramExists(String name, HttpServletRequest request){
 		return !isNullOrEmpty(request.getParameter(name));
@@ -137,7 +193,8 @@ public class Util {
 	}	
 	
 	/**
-	 * Generates a temporary password consisting of 4 letters, 1 digit and 1 special
+	 * Generates a temporary password of between 6-20 characters, with at least 4 letters,
+	 * 1 number, and 1 special character
 	 * character
 	 * 
 	 * @return a temporary password
@@ -196,6 +253,80 @@ public class Util {
 		return form;
 	}
 	
+	//TODO: Run this command as the sandboxed user with permissions only granted recursively to everything in authorizedDirs
+	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
+		Runtime r = Runtime.getRuntime();
+		//the final, empty string should be the directory to apply the command to
+		String[] chownCommand = {"sudo","chown", "-R", "sandbox", ""};
+		
+		//first, give the sandbox user ownership of every given directory
+		for (File f : authorizedDirs) {
+			chownCommand[4]=f.getAbsolutePath();
+			Util.executeCommand(chownCommand,envp);
+		}
+		
+		
+		String[] command=new String[c.length+3];
+		command[0]="sudo";
+		command[1]="-u";
+		command[2]="sandbox";
+		for (int index=3;index<command.length;index++) {
+			command[index]=c[index-3];
+		}
+		
+		BufferedReader reader = null;		
+		
+		try {					
+		    Process p;
+		  
+		    
+			StringBuilder b = new StringBuilder();
+			b.append("Executing the following command:\n");
+			for (int i = 0; i < command.length; i++) {
+			    b.append("  ");
+			    b.append(command[i]);
+			}
+
+			log.info(b.toString());
+			    
+			p = r.exec(command, envp);
+		    
+		    InputStream in = p.getInputStream();
+		    BufferedInputStream buf = new BufferedInputStream(in);
+		    InputStreamReader inread = new InputStreamReader(buf);
+		    reader = new BufferedReader(inread);		
+			
+		    //Also handle error stream
+		    InputStream err = p.getErrorStream();
+		    BufferedInputStream bufErr = new BufferedInputStream(err);
+		    InputStreamReader inreadErr = new InputStreamReader(bufErr);
+		    BufferedReader errReader = new BufferedReader(inreadErr);
+		    String errLine = null;
+		    while ((errLine = errReader.readLine()) != null){
+			log.error("stdErr = " + errLine);
+		    }
+		    errReader.close();
+		    //This will hang indefinitely if the stream is too large.  TODO: fix increase size?
+		    
+		    if (p.waitFor() != 0) {
+			log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
+		    }
+		    
+		    //give back ownership of everything to tomcat
+		    chownCommand =new String[] {"sudo","chown", "-R", "tomcat", ""};
+		    
+		    for (File f : authorizedDirs) {
+				chownCommand[4]=f.getAbsolutePath();
+				Util.executeCommand(chownCommand,envp);
+			}
+		    return reader;
+		} catch (Exception e) {
+			log.warn("execute command says " + e.getMessage(), e);		
+		}
+		
+		return null;
+	}
+	
 	public static BufferedReader executeCommand(String command) {
 		String[] cmd = new String[1];
 		cmd[0] = command;
@@ -211,6 +342,57 @@ public class Util {
 	/** Convenience method for executeCommand() */
 	public static BufferedReader executeCommand(String[] command) {
 		return executeCommand(command,null);
+	}
+	
+	public static BufferedReader executeCommandInDirectory(String[] command, String[] envp, File workingDirectory) {
+		Runtime r = Runtime.getRuntime();
+		
+		BufferedReader reader = null;		
+		//
+		try {					
+		    Process p;
+		    if (command.length == 1) {
+			log.info("Executing the following command: " + command[0]);
+			
+			p = r.exec(command[0], envp);
+		    }
+		    else {
+			StringBuilder b = new StringBuilder();
+			b.append("Executing the following command:\n");
+			for (int i = 0; i < command.length; i++) {
+			    b.append("  ");
+			    b.append(command[i]);
+			}
+
+			log.info(b.toString());
+			
+			p = r.exec(command, envp,workingDirectory);
+		    }
+		    InputStream in = p.getInputStream();
+		    BufferedInputStream buf = new BufferedInputStream(in);
+		    InputStreamReader inread = new InputStreamReader(buf);
+		    reader = new BufferedReader(inread);		
+			
+		    //Also handle error stream
+		    InputStream err = p.getErrorStream();
+		    BufferedInputStream bufErr = new BufferedInputStream(err);
+		    InputStreamReader inreadErr = new InputStreamReader(bufErr);
+		    BufferedReader errReader = new BufferedReader(inreadErr);
+		    String errLine = null;
+		    while ((errLine = errReader.readLine()) != null){
+			log.error("stdErr = " + errLine);
+		    }
+		    errReader.close();
+		    //This will hang indefinitely if the stream is too large.  TODO: fix increase size?
+		    if (p.waitFor() != 0) {
+			log.warn("Command "+command[0]+" failed with value " + p.exitValue());				
+		    }
+		    return reader;
+		} catch (Exception e) {
+			log.warn("execute command says " + e.getMessage(), e);		
+		}
+		
+		return null;
 	}
 
 	/**
@@ -231,6 +413,7 @@ public class Util {
 		    Process p;
 		    if (command.length == 1) {
 			log.info("Executing the following command: " + command[0]);
+			
 			p = r.exec(command[0], envp);
 		    }
 		    else {
@@ -372,6 +555,48 @@ public class Util {
 			IOUtils.closeQuietly(bufferOut);
 		}
 	}
+
+	/**
+	 * Deletes all the solvers, benchmarks, users, and jobs that exist in any subspace of
+	 * the test community. Items in the test community itself are not deleted, and only items
+	 * owned by a test user are deleted.
+	 */
+	public static void clearTestCommunity() {
+		Space testCom=Communities.getTestCommunity();
+		User admin=Users.getAdmins().get(0);
+		List<Space> subspaces=Spaces.getSubSpaceHierarchy(testCom.getId(), admin.getId());
+		for (Space s : subspaces) {
+			Space space=Spaces.getDetails(s.getId(), admin.getId());
+			
+			for (Solver solver : space.getSolvers()) {
+				if (Solvers.isTestSolver(solver.getId())) {
+					Solvers.delete(solver.getId());
+				}
+			}
+			
+			for (Benchmark b : space.getBenchmarks()) {
+				if (Benchmarks.isTestBenchmark(b.getId())) {
+					Benchmarks.delete(b.getId());
+				}
+			}
+			
+			for (Job j : space.getJobs()) {
+				if (Jobs.isTestJob(j.getId())) {
+					Jobs.delete(j.getId());
+				}
+			}
+			
+			for (User u : space.getUsers()) {
+				if (Users.isTestUser(u.getId())) {
+					Users.deleteUser(u.getId(),admin.getId());
+				}
+			}
+		}
+		
+		for (Space s : subspaces) {
+			Spaces.removeSubspaces(s.getId(), testCom.getId(), admin.getId());
+		}
+	}
 	
 	/**
 	 * Deletes all files in the given directory that are as old as, or older than the specified number of days
@@ -395,7 +620,7 @@ public class Util {
 			
 			// Get all of the outdated files
 			Collection<File> outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-			
+			log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 			// Remove them all
 			for(File f : outdatedFiles) {
 				FileUtils.deleteQuietly(f);
@@ -409,18 +634,8 @@ public class Util {
 	 * @author Eric Burns
 	 */
 	public static void clearOldCachedFiles(int daysSinceLastAccess) {
-		log.debug("calling clearOldCachedFiles (periodic");
+		log.debug("calling clearOldCachedFiles (periodic)");
 		try {
-			
-			List<String> paths=Cache.getOldPaths(daysSinceLastAccess);
-			//first, remove the files on disk
-			for (String path : paths) {
-				File file=new File(path);
-				if (file.exists()) {
-					file.delete();
-				}
-			}
-			//now that the files are gone on disk, remove the entries in the database
 			Cache.deleteOldPaths(daysSinceLastAccess);
 		} catch (Exception e) {
 			log.error("clearOldCachedFiles says "+e.getMessage(),e);
@@ -469,7 +684,7 @@ public class Util {
     private static void initDocRootUrl() {
     	initDocRoot();
     	if (docRootUrl == null) {
-    		docRootUrl = "https://" + R.STAREXEC_SERVERNAME + docRoot;
+    		docRootUrl = R.STAREXEC_URL_PREFIX+"://" + R.STAREXEC_SERVERNAME + docRoot;
     	}
     }
     /**
@@ -510,6 +725,29 @@ public class Util {
     	
     	return df.format(b) +" "+suffix[suffixIndex];
     }
+    /**
+     * Converts gigabytes to bytes.
+     * @param gigabytes
+     * @return
+     */
+    public static long gigabytesToBytes(double gigabytes) {
+    	long bytes=(long)(1073741824*gigabytes);
+    	return bytes;
+    }
+    /**
+     * Converts bytes to megabytes, truncated to the nearest integer megabyte
+     * @param bytes
+     * @return
+     */
+    public static long bytesToMegabytes(long bytes) {
+    	return (bytes / (1024*1024));
+    }
+    
+    
+    public static double bytesToGigabytes(long bytes) {
+    	return ((double)bytes/1073741824.0);
+    }
+    
     /**
      * Attempts to delete the directory specified the given path without
      * throwing any errors

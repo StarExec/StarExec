@@ -1,12 +1,6 @@
 package org.starexec.app;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,32 +8,19 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
-import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
-import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
-import org.starexec.test.StarexecCommandTests;
 import org.starexec.test.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
-import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -72,8 +53,14 @@ public class Starexec implements ServletContextListener {
 			log.debug("Releasing grid engine util threadpool...");
 			GridEngineUtil.shutdown();
 			
-			GridEngineUtil.destroySession(session);
+			log.debug("session = " + session);
+			log.debug("session 2 = " + session.toString());
+			
+			if (!session.toString().contains("drmaa")) {
 
+				log.debug("Shutting down the session..." + session);
+				GridEngineUtil.destroySession(session);
+			}
 			// Wait for the task scheduler to finish
 			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
 			taskScheduler.shutdownNow();
@@ -188,8 +175,8 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 3);
-				Util.clearOldFiles(R.JOB_INBOX_DIR,3);
+				Util.clearOldFiles(R.JOB_LOG_DIR, 1);
+				Util.clearOldFiles(R.JOB_INBOX_DIR,1);
 				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1);
 			}
 		};
@@ -216,20 +203,16 @@ public class Starexec implements ServletContextListener {
 		};
 		
 		//created directories expected by the system to exist
-		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
-		downloadDir.mkdirs();
-		File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
-		cacheDir.mkdirs();
-		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
-		graphDir.mkdirs();
+		Util.initializeDataDirectories();
+		
 		TestManager.initializeTests();
 		//Schedule the recurring tasks above to be run every so often
 		if (R.RUN_PERIODIC_SGE_TASKS) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
-		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 72, TimeUnit.HOURS);
-		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
+		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);
+		   // taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		}	

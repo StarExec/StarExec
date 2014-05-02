@@ -20,7 +20,12 @@
 %>
 
 <star:template title="${t_user.fullName}" js="admin/user, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
-	<a id="trashcan"></a>
+	<fieldset>
+		<legend>actions</legend>
+			<ul id="actionList">
+				<li><a type="btnRun" id="addUser" href="/${starexecRoot}/secure/add/user.jsp">Create New User</a></li>
+			</ul>
+	</fieldset>	
 	<fieldset  id="userField">
 			<legend class="expd" id="userExpd"><span>0</span> users</legend>
 			<table id="users">

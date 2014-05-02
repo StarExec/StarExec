@@ -1,6 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,11 +12,9 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
@@ -27,9 +24,8 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
@@ -59,6 +55,8 @@ public class Jobs {
 			HashMap<Integer,String> idsToNames=new HashMap<Integer,String>();
 			
 			idsToNames.put(job.getPrimarySpace(), Spaces.getName(job.getPrimarySpace()));
+			
+			//maps a normal space ID to its corresponding job space ID
 			HashMap<Integer,Integer> idMap= new HashMap<Integer,Integer>();
 			con = Common.getConnection();
 			
@@ -81,12 +79,14 @@ public class Jobs {
 				}
 			}
 			
-			log.debug("finished adding spaces, starting to get job space associations");
 			
+			//add all the job spaces that we need into the database
 			for (int id : idsToNames.keySet()) {
 				int jobSpaceId=Spaces.addJobSpace(idsToNames.get(id),con);
 				idMap.put(id, jobSpaceId);
 			}
+			
+			//next, use the current hierarchy information to create a job space heirarchy
 			for (int id : idMap.keySet()) {
 				log.debug("getting subspaces for space = "+id);
 				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
@@ -103,6 +103,8 @@ public class Jobs {
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
 			Jobs.addJob(con, job);
+			
+			//put the job in the space it was created in
 			Jobs.associate(con, job.getId(), spaceId);
 			
 			log.debug("adding job pairs");
@@ -274,9 +276,13 @@ public class Jobs {
 	 */
 	
 	public static boolean delete(int jobId) {
+		//we should kill jobs before deleting  them so no additional pairs are run
+		if (!Jobs.isJobComplete(jobId)) {
+			Jobs.kill(jobId);
+		}
 		Connection con=null;
 		try {
-			Jobs.invalidateJobRelatedCaches(jobId);
+			Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
 			
 			con=Common.getConnection();
 			return delete(jobId,con);
@@ -325,6 +331,13 @@ public class Jobs {
 		return get(jobId,false);
 	}
 	
+
+	/**
+	 * Gets the wallclock timeout for the given job
+	 * @param jobId The ID of the job in question
+	 * @return The wallclock timeout in seconds, or -1 on error
+	 */
+	
 	public static int getWallclockTimeout(int jobId) {
 		Connection con = null;
 		ResultSet results=null;
@@ -349,6 +362,12 @@ public class Jobs {
 		return timeout;
 	}
 	
+	/**
+	 * Gets the CPU timeout for the given job
+	 * @param jobId The ID of the job in question
+	 * @return The CPU timeout in seconds, or -1 on error
+	 */
+	
 	public static int getCpuTimeout(int jobId) {
 		Connection con = null;
 		ResultSet results=null;
@@ -372,6 +391,37 @@ public class Jobs {
 		}
 		return timeout;
 	}
+	
+	/**
+	 * Gets the maximum memory allowed for the given job in bytes
+	 * @param jobId The ID of the job in question
+	 * @return The maximum memory in bytes, or -1 on error
+	 */
+	
+	public static long getMaximumMemory(int jobId) {
+		Connection con = null;
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		long memory=-1;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetMaxMemory(?)}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				memory=results.getLong("maximum_memory");
+			}
+		} catch (Exception e) {
+			log.error("getCpuTimeout says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		
+		}
+		return memory;
+	}
+	
 	
 	
 	/**
@@ -475,7 +525,6 @@ public class Jobs {
 				j.setCreateTime(results.getTimestamp("created"));					
 				jobs.add(j);				
 			}			
-			Common.safeClose(results);			
 			return jobs;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -547,7 +596,6 @@ public class Jobs {
 			if (results.next()) {
 				jobCount = results.getInt("jobCount");
 			}
-			Common.safeClose(results);
 			return jobCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -581,7 +629,6 @@ public class Jobs {
 			if (results.next()) {
 				jobCount = results.getInt("jobCount");
 			}
-			Common.safeClose(results);
 			return jobCount;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -637,17 +684,17 @@ public class Jobs {
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
 			}
 			else{
-				j=null;
+				return null;
 			}
 			
-			if (j != null){
-				if (since==null) {
-					j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
-				} else  {
-					j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
-				}
-				
+			
+			if (since==null) {
+				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+			} else  {
+				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
 			}
+				
+			
 			return j;
 
 		} catch (Exception e){			
@@ -674,6 +721,12 @@ public class Jobs {
 		return file.getAbsolutePath();
 	}
 	
+	public static String getLogDirectory(int jobId) {
+		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
+		File file=new File(R.JOB_LOG_DIR,String.valueOf(jobId));
+		return file.getAbsolutePath();
+	}
+	
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -683,7 +736,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
-
+		log.debug("getEnqueuePairs2 beginning...");
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 try {
@@ -721,6 +774,7 @@ public class Jobs {
 				jp.setStatus(s);
 				returnList.add(jp);
 			}			
+			log.debug("returnList = " + returnList);
 			return returnList;
 		} catch (Exception e) {
 			log.error("getEnqueuedPairs says "+e.getMessage(),e);
@@ -1175,7 +1229,6 @@ public class Jobs {
 				solver.addConfiguration(config);
 				jobPairs.add(jp);		
 			}	
-			Common.safeClose(results);
 			
 			return jobPairs;
 		} catch (Exception e){			
@@ -1201,7 +1254,6 @@ public class Jobs {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
-		log.debug("Getting pairs for job = "+jobId+" in space = "+jobSpaceId);
 		try {
 			con=Common.getConnection();
 			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?)}");
@@ -1459,7 +1511,6 @@ public class Jobs {
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
-			Common.safeClose(results);
 			return jobs;
 		} catch (Exception e){			
 			log.error("getJobsForNextPageSays " + e.getMessage(), e);
@@ -1491,7 +1542,7 @@ public class Jobs {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobsAdmin(?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfAllJobs(?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
@@ -1503,39 +1554,41 @@ public class Jobs {
 			
 			while(results.next()){
 
-				// Grab the relevant job pair statistics; this prevents a secondary set of queries
-				// to the database in RESTHelpers.java
-				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
-				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
-				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
-				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
-				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
-
-				Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
-				liteJobPairStats.put("completionPercentage", completionPercentage);
-
-				Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
-				liteJobPairStats.put("errorPercentage", errorPercentage);
-
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));	
-				if (results.getBoolean("deleted")) {
-					j.setName(j.getName()+" (deleted)");
+				if (results.getString("status").equals("incomplete")) {
+					// Grab the relevant job pair statistics; this prevents a secondary set of queries
+					// to the database in RESTHelpers.java
+					HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
+					liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
+					liteJobPairStats.put("completePairs", results.getInt("completePairs"));
+					liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
+					liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
+	
+					Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
+					liteJobPairStats.put("completionPercentage", completionPercentage);
+	
+					Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
+					liteJobPairStats.put("errorPercentage", errorPercentage);
+	
+					Job j = new Job();
+					j.setId(results.getInt("id"));
+					j.setPrimarySpace(results.getInt("primary_space"));
+					j.setUserId(results.getInt("user_id"));
+					j.setName(results.getString("name"));	
+					if (results.getBoolean("deleted")) {
+						j.setName(j.getName()+" (deleted)");
+					}
+					j.setDescription(results.getString("description"));				
+					j.setCreateTime(results.getTimestamp("created"));
+					j.setLiteJobPairStats(liteJobPairStats);
+					jobs.add(j);	
 				}
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setLiteJobPairStats(liteJobPairStats);
-				jobs.add(j);	
 				
 							
 			}	
 			
 			return jobs;
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);
+			log.error("GetNextPageOfRunningJobsAdmin says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1613,18 +1666,20 @@ public class Jobs {
 			con = Common.getConnection();	
 			
 			log.info("getting detailed pairs for job " + jobId );
-			//otherwise, just get the completed ones that were completed later than lastSeen
+			
 			 procedure = con.prepareCall("{CALL GetNewCompletedJobPairsByJob(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
 			results = procedure.executeQuery();
 			List<JobPair> pairs= getPairsDetailed(jobId,con,results,true);
 			HashMap<Integer,Properties> props=Jobs.getNewJobAttributes(con,jobId,since);
+			
 			for (Integer i =0; i < pairs.size(); i++){
 				JobPair jp = pairs.get(i);
 				if (props.containsKey(jp.getId())) {
 					jp.setAttributes(props.get(jp.getId()));
 				} else {
+					log.debug("forced to get attributes for a single job pair");
 					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
 				}
 			}
@@ -1639,6 +1694,13 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * For a given job, gets every job pair with the minimal amount of information required
+	 * to find the job pair output on disk
+	 * @param jobId The ID of the job to get pairs for
+	 * @param since Only gets pairs that were finished after "completion ID"
+	 * @return A list of JobPair objects
+	 */
 	public static List<JobPair> getNewCompletedPairsShallow(int jobId, int since) {
 		Connection con = null;	
 		
@@ -1686,7 +1748,7 @@ public class Jobs {
 	protected static HashMap<Integer,Properties> getNewJobAttributes(Connection con, int jobId,Integer completionId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		log.debug("Getting all attributes for job with ID = "+jobId);
+		log.debug("Getting all new attributes for job with ID = "+jobId);
 		 try {
 			procedure=con.prepareCall("{CALL GetNewJobAttrs(?, ?)}");
 			procedure.setInt(1,jobId);
@@ -1809,8 +1871,10 @@ public class Jobs {
 			for (Integer i =0; i < pairs.size(); i++){
 				JobPair jp = pairs.get(i);
 				if (props.containsKey(jp.getId())) {
+					log.debug("got attributes for a pair");
 					jp.setAttributes(props.get(jp.getId()));
 				} else {
+					log.debug("forced to get attributes for a single pair");
 					jp.setAttributes(JobPairs.getAttributes(jp.getId()));
 				}
 			}
@@ -2031,33 +2095,6 @@ public class Jobs {
 		return null;		
 	}
 		
-	/**
-	 * Gets the number of Running Jobs in the whole system
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	
-	public static int getRunningJobCount() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetRunningJobCount()}");
-			results = procedure.executeQuery();
-			
-			if (results.next()) {
-				return results.getInt("jobCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return 0;
-	}
 	
 	/**
 	 * Gets all job pairs that are  running for the given job
@@ -2163,7 +2200,6 @@ public class Jobs {
 			while(results.next()){
 				ids.add(results.getInt("sge_id"));
 			}	
-			Common.safeClose(results);
 			
 			return ids;
 		} catch (Exception e){			
@@ -2223,13 +2259,13 @@ public class Jobs {
 	 * Includes job output, job CSV with and without IDs, and pair output
 	 * @param jobId The ID of the job for which to delete all associated cache entreis
 	 */
-	public static void invalidateJobRelatedCaches(int jobId) {
-		Cache.invalidateCache(jobId, CacheType.CACHE_JOB_OUTPUT);
-		Cache.invalidateCache(jobId, CacheType.CACHE_JOB_CSV);
-		Cache.invalidateCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
+	public static void invalidateAndDeleteJobRelatedCaches(int jobId) {
+		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_OUTPUT);
+		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV);
+		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
 		List<JobPair> pairs = Jobs.getPairs(jobId);
 		for (JobPair pair : pairs) {
-			Cache.invalidateCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
+			Cache.invalidateAndDeleteCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
 		}
 	}
 	
@@ -2399,17 +2435,18 @@ public class Jobs {
 	 */
 	
 	public static boolean isJobPaused(int jobId) {
-		return isJobPausedOrKilled(jobId)==1;
+		return (isJobPausedOrKilled(jobId)==1 || isJobPausedOrKilled(jobId)==3);
 	}
 
 	/**
-	 * Determines whether the given job is either paused or killed
+	 * Determines whether the given job is either paused, admin paused, or killed
 	 * @param con The open connection to make the query on 
 	 * @param jobId The ID of the job in question
 	 * @return
 	 * 0 if the job is neither paused nor killed
 	 * 1 if the job is paused
 	 * 2 if the job has been killed
+	 * 3 if the job has been admin paused
 	 * @author Eric Burns
 	 */
 	public static int isJobPausedOrKilled(Connection con, int jobId) {
@@ -2429,8 +2466,7 @@ public class Jobs {
 				killed=results.getBoolean("killed");
 				if (killed) {
 					return 2;
-				}
-				
+				}				
 			}
 			return 0;
 		} catch (Exception e) {
@@ -2633,6 +2669,69 @@ public class Jobs {
 		return false;
 	}
 	
+	public static boolean isTestJob(int jobId) {
+		return Users.isTestUser(Jobs.get(jobId).getUserId());
+	}
+
+	/**
+	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
+	 * @param jobs The jobs to pause
+	 * @param con An open database connection
+	 * @return True on success, false otherwise
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static boolean pauseAll() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL PauseAll()}");
+			procedure.executeUpdate();
+			log.debug("Pausation of system was successful");
+			
+			List<Job> jobs = new LinkedList<Job>();		
+			jobs = Jobs.getRunningJobs();
+
+			if (jobs != null) {
+				for (Job j : jobs) {
+					//Get the enqueued job pairs and remove them
+					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+					if (jobPairsEnqueued != null) {
+						for (JobPair jp : jobPairsEnqueued) {
+							int sge_id = jp.getGridEngineId();
+							Util.executeCommand("qdel " + sge_id);
+							log.debug("enqueued: Just executed qdel " + sge_id);
+							JobPairs.UpdateStatus(jp.getId(), 1);
+						}
+					}
+					//Get the running job pairs and remove them
+					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(j.getId());
+					log.debug("JPR = " + jobPairsRunning);
+					if (jobPairsRunning != null) {
+						for (JobPair jp: jobPairsRunning) {
+							int sge_id = jp.getGridEngineId();
+							Util.executeCommand("qdel " + sge_id);
+							log.debug("running: Just executed qdel " + sge_id);
+							JobPairs.UpdateStatus(jp.getId(), 1);
+						}
+					}
+					log.debug("Deletion of paused job pairs from queue was succesful");
+				}
+			}
+					
+		
+			return true;
+		} catch (Exception e) {
+			log.error("PauseAll Jobs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
 	public static boolean changeQueue(int jobId, int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -2663,7 +2762,6 @@ public class Jobs {
 	 */
 	private static HashMap<Integer,Properties> processAttrResults(ResultSet results) {
 		try {
-			log.debug("result set obtained");
 			HashMap<Integer,Properties> props=new HashMap<Integer,Properties>();
 			int id;
 			
@@ -2763,7 +2861,6 @@ public class Jobs {
 	 */
 	
 	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
-		log.debug("Processing stat results for job = "+jobId);
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
@@ -2850,12 +2947,31 @@ public class Jobs {
 		}
 		return false;
 	}
-	/*
-	 *Perhaps we will want to cancel  jobs in the future? 
-	 *
-	public static boolean cancelPostProcessing(int jobId) {
-		return false
-	}*/
+	
+	/**
+	 * resumeAll sets global pause to false, which allows job pairs to be sent to the grid engine again
+	 * @author Wyatt Kaiser
+	 */
+	public static boolean resumeAll() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL ResumeAll()}");
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("ResumeAll says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	
 
 	/**
 	 * Sets the given job up to be post processed by adding all of its pairs
@@ -2894,6 +3010,7 @@ public class Jobs {
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		return false;
 	}
@@ -2908,6 +3025,7 @@ public class Jobs {
 	 */	
 	public static boolean saveStats(int jobId, int jobSpaceId,List<SolverStats> stats) {
 		if (!isJobComplete(jobId)) {
+			log.debug("stats for job with id = "+jobId+" were not saved because the job is incomplete");
 			return false; //don't save stats if the job is not complete
 		}
 		Connection con=null;
@@ -3184,5 +3302,121 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return 0;
+	}
+
+	/**
+	 * Gets the number of Running Jobs in the whole system
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	
+	public static int getRunningJobCount() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetRunningJobCount()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("jobCount");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
+	
+	public static List<Job> getRunningJobs() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllJobs()}");
+			results = procedure.executeQuery();
+			
+			List<Job> jobs = new LinkedList<Job>();
+			while (results.next()) {
+				if (results.getString("status").equals("incomplete")) {
+					Job j = new Job();
+					j.setId(results.getInt("id"));
+					j.setUserId(results.getInt("user_id"));
+					j.setName(results.getString("name"));	
+					j.setPrimarySpace(results.getInt("primary_space"));
+					j.setDescription(results.getString("description"));				
+					j.setCreateTime(results.getTimestamp("created"));					
+					jobs.add(j);
+				}
+			}
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
+	public static boolean isSystemPaused() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL IsSystemPaused()}");
+			results = procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getBoolean("paused");
+			}
+			//if no results exist, the system is not globally paused
+			return false;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+
+	public static List<Job> getUnRunnableJobs() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetUnRunnableJobs()}");
+			results = procedure.executeQuery();
+			
+			List<Job> jobs = new LinkedList<Job>();
+			while (results.next()) {
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setName(results.getString("name"));
+				j.setDeleted(results.getBoolean("deleted"));
+				j.setPaused(results.getBoolean("paused"));
+				j.setQueue(Queues.get(results.getInt("queue_id")));
+				jobs.add(j);
+			}
+			//if no results exist, the system is not globally paused
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
 	}
 }

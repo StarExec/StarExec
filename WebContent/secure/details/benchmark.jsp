@@ -1,6 +1,6 @@
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@page import="java.util.TreeMap" %>
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.GeneralSecurity,org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -21,7 +21,11 @@
 		if(b != null) {
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
-			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));			
+			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));		
+			//save the integer codes for benchmark-related cache items. This way, 
+			//if the admin decides to clear the cache for the item, we can query the server with the right code
+			request.setAttribute("cacheType",CacheType.CACHE_BENCHMARK.getVal());
+			request.setAttribute("isAdmin",Users.isAdmin(userId));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			if (s==null) {
 				s=new Space();
@@ -35,6 +39,8 @@
 				down=true;
 			}
 			request.setAttribute("downloadable",down);
+			String content=GeneralSecurity.getHTMLSafeString(Benchmarks.getContents(b,100));
+			request.setAttribute("content",content);
 		} else {
 			if (Benchmarks.isBenchmarkDeleted(benchId)) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been deleted. You likely want to remove it from your spaces");
@@ -156,19 +162,13 @@
 		</table>					
 		</fieldset>							
 	</c:if>	
-	
-	<!-- <fieldset>
-		<legend>related jobs</legend>
-		<p>coming soon...</p>
-	</fieldset> -->		
-	
 
 	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> contents</legend>
-			<textarea class="contentTextarea" id="benchContent" readonly="readonly" ></textarea>	
+			<textarea class="contentTextarea" id="benchContent" readonly="readonly" >${content}</textarea>	
 			<a href="/${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
-			<p class="caption">contents may be truncated. 'popout' for the full content.</p>
+			<p class="caption">content may be truncated. 'popout' for larger text window.</p>
 		</fieldset>			
 	</c:if> 
 
@@ -183,6 +183,13 @@
 			<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
 		
+		<c:if test="${isAdmin}">
+			<span id="cacheType" value="${cacheType}"></span>
+			<button type="button" id="clearCache">clear cache</button>
+		</c:if>
+		
 	</fieldset>
-	
+	<div id="dialog-warning" title="warning">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+	</div>		
 </star:template>

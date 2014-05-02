@@ -16,7 +16,10 @@
 		request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
 		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
 		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
+
 		int id = Integer.parseInt((String)request.getParameter("cid"));
+		request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.SPACE));
+
 		request.setAttribute("defaultBenchLink", Util.docRoot("secure/edit/defaultBenchmark.jsp?id="+((Integer)id).toString()));
 		Space com = Communities.getDetails(id);
 		Permission perm = SessionUtil.getPermission(request, id);
@@ -37,6 +40,7 @@
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
+		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 		try {
 			Benchmark bench=Benchmarks.get(Integer.parseInt(listOfDefaultSettings.get(6)));
 			if (bench!=null) {
@@ -121,7 +125,20 @@
 		
 	<fieldset id= "websiteField">
 		<legend>associated websites</legend>
-		<table id="websiteTable" class="shaded"></table>
+		<table id="websiteTable" class="shaded">
+		
+		<tbody>
+		
+			<c:forEach var="site" items="${sites}">
+				<tr>
+					<td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a class="delWebsite" id="${site.id}">delete</a></td>
+				</tr>
+			
+			</c:forEach>	
+		</tbody>
+		
+		</table>
 		<span id="toggleWebsite" class="caption">+ add new</span>
 		<div id="newWebsite">
 			<label for="website_name">name </label><input type="text" id="website_name" /> 
@@ -201,6 +218,10 @@
 			<tr>
 				<td>cpu timeout</td>
 				<td id="editCpuTimeout">${defaultCpuTimeout}</td>
+			</tr>
+			<tr>
+				<td>maximum memory</td>
+				<td id="editMaxMem">${defaultMaxMem}</td>
 			</tr>
 			<tr>
 				<td>dependencies enabled</td>

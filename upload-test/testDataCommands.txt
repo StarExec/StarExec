@@ -1,0 +1,7 @@
+returnids
+login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
+pushbenchproc id=2 f=smt2-validator.sh n=smt2
+pushbenchmarks id=2 f=benchmarks.zip bt=2
+pushsolver f=CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
+logout
+exit

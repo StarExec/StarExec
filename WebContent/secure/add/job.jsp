@@ -9,6 +9,8 @@
 		int userId = SessionUtil.getUserId(request);
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
+		
+				
 		if(!p.canAddJob()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
@@ -18,7 +20,7 @@
 			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.PRE);
-			request.setAttribute("queues", Queues.getUserQueues(userId));
+			request.setAttribute("queues", Queues.getQueuesForUser(userId));
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
@@ -30,6 +32,7 @@
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
+			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 			
 		}
 	} catch (NumberFormatException nfe) {
@@ -95,6 +98,12 @@
 							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
 						</td>
 					</tr>
+					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The maximum of this value and half the available memory on the nodes will be used.">
+						<td class="label"><p>maximum memory</p></td>
+						<td>	
+							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
+						</td>
+					</tr>
 					<tr class="noHover" title="which queue should this job be submitted to?">
 						<td class="label"><p>worker queue</p></td>
 						<td>
@@ -114,7 +123,14 @@
 							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/> 	
 							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>	
 						</td>
-					</tr>								
+					</tr>	
+					<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
+						<td class="label"><p>Create Paused</p></td>
+						<td>
+							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
+							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
+						</td>
+					</tr>							
 				</tbody>					
 			</table>
 		</fieldset>

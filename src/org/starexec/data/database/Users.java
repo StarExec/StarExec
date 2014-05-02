@@ -10,6 +10,10 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.UserSecurity;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
 
@@ -87,6 +91,25 @@ public class Users {
 		}
 		
 		return false;
+	}
+	
+	
+	public static boolean associate(List<Integer> userIds, int spaceId, boolean hierarchy, int requestUserId) {
+		if (!hierarchy) {
+			return associate(userIds, spaceId);
+		} else {
+			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaceHierarchy(spaceId, requestUserId));
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces to associate the user(s) with
+			subspaceIds.add(spaceId);
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addUser permissions in each
+			for(Space subspace : subspaces){	
+				subspaceIds.add(subspace.getId());
+			}
+			return associate(userIds,subspaceIds);
+		}
 	}
 	
 	/**
@@ -475,6 +498,7 @@ public class Users {
 	 */
 
 	public static boolean getUserByEmail(String email) {
+		log.debug("email = " + email);
 		Connection con = null;
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -627,6 +651,7 @@ public class Users {
 				u.setFirstName(results.getString("first_name"));
 				u.setLastName(results.getString("last_name"));
 				u.setEmail(results.getString("email"));
+				u.setRole(results.getString("role"));
 				
 				//Prevents public user from appearing in table.
 				users.add(u);
@@ -721,6 +746,7 @@ public class Users {
 	 * @author Todd Elvers
 	 */
 	public static boolean register(User user, int communityId, String code, String message){
+		log.debug("begin register..");
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{
@@ -836,6 +862,8 @@ public class Users {
 		
 		return false;
 	}
+	
+	//We should not be using this right now, since our login setup can't handle changing email
 	/**
 	 * Updates the email address of a user in the database with the 
 	 * given user ID
@@ -843,7 +871,7 @@ public class Users {
 	 * @param newValue what the email address will be updated to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
-	 */
+	 *
 	public static boolean updateEmail(int userId, String newValue){
 		Connection con = null;			
 		CallableStatement procedure= null;
@@ -864,7 +892,7 @@ public class Users {
 		}
 		
 		return false;
-	}
+	}*/
 	
 	/**
 	 * Updates the first name of a user in the database with the 
@@ -990,6 +1018,40 @@ public class Users {
 		return false;
 	}
 	/**
+	 * Completely deletes a user from the database. Right now, this is only
+	 * being used to delete temporary users created during testing
+	 * @param userIdToDelete The ID of the user to delete
+	 * @return True on success, false on error
+	 */
+	public static boolean deleteUser(int userIdToDelete, int userIdMakingRequest) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			
+			//Only allow the deletion of test users, and only if the admin is asking
+			if (UserSecurity.canDeleteUser(userIdToDelete, userIdMakingRequest)!=0) {
+				return false;
+			}
+			if (!Users.isTestUser(userIdToDelete)) {
+				return false; //we only want to delete test users for now
+			}
+			
+			
+			
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL DeleteUser(?)}");
+			procedure.setInt(1, userIdToDelete);
+			procedure.executeQuery();
+			return true;
+		}catch (Exception e) {
+			log.error("deleteUser says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	/**
 	 * Checks to see whether the given user is an admin
 	 * @param userId
 	 * @return
@@ -999,7 +1061,159 @@ public class Users {
 		return u.getRole().equals("admin");
 	}
 	
-	public static User getTestUser() {
-		return Users.get(R.TEST_USER_ID);
+	
+	/**
+	 * Checks to see whether the given user is a test user
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isTestUser(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("test");
 	}
+	
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isUnauthorized(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("unauthorized");
+	}
+	
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isSuspended(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("suspended");
+	}
+	
+	/**
+	 * Checks to see whether the given user is an admin
+	 * @param userId
+	 * @return
+	 */
+	public static boolean isNormalUser(int userId) {
+		User u=Users.get(userId);
+		return u.getRole().equals("user");
+	}
+	
+	
+	public static User getTestUser() {
+		User u=Users.get(R.TEST_USER_ID);
+		if (u==null) {
+			log.warn("getTestUser could not find the test user. Please configure one");
+		}
+		return u;
+	}
+	
+	public static int add(User user) {
+		log.debug("beginning to add user...");
+		log.debug("pass = " + user.getPassword());
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+			
+			String hashedPass = Hash.hashPassword(user.getPassword());
+			log.debug("hashedPass = " + hashedPass);
+			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?)}");
+			procedure.setString(1, user.getFirstName());
+			procedure.setString(2, user.getLastName());
+			procedure.setString(3, user.getEmail());
+			procedure.setString(4, user.getInstitution());
+			procedure.setString(5, hashedPass);
+			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setString(7,user.getRole());
+
+			// Register output of ID the user is inserted under
+			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			
+			// Add user to the users table and check to be sure 1 row was modified
+			procedure.executeUpdate();						
+			// Extract id from OUT parameter
+			user.setId(procedure.getInt(8));
+			log.debug("newid = " + user.getId());
+			return user.getId();
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return -1;
+	}
+
+	public static boolean addToCommunity(int userId, int communityId) {
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+						
+			procedure = con.prepareCall("{CALL AddUserToCommunity(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, communityId);
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
+	}
+
+	public static boolean suspend(int userId) {
+		User user = Users.get(userId);
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+						
+			procedure = con.prepareCall("{CALL SuspendUser(?)}");
+			procedure.setString(1, user.getEmail());
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
+	}
+
+	public static boolean reinstate(int userId) {
+		User user = Users.get(userId);
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+						
+			procedure = con.prepareCall("{CALL ReinstateUser(?)}");
+			procedure.setString(1, user.getEmail());
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
+	}	
+	
 }

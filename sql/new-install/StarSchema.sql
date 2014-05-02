@@ -159,6 +159,7 @@ CREATE TABLE queues (
 	slots_free INTEGER DEFAULT 0,
 	slots_total INTEGER DEFAULT 0,
 	permanent BOOLEAN DEFAULT FALSE,
+	global_access BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
 	UNIQUE KEY (name)
 );
@@ -203,7 +204,7 @@ CREATE TABLE jobs (
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
-	primary_space INT,
+	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,
@@ -227,6 +228,8 @@ CREATE TABLE configurations (
 
 -- Table which contains specific information about a job pair
 -- When changing to using runsolver, wallclock changed from bigint to double
+-- note: while some data is redundant in this table (solver_name, config_name, and so on), 
+-- it is essential for speeding up queries.
 CREATE TABLE job_pairs (
 	id INT NOT NULL AUTO_INCREMENT,	
 	job_id INT NOT NULL,
@@ -262,13 +265,14 @@ CREATE TABLE job_pairs (
 	invol_contex_swtch DOUBLE,
 	job_space_id INT,
 	path VARCHAR(2048),
+	maximum_memory BIGINT DEFAULT 1073741824,
 	PRIMARY KEY(id),
 	UNIQUE KEY(sge_id),
 	KEY (job_space_id, config_id),
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
-	KEY (job_id, status_code), 
+	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index
 	CONSTRAINT job_pairs_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL -- not used as an index
@@ -406,6 +410,7 @@ CREATE TABLE queue_reserved (
 	queue_id INT NOT NULL,
 	node_count INT NOT NULL,
 	reserve_date DATE NOT NULL,
+	message TEXT NOT NULL,
 	PRIMARY KEY (space_id, queue_id, reserve_date),
 	CONSTRAINT queue_reserved_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT queue_reserved_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
@@ -415,11 +420,12 @@ CREATE TABLE queue_reserved (
 -- Author: Wyatt Kaiser
 CREATE TABLE reservation_history (
 	space_id INT NOT NULL,
-	queue_id INT NOT NULL,
+	queue_name VARCHAR(64) NOT NULL,
 	node_count INT NOT NULL,
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
-	PRIMARY KEY (queue_Id, start_date)
+	message TEXT NOT NULL,
+	PRIMARY KEY (queue_name, start_date)
 );
 
 -- Includes temporary data when editing node_count information
@@ -469,6 +475,7 @@ CREATE TABLE space_default_settings (
 	clock_timeout INT DEFAULT 1,
 	dependencies_enabled BOOLEAN DEFAULT FALSE,
 	default_benchmark INT DEFAULT NULL,
+	maximum_memory BIGINT DEFAULT 1073741824,
 	PRIMARY KEY (space_id),
 	CONSTRAINT space_default_settings_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT space_default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
@@ -549,3 +556,12 @@ CREATE TABLE file_cache (
 	last_access TIMESTAMP NOT NULL,
 	PRIMARY KEY (id,cache_type)
 );
+
+-- Table that contains some global flags
+-- Author: Wyatt Kaiser
+CREATE TABLE system_flags (
+	integrity_keeper ENUM('') NOT NULL,
+	paused BOOLEAN DEFAULT FALSE,
+	PRIMARY KEY (integrity_keeper)
+);
+

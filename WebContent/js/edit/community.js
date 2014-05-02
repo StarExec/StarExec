@@ -24,16 +24,14 @@ $(document).ready(function(){
 			showMessage('error',"Internal error getting community details",5000);
 		});
 	
-	refreshSpaceWebsites();
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
 });
 
-function populateDetails(jsonData) {
+function populateDetails(jsonData) {	
 	var id = $('#comId').val();
 
-	
 	// Populate leaders table
 	$('#leaderField legend').children('span:first-child').text(jsonData.leaders.length);
 	leaderTable.fnClearTable();	
@@ -41,7 +39,7 @@ function populateDetails(jsonData) {
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
 		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
-		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ')" value="X"/>';
+		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ', ' + id + ')" value="X"/>';
 		var demoteUser = '<input type="button" onclick="demoteUser(' + user.id + ', ' + id + ')" value="Demote"/>';
 		
 		leaderTable.fnAddData([userLink, user.institution, emailLink, deleteUser, demoteUser]);
@@ -65,6 +63,7 @@ function populateDetails(jsonData) {
 }
 
 function removeUser(userid, id) {
+	alert("id inside = " + id);
 	var idArray = new Array();
 	idArray.push(userid);
 	$.post(  
@@ -161,22 +160,35 @@ function attachWebsiteMonitor(){
 	$("#websiteTable").delegate(".delWebsite", "click", function(){
 		var id = $(this).attr('id');
 		var parent = $(this).parent().parent();
-		var answer = confirm("are you sure you want to delete this website?");
-		if (true == answer) {
-			$.post(
-					starexecRoot+"services/websites/delete/" + "space" + "/" + $('#comId').val() + "/" + id,
-					function(returnData){
-						if (returnData == 0) {
-							parent.remove();
-						} else {
-							showMessage('error', "the website was not deleted due to an error; please try again", 5000);
-						}
-					},
-					"json"
-			).error(function(){
-				showMessage('error',"Internal error updating community websites",5000);
-			});
-		}
+		$('#dialog-confirm-delete-txt').text('Are you sure you want to delete this website?');
+		
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-confirm-delete').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/websites/delete/space/" +$('#comId').val() + "/" + id,
+							function(returnData){
+								if (returnData == 0) {
+									parent.remove();
+								} else {
+									showMessage('error', "the website was not deleted due to an error; please try again", 5000);
+								}
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error updating websites",5000);
+					});
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
 	});
 	
 	// Handles adding a new website
@@ -221,7 +233,7 @@ function initUI(){
 	editable("desc");
 	editable("CpuTimeout");
 	editable("ClockTimeout");
-	
+	editable("MaxMem");
 	// Add toggles for the "add new" buttons and hide them by default	
 	$('#toggleWebsite').click(function() {
 		$('#newWebsite').slideToggle('fast');
@@ -358,21 +370,22 @@ function attachFormValidation(){
  * then re-populating the DOM with the new data
  */
 function refreshSpaceWebsites(){
-	$.getJSON(starexecRoot+'services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
+	location.reload();
+	/*$.getJSON(starexecRoot+'services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
 		showMessage('error',"Internal error getting websites",5000);
-	});
+	});*/
 }
 
 /**
  * Processes website data by adding a delete button to the HTML and inject that into the DOM
- */
+ 
 function processWebsiteData(jsonData) {
 	// Injects the clickable delete button that's always present
 	$('#websiteTable tr').remove();
 	$.each(jsonData, function(i, site) {
 		$('#websiteTable').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src=starexecRoot+"images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-}
+}*/
 
 
 function editable(attribute) {
@@ -387,6 +400,9 @@ function editable(attribute) {
 			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
 		} else if (attribute == "ClockTimeout"){
 			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+		} else if (attribute =="MaxMem") {
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+
 		}
 		
 		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
@@ -432,6 +448,8 @@ function saveChanges(obj, save, attr, old) {
 			newVal = $(obj).siblings('input:first').val();
 		} else if (attr == "DependenciesEnabled") {
 			newVal=obj;
+		} else if(attr = "MaxMem") {
+			newVal = $(obj).siblings('input:first').val();
 		}
 		
 		// Fixes 'session expired' bug that would occur if user inputed the empty String

@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 
@@ -43,7 +42,7 @@ public class Processors {
 			procedure.executeUpdate();
 			
 			int procId = procedure.getInt(7);	
-			
+			log.debug("the new processor has the ID = "+procId + " and community id = "+processor.getCommunityId());
 			return procId;			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

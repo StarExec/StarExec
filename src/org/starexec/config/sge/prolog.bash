@@ -137,6 +137,7 @@ function copyDependencies {
 					rm -r "$SOLVER_CACHE_PATH/lock.lock"
 				else
 					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
 					rm -r "$SOLVER_CACHE_PATH"	
 				fi
 			fi
@@ -247,12 +248,28 @@ verifyWorkspace
 sandboxWorkspace
 
 # Determine if there were errors in the job setup
-JOB_ERROR=`grep 'job error:' $SGE_STDOUT_PATH`
+JOB_ERROR=`grep 'job error:' "$SGE_STDOUT_PATH"`
 
 # If there was no error...
 if [ "$JOB_ERROR" = "" ]; then
 	log "running $SOLVER_NAME ($CONFIG_NAME) on $BENCH_NAME"
 	sendStatus $STATUS_RUNNING
 fi
+
+NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
+
+log "node memory in kilobytes =$NODE_MEM"
+#first, get half the memory
+NODE_MEM=$(($NODE_MEM/2))
+
+#then, convert kb to mb
+NODE_MEM=$(($NODE_MEM/1024))
+if [ $MAX_MEM -gt $NODE_MEM ]
+then
+MAX_MEM=$NODE_MEM
+
+fi
+
+log "max memory in megabytes = $MAX_MEM"
 
 exit 0

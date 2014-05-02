@@ -47,7 +47,7 @@ public class Validator {
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL};
+		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
@@ -108,6 +108,25 @@ public class Validator {
 	public static boolean isValidPosInteger(String str) {
 		try {
 			int check=Integer.parseInt(str);
+			if (check<0) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines whether the given string represents a valid double that is greater than or equal to 0
+	 * @param str The string to check
+	 * @return True if valid, false otherwise.
+	 * @author Eric Burns
+	 */
+	
+	public static boolean isValidPosDouble(String str) {
+		try {
+			double check=Double.parseDouble(str);
 			if (check<0) {
 				return false;
 			}
@@ -267,7 +286,7 @@ public class Validator {
 	 * @return 0  if the upload request has all the basic requirements, and a negative error code otherwise.
 	 * @author Eric Burns
 	 */
-	private static int isValidUploadRequest(HashMap<String,String> commandParams) {
+	private static int isValidUploadRequest(HashMap<String,String> commandParams, boolean archiveRequired) {
 		
 		//an ID and either a URL or a file is required for every upload
 		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
@@ -302,7 +321,7 @@ public class Validator {
 					break;
 				}
 			}
-			if (!archiveGood) {
+			if (!archiveGood && archiveRequired) {
 				return Status.ERROR_BAD_ARCHIVETYPE;
 			}
 		}
@@ -339,8 +358,8 @@ public class Validator {
 	 * @author Eric Burns
 	 */
 	
-	private static int isValidUploadRequestNoURL(HashMap<String,String> commandParams) {
-		int valid=isValidUploadRequest(commandParams);
+	private static int isValidUploadRequestNoURL(HashMap<String,String> commandParams, boolean archiveRequired) {
+		int valid=isValidUploadRequest(commandParams, archiveRequired);
 		if (valid<0) {
 			return valid;
 		}
@@ -360,7 +379,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadBenchmarkRequest(HashMap<String,String> commandParams) {
-		int valid=isValidUploadRequest(commandParams);
+		int valid=isValidUploadRequest(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
@@ -379,7 +398,7 @@ public class Validator {
 	 * @author Eric Burns
 	 */
 	public static int isValidSolverUploadRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequest(commandParams);
+		int valid= isValidUploadRequest(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
@@ -393,9 +412,9 @@ public class Validator {
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	
+	//TODO: Do we need an archive here?
 	public static int isValidUploadSpaceXMLRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequestNoURL(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
@@ -411,7 +430,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadConfigRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequestNoURL(commandParams,false);
 		if (valid<0) {
 			return valid;
 		}
@@ -427,7 +446,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadProcessorRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams);
+		int valid= isValidUploadRequestNoURL(commandParams,false);
 		if (valid<0) {
 			return valid;
 		}
@@ -500,7 +519,6 @@ public class Validator {
 			}
 		}
 		
-		
 		//all IDs should be integers greater than 0
 		if (!isValidPosInteger(commandParams.get(R.PARAM_ID)) ||
 				!isValidPosInteger(commandParams.get(R.PARAM_QUEUEID))) {
@@ -527,6 +545,11 @@ public class Validator {
 		if (commandParams.containsKey(R.PARAM_WALLCLOCKTIMEOUT)) {
 			if (!isValidPosInteger(commandParams.get(R.PARAM_WALLCLOCKTIMEOUT))) {
 				return Status.ERROR_INVALID_TIMEOUT;
+			}
+		}
+		if (commandParams.containsKey(R.PARAM_MEMORY)) {
+			if (!isValidPosDouble(commandParams.get(R.PARAM_MEMORY))) {
+				return Status.ERROR_INVALID_MEMORY;
 			}
 		}
 		

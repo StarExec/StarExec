@@ -10,6 +10,7 @@ package org.starexec.command;
 import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 class ArgumentParser {
 	
@@ -148,11 +149,15 @@ class ArgumentParser {
 			}			
 			Integer wallclock=null;
 			Integer cpu=null;
+			Double maxMemory=null;
 			if (commandParams.containsKey(R.PARAM_WALLCLOCKTIMEOUT)) {
 				wallclock=Integer.parseInt(commandParams.get(R.PARAM_WALLCLOCKTIMEOUT));
 			}
 			if (commandParams.containsKey(R.PARAM_CPUTIMEOUT)) {
 				cpu=Integer.parseInt(commandParams.get(R.PARAM_CPUTIMEOUT));
+			}
+			if (commandParams.containsKey(R.PARAM_MEMORY)) {
+				maxMemory=Double.parseDouble(commandParams.get(R.PARAM_MEMORY));
 			}
 			Boolean useDepthFirst=true;
 			if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
@@ -178,9 +183,13 @@ class ArgumentParser {
 			if (commandParams.containsKey(R.PARAM_DESC)) {
 				desc=commandParams.get(R.PARAM_DESC);
 			}
+			boolean startPaused=false;
+			if (commandParams.containsKey(R.PARAM_PAUSED)) {
+				startPaused=true;
+			}
 			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc, 
 					Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),
-					wallclock, cpu,useDepthFirst);
+					wallclock, cpu,useDepthFirst,maxMemory,startPaused);
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
@@ -267,7 +276,7 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			Integer [] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 			return con.removePrimitives(ids, Integer.parseInt(commandParams.get(R.PARAM_FROM)), type, commandParams.containsKey(R.PARAM_DELETE_PRIMS));
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
@@ -328,7 +337,7 @@ class ArgumentParser {
 				return valid;
 			}
 			
-			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 			return con.deletePrimitives(ids, type);
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
@@ -373,7 +382,6 @@ class ArgumentParser {
 					hierarchy,procClass);
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 		
@@ -425,7 +433,6 @@ class ArgumentParser {
 			
 		
 		} catch (Exception e) {
-			e.printStackTrace();
 			errorMap.put(Status.ERROR_SERVER, null);
 			
 			return errorMap;

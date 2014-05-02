@@ -194,7 +194,7 @@ function populateDetails(jsonData) {
 	});
 
 	// Show/hide the websites panel based on if there are websites or not
-	if(jsonData.websites.length < 1) {
+	/*if(jsonData.websites.length < 1) {
 		$('#webDiv').fadeOut('fast');
 	} else {
 		$('#webDiv').fadeIn('fast');
@@ -206,7 +206,7 @@ function populateDetails(jsonData) {
 	$.each(jsonData.websites, function(i, site) {		
 		var link = '<a href="' + site.url + '" target="blank">' + site.name+ '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';					
 		$('#websites').append('<li>' + link + '</li>');
-	});
+	});*/
 	
 	// Check the new permissions for the loaded space
 	checkPermissions(jsonData.perm);	

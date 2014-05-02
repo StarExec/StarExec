@@ -13,6 +13,12 @@ function initUI(){
 		}
     });
 	
+	$("#manageCache").button( {
+		icons: {
+			primary: "ui-icon-document"
+		}
+	});
+	
 		
 	$("#restartStarExec").click(function(){
 		$('#dialog-confirm-restart-txt').text('are you sure you want to restart StarExec?');
@@ -25,7 +31,6 @@ function initUI(){
 				'OK': function() {
 					log('user confirmed starexec restart.');
 					$('#dialog-confirm-restart').dialog('close');
-					alert(starexecRoot);
 					$.post(
 							starexecRoot+"services/restart/starexec/",
 							function(returnCode) {
@@ -33,11 +38,8 @@ function initUI(){
 									case 0:
 										window.location = starexecRoot+'secure/explore/spaces.jsp';
 										break;
-									case 1:
-										showMessage('error', "job was not deleted; please try again", 5000);
-										break;
 									case 2:
-										showMessage('error', "only the owner of this job can delete it", 5000);
+										showMessage('error', "only the administrator can restart StarExec", 5000);
 										break;
 									default:
 										showMessage('error', "invalid parameters", 5000);

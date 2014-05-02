@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.util.SessionUtil;
@@ -44,6 +45,7 @@ public class UploadConfiguration extends HttpServlet {
     	try {	
     		// Ensure request is a file upload request (i.e. a multipart request)
 			if (ServletFileUpload.isMultipartContent(request)) {
+
 				// Get the configuration form attributes from add/configuration.jsp
 				HashMap<String, Object> configAttrMap = Util.parseMultipartRequest(request); 
 				
@@ -52,20 +54,22 @@ public class UploadConfiguration extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload configuration request was malformed.");
 					return;
 				} 
-				
-				// Permissions check; ensure the uploading user owns the solver to which they are uploading
-				if(Solvers.get(Integer.parseInt((String)configAttrMap.get(SOLVER_ID))).getUserId() != userId){
+
+				if (0!=SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId)) {
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only owners of a solver may upload configurations to it.");
 					return;
 				}
+
 				
 				// Process the configuration file and write it to the parent solver's /bin directory, then update the solver's disk_size attribute
 				int result = handleConfiguration(configAttrMap);
 				
 				// Redirect user based on how the configuration handling went
 				if(result == -1) {
+
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new configuration.");	
 				} else {
+
 					//result should be the new ID of the configuration
 					response.addCookie(new Cookie("New_ID", String.valueOf(result)));
 				    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)configAttrMap.get(SOLVER_ID))));	
@@ -105,6 +109,7 @@ public class UploadConfiguration extends HttpServlet {
 			File newConfigFile = new File(Util.getSolverConfigPath(solver.getPath(), newConfig.getName()));
 			
 			// If a configuration file exists on disk with the same name, append an integer to the file to make it unique
+			//TODO: if the given name is already the max length, this is going to fail
 			if(newConfigFile.exists()){
 				boolean fileAlreadyExists = true;
 				int intSuffix = 0;
@@ -152,17 +157,23 @@ public class UploadConfiguration extends HttpServlet {
 			// Ensure the map contains all relevant keys
 			if (!configAttrMap.containsKey(UPLOAD_FILE) ||
 					!configAttrMap.containsKey(SOLVER_ID) ||
-					!configAttrMap.containsKey(CONFIG_NAME) || 
-					!configAttrMap.containsKey(CONFIG_DESC)) {
+					!configAttrMap.containsKey(CONFIG_NAME)) {
 				return false;
 			}
 			
 			// Ensure the parent solver id is valid
 			Integer.parseInt((String)configAttrMap.get(SOLVER_ID));
 			
+			
+			if (configAttrMap.containsKey(CONFIG_DESC)) {
+				if (!Validator.isValidPrimDescription((String)configAttrMap.get(CONFIG_DESC))) {
+
+					return false;
+				}
+			}
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidPrimName((String)configAttrMap.get(CONFIG_NAME)) || 
-					!Validator.isValidPrimDescription((String)configAttrMap.get(CONFIG_DESC))) {
+			if(!Validator.isValidPrimName((String)configAttrMap.get(CONFIG_NAME))) {
+
 				return false;
 			}
 			

@@ -32,6 +32,8 @@
 
 	<p> See <a href="machine-specs.txt">here</a> for machine specifications for the compute nodes.</p>
 
+	<p> See <a href="STAREXEC TERMS OF SERVICE.doc">here</a> for our terms of service.</p>
+
    <h2>StarExec Advisory Committee</h2>
 	<ul>
 		<li>Nikolaj Bjørner (Microsoft Research)</li>

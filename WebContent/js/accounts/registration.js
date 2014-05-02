@@ -26,6 +26,17 @@ function initUI(){
 }
 
 /**
+ * How this works:
+ * By default an error is show on the page and the desired element(s) have their visibility set to hidden.
+ * This function, when called, hides the error element and displays the desired element(s) via javascript.
+ * Therefore, users without javascript enabled will only ever see the error and never see the desired element(s).
+ */
+function checkForJavascript(errorElementToHide, desiredElementToShow){
+	$(errorElementToHide).hide();
+	$(desiredElementToShow).css('visibility','visible');
+}
+
+/**
  * Sets a default message for a textarea that is cleared when the textarea
  * receives focus and only returns if the textarea is empty when it loses focus
  */
@@ -48,17 +59,6 @@ function monitorTextarea(textarea, defaultText){
 	            this.value = $(textarea).data("default");
 	        }
 	});
-}
-
-/**
- * How this works:
- * By default an error is show on the page and the desired element(s) have their visibility set to hidden.
- * This function, when called, hides the error element and displays the desired element(s) via javascript.
- * Therefore, users without javascript enabled will only ever see the error and never see the desired element(s).
- */
-function checkForJavascript(errorElementToHide, desiredElementToShow){
-	$(errorElementToHide).hide();
-	$(desiredElementToShow).css('visibility','visible');
 }
 
 

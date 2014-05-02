@@ -23,6 +23,7 @@
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this solver can edit details about it.");
 			} else {
 				request.setAttribute("solver", s);
+				request.setAttribute("sites", Websites.getAllForHTML(solverId, Websites.WebsiteType.SOLVER));
 				if(s.isDownloadable()){
 					request.setAttribute("isDownloadable", "checked");
 					request.setAttribute("isNotDownloadable", "");
@@ -101,6 +102,12 @@
 				</tr>
 			</thead>
 			<tbody>
+			<c:forEach items="${sites}" var="s">
+				<tr>
+					<td><a href="${s.url}">${s.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a class="delWebsite" id="${s.id}">delete</a></td>
+				</tr>
+			</c:forEach>
 			</tbody>
 		</table>			
 		<span id="toggleWebsite" class="caption"><span>+</span> add new</span>

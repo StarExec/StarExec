@@ -11,10 +11,6 @@ $(document).ready(function(){
 	initDataTables();
 
 	
-	$('#nodes tbody tr').live('click', function () {
-		   $(this).toggleClass( 'row_selected' );
-		} );
-	
 	updateButtonActions();
 	
 
@@ -84,6 +80,14 @@ function updateButtonActions() {
 		
 		history.back(-1);
 	});
+	
+	$('#btnDateChange').button({
+		icons: {
+			secondary: "ui-icon-refresh"
+		}
+	}).click(function(){
+		nodeTable.fnDraw();
+	});
 }
 
 function initDataTables() {
@@ -111,6 +115,9 @@ function initDataTables() {
 				} else if(conflict === 'CONFLICT') {
 					colorCSS = 'statusConflict';
 					conflictNumber = conflictNumber + 1;
+				} else if(conflict === 'ZERO') {
+					colorCSS = 'statusZero';
+					conflictNumber = conflictNumber + 1;
 				}
 			oSettings.aoData[i].nTr.className += " "+ colorCSS;
 			}
@@ -126,27 +133,35 @@ function initDataTables() {
 	nodeTable.makeEditable({
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
-			//alert("start");
 			needToConfirm = true;
 			nodeTable.fnDraw();
+
+			setTimeout(function(){nodeTable.fnDraw();}, 1000);
+
 		},
 	  });
 	
-	//new FixedColumns( nodeTable );
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 
+	var last_date = document.getElementById("last").value;
+	var string_last_date = last_date.replace(/\//g , "");
+	
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
-			sSource + "nodes/dates/pagination",
+			sSource + "nodes/dates/pagination/" + string_last_date,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){
 				case 1:
 					showMessage('error', "failed to get the next page of results; please try again", 5000);
 					break;
-				case 2:		
+				case 2:	
+					showMessage('error', "not a valid date; please try again", 5000);
+					break;
+				case 4: 
+					showMessage('error', "the date must be greater than provided dates; please try again", 5000);
 					break;
 				default:	// Have to use the default case since this process returns JSON objects to the client
 

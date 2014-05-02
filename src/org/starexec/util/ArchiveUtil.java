@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -388,8 +389,59 @@ public class ArchiveUtil {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	public static void createZip(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
+		//removing the top level is the same as just adding all the subdirectories to one zip archive
+		if (removeTopLevel) {
+			List<File> files=new ArrayList<File>();
+			for (File f : path.listFiles()) {
+				files.add(f);
+			}
+			createZip(files,destination);
+			return;
+		}
+		
 		//log.debug("creating zip, path = " + path + ", dest = " + destination);
-
+		String[] zipCommand;
+		
+		//for some reason, zip fails if the name has dashes. We need to remove them, zip the file, then rename it
+		String destName=destination.getName();
+		String newDestName=destName.replace("-", "");
+		File tempDest=new File(destination.getParentFile(),newDestName);
+		File cd;
+		
+		cd=path.getParentFile();
+		zipCommand=new String[5];
+		zipCommand[0]="zip";
+		zipCommand[1]="-r";
+		zipCommand[2]="-q";
+		zipCommand[3]=tempDest.getAbsolutePath();
+		zipCommand[4]=path.getName(); //we are trying to run this command in the required directory, so an absolute path is not needed
+	
+		Util.executeCommandInDirectory(zipCommand,null,cd);
+		
+		//put the dashes back into the file path
+		if (!destName.equals(newDestName)) {
+			String[] renameArchiveCommand=new String[3];
+			renameArchiveCommand[0]="mv";
+			renameArchiveCommand[1]=tempDest.getAbsolutePath();
+			renameArchiveCommand[2]=destination.getAbsolutePath();
+			Util.executeCommand(renameArchiveCommand);
+		}
+		
+		//rename the top level if it exists and we have a name for it
+		if (baseName!=null && baseName.length()>0) {
+			String[] renameCommand=new String[6];
+			renameCommand[0]="printf";
+			renameCommand[1]="\"@ "+path.getName()+"\n@="+baseName+"\n\"";
+			renameCommand[2]="|";
+			renameCommand[3]="zipnote";
+			renameCommand[4]="-w";
+			renameCommand[5]=destination.getAbsolutePath();
+			Util.executeCommand(renameCommand);
+		}
+		
+		log.debug("the newly created archive exists = "+destination.exists());
+		
+		/*
 		FileOutputStream fOut = null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -405,7 +457,7 @@ public class ArchiveUtil {
 			zOut.close();
 			bOut.close();
 			fOut.close();
-		}
+		}*/
 	}
 	
 	/**
@@ -423,8 +475,39 @@ public class ArchiveUtil {
 	 * Creates a zip in the same way as above, but with multiple files
 	 * @author Eric Burns
 	 */
-	public static void createZip(List<File> paths, File destination, String baseName) throws Exception {
-		//log.debug("creating zip, of multiple files, dest = " + destination);
+	
+	
+	public static void createZip(List<File> paths, File destination) throws Exception {
+		
+		String[] zipCommand;
+		
+		//for some reason, zip fails if the name has dashes. We need to remove them, zip the file, then rename it
+		String destName=destination.getName();
+		String newDestName=destName.replace("-", "");
+		File tempDest=new File(destination.getParentFile(),newDestName);
+		for (File file : paths) {
+			zipCommand=new String[5];
+			zipCommand[0]="zip";
+			zipCommand[1]="-r";
+			zipCommand[2]="-q";
+			zipCommand[3]=tempDest.getAbsolutePath();
+			zipCommand[4]=file.getName(); //we will be executing the command from the parent directory of the needed file
+			Util.executeCommandInDirectory(zipCommand,null,file.getParentFile());
+		}
+		
+		//put the dashes back into the file path
+		if (!destName.equals(newDestName)) {
+			String[] renameArchiveCommand=new String[3];
+			renameArchiveCommand[0]="mv";
+			renameArchiveCommand[1]=tempDest.getAbsolutePath();
+			renameArchiveCommand[2]=destination.getAbsolutePath();
+			Util.executeCommand(renameArchiveCommand);
+		}
+		
+		
+		
+		
+		/*
 		FileOutputStream fOut=null;
 		BufferedOutputStream bOut = null;
 		ZipArchiveOutputStream zOut = null;
@@ -440,12 +523,9 @@ public class ArchiveUtil {
 			zOut.close();
 			bOut.close();
 			fOut.close();
-		}
+		}*/
 	}
 	
-	public static void createZip(List<File> paths, File destination) throws Exception {
-		createZip(paths,destination,"");
-	}	
 	
 	
 	/**

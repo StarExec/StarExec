@@ -61,7 +61,6 @@ function attachFormValidation() {
 				regex: getPrimNameRegex()
 			},
 			uploadConfigDesc: { 
-				required: true,
 				maxlength: $("#uploadConfigDesc").attr("maxlength"),
 				regex: getPrimDescRegex()
 			}
@@ -90,7 +89,6 @@ function attachFormValidation() {
 				regex: getPrimNameRegex()
 			},
 			saveConfigDesc: { 
-				required: true,
 				maxlength: $("#saveConfigDesc").attr("maxlength"),
 				regex: getPrimDescRegex()
 			},

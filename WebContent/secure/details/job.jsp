@@ -14,9 +14,19 @@
 			j=Jobs.get(jobId);
 			
 			boolean queueExists = true;
+			boolean queueIsEmpty = false;
+
 			if (j.getQueue() == null) {
 				queueExists = false;
+			} else {
+				Queue q = j.getQueue();
+				List<WorkerNode> nodes = Cluster.getNodesForQueue(q.getId());
+				if (nodes.size() == 0) {
+					queueIsEmpty = true;
+				}
+
 			}
+			
 			
 			int jobSpaceId=j.getPrimarySpace();
 			//this means it's an old job and we should run the backwards-compatibility routine
@@ -30,30 +40,45 @@
 				JobStatus status=Jobs.getJobStatusCode(jobId);
 				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
 				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
+				boolean isAdminPaused = Jobs.isSystemPaused();
 				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
 				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
 				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
 				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
 				int wallclock=Jobs.getWallclockTimeout(jobId);
 				int cpu=Jobs.getCpuTimeout(jobId);
+				long memory=Jobs.getMaximumMemory(jobId);
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
+				
+				//save the integer codes for solver-related cache items. This way, 
+				//if the admin decides to clear the cache for the item, we can query the server with the right code
+				request.setAttribute("cacheType1",CacheType.CACHE_JOB_OUTPUT.getVal());
+				request.setAttribute("cacheType2",CacheType.CACHE_JOB_CSV.getVal());
+				request.setAttribute("cacheType3",CacheType.CACHE_JOB_CSV_NO_IDS.getVal());
+				request.setAttribute("cacheType4",CacheType.CACHE_JOB_PAIR.getVal());
+				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
 				request.setAttribute("jobspace",s);
 				request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 				request.setAttribute("isPaused", isPaused);
+				request.setAttribute("isAdminPaused", isAdminPaused);
 				request.setAttribute("isKilled", isKilled);
 				request.setAttribute("isRunning", isRunning);
 				request.setAttribute("isComplete", isComplete);
+				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
-				request.setAttribute("queues", Queues.getUserQueues(userId));
+				
+				//TODO: I don't think this is right. The primary space is a JOB SPACE, and we just want a space
+				request.setAttribute("queues", Queues.getQueuesForUser(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
 				request.setAttribute("cpu",cpu);
 				request.setAttribute("wallclock",wallclock);
+				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -92,6 +117,16 @@
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
 			</fieldset>
+						 
+			<fieldset id="subspaceSummaryField">
+				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
+				<fieldset id="panelActions">
+				<button id="popoutPanels">Popout</button>
+				<button id="collapsePanels">Collapse All</button>
+				<button id="openPanels">Open All</button>
+				</fieldset>
+			</fieldset>
+			
 			<fieldset id="solverSummaryField">
 			<legend>solver summary</legend>
 				<table id="solveTbl" class="shaded">
@@ -116,9 +151,9 @@
 			
 				<fieldset id="graphField">
 			<legend>graphs</legend> 
-			<img id="spaceOverview" src="/${starexecRoot}/images/emptyGraph.png" width="300" height="300" /> 
+			<img id="spaceOverview" src="/${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
 				
-				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/emptyGraph.png" usemap="#solverComparisonMap" />
+				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
 				<fieldset id="optionField">
 				<legend>options</legend> 
 					<fieldset id="spaceOverviewOptionField">
@@ -184,10 +219,13 @@
 							<c:if test="${isPaused}">
 								<td>paused</td>
 							</c:if>
+							<c:if test="${isAdminPaused}">
+								<td>Paused(admin)</td>
+							</c:if>
 							<c:if test="${isKilled}">
 								<td>killed</td>
 							</c:if>
-							<c:if test="${not isPaused && not isKilled}">	
+							<c:if test="${not isPaused && not isKilled && not isAdminPaused}">	
 								<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
 							</c:if>
 		
@@ -230,6 +268,10 @@
 							<td>cpu timeout</td>
 							<td>${cpu}</td>
 						</tr>		
+						<tr title="the maximum memory each pair in the job was allowed to use, in gigabytes">
+							<td>max memory</td>
+							<td>${maxMemory}</td>
+						</tr>
 					</tbody>
 				</table>	
 			</fieldset>
@@ -240,7 +282,15 @@
 				<ul id="actionList">
 					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
-					<c:if test="${job.userId == userId}"> 
+					<c:if test="${isAdmin}">
+						<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
+						<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
+						<span id="cacheType3" class="cacheType" value="${cacheType3}"></span>
+						<span id="cacheType4" class="cacheType" value="${cacheType4}"></span>
+						<button type="button" id="clearCache">clear cache</button>
+					</c:if>
+					
+					<c:if test="${job.userId == userId or isAdmin}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
 						<c:if test="${pairStats.pendingPairs > 0}">
 							<c:if test="${isRunning}">
@@ -252,10 +302,10 @@
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
-						<c:if test="${isPaused and queueExists}">
+						<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
 						</c:if>
-						<c:if test="${isPaused}">
+						<c:if test="${isPaused or isAdminPaused}">
 							<li><button type="button" id="changeQueue">Change Queue</button></li>	
 						</c:if>
 						</c:if>
@@ -279,6 +329,9 @@
 					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>
 					<map id="bigSolverComparisonMap"></map>
 				</div>
+				<div id="dialog-warning" title="warning">
+					<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+				</div>		
 				<div id="dialog-postProcess" title="run new postprocessor">
 					<p><span id="dialog-postProcess-txt"></span></p><br/>
 					

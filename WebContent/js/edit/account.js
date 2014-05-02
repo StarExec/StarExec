@@ -3,7 +3,6 @@ $(document).ready(function(){
 	attachFormValidation();
 	attachPasswordMonitor();
 	attachWebsiteMonitor();
-	refreshUserWebsites();
 });
 
 
@@ -86,6 +85,7 @@ function initUI(){
 	editable("firstname");
 	editable("lastname");
 	editable("institution");
+	editable("diskquota");
 	
 	// If the client's picture is clicked on, pop it up in a JQuery modal window
 	$('#showPicture').click(function(event){
@@ -252,9 +252,12 @@ function initButtonIcons(){
  * Queries the server for the user's websites and displays them on the page
  */
 function refreshUserWebsites(){
+	location.reload();
+	//we should NOT do this, because it leaves us vulnerable to XSS attacks
+	/*
 	$.getJSON(starexecRoot+'services/websites/user/-1', processWebsiteData).error(function(){
 		showMessage('error',"Internal error displaying user websites",5000);
-	});
+	});*/
 }
 
 /**
@@ -271,7 +274,7 @@ function togglePlusMinus(addSiteButton){
 
 /**
  * Extracts, formats, and injects the websites returned from the server into the client's DOM 
- */
+ 
 function processWebsiteData(jsonData) {
 	// Ensures the websites table is empty
 	$('#websites tbody tr').remove();
@@ -280,7 +283,7 @@ function processWebsiteData(jsonData) {
 	$.each(jsonData, function(i, site) {
 		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-}
+}*/
 
 /**
  * Allows for a given field to be editable
@@ -315,6 +318,9 @@ function editable(attribute) {
  * @param old the old values to apply if save = false
  */
 function saveChanges(obj, save, attr, old) {
+	
+	var userId = window.location.search.split('id=')[1]; 
+
 	if (true == save) {
 		var newVal = $(obj).siblings('input:first').val();
 		
@@ -322,7 +328,7 @@ function saveChanges(obj, save, attr, old) {
 		newVal = (newVal == "") ? "-1" : newVal;
 		
 		$.post(  
-				starexecRoot+"services/edit/user/" + attr + "/" + newVal,
+				starexecRoot+"services/edit/user/" + attr + "/" + userId + "/" + newVal,
 			    function(returnCode){  			        
 			    	if(returnCode == '0') {
 			    		// Hide the input box and replace it with the table cell

@@ -104,6 +104,15 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>AssocCommunities</servlet-name>
+    <servlet-class>org.starexec.servlets.AssocCommunities</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AssocCommunities</servlet-name>
+    <url-pattern>/secure/assoc/communities</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>Verify</servlet-name>
     <servlet-class>org.starexec.servlets.Verify</servlet-class>
   </servlet>
@@ -137,6 +146,15 @@
   <servlet-mapping>
     <servlet-name>JobCreator</servlet-name>
     <url-pattern>/secure/add/job</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>JobXMLUploader</servlet-name>
+  	<servlet-class>org.starexec.servlets.UploadJobXML</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JobXMLUploader</servlet-name>
+    <url-pattern>/secure/upload/jobXML</url-pattern>
   </servlet-mapping>
   
   <servlet>
@@ -301,6 +319,12 @@
   <security-role>
   	<role-name>unauthorized</role-name>
   </security-role>
+  <security-role>
+  	<role-name>suspended</role-name>
+  </security-role>
+  <security-role>
+  	<role-name>test</role-name>
+  </security-role>
   
   <!-- Form based authentication configuration -->
   <login-config>
@@ -342,6 +366,7 @@
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
 	  <role-name>unauthorized</role-name>
+	  <role-name>suspended</role-name>
     </auth-constraint>		
   </security-constraint>
 
@@ -354,6 +379,7 @@
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
 	  <role-name>unauthorized</role-name>
+	  <role-name>suspended</role-name>
     </auth-constraint>		
   </security-constraint>
   

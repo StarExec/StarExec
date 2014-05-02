@@ -165,22 +165,19 @@ CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TE
 				(benchmarks.name LIKE	CONCAT('%', _query, '%')
 				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
 	END //
-		
 -- Retrieves all benchmarks belonging to a space
--- Author: Tyler Jensen
+-- Author: Eric Burns
+	
 DROP PROCEDURE IF EXISTS GetSpaceBenchmarksById;
 CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 	BEGIN
 		SELECT *
-		FROM benchmarks AS bench
-			LEFT OUTER JOIN processors AS types
-			ON bench.bench_type=types.id
-		WHERE bench.deleted=false AND recycled=false and bench.id IN
-				(SELECT bench_id
-				FROM bench_assoc
-				WHERE space_id = _id)
-		ORDER BY bench.name;
+		FROM bench_assoc
+		JOIN benchmarks AS bench ON bench.id=bench_assoc.bench_id
+		LEFT OUTER JOIN processors AS types ON bench.bench_type=types.id
+		WHERE bench_assoc.space_id=_id and bench.deleted=false and bench.recycled=false;
 	END //
+
 
 -- Returns the number of public spaces a benchmark is in
 -- Benton McCune
@@ -459,6 +456,8 @@ CREATE PROCEDURE GetRecycledBenchmarkIds(IN _userId INT)
 
 -- Removes all benchmarks in the database that are deleted and also orphaned. Runs periodically.
 -- Author: Eric Burns
+
+-- TODO: This runs too slowly. It needs to be sped up somehow
 DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedBenchmarks;
 CREATE PROCEDURE RemoveDeletedOrphanedBenchmarks()
 	BEGIN
@@ -485,5 +484,15 @@ CREATE PROCEDURE ClearBenchAttributes(IN _benchId INT)
 		DELETE FROM bench_attributes
 		WHERE _benchId=bench_id;
 	END //
+	
+-- Retrieves the benchmarks owned by a given user id
+-- Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchmarksByOwner;
+CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
+	BEGIN
+		SELECT *
+		FROM benchmarks
+		WHERE user_id = _userId and deleted=false AND recycled=false;
+	END //	
 	
 DELIMITER ; -- This should always be at the end of this file

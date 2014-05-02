@@ -1,5 +1,4 @@
 $(document).ready(function(){
-	refreshSolverWebsites();
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
@@ -189,17 +188,21 @@ function togglePlusMinus(addSiteButton){
  * Refreshes the list of websites associated with this solver
  */
 function refreshSolverWebsites(){
+	location.reload();
+	
+	//we should NOT do this, because it leaves us vulnerable to XSS attacks
+	/*
 	//get website information for the given solver
 	$.getJSON(starexecRoot+'services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
 		showMessage('error',"Internal error getting websites",5000);
-	});
+	});*/
 }
 
 
 /**
  * Processes website data received from the server by creating HTML
  * for each website, adding a 'delete' button, and then injecting that HTML into the DOM 
- */
+ 
 function processWebsiteData(jsonData) {
 	// Ensures the websites table is empty
 	$('#websites tbody tr').remove();
@@ -208,7 +211,7 @@ function processWebsiteData(jsonData) {
 	$.each(jsonData, function(i, site) {
 		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
 	});
-}
+}*/
 
 /**
  * Monitors the solver's "websites" and updates the server if the client adds/deletes any
@@ -229,7 +232,7 @@ function attachWebsiteMonitor(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/websites/recycle/solver/" + getParameterByName("id") + "/" + id,
+							starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
 							function(returnData){
 								if (returnData == 0) {
 									parent.remove();
@@ -264,7 +267,8 @@ function attachWebsiteMonitor(){
 		} else if (url.trim().length <= 12) {
 			showMessage('error', 'the given url is not long enough', 6000);
 			return;
-		}	
+		}
+		
 		
 		var data = {name: name, url: url};
 		$.post(

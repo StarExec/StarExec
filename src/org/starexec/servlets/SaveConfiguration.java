@@ -133,9 +133,15 @@ public class SaveConfiguration extends HttpServlet {
 		try {
 			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_NAME))
 					|| Util.isNullOrEmpty((String) request.getParameter(SOLVER_ID))
-					|| Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))
-					|| Util.isNullOrEmpty((String) request.getParameter(CONFIG_DESC))){
+					|| Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
 				return false;
+			}
+			
+			
+			if (!Util.isNullOrEmpty((String) request.getParameter(CONFIG_DESC))) {
+				if (!Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
+					return false;
+				}
 			}
 			
 			// Ensure the parent solver id is valid

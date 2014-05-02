@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -137,6 +140,14 @@ public class UploadSolver extends HttpServlet {
     		log.error(e.getMessage(), e);
     	}	
 	}
+    /**
+     * Checks to see whether the given directory contains a solver build script in the top level
+     * @param dir The directory to look inside of
+     * @return True if the build script is there, and false otherwise
+     */
+    public boolean containsBuildScript(File dir) {
+    	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
+    }
     
 	/**
 	 * This method is responsible for uploading a solver to
@@ -146,7 +157,8 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")	
+	
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			int[] returnArray = new int[2];
@@ -157,7 +169,7 @@ public class UploadSolver extends HttpServlet {
 			String name=null;
 			URL url=null;
 			if (upMethod.equals("local")) {
-				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);		
+				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
 			} else {
 				try {
 					url=new URL((String)form.get(UploadSolver.FILE_URL));
@@ -195,15 +207,14 @@ public class UploadSolver extends HttpServlet {
 			File archiveFile=null;
 			//String FileName=null;
 			if (upMethod.equals("local")) {
-				archiveFile = new File(uniqueDir,  item.getName());
+				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
+				archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
-				//FileName = item.getName().split("\\.")[0];
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				FileUtils.copyURLToFile(url, archiveFile);
-				//FileName=name.split("\\.")[0];
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
@@ -211,13 +222,22 @@ public class UploadSolver extends HttpServlet {
 			long allowedBytes=currentUser.getDiskQuota();
 			long usedBytes=Users.getDiskUsage(userId);
 			
+			//the user does not have enough disk quota to upload this solver
 			if (fileSize>allowedBytes-usedBytes) {
 				archiveFile.delete();
 				returnArray[0]=-4;
 				return returnArray;
 			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-
+			
+			if (containsBuildScript(uniqueDir)) {
+				log.debug("the uploaded solver did contain a build script");
+				List<File> authorized=new ArrayList<File>();
+				authorized.add(uniqueDir);
+				String[] command=new String[1];
+				command[0]="./"+R.SOLVER_BUILD_SCRIPT;
+				Util.executeSandboxedCommand(command, null, authorized);
+			}
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
 				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
@@ -305,9 +325,7 @@ public class UploadSolver extends HttpServlet {
 			
 			Integer.parseInt((String)form.get(SPACE_ID));
 			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
-			//FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 
-			//String item_desc_file = ArchiveUtil.extractArchiveDesc(SOLVER_NAME);
 			
 			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) ||
 					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	

@@ -86,459 +86,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code		LIKE 	CONCAT('%', _query, '%')
 				OR		wallclock				LIKE	CONCAT('%', _query, '%'));
-	END //	
-	
--- Gets the fewest necessary Jobs in order to service a client's
--- request for the next page of Jobs in their DataTable object.  
--- This services the DataTable object by supporting filtering by a query, 
--- ordering results by a column, and sorting results in ASC or DESC order.  
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfRunningJobsAdmin;
-CREATE PROCEDURE GetNextPageOfRunningJobsAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of Jobs without filtering for _query
-		IF (_query = '' OR _query = NULL) THEN
-			IF _sortASC = TRUE THEN
-				SELECT DISTINCT
-						jobs.id, 
-						jobs.name, 
-						jobs.user_id, 
-						jobs.created, 
-						jobs.description, 
-						jobs.deleted,
-						jobs.primary_space,
-						GetJobStatus(jobs.id)		AS status,
-						GetTotalPairs(jobs.id) 		AS totalPairs,
-						GetCompletePairs(jobs.id) 	AS completePairs,
-						GetPendingPairs(jobs.id) 	AS pendingPairs,
-						GetErrorPairs(jobs.id) 		AS errorPairs
-				
-				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20
-				
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) ASC
-			 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	DISTINCT
-						jobs.id, 
-						jobs.name, 
-						jobs.user_id, 
-						jobs.created, 
-						jobs.description, 
-						jobs.deleted,
-						jobs.primary_space,
-						GetJobStatus(jobs.id)		AS status,
-						GetTotalPairs(jobs.id) 		AS totalPairs,
-						GetCompletePairs(jobs.id) 	AS completePairs,
-						GetPendingPairs(jobs.id) 	AS pendingPairs,
-						GetErrorPairs(jobs.id) 		AS errorPairs
-				
-				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20				
-				
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-			
-		-- Otherwise, ensure the target Jobs contain _query
-		ELSE
-			IF _sortASC = TRUE THEN
-				SELECT 	DISTINCT
-						jobs.id, 
-						jobs.name, 
-						jobs.user_id, 
-						jobs.created, 
-						jobs.description, 
-						jobs.deleted,
-						jobs.primary_space,
-						GetJobStatus(jobs.id)		AS status,
-						GetTotalPairs(jobs.id) 		AS totalPairs,
-						GetCompletePairs(jobs.id) 	AS completePairs,
-						GetPendingPairs(jobs.id) 	AS pendingPairs,
-						GetErrorPairs(jobs.id) 		AS errorPairs
-				
-				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20
-				AND
-				
-				-- Exclude Jobs whose name and status don't contain the query string
-						(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-										
-										
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) ASC
-					 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT DISTINCT
-						jobs.id, 
-						jobs.name, 
-						jobs.user_id, 
-						jobs.created, 
-						jobs.description, 
-						jobs.deleted,
-						jobs.primary_space,
-						GetJobStatus(jobs.id)		AS status,
-						GetTotalPairs(jobs.id) 		AS totalPairs,
-						GetCompletePairs(jobs.id) 	AS completePairs,
-						GetPendingPairs(jobs.id) 	AS pendingPairs,
-						GetErrorPairs(jobs.id) 		AS errorPairs
-				FROM	jobs
-				JOIN    job_pairs ON jobs.id = job_pairs.job_id
-				WHERE 	job_pairs.status_code < 7 OR job_pairs.status_code = 20 
-				AND
-					 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		END IF;
-	END //
-
-	
--- Gets the fewest necessary Jobs in order to service a client's
--- request for the next page of Jobs in their DataTable object.  
--- This services the DataTable object by supporting filtering by a query, 
--- ordering results by a column, and sorting results in ASC or DESC order.  
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetNextPageOfJobs;
-CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of Jobs without filtering for _query
-		IF (_query = '' OR _query = NULL) THEN
-			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				
-				FROM	jobs
-				
-				-- Exclude Jobs that aren't in the specified space
-				WHERE 	id 	IN (SELECT job_id 
-								FROM job_assoc
-								WHERE space_id = _spaceId)
-				
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) ASC
-			 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				FROM	jobs
-				WHERE 	id 	IN (SELECT job_id 
-								FROM job_assoc
-								WHERE space_id = _spaceId)
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-			
-		-- Otherwise, ensure the target Jobs contain _query
-		ELSE
-			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				
-				FROM	jobs
-				
-				-- Exclude Jobs whose name and status don't contain the query string
-				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-										
-				-- Exclude Jobs that aren't in the specified space
-				AND 	id 		IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
-										
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) ASC
-					 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				FROM	jobs
-				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-				AND 	id 		IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		END IF;
-	END //
-
-
-	
-	
-	-- Gets the fewest necessary Jobs in order to service a client's
--- request for the next page of Jobs in their DataTable object.  
--- This services the DataTable object by supporting filtering by a query, 
--- ordering results by a column, and sorting results in ASC or DESC order.
--- Gets jobs across all spaces for one user.  
--- Author: Ben and Ruoyu
-DROP PROCEDURE IF EXISTS GetNextPageOfUserJobs;
-CREATE PROCEDURE GetNextPageOfUserJobs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _userId INT, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of Jobs without filtering for _query
-		IF (_query = '' OR _query = NULL) THEN
-			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				
-				FROM	jobs 
-				
-				WHERE user_id = _userId
-				
-				AND deleted=false
-				
-				
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) ASC
-			 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				FROM	jobs 
-				
-				WHERE user_id = _userId
-				
-				AND deleted=false
-
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-			
-		-- Otherwise, ensure the target Jobs contain _query
-		ELSE
-			IF _sortASC = TRUE THEN
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				
-				FROM	jobs 
-				
-				WHERE user_id = _userId
-				
-				AND deleted=false
-				
-				-- Exclude Jobs whose name and status don't contain the query string
-				AND 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-										
-										
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) ASC	 
-				-- Shrink the results to only those required for the next page of Jobs
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id, 
-						name, 
-						user_id, 
-						created, 
-						description, 
-						deleted,
-						primary_space,
-						GetJobStatus(id)		AS status,
-						GetTotalPairs(id) 		AS totalPairs,
-						GetCompletePairs(id) 	AS completePairs,
-						GetPendingPairs(id) 	AS pendingPairs,
-						GetErrorPairs(id) 		AS errorPairs
-				FROM	jobs 
-				WHERE user_id = _userId
-				
-				AND deleted=false
-				
-				AND 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-
-				ORDER BY 
-					 (CASE _colSortedOn
-					 	WHEN 0 THEN name
-					 	WHEN 1 THEN status
-					 	WHEN 2 THEN completePairs
-					 	WHEN 3 THEN pendingPairs
-					 	WHEN 4 THEN errorPairs
-						ELSE created
-					 END) DESC
-				
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		END IF;
-	END //
-	
-	
-	
+	END //		
 
 	
 -- Gets attributes for every pair in a job
@@ -838,6 +386,16 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 		WHERE job_id = _jobId AND status_code = 1;
 	END //
 	
+-- Sets the global paused flag to true
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS PauseAll;
+CREATE PROCEDURE PauseAll()
+	BEGIN
+		INSERT INTO system_flags (integrity_keeper, paused)
+		VALUES ('', true)
+		ON DUPLICATE KEY UPDATE paused = true;
+	END //
+	
 -- Sets the "paused" property of a job to false
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS ResumeJob;
@@ -850,6 +408,16 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		UPDATE job_pairs
 		SET status_code = 1
 		WHERE job_id = _jobId AND status_code = 20;
+	END //
+	
+-- sets the global paused flag to false
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS ResumeAll;
+CREATE PROCEDURE ResumeAll()
+	BEGIN
+		INSERT INTO system_flags (integrity_keeper, paused)
+		VALUES ('', false)
+		ON DUPLICATE KEY UPDATE paused = false;
 	END //
 	
 -- Sets the "killed" property of a job to true
@@ -884,10 +452,10 @@ CREATE PROCEDURE ChangeQueue(IN _jobId INT, IN _queueId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), IN _solverId INT, OUT _id INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN _status TINYINT, IN _cpuTimeout INT, IN _clockTimeout INT, IN _path VARCHAR(2048),IN _jobSpaceId INT,IN _configName VARCHAR(256), IN _solverName VARCHAR(256), IN _benchName VARCHAR(256), IN _solverId INT, IN _mem BIGINT, OUT _id INT)
 	BEGIN
-		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id)
-		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName, _solverId);
+		INSERT INTO job_pairs (job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id, maximum_memory)
+		VALUES (_jobId, _benchId, _configId, _status, _cpuTimeout, _clockTimeout, _path, _jobSpaceId, _solverName,  _benchName, _configName, _solverId, _mem);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
@@ -1055,17 +623,74 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 		UPDATE jobs SET post_processor = _procId WHERE id=_jobId;
 	END //
 	
+	
+-- Gets the wallclock timeout for the given job
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetWallclockTimeout;
 CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT)
 	BEGIN
 		SELECT DISTINCT clockTimeout 
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
+		WHERE jobs.id=_jobId;
 	END //
 	
+-- Gets the cpu timeout for the given job
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetCpuTimeout;
 CREATE PROCEDURE GetCpuTimeout(IN _jobId INT)
 	BEGIN
 		SELECT DISTINCT cpuTimeout
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id;
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
+		WHERE jobs.id=_jobId;
 	END //
+
+-- Gets the maximum memory for the given job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetMaxMemory;
+CREATE PROCEDURE GetMaxMemory(IN _jobId INT) 
+	BEGIN
+		SELECT DISTINCT maximum_memory
+		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
+		WHERE jobs.id=_jobId;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetAllJobs;
+CREATE PROCEDURE GetAllJobs()
+	BEGIN
+		SELECT 	id,
+				user_id,
+				name,
+				queue_id,
+				created,
+				description,
+				deleted,
+				paused,
+				killed,
+				primary_space,
+				GetJobStatus(id) 		AS status,
+				GetTotalPairs(id) 		AS totalPairs,
+				GetCompletePairs(id)	AS completePairs,
+				GetPendingPairs(id)		AS pendingPairs,
+				GetErrorPairs(id)		AS errorPairs
+				
+		FROM jobs;
+	END //
+	
+DROP PROCEDURE IF EXISTS IsSystemPaused;
+CREATE PROCEDURE IsSystemPaused()
+	BEGIN
+		SELECT paused
+		FROM system_flags;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetUnRunnableJobs;
+CREATE PROCEDURE GetUnRunnableJobs()
+	BEGIN
+		SELECT DISTINCT *
+		FROM jobs
+		WHERE queue_id = null
+		OR id NOT IN (SELECT jobs.id 
+					FROM jobs JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id);
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

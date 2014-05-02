@@ -21,6 +21,7 @@ $(document).ready(function(){
 	attachFormValidation();
 	
 	$('#radioDepth').attr('checked','checked');
+	$('#radioNoPause').attr('checked','checked');
 
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {
@@ -70,6 +71,10 @@ function attachFormValidation(){
 				required: true,			    
 			    max: 259200
 			},
+			maxMem: {
+				required: true,
+				max : 100 // TODO: What should this be? What should the minimum be?
+			},
 			queue: {
 				required: true
 			}
@@ -93,6 +98,10 @@ function attachFormValidation(){
 			wallclockTimeout: {
 				required: "enter a timeout",			    
 			    max: "3 day max timeout"
+			},
+			maxMem: {
+				required: "enter a maximum memory",
+				max: "100 gigabytes maximum" 
 			},
 			queue: {
 				required: "error - no worker queues"

@@ -175,6 +175,9 @@ function initDataTables() {
 				} else if(conflict === 'CONFLICT') {
 					colorCSS = 'statusConflict';
 					conflictNumber = conflictNumber + 1;
+				} else if(conflict === 'ZERO') {
+					colorCSS = 'statusZero';
+					conflictNumber = conflictNumber + 1;
 				}
 			oSettings.aoData[i].nTr.className += " "+ colorCSS;
 			}
@@ -190,6 +193,8 @@ function initDataTables() {
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
 			nodeTable.fnDraw();
+
+			setTimeout(function(){nodeTable.fnDraw();}, 1000);
 		}
 	  });
 

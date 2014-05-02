@@ -26,6 +26,7 @@
 			
 			<button id="runAll">Run All Tests</button>	
 			<button id="runSelected">Run Selected Tests</button>
+			<button id="runStress">Run Stress Test</button>
 		</fieldset>		
 	
 </star:template>

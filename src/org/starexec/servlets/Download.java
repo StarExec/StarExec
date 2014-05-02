@@ -32,7 +32,6 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Job;
@@ -40,7 +39,6 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
@@ -104,17 +102,19 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
-				shortName="Job"+jobId+"_CSV";
+				shortName="Job"+jobId+"_info";
 				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
 			} else if (request.getParameter("type").equals("j_outputs")) {
-				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+				int jobId=Integer.parseInt(request.getParameter("id"));
+				
 				String lastSeen=request.getParameter("since");
 				Integer since=null;
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
+					System.out.println("found since = "+lastSeen);
 				}
-				shortName="Job"+job.getId()+"_Output";
-				archive = handleJobOutputs(job, u.getId(), ".zip", response,since);
+				shortName="Job"+jobId+"_output";
+				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
 			} else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
@@ -169,8 +169,9 @@ public class Download extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
 			}									
 		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			
 		}
 	}	
 
@@ -185,31 +186,24 @@ public class Download extends HttpServlet {
 	 */
 	private static File handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
 		log.info("handleSolver");
-		String description = s.getDescription();
+		
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
 
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
-				String cachedFileName=null;
+				String cachedFilePath=null;
 				if(!reupload) {
-					cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
+					cachedFilePath=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
 				} else {
-					cachedFileName=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD);
+					cachedFilePath=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD);
 				}
 				
-				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
+				//if the entry was in the cache, we can just return it.
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
 					
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(s.getId(),CacheType.CACHE_SOLVER);
-					}
+					log.debug("returning a cached file!");
+					return cachedFile;
 				}
 			
 			
@@ -219,15 +213,15 @@ public class Download extends HttpServlet {
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
 
-			String path = s.getPath();
-			int index = path.lastIndexOf(File.separator);
-			String tempdest = path.substring(index);
+			//String path = s.getPath();
+			//int index = path.lastIndexOf(File.separator);
+			//String tempdest = path.substring(index);
 
-			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
-			tempDir.mkdirs();
-			copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
+			//File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
+			//tempDir.mkdirs();
+			//copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
 
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseName, reupload);
+			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, baseName, reupload);
 			if (!reupload) {
 				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,uniqueDir,fileName);
 			} else {
@@ -237,7 +231,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
 		}
 
 		return null;
@@ -309,19 +303,13 @@ public class Download extends HttpServlet {
 	private static File handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
 		// If we can see this benchmark AND the benchmark is downloadable...
 		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
-			String cachedFileName=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
+			String cachedFilePath=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
 			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				if (cachedFile.exists()) {
-					//it's there, so give back the name
-					log.debug("returning a cached file!");
-					return cachedFile;
-				} else {
-					log.warn("a cached file did not exist when it should have!");
-					Cache.invalidateCache(b.getId(),CacheType.CACHE_BENCHMARK);
-				}
+			if (cachedFilePath!=null) {
+				File cachedFile = new File(cachedFilePath);
+
+				return cachedFile;
+				
 			}
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
@@ -333,7 +321,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
 		}
 
 		return null;
@@ -362,26 +350,20 @@ public class Download extends HttpServlet {
 		// If we can see this Space
 		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
 			
-				String cachedFileName=null;
-				cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
+				String cachedFilePath=null;
+				cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
 				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
+					
 						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE_XML);
-					}
+					
 				}
 			
 			log.debug("Permission to download XML granted");			
 			BatchUtil butil = new BatchUtil();
 			File file = null;
-
 			file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
 			String baseFileName=space.getName()+"_XML";
 			String fileNamewoFormat = baseFileName+"_("+ UUID.randomUUID().toString()+")";
@@ -407,7 +389,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
 		}
 
 		return null;
@@ -427,25 +409,16 @@ public class Download extends HttpServlet {
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			
-			String cachedFileName=null;
-			
-			cachedFileName=Cache.getCache(jp.getId(),CacheType.CACHE_JOB_PAIR);
+			String cachedFilePath=Cache.getCache(jp.getId(),CacheType.CACHE_JOB_PAIR);
 			
 			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFileName!=null) {
-				File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+			if (cachedFilePath!=null) {
+				File cachedFile = new File(cachedFilePath);
 				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				if (cachedFile.exists()) {
-					//it's there, so give back the name
-					log.debug("returning a cached file!");
-					return cachedFile;
-				} else {
-					log.warn("a cached file did not exist when it should have!");
-					Cache.invalidateCache(jp.getId(),CacheType.CACHE_SPACE);
-				}
+				log.debug("returning a cached file!");
+				return cachedFile;
+				
 			}
-			
-			
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
 			String fileName = UUID.randomUUID().toString() + format;
@@ -459,7 +432,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
 		return null;
@@ -481,27 +454,19 @@ public class Download extends HttpServlet {
 		boolean jobComplete=Jobs.isJobComplete(jobId);
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			if (jobComplete && since==null) {
-				String cachedFileName = null;
+				String cachedFilePath = null;
 				if (returnIds) {
-					cachedFileName=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
+					cachedFilePath=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
 				} else {
-					cachedFileName=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
+					cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
 				}
-				if (cachedFileName!= null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(jobId,CacheType.CACHE_JOB_CSV);
-					}
+				if (cachedFilePath!= null) {
+					File cachedFile = new File(cachedFilePath);
+					log.debug("returning a cached file!");
+					return cachedFile;
+					
 				}
 			}
-			
-
 			Job job;
 			if (since==null) {
 				job = Jobs.getDetailed(jobId);
@@ -529,6 +494,7 @@ public class Download extends HttpServlet {
 			String fileName = UUID.randomUUID().toString() + format;
 			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 			uniqueDir.createNewFile();
+			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
 			String jobFile = CreateJobCSV(job, returnIds);
 			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
 			if (returnIds && jobComplete) {
@@ -537,7 +503,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
 		return null;
@@ -556,9 +522,11 @@ public class Download extends HttpServlet {
 		sb.delete(0, sb.length());
 		sb.append(R.NEW_JOB_OUTPUT_DIR);
 		sb.append(File.separator);
-		sb.append(job.getUserId());
-		sb.append("_");
+		//sb.append(job.getUserId());
+		
+		sb.append("Job");
 		sb.append(job.getId());
+		sb.append("_info");
 		sb.append(".csv");
 		String filename = sb.toString();
 
@@ -568,9 +536,9 @@ public class Download extends HttpServlet {
 		/* generate the table header */
 		sb.delete(0, sb.length());
 		if (!returnIds) {
-			sb.append("benchmark,solver,configuration,status,time(s),result");
+			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,result");
 		} else {
-			sb.append("pair id, benchmark,benchmark id, solver,solver id,configuration,configuration id,status,time(s),result");
+			sb.append("pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time,wallclock time,result");
 		}
 		
 
@@ -618,16 +586,20 @@ public class Download extends HttpServlet {
 				sb.append(pair.getSolver().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getSolver().getConfigurations().get(0).getName());
+			sb.append(pair.getConfiguration().getName());
 			sb.append(",");
 			if (returnIds) {
-				sb.append(pair.getSolver().getConfigurations().get(0).getId());
+				sb.append(pair.getConfiguration().getId());
 				sb.append(",");
 			}
 			sb.append(pair.getStatus().toString());
 
 			sb.append(",");
+			sb.append((pair.getCpuTime()));
+
+			sb.append(",");
 			sb.append((pair.getWallclockTime()));
+
 			sb.append(",");
 			sb.append(pair.getStarexecResult());
 
@@ -666,25 +638,24 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static File handleJobOutputs(Job j, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
-		boolean jobComplete=Jobs.isJobComplete(j.getId());
+	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
+		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
-		if (Permissions.canUserSeeJob(j.getId(), userId)) {
-			if (jobComplete && since==null) {
-				String cachedFileName=null;
-				cachedFileName=Cache.getCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
+		if (Permissions.canUserSeeJob(jobId, userId)) {
+			log.debug("confirmed user can download job = "+jobId);
+			boolean jobComplete=Jobs.isJobComplete(jobId);
+			if (jobComplete && since==null) { //there is no cache for partial results
+				String cachedFilePath=null;
+				cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_OUTPUT);
+				log.debug("checked in cache for job = "+jobId);
+
 				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
 					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(j.getId(),CacheType.CACHE_JOB_OUTPUT);
-					}
+					log.debug("returning a cached file for job = "+jobId);
+					return cachedFile;
+					
 				}
 			}
 
@@ -698,12 +669,12 @@ public class Download extends HttpServlet {
 			File file, dir;
 			
 			//if we only want the new job pairs
-			List<JobPair> pairs;
 			if (since!=null) {
+				List<JobPair> pairs;
 				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
 				tempDir.mkdir();
 				log.debug("Getting incremental job output results");
-				pairs=Jobs.getNewCompletedPairsShallow(j.getId(), since);
+				pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
 				for (JobPair x : pairs) {
@@ -719,7 +690,7 @@ public class Download extends HttpServlet {
 					if (file.exists()) {
 						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
 
-						//store in the old format becaues the pair has no path
+						//store in the old format because the pair has no path
 						if (jp.getPath()==null) {
 							dir=new File(tempDir,jp.getSolver().getName());
 							dir.mkdir();
@@ -744,11 +715,15 @@ public class Download extends HttpServlet {
 
 					}
 				}
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"new_output_"+String.valueOf(j.getId()),false);
+				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
 			} else {
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(j.getId())), uniqueDir, format,"output_"+String.valueOf(j.getId()),false);
+				log.debug("preparing to create archive for job = "+jobId);
+
+				ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
+				log.debug("archive created for job = "+jobId);
+
 				if (jobComplete) {
-					Cache.setCache(j.getId(),CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
+					Cache.setCache(jobId,CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}
 			}
 
@@ -764,7 +739,7 @@ public class Download extends HttpServlet {
 		}
 
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
 		return null;
@@ -789,24 +764,18 @@ public class Download extends HttpServlet {
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
 			//we are only caching hierarchies with benchmarks + solvers so far
 			if (includeBenchmarks && includeSolvers) {
-				String cachedFileName=null;
+				String cachedFilePath=null;
 				if (hierarchy) {
-					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
+					cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
 				} else {
-					cachedFileName=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
+					cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
 				}
-				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFileName!=null) {
-					File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), cachedFileName);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					if (cachedFile.exists()) {
-						//it's there, so give back the name
-						log.debug("returning a cached file!");
-						return cachedFile;
-					} else {
-						log.warn("a cached file did not exist when it should have!");
-						Cache.invalidateCache(space.getId(),CacheType.CACHE_SPACE);
-					}
+				//if the entry was in the cache, we can return it
+				if (cachedFilePath!=null) {
+					File cachedFile = new File(cachedFilePath);
+					log.debug("returning a cached file!");
+					return cachedFile;
+					
 				}
 			}
 			
@@ -832,7 +801,7 @@ public class Download extends HttpServlet {
 			return uniqueDir;
 		}
 		else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
 		}
 		return null;
 	}
@@ -920,7 +889,7 @@ public class Download extends HttpServlet {
 			}
 
 
-			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid, false);
+			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid);
 			if(subspaceList ==  null || subspaceList.size() == 0){
 				return;
 			}
@@ -945,12 +914,10 @@ public class Download extends HttpServlet {
 		try {
 			if (!Util.paramExists("type", request)
 					|| !Util.paramExists("id", request)) {
-				System.out.println("here1");
 				return false;
 			}
 
 			if (!Validator.isValidInteger(request.getParameter("id"))) {
-				System.out.println("here2");
 
 				return false;
 			}
@@ -964,7 +931,6 @@ public class Download extends HttpServlet {
 					request.getParameter("type").equals("j_outputs") ||
 					request.getParameter("type").equals("space") ||
 					request.getParameter("type").equals("proc"))) {
-				System.out.println("here3");
 
 				return false;
 			}

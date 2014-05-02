@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,9 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -180,6 +183,7 @@ public class Queues {
 	 */
 	protected static Queue get(Connection con, int qid) throws Exception {	
 		log.debug("starting get");
+		log.debug("id = " + qid);
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		
@@ -423,11 +427,10 @@ public class Queues {
 			
 			results = procedure.executeQuery();
 
-			while(results.next()){
-				return results.getInt("id");
-			}			
-
-			return -1;			
+			if (results.next()) {
+				return results.getInt("id");	
+			}
+			
 			
 		} catch (Exception e){			
 			log.error("getIdByName says " + e.getMessage(), e);		
@@ -436,7 +439,7 @@ public class Queues {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-			return -1;				
+			return -2;				
 	}
 	
 	/**
@@ -709,6 +712,121 @@ public class Queues {
 		return null;
 	}
 	
+	
+	public static List<Queue> getQueuesForUser(int userId) {
+		User u = Users.get(userId);
+		if (u.getRole().equals("admin")) {
+			return getQueues(0);
+		} else {
+			
+			List<Space> user_spaces = Spaces.GetSpacesByUser(userId);
+			List<Space> all_spaces = new LinkedList<Space>();
+			all_spaces.addAll(user_spaces);
+			if (user_spaces != null) {
+				for (Space s : user_spaces) {
+					List<Space> superSpaces = Spaces.getSuperSpaces(s.getId());
+					all_spaces.addAll(superSpaces);
+				}
+			}	
+			
+			log.debug("all_spaces" + all_spaces.size());
+			
+			Connection con = null;
+			try {
+				con = Common.getConnection();
+				List<Queue> queues = new LinkedList<Queue>();
+				// First add all the queues that have been reserved for a 
+				// superspace that the user is a member of
+				if (all_spaces != null) {
+					for (Space s : all_spaces) {
+						log.debug("space = " + s.getId());
+						queues.addAll(Queues.getQueuesForSpace(s.getId()));
+					}
+				}
+				
+				//Next add all global_access permanent queues
+				//queues.addAll(Queues.getGlobalQueues());
+				queues.addAll(Queues.getPermanentQueuesForUser(userId));
+				
+				
+				
+				
+				return queues;
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			} finally {
+				Common.safeClose(con);
+			}
+		}
+		return null;
+	}
+	
+	private static List<Queue> getPermanentQueuesForUser(int userId) {
+		Connection con = null;
+		ResultSet results = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetPermanentQueuesForUser(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			List<Queue> queues = new LinkedList<Queue>();
+			
+			while (results.next()) {
+				Queue q = new Queue();
+				q.setId(results.getInt("id"));
+				q.setName(results.getString("name"));
+				q.setStatus(results.getString("status"));
+				q.setPermanent(results.getBoolean("permanent"));
+				q.setGlobalAccess(results.getBoolean("global_access"));
+				queues.add(q);
+			}
+			return queues;
+		} catch (Exception e) {
+			log.error("GetPermanentQueuesForUser says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
+	/**
+	 * Get all the queues that have been reserved for a particular space
+	 * @param space_id
+	 * @return
+	 */
+	public static List<Queue> getQueuesForSpace(int space_id) {
+		Connection con = null;
+		ResultSet results = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetQueuesForSpace(?)}");
+			procedure.setInt(1, space_id);
+	
+			results = procedure.executeQuery();
+			List<Queue> queues = new LinkedList<Queue>();
+			
+			while(results.next()){
+				Queue q = Queues.get(results.getInt("queue_id"));
+				queues.add(q);
+			}			
+						
+			return queues;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
+	
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
@@ -907,7 +1025,6 @@ public class Queues {
 	 */
 	public static boolean update(String name, HashMap<String, String> attributes) {
 		Connection con = null;	
-		CallableStatement procAddQueue = null;
 		CallableStatement procAddCol = null;
 		CallableStatement procUpdateAttr = null;
 		try {
@@ -1113,6 +1230,32 @@ public class Queues {
 		}
 		return false;
 	}
+	
+	public static boolean isQueueGlobal(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL IsQueueGlobal(?)}");
+			procedure.setInt(1, queue_id);
+			
+			results = procedure.executeQuery();
+			boolean global = false;
+			while(results.next()) {
+				global = results.getBoolean("global_access");
+			}
+			return global;
+		} catch (Exception e) {
+			log.error("IsQueueGlobal says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+	}
 
 	public static void delete(int queueId) {
 		Connection con = null;
@@ -1130,6 +1273,44 @@ public class Queues {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+	}
+	
+	public static boolean makeGlobal(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL MakeQueueGlobal(?)}");
+			procedure.setInt(1, queue_id);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	public static boolean removeGlobal(int queue_id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL RemoveQueueGlobal(?)}");
+			procedure.setInt(1, queue_id);
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 
 }

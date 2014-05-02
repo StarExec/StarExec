@@ -118,6 +118,42 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 		ORDER BY name;	
 	END //
 	
+-- Gets the id, name, and status of all queues that are available for a job
+-- Default Queue
+-- Reserved for space
+-- permanent and has given access to specified community that the user is a leader of
+-- permanent and global
+-- In all situations, the queue must not be empty
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetAllQueuesForJob;
+CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT, IN _defaultQueueId INT)
+	BEGIN
+		SELECT DISTINCT id, name, status
+		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
+		WHERE status = "ACTIVE" 
+		AND 
+			-- If the queue is default queue
+			(id = _defaultQueueId)
+				OR
+			-- If the queue is reserved for this space...
+			(id IN (select queue_id from comm_queue WHERE queues.permanent = false AND space_id = _spaceId))
+				OR
+			-- If the queue is permanent and has given access to a specified community that the user is leader of
+			(id IN  
+				(SELECT queues.id
+				FROM comm_queue JOIN queues ON queues.id = comm_queue.queue_id
+				WHERE queues.permanent = true
+				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))))
+				OR
+			-- the queue has global access
+			(id IN
+				(SELECT queues.id
+				FROM queues
+				WHERE global_access = true));
+			
+	END //
+		
+	
 -- Gets the id, name and status of all queues in the cluster that are active and the user can use and are unreserved
 -- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
 -- Author: Benton McCune
@@ -243,7 +279,7 @@ CREATE PROCEDURE GetActiveNodeCount()
 	END //
 	
 DROP PROCEDURE IF EXISTS GetNonPermanentNodeCount;
-CREATE PROCEDURE GetNonPermanentNodeCount()
+CREATE PROCEDURE GetNonPermanentNodeCount(IN _defaultQueueId INT)
 	BEGIN
 		SELECT Count(*)
 		AS nodeCount
@@ -251,7 +287,7 @@ CREATE PROCEDURE GetNonPermanentNodeCount()
 		WHERE nodes.id = queue_assoc.node_id
 				AND nodes.status = "ACTIVE" 
 				AND queue_assoc.queue_id = queues.id
-				AND queues.permanent = false;
+				AND (queues.permanent = false || queues.id = _defaultQueueId);
 	END //
 	
 -- Returns the node count for a particular date for a particular queue
@@ -274,10 +310,10 @@ CREATE PROCEDURE GetLatestNodeDate()
 	END //
 	
 DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
-CREATE PROCEDURE UpdateReservedNodeCount(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _date DATE)
+CREATE PROCEDURE UpdateReservedNodeCount(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _date DATE, IN _message TEXT)
 	BEGIN
 		INSERT INTO queue_reserved
-		VALUES (_spaceId, _queueId, _nodeCount, _date)
+		VALUES (_spaceId, _queueId, _nodeCount, _date, _message)
 		ON DUPLICATE KEY UPDATE
 		node_count=_nodeCount;
 	END //
@@ -350,6 +386,16 @@ CREATE PROCEDURE GetAllNodes ()
 		WHERE status = "ACTIVE";
 	END //
 	
+-- Returns all the nodes in the system that are active and not associated with the queue already
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNonAttachedNodes;
+CREATE PROCEDURE GetNonAttachedNodes(IN _queueId INT)
+	BEGIN
+		SELECT DISTINCT *
+		FROM nodes JOIN queue_assoc on nodes.id = queue_assoc.node_id 
+		WHERE status = "ACTIVE" AND queue_assoc.queue_id != _queueId;
+	END //
+	
 -- Returns all the nodes in the system that are active and not associated w/ permanent queue
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetAllNonPermanentNodes;
@@ -371,7 +417,8 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 		SELECT DISTINCT
 			jobs.id, 
 			jobs.name, 
-			jobs.user_id, 
+			jobs.user_id,
+			jobs.queue_id,
 			jobs.created, 
 			jobs.description, 
 			jobs.deleted,
@@ -417,6 +464,32 @@ CREATE PROCEDURE GetNodeNameById(IN _nodeId INT)
 		WHERE id = _nodeId;
 	END //
 	
+-- Get the id of the default queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetDefaultQueueId;
+CREATE PROCEDURE GetDefaultQueueId(IN _queueName VARCHAR(64))
+	BEGIN
+		SELECT id
+		FROM queues
+		WHERE name = _queueName;
+	END //
+	
+-- Give the community (leaders) Access to a permanent queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS SetPermQueueCommunityAccess;
+CREATE PROCEDURE SetPermQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
+	BEGIN
+		INSERT INTO comm_queue
+		VALUES (_communityId, _queueId);
+	END //
+	 
+DROP PROCEDURE IF EXISTS RemoveEmptyNodeCounts;
+CREATE PROCEDURE RemoveEmptyNodeCounts()
+	BEGIN
+		DELETE FROM queue_reserved
+		WHERE node_count = 0
+		AND queue_id IN (SELECT DISTINCT queue_id FROM (SELECT DISTINCT queue_id FROM queue_reserved where node_count != 0) AS QueuesToDeleteFrom);
+	END //
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
 CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)

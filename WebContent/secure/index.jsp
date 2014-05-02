@@ -6,8 +6,9 @@
 	int userId = SessionUtil.getUserId(request);
 		User user = Users.get(userId);
 		System.out.println("role = " + user.getRole());
-		System.out.println("boolean = " + user.getRole().equals("unauthorized"));
-		if (!user.getRole().equals("unauthorized")){
+		System.out.println("unauthorized = " + user.getRole().equals("unauthorized"));
+		System.out.println("suspended = " + user.getRole().equals("suspended"));
+		if (!user.getRole().equals("unauthorized") && !user.getRole().equals("suspended")){
 			String redirectURL = Util.docRoot("secure/explore/spaces.jsp");
     		response.sendRedirect(redirectURL);
 		}
@@ -32,7 +33,17 @@
 			setTimeout(logout, 20000);
 		</script>
 	</c:if>
-	<c:if test="${user.role != 'unauthorized'}">
+	<c:if test="${user.role == 'suspended'}">
+		<p>
+			<strong>You have been suspended and have indefinitely lost access to StarExec services</strong>
+		</p>
+		<br />
+		<p>you will be automatically logged out after 20 seconds.</p>
+		<script language="javascript">
+			setTimeout(logout, 20000);
+		</script>
+	</c:if>
+	<c:if test="${user.role != 'unauthorized' || user.role != 'suspended'}">
 		<style type="text/css">
 #content a:link {
 	text-decoration: underline;
@@ -46,7 +57,6 @@
 	padding: 3px;
 }
 </style>
-		<p>Nobody should see this message.  Please report if you do.</p>
 		<br />
 		<br />
 		<li><a

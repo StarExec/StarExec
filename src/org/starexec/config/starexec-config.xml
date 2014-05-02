@@ -8,7 +8,7 @@
 			<property key="MYSQL_USERNAME" value="prod_star_app" />
 			<property key="MYSQL_PASSWORD" value="g4qC867ByQ3736i7" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
-			<property key="MYSQL_POOL_MAX_SIZE" value="100" />			
+			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/batchSpace/batchSpaceSchema.xsd" /> 
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
@@ -19,7 +19,7 @@
 			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />
 			<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/joboutput"/>	
 			<property key="JOBPAIR_INPUT_DIR" value="/home/starexec/jobpairs"/>
-			<property key="JOB_LOG_DIR" value="/home/starexec/jobout/logs" />
+			<property key="JOB_LOG_DIR" value="/home/starexec/joboutput/logs" />
 			<property key="NODE_WORKING_DIR" value="/export/starexec/sandbox/" />
 			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
@@ -27,7 +27,8 @@
 			<property key="CACHED_FILE_DIR" value="/secure/cache"/>
 			<property key="JOBGRAPH_FILE_DIR" value="/secure/jobgraphs"/>
 			<property key="PICTURE_PATH" value="/home/starexec/pictures" /> 
-			<property key="BATCH_SPACE_XML_DIR" value="/home/starexec/batchSpace/uploads" /> 										
+			<property key="BATCH_SPACE_XML_DIR" value="/home/starexec/batchSpace/uploads" /> 	
+			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
@@ -63,7 +64,7 @@
 			<property key="TEST_USER_PASSWORD" value="null"/>
 	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
-			<property key="MAX_PAIR_VMEM" value="63488" /> <!-- in MB -->
+			<property key="MAX_PAIR_VMEM" value="4294967296" /> <!-- in bytes -->
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
    		</class>
@@ -77,7 +78,7 @@
 			<property key="TEST_COMMUNITY_ID" value="2"/>
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
 	  		<property key="NUM_JOB_SCRIPTS" value="20" />
-			<property key="MAX_PAIR_VMEM" value="5120" /> <!-- in MB -->
+			<property key="MAX_PAIR_VMEM" value="4294967296" /> <!-- in bytes -->
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
                         <property key="MYSQL_USERNAME" value="stardev" />
@@ -100,7 +101,7 @@
                 <property key="JOB_INBOX_DIR" value="/home/astump/starexec_astump_data/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/jobout" />     
 		<property key="NEW_JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/jobout/logs" />
+                <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/astump/starexec_astump_data/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/astump/starexec_astump_data/batchSpace/uploads" />           
 		</class>
@@ -110,22 +111,22 @@
         <!-- MYSQL Configuration -->
 
          <property key="MYSQL_DATABASE" value="starexec_tsmith14" />
-         <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+         <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tsmith14?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
          <property key="PUBLIC_USER_ID" value="3" />
-         <property key="SPACE_XML_SCHEMA_LOC" value="/home/tsmith14/starexec_tsmith14_data/batchSpace/batchSpaceSchema.xsd" />
+         <property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/batchSpace/batchSpaceSchema.xsd" />
          <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
          <property key="STAREXEC_APPNAME" value="starexec_tsmith14"/>
-         <property key="BENCHMARK_PATH" value="/home/tsmith14/starexec_tsmith14_data/Benchmarks" />
-         <property key="SOLVER_PATH" value="/home/tsmith14/starexec_tsmith14_data/Solvers" />
-         <property key="PROCESSOR_DIR" value="/home/tsmith14/starexec_tsmith14_data/processor_scripts" />
-         <property key="STAREXEC_DATA_DIR" value="/home/tsmith14/starexec_tsmith14_data" />
-         <property key="JOB_INBOX_DIR" value="/home/tsmith14/starexec_tsmith14_data/jobin" />
-         <property key="JOB_OUTPUT_DIR" value="/home/tsmith14/starexec_tsmith14_data/jobout" />
-         <property key="NEW_JOB_OUTPUT_DIR" value="/home/tsmith14/starexec_tsmith14_data/joboutput"/>    ^M
-         <property key="JOB_LOG_DIR" value="/home/tsmith14/starexec_tsmith14_data/jobout/logs" />
-         <property key="PICTURE_PATH" value="/home/tsmith14/starexec_tsmith14_data/pictures" />
-         <property key="BATCH_SPACE_XML_DIR" value="/home/tsmith14/starexec_tsmith14_data/batchSpace/uploads" />
-         </class>^M
+         <property key="BENCHMARK_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/Benchmarks" />
+         <property key="SOLVER_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/Solvers" />
+         <property key="PROCESSOR_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/processor_scripts" />
+         <property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data" />
+         <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobin" />
+         <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/jobout" />
+         <property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/joboutput"/>    
+         <property key="JOB_LOG_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/joboutput/logs" />
+         <property key="PICTURE_PATH" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/pictures" />
+         <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_tsmith14/starexec_tsmith14_data/batchSpace/uploads" />
+         </class>
     </configuration>
 
 	<configuration name="stardev_eaburns" inherit="stardev">
@@ -144,11 +145,32 @@
                 <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobout" />     
 		<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobout/logs" />
+                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_eaburns/data_dir/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/starexec/starexec_eaburns/data_dir/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_eaburns/data_dir/batchSpace/uploads" />           
 		</class>
 	</configuration>
+	        <configuration name="stardev_wkaiser" inherit="stardev">
+                <class name="org.starexec.constants.R">
+                <!-- MYSQL Configuration -->
+                <property key="MYSQL_DATABASE" value="starexec_wkaiser" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_wkaiser?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="PUBLIC_USER_ID" value="3" />
+                <property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/starexec_wkaiser_data/batchSpace/batchSpaceSchema.xsd" />
+                <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
+                <property key="STAREXEC_APPNAME" value="starexec_wkaiser"/>
+                <property key="BENCHMARK_PATH" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/Benchmarks" />
+                <property key="SOLVER_PATH" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/Solvers" />
+                <property key="PROCESSOR_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/processor_scripts" />           
+                <property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data" />
+                <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/jobin" />
+                <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/jobout" />
+                <property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/joboutput"/>
+                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/joboutput/logs" />
+                <property key="PICTURE_PATH" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/pictures" /> 
+                <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_wkaiser/starexec_wkaiser_data/batchSpace/uploads" />
+                </class>
+        </configuration>
    <!-- local development configurations should inherit from this -->
    <configuration name="local" inherit="stardev">
    		<class name="org.starexec.constants.R">   
@@ -156,6 +178,8 @@
                 <property key="STAREXEC_SERVERNAME" value="localhost:8080" />
                 <property key="STAREXEC_APPNAME" value="starexec"/>
                 <property key="RUN_PERIODIC_SGE_TASKS" value="false"/>
+                <property key="STAREXEC_URL_PREFIX" value="http"/>
+                
                 </class> 
    </configuration>
   <configuration name="astump_dev" inherit="local">
@@ -181,7 +205,7 @@
 	  <property key="BATCH_SPACE_XML_DIR" value="/home/astump/lstarexec/batch/uploads" />  
  <!--   Misc. Configuration     --> 
 	  <property key="CONTACT_EMAIL" value="aaron.stump@gmail.com" />    
-	  <property key="PUBLIC_USER_ID" value="8" /> 
+	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 
   	</class>
   </configuration>
@@ -235,21 +259,21 @@
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 
-	  <property key="BENCHMARK_PATH" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\benchmarks" /> 
-	  <property key="SOLVER_PATH" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\solvers" /> 
-	  <property key="CONFIG_PATH" value="C:\\Users\\Wyatt\\workspace\\starexec\\src\\org\\starexec\\config" /> 
-	  <property key="JOB_INBOX_DIR" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\jobs" /> 
-	  <property key="NODE_WORKING_DIR" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\nodes" /> 
-	  <property key="BENCH_TYPE_DIR" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\types" /> 
-	  <property key="SPACE_XML_SCHEMA_LOC" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\batch\\batchSpaceSchema.xsd" /> 
+	  <property key="BENCHMARK_PATH" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\benchmarks" /> 
+	  <property key="SOLVER_PATH" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\solvers" /> 
+	  <property key="CONFIG_PATH" value="C:\\Users\\wyatt_000\\workspace\\starexec\\src\\org\\starexec\\config" /> 
+	  <property key="JOB_INBOX_DIR" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\jobs" /> 
+	  <property key="NODE_WORKING_DIR" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\nodes" /> 
+	  <property key="BENCH_TYPE_DIR" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\types" /> 
+	  <property key="SPACE_XML_SCHEMA_LOC" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\batch\\batchSpaceSchema.xsd" /> 
 	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
 	  <property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
-	  <property key="PICTURE_PATH" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\pictures" />
-	  <property key="BATCH_SPACE_XML_DIR" value="C:\\Users\\Wyatt\\workspace\\starexec\\starexec_res\\batch\\uploads" />  
+	  <property key="PICTURE_PATH" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\pictures" />
+	  <property key="BATCH_SPACE_XML_DIR" value="C:\\Users\\wyatt_000\\workspace\\starexec\\starexec_res\\batch\\uploads" />  
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="wyatt-kaiser@uiowa.edu" />    
-	  <property key="PUBLIC_USER_ID" value="8" /> 
+	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 
  <!--   SGE Configuration     --> 
 	  <property key="QUEUE_LIST_COMMAND" value="cmdspoof C:\\Users\\Ben\\CmdSpoof -sql.txt" /> 

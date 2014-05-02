@@ -29,7 +29,7 @@
 	</div>
 
 	<div id="actionPanel">
-		<fieldset>
+		<fieldset id="fieldStep1">
 			<legend>permissions</legend>
 			<table id="tblDefaultPerm">
 				<tr>
@@ -67,5 +67,11 @@
 			</div>
 				
 		</fieldset>	
+		<fieldset id="fieldStep2">
+			<legend>permissions</legend>
+			<p> USER IS NOT A MEMBER OF THIS CLASS</p>
+			<button type="button" id="makeMember">Make Member</button>	
+
+		</fieldset>
 	</div>	
 </star:template>

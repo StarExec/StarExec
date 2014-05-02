@@ -24,6 +24,11 @@ function initUI(){
 			primary: "ui-icon-check"
 		}
 	});
+	$("#runStress").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
 	
 	$("#runAll").click(function() {
 		$.post(
@@ -59,6 +64,20 @@ function initUI(){
 			"json"
 		);
 		unselectAllRows(testTable);
+	});
+	$("#runStress").click(function() {
+		$.post(
+				starexecRoot+"services/test/runStressTest",
+				{},
+				function(returnCode) {
+					if (returnCode=="0") {
+						showMessage("success","stress testing started succesfully",5000);
+					} else {
+						showMessage("error","There was an error while starting the stress testing",5000);
+					}
+				}
+		),
+		"json"
 	});
 	
 	extendDataTableFunctions();
@@ -134,7 +153,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						showMessage('error', "failed to get the next page of results; please try again", 5000);
 						break;
 					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
+						showMessage('error', "you do not have sufficient permissions to view these tests", 5000);
 						break;
 					default:
 						fnCallback(nextDataTablePage);						

@@ -26,10 +26,12 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -79,7 +81,7 @@ public class BatchUtil {
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
 		
-		validateAgainstSchema(file);//Not really necessary, but a good check to have in the event of future code changes
+		validateAgainstSchema(file);
 		return file;
 	}
 	
@@ -92,22 +94,13 @@ public class BatchUtil {
      */	
     public Element generateSpacesXML(Space space, int userId){		
 	log.debug("Generating Space XML for space " + space.getId());
-	//stardev also needs to point to starexec here-- we don't want it to use Util.url
 	Element spacesElement=null;
-	if (R.STAREXEC_SERVERNAME.contains("stardev")) {
-		spacesElement = doc.createElementNS("https://www.starexec.org/starexec/public/batchSpaceSchema.xsd", "tns:Spaces");
-		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+
+	spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
+	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
-		spacesElement.setAttribute("xsi:schemaLocation", 
-					   "https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd");
-	} else {
-		spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
-		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		
-		spacesElement.setAttribute("xsi:schemaLocation", 
-					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));
-	}
-	
+	spacesElement.setAttribute("xsi:schemaLocation", 
+					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
 		
 	Element rootSpaceElement = generateSpaceXML(space, userId);
 	spacesElement.appendChild(rootSpaceElement);
@@ -133,6 +126,92 @@ public class BatchUtil {
 		Attr name = doc.createAttribute("name");
 		name.setValue(space.getName());
 		spaceElement.setAttributeNode(name);
+		
+		// New attributes to space XML elements
+		// @author Tim Smith
+		
+		// Sticky leaders attribute : sticky-leaders
+		Attr stickyLeaders = doc.createAttribute("sticky-leaders");
+		stickyLeaders.setValue(Boolean.toString(space.isStickyLeaders()));
+		spaceElement.setAttributeNode(stickyLeaders);
+		
+		// TODO: Find out if the users from the parent space are inherited (inherit-users)
+		Attr inheritUsers = doc.createAttribute("inherit-users");
+		Boolean iu = false;
+		// Cheap implementation, just assume false
+		inheritUsers.setValue(iu.toString());
+		spaceElement.setAttributeNode(inheritUsers);
+		
+		// Locked attribute
+		Attr locked = doc.createAttribute("locked");
+		locked.setValue(Boolean.toString(space.isLocked()));
+		spaceElement.setAttributeNode(locked);
+		
+		
+		Permission perm = space.getPermission();
+		
+		//Permissions attributes - only set when false since default is all true
+		if (!perm.canAddBenchmark()) {
+			Attr addBenchPerm = doc.createAttribute("add-benchmark-perm");
+			addBenchPerm.setValue("false");
+			spaceElement.setAttributeNode(addBenchPerm);
+		}
+		
+		if (!perm.canAddJob()) {
+			Attr addJobPerm = doc.createAttribute("add-job-perm");
+			addJobPerm.setValue("false");
+			spaceElement.setAttributeNode(addJobPerm);
+		}
+		
+		if (!perm.canAddSolver()){
+			Attr addSolverPerm = doc.createAttribute("add-solver-perm");
+			addSolverPerm.setValue("false");
+			spaceElement.setAttributeNode(addSolverPerm);
+		}
+		
+		if (!perm.canAddSpace()){
+			Attr addSpacePerm = doc.createAttribute("add-space-perm");
+			addSpacePerm.setValue("false");
+			spaceElement.setAttributeNode(addSpacePerm);
+		}
+		
+		if (!perm.canAddUser()){
+			Attr addUserPerm = doc.createAttribute("add-user-perm");
+			addUserPerm.setValue("false");
+			spaceElement.setAttributeNode(addUserPerm);
+		}
+		
+		if (!perm.canRemoveBench()) {
+			Attr remBenchmarkPerm = doc.createAttribute("rem-benchmark-perm");
+			remBenchmarkPerm.setValue("false");
+			spaceElement.setAttributeNode(remBenchmarkPerm);
+		}
+		
+		if (!perm.canRemoveJob()) {
+			Attr remJobPerm = doc.createAttribute("rem-job-perm");
+			remJobPerm.setValue("false");
+			spaceElement.setAttributeNode(remJobPerm);
+		}
+		
+		if (!perm.canRemoveSolver()) {
+			Attr remSolverPerm = doc.createAttribute("rem-solver-perm");
+			remSolverPerm.setValue("false");
+			spaceElement.setAttributeNode(remSolverPerm);
+		}
+		
+		if (!perm.canRemoveSpace()) {
+			Attr remSpacePerm = doc.createAttribute("rem-space-perm");
+			remSpacePerm.setValue("false");
+			spaceElement.setAttributeNode(remSpacePerm);
+		}
+		
+		if (!perm.canRemoveUser()) {
+			Attr remUserPerm = doc.createAttribute("rem-user-perm");
+			remUserPerm.setValue("false");
+			spaceElement.setAttributeNode(remUserPerm);
+		}
+		
+		// -------------------------------------------------
 		
 		for (Benchmark benchmark:space.getBenchmarks()){
 			Element benchElement = doc.createElement("Benchmark");	
@@ -170,7 +249,8 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(R.SPACE_XML_SCHEMA_LOC)}));
+			String schemaLoc = R.SPACE_XML_SCHEMA_LOC;
+			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 //			builder.setErrorHandler(new SAXErrorHandler());
@@ -231,12 +311,18 @@ public class BatchUtil {
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
 				name = spaceElement.getAttribute("name");
+				if (name == null) {
+					log.debug("Name not found");
+					errorMessage = "Space elements must include a 'name' attribute.";
+					return false;
+				}
 				log.debug("Space Name = " + name);
 				if (name.length()<2){
 					log.debug("Name was not long enough");
 					errorMessage = name + "is not a valid name.  It must have two characters.";
 					return false;
 				}
+				
 			}
 			else{
 				log.warn("Space Node should be an element, but isn't");
@@ -307,9 +393,70 @@ public class BatchUtil {
 		Space space = new Space();
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
+		
+		// Check for permission attributes in XML and set permissions accordingly
+		String perm = spaceElement.getAttribute("add-benchmark-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddBenchmark(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-job-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddJob(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-solver-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddSolver(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-space-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddSpace(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("add-user-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setAddUser(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-benchmark-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveBench(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-job-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveJob(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-solver-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveSolver(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-space-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveSpace(Boolean.valueOf(perm));
+		
+		perm = spaceElement.getAttribute("rem-user-perm");
+		if (!perm.equals("") && !perm.equals(null))
+			permission.setRemoveUser(Boolean.valueOf(perm));
+		
 		space.setPermission(permission);
+		
 		Random rand=new Random();
 		String baseSpaceName=space.getName();
+		
+		// Look for a sticky leaders attribute. If it's there, set sticky leaders
+		String sl = spaceElement.getAttribute("sticky-leaders");		
+		if (!sl.equals("") && !sl.equals(null)) {
+			Boolean stickyLeaders = Boolean.valueOf(sl);
+			space.setStickyLeaders(stickyLeaders);
+		}
+		
+	
+		
+		// Check for the locked attribute
+		String locked = spaceElement.getAttribute("locked");
+		if (!locked.equals("") && !locked.equals(null)) {
+			Boolean isLocked = Boolean.valueOf(locked);
+			space.setLocked(isLocked);
+		}
+		
+		//------------------------------------------------------------------------
 		
 		//Is appending a random number to the name what we want?
 		//Also, this will hang if there are too many spaces with the given name
@@ -325,6 +472,23 @@ public class BatchUtil {
 			attempt++;
 		}
 		Integer spaceId = Spaces.add(space, parentId, userId);
+		
+		// Check for inherit users attribute. If it is true, make the users the same as the parent
+		String iu = spaceElement.getAttribute("inherit-users");
+		if (!iu.equals("") && !iu.equals(null)){
+			Boolean inheritUsers = Boolean.valueOf(iu);
+			log.debug("inherit = " + inheritUsers);
+			if (inheritUsers) {
+				log.debug("Adding inherited users");
+				List<User> users = Spaces.getUsers(parentId);
+				log.debug("parent users = " + users);
+				for (User u : users) {
+					log.debug("users = " + u.getFirstName());
+					int tempId = u.getId();
+					Users.associate(tempId, spaceId);
+				}
+			}
+		}
 		
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();

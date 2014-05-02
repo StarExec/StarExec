@@ -114,6 +114,45 @@ CREATE PROCEDURE GetAllSpaces()
 		FROM spaces;
 	END //
 
+-- Returns all super-spaces of the space with the given id.
+-- Author: Wyatt Kaiser
+ DROP PROCEDURE IF EXISTS GetSuperSpacesById;
+ CREATE PROCEDURE GetSuperSpacesById(IN _spaceId INT)
+	BEGIN
+		 IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
+			SELECT id
+			FROM spaces
+			WHERE id = 
+				(SELECT MIN(id)
+				FROM spaces);
+		 ELSE					-- Else find all parent spaces that are an ancestor of a space the user is apart of
+			SELECT ancestor AS id
+			FROM closure
+			WHERE descendant = _spaceId
+			AND ancestor != _spaceId;
+		 END IF;
+	END //
+
+-- Returns all spaces a user can see in the hierarchy rooted at the given space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyById;
+CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
+	BEGIN
+		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
+			SELECT spaces.name,spaces.description,spaces.locked,spaces.id
+			FROM spaces
+			WHERE id = 
+				(SELECT MIN(id)
+				FROM spaces);
+		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
+			SELECT spaces.name,spaces.description,spaces.locked,spaces.id 
+			FROM closure
+				JOIN spaces ON spaces.id=closure.descendant
+				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
+				WHERE closure.ancestor=_spaceId and closure.ancestor!=closure.descendant;
+		END IF;
+	END //
+		
 	
 -- Returns all spaces belonging to the space with the given id.
 -- Author: Tyler Jensen & Benton McCune & Eric Burns
@@ -133,14 +172,14 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 				JOIN spaces ON spaces.id=set_assoc.child_id
 				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
 				WHERE set_assoc.space_id=_spaceId
-			ORDER BY name;
+				ORDER BY name;
 		END IF;
 	END //
 	
 -- Returns all the spaces belonging to the space (doesn't require user to be in user_assoc)
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetSubSpacesAdmin;
-CREATE PROCEDURE GETSubSpacesAdmin(IN _spaceId INT)
+CREATE PROCEDURE GetSubSpacesAdmin(IN _spaceId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN -- If we get an invalid ID, return the root space (the space with the minimum ID)
 			SELECT spaces.name, spaces.description,spaces.locked,spaces.id
@@ -151,12 +190,31 @@ CREATE PROCEDURE GETSubSpacesAdmin(IN _spaceId INT)
 		ELSE 
 			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM set_assoc
-				JOIN closure ON set_assoc.child_id=closure.ancestor
 				JOIN spaces ON spaces.id=set_assoc.child_id
 				WHERE set_assoc.space_id=_spaceId
-			ORDER BY name;
+				ORDER BY name;
 		END IF;
 	END //
+	
+-- Returns all the spaces in the hierarchy rooted at the given space (doesn't require user to be in user_assoc)
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyAdmin;
+CREATE PROCEDURE GetSubSpaceHierarchyAdmin(IN _spaceId INT)
+	BEGIN
+		IF _spaceId <= 0 THEN -- If we get an invalid ID, return the root space (the space with the minimum ID)
+			SELECT spaces.name, spaces.description,spaces.locked,spaces.id
+			FROM spaces
+			WHERE id =
+				(SELECT MIN(id)
+				FROM spaces);
+		ELSE 
+			SELECT DISTINCT spaces.name,spaces.description,spaces.locked,spaces.id
+			FROM closure
+				JOIN spaces ON spaces.id=closure.descendant
+				WHERE closure.ancestor=_spaceId and closure.ancestor!=closure.descendant;
+		END IF;
+	END //
+
 
 -- Returns the parent space of a given space ID
 -- Author: Wyatt Kaiser
@@ -197,8 +255,7 @@ CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VAR
 						JOIN closure ON set_assoc.child_id=closure.ancestor 
 						JOIN user_assoc ON (user_assoc.user_id=_userId AND user_assoc.space_id=closure.descendant) 
 						WHERE set_assoc.space_id=_spaceId)
-				AND name = _name
-				ORDER BY name;
+				AND name = _name;
 			ELSE
 				SELECT *
 				FROM spaces
@@ -207,8 +264,7 @@ CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VAR
 				 	FROM set_assoc 
 						JOIN closure ON set_assoc.child_id=closure.ancestor  
 						WHERE set_assoc.space_id=_spaceId)
-				AND name = _name
-				ORDER BY name;
+				AND name = _name;
 			END IF;
 		END IF;
 	END //
@@ -224,8 +280,7 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 		WHERE id IN
 				(SELECT child_id
 				 FROM set_assoc
-				 WHERE space_id=1)
-		ORDER BY name;
+				 WHERE space_id=1);
 	END //
 	
 -- Gets all the subspaces of a given space needed for a given job (non-recursive)
@@ -257,7 +312,14 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userI
 
 		WHERE ancestor=_spaceId AND ancestor!=descendant;
 	END //
-	
+
+DROP PROCEDURE IF EXISTS GetTotalSubspaceCountBySpaceIdInHierarchy;
+CREATE PROCEDURE GetTotalSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) AS spaceCount
+		FROM closure
+		WHERE ancestor=_spaceId AND ancestor!=descendant;
+	END //
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
@@ -368,11 +430,19 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(128), IN _
 DROP PROCEDURE IF EXISTS GetSpaceDefaultSettingsById;
 CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
 	BEGIN
-		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor, dependencies_enabled, default_benchmark
+		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor, dependencies_enabled, default_benchmark,maximum_memory
 		FROM space_default_settings AS settings
 		LEFT OUTER JOIN processors AS pros
 		ON settings.post_processor = pros.id
 		WHERE space_id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS SetSpaceMaximumMemorySetting;
+CREATE PROCEDURE SetSpaceMaximumMemorySetting(IN _spaceId INT, IN _bytes BIGINT)
+	BEGIN
+		UPDATE space_default_settings
+		SET maximum_memory=_bytes
+		WHERE space_id = _spaceId;
 	END //
 
 -- Set a default setting of a space given by id.
@@ -405,15 +475,16 @@ CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _settin
 		UPDATE space_default_settings
 		SET default_benchmark=_setting
 		WHERE space_id=_id;
+		
     END CASE;
 	END //
 
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS InitSpaceDefaultSettingsById;
-CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT)
+CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT)
 	BEGIN
-		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark) VALUES (_id, _pp, _cto, _clto, _dp, _db);
+		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory) VALUES (_id, _pp, _cto, _clto, _dp, _db,_dm);
 	END //
 
 -- Get the id of the community where the space belongs to
@@ -518,16 +589,6 @@ BEGIN
 	AND space_id = _spaceId;
 END //
 
--- Get the id of a space given its name
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetIdBySpaceName;
-CREATE PROCEDURE GetIdBySpaceName(IN _spaceName varchar(128))
-BEGIN
-	SELECT id
-	FROM spaces
-	WHERE name = _spaceName;
-END //
-
 
 -- Sets the "sticky_leader" flag for a given space
 -- Author: Eric Burns
@@ -536,5 +597,17 @@ CREATE PROCEDURE SetStickyLeader(IN _spaceID INT, IN _val BOOLEAN)
 BEGIN
 	UPDATE spaces SET sticky_leader =  _val WHERE id=_spaceID;
 END //
+
+-- Get all the communities that are not already attached to a queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetNonAttachedCommunities;
+CREATE PROCEDURE GetNonAttachedCommunities(IN _queueId INT)
+	BEGIN
+		SELECT DISTINCT spaces.id, spaces.name
+		FROM spaces JOIN set_assoc ON spaces.id = set_assoc.child_id
+		WHERE set_assoc.space_id = 1
+		AND spaces.id NOT IN 
+			(SELECT space_id FROM comm_queue WHERE queue_id = _queueId );
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

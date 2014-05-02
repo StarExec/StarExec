@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.*, org.starexec.data.to.*, org.starexec.data.database.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -8,6 +8,12 @@
 	int uid=SessionUtil.getUserId(request);
 	//System.out.println(uid);
 	request.setAttribute("userId",uid);
+	
+	request.setAttribute("cacheType1",CacheType.CACHE_SPACE.getVal());
+	request.setAttribute("cacheType2",CacheType.CACHE_SPACE_XML.getVal());
+	request.setAttribute("cacheType3",CacheType.CACHE_SPACE_HIERARCHY.getVal());
+	request.setAttribute("isAdmin",Users.isAdmin(uid));
+	
 	
 %>
 <star:template title="space explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
@@ -126,6 +132,7 @@
 				<li><a class="btnRun" id="addJob" href="/${starexecRoot}/secure/add/job.jsp">create job</a></li>
 				<li><a class="btnDown" id="downloadXML" href="/${starexecRoot}/secure/download">download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
+				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
 				<li><a class="btnRun" id="makePublic">make public</a></li>
 				<li><a class="btnRun" id="makePrivate">make private</a></li>
@@ -133,6 +140,14 @@
 				<li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>
 				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
+			
+			<c:if test="${isAdmin}">
+				<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
+				<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
+				<span id="cacheType3" class="cacheType" value="${cacheType3}"></span>
+				<button type="button" id="clearCache">clear cache</button>
+			</c:if>
+			
 		</fieldset>	
 
 	</div>	
@@ -149,6 +164,9 @@
 		<input type="radio" name="downloadOption" id="downloadBenchmarks"/> benchmarks only<br>
 		<input type="radio" name="downloadOption" id="downloadBoth" checked="checked"/> solvers + benchmarks<br></p>
 	</div>
+	<div id="dialog-warning" title="warning">
+		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+	</div>		
 	
 	
 	

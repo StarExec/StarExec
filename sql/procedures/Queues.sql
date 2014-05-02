@@ -22,7 +22,7 @@ CREATE PROCEDURE RemoveQueue(IN _queueId INT)
 -- Retrieves the id of a queue given its name
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetIdByName;
-CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(126))
+CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 	BEGIN
 		SELECT id
 		FROM queues
@@ -52,6 +52,7 @@ CREATE PROCEDURE GetEnqueuedJobs(IN _queueId INT)
 	
 -- Retrieves the number of jobs with pending job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
+-- TODO: This might be slow. Think about a possible index on queueId?
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
 CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	BEGIN
@@ -122,6 +123,16 @@ CREATE PROCEDURE MakeQueuePermanent (IN _queueId INT)
 		SET permanent = true
 		WHERE id = _queueId;
 	END //
+
+-- Determines if the queue has global access
+-- Author: Wyatt kaiser
+DROP PROCEDURE IF EXISTS IsQueueGlobal;
+CREATE PROCEDURE IsQueueGlobal (IN _queueId INT)
+	BEGIN
+		SELECT global_access
+		FROM queues
+		WHERE id = _queueId;
+	END //
 	
 -- Removes a queue's association with a space
 -- Author: Wyatt Kaiser
@@ -131,5 +142,63 @@ CREATE PROCEDURE RemoveQueueAssociation(IN _queueId INT)
 		DELETE FROM comm_queue
 		WHERE queue_id = _queueId;
 	END //
+	
+-- Make a permanent queue have global access
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS MakeQueueGlobal;
+CREATE PROCEDURE MakeQueueGlobal(IN _queueId INT)
+	BEGIN
+		UPDATE queues
+		SET global_access = true
+		WHERE id = _queueId;
 		
+		DELETE FROM comm_queue
+		WHERE queue_id = _queueId;
+	END //
+		
+-- remove global access from a permanent queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS RemoveQueueGlobal;
+CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
+	BEGIN
+		UPDATE queues
+		SET global_access = false
+		WHERE _queueId = _queueId;
+	END //
+	
+-- Get the active queues that have been reserved for a particular space
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS GetQueuesForSpace;
+CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
+	BEGIN
+		SELECT DISTINCT queue_id
+		FROM comm_queue
+		JOIN queues ON comm_queue.queue_id = queues.id
+		WHERE comm_queue.space_id = _spaceId 
+			AND queues.status = "ACTIVE" 
+			AND queues.permanent = false;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
+CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
+	BEGIN
+		SELECT DISTINCT id, name, status, permanent, global_access
+		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
+		WHERE status = "ACTIVE"
+		AND
+			-- if the queue is permanent and has given access to a specified community that the user is a leader of
+			(id IN
+				(SELECT queues.id
+				FROM comm_queue JOIN queues ON queues.id = comm_queue.queue_id
+				WHERE queues.permanent = true
+				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))))
+			OR
+			-- the queue has global access
+			(id IN
+				(SELECT queues.id
+				 FROM queues
+				 WHERE global_access = true));
+				 
+	END //
+	
 DELIMITER ; -- This should always be at the end of this file

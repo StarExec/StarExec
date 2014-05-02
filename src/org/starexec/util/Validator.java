@@ -25,7 +25,7 @@ public class Validator {
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
 	private static Pattern patternDate;
-	
+	private static Pattern patternDouble;
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	
     public static void initialize() {
@@ -44,6 +44,7 @@ public class Validator {
 	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 	    	patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
 	    	patternDate = Pattern.compile(R.DATE_PATTERN);
+	    	patternDouble=Pattern.compile(R.DOUBLE_PATTERN);
 	    	log.debug("Validator patterns successfully compiled");
     	}
     }
@@ -58,7 +59,7 @@ public class Validator {
 	 * mark, and is between 6-20 characters
 	 */
 	public static boolean isValidPassword(String password) {		
-		return patternPassword.matcher(password).matches();		
+		return password!=null && patternPassword.matcher(password).matches();		
 	}
 		
 	/**
@@ -69,7 +70,7 @@ public class Validator {
 	 * and not null or the empty string
 	 */
 	public static boolean isValidInstitution(String institute){		
-		return patternInstitution.matcher(institute).matches();		
+		return institute!=null && patternInstitution.matcher(institute).matches();		
 	}
 	
 	/**
@@ -80,7 +81,7 @@ public class Validator {
 	 * not null or the empty string, and is in email address format
 	 */
     public static boolean isValidEmail(String email){
-		return patternEmail.matcher(email).matches();
+		return email!=null && patternEmail.matcher(email).matches();
     }
     
     /**
@@ -91,7 +92,7 @@ public class Validator {
      * contains only letters and dashes
      */
     public static boolean isValidUserName(String name){    	
-		return patternUserName.matcher(name).matches();
+		return name!=null && patternUserName.matcher(name).matches();
     }
     
     /**
@@ -103,7 +104,7 @@ public class Validator {
      * 1 and 300 characters in length 
      */
     public static boolean isValidRequestMessage(String message){
-    	return patternRequestMsg.matcher(message).matches();
+    	return message!=null && patternRequestMsg.matcher(message).matches();
     }
     
     /**
@@ -114,7 +115,7 @@ public class Validator {
      * contains only letters, numbers and dashes
      */
     public static boolean isValidPrimName(String name){   
-    	return patternPrimName.matcher(name).matches();    	
+    	return name!=null && patternPrimName.matcher(name).matches();    	
     }
     
     /**
@@ -125,7 +126,7 @@ public class Validator {
      * @return true iff boolString isn't null and is either "true" or "false"
      */
     public static boolean isValidBool(String boolString){
-    	return patternBoolean.matcher(boolString).matches();
+    	return boolString!=null && patternBoolean.matcher(boolString).matches();
     }
     
     /**
@@ -136,7 +137,7 @@ public class Validator {
      * @return true iff name isn't null or empty and is less than 1024 characters
      */
     public static boolean isValidPrimDescription(String desc){
-    	return patternPrimDesc.matcher(desc).matches();
+    	return desc!=null && patternPrimDesc.matcher(desc).matches();
     }
     
     /** 
@@ -146,7 +147,7 @@ public class Validator {
      * @return true iff the URL passes the check
      */
     public static boolean isValidWebsite(String url) {    	
-    	return patternUrl.matcher(url).matches();
+    	return url!=null && patternUrl.matcher(url).matches();
     }
     
     /**
@@ -155,7 +156,40 @@ public class Validator {
      * @return True if the string is numeric, false otherwise
      */
     public static boolean isValidInteger(String s) {
-    	return patternInteger.matcher(s).matches();
+    	try {
+    		Integer.parseInt(s);
+    		return true;
+    	} catch(Exception e) {
+    		return false;
+    	}
+    }
+    
+    /**
+     * Validates a string to ensure it can be treated as a double 
+     * @param s The string to validate as a double
+     * @return True if the string is numeric, false otherwise
+     */
+    public static boolean isValidDouble(String s) {
+    	try {
+    		Double.parseDouble(s);
+    		return true;
+    	} catch(Exception e) {
+    		return false;
+    	}
+    }
+    
+    /**
+     * Validates a string to ensure it can be treated as a long 
+     * @param s The string to validate as a long
+     * @return True if the string is numeric, false otherwise
+     */
+    public static boolean isValidLong(String s) {
+    	try {
+    		Long.parseLong(s);
+    		return true;
+    	} catch(Exception e) {
+    		return false;
+    	}
     }
     
     /**
@@ -164,7 +198,7 @@ public class Validator {
      * @return True if the string is in the date format, false otherwise
      */
     public static boolean isValidDate(String s) {
-    	return patternDate.matcher(s).matches();
+    	return s!=null && patternDate.matcher(s).matches();
     }
     
     /**
@@ -173,13 +207,20 @@ public class Validator {
      * @return True if every string in the array can be parsed as a int
      */
     public static boolean isValidIntegerList(String[] list) {
+    	if (list==null) {
+    		return false;
+    	}
     	for(String s : list) {
-    		if(false == patternInteger.matcher(s).matches()) {
+    		if (!isValidInteger(s)) {
     			return false;
     		}
     	}
     	
     	return true;
+    }
+    
+    public static boolean isValidPictureType(String type) {
+    	return (type.equals("user") || type.equals("benchmark") || type.equals("solver"));
     }
     
     /**
@@ -188,6 +229,9 @@ public class Validator {
      * @return true iff the format is of supported type
      */
     public static boolean isValidArchiveType(String format) {
+    	if (format==null) {
+    		return false;
+    	}
 		for(String ext : Validator.extensions) {
 			if(format.equals(ext)) {
 				return true;

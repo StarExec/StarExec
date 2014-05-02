@@ -19,6 +19,7 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Expose private int slotsAvailable;
 	@Expose private int slotsTotal;
 	@Expose private boolean permanent;
+	@Expose private boolean global_access;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
 	@Expose private HashMap<Integer, String[]> jobPairs;
@@ -124,6 +125,20 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	public void setPermanent(boolean permanent) {
 		this.permanent = permanent;
 	}
+	
+	/**
+	 * @return true if the queue is global, false otherwise
+	 */
+	public boolean getGlobalAccess() {
+		return global_access;
+	}
+	
+	/**
+	 * @param global_access true if queue is global, false otherwise
+	 */
+	public void setGlobalAccess(boolean global_access) {
+		this.global_access = global_access;
+	}
 
 	/**
 	 * @return the worker nodes that belong to the queue
@@ -173,4 +188,5 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	public Iterator<WorkerNode> iterator() {
 		return this.nodes.iterator();
 	}
+
 }

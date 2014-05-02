@@ -64,6 +64,27 @@ public class Communities {
 		return returnSpaces;
 	}
 	
+	public static int getDefaultCpuTimeout(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Integer.parseInt(settings.get(2)));
+	}
+	
+	public static int getDefaultWallclockTimeout(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Integer.parseInt(settings.get(3)));
+	}
+	
+	public static int getDefaultPostProcessorId(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Integer.parseInt(settings.get(4)));
+	}
+	
+	public static long getDefaultMaxMemory(int id) {
+		List<String> settings= getDefaultSettings(id);
+		return (Long.parseLong(settings.get(7)));
+	}
+	
+	
 	/**
 	 * Get the default setting of the community given by the id.
 	 * 
@@ -73,7 +94,7 @@ public class Communities {
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
-		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0");
+		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0","1073741824");
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -83,9 +104,14 @@ public class Communities {
 			results = procedure.executeQuery();
 			
 			if (results.next()) {
-				procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
-				procedure.setInt(1, results.getInt("community"));
-				results = procedure.executeQuery();
+			    Common.safeClose(procedure);
+			    procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
+			    procedure.setInt(1, results.getInt("community"));
+			    Common.safeClose(results);
+			    results = procedure.executeQuery();
+			} else {
+				log.error("We were unable to find the community for the space ="+id);
+				return null;
 			}
 			
 			if(results.next()){
@@ -96,15 +122,18 @@ public class Communities {
 				listOfDefaultSettings.set(4, results.getString("post_processor"));
 				listOfDefaultSettings.set(5, results.getString("dependencies_enabled"));
 				listOfDefaultSettings.set(6, results.getString("default_benchmark"));
+				listOfDefaultSettings.set(7,results.getString("maximum_memory"));
 			}
 			else {
-				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?)}");
+			        Common.safeClose(procedure);
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?)}");
 				procedure.setInt(1, id);
 				procedure.setInt(2, 1);
 				procedure.setInt(3, 1);
 				procedure.setInt(4, 1);
 				procedure.setInt(5, 0);
 				procedure.setObject(6, null);
+				procedure.setLong(7,1073741824); //memory initialized to 1 gigabyte
 				procedure.executeUpdate();
 			}
 		} catch (Exception e){			
@@ -221,15 +250,41 @@ public class Communities {
 		return false;
 	}
 	
+	public static boolean setDefaultMaxMemory(int id, long bytes) {
+		Connection con = null;	
+		CallableStatement procedure= null;
+		try {			
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL SetSpaceMaximumMemorySetting(?, ?)}");
+			procedure.setInt(1, id);
+			procedure.setLong(2, bytes);
+
+			procedure.executeUpdate();
+		
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Set the default settings for a community given by the id.
 	 * @param id The space id of the community
 	 * @param num Indicates which attribute needs to be set
+	 * 1 = post_processor_id
+	 * 2 = cpu_timeout
+	 * 3 = wallclock_timeout
+	 * 4 = dependencies_enabled
+	 * 5 = default_benchmark_id
 	 * @param setting The new value of the setting
 	 * @return True if the operation is successful
 	 * @author Ruoyu Zhang
 	 */
-	public static boolean setDefaultSettings(int id, int num, int setting) {
+	public static boolean setDefaultSettings(int id, int num, long setting) {
 		Connection con = null;	
 		CallableStatement procedure= null;
 		try {			
@@ -237,10 +292,13 @@ public class Communities {
 			procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
+			//if we are setting one of the IDs and it is -1, this means there is no setting
+			//and we should use null
 			if ((num==1 || num==5) && setting==-1) {
 				procedure.setObject(3,null);
 			} else {
-				procedure.setInt(3, setting);
+					procedure.setInt(3,(int)setting);
+				
 			}
 			
 			
@@ -258,6 +316,10 @@ public class Communities {
 	}
 	
 	public static Space getTestCommunity() {
-		return Communities.getDetails(R.TEST_COMMUNITY_ID);
+		Space s=Communities.getDetails(R.TEST_COMMUNITY_ID);
+		if (s==null) {
+			log.warn("getTestCommunity could not retrieve the test community--please set one up in the configuration");
+		}
+		return s;
 	}
 }

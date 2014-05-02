@@ -1,5 +1,17 @@
 $(document).ready(function(){
+	initButton();
 	
+	initDataTables();
+	
+	$('#jobs tbody tr').live('click', function () {
+		   $(this).toggleClass( 'row_selected' );
+		} );
+	
+});
+
+function initButton() {
+	$('#dialog-confirm-pause').hide();
+
 	$("#pauseAll").button({
 		icons: {
 			primary: "ui-icon-pause"
@@ -12,13 +24,74 @@ $(document).ready(function(){
 		}
 	});
 	
-	initDataTables();
+	$("#pauseAll").click(function() {
+		$('#dialog-confirm-pause-txt').text('are you sure you want to pause all running jobs?');
 	
-	$('#jobs tbody tr').live('click', function () {
-		   $(this).toggleClass( 'row_selected' );
-		} );
+		$('#dialog-confirm-pause').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed to pause all running jobs');
+					$('#dialog-confirm-pause').dialog('close');
+					$.post(
+							starexecRoot+"services/admin/pauseAll/",
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "all running jobs have been paused", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "jobs were not paused; please try again", 5000);
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled pause all running jobs');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
 	
-});
+	$("#resumeAll").click(function() {
+		$('#dialog-confirm-pause-txt').text('are you sure you want to resume all admin paused jobs?');
+	
+		$('#dialog-confirm-pause').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed to resume all admin paused jobs');
+					$('#dialog-confirm-pause').dialog('close');
+					$.post(
+							starexecRoot+"services/admin/resumeAll/",
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "all admin paused jobs have been resumed", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "jobs were not resumed; please try again", 5000);
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled resume all admin paused jobs');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+}
 
 function initDataTables() {
 	// Setup the DataTable objects

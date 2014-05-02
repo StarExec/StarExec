@@ -54,13 +54,15 @@ public class R {
     public static String USER_NAME_PATTERN="^[A-Za-z\\-\\s']{2," +String.valueOf(USER_FIRST_LEN)+ "}$";
     public static String INSTITUTION_PATTERN="^[\\w\\-\\s']{2," +String.valueOf(INSTITUTION_LEN) +"}$";
     public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
-    public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
+    //public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
+    public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
     public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$";
-    public static String PRIMITIVE_DESC_PATTERN="^.{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
+    public static String PRIMITIVE_DESC_PATTERN="^[^<>\"\'%;)(&\\+-]{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
     public static String PASSWORD_PATTERN="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$";
 	public static String DATE_PATTERN="[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]";
-	
+	public static String DOUBLE_PATTERN="^\\-?((\\d+(\\.\\d*)?)|(\\.\\d+))$";
+
     // Email properties
     public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
     public static int EMAIL_SMTP_PORT = 25;
@@ -96,11 +98,12 @@ public class R {
     public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
     public static String PICTURE_PATH = null;								// Where the pictures are located
     public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
-  
+    public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = null;
     //Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
     public static String ADMIN_USER_PASSWORD = "admin";			
+    public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue
     
     //Test info
     public static int TEST_USER_ID=-1;
@@ -143,6 +146,7 @@ public class R {
 	public static String CONFIGURATION_PREFIX = "starexec_run_";            // The prefix for a file in the solver bin directory to be considered a configuration
 	public static String EXPECTED_RESULT = "starexec-expected-result";    // key for key value pair in benchmark attributes
 	public static String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description
+	public static String SOLVER_BUILD_SCRIPT="starexec_build";
 	public static String BENCHMARK_DESC_PATH = "starexec_description.txt";	// File that can be included within the archive solver file to include the description
 	public static String DESC_PATH = "starexec_description.txt";
 	
@@ -169,7 +173,7 @@ public class R {
     public static int MAX_PAIR_RUNTIME = 86400;  							// The largest possible amount of time a job pair can run before being terminated (in seconds)
     public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
-    public static long MAX_PAIR_VMEM = 4194304;  							// The largest possible amount of memory (in kilobytes) a job pair is allowed to use
+    public static long MAX_PAIR_VMEM = 4294967296L;  					// The largest possible amount of memory (in bytes) a job pair is allowed to use
     public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task

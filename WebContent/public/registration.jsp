@@ -15,6 +15,7 @@
 	<p class="registration">create a new user account</p>
 	<div id="javascriptDisabled">javascript is required for most features in StarExec, please enable it and reload this page</div>
 	<form method="POST" action="/${starexecRoot}/public/registration/manager" id="regForm" class="registration">	
+	<input type="hidden" name="adminCreated" value="false" />	
 	<fieldset>			
 		<legend class="registration">user information</legend>
 		<table class="shaded">

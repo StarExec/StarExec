@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -45,7 +46,7 @@ public class Solvers {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
+			long diskUsage=FileUtils.sizeOf(new File(s.getPath()));
 			// Add the solver
 			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, s.getUserId());
@@ -54,7 +55,7 @@ public class Solvers {
 			procedure.setString(4, s.getPath());
 			procedure.setString(5, s.getDescription());
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
-			procedure.setLong(7, FileUtils.sizeOf(new File(s.getPath())));
+			procedure.setLong(7, diskUsage);
 			
 			procedure.executeUpdate();
 			
@@ -67,7 +68,7 @@ public class Solvers {
 				c.setSolverId(solverId);
 				addConfiguration(con, c);
 			}
-			Cache.invalidateCache(spaceId,CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return solverId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -116,7 +117,6 @@ public class Solvers {
 	 */
 	public static int addConfiguration(Solver s, Configuration c) {
 		Connection con = null;
-		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			c.setSolverId(s.getId());
@@ -127,14 +127,13 @@ public class Solvers {
 			Solvers.updateSolverDiskSize(con, s);
 			//invalidate the cache of any spaces with this solver
 			Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
-			Cache.invalidateCache(c.getSolverId(), CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(c.getSolverId(), CacheType.CACHE_SOLVER);
 			
 			return newConfigId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}		
 		
 		return -1;
@@ -156,7 +155,7 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
-			Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+			Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
@@ -216,6 +215,32 @@ public class Solvers {
 		return false;
 	}
 	
+	public static boolean associate(List<Integer> solverIds, int rootSpaceId, boolean linkInSubspaces, int userId, boolean includeRoot) {
+		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
+		if (linkInSubspaces) {
+			
+			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
+			List<Integer> subspaceIds = new LinkedList<Integer>();
+			
+			// Add the destination space to the list of spaces to associate the solvers with only
+			//if we aren't copying. If we're copying, we did this already
+			if (includeRoot) {
+				subspaceIds.add(rootSpaceId);
+			}
+			
+			// Iterate once through all subspaces of the destination space to ensure the user has addSolver permissions in each
+			for(Space subspace : subspaces){
+				subspaceIds.add(subspace.getId());
+			}
+
+			// Add the solvers to the destination space and its subspaces
+			return Solvers.associate(solverIds, subspaceIds);
+		} else {
+			// Add the solvers to the destination space
+			return Solvers.associate(solverIds, rootSpaceId);
+		}
+	}
+	
 	/**
 	 * Adds an association between a list of solvers and a list of spaces, in an all-or-none fashion
 	 * 
@@ -271,6 +296,22 @@ public class Solvers {
 		}
 		return false;
 	}
+	/**
+	 * Copies a list of solvers into the given space, assigning the given user as the owner of each one
+	 * @param solvers A list of solves
+	 * @param userId The ID of the user who will own the new solvers
+	 * @param spaceId The ID of the space to put the solvers in
+	 * @return The IDs of the new solvers, in the same order that the solvers are in. Negative numbers indicate
+	 * errors associated with the corresponding solvers
+	 */
+	public static List<Integer> copySolvers(List<Solver> solvers, int userId, int spaceId) {
+		List<Integer> ids= new ArrayList<Integer>();
+		for (Solver s : solvers) {
+			ids.add(copySolver(s,userId,spaceId));
+			
+		}
+		return ids;
+	}
 	
 	/**
 	 * Makes a deep copy of an existing solver, gives it a new user, and places it
@@ -325,8 +366,8 @@ public class Solvers {
 		CallableStatement procedure = null;
 		try {
 			Cache.invalidateSpacesAssociatedWithSolver(id);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
-			Cache.invalidateCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL SetSolverToDeletedById(?, ?)}");
@@ -373,8 +414,8 @@ public class Solvers {
 			
 			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
 			Cache.invalidateSpacesAssociatedWithSolver(solverId);
-			Cache.invalidateCache(solverId, CacheType.CACHE_SOLVER);
-			Cache.invalidateCache(solverId,CacheType.CACHE_SOLVER_REUPLOAD);
+			Cache.invalidateAndDeleteCache(solverId, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(solverId,CacheType.CACHE_SOLVER_REUPLOAD);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -424,8 +465,9 @@ public class Solvers {
 		
 		List<Configuration> returnList = new ArrayList<Configuration>();
 		
-		for(File f : binDir.listFiles()){			
+		for(File f : binDir.listFiles()){	
 			if(f.isFile() && f.getName().startsWith(CONFIG_PREFIX)){
+
 				Configuration c = new Configuration();								
 				c.setName(f.getName().substring(CONFIG_PREFIX.length()));
 				returnList.add(c);
@@ -723,7 +765,7 @@ public class Solvers {
 	public static List<Solver> getBySpaceHierarchy(int spaceId, int userId) {
 		List<Solver> solvers=new ArrayList<Solver>();
 		solvers.addAll(Solvers.getBySpace(spaceId));
-		List<Space> spaceIds=Spaces.getSubSpaces(spaceId, userId, true);
+		List<Space> spaceIds=Spaces.getSubSpaceHierarchy(spaceId, userId);
 		for (Space s: spaceIds) {
 			solvers.addAll(Solvers.getBySpace(s.getId()));
 		}
@@ -777,6 +819,10 @@ public class Solvers {
 		return null;		
 	}
 	
+	public static boolean isTestSolver(int solverId) {
+		return Users.isTestUser(Solvers.get(solverId).getUserId());
+	}
+
 	
 	/**
 	 * Gets a particular Configuration on a connection
@@ -1072,7 +1118,7 @@ public class Solvers {
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
-	public static Solver getSolverByConfig(int configId, boolean includeDeleted) throws Exception {			
+	public static Solver getSolverByConfig(int configId, boolean includeDeleted){			
 		Connection con = null;			
 		
 		try {			
@@ -1489,6 +1535,17 @@ public class Solvers {
 		return setRecycledState(id,true);
 	}
 	
+	public static boolean recycleSolversOwnedByUser(Collection<Solver> solvers, int userId) {
+		boolean success=true;
+		for (Solver s : solvers) {
+			if (s.getUserId()==userId) {
+				success=success && Solvers.recycle(s.getId());
+			}
+		}
+		
+		return success;
+	}
+	
 	/**
 	 * Sets the "recycled" flag in the database to false. Indicates the user has removed
 	 * the solver from the recycle bin
@@ -1633,7 +1690,7 @@ public class Solvers {
 		
 		try {
 			Cache.invalidateSpacesAssociatedWithSolver(id);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetSolverRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -1655,17 +1712,16 @@ public class Solvers {
 	 * @param configId the id of the configuration to update
 	 * @param name the new name to update the configuration with (this will also affect the filename on disk)
 	 * @param description the new description to update the configuration with
-	 * @param contents the new configuration file contents to update the file contents on disk with
 	 * @return true iff the configuration file is successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean updateConfigDetails(int configId, String name, String description, String contents) {
+	public static boolean updateConfigDetails(int configId, String name, String description) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
 			
 			// Try and update the configuration file's name and/or contents
-			if(Solvers.updateConfigFile(configId, name, contents)){
+			if(Solvers.updateConfigFile(configId, name)){
 				
 				// If the physical configuration file was successfully renamed, update the database too
 				con = Common.getConnection();
@@ -1696,13 +1752,12 @@ public class Solvers {
 	 *
 	 * @param configId the id of the configuration whose file is to be updated
 	 * @param newConfigName the new configuration filename
-	 * @param contents the new configuration file contents
 	 * @return true iff the configuration file was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean updateConfigFile(int configId, String newConfigName, String contents){
+	public static boolean updateConfigFile(int configId, String newConfigName){
 		try {
-			if(configId < 0 || Util.isNullOrEmpty(newConfigName) || Util.isNullOrEmpty(contents)){
+			if(configId < 0 || Util.isNullOrEmpty(newConfigName)){
 				log.warn("The configuration file parameters to update with are invalid.");
 				return false;
 			}
@@ -1726,23 +1781,11 @@ public class Solvers {
 				}
 			}
 			
-			// IF the contents aren't the same between oldConfig and newConfig THEN
-			if (!contents.equals(FileUtils.readFileToString(oldConfig))) {
-				// Rewrite the file, changing the name if necessary
-				if (true == isConfigNameUnchanged) {
-					FileUtils.writeByteArrayToFile(oldConfig, contents.getBytes(), false);
-				} else {
-					FileUtils.writeByteArrayToFile(newConfig, contents.getBytes());
-					oldConfig.delete();
-				}
+			// Rename the file if necessary
+			if (!isConfigNameUnchanged){
+				FileUtils.moveFile(oldConfig, newConfig);
 			}
-			// OTHERWISE contents are the same
-			else { 
-				// Rename the file if necessary
-				if (false == isConfigNameUnchanged){
-					FileUtils.moveFile(oldConfig, newConfig);
-				}
-			}
+			
 			
 			return true;
 		} catch (Exception e){
@@ -1775,8 +1818,8 @@ public class Solvers {
 			procedure.executeUpdate();						
 			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
 			Cache.invalidateSpacesAssociatedWithSolver(id);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER);
-			Cache.invalidateCache(id, CacheType.CACHE_SOLVER_REUPLOAD);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
+			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER_REUPLOAD);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1871,6 +1914,13 @@ public class Solvers {
 			Common.safeClose(results);
 		}
 		return null;
+	}
+	
+	public static String getDefaultSolverPath(int userId,String solverName) {
+		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir, solverName);
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		return uniqueDir.getAbsolutePath();
 	}
 	
 }

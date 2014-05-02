@@ -37,6 +37,7 @@ public class Registration extends HttpServlet {
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
 	public static String USER_MESSAGE = "msg";
+	public static String ADMIN_CREATED = "adminCreated";
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -51,7 +52,7 @@ public class Registration extends HttpServlet {
 		switch (result) {
 		  case SUCCESS: 
 			// Notify user of successful registration
-		      response.sendRedirect(Util.docRoot("public/registration.jsp?result=regSuccess"));
+		      response.sendRedirect(Util.docRoot("secure/add/user.jsp?result=regSuccess"));
 		    break;
 		  case FAIL: 
 			// Notify user the email address they inputed is already in use
@@ -75,6 +76,7 @@ public class Registration extends HttpServlet {
 	 * @author Todd Elvers
 	 */
 	public static int register(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
 		// Validate parameters of the new user request
 		if(!validateRequest(request)) {
 			log.info(String.format("Registration was unsuccessfully started for new user because parameter validation failed."));
@@ -94,25 +96,43 @@ public class Registration extends HttpServlet {
 		user.setEmail(request.getParameter(Registration.USER_EMAIL));
 		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
 		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));
-		
+		user.setRole("user");
 		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		
-		// Generate unique code to safely reference this user's entry in verification hyperlinks
-		String code = UUID.randomUUID().toString();
 		
-		// Add user to the database and get the UUID that was created
-		boolean added = Users.register(user, communityId, code, request.getParameter(Registration.USER_MESSAGE));
 		
-		// If the user was successfully added to the database, send an activation email
-		if(added) {
-			log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
+
+		
+		boolean adminCreated = Boolean.parseBoolean(request.getParameter(Registration.ADMIN_CREATED));
+		
+		if (!adminCreated) {
 			
-			Mail.sendActivationCode(user, code);
-			return SUCCESS;
+			// Generate unique code to safely reference this user's entry in verification hyperlinks
+			String code = UUID.randomUUID().toString();
+			
+			// Add user to the database and get the UUID that was created
+			boolean added = Users.register(user, communityId, code, request.getParameter(Registration.USER_MESSAGE));
+			
+			// If the user was successfully added to the database, send an activation email
+			if(added) {
+				log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
+				
+				Mail.sendActivationCode(user, code);
+				return SUCCESS;
+			} else {
+				log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
+				return FAIL;
+			} 
 		} else {
-			log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
-			return FAIL;
-		} 
+			int id = Users.add(user);
+			boolean success = Users.addToCommunity(id, communityId);
+			if (success) {
+				//Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
+				return SUCCESS;
+			} else {
+				return FAIL;
+			}			
+		}
 	}
 	
 	
@@ -131,8 +151,7 @@ public class Registration extends HttpServlet {
 	    	   !Util.paramExists(Registration.USER_EMAIL, request) ||
 	    	   !Util.paramExists(Registration.USER_PASSWORD, request) ||
 	    	   !Util.paramExists(Registration.USER_INSTITUTION, request) ||
-	    	   !Util.paramExists(Registration.USER_COMMUNITY, request) ||
-	    	   !Util.paramExists(Registration.USER_MESSAGE, request)) {
+	    	   !Util.paramExists(Registration.USER_COMMUNITY, request)) {
 	    		log.debug("Registration missing parameter");
 	    		return false;
 	    	}    	    	   
@@ -144,8 +163,8 @@ public class Registration extends HttpServlet {
 	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_FIRSTNAME)) 
 					|| !Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME)) 
 					|| !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))
-					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))
-					|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
+					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))) {
+					//|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
 	    		log.debug("Registration has invalid parameter");
 				return false;
 			}

@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -22,7 +23,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
@@ -35,8 +35,8 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.WorkerNode;
 
 /**
  * Contains methods for interacting with the sun grid engine. This class is NOT operating system independent
@@ -636,40 +636,8 @@ public class GridEngineUtil {
     	return (new File(stdoutPath));	
     }
 
-    /**
-     * Returns the log of a job pair by reading
-     * in the physical log file into a string.
-     * @param pair The pair to get the log for (must have a valid id and sge id)
-     * @return The log of the job run
-     */
-    public static String getJobLog(JobPair pair) {
-    	return GridEngineUtil.getJobLog(pair.getId(), pair.getGridEngineId());
-    }
 
-    /**
-     * Returns the log of a job pair by reading
-     * in the physical log file into a string.
-     * @param pairId The id of the pair to get the log for
-     * @param sgeId The SGE id of the pair
-     * @return The log of the job run
-     */
-    public static String getJobLog(int pairId, int sgeId) {
-    	try {
-    		// Find the path to the job log. It's in the job log directory
-    		// in the format job_1.bash.o2 where 1 is the pair id and 2 is the sge id
-    		String logPath = String.format("%s/job_%d.bash.o%d", R.JOB_LOG_DIR, pairId, sgeId);			
-    		log.debug("getJobLog(): checking existence of log file "+logPath);
-    		File logFile = new File(logPath);
 
-    		if(logFile.exists()) {
-    			return FileUtils.readFileToString(logFile);
-    		}
-    	} catch (Exception e) {
-    		log.warn(e.getMessage(), e);
-    	}
-
-    	return null;
-    }
     
     /**
      * Cancels/Ends a reservation
@@ -682,11 +650,16 @@ public class GridEngineUtil {
 			for (QueueRequest req : queueReservations) {
 				SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
 				
+		        Calendar cal = Calendar.getInstance();
+		        cal.setTime(today);
+		        cal.add(Calendar.DATE, -1);
+		        java.util.Date yesterday = cal.getTime();
+				
 				/**
-				 * If today is when the reservation is ending
+				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
 				 */
-				boolean end_is_today = fmt.format(req.getEndDate()).equals(fmt.format(today));
-				if (end_is_today) {
+				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
+				if (end_was_yesterday) {
 					cancelReservation(req);
 				}
 				
@@ -708,7 +681,7 @@ public class GridEngineUtil {
 				String shortQueueName = split[0];
 
 
-				/**The Following code if for when the node count is changing throughout the reservation**/
+				/**The Following code is for when the node count is changing throughout the reservation**/
 				//When the node count is decreasing for this reservation on this day
 				//Need to move a certain number of nodes back to all.q
 				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
@@ -749,6 +722,7 @@ public class GridEngineUtil {
 		List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
 
 		if (actualNodeCount < nodeCount) {
+			
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
 			for (int i = 0; i < (nodeCount - actualNodeCount); i++) {
 				transferNodes.add(AllQueueNodes.get(i));
@@ -766,7 +740,6 @@ public class GridEngineUtil {
 
 	public static void cancelReservation(QueueRequest req) {
 		log.debug("Begin cancelReservation");
-		log.debug("req.getQueueName() = " + req.getQueueName());
 		String queueName = req.getQueueName();
 		String[] split = queueName.split("\\.");
 		String shortQueueName = split[0];
@@ -781,17 +754,6 @@ public class GridEngineUtil {
 			}
 		}
 		
-		//TODO: Send Email on either completion or all paused [COMPLETE]
-		/*
-		try {
-			log.debug("sending email...");
-			Mail.sendReservationEnding(req);
-			log.debug("email sent");
-		} catch (IOException e) {
-			log.debug("ERROR");
-			e.printStackTrace();
-		}
-		*/
 
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
@@ -969,7 +931,6 @@ public class GridEngineUtil {
 					sb.append(shortName);
 					sb.append(" ");
 					
-					//TODO: remove the association with this node and the queue it is currently associated with
 					Queue queue = nodesAndQueues.get(n);
 					String name = queue.getName();
 					String[] split3 = name.split("\\.");
@@ -1157,6 +1118,17 @@ public class GridEngineUtil {
 				
 				//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
 				Queue queue = NQ.get(n);
+				
+				//if this is going to make the queue empty...... need to pause all jobs first
+				if (Cluster.getNodesForQueue(queue.getId()).size() == 1 ) {
+					List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
+					if (jobs != null) {
+						for (Job j : jobs) {
+							Jobs.pause(j.getId());
+						}
+					}
+				}
+				
 				String name = queue.getName();
 				String[] split3 = name.split("\\.");
 				String shortQName = split3[0];

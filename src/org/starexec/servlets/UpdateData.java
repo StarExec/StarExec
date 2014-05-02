@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jfree.util.Log;
+import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
@@ -52,7 +52,7 @@ public class UpdateData extends HttpServlet {
 		QueueRequest req = null;
 		String queueName = null;
 		int queueId = Queues.getIdByName(columnName);
-		if (queueId == -1) {
+		if (queueId == -2) {
 			req = Requests.getQueueRequest(code);
 			isNewQueue = true;
 		}
@@ -60,21 +60,17 @@ public class UpdateData extends HttpServlet {
 		//Row #
 		//int rowId = Integer.parseInt(request.getParameter("rowId"));
 		
-		
+		int defaultQueueId = Cluster.getDefaultQueueId();
 		
 		int value = 0;
 		//Updated value
-		if (queueId == 1 || columnName.equals("date") || columnName.equals("total") || columnName.equals("conflict")) {
+		if (queueId == defaultQueueId || columnName.equals("date") || columnName.equals("total") || columnName.equals("conflict")) {
 			response.getWriter().print("error - not editable");
 			return;
 		} else {
 			value = Integer.parseInt(request.getParameter("value"));
 		}
 
-		
-		
-
-		
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		Date reserve_date = null;
 		try {

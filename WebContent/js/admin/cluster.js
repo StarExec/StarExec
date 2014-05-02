@@ -1,6 +1,7 @@
 var reserved;
 var requests;
 var type;
+var defaultQueueId;
 
 $(document).ready(function(){
 	
@@ -62,7 +63,9 @@ $(document).ready(function(){
 	   id = data.rslt.obj.attr("id");
 	   window['type'] = data.rslt.obj.attr("rel");
 	   var permanent = data.rslt.obj.attr("permanent");
-	   updateActionId(id, type, permanent);
+	   var global = data.rslt.obj.attr("global");
+	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
+	   updateActionId(id, type, permanent, global);
 	   //getCommunityDetails(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
@@ -114,50 +117,98 @@ function initUI(id){
 		}
 	});
 	
-	if (id == -1) {
-		$("#reserveQueue").hide();
-		$("#removeQueue").hide();
-		$("#makePermanent").hide();
-		$("#moveNodes").hide();
-	}
+	$("#CommunityAssoc").button({
+		icons: {
+			primary: "ui-icon-clipboard"
+		}
+	});
+	
+	$("#makeGlobal").button({
+		icons: {
+			primary: "ui-icon-unlocked"
+		}
+	});
+	
+	$("#removeGlobal").button({
+		icons: {
+			primary: "ui-icon-locked"
+		}
+	});
+	
+	
+	//Make tables expandable/collapsable
+	$('#reservationField').expandable(false);
+	$('#reservedField').expandable(false);
+	$('#historicField').expandable(true);
+
 	
 
 
 }
 
-function updateActionId(id, type, permanent) {
-	if (id != 1 && (type=="active_queue" || type=="inactive_queue")) {
-		$("#removeQueue").show();
-		$("#makePermanent").show();
-		if (permanent == 'false') {
-			$("#makePermanent").show();
-			$("#moveNodes").hide();
-		} else {
-			$("#moveNodes").show();
+function updateActionId(id, type, permanent, global) {
+	$("#removeQueue").hide();
+	$("#makePermanent").hide();
+	$("#moveNodes").hide();
+	$("#CommunityAssoc").hide();
+	$("#makeGlobal").hide();
+	$("#removeGlobal").hide();
+	
+	if (id == -1) {
+		$("#removeQueue").hide();
+		$("#makePermanent").hide();
+		$("#moveNodes").hide();
+		$("#CommunityAssoc").hide();
+		$("#makeGlobal").hide();
+		$("#removeGlobal").hide();
+	}
+	
+	if (type == "active_queue" || type=="inactive_queue") {
+		if (id == defaultQueueId) {
+			$("#removeQueue").hide();
 			$("#makePermanent").hide();
+			$("#moveNodes").show();
+			$("#CommunityAssoc").hide();
+			$("#makeGlobal").hide();
+			$("#removeGlobal").hide();
+		} else {
+			$("#removeQueue").show();
+
+			if (permanent == 'true') {
+				$("#makePermanent").hide();
+				$("#moveNodes").show();
+
+				if (global == 'true') {
+					$("#makeGlobal").hide();
+					$("#removeGlobal").show();
+					$("#CommunityAssoc").hide();
+				} else {
+					$("#makeGlobal").show();
+					$("#removeGlobal").hide();
+					$("#CommunityAssoc").show();
+				}
+				
+			} else {
+				$("#makePermanent").show();
+				$("#moveNodes").hide();
+				$("#CommunityAssoc").hide();
+				$("#makeGlobal").hide();
+				$("#removeGlobal").hide();
+			}
+			
 		}
 	} else {
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
-		if ((type=="active_queue" || type=="inactive_queue") && (permanent == 'true')) {
-			$("#makePermanent").hide();
-			$("#moveNodes").show();
-		}
+		$("#moveNodes").hide();
+		$("#CommunityAssoc").hide();
+		$("#makeGlobal").hide();
+		$("#removeGlobal").hide();
 	}
 	
+	
 	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
-
-	/*
-	if (permanent=='true' || id == 1) {
-		$("#makePermanent").hide();
-		if (id != 1) {
-			$("#moveNodes").show();
-		}
-	} else {	
-		$("#makePermanent").show();
-		$("#moveNodes").hide();
-	}
-	*/
+	$('#CommunityAssoc').attr('href', starexecRoot + "secure/admin/assocCommunity.jsp?id=" + id);
 	
 	
 	$("#makePermanent").click(function() {
@@ -236,6 +287,89 @@ function updateActionId(id, type, permanent) {
 			}
 		});
 	});	
+	
+	$("#makeGlobal").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to give global access to this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed giving global access.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+							starexecRoot+"services/queue/global/" + id,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "the queue was successfully given global acccess", 5000);
+										//window.location = starexecRoot+'secure/admin/cluster.jsp';
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "queue was not given global access; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the admin can give global access to this queue", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled giving global access');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});	
+	
+	$("#removeGlobal").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to remove global access from this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed removing global access.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+							starexecRoot+"services/queue/global/remove/" + id,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "successfully removed global access", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "global access was not removed; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the admin can remove global access from this queue", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled removing global access');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});	
 }
 
 function initDataTables(){
@@ -257,6 +391,15 @@ function initDataTables(){
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler2
+	});
+	historic = $('#qhistoric').dataTable( {
+		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"iDisplayStart"	: 0,
+		"iDisplayLength": 10,
+		"bServerSide"	: true,
+		"sAjaxSource"	: starexecRoot+"services/",
+		"sServerMethod" : 'POST',
+		"fnServerData"	: fnPaginationHandler3
 	});
 }
 
@@ -324,8 +467,34 @@ function fnPaginationHandler2(sSource, aoData, fnCallback){
 	});
 }
 
-function handleRequest(code) {
-	
+function fnPaginationHandler3(sSource, aoData, fnCallback){
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			sSource + "queues/historic/pagination",
+			aoData,
+			function(nextDataTablePage){
+				switch(nextDataTablePage){
+				case 1:
+					showMessage('error', "failed to get the next page of results; please try again", 5000);
+					break;
+				case 2:		
+					break;
+				default:	// Have to use the default case since this process returns JSON objects to the client
+
+					// Update the number displayed in this DataTable's fieldset
+					$('#historicExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
+				
+				// Replace the current page with the newly received page
+				fnCallback(nextDataTablePage);
+				
+
+				break;
+				}
+			},  
+			"json"
+	).error(function(){
+		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
+	});
 }
 
 

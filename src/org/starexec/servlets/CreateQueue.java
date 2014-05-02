@@ -3,13 +3,6 @@ package org.starexec.servlets;
 
 import java.io.IOException;
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -18,19 +11,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Mail;
-import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 
 
@@ -71,6 +59,7 @@ public class CreateQueue extends HttpServlet {
 		int queueSpaceId = req.getSpaceId();
 		Date start = req.getStartDate();
 		Date end = req.getEndDate();
+		String message = req.getMessage();
 	
 		// Make sure that the queue has a unique name
 		if(Queues.notUniquePrimitiveName(queue_name)) {
@@ -82,18 +71,18 @@ public class CreateQueue extends HttpServlet {
 		
 		//Add the queue, reserve the nodes, and approve the reservation
 		int newQueueId = Queues.add(queue_name + ".q");
-		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end);
-		Cluster.updateTempChanges();
+		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end, message);
 		boolean approved = Requests.approveQueueReservation(req, newQueueId);
+		Cluster.updateTempChanges();
 
 		
 		User u = Users.get(queueUserId);
-		if(approved && !u.getRole().equals("admin")) {
+		if(approved && !Users.isAdmin(u.getId())) {
 			// Notify user they've been approved	
 			Mail.sendReservationResults(req, true);
 			log.info(String.format("User [%s] has finished the approval process.", Users.get(req.getUserId()).getFullName()));
 			
-		} else if (approved && u.getRole().equals("admin")) {
+		} else if (approved && Users.isAdmin(u.getId())) {
 			log.info(String.format("Admin has finished the add queue process."));
 			
 		} else {

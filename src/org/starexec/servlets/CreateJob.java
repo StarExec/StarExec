@@ -69,6 +69,8 @@ public class CreateJob extends HttpServlet {
 	private static final String clockTimeout = "wallclockTimeout";
 	private static final String spaceId = "sid";
 	private static final String traversal = "traversal";
+	private static final String pause = "pause";
+	private static final String maxMemory="maxMem";
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -89,9 +91,14 @@ public class CreateJob extends HttpServlet {
 
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
+		
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
-
+		
+		//memory is in units of bytes
+		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
+		log.debug("memoryLimit = 0"+memoryLimit);
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
@@ -100,7 +107,7 @@ public class CreateJob extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
 			return;
 		}
-		
+		log.debug("confirmed the new job has a unique name");
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -111,27 +118,27 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(workerQueue)));
 		j.setPrimarySpace(space);
 		//Create the HashMap to be used for creating job-pair path
-		HashMap<Integer, String> SP = new HashMap<Integer, String>();
-		SP.put(space, Spaces.get(space).getName());
-		Spaces.spacePathCreate(userId, Spaces.getSubSpaces(space, userId, true), SP, space);
+		log.debug("started building the new job");
+		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 		log.debug("HASHMAP = " + SP);
-
+		
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversal2 = request.getParameter(traversal);
 		//Depending on our run selection, handle each case differently
 		if (selection.equals("runAllBenchInSpace")) {
-			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, space, SP);
+			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, space, SP);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 
-			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true)); //Remove spaces the user is not a member of
-								
+			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
+			log.debug("got all the subspaces for the job");		
 			spaces.add(0, Spaces.get(space));
 			if (traversal2.equals("depth")) {
 				for (Space s : spaces) {
-					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, s.getId(), SP);
+					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, s.getId(), SP);
 				}
+				log.debug("added all the job pairs from every space");
 			} else {
 				log.debug("User Selected Round-Robin Search");
 				int max = 0;
@@ -157,13 +164,13 @@ public class CreateJob extends HttpServlet {
 				for(int i=0; i < max; i++) {
 					for (Space s : spaces) {
 						BSC bsc = SpaceToBSC.get(s);
-							if (bsc.b.size() > i) {
-								log.debug("Calling addJobPairsRobin function: i= " + i);
-								JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
-							}
+						if (bsc.b.size() > i) {
+							log.debug("Calling addJobPairsRobin function: i= " + i);
+							JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
 						}
 					}
 				}
+			}
 		} else { //hierarchy OR choice
 			List<Integer> solverIds = Util.toIntegerList(request.getParameterValues(solvers));
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
@@ -177,10 +184,10 @@ public class CreateJob extends HttpServlet {
 			if (benchMethod.equals("runAllBenchInHierarchy")) {
 				if (traversal.equals("depth")) {
 					log.debug("User selected depth-first traversal");
-					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit, SP);
+					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit,memoryLimit, SP);
 				} else {
 					log.debug("User selected round-robin traversal");
-					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaces(space, userId, true));
+					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId));
 					spaces.add(0,Spaces.get(space));
 					HashMap<Space, BSC> SpaceToBSC = new HashMap<Space, BSC>();
 					int max = 0;
@@ -203,7 +210,7 @@ public class CreateJob extends HttpServlet {
 							BSC bsc = SpaceToBSC.get(s);
 								if (bsc.b.size() > i) {
 									log.debug("Calling addJobPairsRobinSelected function: i = " + i);
-									JobManager.addJobPairsRobinSelected(j, userId, cpuLimit, runLimit, s.getId(), bsc.b.get(i), solvers, SP);
+									JobManager.addJobPairsRobinSelected(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), solvers, SP);
 								}
 						}
 					}
@@ -224,22 +231,33 @@ public class CreateJob extends HttpServlet {
 					return;
 				}
 
-				JobManager.buildJob(j, userId, cpuLimit, runLimit, benchmarkIds, solverIds, configIds, space, SP);
+				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, solverIds, configIds, space, SP);
 			}
 		}
-
+		
 		if (j.getJobPairs().size() == 0) {
 			// No pairs in the job means something went wrong; error out
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");
 			return;
 		}
-
+		
 		//decoupling adding job to db and script creation/submission
 		//boolean submitSuccess = JobManager.submitJob(j, space);
 		boolean submitSuccess = Jobs.add(j, space);
-		JobManager.checkPendingJobs(); // to start this job running if it is not
+		String start_paused = request.getParameter(pause);
+
+		//if the user chose to immediately pause the job
+		if (start_paused.equals("yes")) {
+			Jobs.pause(j.getId());
+		} else {
+			//TODO: Why are we doing this here? The periodic task can handle this, and it interferes with 
+			//sending back a response to the user.
+			//JobManager.checkPendingJobs(); // to start this job running if it is not	
+		}
+		
 		if(submitSuccess) {
 		    // If the submission was successful, send back to space explorer
+
 			response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
 		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 		}else  {
@@ -268,6 +286,10 @@ public class CreateJob extends HttpServlet {
 			}
 
 			if(!Validator.isValidInteger((String)request.getParameter(cpuTimeout))) {
+				return false;
+			}
+			
+			if(!Validator.isValidDouble((String)request.getParameter(maxMemory))) {
 				return false;
 			}
 

@@ -6,16 +6,18 @@
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));	
 		User t_user = Users.get(id);
-		int userId = SessionUtil.getUserId(request);
+		int visiting_userId = SessionUtil.getUserId(request);
+		User visiting_user = Users.get(visiting_userId);
+		
 		
 
 		if(t_user != null) {
 			request.setAttribute("t_user", t_user);
 			boolean owner = true;
 			String userFullName = t_user.getFullName();
-			request.setAttribute("sites", Websites.getAll(id, Websites.WebsiteType.USER));
+			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
-			if(userId != id){
+			if( (visiting_userId != id) && (!visiting_user.getRole().equals("admin"))  ){
 				owner = false;
 			} else {
 				List<Job> jList = Jobs.getByUserId(t_user.getId());
@@ -30,7 +32,9 @@
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 				}
 			}
-			request.setAttribute("owner", owner);			
+			request.setAttribute("owner", owner);	
+			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
+
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}
@@ -153,7 +157,7 @@
 			
 		<fieldset id="actionField">
 		<legend>actions</legend>
-			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp">edit</a>
+			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
 			<a id="recycleBinButton" href="/${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
 	</c:if>

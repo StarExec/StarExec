@@ -1,19 +1,30 @@
-var summaryTable;
+var summaryTable; 
 var pairTable;
-var spaceId;
-var curSpaceId;
-var jobId;
+var curSpaceId; //stores the ID of the job space that is currently selected from the space viewer
+var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
+var panelArray=null;
 $(document).ready(function(){
-	spaceId=$("#spaceId").attr("value");
 	jobId=$("#jobId").attr("value");
+	
+	
+	//sets up buttons and so on
 	initUI();
+	
+	//sets up the job space tree on the left side of the page
 	initSpaceExplorer();
 	initDataTables();
+	
+	//update the tables every 10 seconds
 	setInterval(function() {
 		pairTable.fnDraw(false);
-	},10000);
-	reloadTables(spaceId);
+		for (i=0;i<panelArray.length;i++) {
+			panelArray[i].fnReloadAjax(null,null,true,curSpaceId,false);
+		}
+	},5000);
+	
+	//puts data into the data tables
+	reloadTables($("#spaceId").attr("value"));
 });
 
 function createDownloadRequest(item,type,returnIds) {
@@ -24,7 +35,7 @@ function createDownloadRequest(item,type,returnIds) {
 		href=href+"&returnids="+returnIds;
 	}
 	$(item).attr('href', href);
-	destroyOnReturn(token);
+	destroyOnReturn(token);		//when we see the download token as a cookie, destroy the dialog box
 	window.location.href = href;
 }
 
@@ -79,27 +90,48 @@ function initSpaceExplorer() {
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
 }
 
+function clearPanels() {
+	if (panelArray==null)  {
+		return;
+	}
+	for (i=0;i<panelArray.length;i++) {
+		panelArray[i].fnDestroy();
+		$(panelArray[i]).remove();
+	}
+}
+
+
 function reloadTables(id) {
 	//we  only need to update if we've actually selected a new space
 	if (curSpaceId!=id) {
 		curSpaceId=id;
-		summaryTable.fnClearTable();
+		summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
+		clearPanels();
 		pairTable.fnClearTable();
+		
+		//clear out the graphs
 		$("#solverChoice1").empty();
 		$("#solverChoice2").empty();
 		$("#spaceOverviewSelections").empty();
-		$("#spaceOverview").attr("src",starexecRoot+"/images/emptyGraph.png");
-		$("#solverComparison").attr("src",starexecRoot+"/images/emptyGraph.png");
+		$("#spaceOverview").attr("src",starexecRoot+"/images/loadingGraph.png");
+		$("#solverComparison").attr("src",starexecRoot+"/images/loadingGraph.png");
+		
+		//tell the tables to display a "loading" indicator
 		summaryTable.fnProcessingIndicator(true);
+		
 		pairTable.fnProcessingIndicator(true);
-		summaryTable.fnReloadAjax(null,null,true,id);
+		summaryTable.fnReloadAjax(null,null,true,id,true);
+		
+		initializePanels();
+
 	}
 
 }
 
-function update() {
+function updateGraphs() {
 	
 	summaryTable.fnProcessingIndicator(false);
+
 	rows = $("#solveTbl tbody tr");	
 	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
 		$("#graphField").hide();
@@ -118,7 +150,7 @@ function update() {
 		//select first five solver/ configuration pairs
 		$("#spaceOverviewSelections").children("option:lt(5)").prop("selected",true);
 		lastValidSelectOption = $("#spaceOverviewSelections").val();
-		updateSpaceOverview();
+		updateSpaceOverviewGraph();
 		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
 			$("#solverComparison").show();
 			$("#solverComparisonOptionField").show();
@@ -132,10 +164,7 @@ function update() {
 
 		}
 		
-	}
-	
-	
-	
+	}	
 }
 
 /**
@@ -146,6 +175,7 @@ function initUI(){
 	$('#dialog-confirm-delete').hide();
 	$('#dialog-confirm-pause').hide();
 	$('#dialog-confirm-resume').hide();
+	$( "#dialog-warning").hide();
 	$("#dialog-return-ids").hide();
 	$("#dialog-solverComparison").hide();
 	$("#dialog-spaceOverview").hide();
@@ -162,11 +192,35 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+	
+	$('#clearCache').button( {
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	});
+	
 	$("#postProcess").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
 		}
 	});
+	
+	$("#popoutPanels").button({
+		icons: {
+			primary: "ui-icon-extlink"
+		}
+	});
+	$("#collapsePanels").button( {
+		icons: {
+			primary: "ui-icon-folder-collapsed"
+		}
+	}) ;
+	$("#openPanels").button( {
+		icons: {
+			primary: "ui-icon-folder-open"
+		}
+	}) ;
+	
 	$("#spaceOverviewUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
@@ -207,7 +261,60 @@ function initUI(){
 			secondary: "ui-icon-transferthick-e-w"
 		}
 	});
-		
+	
+	$("#popoutPanels").click(function() {
+		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId);
+	});
+	$("#collapsePanels").click(function() {
+		$(".panelField").each(function() {
+			legend = $(this).children('legend:first');
+			isOpen = $(legend).data('open');
+			if (isOpen) {
+				$(legend).trigger("click");
+			}
+		});
+	});
+	$("#openPanels").click(function() {
+		$(".panelField").each(function() {
+			legend = $(this).children('legend:first');
+			isOpen = $(legend).data('open');
+			
+			if (!isOpen) {
+				$(legend).trigger("click");
+			}
+		});
+	});
+	
+	$("#clearCache").click(function(){
+			
+			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
+			$("#dialog-warning").dialog({
+				modal: true,
+				width: 380,
+				height: 165,
+				buttons: {
+					'clear cache': function() {
+						$(this).dialog("close");
+						$(".cacheType").each(function() {
+							
+							type=$(this).attr("value");
+							$.post(
+									starexecRoot+"services/cache/clear/"+jobId+"/"+type,
+									function(returnCode) {
+										if (returnCode<0) {
+											showMessage('error',"There was an error clearing the cache for this item",5000);
+										}		
+							});
+						});									
+					},
+					"cancel": function() {
+						$(this).dialog("close");
+					}
+				}
+			});
+	});
+	
+	
 	$("#deleteJob").click(function(){
 		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
 		
@@ -469,7 +576,7 @@ function initUI(){
 	
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
 	$("#spaceOverviewUpdate").click(function() {
-	  	updateSpaceOverview();
+	  	updateSpaceOverviewGraph();
 	});
 	$("#solverComparisonUpdate").click(function() {
 		updateSolverComparison(false);
@@ -500,7 +607,7 @@ function initUI(){
 	});
 }
 
-function updateSpaceOverview() {
+function updateSpaceOverviewGraph() {
 	var configs = new Array();
 	$("#spaceOverviewSelections option:selected").each(function() {
 		configs.push($(this).attr("value"));
@@ -519,15 +626,19 @@ function updateSpaceOverview() {
 				
 				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;
 				case "2":
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;	
 				case "12":
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;
 				case "13":
 					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 					break;
 				default:
 					
@@ -564,15 +675,23 @@ function updateSolverComparison(big) {
 				
 				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				case "2":
 					showMessage('error',"You do not have sufficient permission to view job pair details for this job",5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				case "12":
 					showMessage('error',"you have selected too many solver / configuration pairs",5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				case "13":
 					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 					break;
 				default:
 					jsonObject=$.parseJSON(returnCode);
@@ -595,6 +714,71 @@ function updateSolverComparison(big) {
 	);
 }
 
+function openSpace(childId) {
+	$("#exploreList").jstree("open_node", "#" + curSpaceId, function() {
+		$.jstree._focused().select_node("#" + childId, true);	
+	});	
+}
+
+
+function getPanelTable(space) {
+	spaceName=space.attr("name");
+	spaceId=parseInt(space.attr("id"));
+	
+	table="<fieldset class=\"panelField\">" +
+			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
+			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
+					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
+			"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
+			"<th class=\"solvedHead\">solved</th> <th class=\"timeHead\">time</th> </tr>" +
+			"</thead>" +
+			"<tbody></tbody> </table></fieldset>";
+	return table;
+	
+}
+
+function initializePanels() {
+	sentSpaceId=curSpaceId;
+	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+sentSpaceId,function(spaces) {
+		panelArray=new Array();		
+		if (spaces.length==0) {
+			$("#subspaceSummaryField").hide();
+		}else {
+			$("#subspaceSummaryField").show();
+		}
+		for (i=0;i<spaces.length;i++) {
+			//if the user has changed spaces since this request was sent, we don't want to continue
+			//generating panels for the old space.
+			if (sentSpaceId!=curSpaceId) {
+				return;
+			}
+			space=$(spaces[i]);
+			spaceName=space.attr("name");
+			spaceId=parseInt(space.attr("id"));
+			
+			child=getPanelTable(space);
+			$("#panelActions").after(child); //put the table after the panelActions fieldset
+			panelArray[i]=$("#panel"+spaceId).dataTable({
+		        "sDom"			: 'rt<"clear">',
+		        "iDisplayStart"	: 0,
+		        "iDisplayLength": 1000, // make sure we show every entry
+		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true",
+		        "sServerMethod" : "POST",
+		        "fnServerData" : fnShortStatsPaginationHandler
+		    });
+		}
+		$(".viewSubspace").each(function() {
+			$(this).click(function() {
+				spaceId=$(this).parents("table.panel").attr("spaceId");
+				openSpace(spaceId);	
+			});
+			
+		});
+		$(".panelField").expandable();
+	});
+	
+}
+
 /**
  * Initializes the DataTable objects
  */
@@ -612,13 +796,6 @@ function initDataTables(){
         "fnServerData" : fnStatsPaginationHandler
     });
 	
-	$(".subspaceTable").dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-        "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
-        "bSort": true,
-        "bPaginate": true
-	});
 	// Job pairs table
 	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -683,7 +860,7 @@ function extendDataTableFunctions(){
 	//allows refreshing a table that is using client-side processing (for the summary table)
 	//modified to work for the summary table-- this version of fnReloadAjax should not be used
 	//anywhere else
-	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw, id )
+	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw, id,doUpdate )
 	{
 	    if ( sNewSource !== undefined && sNewSource !== null ) {
 	        oSettings.sAjaxSource = sNewSource;
@@ -705,7 +882,6 @@ function extendDataTableFunctions(){
 	    oSettings.fnServerData.call( oSettings.oInstance, oSettings.sAjaxSource, aData, function(json) {
 	    	//if we aren't on the same space anymore, don't update the table with this data.
 	    	if (id!=curSpaceId) {
-	    		
 	    		return;
 	    	}
 	        /* Clear the old information from the table */
@@ -738,24 +914,51 @@ function extendDataTableFunctions(){
 	        {
 	            fnCallback( oSettings );
 	        }
-	        update();
+	        if (doUpdate) {
+		        updateGraphs();
+	        } 
 	    }, oSettings );
 	    
 	};
 }
 
+function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
+	$.post(  
+			sSource,
+			aoData,
+			function(nextDataTablePage){
+				//if the user has clicked on a different space since this was called, we want those results, not these
+				
+				switch(nextDataTablePage){
+					case 1:
+						showMessage('error', "failed to get the next page of results; please try again", 5000);
+						break;
+					case 2:
+						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
+						break;
+					default:
+					
+						fnCallback(nextDataTablePage);						
+						break;
+				}
+			},  
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error populating data table",5000);
+	});
+}
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
-	var jobId = getParameterByName('id');
 	if (curSpaceId==undefined) {
 		return;
 	}
 	outSpaceId=curSpaceId;
 	
 	$.post(  
-			sSource + jobId+"/solvers/pagination/"+outSpaceId,
+			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false",
 			aoData,
 			function(nextDataTablePage){
+				//if the user has clicked on a different space since this was called, we want those results, not these
 				if (outSpaceId!=curSpaceId) {
 					return;
 				}

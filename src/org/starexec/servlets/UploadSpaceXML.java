@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -35,6 +36,7 @@ public class UploadSpaceXML extends HttpServlet {
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
+	private static final String users = "users";
 
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -52,6 +54,8 @@ public class UploadSpaceXML extends HttpServlet {
 				
 				BatchUtil result = this.handleXMLFile(userId, form);				
 			
+				// Note: Inherit users is handled in BatchUtil's createSpaceFromElement(...)
+				
 				// Redirect based on success/failure
 				if(result.getSpaceCreationSuccess()) {
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
@@ -88,7 +92,7 @@ public class UploadSpaceXML extends HttpServlet {
 			
 			//Process the archive file and extract
 		
-			File archiveFile = new File(uniqueDir,  item.getName());
+			File archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());

@@ -8,8 +8,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -37,7 +37,7 @@ public class JobPairs {
 	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
@@ -50,12 +50,13 @@ public class JobPairs {
 			procedure.setString(10,pair.getSolver().getName());
 			procedure.setString(11,pair.getBench().getName());
 			procedure.setInt(12,pair.getSolver().getId());
+			procedure.setLong(13, pair.getMaxMemory());
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(13));
+			pair.setId(procedure.getInt(14));
 
 			return true;
 		} catch (Exception e) {
@@ -122,6 +123,7 @@ public class JobPairs {
 		return false;
 	}
 	
+	//TODO: Is this secure? What permissions does this script have?
 	/**
 	 * Runs the given post processor on the given pair and returns the properties that were obtained
 	 * @param pairId The ID of the pair in question
@@ -136,8 +138,10 @@ public class JobPairs {
 			// Run the processor on the benchmark file
 			String [] procCmd = new String[2];
 			procCmd[0] = p.getFilePath();
-	
-			procCmd[1] = JobPairs.getFilePath(pairId);
+			JobPair pair=JobPairs.getPair(pairId);
+			procCmd[1] = JobPairs.getFilePath(pair);
+			
+			procCmd[2] = Benchmarks.get(pair.getId()).getPath();
 			reader = Util.executeCommand(procCmd,null);
 			
 			// Load results into a properties file
@@ -292,8 +296,8 @@ public class JobPairs {
 				str2=jp2.getStatus().getStatus();
 			}
 			else if (sortIndex==3) {
-				str1=jp1.getAttributes().getProperty("starexec-result");
-				str2=jp2.getAttributes().getProperty("starexec-result");
+				str1=jp1.getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=jp2.getAttributes().getProperty(R.STAREXEC_RESULT);
 			} else {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
@@ -439,6 +443,46 @@ public class JobPairs {
 
 		return null;
 	}
+	
+	/**
+	 * Gets the path to the output file  for this pair.
+	 * @param pairId The id of the pair to get the filepath for
+	 * @return The string path, or null on failure
+	 * @author Eric Burns
+	 */
+	
+	public static String getLogPath(int pairId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL getJobPairFilePathInfo(?)}");
+			procedure.setInt(1,pairId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				JobPair pair=new JobPair();
+				Solver s= pair.getSolver();
+				s.setName(results.getString("solver_name"));
+				Benchmark b=pair.getBench();
+				b.setName(results.getString("bench_name"));
+				Configuration c=pair.getConfiguration();
+				c.setName(results.getString("config_name"));
+				pair.setJobId(results.getInt("job_id"));
+				pair.setPath(results.getString("path"));
+				return JobPairs.getLogFilePath(pair);
+				
+			}
+		} catch (Exception e) {
+			log.debug("getFilePath says "+e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
 	/**
 	 * Gets the path to the output file  for this pair.
 	 * @param pairId The id of the pair to get the filepath for
@@ -478,6 +522,57 @@ public class JobPairs {
 	}
 	
 	/**
+     * Returns the log of a job pair by reading
+     * in the physical log file into a string.
+     * @param pairId The id of the pair to get the log for
+     * @param sgeId The SGE id of the pair
+     * @return The log of the job run
+     */
+    public static String getJobLog(int pairId) {
+    	try {
+    		
+    		String logPath = JobPairs.getLogPath(pairId);
+    	
+    		File logFile = new File(logPath);
+
+    		if(logFile.exists()) {
+    			return FileUtils.readFileToString(logFile);
+    		}
+    	} catch (Exception e) {
+    		log.warn(e.getMessage(), e);
+    	}
+
+    	return null;
+    }
+	/**
+	 * Returns the absolute path to where the log for a pair is stored given the pair.
+	 * @param pair
+	 * @return
+	 */
+	public static String getLogFilePath(JobPair pair) {
+		try {
+			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
+			log.debug("trying to find log at path = "+file.getAbsolutePath());
+			String[] pathSpaces=pair.getPath().split("/");
+			for (String space : pathSpaces) {
+				file=new File(file,space);
+			}
+
+			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
+
+			file=new File(file,pair.getBench().getName());
+			
+			
+			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
+			return file.getAbsolutePath();
+		} catch(Exception e) {
+			log.error("getFilePath says "+e.getMessage(),e);
+		}
+		return null;
+		
+	}
+	
+	/**
 	 * Gets the path to the output file  for this pair. Requires that the 
 	 * jobId, path, solver name, config name, and bench names be populated
 	 * @param pair The pair to get the filepath for
@@ -492,17 +587,20 @@ public class JobPairs {
 			for (String space : pathSpaces) {
 				file=new File(file,space);
 			}
-			File testFile=new File(file,pair.getSolver().getName());
-			testFile=new File(testFile,pair.getConfiguration().getName());
-			
+
 			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
 
 			file=new File(file,pair.getBench().getName());
-			testFile=new File(testFile,pair.getBench().getName());
+			
 			if (!file.exists()) {	    // if the job output could not be found
+				File testFile=new File(file,pair.getSolver().getName());
+				testFile=new File(testFile,pair.getConfiguration().getName());
+				testFile=new File(testFile,pair.getBench().getName());
 				if (testFile.exists()) {  //check the alternate path some pairs are still stored at
 					FileUtils.copyFile(testFile, file);
-					testFile.delete();
+					if (file.exists()) {
+						testFile.delete();
+					}
 				}
 			}
 			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
@@ -775,7 +873,7 @@ public class JobPairs {
 		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
 		jp.setPath(result.getString("path"));
 		jp.setJobSpaceId(result.getInt("job_space_id"));
-		
+		jp.setMaxMemory(result.getLong("maximum_memory"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}

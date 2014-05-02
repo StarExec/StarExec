@@ -30,14 +30,36 @@
     		</element>
     	</sequence>
     	 <attribute name="id" type="int" use="optional"></attribute>
+    	 <attribute name="sticky-leaders" type="boolean" use="optional"></attribute>
+    	 <attribute name="inherit-users" type="boolean" use="optional"></attribute>
+    	 <attribute name="locked" type="boolean" use="optional"></attribute>
+    	 <attribute name="add-benchmark-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="add-job-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="add-solver-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="add-space-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="add-user-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="rem-benchmark-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="rem-job-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="rem-solver-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="rem-space-perm" type="boolean" use="optional"></attribute>
+    	 <attribute name="rem-user-perm" type="boolean" use="optional"></attribute>
     	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
     </complexType>
 
     <complexType name="Benchmark">
+        <sequence>
+  	  <element name="Attribute" type="tns:Attribute" minOccurs="0" maxOccurs="unbounded">
+    	  </element>
+        </sequence>
     	<attribute name="id" type="int"></attribute>
     	<attribute name="name" type="string" use="optional"></attribute>
     </complexType>
     
+    <complexType name="Attribute">
+    	<attribute name="name" type="string"></attribute>
+    	<attribute name="value" type="string"></attribute>
+    </complexType>
+
     <complexType name="Solver">
     	<attribute name="id" type="int"></attribute>
     	<attribute name="name" type="string" use="optional"></attribute>

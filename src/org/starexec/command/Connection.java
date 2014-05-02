@@ -24,16 +24,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.Header;
-
-
-
-
-import org.apache.http.conn.ssl.SSLSocketFactory;
-
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -45,14 +37,17 @@ import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.entity.mime.content.StringBody;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 
 
 public class Connection {
@@ -271,7 +266,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code otherwise.
 	 */
 	public int uploadBenchmarksToSingleSpace(String filePath,Integer processorID, Integer spaceID,Boolean downloadable) {
-		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),"",downloadable,true,false,false,null);
+		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),"",downloadable,false,false,false,null);
 	}
 	
 	//TODO: Support dependencies for benchmarks
@@ -327,7 +322,6 @@ public class Connection {
 			//TODO: improve the error handling here
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}
@@ -342,41 +336,46 @@ public class Connection {
 	public int uploadConfiguration(String name, String desc, String filePath, Integer solverID) {
 		try {
 			
-			
 			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADCONFIG);
-			post=(HttpPost) setHeaders(post);
+			if (desc==null) {
+				desc="";
+			}
 			
 			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("solverID",new StringBody(solverID.toString(),utf8));
-			entity.addPart("uploadConfigDesc",new StringBody(name,utf8));
-			entity.addPart("uploadConfigName",new StringBody(desc,utf8));
+			entity.addPart("solverId",new StringBody(solverID.toString(),utf8));
+			entity.addPart("uploadConfigDesc",new StringBody(desc,utf8));
+			entity.addPart("uploadConfigName",new StringBody(name,utf8));
 			
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("file", fileBody);
-			
+			post=(HttpPost) setHeaders(post);
+
+			post.setEntity(entity);
 			
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			//we're expecting a redirect to the configuration
-			if (response.getStatusLine().getStatusCode()!=302) {
-				return Status.ERROR_BAD_ARGS;
+			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
+			if (id==null) {
+				return Status.ERROR_SERVER;
 			}
-			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
-			return newID;
+			
+			return Integer.parseInt(id);
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}
 	}
 	
 	/**
-	 * This method takes in a HashMap mapping String keys to String values
-	 * and creates and HTTP POST request that pushes a processor to Starexec
-	 * 
-	 * @param commandParams The parameters from the command line. A file and an ID are required.
-	 * @return The new processor ID on success, or a negative error code on failure
-	 * @author Eric Burns
+	 * Uploads a processor to starexec 
+	 * @param name The name to give the processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @param type Must be "post" "pre" or "bench"
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
 	
 	protected int uploadProcessor(String name, String desc, String filePath,Integer communityID,String type) {
@@ -403,8 +402,9 @@ public class Connection {
 			
 			response.getEntity().getContent().close();
 			
-			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_BAD_ARGS;
+			//we are expecting to be redirected to the page for the processor
+			if (response.getStatusLine().getStatusCode()!=302) {
+				return Status.ERROR_SERVER;
 			}
 			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return id;
@@ -415,39 +415,42 @@ public class Connection {
 		
 	}
 	
+
 	/**
-	 * Handles requests for uploading post-processors.
-	 * @param commandParams The key/value pairs given by the user at the command line. A file and an ID are required
-	 * @return 0 on success and a negative error code otherwise
-	 * @author Eric Burns
+	 * Uploads a post processor to starexec 
+	 * @param name The name to give the post processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
-	
 	public int uploadPostProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name,desc,filePath,communityID, "post");
 	}
 	
 	/**
-	 * Handles requests for uploading benchmark processors 
-	 * @param name The name to be given to the new benchmark processor.
-	 * @param desc A description of the benchmark processor
-	 * @param filePath The path to the zip archive containing the processor
-	 * @param communityID The ID of the community to add the processor to
-	 * @return A status code corresponding to Status.java
+	 * Uploads a benchmark processor to starexec 
+	 * @param name The name to give the benchmark processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
-	
 	public int uploadBenchProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name,desc,filePath,communityID, "bench");
 	}
 	
 	/**
-	 * Handles requests for uploading preprocessors 
-	 * @param name The name to be given to the new pre processor.
-	 * @param desc A description of the pre processor
-	 * @param filePath The path to the zip archive containing the processor
-	 * @param communityID The ID of the community to add the processor to
-	 * @return A status code corresponding to Status.java
+	 * Uploads a pre processor to starexec 
+	 * @param name The name to give the pre processor
+	 * @param desc A description for the processor
+	 * @param filePath An absolute file path to the file to upload
+	 * @param communityID The ID of the community that will be given the processor
+	 * @return The positive integer ID assigned the new processor on success, or a negative
+	 * error code on failure
 	 */
-	
 	public int uploadPreProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name,desc,filePath,communityID, "pre");
 	}
@@ -472,7 +475,7 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_BAD_ARGS;
+				return Status.ERROR_SERVER;
 			}
 			
 			return 0;
@@ -557,6 +560,30 @@ public class Connection {
 		}	
 	}
 	
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param desc The description of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param url The URL of the archived solver to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolverFromURL(String name,String desc,Integer spaceID, String url, Boolean downloadable) {
+		return uploadSolverFromURL(name,desc,"text",spaceID,url,downloadable);
+	}
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param url The URL of hte archived solver to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable) {
+		return uploadSolverFromURL(name,null,"upload",spaceID,url,downloadable);
+	}
+	
 	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable) {
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
@@ -633,27 +660,27 @@ public class Connection {
 		return this.setUserSetting("institution",inst);
 	}
 	
-	public int deleteSolvers(Integer[] ids) {
+	public int deleteSolvers(List<Integer> ids) {
 		return deletePrimitives(ids,"solver");
 	}
 	
-	public int deleteBenchmarks(Integer[] ids) {
+	public int deleteBenchmarks(List<Integer> ids) {
 		return deletePrimitives(ids,"benchmark");
 	}
 	
-	public int deleteProcessors(Integer[] ids) {
+	public int deleteProcessors(List<Integer> ids) {
 		return deletePrimitives(ids,"processor");
 	}
 	
-	public int deleteConfigurations(Integer[] ids) {
+	public int deleteConfigurations(List<Integer> ids) {
 		return deletePrimitives(ids,"configuration");
 	}
-	public int deleteJobs(Integer[] ids) {
+	public int deleteJobs(List<Integer> ids) {
 		return deletePrimitives(ids,"job");
 	}
 	
 	
-	protected int deletePrimitives(Integer[] ids, String type) {
+	protected int deletePrimitives(List<Integer> ids, String type) {
 		try {
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type);
@@ -721,7 +748,8 @@ public class Connection {
 	
 	protected int setUserSetting(String setting,String val) {
 		try {	
-			String url=baseURL+R.URL_USERSETTING+setting+"/"+val;
+			int userId=getUserID();
+			String url=baseURL+R.URL_USERSETTING+setting+"/"+userId+"/"+val;
 			url=url.replace(" ", "%20"); //encodes white space, which can't be used in a URL
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
@@ -730,12 +758,11 @@ public class Connection {
 			response.getEntity().getContent().close();
 			
 			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_BAD_ARGS;
+				return Status.ERROR_SERVER;
 			}
 			
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_SERVER;
 		}
 	}
@@ -788,23 +815,57 @@ public class Connection {
 		}
 	}
 	
-	public int removeSolvers(Integer[] solverIds, Integer spaceID) {
+	/**
+	 * Removes the given solvers from the given space. The solvers are NOT deleted.
+	 * @param solverIds The IDs of the solvers to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	public int removeSolvers(List<Integer> solverIds, Integer spaceID) {
 		return removePrimitives(solverIds,spaceID,"solver",false);
 	}
 	
-	public int removeJobs(Integer[] jobIds, Integer spaceID) {
+	/**
+	 * Removes the given jobs from the given space. The jobs are NOT deleted.
+	 * @param jobIds The IDs of the jobs to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeJobs(List<Integer> jobIds, Integer spaceID) {
 		return removePrimitives(jobIds,spaceID, "job",false);
 	}
 	
-	public int removeUsers(Integer[] userIds, Integer spaceID) {
+	/**
+	 * Removes the given users from the given space. The users are NOT deleted.
+	 * @param userIds The IDs of the users to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeUsers(List<Integer> userIds, Integer spaceID) {
 		return removePrimitives(userIds,spaceID, "user",false);
 	}
 	
-	public int removeBenchmarks(Integer[] benchmarkIds, Integer spaceID) {
+	/**
+	 * Removes the given benchmarks from the given space. The benchmarks are NOT deleted.
+	 * @param benchmarkIds The IDs of the benchmarks to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeBenchmarks(List<Integer> benchmarkIds, Integer spaceID) {
 		return removePrimitives(benchmarkIds, spaceID, "benchmark",false);
 	}
 	
-	public int removeSubspace(Integer[] subspaceIds, Integer spaceID, Boolean deletePrims) {
+	/**
+	 * Removes the given subspaces from the given space.
+	 * @param subspaceIds The IDs of the subspaces to remove
+	 * @param spaceID The ID of the space
+	 * @return 0 on success, or a negative integer status code on failure
+	 */
+	
+	public int removeSubspace(List<Integer> subspaceIds, Integer spaceID, Boolean deletePrims) {
 		return removePrimitives(subspaceIds, spaceID,"subspace", deletePrims);
 	}
 	
@@ -815,7 +876,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
 	 */
-	protected int removePrimitives(Integer[] primIDs,Integer spaceID,String type, Boolean deletePrims) {
+	protected int removePrimitives(List<Integer> primIDs,Integer spaceID,String type, Boolean deletePrims) {
 		try {
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
@@ -947,6 +1008,7 @@ public class Connection {
 	public int copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
 		return copyOrLinkPrimitives(spaceIds,oldSpaceId,newSpaceId,true,hierarchy,"space");
 	}
+	
 	
 	
 	
@@ -1442,6 +1504,21 @@ public class Connection {
 			String done=null;
 			setSessionIDIfExists(response.getAllHeaders());
 			
+			
+			
+			boolean fileFound=false;
+			for (Header x : response.getAllHeaders()) {
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound=true;
+					break;
+				}
+			}
+			
+			if (!fileFound) {
+				response.getEntity().getContent().close();
+				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			}
+			
 			//if we're sending 'since,' it means this is a request for new job data
 			if (urlParams.containsKey(R.FORMPARAM_SINCE)) {
 				
@@ -1461,19 +1538,6 @@ public class Connection {
 					//don't save a empty files
 					return R.SUCCESS_NOFILE;
 				}
-			}
-			
-			boolean fileFound=false;
-			for (Header x : response.getAllHeaders()) {
-				if (x.getName().equals("Content-Disposition")) {
-					fileFound=true;
-					break;
-				}
-			}
-			
-			if (!fileFound) {
-				response.getEntity().getContent().close();
-				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			
 			//copy file from the HTTPResponse to an output stream
@@ -1496,7 +1560,6 @@ public class Connection {
 					this.setJobOutCompletion(Integer.parseInt(urlParams.get("id")), lastSeen);
 				}
 				
-				//System.out.println("Maximum completion ID found= "+String.valueOf(lastSeen));
 			}
 			if (done!=null) {
 				return R.SUCCESS_JOBDONE;
@@ -1538,9 +1601,10 @@ public class Connection {
 	 * @param cpu The cpu timeout for job pairs. If null, the default for the space will be used.
 	 * @param useDepthFirst If true, job pairs will be run in a depth-first fashion in the space hierarchy.
 	 * If false, they will be run in a round-robin fashion.
+	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @return
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused) {
 		try {
 			
 			
@@ -1558,7 +1622,7 @@ public class Connection {
 			
 			String line=br.readLine();
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
-			String cpuTime=null,wallclockTime=null;
+			String cpuTime=null,wallclockTime=null, mem=null;
 			
 			while (line!=null) {
 				
@@ -1572,16 +1636,22 @@ public class Connection {
 						cpuTime=keyValue.getValue();
 					} else if (keyValue.getName().equals("wallclockTimeout")) {
 						wallclockTime=keyValue.getValue();
-					} 
+					} else if (keyValue.getName().equals("maxMem")) {
+						mem=keyValue.getValue();
+					}
 				}
 				
 				line=br.readLine();
 			}
+			//use the user given values if they are specified
 			if (cpu!=null) {
 				cpuTime=String.valueOf(cpu);
 			}
 			if (wallclock!=null) {
 				wallclockTime=String.valueOf(wallclock);
+			}
+			if (maxMemory!=null) {
+				mem=String.valueOf(maxMemory);
 			}
 			
 			
@@ -1605,19 +1675,25 @@ public class Connection {
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
-			
+			params.add(new BasicNameValuePair("maxMem",mem));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
-			
+			if (startPaused) {
+				params.add(new BasicNameValuePair("pause","yes"));
+			} else {
+				params.add(new BasicNameValuePair("pause","no"));
+			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			if (response.getStatusLine().getStatusCode()!=302) {
-				return Status.ERROR_SERVER;
+
+			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
+			
+			if (Validator.isValidPosInteger(id)) {
+				return Integer.parseInt(id);
 			}
-			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
-			return id;
+			return Status.ERROR_SERVER;
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}

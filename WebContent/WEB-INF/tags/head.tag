@@ -19,11 +19,14 @@
 		</c:forEach>	
 	</c:if>		
         <script> var starexecRoot="/${starexecRoot}/"; </script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>		
 	<!--[if lt IE 9]> 
+		
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script> 
 	<![endif]-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>	
+	
 	<script src="/${starexecRoot}/js/lib/jquery-ui-1.8.16.custom.min.js"></script>
+	
 	<script src="/${starexecRoot}/js/master.js"></script>
 	<c:if test="${not empty js}">	
 		<c:forEach var="jsFile" items="${fn:split(js, ',')}">

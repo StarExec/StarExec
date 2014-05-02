@@ -5,16 +5,46 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 -- Begins the registration process by adding a user to the USERS table
 -- Makes their role "unauthorized"
--- Author: Todd Elvers
+-- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS AddUser;
-CREATE PROCEDURE AddUser(IN _first_name VARCHAR(32), IN _last_name VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT, OUT _id INT)
+CREATE PROCEDURE AddUser(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT(20), OUT _id INT)
 	BEGIN		
-		INSERT INTO users(first_name, last_name, email, institution, created, password, disk_quota)
-		VALUES (_first_name, _last_name, _email, _institute, SYSDATE(), _password, _diskQuota);
+		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
+		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota);
+		
 		SELECT LAST_INSERT_ID() INTO _id;
 		
 		INSERT INTO user_roles(email, role)
 		VALUES (_email, 'unauthorized');
+	END //
+	
+DROP PROCEDURE IF EXISTS AddUserAuthorized;
+CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20),IN _role VARCHAR(24), OUT _id INT)
+	BEGIN
+		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
+		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota);
+		SELECT LAST_INSERT_ID() INTO _id;
+		
+		INSERT INTO user_roles(email, role)
+		VALUES (_email, _role);
+	END //
+
+-- Adds a user to a community directly (used through admin interface)
+-- Skips the community request stage
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS AddUserToCommunity;
+CREATE PROCEDURE AddUserToCommunity(IN _userId INT, IN _communityId INT)
+	BEGIN
+		DECLARE _newPermId INT;
+		DECLARE _pid INT;
+		
+		-- Copy the default permission for the community 					
+		SELECT default_permission FROM spaces WHERE id=_communityId INTO _pid;
+		CALL CopyPermissions(_pid, _newPermId);
+		
+		INSERT INTO user_assoc(user_id, space_id, permission)
+		VALUES(_userId, _communityId, _newPermId);
+		
 	END //
 
 -- Adds an association between a user and a space
@@ -51,9 +81,10 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
 						
-				FROM	users WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -71,8 +102,9 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users WHERE (id != _publicUserId)
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 				ORDER BY 
 				(CASE _colSortedOn
 					WHEN 0 THEN full_name
@@ -89,9 +121,10 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
 				
-				FROM	users WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 							
 				-- Exclude Users whose name and description don't contain the query string
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
@@ -114,8 +147,9 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						email,
 						first_name,
 						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name
-				FROM	users WHERE (id != _publicUserId)
+						CONCAT(first_name, ' ', last_name) AS full_name,
+						role
+				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
 				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
 				OR		email								LIKE 	CONCAT('%', _query, '%'))
@@ -361,5 +395,35 @@ CREATE PROCEDURE IsMemberOfCommunity(IN _userId INT, IN communityId INT)
 			JOIN user_assoc AS assoc ON assoc.space_id=descendant
 		WHERE assoc.user_id=_userId AND ancestor=communityId;
 	END //
+	
+	
+-- Deletes a user from the database. Right now, this is only used to get rid of temporary test users
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS DeleteUser;
+CREATE PROCEDURE DeleteUser(IN _userId INT)
+	BEGIN
+		DELETE FROM users WHERE id=_userId;
+	END //
+	
+-- Suspends a user
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS SuspendUser;
+CREATE PROCEDURE SuspendUser(IN _userEmail VARCHAR(64))
+	BEGIN
+		UPDATE user_roles
+		SET role = "suspended"
+		WHERE email = _userEmail;
+	END //
+	
+-- Suspends a suspended user
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS ReinstateUser;
+CREATE PROCEDURE ReinstateUser(IN _userEmail VARCHAR(64))
+	BEGIN
+		UPDATE user_roles
+		SET role = "user"
+		WHERE email = _userEmail;
+	END //
+	
 
 DELIMITER ; -- This should always be at the end of this file

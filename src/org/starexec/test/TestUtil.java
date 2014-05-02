@@ -1,7 +1,8 @@
 package org.starexec.test;
 
-import org.starexec.constants.R;
 import java.util.Random;
+
+import org.starexec.constants.R;
 public class TestUtil {
 	private static String[] letters={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 	private static Random rnd=new Random();
@@ -12,15 +13,24 @@ public class TestUtil {
 	 */
 	public static String getRandomSpaceName() {
 		return getRandomAlphaString(R.SPACE_NAME_LEN-1);
-		
-			
+	}
+	public static String getRandomPassword() {
+		return getRandomAlphaString(R.PASSWORD_LEN-1);
 	}
 	
 	public static String getRandomSolverName() {
 		return getRandomAlphaString(R.SOLVER_NAME_LEN-1);
 	}
 	
-	private static String getRandomAlphaString(int length) {
+	public static String getRandomJobName() {
+		return getRandomAlphaString(R.JOB_NAME_LEN-1);
+	}
+	
+	public static String getRandomUserName() {
+		return getRandomAlphaString(R.USER_FIRST_LEN-1);
+	}
+	
+	public static String getRandomAlphaString(int length) {
 		String name="";
 		while (length>0) {
 			name=name+letters[rnd.nextInt(letters.length)];

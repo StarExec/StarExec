@@ -3,11 +3,15 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.owasp.esapi.ESAPI;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Website;
+import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for user-defined websites
@@ -28,6 +32,7 @@ public class Websites {
 	public static boolean add(int id, String url, String name, WebsiteType type) {
 		Connection con = null;			
 		CallableStatement procedure= null;
+		
 		try {
 			con = Common.getConnection();		
 			 procedure = null;
@@ -64,6 +69,36 @@ public class Websites {
 	}
 	
 	/**
+	 * Returns a new website with the same URL and name as the original, but where
+	 * the name and URL strings have been escaped to be safe for javascript insertion
+	 * @param site The site to process
+	 * @return A new, identical website with javascript-safe attributes
+	 */
+	public static Website processWebsiteForJavaScript(Website site) {
+		
+		Website newSite=new Website();
+		newSite.setId(site.getId());
+		newSite.setUrl(GeneralSecurity.getJavascriptSafeString(site.getUrl()));
+		newSite.setName(GeneralSecurity.getJavascriptSafeString(site.getName()));
+		return newSite;
+	}
+	
+	/**
+	 * Returns a new website with the same URL and name as the original, but where
+	 * the name and URL strings have been escaped to be safe for HTML insertion
+	 * @param site The site to process
+	 * @return A new, identical website with javascript-safe attributes
+	 */
+	public static Website processWebsiteForHTML(Website site) {
+			Website newSite=new Website();
+			newSite.setId(site.getId());
+			newSite.setUrl(GeneralSecurity.getHTMLAttributeSafeString(site.getUrl()));
+			newSite.setName(GeneralSecurity.getHTMLSafeString(site.getName()));
+			return newSite;
+
+	}
+	
+	/**
 	 * Deletes the website associated with the given website ID.
 	 * @param websiteId the ID of the website to delete
 	 * @param entityId the ID of the entity that the website belongs to (user, solver, space)
@@ -75,8 +110,7 @@ public class Websites {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
-			con = Common.getConnection();		
-			 procedure = null;			
+			con = Common.getConnection(); 			
 			
 			switch(webType) {
 				case USER:
@@ -108,10 +142,33 @@ public class Websites {
 		return false;
 	}	
 	
+	public static List<Website> getAllForHTML(int id, WebsiteType webType) {
+		List<Website> sites=getAll(id,webType);
+		List<Website> answer=new ArrayList<Website>();
+		
+		for (Website s : sites) {
+			answer.add(processWebsiteForHTML(s));
+		}
+		return answer;
+	}
+	
+	public static List<Website> getAllForJavascript(int id, WebsiteType webType) {
+		List<Website> sites=getAll(id,webType);
+		List<Website> answer=new ArrayList<Website>();
+		
+		for (Website s : sites) {
+			answer.add(processWebsiteForJavaScript(s));
+		}
+		return answer;
+	}
+	
+	
 	/**
 	 * Returns a list of websites associated with the given entity based on its type
 	 * @param id The id of the entity to get websites for
 	 * @param webType The type of entity to get websites for (solver, user or space)
+	 * @param javascriptSafe If true, websites with their attributes escaped such that they 
+	 * are safe for insertion into javascript
 	 * @return A list of websites associated with the entity
 	 * @author Tyler Jensen
 	 */
@@ -121,7 +178,6 @@ public class Websites {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = null;
 			
 			switch(webType) {
 				case USER:
@@ -148,6 +204,8 @@ public class Websites {
 				w.setName(results.getString("name"));
 				w.setUrl(results.getString("url"));
 				websites.add(w);				
+
+				
 			}
 			
 			return websites;

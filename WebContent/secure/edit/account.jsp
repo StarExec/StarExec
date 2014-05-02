@@ -3,18 +3,34 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-		User user = SessionUtil.getUser(request);
-		long disk_usage = Users.getDiskUsage(user.getId());
-		int userId = user.getId();
-		if (userId!=R.PUBLIC_USER_ID){
-			request.setAttribute("userId", userId);
-			request.setAttribute("diskQuota", Util.byteCountToDisplaySize(user.getDiskQuota()));
-			request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
+		int userId = Integer.parseInt(request.getParameter("id"));	
+		User t_user = Users.get(userId);
+		int visiting_userId = SessionUtil.getUserId(request);
+		User visiting_user = Users.get(visiting_userId);
+		
+		
+		long disk_usage = Users.getDiskUsage(t_user.getId());		
+		
+		if(t_user != null) {
+			
+			boolean owner = true;
+			boolean isadmin = false;
+			if( (visiting_userId != userId) && (!visiting_user.getRole().equals("admin"))  ){
+				owner = false;
+			} else {
+				request.setAttribute("userId", userId);
+				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
+				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
+				request.setAttribute("sites", Websites.getAllForHTML(userId, Websites.WebsiteType.USER));
+			}
+			if (visiting_user.getRole().equals("admin")) {
+				isadmin = true;
+			}
+			request.setAttribute("owner", owner);
+			request.setAttribute("isadmin", isadmin);
+			request.setAttribute("user", t_user);
 		}
-		else{
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Only registered users can edit their accounts.");	
-		}
-		} catch (Exception e) {
+	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 	}
 %>
@@ -25,7 +41,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 	<legend>personal information</legend>
-	<table id="infoTable">
+	<table id="infoTable" uid=${t_user.id}>
 		<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">
@@ -65,6 +81,29 @@
 		</table>
 		<h6>(click the current value of an attribute to edit it; email addresses are currently not editable)</h6>
 	</fieldset>
+	<c:if test="${isadmin}">
+		<fieldset>
+			<legend>user disk quota</legend>
+				<table id="diskUsageTable" class="shaded" uid=${t_user.id}>
+					<thead>
+						<tr>
+							<th>attribute</th>
+							<th>value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>disk quota</td>
+							<td id="editdiskquota">${diskQuota}</td>
+						</tr>
+						<tr>
+							<td>current disk usage</td>
+							<td>${diskUsage}</td>
+						</tr>
+					</tbody>			
+				</table>
+		</fieldset>
+	</c:if>
 	<fieldset>
 		<legend>associated websites</legend>
 		<table id="websites" class="shaded">
@@ -75,6 +114,12 @@
 				</tr>
 			</thead>
 			<tbody>
+			<c:forEach items="${sites}" var="s">
+				<tr>
+					<td><a href="${s.url}">${s.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a class="delWebsite" id="${s.id}">delete</a></td>
+				</tr>
+			</c:forEach>
 			</tbody>
 		</table>
 		
@@ -87,7 +132,7 @@
 	</fieldset>
 	<fieldset>
 		<legend>password</legend>
-		<form id="changePassForm">
+		<form id="changePassForm" method="post">
 			<table id="passwordTable" class="shaded">
 				<thead>
 					<tr>

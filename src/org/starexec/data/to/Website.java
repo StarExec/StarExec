@@ -36,6 +36,6 @@ public class Website extends Identifiable {
 	
 	@Override
 	public String toString() {
-		return String.format("<a target='_blank' href='%s'>%s</a>", url, name);
+		return String.format("<a target=\"_blank\" href=\"%s\">%s</a>", url, name);
 	}
 }

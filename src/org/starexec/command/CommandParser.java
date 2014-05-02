@@ -6,6 +6,7 @@ package org.starexec.command;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +49,7 @@ class CommandParser {
 			return serverStatus;
 		} catch (Exception e ) {
 			//likely a null pointer because we are missing an important argument
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -74,6 +75,8 @@ class CommandParser {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
 				serverStatus=parser.uploadSpaceXML(commandParams);
+			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
+				serverStatus=parser.uploadConfiguration(commandParams);
 			}
 			else {
 				return Status.ERROR_BAD_COMMAND;
@@ -86,8 +89,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
-			e.printStackTrace();
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -151,7 +153,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -190,7 +192,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -224,7 +226,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -257,7 +259,7 @@ class CommandParser {
 			
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -344,7 +346,7 @@ class CommandParser {
 			
 			return 0;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -554,6 +556,15 @@ class CommandParser {
 		return answer;
 	}
 	
+	protected static List<Integer> convertToIntList(String str) {
+		String[] ids=str.split(",");
+		List<Integer> answer=new ArrayList<Integer>();
+		for (String s : ids) {
+			answer.add(Integer.parseInt(s));
+		}
+		return answer;
+	}
+	
 
 	/**
 	 * Polls a job on StarExec, getting incremental job results until the job is completed
@@ -719,7 +730,7 @@ class CommandParser {
 				
 			}
 			else {
-				return Status.ERROR_BAD_COMMAND;
+				return Status.ERROR_SERVER;
 			}
 			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {
@@ -727,7 +738,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
-			return Status.ERROR_BAD_ARGS;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 

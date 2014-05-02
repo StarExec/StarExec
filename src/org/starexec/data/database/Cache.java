@@ -28,9 +28,12 @@ public class Cache {
 		try {
 			String filePath=Cache.getCache(id, type);
 			if (filePath!=null) {
-				File cacheFile=new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), filePath);
+				File cacheFile=new File(filePath);
 				if (cacheFile.exists()) {
 					cacheFile.delete();
+				} else {
+					log.debug("deleteCacheFile tried to delete cached file with id = "+id+" and type = "+type.getVal()+", but it did" +
+							"not exist");
 				}
 			}
 			return true;
@@ -39,10 +42,17 @@ public class Cache {
 		} 
 		return false;
 	}
+	/**
+	 * Clears the entire cache
+	 * @return True on success, and false otherwise
+	 */
+	public static boolean deleteAllCache() {
+		return deleteOldPaths(0);
+	}
 	
 	
 	/**
-	 * Deletes all the paths to cached items that have not been accesed in the past 
+	 * Deletes all the paths to cached items that have not been accessed in the past 
 	 * <daysSinceLastAccess> days
 	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
 	 * @return True if the operation was successful, false otherwise
@@ -52,6 +62,16 @@ public class Cache {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
+			//first, get all the old paths so we can delete them from disk
+			List<String> paths=Cache.getOldPaths(daysSinceLastAccess);
+			//first, remove the files on disk
+			for (String path : paths) {
+				File file=new File(path);
+				if (file.exists()) {
+					file.delete();
+				}
+			}
+			//then, remove everything from the database
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteOldCachePaths(?)}");
 			//get current time minus the number of days to get the time before which files are considered "old"
@@ -59,7 +79,7 @@ public class Cache {
 			procedure.executeQuery();
 			return true;
 		} catch (Exception e) {
-			log.debug("getOldPaths says "+e.getMessage(),e);
+			log.debug("deleteOldPaths says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -68,9 +88,78 @@ public class Cache {
 	}
 	
 	
+	/**
+	 * Deletes all the paths to cached items that have not been accessed in the past 
+	 * <daysSinceLastAccess> days
+	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
+	 * @return True if the operation was successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean deleteCacheOfType(CacheType type) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			//first, get all the old paths so we can delete them from disk
+			List<String> paths=Cache.getPathsOfType(type);
+			//first, remove the files on disk
+			for (String path : paths) {
+				File file=new File(path);
+				if (file.exists()) {
+					file.delete();
+				}
+			}
+			//then, remove everything from the database
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL DeleteCachePathsOfType(?)}");
+			//get current time minus the number of days to get the time before which files are considered "old"
+			procedure.setInt(1, type.getVal());
+			procedure.executeQuery();
+			return true;
+		} catch (Exception e) {
+			log.debug("deleteCacheOfType says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
 	
 	/**
-	 * Returns the relative path to a cached space directory
+	 * Gets all the absolute paths to cached items that are of the given type
+	 * @param type The type of the cached items to retrieve
+	 * @return A list of strings, each string representing an absolute path
+	 * @author Eric Burns
+	 */
+	public static List<String> getPathsOfType(CacheType type) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetPathsOfType(?)}");
+			procedure.setInt(1, type.getVal());
+			results=procedure.executeQuery();
+			List<String> paths=new ArrayList<String>();
+			while (results.next()) {
+				File f=convertNameToFile(results.getString("path"));
+				paths.add(f.getAbsolutePath());
+			}
+			return paths;
+		} catch (Exception e) {
+			log.debug("getPathsOfType says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	
+	
+	/**
+	 * Returns the absolute path to a cached space directory. The path is guaranteed to point to a file that actually
+	 * exists-- otherwise, null will be returned.
 	 * @param id The ID of the primitive in question
 	 * @param the type of the cache, which indicates the type of the primitive (solver, space, benchmark, job)
 	 * @return The String path on success, null if there is no path or if there was an error
@@ -91,7 +180,15 @@ public class Cache {
 			results= procedure.executeQuery();
 			if (results.next()) {
 				log.debug("THE PATH OF THE CACHE IS "+results.getString("path"));
-				return results.getString("path");
+				File cachedFile = Cache.convertNameToFile(results.getString("path"));
+				if (cachedFile.exists()) {
+					return cachedFile.getAbsolutePath();
+				} else {
+					//file did not exist, so we should invalidate this part of the cache and return null
+					Cache.invalidateCache(id, type,con);
+					return null;
+				}
+							
 			}
 		} catch (Exception e) {
 			log.debug("Spaces.setCache says "+e.getMessage(),e);
@@ -104,7 +201,7 @@ public class Cache {
 	}
 	
 	/**
-	 * Gets all the paths to cached items that have not been accesed in the past 
+	 * Gets all the absolute paths to cached items that have not been accessed in the past 
 	 * <daysSinceLastAccess> days
 	 * @param daysSinceLastAccess The number of days since the last access of a file we consider "old"
 	 * @return A list of strings, each string representing a path relative to R.CACHED_FILE_DIR
@@ -122,7 +219,9 @@ public class Cache {
 			results=procedure.executeQuery();
 			List<String> paths=new ArrayList<String>();
 			while (results.next()) {
-				paths.add(results.getString("path"));
+				File f=convertNameToFile(results.getString("path"));
+				
+				paths.add(f.getAbsolutePath());
 			}
 			return paths;
 		} catch (Exception e) {
@@ -143,7 +242,7 @@ public class Cache {
 	 * @return True if the invalidation was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean invalidateCache(int id, CacheType type) {
+	public static boolean invalidateAndDeleteCache(int id, CacheType type) {
 		log.debug("invalidating cache for id = "+id+" type = "+type.toString());
 		Connection con=null;
 		Cache.deleteCacheFile(id, type);
@@ -159,7 +258,7 @@ public class Cache {
 				int spaceId=id;
 				//invalidate up to the root space
 				while (spaceId>1) {
-					Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE_HIERARCHY);
+					Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE_HIERARCHY);
 					int ancestorSpaceId=Spaces.getParentSpace(spaceId);
 					if (ancestorSpaceId==spaceId) {
 						break;
@@ -216,7 +315,7 @@ public class Cache {
 		try {
 			List<Integer> spaceIds=Benchmarks.getAssociatedSpaceIds(benchId);
 			for (int spaceId : spaceIds) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			}
 			return true;
 		} catch (Exception e) {
@@ -235,7 +334,7 @@ public class Cache {
 		try {
 			List<Integer> spaceIds=Solvers.getAssociatedSpaceIds(solverId);
 			for (int spaceId : spaceIds) {
-				Cache.invalidateCache(spaceId, CacheType.CACHE_SPACE);
+				Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			}
 			return true;
 		} catch (Exception e) {
@@ -258,6 +357,7 @@ public class Cache {
 	 */
 	
 	public static boolean setCache(int id, CacheType type, File archive, String destName) {
+		//if we have anything job related, we first need to make sure the 
 		if (type==CacheType.CACHE_JOB_CSV || type==CacheType.CACHE_JOB_CSV_NO_IDS || type==CacheType.CACHE_JOB_OUTPUT ||
 				type== CacheType.CACHE_JOB_PAIR) {
 			int jobId;
@@ -296,6 +396,16 @@ public class Cache {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+	
+	/**
+	 * Given the name of a cached file from the database, returns a file object pointing to that file
+	 * @param fileName The name of hte file
+	 * @return
+	 */
+	private static File convertNameToFile(String fileName) {
+		File cachedFile = new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR + File.separator), fileName);
+		return cachedFile;
 	}
 	
 }
