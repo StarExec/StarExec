@@ -8,7 +8,7 @@
 			<property key="MYSQL_USERNAME" value="prod_star_app" />
 			<property key="MYSQL_PASSWORD" value="g4qC867ByQ3736i7" />
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
-			<property key="MYSQL_POOL_MAX_SIZE" value="100" />			
+			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<property key="SPACE_XML_SCHEMA_LOC" value="/home/starexec/batchSpace/batchSpaceSchema.xsd" /> 
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
