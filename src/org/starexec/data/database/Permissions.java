@@ -71,7 +71,6 @@ public class Permissions {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
 			procedure.setInt(1, benchId);					
 			procedure.setInt(2, userId);
