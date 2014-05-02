@@ -31,16 +31,21 @@ public class Cluster {
 	public static void associateNodes(int queueId, List<Integer> nodeIds) {
 		log.debug("Calling AssociateQueue");
 		Connection con = null;
+		CallableStatement associateQueue=null;
 		try {		
 			con = Common.getConnection();
 			// Adds the nodes as associated with the queue
 			for (int nodeId : nodeIds) {
-				CallableStatement associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
+				associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
 				associateQueue.setInt(1, queueId);
 				associateQueue.setInt(2, nodeId);
 				associateQueue.executeUpdate();
+				//TODO: Ensure this line is correct
+				Common.safeClose(associateQueue);
 			}
 		} catch (Exception e) {
+			//if there was an error during the update, the procedure will not close
+			Common.safeClose(associateQueue);
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
