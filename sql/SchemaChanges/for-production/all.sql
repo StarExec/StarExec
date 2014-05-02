@@ -1,2 +1,0 @@
-source QueueReservation.sql
-source AddMaximumMemoryColumns.sql
