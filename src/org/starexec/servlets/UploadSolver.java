@@ -229,13 +229,14 @@ public class UploadSolver extends HttpServlet {
 				return returnArray;
 			}
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-			
+			log.debug(uniqueDir.getAbsolutePath());
 			if (containsBuildScript(uniqueDir)) {
+				File script=new File(uniqueDir,R.SOLVER_BUILD_SCRIPT);
 				log.debug("the uploaded solver did contain a build script");
 				List<File> authorized=new ArrayList<File>();
 				authorized.add(uniqueDir);
 				String[] command=new String[1];
-				command[0]="./"+R.SOLVER_BUILD_SCRIPT;
+				command[0]=script.getAbsolutePath();
 				Util.executeSandboxedCommand(command, null, authorized);
 			}
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);

@@ -68,7 +68,7 @@ public class Solvers {
 				c.setSolverId(solverId);
 				addConfiguration(con, c);
 			}
-			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
+
 			return solverId;						
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
