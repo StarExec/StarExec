@@ -3223,10 +3223,10 @@ public class Jobs {
 				jp.setJobId(results.getInt("job_id"));
 				jp.setGridEngineId(results.getInt("sge_id"));
 				int benchId = results.getInt("bench_id");
-				Benchmark b = Benchmarks.get(benchId);
+				Benchmark b = Benchmarks.get(con,benchId,false);
 				jp.setBench(b);
 				int config_id = results.getInt("config_id");
-				Configuration c = Solvers.getConfiguration(config_id);
+				Configuration c = Solvers.getConfiguration(con,config_id);
 				jp.setConfiguration(c);
 				pairs.add(jp);
 			} 
