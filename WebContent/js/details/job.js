@@ -15,13 +15,13 @@ $(document).ready(function(){
 	initSpaceExplorer();
 	initDataTables();
 	
-	//update the tables every 10 seconds
+	//update the tables every 30 seconds
 	setInterval(function() {
 		pairTable.fnDraw(false);
 		for (i=0;i<panelArray.length;i++) {
 			panelArray[i].fnReloadAjax(null,null,true,curSpaceId,false);
 		}
-	},5000);
+	},30000);
 	
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));

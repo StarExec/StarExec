@@ -476,7 +476,7 @@ public class Jobs {
 	 */
 
 	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId) {
-		List<SolverStats> stats=Jobs.getJobStatsInJobSpaceHierarchy(jobSpaceId);
+		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(jobSpaceId);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
@@ -485,11 +485,11 @@ public class Jobs {
 		}
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobId,jobSpaceId);
+		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobSpaceId);
 		List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
 		for (Space s : subspaces) {
-			pairs.addAll(getJobPairsForStatsInJobSpace(jobId,s.getId()));
+			pairs.addAll(getJobPairsForStatsInJobSpace(s.getId()));
 		}
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
 		
@@ -1250,7 +1250,7 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsForStatsInJobSpace(int jobId, int jobSpaceId) {
+	public static List<JobPair> getJobPairsForStatsInJobSpace(int jobSpaceId) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1260,8 +1260,8 @@ public class Jobs {
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			
-			List<JobPair> pairs=processStatResults(results, jobId);
-			
+			List<JobPair> pairs=processStatResults(results);
+			Common.safeClose(results);
 			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobSpaceId);
 			for (JobPair jp : pairs) {
 				if (attrs.containsKey(jp.getId())) {
@@ -1607,7 +1607,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<SolverStats> getJobStatsInJobSpaceHierarchy(int jobSpaceId) {
+	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(int jobSpaceId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -2537,7 +2537,7 @@ public class Jobs {
     
 
 	public static boolean isPublic(int jobId) {
-		log.debug("isPublic called on job " + jobId);
+		
 		Job j = Jobs.get(jobId);
 		if (j==null) {
 			return false;
@@ -2558,7 +2558,7 @@ public class Jobs {
 			if (results.next()){
 				count = (results.getInt("spaceCount"));
 			}			
-			log.debug("Job " + j.getName() + " is in " + count  + " public spaces");
+			
 			if (count > 0){
 				return true;
 			}
@@ -2886,7 +2886,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static List<JobPair> processStatResults(ResultSet results, int jobId) throws Exception {
+	private static List<JobPair> processStatResults(ResultSet results) throws Exception {
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
@@ -2920,11 +2920,7 @@ public class Jobs {
 			returnList.add(jp);			
 			
 		}
-		
-		Common.safeClose(results);
-		
-		
-		
+
 		return returnList;	
 	}
 
