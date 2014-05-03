@@ -62,7 +62,6 @@
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
 				request.setAttribute("jobspace",s);
-				request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
 				request.setAttribute("isPaused", isPaused);
 				request.setAttribute("isAdminPaused", isAdminPaused);
 				request.setAttribute("isKilled", isKilled);
@@ -214,7 +213,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr title="${pairStats.pendingPairs == 0 ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
+						<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
 							<td>status</td>		
 							<c:if test="${isPaused}">
 								<td>paused</td>
@@ -226,7 +225,7 @@
 								<td>killed</td>
 							</c:if>
 							<c:if test="${not isPaused && not isKilled && not isAdminPaused}">	
-								<td>${pairStats.pendingPairs == 0 ? 'complete' : 'incomplete'}</td>
+								<td>${isComplete ? 'complete' : 'incomplete'}</td>
 							</c:if>
 		
 						</tr>
@@ -292,16 +291,16 @@
 					
 					<c:if test="${job.userId == userId or isAdmin}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
-						<c:if test="${pairStats.pendingPairs > 0}">
+						
 							<c:if test="${isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>
-						</c:if>
-						<c:if test="${pairStats.pendingPairs == 0}">
+						
+						
 							<c:if test="${isComplete}">
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
-						</c:if>
+						
 						<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
 							<li><button type="button" id="resumeJob">resume job</button></li>
 						</c:if>

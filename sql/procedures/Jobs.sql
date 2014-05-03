@@ -156,6 +156,14 @@ CREATE PROCEDURE RemoveJobStatsInJobSpace(IN _jobSpaceId INT)
 		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
 
+-- Counts the number of pending pairs in a job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS CountPendingPairs;
+CREATE PROCEDURE CountPendingPairs(IN _jobId INT) 
+	BEGIN
+		SELECT count(*) AS pending FROM job_pairs
+		WHERE status_code BETWEEN 1 AND 6 AND job_id=_jobId;
+	END //
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran

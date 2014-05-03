@@ -2320,27 +2320,53 @@ public class Jobs {
 		}
 		return false;
 	}
+	/**
+	 * Returns the number of job pairs that are pending for the current job
+	 * @param jobId The ID of the job in question
+	 * @return The integer number of pending pairs. -1 is returned on error
+	 */
+	public static int countPendingPairs(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL CountPendingPairs(?)}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("pending");
+			}
+		} catch(Exception e) {
+			log.error("countPendingPairs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return -1;
+	}
 	
 	public static JobStatus getJobStatusCode(int jobId) {
 		JobStatus status=new JobStatus();
 		
 		try {
-			if (isJobPaused(jobId)) {
+			int a=Jobs.isJobPausedOrKilled(jobId);
+			if (a==1) {
 				status.setCode(JobStatusCode.STATUS_PAUSED);
 				return status;
-			}
-			if (isJobKilled(jobId)) {
+			} else if(a==2) {
 				status.setCode(JobStatusCode.STATUS_KILLED);
 				return status;
 			}
+		
 			if (hasProcessingPairs(jobId)) {
 				status.setCode(JobStatusCode.STATUS_PROCESSING);
 				return status;
 			}
-			
-			HashMap<String,String> overview = Statistics.getJobPairOverview(jobId);
+
 			//if the job is not paused and no pending pairs remain, it is done
-			if (overview.get("pendingPairs").equals("0")) {
+			if (countPendingPairs(jobId)==0) {
 				status.setCode(JobStatusCode.STATUS_COMPLETE);
 				return status;
 			} 
