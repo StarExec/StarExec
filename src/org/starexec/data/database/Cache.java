@@ -254,7 +254,7 @@ public class Cache {
 			}
 			//if we were deleting the cache of a space, we need to delete the cache of
 			//the space hierarchy for this and  every ancestor space
-			Common.safeClose(con);
+			
 			if (type==CacheType.CACHE_SPACE) {
 				int spaceId=id;
 				//invalidate up to the root space

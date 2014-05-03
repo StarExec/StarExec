@@ -449,11 +449,11 @@ public class Jobs {
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));
-				j.setQueue(Queues.get(results.getInt("queue_id")));
+				j.setQueue(Queues.get(con,results.getInt("queue_id")));
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setCreateTime(results.getTimestamp("created"));
-				j.setPreProcessor(Processors.get(results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(results.getInt("post_processor")));
+				j.setPreProcessor(Processors.get(con,results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(con,results.getInt("post_processor")));
 				j.setDescription(results.getString("description"));
 				return j;
 			}
@@ -753,18 +753,18 @@ public class Jobs {
 				JobPair jp = JobPairs.resultToPair(results);
 				int nodeId=results.getInt("node_id");
 				if (!nodes.containsKey(nodeId)) {
-					nodes.put(nodeId,Cluster.getNodeDetails(nodeId));
+					nodes.put(nodeId,Cluster.getNodeDetails(con,nodeId));
 				}
 				jp.setNode(nodes.get(nodeId));	
 				int benchId=results.getInt("bench_id");
 				if (!benchmarks.containsKey(benchId)) {
-					benchmarks.put(benchId,Benchmarks.get(benchId));
+					benchmarks.put(benchId,Benchmarks.get(con,benchId,false));
 				}
 				jp.setBench(benchmarks.get(benchId));
 				int configId=results.getInt("config_id");
 				if (!configs.containsKey(configId)) {
-					configs.put(configId, Solvers.getConfiguration(configId));
-					solvers.put(configId, Solvers.getSolverByConfig(configId,false));
+					configs.put(configId, Solvers.getConfiguration(con,configId));
+					solvers.put(configId, Solvers.getSolverByConfig(con,configId,false));
 				}
 				jp.setSolver(solvers.get(configId));
 				jp.setConfiguration(configs.get(configId));
@@ -1260,7 +1260,7 @@ public class Jobs {
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			
-			List<JobPair> pairs=processStatResults(results, jobId,con);
+			List<JobPair> pairs=processStatResults(results, jobId);
 			
 			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobSpaceId);
 			for (JobPair jp : pairs) {
@@ -2860,7 +2860,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
+	private static List<JobPair> processStatResults(ResultSet results, int jobId) throws Exception {
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();

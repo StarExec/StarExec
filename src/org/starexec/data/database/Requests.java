@@ -195,7 +195,7 @@ public class Requests {
 	protected static boolean addQueueRequest(Connection con, QueueRequest req, java.util.Date date ) {
 		CallableStatement procedure = null;
 		try {		
-			con = Common.getConnection();
+			
 			
 		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 			
@@ -216,7 +216,7 @@ public class Requests {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
+			
 			Common.safeClose(procedure);
 		}
 		
@@ -797,11 +797,12 @@ public class Requests {
 	public static int getHistoricCount() {
 		Connection con = null;
 		CallableStatement procedure = null;
+		ResultSet results=null;
 		try {			
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetHistoricReservationCount()}");
-			ResultSet results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			int reservationCount= 0;
 			if (results.next()) {
 				reservationCount = results.getInt("reservationCount");
@@ -812,6 +813,7 @@ public class Requests {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		
 		return 0;

@@ -72,6 +72,7 @@ public class Benchmarks {
 					return benchId;
 				} else {
 					//will throw exception in calling method
+					Common.doRollback(con);
 					return -1;
 				}
 			} catch (Exception e){
@@ -109,16 +110,11 @@ public class Benchmarks {
 	 * @return The new benchmark ID on success, -1 otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection conParam, Benchmark benchmark, int spaceId) throws Exception {				
-		Connection con = null;
+	protected static int add(Connection con, Benchmark benchmark, int spaceId) throws Exception {				
+		
 		CallableStatement procedure=null;
 		try{
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-
-			log.debug("Driver Name = " + con.getMetaData().getDriverName());
-			log.debug("Driver Version = " + con.getMetaData().getDriverVersion());
-					
+	
 			Properties attrs = benchmark.getAttributes();
 			log.info("adding benchmark " + benchmark.getName() + " to space " + spaceId);
 			// Setup normal information for the benchmark
@@ -154,16 +150,16 @@ public class Benchmarks {
 				}							
 
 			}				
-			Common.endTransaction(con);
+			
 			log.info("(within internal add method) Added Benchmark " + benchmark.getName());	
 			return benchmark.getId();
 		}
 		catch (Exception e){			
 			log.error("add says " + e.getMessage(), e);
-			Common.doRollback(con);
+			
 			return -1;
 		} finally {
-			Common.safeClose(con);
+			
 			Common.safeClose(procedure);
 		}
 	}
@@ -428,16 +424,14 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection conParam, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
-		Connection con = null;			
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection con, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
 		if (benchmarks.size()>0){
 			try {			
-				con = Common.getConnection();
-				Common.beginTransaction(con);
+				
 				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
-				Common.endTransaction(con);
+				
 
 				log.info("About to attach attributes to " + benchmarks.size());
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
@@ -461,10 +455,10 @@ public class Benchmarks {
 				}
 				return ids;
 			} catch (Exception e){			
-				log.error("Need to roll back - addWithDeps says" + e.getMessage(), e);
-				Common.doRollback(con);
+				
+				
 			} finally {
-				Common.safeClose(con);
+				
 			}
 		}
 		else
@@ -495,8 +489,12 @@ public class Benchmarks {
 			Common.beginTransaction(con);
 
 			List<Integer> values = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
-
-			Common.endTransaction(con);
+			if (values==null) {
+				con.rollback();
+			} else {
+				Common.endTransaction(con);
+			}
+			
 
 			return values;
 		} catch (Exception e){			

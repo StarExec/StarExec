@@ -1108,7 +1108,7 @@ public class Solvers {
 		if (s==null) {
 			return null;
 		}
-		s.setMostRecentUpdate(Solvers.getMostRecentTimestamp(s.getId()));
+		s.setMostRecentUpdate(Solvers.getMostRecentTimestamp(con,s.getId()));
 		s.addConfiguration(c);
 		return s;
 	}
@@ -1887,12 +1887,12 @@ public class Solvers {
 	 * @return The timestamp as a string, or null on failure
 	 * @author Eric Burns
 	 */
-	public static String getMostRecentTimestamp(int solverId) {
-		Connection  con=null;
+	public static String getMostRecentTimestamp(Connection con,int solverId) {
+		
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
-			con=Common.getConnection();
+			
 			procedure=con.prepareCall("{CALL GetMaxConfigTimestamp(?)}");
 			procedure.setInt(1,solverId);
 			results=procedure.executeQuery();
@@ -1909,7 +1909,7 @@ public class Solvers {
 		} catch (Exception e) {
 			log.error("getMostRecentTimestamp says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
+			
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
