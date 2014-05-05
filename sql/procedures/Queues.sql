@@ -185,7 +185,7 @@ CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
 		SELECT DISTINCT id, name, status, permanent, global_access
 		FROM queues 
 			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
-			JOIN comm_queue ON queues.id = comm_queue.queue_id
+			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
 		WHERE 	
 				queues.status = "ACTIVE"
 			AND queues.permanent = true

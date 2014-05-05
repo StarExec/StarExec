@@ -741,7 +741,9 @@ public class Queues {
 				}
 			}
 			
+			log.debug("queues size = " + queues.size());
 			queues.addAll(Queues.getPermanentQueuesForUser(userId));
+			log.debug("queues size = " + queues.size());
 			
 			
 			
