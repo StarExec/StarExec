@@ -1148,17 +1148,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				superSpaces.add(s);
 			}
 			
-			List<Space> additionalSuperSpaces = new LinkedList<Space>();
-				
-			for(Space s : superSpaces){
-				//if its  not the root space, get the superspaces of it as well
-				if (s.getId() != 1) {
-					additionalSuperSpaces.addAll(Spaces.getSuperSpaces(s.getId(), con));
-				}
-			}
-			
-			log.debug("Found an additional " + additionalSuperSpaces.size() + " superSpaces via recursion");
-			superSpaces.addAll(additionalSuperSpaces);
 			log.debug("Returning from adding superSpaces");
 			return superSpaces;
 		} catch (Exception e) {
