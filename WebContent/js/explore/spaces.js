@@ -59,6 +59,7 @@ function initDialogs() {
 	$( "#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
 	$( "#dialog-warning").hide();
+	$("#dialog-confirm-change").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -134,8 +135,8 @@ function initButtonUI() {
 
 	$("#makePublic").click(function(){
 		// Display the confirmation dialog
-		$('#dialog-confirm-copy-txt').text('do you want to make the single space public or the hierarchy?');
-		$('#dialog-confirm-copy').dialog({
+		$('#dialog-confirm-change-txt').text('do you want to make the single space public or the hierarchy?');
+		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,
 			height: 165,
@@ -206,8 +207,8 @@ function initButtonUI() {
 	
 	$("#makePrivate").click(function(){
 		// Display the confirmation dialog
-		$('#dialog-confirm-copy-txt').text('do you want to make the single space private or the hierarchy?');
-		$('#dialog-confirm-copy').dialog({
+		$('#dialog-confirm-change-txt').text('do you want to make the single space private or the hierarchy?');
+		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,
 			height: 165,

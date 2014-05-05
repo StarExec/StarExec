@@ -670,7 +670,6 @@ public class RESTServices {
 		if(primType.startsWith("j")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
-			log.debug("getting next page of users");
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
 			

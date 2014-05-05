@@ -670,6 +670,7 @@ public class Download extends HttpServlet {
 			
 			//if we only want the new job pairs
 			if (since!=null) {
+				log.debug("starting to get parital results for job id = "+jobId);
 				List<JobPair> pairs;
 				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
 				tempDir.mkdir();
@@ -683,13 +684,11 @@ public class Download extends HttpServlet {
 					}
 				}
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
 				for (JobPair jp : pairs) {
 					file=new File(JobPairs.getFilePath(jp));
 
-					log.debug("Searching for pair output at" + file.getAbsolutePath());
 					if (file.exists()) {
-						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
-
 						//store in the old format because the pair has no path
 						if (jp.getPath()==null) {
 							dir=new File(tempDir,jp.getSolver().getName());
@@ -715,7 +714,9 @@ public class Download extends HttpServlet {
 
 					}
 				}
+				log.debug("finished copying new job pairs-- starting to make archive for job id = "+jobId);
 				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
+				log.debug("archive written for job id ="+jobId);
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);
 

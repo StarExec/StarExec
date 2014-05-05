@@ -482,9 +482,37 @@ public class Spaces {
 		}
 		return 0;
 	}
+	/**
+	 * Gets the number of subspaces a space has.
+	 * @param spaceId The ID of the space to retrieve the subspace count for
+	 * @return The integer number of spaces, or -1 on error
+	 */
+	public static int getCountInSpace(int spaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetSubspaceCountBySpaceIdAdmin(?)}");
+			procedure.setInt(1, spaceId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("spaceCount");
+			}
+		} catch (Exception e) {
+			log.error("getCountInSpace says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+		
+	}
+	
 	
 	/**
-	 * Gets the number of Spaces in a given space
+	 * Gets the number of Spaces in a given space that a given user can see
 	 * 
 	 * @param spaceId the id of the space to count the Spaces in
 	 * @param userId the id of the user making the request
@@ -494,7 +522,10 @@ public class Spaces {
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
 		//the admin can see every space, so we don't need to worry about finding only spaces some user can see
 		if (Users.isAdmin(userId)) {
-			return getCountInSpaceHierarchy(spaceId);
+			if (hierarchy) {
+				return getCountInSpaceHierarchy(spaceId);
+			}
+			return getCountInSpace(spaceId);
 		}
 		
 		Connection con = null;
@@ -1988,6 +2019,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return true if successful
 	 * @author Ruoyu Zhang
 	 */
+	//TODO: This is pretty slow at handling a full hierarchy. It should be changed so that one query uses the closure table
+	//to do it all at once
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
 		if (status!=0){

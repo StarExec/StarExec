@@ -151,7 +151,9 @@
 		</fieldset>	
 
 	</div>	
-	
+	<div id="dialog-confirm-change" title="confirm change">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
+	</div>
 	<div id="dialog-confirm-copy" title="confirm copy">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
