@@ -603,7 +603,7 @@ public class JobPairs {
 					}
 				}
 			}
-			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
+			
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);
