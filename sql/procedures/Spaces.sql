@@ -119,18 +119,10 @@ CREATE PROCEDURE GetAllSpaces()
  DROP PROCEDURE IF EXISTS GetSuperSpacesById;
  CREATE PROCEDURE GetSuperSpacesById(IN _spaceId INT)
 	BEGIN
-		 IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
-			SELECT id
-			FROM spaces
-			WHERE id = 
-				(SELECT MIN(id)
-				FROM spaces);
-		 ELSE					-- Else find all parent spaces that are an ancestor of a space the user is apart of
 			SELECT ancestor AS id
 			FROM closure
 			WHERE descendant = _spaceId
 			AND ancestor != _spaceId;
-		 END IF;
 	END //
 
 -- Returns all spaces a user can see in the hierarchy rooted at the given space

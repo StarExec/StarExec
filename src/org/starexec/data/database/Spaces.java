@@ -1148,17 +1148,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				superSpaces.add(s);
 			}
 			
-			List<Space> additionalSuperSpaces = new LinkedList<Space>();
-				
-			for(Space s : superSpaces){
-				//if its  not the root space, get the superspaces of it as well
-				if (s.getId() != 1) {
-					additionalSuperSpaces.addAll(Spaces.getSuperSpaces(s.getId(), con));
-				}
-			}
-			
-			log.debug("Found an additional " + additionalSuperSpaces.size() + " superSpaces via recursion");
-			superSpaces.addAll(additionalSuperSpaces);
 			log.debug("Returning from adding superSpaces");
 			return superSpaces;
 		} catch (Exception e) {
@@ -1396,9 +1385,10 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		ResultSet results = null;
 		
 		try {
+			con = Common.getConnection();
 			// If the type of the primitive is solver.
 			if(type == 1) {
-				con = Common.getConnection();		
+					
 				procedure = con.prepareCall("{CALL countSpaceSolversByName(?, ?)}");
 				procedure.setString(1, prim);
 				procedure.setInt(2, space_id);
@@ -1415,7 +1405,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			//If the type of the primitive is benchmark.
 			else if(type == 2) {
-				con = Common.getConnection();
 				procedure = con.prepareCall("{CALL countSpaceBenchmarksByName(?, ?)}");
 				procedure.setString(1, prim);
 				procedure.setInt(2, space_id);
@@ -1432,7 +1421,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			//If the type of the primitive is job.
 			else if(type == 3) {
-				con = Common.getConnection();
+				
 				procedure = con.prepareCall("{CALL countSpaceJobsByName(?, ?)}");
 				procedure.setString(1, prim);
 				procedure.setInt(2, space_id);
@@ -1449,7 +1438,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			//If the type of the primitive is subspace.
 			else if(type == 4) {
-				con = Common.getConnection();
 				procedure = con.prepareCall("{CALL countSubspacesByName(?, ?)}");
 				procedure.setString(1, prim);
 				procedure.setInt(2, space_id);

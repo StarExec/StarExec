@@ -164,7 +164,7 @@ public class Permissions {
 				return true;
 			}
 			
-			//if there was no special case, check to see if the user shares a space with the job
+			//if there was no special case, check to see if the user shares a space with the job or owns the job
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
 			procedure.setInt(1, jobId);					

@@ -156,6 +156,14 @@ CREATE PROCEDURE RemoveJobStatsInJobSpace(IN _jobSpaceId INT)
 		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
 
+-- Counts the number of pending pairs in a job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS CountPendingPairs;
+CREATE PROCEDURE CountPendingPairs(IN _jobId INT) 
+	BEGIN
+		SELECT count(*) AS pending FROM job_pairs
+		WHERE status_code BETWEEN 1 AND 6 AND job_id=_jobId;
+	END //
 -- Retrieves simple overall statistics for job pairs belonging to a job
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran
@@ -629,9 +637,9 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 DROP PROCEDURE IF EXISTS GetWallclockTimeout;
 CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT)
 	BEGIN
-		SELECT DISTINCT clockTimeout 
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
-		WHERE jobs.id=_jobId;
+		SELECT clockTimeout 
+		FROM job_pairs 
+		WHERE job_id=_jobId LIMIT 1;
 	END //
 	
 -- Gets the cpu timeout for the given job
@@ -639,9 +647,9 @@ CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT)
 DROP PROCEDURE IF EXISTS GetCpuTimeout;
 CREATE PROCEDURE GetCpuTimeout(IN _jobId INT)
 	BEGIN
-		SELECT DISTINCT cpuTimeout
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
-		WHERE jobs.id=_jobId;
+		SELECT cpuTimeout
+		FROM job_pairs 
+		WHERE job_id=_jobId LIMIT 1;
 	END //
 
 -- Gets the maximum memory for the given job
@@ -649,9 +657,9 @@ CREATE PROCEDURE GetCpuTimeout(IN _jobId INT)
 DROP PROCEDURE IF EXISTS GetMaxMemory;
 CREATE PROCEDURE GetMaxMemory(IN _jobId INT) 
 	BEGIN
-		SELECT DISTINCT maximum_memory
-		FROM job_pairs JOIN jobs ON jobs.id=job_pairs.job_id
-		WHERE jobs.id=_jobId;
+		SELECT maximum_memory
+		FROM job_pairs
+		WHERE job_id=_jobId LIMIT 1;
 	END //
 	
 DROP PROCEDURE IF EXISTS GetAllJobs;

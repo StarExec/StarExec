@@ -250,7 +250,7 @@ public class Validator {
 	 * @return 0 if the request is valid, and a negative error code if it is not
 	 * @author Eric Burns
 	 */
-	public static int isValidDownloadRequest(HashMap<String,String> urlParams, HashMap<String,String>commandParams) {
+	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type) {
 		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -268,11 +268,11 @@ public class Validator {
 				return Status.ERROR_FILE_EXISTS;
 			}
 		}
-		if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
+		if (type.equals("job")) {
 			findUnnecessaryParams(allowedDownloadCSVParams,commandParams);
-		} else if  (urlParams.get(R.FORMPARAM_TYPE).equals("space")) {
+		} else if  (type.equals("space")) {
 			findUnnecessaryParams(allowedDownloadSpaceParams,commandParams);
-		}
+		} 
 		else {
 			findUnnecessaryParams(allowedDownloadParams,commandParams);
 		}

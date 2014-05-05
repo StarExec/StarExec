@@ -720,45 +720,43 @@ public class Queues {
 		} else {
 			
 			List<Space> user_spaces = Spaces.GetSpacesByUser(userId);
-			List<Space> all_spaces = new LinkedList<Space>();
-			all_spaces.addAll(user_spaces);
+			List<Integer> all_spaces = new LinkedList<Integer>();
 			if (user_spaces != null) {
 				for (Space s : user_spaces) {
+					all_spaces.add(s.getId());
+				}
+				for (Space s : user_spaces) {
 					List<Space> superSpaces = Spaces.getSuperSpaces(s.getId());
-					all_spaces.addAll(superSpaces);
+					for (Space s1 : superSpaces) {
+						if (!all_spaces.contains(s1.getId())) {
+							all_spaces.add(s1.getId());
+						}
+					}
 				}
 			}	
 			
 			log.debug("all_spaces" + all_spaces.size());
 			
-			Connection con = null;
-			try {
-				con = Common.getConnection();
-				List<Queue> queues = new LinkedList<Queue>();
-				// First add all the queues that have been reserved for a 
-				// superspace that the user is a member of
-				if (all_spaces != null) {
-					for (Space s : all_spaces) {
-						log.debug("space = " + s.getId());
-						queues.addAll(Queues.getQueuesForSpace(s.getId()));
-					}
+			List<Queue> queues = new LinkedList<Queue>();
+			// First add all the queues that have been reserved for a 
+			// superspace that the user is a member of
+			if (all_spaces != null) {
+				for (int s : all_spaces) {
+					log.debug("space = " + s);
+					queues.addAll(Queues.getQueuesForSpace(s));
 				}
-				
-				//Next add all global_access permanent queues
-				//queues.addAll(Queues.getGlobalQueues());
-				queues.addAll(Queues.getPermanentQueuesForUser(userId));
-				
-				
-				
-				
-				return queues;
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-			} finally {
-				Common.safeClose(con);
 			}
+			
+			log.debug("queues size = " + queues.size());
+			queues.addAll(Queues.getPermanentQueuesForUser(userId));
+			log.debug("queues size = " + queues.size());
+			
+			
+			
+			
+			return queues;
+
 		}
-		return null;
 	}
 	
 	private static List<Queue> getPermanentQueuesForUser(int userId) {

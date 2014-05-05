@@ -197,20 +197,22 @@ public class Communities {
 	public static boolean isCommunity(int spaceId) {
 		Connection con = null;
 		CallableStatement procedure= null;
+		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL IsCommunity(?)}");
 			procedure.setInt(1, spaceId);
 
-			ResultSet result = procedure.executeQuery();
+			results = procedure.executeQuery();
 
-			return result.next();
+			return results.next();
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 
 		return false;

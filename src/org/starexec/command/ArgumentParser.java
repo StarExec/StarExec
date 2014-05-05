@@ -355,26 +355,12 @@ class ArgumentParser {
 	
 	protected int downloadArchive(String type,Integer since,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
 		try {
-			Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));
-			HashMap<String,String> urlParams=new HashMap<String,String>();
-			urlParams.put(R.FORMPARAM_TYPE, type);
-			urlParams.put(R.FORMPARAM_TYPE, id.toString());
-			
-			int valid=Validator.isValidDownloadRequest(urlParams, commandParams);
+			Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			
+			int valid=Validator.isValidDownloadRequest(commandParams,type);
 			if (valid<0) {
 				return valid;
 			}
-			//if the use put in the include ids param, pass it on to the server
-			if (commandParams.containsKey(R.PARAM_INCLUDE_IDS)) {
-				urlParams.put("returnids","true");
-			}
-			if (commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS)) {
-				urlParams.put("includebenchmarks", "false");
-			}
-			if (commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS)) {
-				urlParams.put("includesolvers","false");
-			}
-		
+
 			String location=commandParams.get(R.PARAM_OUTPUT_FILE);
 			//First, put in the request for the server to generate the desired archive			
 			return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),

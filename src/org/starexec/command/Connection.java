@@ -505,7 +505,7 @@ public class Connection {
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
 	public int uploadSolver(String name,Integer spaceID,String filePath,Boolean downloadable) {
-		return uploadSolver(name,null,"upload",spaceID,filePath,downloadable);
+		return uploadSolver(name,"","upload",spaceID,filePath,downloadable);
 	}
 	
 	/**
@@ -554,6 +554,9 @@ public class Connection {
 			
 			response.getEntity().getContent().close();
 			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			if (newID<=0) {
+				return Status.ERROR_SERVER;
+			}
 			return newID;
 		} catch (Exception e) {	
 			return Status.ERROR_SERVER;
@@ -581,7 +584,7 @@ public class Connection {
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
 	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable) {
-		return uploadSolverFromURL(name,null,"upload",spaceID,url,downloadable);
+		return uploadSolverFromURL(name,"","upload",spaceID,url,downloadable);
 	}
 	
 	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable) {

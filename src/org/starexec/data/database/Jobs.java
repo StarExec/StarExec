@@ -449,11 +449,11 @@ public class Jobs {
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));
-				j.setQueue(Queues.get(results.getInt("queue_id")));
+				j.setQueue(Queues.get(con,results.getInt("queue_id")));
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setCreateTime(results.getTimestamp("created"));
-				j.setPreProcessor(Processors.get(results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(results.getInt("post_processor")));
+				j.setPreProcessor(Processors.get(con,results.getInt("pre_processor")));
+				j.setPostProcessor(Processors.get(con,results.getInt("post_processor")));
 				j.setDescription(results.getString("description"));
 				return j;
 			}
@@ -476,7 +476,7 @@ public class Jobs {
 	 */
 
 	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId) {
-		List<SolverStats> stats=Jobs.getJobStatsInJobSpaceHierarchy(jobSpaceId);
+		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(jobSpaceId);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
@@ -485,11 +485,11 @@ public class Jobs {
 		}
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobId,jobSpaceId);
+		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobSpaceId);
 		List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
 		for (Space s : subspaces) {
-			pairs.addAll(getJobPairsForStatsInJobSpace(jobId,s.getId()));
+			pairs.addAll(getJobPairsForStatsInJobSpace(s.getId()));
 		}
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
 		
@@ -753,18 +753,18 @@ public class Jobs {
 				JobPair jp = JobPairs.resultToPair(results);
 				int nodeId=results.getInt("node_id");
 				if (!nodes.containsKey(nodeId)) {
-					nodes.put(nodeId,Cluster.getNodeDetails(nodeId));
+					nodes.put(nodeId,Cluster.getNodeDetails(con,nodeId));
 				}
 				jp.setNode(nodes.get(nodeId));	
 				int benchId=results.getInt("bench_id");
 				if (!benchmarks.containsKey(benchId)) {
-					benchmarks.put(benchId,Benchmarks.get(benchId));
+					benchmarks.put(benchId,Benchmarks.get(con,benchId,false));
 				}
 				jp.setBench(benchmarks.get(benchId));
 				int configId=results.getInt("config_id");
 				if (!configs.containsKey(configId)) {
-					configs.put(configId, Solvers.getConfiguration(configId));
-					solvers.put(configId, Solvers.getSolverByConfig(configId,false));
+					configs.put(configId, Solvers.getConfiguration(con,configId));
+					solvers.put(configId, Solvers.getSolverByConfig(con,configId,false));
 				}
 				jp.setSolver(solvers.get(configId));
 				jp.setConfiguration(configs.get(configId));
@@ -1250,7 +1250,7 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsForStatsInJobSpace(int jobId, int jobSpaceId) {
+	public static List<JobPair> getJobPairsForStatsInJobSpace(int jobSpaceId) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1260,8 +1260,8 @@ public class Jobs {
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			
-			List<JobPair> pairs=processStatResults(results, jobId,con);
-			
+			List<JobPair> pairs=processStatResults(results);
+			Common.safeClose(results);
 			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobSpaceId);
 			for (JobPair jp : pairs) {
 				if (attrs.containsKey(jp.getId())) {
@@ -1607,7 +1607,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<SolverStats> getJobStatsInJobSpaceHierarchy(int jobSpaceId) {
+	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(int jobSpaceId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -2320,27 +2320,53 @@ public class Jobs {
 		}
 		return false;
 	}
+	/**
+	 * Returns the number of job pairs that are pending for the current job
+	 * @param jobId The ID of the job in question
+	 * @return The integer number of pending pairs. -1 is returned on error
+	 */
+	public static int countPendingPairs(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL CountPendingPairs(?)}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("pending");
+			}
+		} catch(Exception e) {
+			log.error("countPendingPairs says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return -1;
+	}
 	
 	public static JobStatus getJobStatusCode(int jobId) {
 		JobStatus status=new JobStatus();
 		
 		try {
-			if (isJobPaused(jobId)) {
+			int a=Jobs.isJobPausedOrKilled(jobId);
+			if (a==1) {
 				status.setCode(JobStatusCode.STATUS_PAUSED);
 				return status;
-			}
-			if (isJobKilled(jobId)) {
+			} else if(a==2) {
 				status.setCode(JobStatusCode.STATUS_KILLED);
 				return status;
 			}
+		
 			if (hasProcessingPairs(jobId)) {
 				status.setCode(JobStatusCode.STATUS_PROCESSING);
 				return status;
 			}
-			
-			HashMap<String,String> overview = Statistics.getJobPairOverview(jobId);
+
 			//if the job is not paused and no pending pairs remain, it is done
-			if (overview.get("pendingPairs").equals("0")) {
+			if (countPendingPairs(jobId)==0) {
 				status.setCode(JobStatusCode.STATUS_COMPLETE);
 				return status;
 			} 
@@ -2511,7 +2537,7 @@ public class Jobs {
     
 
 	public static boolean isPublic(int jobId) {
-		log.debug("isPublic called on job " + jobId);
+		
 		Job j = Jobs.get(jobId);
 		if (j==null) {
 			return false;
@@ -2532,7 +2558,7 @@ public class Jobs {
 			if (results.next()){
 				count = (results.getInt("spaceCount"));
 			}			
-			log.debug("Job " + j.getName() + " is in " + count  + " public spaces");
+			
 			if (count > 0){
 				return true;
 			}
@@ -2860,7 +2886,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static List<JobPair> processStatResults(ResultSet results, int jobId, Connection con) throws Exception {
+	private static List<JobPair> processStatResults(ResultSet results) throws Exception {
 		List<JobPair> returnList = new ArrayList<JobPair>();
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
@@ -2894,11 +2920,7 @@ public class Jobs {
 			returnList.add(jp);			
 			
 		}
-		
-		Common.safeClose(results);
-		
-		
-		
+
 		return returnList;	
 	}
 
@@ -3223,10 +3245,10 @@ public class Jobs {
 				jp.setJobId(results.getInt("job_id"));
 				jp.setGridEngineId(results.getInt("sge_id"));
 				int benchId = results.getInt("bench_id");
-				Benchmark b = Benchmarks.get(benchId);
+				Benchmark b = Benchmarks.get(con,benchId,false);
 				jp.setBench(b);
 				int config_id = results.getInt("config_id");
-				Configuration c = Solvers.getConfiguration(config_id);
+				Configuration c = Solvers.getConfiguration(con,config_id);
 				jp.setConfiguration(c);
 				pairs.add(jp);
 			} 
