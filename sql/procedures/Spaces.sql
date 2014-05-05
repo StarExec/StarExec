@@ -123,7 +123,6 @@ CREATE PROCEDURE GetAllSpaces()
 			FROM closure
 			WHERE descendant = _spaceId
 			AND ancestor != _spaceId;
-		 END IF;
 	END //
 
 -- Returns all spaces a user can see in the hierarchy rooted at the given space
