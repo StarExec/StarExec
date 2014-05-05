@@ -183,22 +183,17 @@ DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
 CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
 	BEGIN
 		SELECT DISTINCT id, name, status, permanent, global_access
-		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
-		WHERE status = "ACTIVE"
-		AND
-			-- if the queue is permanent and has given access to a specified community that the user is a leader of
-			(id IN
-				(SELECT queues.id
-				FROM comm_queue JOIN queues ON queues.id = comm_queue.queue_id
-				WHERE queues.permanent = true
-				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))))
-			OR
-			-- the queue has global access
-			(id IN
-				(SELECT queues.id
-				 FROM queues
-				 WHERE global_access = true));
-				 
+		FROM queues 
+			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
+			JOIN comm_queue ON queues.id = comm_queue.queue_id
+		WHERE 	
+				queues.status = "ACTIVE"
+			AND queues.permanent = true
+			AND (
+				(IsLeader(comm_queue.space_id, _userId) = 1)	-- Either you are the leader of the community it was given access to
+				OR
+				(global_access = true)							-- or it is a global permanent queue
+				);				 
 	END //
 	
 DELIMITER ; -- This should always be at the end of this file

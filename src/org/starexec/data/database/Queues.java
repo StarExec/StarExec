@@ -731,34 +731,24 @@ public class Queues {
 			
 			log.debug("all_spaces" + all_spaces.size());
 			
-			Connection con = null;
-			try {
-				con = Common.getConnection();
-				List<Queue> queues = new LinkedList<Queue>();
-				// First add all the queues that have been reserved for a 
-				// superspace that the user is a member of
-				if (all_spaces != null) {
-					for (Space s : all_spaces) {
-						log.debug("space = " + s.getId());
-						queues.addAll(Queues.getQueuesForSpace(s.getId()));
-					}
+			List<Queue> queues = new LinkedList<Queue>();
+			// First add all the queues that have been reserved for a 
+			// superspace that the user is a member of
+			if (all_spaces != null) {
+				for (Space s : all_spaces) {
+					log.debug("space = " + s.getId());
+					queues.addAll(Queues.getQueuesForSpace(s.getId()));
 				}
-				
-				//Next add all global_access permanent queues
-				//queues.addAll(Queues.getGlobalQueues());
-				queues.addAll(Queues.getPermanentQueuesForUser(userId));
-				
-				
-				
-				
-				return queues;
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-			} finally {
-				Common.safeClose(con);
 			}
+			
+			queues.addAll(Queues.getPermanentQueuesForUser(userId));
+			
+			
+			
+			
+			return queues;
+
 		}
-		return null;
 	}
 	
 	private static List<Queue> getPermanentQueuesForUser(int userId) {
