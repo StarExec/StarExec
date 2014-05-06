@@ -400,7 +400,7 @@ public class ArchiveUtil {
 	public static void createAndOutputZip(File path, OutputStream output) throws Exception {
 		
 		ZipOutputStream stream=new ZipOutputStream(output);
-		addDirToArchive(stream,path);
+		addDirToArchive(stream,path,"");
 		stream.close();
 		
 	}
