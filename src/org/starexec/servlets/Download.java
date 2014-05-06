@@ -70,6 +70,16 @@ public class Download extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
 				return;
 			}
+			
+			Object check=request.getParameter("token");
+			//token is used to tell the client when the file has arrived
+			if (check!=null) {
+				String token=check.toString();
+				Cookie newCookie=new Cookie("fileDownloadToken", token);
+				newCookie.setMaxAge(60);
+				response.addCookie(newCookie);
+			}
+			
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
 				shortName=s.getName();
@@ -142,19 +152,14 @@ public class Download extends HttpServlet {
 					System.out.println("found since = "+lastSeen);
 				}
 				shortName="Job"+jobId+"_output";
+				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
 			}
 			// Redirect based on success/failure
 			if(archive != null) {
-				Object check=request.getParameter("token");
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
-				//token is used to tell the client when the file has arrived
-				if (check!=null) {
-					String token=check.toString();
-					Cookie newCookie=new Cookie("fileDownloadToken", token);
-					newCookie.setMaxAge(60);
-					response.addCookie(newCookie);
-				}
+
 				
 				if (!request.getParameter("type").equals("j_outputs")) {
 					FileInputStream stream=new FileInputStream(archive);

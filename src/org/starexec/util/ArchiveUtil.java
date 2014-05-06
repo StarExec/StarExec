@@ -393,6 +393,7 @@ public class ArchiveUtil {
 			FileInputStream input=new FileInputStream(files[index]);
 			
 			IOUtils.copy(input, zos);
+			zos.closeEntry();
 			input.close();
 		}
 	}
