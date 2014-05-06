@@ -156,11 +156,17 @@ public class Download extends HttpServlet {
 					response.addCookie(newCookie);
 				}
 				FileInputStream stream=new FileInputStream(archive);
+				
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				log.debug("measuing the size of the file to be returned");
 				long size=FileUtils.sizeOf(archive);
 				log.debug("the size of the file being returned is "+size);
+				
+				
 				response.addHeader("Content-Length",String.valueOf(size));
+				log.debug("copying input stream into servlet output stream");
 				IOUtils.copyLarge(stream, response.getOutputStream());
+				log.debug("done copying input stream into servlet output stream");
 				response.getOutputStream().close();
 				
 				stream.close();
@@ -675,7 +681,9 @@ public class Download extends HttpServlet {
 				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
 				tempDir.mkdir();
 				log.debug("Getting incremental job output results");
+				
 				pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
+				
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
 				for (JobPair x : pairs) {
@@ -685,6 +693,7 @@ public class Download extends HttpServlet {
 				}
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
+				//5 minutes for this loop-- this is easily the slowest part of getting incremental results
 				for (JobPair jp : pairs) {
 					file=new File(JobPairs.getFilePath(jp));
 
@@ -692,23 +701,20 @@ public class Download extends HttpServlet {
 						//store in the old format because the pair has no path
 						if (jp.getPath()==null) {
 							dir=new File(tempDir,jp.getSolver().getName());
-							dir.mkdir();
 							dir=new File(dir,jp.getConfiguration().getName());
-							dir.mkdir();
+							dir.mkdirs();
 						} else {
 							String path=jp.getPath();
 
 							String [] spaces=path.split("/");
 							dir=new File(tempDir,spaces[0]);
-							dir.mkdir();
+							
 							for (int index=1;index<spaces.length;index++) {
 								dir=new File(dir,spaces[index]);
-								dir.mkdir();
 							}
 							dir=new File(dir,jp.getSolver().getName());
-							dir.mkdir();
 							dir=new File(dir,jp.getConfiguration().getName());
-							dir.mkdir();
+							dir.mkdirs();
 						}
 						FileUtils.copyFileToDirectory(file,dir);
 

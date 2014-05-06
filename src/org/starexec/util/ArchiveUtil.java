@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -378,7 +379,11 @@ public class ArchiveUtil {
 		}
 		
 	}
-
+	//
+//	public static ZipOutputStream createZipOutputStream(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
+//		FileOutputStream outputStream=new FileOutputStream(destination);
+//		ZipOutputStream stream=new ZipOutputStream(outputStream);
+//	}
 	
 	
 	/**
@@ -386,9 +391,11 @@ public class ArchiveUtil {
 	 * @param path the path to be zipped
 	 * @param destination where to save the .zip file created
 	 * @param baseName-- the name to be given to the file specified in path
-	 * @author Skylar Stark & Wyatt Kaiser
+	 * @author Eric Burns
 	 */
 	public static void createZip(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
+		
+		
 		//removing the top level is the same as just adding all the subdirectories to one zip archive
 		if (removeTopLevel) {
 			List<File> files=new ArrayList<File>();
@@ -409,12 +416,13 @@ public class ArchiveUtil {
 		File cd;
 		
 		cd=path.getParentFile();
-		zipCommand=new String[5];
+		zipCommand=new String[6];
 		zipCommand[0]="zip";
 		zipCommand[1]="-r";
 		zipCommand[2]="-q";
-		zipCommand[3]=tempDest.getAbsolutePath();
-		zipCommand[4]=path.getName(); //we are trying to run this command in the required directory, so an absolute path is not needed
+		zipCommand[3]="-1";
+		zipCommand[4]=tempDest.getAbsolutePath();
+		zipCommand[5]=path.getName(); //we are trying to run this command in the required directory, so an absolute path is not needed
 	
 		Util.executeCommandInDirectory(zipCommand,null,cd);
 		
@@ -428,36 +436,11 @@ public class ArchiveUtil {
 		}
 		
 		//rename the top level if it exists and we have a name for it
-		if (baseName!=null && baseName.length()>0) {
-			String[] renameCommand=new String[6];
-			renameCommand[0]="printf";
-			renameCommand[1]="\"@ "+path.getName()+"\n@="+baseName+"\n\"";
-			renameCommand[2]="|";
-			renameCommand[3]="zipnote";
-			renameCommand[4]="-w";
-			renameCommand[5]=destination.getAbsolutePath();
-			Util.executeCommand(renameCommand);
-		}
+		
 		
 		log.debug("the newly created archive exists = "+destination.exists());
 		
-		/*
-		FileOutputStream fOut = null;
-		BufferedOutputStream bOut = null;
-		ZipArchiveOutputStream zOut = null;
-
-		try {
-			fOut = new FileOutputStream(destination);
-			bOut = new BufferedOutputStream(fOut);
-			zOut = new ZipArchiveOutputStream(bOut);
-
-			addFileToZip(zOut, path, "",baseName, removeTopLevel, 0);
-		} finally {
-			zOut.finish();
-			zOut.close();
-			bOut.close();
-			fOut.close();
-		}*/
+		
 	}
 	
 	/**
