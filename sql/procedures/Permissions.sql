@@ -29,7 +29,7 @@ CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 			SELECT COUNT(*)
 			FROM solver_assoc
 			JOIN user_assoc ON user_assoc.space_id=solver_assoc.space_id					-- Join on user_assoc to get all the users that belong to those spaces
-			WHERE solver_assoc.id=_solverId AND user_assoc.user_id=_userId)			-- But only count those for the solver and user we're looking for
+			WHERE solver_assoc.solver_id=_solverId AND user_assoc.user_id=_userId)			-- But only count those for the solver and user we're looking for
 		> 0, 1, (SELECT COUNT(*) FROM solvers WHERE solvers.id=_solverId AND solvers.user_id=_userId)) -- If there were more than 0 results, return 1, else check to see if the user owns the solver, and return under the name 'verified'
 		 AS verified; 	
 	END //
