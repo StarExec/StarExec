@@ -379,11 +379,27 @@ public class ArchiveUtil {
 		}
 		
 	}
-	//
-//	public static ZipOutputStream createZipOutputStream(File path, File destination, String baseName, boolean removeTopLevel) throws Exception {
-//		FileOutputStream outputStream=new FileOutputStream(destination);
-//		ZipOutputStream stream=new ZipOutputStream(outputStream);
-//	}
+	
+	public static void addDirToArchive(ZipOutputStream zos, File srcFile) throws Exception {
+		File[] files=srcFile.listFiles();
+		for (int index=0;index<files.length;index++) {
+			if (files[index].isDirectory()) {
+				addDirToArchive(zos,files[index]);
+				continue;
+			}
+			FileInputStream input=new FileInputStream(files[index]);
+			IOUtils.copy(input, zos);
+			input.close();
+		}
+	}
+	
+	public static void createAndOutputZip(File path, OutputStream output) throws Exception {
+		
+		ZipOutputStream stream=new ZipOutputStream(output);
+		addDirToArchive(stream,path);
+		stream.close();
+		
+	}
 	
 	
 	/**

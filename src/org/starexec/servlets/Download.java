@@ -104,18 +104,7 @@ public class Download extends HttpServlet {
 				}
 				shortName="Job"+jobId+"_info";
 				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
-			} else if (request.getParameter("type").equals("j_outputs")) {
-				int jobId=Integer.parseInt(request.getParameter("id"));
-				
-				String lastSeen=request.getParameter("since");
-				Integer since=null;
-				if (lastSeen!=null) {
-					since=Integer.parseInt(lastSeen);
-					System.out.println("found since = "+lastSeen);
-				}
-				shortName="Job"+jobId+"_output";
-				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
-			} else if (request.getParameter("type").equals("space")) {
+			}  else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
 				//to get both solvers and benchmarks
@@ -143,6 +132,17 @@ public class Download extends HttpServlet {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
 				}
 				archive=handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
+			} else if (request.getParameter("type").equals("j_outputs")) {
+				int jobId=Integer.parseInt(request.getParameter("id"));
+				
+				String lastSeen=request.getParameter("since");
+				Integer since=null;
+				if (lastSeen!=null) {
+					since=Integer.parseInt(lastSeen);
+					System.out.println("found since = "+lastSeen);
+				}
+				shortName="Job"+jobId+"_output";
+				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
 			}
 			// Redirect based on success/failure
 			if(archive != null) {
@@ -155,21 +155,22 @@ public class Download extends HttpServlet {
 					newCookie.setMaxAge(60);
 					response.addCookie(newCookie);
 				}
-				FileInputStream stream=new FileInputStream(archive);
 				
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				log.debug("measuing the size of the file to be returned");
-				long size=FileUtils.sizeOf(archive);
-				log.debug("the size of the file being returned is "+size);
-				
-				
-				response.addHeader("Content-Length",String.valueOf(size));
-				log.debug("copying input stream into servlet output stream");
-				IOUtils.copyLarge(stream, response.getOutputStream());
-				log.debug("done copying input stream into servlet output stream");
+				if (!request.getParameter("type").equals("j_outputs")) {
+					FileInputStream stream=new FileInputStream(archive);
+					
+					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+					log.debug("measuing the size of the file to be returned");
+					long size=FileUtils.sizeOf(archive);
+					log.debug("the size of the file being returned is "+size);
+
+					response.addHeader("Content-Length",String.valueOf(size));
+					log.debug("copying input stream into servlet output stream");
+					IOUtils.copyLarge(stream, response.getOutputStream());
+					log.debug("done copying input stream into servlet output stream");
+					stream.close();
+				}
 				response.getOutputStream().close();
-				
-				stream.close();
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
@@ -644,7 +645,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
+	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws Exception {    	
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jobId, userId)) {
@@ -725,8 +726,8 @@ public class Download extends HttpServlet {
 				log.debug("archive written for job id ="+jobId);
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);
-
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
+				ArchiveUtil.createAndOutputZip(new File(Jobs.getDirectory(jobId)),response.getOutputStream());
+				//ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
 				log.debug("archive created for job = "+jobId);
 
 				if (jobComplete) {
