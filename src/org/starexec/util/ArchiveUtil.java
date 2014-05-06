@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -380,14 +381,17 @@ public class ArchiveUtil {
 		
 	}
 	
-	public static void addDirToArchive(ZipOutputStream zos, File srcFile) throws Exception {
+	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws Exception {
 		File[] files=srcFile.listFiles();
 		for (int index=0;index<files.length;index++) {
 			if (files[index].isDirectory()) {
-				addDirToArchive(zos,files[index]);
+				addDirToArchive(zos,files[index],zipFileName+File.separator+files[index].getName());
 				continue;
 			}
+			ZipEntry entry=new ZipEntry(zipFileName+File.separator+files[index].getName());
+			zos.putNextEntry(entry);
 			FileInputStream input=new FileInputStream(files[index]);
+			
 			IOUtils.copy(input, zos);
 			input.close();
 		}
