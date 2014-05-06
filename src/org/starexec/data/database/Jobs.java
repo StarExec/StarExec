@@ -2836,7 +2836,6 @@ public class Jobs {
 			
 			if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
 				SolverStats newSolver=new SolverStats();
-				log.debug("adding solver "+jp.getSolver().getName()+ " with configuration "+jp.getConfiguration().getName()+" to stats");
 				
 				newSolver.setSolver(jp.getSolver());
 				newSolver.setConfiguration(jp.getConfiguration());

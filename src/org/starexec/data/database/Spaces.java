@@ -140,7 +140,7 @@ public class Spaces {
 	 */
 	public static int addJobSpace(String name) {
 		Connection con = null;
-		log.debug("adding new job space with name ="+name);
+		log.debug("adding new job space with name = "+name);
 		try {
 			con=Common.getConnection();
 			int newSpaceId=addJobSpace(name,con);
@@ -1241,7 +1241,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			log.debug("Getting job space subspaces for job space id = "+jobSpaceId);
 			 procedure = con.prepareCall("{CALL GetJobSubSpaces(?)}");
 			procedure.setInt(1, jobSpaceId);
 			
@@ -1256,7 +1255,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				subSpaces.add(s);
 			}
 			
-			log.debug("Returning " +subSpaces.size()+ "subspaces for job space id = "+jobSpaceId);
 			return subSpaces;
 		} catch (Exception e) {
 			log.error("getSubSpacesForJob says "+e.getMessage(),e);
