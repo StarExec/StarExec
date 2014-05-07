@@ -22,11 +22,13 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Queue;
 import org.starexec.jobs.JobManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -118,38 +120,46 @@ public class JobUtil {
 		// 			use Jobs.add() to put the job on the space
 		
 		try {
-		errorMessage = "Check unique name, ";
+		errorMessage = "Name, ";
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
 			errorMessage = "The job should have a unique name in the space.";
 			return false;
 		}
 		
-		errorMessage += "Setting up proc, ";
+		errorMessage += "Name, ";
+		Job job = new Job();
+		job.setName(jobElement.getAttribute("name"));
+		
+		errorMessage += "Proc, ";
 		Integer preProcId = null;
 		String preProc = jobElement.getAttribute("preproc-id");
 		if (preProc != null && !preProc.equals("")){
 			preProcId = Integer.parseInt(preProc);
+			if (preProcId != null && preProcId > 0) job.setPreProcessor(Processors.get(preProcId));
 		}
 		
 		Integer postProcId = null;
 		String postProc = jobElement.getAttribute("postproc-id");
 		if (postProc != null && !postProc.equals("")){
 			postProcId = Integer.parseInt(postProc);
+			if (postProcId != null && postProcId > 0) job.setPostProcessor(Processors.get(postProcId));
 		}
 		
-		errorMessage += "Running JobManager.setupJob, ";
-		
-		Job job = JobManager.setupJob(
-				userId, 
-				jobElement.getAttribute("name"),
-				"",
-				preProcId, 
-				postProcId, 
-				Integer.parseInt(jobElement.getAttribute("queue-id"))
-			);
+		errorMessage += "Queue, ";
+		int queueId = Integer.parseInt(jobElement.getAttribute("queue-id"));
+		Queue queue = Queues.get(queueId);
+		job.setQueue(queue);
+//		Job job = JobManager.setupJob(
+//				userId, 
+//				jobElement.getAttribute("name"),
+//				"",
+//				preProcId, 
+//				postProcId, 
+//				Integer.parseInt(jobElement.getAttribute("queue-id"))
+//			);
 		job.setPrimarySpace(spaceId);
 		
-		errorMessage += "Starting timeout logic, ";
+		errorMessage += "Timeouts, ";
 		
 		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
 		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
