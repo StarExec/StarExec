@@ -42,7 +42,7 @@ CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 			SELECT COUNT(*)
 			FROM bench_assoc
 			JOIN user_assoc ON user_assoc.space_id=bench_assoc.space_id             -- Join on user_assoc to get all the users that belong to those spaces
-			WHERE bench_assoc.id=_benchId AND user_assoc.user_id=_userId)            -- But only count those for the benchmark and user we're looking for
+			WHERE bench_assoc.bench_id=_benchId AND user_assoc.user_id=_userId)            -- But only count those for the benchmark and user we're looking for
 		> 0, 1, (SELECT COUNT(*) FROM benchmarks WHERE benchmarks.id=_benchId AND benchmarks.user_id=_userId)) AS verified; 												    -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
 	END //
 
