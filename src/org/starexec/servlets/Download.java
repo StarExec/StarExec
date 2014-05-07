@@ -674,9 +674,10 @@ public class Download extends HttpServlet {
 				zipFileName.append(File.separator);
 				zipFileName.append(file.getName());
 				ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
-				stream.close();
+				
 				
 			}
+			stream.close();
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPairsToZipOutput says "+e.getMessage(),e);
