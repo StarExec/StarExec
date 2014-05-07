@@ -3291,7 +3291,9 @@ public class RESTServices {
 				e1.printStackTrace();
 			}
 			
-			if (newDateSql.before(latestSql)) {
+			log.debug("newDate = " + newDateSql);
+			log.debug("latestSql = " + latestSql);
+			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
 				return gson.toJson(4);
 			}
 			
