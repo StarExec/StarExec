@@ -2,7 +2,10 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,6 +17,16 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Processors;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
+import org.starexec.jobs.JobManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,13 +94,100 @@ public class JobUtil {
 			}
 		}
 		
-		// Verify the user has access to the benchmarks and solvers for the JobPair elements
+		// TODO: Verify the user has access to the benchmarks and solvers each of the JobPair elements
+
 		
-		// TODO Create job pairs from an XML configuration file
+		this.jobCreationSuccess = true;
+		
+		for (int i = 0; i < listOfJobElements.getLength(); i++){
+			Node jobNode = listOfJobElements.item(i);
+			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
+				Element jobElement = (Element)jobNode;
+				
+				jobCreationSuccess = jobCreationSuccess && createJobFromElement(userId, spaceId, jobElement);
+			}
+		}
 		
 		return true;
 	}
 	
+	private boolean createJobFromElement(int userId, Integer spaceId,
+			Element jobElement) {
+		// TODO Create a job object with a list of job pairs and
+		// 			use Jobs.add() to put the job on the space
+		
+		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
+			errorMessage = "The job should have a unique name in the space.";
+			return false;
+		}
+		
+		Integer preProcId = null;
+		String preProc = jobElement.getAttribute("preproc-id");
+		if (preProc != null && !preProc.equals("")){
+			preProcId = Integer.parseInt(preProc);
+		}
+		
+		Integer postProcId = null;
+		String postProc = jobElement.getAttribute("postproc-id");
+		if (postProc != null && !postProc.equals("")){
+			postProcId = Integer.parseInt(postProc);
+		}
+		
+		Job job = JobManager.setupJob(
+				userId, 
+				jobElement.getAttribute("name"),
+				"",
+				preProcId, 
+				postProcId, 
+				Integer.parseInt(jobElement.getAttribute("queue-id"))
+			);
+		job.setPrimarySpace(spaceId);
+		
+		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
+		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
+		double memLimit = Double.parseDouble(jobElement.getAttribute("mem-limit"));
+		
+		long memoryLimit=Util.gigabytesToBytes(memLimit);
+		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
+		
+		NodeList jobPairs = jobElement.getChildNodes();
+		for (int i = 0; i < jobPairs.getLength(); i++) {
+			Node jobPairNode = jobPairs.item(i);
+			if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
+				Element jobPairElement = (Element)jobPairNode;
+				
+				JobPair jobPair = new JobPair();
+				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("benchmark-id"));
+				int solverId = Integer.parseInt(jobPairElement.getAttribute("solver-id"));
+				int configId = Integer.parseInt(jobPairElement.getAttribute("configuration-id"));
+				
+				jobPair.setCpuTimeout(cpuTimeout);
+				jobPair.setWallclockTimeout(wallclock);
+				jobPair.setMaxMemory(memoryLimit);
+				
+				jobPair.setBench(Benchmarks.get(benchmarkId));
+				jobPair.setSolver(Solvers.get(solverId));
+				jobPair.setConfiguration(Solvers.getConfiguration(configId));
+				
+				job.addJobPair(jobPair);
+			}
+		}
+		
+		if (job.getJobPairs().size() == 0) {
+			// No pairs in the job means something is wrong; error out
+			errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
+			return false;
+		}
+		
+		boolean submitSuccess = Jobs.add(job, spaceId);
+		if (submitSuccess){
+			Jobs.pause(job.getId());
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using

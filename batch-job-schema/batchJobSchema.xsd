@@ -24,10 +24,16 @@
     		</element>
     	</sequence>
     	
-    	<attribute name="name" type="tns:PrimitiveName"></attribute>
+    	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
+    	<attribute name="queue-id" type="int" use="required"></attribute>
+    	<attribute name="preproc-id" type="int" use="optional"></attribute>
+    	<attribute name="postproc-id" type="int" use="optional"></attribute>
+    	
     	<!-- Note: Timeouts are in seconds -->
-    	<attribute name="cpu-timeout" type="int"></attribute>
-    	<attribute name="wallclock-timeout" type="int"></attribute>
+    	<attribute name="cpu-timeout" type="int" use="required"></attribute>
+    	<attribute name="wallclock-timeout" type="int" use="required"></attribute>
+    	<!-- Note: This is in Gigabytes -->
+    	<attribute name="mem-limit" type="double" use="required"></attribute>
     </complexType>
     
     <complexType name="JobPair">
