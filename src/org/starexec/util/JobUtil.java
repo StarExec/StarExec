@@ -201,14 +201,13 @@ public class JobUtil {
 			return false;
 		}
 		
-		boolean submitSuccess = Jobs.add(job, spaceId);
-		if (submitSuccess){
-			//Jobs.pause(job.getId());
-			errorMessage += "Success!";
-			return true;
-		} else {
-			return false;
-		}
+		List<Job> jobs = new LinkedList<Job>();
+		jobs.add(job);
+		
+		errorMessage += "Submitting...";
+		JobManager.submitJobs(jobs, queue, jobPairs.getLength());
+		return true;
+		
 		}
 		catch (Exception e) {
 			return false;
