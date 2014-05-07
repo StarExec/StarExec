@@ -118,13 +118,13 @@ public class JobUtil {
 		// 			use Jobs.add() to put the job on the space
 		
 		try {
-		errorMessage = "Started creation, check unique name\n";
+		errorMessage = "Check unique name, ";
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
 			errorMessage = "The job should have a unique name in the space.";
 			return false;
 		}
 		
-		errorMessage += "Setting up processors\n";
+		errorMessage += "Setting up proc, ";
 		Integer preProcId = null;
 		String preProc = jobElement.getAttribute("preproc-id");
 		if (preProc != null && !preProc.equals("")){
@@ -137,7 +137,7 @@ public class JobUtil {
 			postProcId = Integer.parseInt(postProc);
 		}
 		
-		errorMessage += "Running JobManager.setupJob\n";
+		errorMessage += "Running JobManager.setupJob, ";
 		
 		Job job = JobManager.setupJob(
 				userId, 
@@ -149,7 +149,7 @@ public class JobUtil {
 			);
 		job.setPrimarySpace(spaceId);
 		
-		errorMessage += "Starting timeout logic\n";
+		errorMessage += "Starting timeout logic, ";
 		
 		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
 		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
@@ -158,7 +158,7 @@ public class JobUtil {
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
 		
-		errorMessage += "Starting job pairs\n";
+		errorMessage += "Starting job pairs, ";
 		
 		NodeList jobPairs = jobElement.getChildNodes();
 		for (int i = 0; i < jobPairs.getLength(); i++) {
@@ -183,7 +183,7 @@ public class JobUtil {
 			}
 		}
 		
-		errorMessage += "Going to submit job\n";
+		errorMessage += "Going to submit job. ";
 		
 		if (job.getJobPairs().size() == 0) {
 			// No pairs in the job means something is wrong; error out
