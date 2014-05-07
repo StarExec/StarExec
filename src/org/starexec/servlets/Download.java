@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -154,27 +155,33 @@ public class Download extends HttpServlet {
 				shortName="Job"+jobId+"_output";
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
+				boolean success= handleJobOutputs(jobId, u.getId(), ".zip", response,since);
+				if (success) {
+					response.getOutputStream().close();
+					return;
+				} else {
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
+					return;
+				}
 			}
 			// Redirect based on success/failure
 			if(archive != null) {
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 
 				
-				if (!request.getParameter("type").equals("j_outputs")) {
-					FileInputStream stream=new FileInputStream(archive);
-					
-					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-					log.debug("measuing the size of the file to be returned");
-					long size=FileUtils.sizeOf(archive);
-					log.debug("the size of the file being returned is "+size);
-
-					response.addHeader("Content-Length",String.valueOf(size));
-					log.debug("copying input stream into servlet output stream");
-					IOUtils.copyLarge(stream, response.getOutputStream());
-					log.debug("done copying input stream into servlet output stream");
-					stream.close();
-				}
+				
+				FileInputStream stream=new FileInputStream(archive);
+				
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				log.debug("measuing the size of the file to be returned");
+				long size=FileUtils.sizeOf(archive);
+				log.debug("the size of the file being returned is "+size);
+				response.addHeader("Content-Length",String.valueOf(size));
+				log.debug("copying input stream into servlet output stream");
+				IOUtils.copyLarge(stream, response.getOutputStream());
+				log.debug("done copying input stream into servlet output stream");
+				stream.close();
+				
 				response.getOutputStream().close();
 				return;
 			} else {
@@ -639,7 +646,44 @@ public class Download extends HttpServlet {
 		FileUtils.write(new File(filename), sb.toString());
 		return filename;
 	}
+	
+	
+	private static boolean addJobPairsToZipOutput(int jobId, List<JobPair> pairs, HttpServletResponse response) {
+		try {
+			String baseName="Job"+String.valueOf(jobId)+"_output_new";
+			ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
+			for (JobPair p : pairs ) {
+				File file=new File(JobPairs.getFilePath(p));
+				StringBuilder zipFileName=new StringBuilder(baseName);
+				zipFileName.append(File.separator);
+				
+				String path=p.getPath();
 
+				String [] spaces=path.split("/");
+				
+					
+				for (int index=0;index<spaces.length;index++) {
+					zipFileName.append(spaces[index]);
+					zipFileName.append(File.separator);
+				}
+					
+				
+				zipFileName.append(p.getSolver().getName());
+				zipFileName.append(File.separator);
+				zipFileName.append(p.getConfiguration().getName());
+				zipFileName.append(File.separator);
+				zipFileName.append(file.getName());
+				ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+				stream.close();
+				
+			}
+			return true;
+		} catch (Exception e) {
+			log.error("addJobPairsToZipOutput says "+e.getMessage(),e);
+		} 
+		return false;
+	}
+	
 	/**
 	 * Get a zip file which contains the outputs of a job from all its job pairs.
 	 * @param j The job to be handled
@@ -650,12 +694,22 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws Exception {    	
+	//TODO: Handle caching in this function
+	private static boolean handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws Exception {    	
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			log.debug("confirmed user can download job = "+jobId);
 			boolean jobComplete=Jobs.isJobComplete(jobId);
+			//if there are no pending pairs, the job is done
+			try {
+				if (jobComplete) {
+					response.addCookie(new Cookie("Job-Complete","true"));
+				}
+			} catch (Exception e) {
+				log.error(e);
+			}
+			/*
 			if (jobComplete && since==null) { //there is no cache for partial results
 				String cachedFilePath=null;
 				cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_OUTPUT);
@@ -669,23 +723,23 @@ public class Download extends HttpServlet {
 					return cachedFile;
 					
 				}
-			}
+			}*/
 
 			// Path is /starexec/WebContent/secure/files/{random name}.{format}
 			// Create the file so we can use it
-			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
+			//String fileName = UUID.randomUUID().toString() + format;
+			//File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
 
-			uniqueDir.createNewFile();
+			//uniqueDir.createNewFile();
 			
-			File file, dir;
+			//File file, dir;
 			
 			//if we only want the new job pairs
 			if (since!=null) {
 				log.debug("starting to get parital results for job id = "+jobId);
 				List<JobPair> pairs;
-				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
-				tempDir.mkdir();
+				//File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
+				//tempDir.mkdir();
 				log.debug("Getting incremental job output results");
 				
 				pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
@@ -700,15 +754,16 @@ public class Download extends HttpServlet {
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
 				//5 minutes for this loop-- this is easily the slowest part of getting incremental results
-				for (JobPair jp : pairs) {
+				Download.addJobPairsToZipOutput(jobId,pairs,response);
+				/*for (JobPair jp : pairs) {
 					file=new File(JobPairs.getFilePath(jp));
 
 					if (file.exists()) {
 						//store in the old format because the pair has no path
 						if (jp.getPath()==null) {
-							dir=new File(tempDir,jp.getSolver().getName());
-							dir=new File(dir,jp.getConfiguration().getName());
-							dir.mkdirs();
+							//dir=new File(tempDir,jp.getSolver().getName());
+							//dir=new File(dir,jp.getConfiguration().getName());
+							//dir.mkdirs();
 						} else {
 							String path=jp.getPath();
 
@@ -725,37 +780,30 @@ public class Download extends HttpServlet {
 						FileUtils.copyFileToDirectory(file,dir);
 
 					}
-				}
-				log.debug("finished copying new job pairs-- starting to make archive for job id = "+jobId);
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
-				log.debug("archive written for job id ="+jobId);
+				}*/
+				//log.debug("finished copying new job pairs-- starting to make archive for job id = "+jobId);
+				//ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
+				//log.debug("archive written for job id ="+jobId);
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);
-				ArchiveUtil.createAndOutputZip(new File(Jobs.getDirectory(jobId)),response.getOutputStream());
+				ArchiveUtil.createAndOutputZip(new File(Jobs.getDirectory(jobId)),response.getOutputStream(),"Job"+String.valueOf(jobId)+"_output");
 				//ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
 				log.debug("archive created for job = "+jobId);
 
 				if (jobComplete) {
-					Cache.setCache(jobId,CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
+					//Cache.setCache(jobId,CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
 				}
 			}
 
-			//if there are no pending pairs, the job is done
-			try {
-				if (jobComplete) {
-					response.addCookie(new Cookie("Job-Complete","true"));
-				}
-			} catch (Exception e) {
-				log.error(e);
-			}
-			return uniqueDir;
+			
+			return true;
 		}
 
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
-		return null;
+		return false;
 	}
 
 	/**

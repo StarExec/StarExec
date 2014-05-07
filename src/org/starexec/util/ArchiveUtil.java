@@ -381,6 +381,16 @@ public class ArchiveUtil {
 		
 	}
 	
+	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws Exception {
+		ZipEntry entry=new ZipEntry(zipFileName);
+		zos.putNextEntry(entry);
+		FileInputStream input=new FileInputStream(srcFile);
+		
+		IOUtils.copy(input, zos);
+		zos.closeEntry();
+		input.close();
+	}
+	
 	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws Exception {
 		File[] files=srcFile.listFiles();
 		for (int index=0;index<files.length;index++) {
@@ -388,20 +398,14 @@ public class ArchiveUtil {
 				addDirToArchive(zos,files[index],zipFileName+File.separator+files[index].getName());
 				continue;
 			}
-			ZipEntry entry=new ZipEntry(zipFileName+File.separator+files[index].getName());
-			zos.putNextEntry(entry);
-			FileInputStream input=new FileInputStream(files[index]);
-			
-			IOUtils.copy(input, zos);
-			zos.closeEntry();
-			input.close();
+			addFileToArchive(zos,files[index],zipFileName+File.separator+files[index].getName());
 		}
 	}
 	
-	public static void createAndOutputZip(File path, OutputStream output) throws Exception {
+	public static void createAndOutputZip(File path, OutputStream output, String baseName) throws Exception {
 		
 		ZipOutputStream stream=new ZipOutputStream(output);
-		addDirToArchive(stream,path,"");
+		addDirToArchive(stream,path,baseName);
 		stream.close();
 		
 	}
