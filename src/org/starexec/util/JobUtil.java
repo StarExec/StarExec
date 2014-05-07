@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.ErrorManager;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -117,11 +118,13 @@ public class JobUtil {
 		// 			use Jobs.add() to put the job on the space
 		
 		try {
+		errorMessage = "Started creation, check unique name\n";
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
 			errorMessage = "The job should have a unique name in the space.";
 			return false;
 		}
 		
+		errorMessage += "Setting up processors\n";
 		Integer preProcId = null;
 		String preProc = jobElement.getAttribute("preproc-id");
 		if (preProc != null && !preProc.equals("")){
@@ -134,6 +137,8 @@ public class JobUtil {
 			postProcId = Integer.parseInt(postProc);
 		}
 		
+		errorMessage += "Running JobManager.setupJob\n";
+		
 		Job job = JobManager.setupJob(
 				userId, 
 				jobElement.getAttribute("name"),
@@ -144,12 +149,16 @@ public class JobUtil {
 			);
 		job.setPrimarySpace(spaceId);
 		
+		errorMessage += "Starting timeout logic\n";
+		
 		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
 		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
 		double memLimit = Double.parseDouble(jobElement.getAttribute("mem-limit"));
 		
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
+		
+		errorMessage += "Starting job pairs\n";
 		
 		NodeList jobPairs = jobElement.getChildNodes();
 		for (int i = 0; i < jobPairs.getLength(); i++) {
@@ -174,6 +183,8 @@ public class JobUtil {
 			}
 		}
 		
+		errorMessage += "Going to submit job\n";
+		
 		if (job.getJobPairs().size() == 0) {
 			// No pairs in the job means something is wrong; error out
 			errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
@@ -183,12 +194,13 @@ public class JobUtil {
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		if (submitSuccess){
 			Jobs.pause(job.getId());
+			errorMessage += "Success!";
 			return true;
 		} else {
 			return false;
 		}
-		} catch (Exception e) {
-			errorMessage = e.getMessage();
+		}
+		catch (Exception e) {
 			return false;
 		}
 	}
