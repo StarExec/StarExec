@@ -203,7 +203,7 @@ public class JobUtil {
 		
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		if (submitSuccess){
-			Jobs.pause(job.getId());
+			//Jobs.pause(job.getId());
 			errorMessage += "Success!";
 			return true;
 		} else {
