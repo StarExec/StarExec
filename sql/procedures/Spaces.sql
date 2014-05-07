@@ -118,7 +118,7 @@ CREATE PROCEDURE GetAllSpaces()
 DROP PROCEDURE IF EXISTS GetAllSuperSpacesByUser;
 CREATE PROCEDURE GetAllSuperSpacesByUser(IN _userId INT)
 	BEGIN
-		SELECT distinct ancestor
+		SELECT distinct ancestor AS id
                 FROM user_assoc JOIN closure ON user_assoc.space_id = closure.descendant
                 WHERE user_assoc.user_id = _userId;
 	END //

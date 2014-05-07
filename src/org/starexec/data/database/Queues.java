@@ -719,41 +719,20 @@ public class Queues {
 			return getQueues(0);
 		} else {
 			
-			List<Space> user_spaces = Spaces.GetSpacesByUser(userId);
-			List<Integer> all_spaces = new LinkedList<Integer>();
-			if (user_spaces != null) {
-				for (Space s : user_spaces) {
-					all_spaces.add(s.getId());
-				}
-				for (Space s : user_spaces) {
-					List<Space> superSpaces = Spaces.getSuperSpaces(s.getId());
-					for (Space s1 : superSpaces) {
-						if (!all_spaces.contains(s1.getId())) {
-							all_spaces.add(s1.getId());
-						}
-					}
-				}
-			}	
 			
-			log.debug("all_spaces" + all_spaces.size());
+			List<Space> spaces = Spaces.getAllSuperSpaces(userId);
 			
 			List<Queue> queues = new LinkedList<Queue>();
 			// First add all the queues that have been reserved for a 
 			// superspace that the user is a member of
-			if (all_spaces != null) {
-				for (int s : all_spaces) {
-					log.debug("space = " + s);
-					queues.addAll(Queues.getQueuesForSpace(s));
+			if (spaces != null) {
+				for (Space s : spaces) {
+					queues.addAll(Queues.getQueuesForSpace(s.getId()));
 				}
 			}
 			
-			log.debug("queues size = " + queues.size());
-			queues.addAll(Queues.getPermanentQueuesForUser(userId));
-			log.debug("queues size = " + queues.size());
-			
-			
-			
-			
+			//Then get the permanent queues for the user
+			queues.addAll(Queues.getPermanentQueuesForUser(userId));			
 			return queues;
 
 		}

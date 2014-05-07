@@ -2423,4 +2423,33 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		ids.addAll(recGetStickyLeaders(Spaces.getParentSpace(spaceId)));
 		return ids;
 	}
+	public static List<Space> getAllSuperSpaces(int userId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL GetAllSuperSpacesByUser(?)}");
+			procedure.setInt(1, userId);					
+			results = procedure.executeQuery();			
+			
+			List<Space> spaces = new LinkedList<Space>();
+			
+			while (results.next()) {
+				Space s = new Space();
+				s.setId(results.getInt("id"));				
+				spaces.add(s);
+			}
+			
+			return spaces;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return null;
+	}
 }
