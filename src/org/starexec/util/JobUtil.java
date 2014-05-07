@@ -116,6 +116,7 @@ public class JobUtil {
 		// TODO Create a job object with a list of job pairs and
 		// 			use Jobs.add() to put the job on the space
 		
+		try {
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
 			errorMessage = "The job should have a unique name in the space.";
 			return false;
@@ -184,6 +185,10 @@ public class JobUtil {
 			Jobs.pause(job.getId());
 			return true;
 		} else {
+			return false;
+		}
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
 			return false;
 		}
 	}
