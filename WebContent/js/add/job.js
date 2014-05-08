@@ -73,7 +73,7 @@ function attachFormValidation(){
 			},
 			maxMem: {
 				required: true,
-				max : 100 // TODO: What should this be? What should the minimum be?
+				min : 0 
 			},
 			queue: {
 				required: true
