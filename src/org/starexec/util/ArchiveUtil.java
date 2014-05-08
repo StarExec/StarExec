@@ -402,8 +402,28 @@ public class ArchiveUtil {
 		}
 	}
 	
-	public static void createAndOutputZip(File path, OutputStream output, String baseName) throws Exception {
-		
+	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws Exception {
+		ZipOutputStream stream=new ZipOutputStream(output);
+		for (File f : paths) {
+			if (f.isDirectory()) {
+				addDirToArchive(stream,f,baseName);
+			} else {
+				addFileToArchive(stream,f,baseName);
+			}
+		}
+		stream.close();
+	}
+	
+	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws Exception {
+		if (removeTopLevel) {
+			File[] files=path.listFiles();
+			List<File> f=new ArrayList<File>();
+			for (File temp : files) {
+				f.add(temp);
+			}
+			createAndOutputZip(f,output,baseName);
+			return;
+		}
 		ZipOutputStream stream=new ZipOutputStream(output);
 		addDirToArchive(stream,path,baseName);
 		stream.close();

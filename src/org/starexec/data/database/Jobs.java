@@ -282,7 +282,7 @@ public class Jobs {
 		}
 		Connection con=null;
 		try {
-			Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
+			//Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
 			
 			con=Common.getConnection();
 			return delete(jobId,con);
@@ -2260,12 +2260,12 @@ public class Jobs {
 	 * @param jobId The ID of the job for which to delete all associated cache entreis
 	 */
 	public static void invalidateAndDeleteJobRelatedCaches(int jobId) {
-		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_OUTPUT);
-		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV);
-		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
+		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_OUTPUT);
+		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV);
+		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
 		List<JobPair> pairs = Jobs.getPairs(jobId);
 		for (JobPair pair : pairs) {
-			Cache.invalidateAndDeleteCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
+			//Cache.invalidateAndDeleteCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
 		}
 	}
 	
