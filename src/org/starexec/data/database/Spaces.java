@@ -17,6 +17,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Permission;
@@ -1771,10 +1772,24 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	}
 	
 	
-	
+	/**
+	 * For a given user, removes the given solver from every space in the hierarchy rooted at the given
+	 * space that they can see.
+	 * @param solverIds The IDs of the solvers to remove
+	 * @param rootSpaceId The ID of the root space of the hierarchy
+	 * @param userId
+	 * @return
+	 */
 	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds,int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
-		return removeSolversFromHierarchy(solverIds,subspaces);
+		subspaces.add(Spaces.get(rootSpaceId));
+		List<Space> allowedSpaces=new ArrayList<Space>();
+		for (Space s : subspaces) {
+			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId)==0) {
+				allowedSpaces.add(s);
+			}
+		}
+		return removeSolversFromHierarchy(solverIds,allowedSpaces);
 	}
 	
 	/** 
@@ -2218,6 +2233,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
+		if (Users.isAdmin(userId)){
+			return spaces;
+		}
 		Iterator<Space> iter = spaces.iterator();
 		while (iter.hasNext()) {
 			if (!Users.isMemberOfSpace(userId, iter.next().getId())) {

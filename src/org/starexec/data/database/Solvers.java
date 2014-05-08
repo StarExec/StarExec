@@ -218,8 +218,9 @@ public class Solvers {
 	public static boolean associate(List<Integer> solverIds, int rootSpaceId, boolean linkInSubspaces, int userId, boolean includeRoot) {
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (linkInSubspaces) {
-			
+			log.debug("got a request to link in subspaces");
 			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
+			log.debug("found a total subspaces = "+subspaces.size());
 			List<Integer> subspaceIds = new LinkedList<Integer>();
 			
 			// Add the destination space to the list of spaces to associate the solvers with only
