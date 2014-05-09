@@ -96,21 +96,6 @@ CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 		ORDER BY attr_key ASC;
 	END //
 	
-
--- Updates a job pair's status given its sge id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateSGEPairStatus;
-CREATE PROCEDURE UpdateSGEPairStatus(IN _sgeId INT, IN _statusCode TINYINT)
-	BEGIN
-		UPDATE job_pairs
-		SET status_code=_statusCode
-		WHERE sge_id=_sgeId;
-		IF _statusCode>6 THEN
-			INSERT IGNORE INTO job_pair_completion (pair_id) VALUES (_jobPairId);
-		END IF;
-			
-	END //	
-	
 -- Updates a job pair's sge id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS SetSGEJobId;

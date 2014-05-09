@@ -2178,40 +2178,8 @@ public class Jobs {
 
 		return null;		
 	}
-	
-	
-	
-	/**
-	 * @param statusCode which status to filter grid engine ids by
-	 * @return A list of SGE job id's that have the specified status
-	 */
-	public static List<Integer> getSgeIdsByStatus(int statusCode) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();									
-			 procedure = con.prepareCall("{CALL GetSGEIdsByStatus(?)}");			
-			procedure.setInt(1, statusCode);
 
-			 results = procedure.executeQuery();
-			List<Integer> ids = new ArrayList<Integer>();
-
-			while(results.next()){
-				ids.add(results.getInt("sge_id"));
-			}	
-			
-			return ids;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
+	
 	
 	/**
 	 * Retrieves a job with basic info from the database (excludes pair and queue/processor info) 

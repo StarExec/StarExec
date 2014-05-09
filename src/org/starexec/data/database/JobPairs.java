@@ -525,7 +525,6 @@ public class JobPairs {
      * Returns the log of a job pair by reading
      * in the physical log file into a string.
      * @param pairId The id of the pair to get the log for
-     * @param sgeId The SGE id of the pair
      * @return The log of the job run
      */
     public static String getJobLog(int pairId) {
@@ -711,74 +710,9 @@ public class JobPairs {
 		return null;		
 	}
 		
-	/**
-	 * Gets the job pair with the given id recursively 
-	 * (Worker node, status, benchmark and solver WILL be populated)
-	 * @param con The connection to make the query on 
-	 * @param sgeId The sge id of the pair to get
-	 * @return The job pair object with the given id.
-	 * @author Tyler Jensen
-	 */
-	protected static JobPair getSGEPairDetailed(Connection con, int sgeId) throws Exception {	
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			log.info("Have connection and now getting sgeDetailed pair info for sgeId =  " + sgeId);
-			 procedure = con.prepareCall("{CALL GetJobPairBySGE(?)}");
-			procedure.setInt(1, sgeId);					
-			 results = procedure.executeQuery();								
-			if(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
-				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),false));
-				jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id"),true));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-
-				Status s = new Status();
-				s.setCode(results.getInt("status_code"));
-			
-				jp.setStatus(s);
-				log.info("about to close result set for sgeId " + sgeId);
-				Common.safeClose(results);
-				return jp;
-			}
-			else
-			{
-				log.info("returning null for sgeDetailed, must have have been no results for GetJobPairBySGE with sgeId = " + sgeId);	
-			}
-		} catch (Exception e) {
-			log.error("getSGEPairDetailed says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;		
-	}
 	
 
-	/**
-	 * Gets the job pair with the given id recursively 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param sgeId The sge id of the pair to get
-	 * @return The job pair object with the given id.
-	 * @author Tyler Jensen
-	 */
-	public static JobPair getSGEPairDetailed(int sgeId) {
-		log.info("getting SGEPairDetailed for sgeId = " + sgeId);
-		Connection con = null;			 
-
-		try {			
-			con = Common.getConnection();
-			return getSGEPairDetailed(con, sgeId);		
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;		
-	}
-
+	
 	/**
 	 * Given two lists of JobPairs that are sorted in the direction indicated by ASC, returns a single list
 	 * containing all the JobPairs
@@ -918,33 +852,7 @@ public class JobPairs {
 	}
 	
 
-	/**
-	 * Updates a pair's status given the pair's sge id
-	 * @param sgeId the SGE id of the pair to update the status of
-	 * @param statusCode the status code to set for the pair
-	 * @return True if the operation was a success, false otherwise
-	 */
-	public static boolean setSGEPairStatus(int sgeId, int statusCode) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
 
-			procedure = con.prepareCall("{CALL UpdateSGEPairStatus(?, ?)}");
-			procedure.setInt(1, sgeId);
-			procedure.setInt(2, statusCode);
-
-			procedure.executeUpdate();								
-			return true;
-		} catch(Exception e) {			
-			log.error(e.getMessage(), e);
-		} finally {			
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-
-		return false;
-	}
 	
 
 	/**
