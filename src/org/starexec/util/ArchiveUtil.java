@@ -401,19 +401,39 @@ public class ArchiveUtil {
 			addFileToArchive(zos,files[index],zipFileName+File.separator+files[index].getName());
 		}
 	}
-	
+	/**
+	 * Writes several files to one zip file at the location indicated by the given outputstream
+	 * @param paths The list of files to add to the zip
+	 * @param output The outputstream to write to
+	 * @param baseName If not null or empty, all files will be in one directory with this name
+	 * @throws Exception
+	 */
 	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws Exception {
+		String newFileName=baseName;
 		ZipOutputStream stream=new ZipOutputStream(output);
 		for (File f : paths) {
-			if (f.isDirectory()) {
-				addDirToArchive(stream,f,baseName);
+			if (baseName==null || baseName.length()==0) {
+				newFileName=f.getName();
 			} else {
-				addFileToArchive(stream,f,baseName);
+				newFileName=baseName+File.separator+f.getName();
+			}
+			if (f.isDirectory()) {
+				addDirToArchive(stream,f,newFileName);
+			} else {
+				addFileToArchive(stream,f,newFileName);
 			}
 		}
 		stream.close();
 	}
-	
+	/**
+	 * Writes a directory recursively to a zip file at the location indicated by the given output stream.
+	 * @param paths The directory to add to the zip file
+	 * @param output The outputstream to write to
+	 * @param baseName If not null or empty, all files will be in one directory with this name
+	 * @param removeTopLevel If true, includes all files in the given directory but not the directory itself. Basename will
+	 * be IGNORED if this is true. It should be set to false if the desire is to simply rename the top level.
+	 * @throws Exception
+	 */
 	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws Exception {
 		if (removeTopLevel) {
 			File[] files=path.listFiles();
@@ -421,11 +441,16 @@ public class ArchiveUtil {
 			for (File temp : files) {
 				f.add(temp);
 			}
-			createAndOutputZip(f,output,baseName);
+			createAndOutputZip(f,output,"");
 			return;
 		}
 		ZipOutputStream stream=new ZipOutputStream(output);
-		addDirToArchive(stream,path,baseName);
+		if (baseName==null || baseName.length()>0) {
+			addDirToArchive(stream,path,baseName);
+		} else {
+			addDirToArchive(stream,path,path.getName());
+		}
+		
 		stream.close();
 		
 	}

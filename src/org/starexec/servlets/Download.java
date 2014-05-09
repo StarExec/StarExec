@@ -202,8 +202,11 @@ public class Download extends HttpServlet {
 		// If we can see this solver AND the solver is downloadable...
 
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
-				
-			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName,reupload);
+			if (reupload) {
+				ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), "",true);
+			} else {
+				ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName,false);
+			}
 		
 			return true;
 		}
