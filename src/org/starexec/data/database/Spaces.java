@@ -612,7 +612,7 @@ public class Spaces {
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId));
-			s.setPublic(Spaces.isPublicSpace(spaceId));
+			//s.setPublic(Spaces.isPublicSpace(spaceId)); this should be there already
 			s.setPermission(Permissions.getSpaceDefault(spaceId));
 			return s;			
 		} catch (Exception e){			

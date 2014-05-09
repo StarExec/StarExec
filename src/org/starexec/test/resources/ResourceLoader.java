@@ -61,6 +61,7 @@ public class ResourceLoader {
 	 * @return 
 	 */
 	public static File getResource(String name) {
+		
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
 	

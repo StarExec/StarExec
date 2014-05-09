@@ -37,11 +37,6 @@ public class UtilTests extends TestSequence{
 	}
 	
 	@Test
-	private void GetLineSeparatorTest() {
-		Assert.assertEquals(File.separator,Util.getLineSeparator());
-	}
-	
-	@Test
 	private void ToIntegerListTest() {
 		List<Integer> ints=Util.toIntegerList(new String[]{"11","2","321"});
 		Assert.assertEquals(3,ints.size());
