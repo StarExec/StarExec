@@ -234,7 +234,7 @@ public class Download extends HttpServlet {
 			for (Processor x : procs) {
 				files.add(new File(x.getFilePath()));
 			}
-			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "");
+			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
 			//ArchiveUtil.createArchive(files, uniqueDir, format);
 
 			return true;
