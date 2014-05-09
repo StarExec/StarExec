@@ -267,7 +267,7 @@ CREATE TABLE job_pairs (
 	path VARCHAR(2048),
 	maximum_memory BIGINT DEFAULT 1073741824,
 	PRIMARY KEY(id),
-	UNIQUE KEY(sge_id),
+	KEY(sge_id),
 	KEY (job_space_id, config_id),
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
