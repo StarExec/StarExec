@@ -438,7 +438,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void deleteJobsTest() {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		Job tempJob=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds);
+		Job tempJob=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 		List<Integer> ids= new ArrayList<Integer>();
 		ids.add(tempJob.getId());
 		Assert.assertNotNull(Jobs.get(tempJob.getId()));
@@ -613,7 +613,7 @@ public class StarexecCommandTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds);
+		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 
 		Assert.assertNotNull(benchmarkIds);
 

@@ -125,7 +125,8 @@ public class ResourceLoader {
 	 * @param benchmarks The benchmarkIDs to run
 	 * @return The job object
 	 */
-	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds) {
+	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds,
+			int cpuTimeout, int wallclockTimeout, int memory) {
 		
 		Space space=Spaces.get(spaceId);
 		String name=TestUtil.getRandomJobName();
@@ -141,7 +142,7 @@ public class ResourceLoader {
 		spaces.add(Spaces.get(spaceId));
 		HashMap<Integer,String> SP = new HashMap<Integer,String>();
 		SP.put(spaceId, Spaces.get(spaceId).getName());
-		JobManager.buildJob(job, userId, 100, 100, Util.gigabytesToBytes(1), benchmarkIds, solverIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, solverIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
 		return job;

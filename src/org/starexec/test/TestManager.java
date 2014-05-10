@@ -12,6 +12,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.BenchmarkTests;
+import org.starexec.test.database.JobTests;
 import org.starexec.test.database.PermissionsTests;
 import org.starexec.test.database.ProcessorTests;
 import org.starexec.test.database.SolverTests;
@@ -63,6 +64,7 @@ public class TestManager {
 		tests.add(new WebsiteTests());
 		tests.add(new BenchmarkTests());
 		tests.add(new ProcessorTests());
+		tests.add(new JobTests());
 	}
 	
 	/**

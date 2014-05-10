@@ -80,7 +80,7 @@ public class JobSecurityTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds);
+		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,100,100,1);
 		Assert.assertNotNull(Jobs.get(job.getId()));
 		
 	}
@@ -95,7 +95,7 @@ public class JobSecurityTests extends TestSequence {
 		Processors.delete(postProc.getId());
 		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());
 		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user.getId(),admin.getId());
+		Users.deleteUser(nonOwner.getId(),admin.getId());
 	}
 
 }

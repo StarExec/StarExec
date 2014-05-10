@@ -427,7 +427,7 @@ public class ArchiveUtil {
 	}
 	/**
 	 * Writes a directory recursively to a zip file at the location indicated by the given output stream.
-	 * @param paths The directory to add to the zip file
+	 * @param paths The directory or file to zip
 	 * @param output The outputstream to write to
 	 * @param baseName If not null or empty, all files will be in one directory with this name
 	 * @param removeTopLevel If true, includes all files in the given directory but not the directory itself. Basename will
