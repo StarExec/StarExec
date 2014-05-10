@@ -152,7 +152,12 @@ public class Download extends HttpServlet {
 					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
 				}
-				success= handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
+				if (proc.size()>0) {
+					success= handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
+				} else {
+					response.sendError(HttpServletResponse.SC_NO_CONTENT,"There are no processors to download");
+					return;
+				}
 			} else if (request.getParameter("type").equals("j_outputs")) {
 				int jobId=Integer.parseInt(request.getParameter("id"));
 				
@@ -227,18 +232,17 @@ public class Download extends HttpServlet {
 	private static boolean handleProc(List<Processor> procs, int userId, String format, int spaceId, HttpServletResponse response) throws Exception {
 
 		if (Permissions.canUserSeeSpace(spaceId, userId)) {
-
-			//String fileName="Community "+String.valueOf(spaceId)+"Procs" + "_("+UUID.randomUUID().toString()+")" +format;
-			//File uniqueDir=new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR), fileName);
-			//uniqueDir.createNewFile();
+			
 			List<File> files=new LinkedList<File>();
 			for (Processor x : procs) {
 				files.add(new File(x.getFilePath()));
 			}
-			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
-			//ArchiveUtil.createArchive(files, uniqueDir, format);
+			if (files.size()>0) {
+				ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
+				return true;
+			}
 
-			return true;
+			
 		}
 		return false;
 	}

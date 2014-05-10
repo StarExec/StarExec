@@ -445,10 +445,19 @@ public class ArchiveUtil {
 			return;
 		}
 		ZipOutputStream stream=new ZipOutputStream(output);
+		boolean dir=path.isDirectory();
 		if (baseName==null || baseName.length()>0) {
-			addDirToArchive(stream,path,baseName);
+			if (dir) {
+				addDirToArchive(stream,path,baseName);
+			} else {
+				addFileToArchive(stream,path,baseName+File.separator+path.getName());
+			}
 		} else {
-			addDirToArchive(stream,path,path.getName());
+			if (dir) {
+				addDirToArchive(stream,path,path.getName());
+			} else {
+				addFileToArchive(stream,path,path.getName());
+			}
 		}
 		
 		stream.close();
