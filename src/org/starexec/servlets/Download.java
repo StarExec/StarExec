@@ -181,6 +181,7 @@ public class Download extends HttpServlet {
 											
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			response.getOutputStream().close();
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			
 		}
