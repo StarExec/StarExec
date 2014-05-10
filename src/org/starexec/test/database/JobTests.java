@@ -53,7 +53,7 @@ public class JobTests extends TestSequence {
 		Job testJob=Jobs.getDetailed(job.getId());
 		Assert.assertNotNull(testJob);
 		Assert.assertEquals(testJob.getName(),job.getName());
-		Assert.assertEquals(testJob.getJobPairs().size(),benchmarkIds.size()); //job is supposed to have one pair per benchmark
+		Assert.assertEquals(benchmarkIds.size(),testJob.getJobPairs().size()); //job is supposed to have one pair per benchmark
 	}
 	
 	@Test
@@ -62,7 +62,7 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(1,jobs.size());
 		Assert.assertEquals(jobs.get(0).getName(),job.getName());
 		
-		Jobs.getByUserId(user2.getId());
+		jobs=Jobs.getByUserId(user2.getId());
 		Assert.assertEquals(1,jobs.size());
 		Assert.assertEquals(jobs.get(0).getName(),job2.getName());
 	}
