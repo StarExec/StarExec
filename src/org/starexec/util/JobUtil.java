@@ -120,17 +120,16 @@ public class JobUtil {
 		// 			use Jobs.add() to put the job on the space
 		
 		try {
-		errorMessage = "Name, ";
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
-			errorMessage = "The job should have a unique name in the space.";
+			errorMessage = "Error: The job should have a unique name in the space.";
 			return false;
 		}
 		
-		errorMessage += "Name, ";
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
-		
-		errorMessage += "Proc, ";
+		job.setUserId(userId);		
+		job.setId(2040);
+
 		Integer preProcId = null;
 		String preProc = jobElement.getAttribute("preproc-id");
 		if (preProc != null && !preProc.equals("")){
@@ -145,7 +144,6 @@ public class JobUtil {
 			if (postProcId != null && postProcId > 0) job.setPostProcessor(Processors.get(postProcId));
 		}
 		
-		errorMessage += "Queue, ";
 		int queueId = Integer.parseInt(jobElement.getAttribute("queue-id"));
 		Queue queue = Queues.get(queueId);
 		job.setQueue(queue);
@@ -159,7 +157,6 @@ public class JobUtil {
 //			);
 		job.setPrimarySpace(spaceId);
 		
-		errorMessage += "Timeouts, ";
 		
 		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
 		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
@@ -168,7 +165,6 @@ public class JobUtil {
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
 		
-		errorMessage += "Starting job pairs, ";
 		
 		NodeList jobPairs = jobElement.getChildNodes();
 		for (int i = 0; i < jobPairs.getLength(); i++) {
@@ -188,12 +184,10 @@ public class JobUtil {
 				jobPair.setBench(Benchmarks.get(benchmarkId));
 				jobPair.setSolver(Solvers.get(solverId));
 				jobPair.setConfiguration(Solvers.getConfiguration(configId));
-				
+				jobPair.setSpace(Spaces.get(spaceId));	
 				job.addJobPair(jobPair);
 			}
 		}
-		
-		errorMessage += "Going to submit job. ";
 		
 		if (job.getJobPairs().size() == 0) {
 			// No pairs in the job means something is wrong; error out
@@ -204,12 +198,16 @@ public class JobUtil {
 		List<Job> jobs = new LinkedList<Job>();
 		jobs.add(job);
 		
-		errorMessage += "Submitting...";
-		JobManager.submitJobs(jobs, queue, jobPairs.getLength());
-		return true;
+		boolean submitSuccess = Jobs.add(job, spaceId);
+		//JobManager.submitJobs(jobs, queue, jobPairs.getLength());
+		if (!submitSuccess){
+			errorMessage = "Error: failed to add job with id " +job.getId() + " to space with id " + spaceId;
+		}
+		return submitSuccess;
 		
 		}
 		catch (Exception e) {
+			errorMessage = e.toString();
 			return false;
 		}
 	}
