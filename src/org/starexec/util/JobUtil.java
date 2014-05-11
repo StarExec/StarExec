@@ -2,6 +2,7 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.ErrorManager;
@@ -128,7 +129,7 @@ public class JobUtil {
 		
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
-		job.setUserId(userId);		
+		job.setUserId(userId);
 		
 		String jobId = jobElement.getAttribute("id");
 		if(jobId != "" && jobId != null){
@@ -190,7 +191,11 @@ public class JobUtil {
 				jobPair.setBench(Benchmarks.get(benchmarkId));
 				jobPair.setSolver(Solvers.getSolverByConfig(configId, false));
 				jobPair.setConfiguration(Solvers.getConfiguration(configId));
-				jobPair.setSpace(Spaces.get(spaceId));	
+				jobPair.setSpace(Spaces.get(spaceId));
+				
+				HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);
+				jobPair.setPath(SP.get(spaceId));
+				
 				job.addJobPair(jobPair);
 			}
 		}
@@ -208,6 +213,7 @@ public class JobUtil {
 		if (!submitSuccess){
 			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
 		} else if (jobElement.getAttribute("start-paused") == "true") {
+			JobManager.submitJobs(jobs, queue, job.getJobPairs().size());
 			Jobs.pause(job.getId());
 		}
 		return submitSuccess;
