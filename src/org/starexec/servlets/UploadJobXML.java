@@ -68,6 +68,12 @@ public class UploadJobXML extends HttpServlet {
     	}	
 	}
 
+	/**
+	 * Gets the XML file from the form and tries to create a job from it
+	 * @param userId the ID of the user making the request
+	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
+	 * @author Tim Smith
+	 */
 	private JobUtil handleXMLFile(int userId, HashMap<String, Object> form) {
 		try {
 			log.debug("Handling Upload of XML File from User " + userId);

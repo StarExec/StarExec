@@ -23,14 +23,18 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Solver;
 import org.starexec.jobs.JobManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -99,9 +103,6 @@ public class JobUtil {
 			}
 		}
 		
-		// TODO: Verify the user has access to the benchmarks and solvers each of the JobPair elements
-
-		
 		this.jobCreationSuccess = true;
 		
 		for (int i = 0; i < listOfJobElements.getLength(); i++){
@@ -113,9 +114,16 @@ public class JobUtil {
 			}
 		}
 		
-		return true;
+		return jobCreationSuccess;
 	}
 	
+	/**
+	 * Creates a single job from an XML job element.
+	 * @param userId the ID of the user creating the job
+	 * @param spaceId the space in which the job will be created
+	 * @param jobElement the XML job element as defined in the deployed public/batchJobSchema.xsd
+	 * @author Tim Smith
+	 */
 	private boolean createJobFromElement(int userId, Integer spaceId,
 			Element jobElement) {
 		// TODO Create a job object with a list of job pairs and
@@ -173,6 +181,7 @@ public class JobUtil {
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
 		
+		HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);
 		
 		NodeList jobPairs = jobElement.getChildNodes();
 		for (int i = 0; i < jobPairs.getLength(); i++) {
@@ -188,12 +197,23 @@ public class JobUtil {
 				jobPair.setWallclockTimeout(wallclock);
 				jobPair.setMaxMemory(memoryLimit);
 				
-				jobPair.setBench(Benchmarks.get(benchmarkId));
-				jobPair.setSolver(Solvers.getSolverByConfig(configId, false));
+				Benchmark b = Benchmarks.get(benchmarkId);
+				if (!Permissions.canUserSeeBench(benchmarkId, userId)){
+					errorMessage = "You do not have permission to see benchmark " + benchmarkId;
+					return false;
+				}
+				jobPair.setBench(b);
+				
+				Solver s = Solvers.getSolverByConfig(configId, false);
+				if (!Permissions.canUserSeeSolver(s.getId(), userId)){
+					errorMessage = "You do not have permission to see the solver " + s.getId();
+					return false;
+				}
+				
+				jobPair.setSolver(s);
 				jobPair.setConfiguration(Solvers.getConfiguration(configId));
 				jobPair.setSpace(Spaces.get(spaceId));
 				
-				HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);
 				jobPair.setPath(SP.get(spaceId));
 				
 				job.addJobPair(jobPair);
@@ -225,6 +245,11 @@ public class JobUtil {
 		}
 	}
 
+	/**
+	 * Checks that the XML file uploaded is valid against the deployed public/batchJobSchema.xsd
+	 * @param file the XML file to be validated against the XSD
+	 * @author Tim Smith
+	 */
 	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
