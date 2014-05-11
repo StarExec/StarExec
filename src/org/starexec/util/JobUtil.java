@@ -236,10 +236,7 @@ public class JobUtil {
 		if (!submitSuccess){
 			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
 		} else if (Boolean.valueOf(jobElement.getAttribute("start-paused"))) {
-			JobManager.submitJobs(jobs, queue, job.getJobPairs().size());
 			Jobs.pause(job.getId());
-		} else {
-			JobManager.submitJobs(jobs, queue, job.getJobPairs().size());
 		}
 		return submitSuccess;
 		
