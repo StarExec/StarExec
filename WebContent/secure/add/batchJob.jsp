@@ -31,11 +31,10 @@
 					<td>file location</td>
 					<td><input id="fileUpload" name="f" type="file" /></td>
 				</tr>
-				<tr>
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 				</tr>
 				<tr>
-					<td>view the schema <a href="public/batchJobSchema.xsd">here</a></td>
+					<td><a href="../../public/batchJobSchema.xsd">view the schema here</a></td>
 				</tr>
 			</table>																	
 		</fieldset>

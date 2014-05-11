@@ -35,7 +35,7 @@
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 				</tr>
 				<tr>
-					<td>view the schema <a href="public/batchSpaceSchema.xsd">here</a></td>
+					<td><a href="../../public/batchSpaceSchema.xsd">view the schema here</a></td>
 				</tr>
 			</table>																	
 		</fieldset>
