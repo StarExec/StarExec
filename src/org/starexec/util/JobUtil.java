@@ -128,24 +128,35 @@ public class JobUtil {
 		
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
-		job.setUserId(userId);
+		job.setUserId(userId);		
 		
 		String jobId = jobElement.getAttribute("id");
 		if(jobId != "" && jobId != null){
 			job.setId(Integer.parseInt(jobId));
 		}
+		
 		Integer preProcId = null;
 		String preProc = jobElement.getAttribute("preproc-id");
 		if (preProc != null && !preProc.equals("")){
 			preProcId = Integer.parseInt(preProc);
-			if (preProcId != null && preProcId > 0) job.setPreProcessor(Processors.get(preProcId));
+			if (preProcId != null && preProcId > 0) {
+				Processor p = Processors.get(preProcId);
+				if (p != null && p.getFilePath() != null) {
+					job.setPreProcessor(p);
+				}
+			}
 		}
 		
 		Integer postProcId = null;
 		String postProc = jobElement.getAttribute("postproc-id");
 		if (postProc != null && !postProc.equals("")){
 			postProcId = Integer.parseInt(postProc);
-			if (postProcId != null && postProcId > 0) job.setPostProcessor(Processors.get(postProcId));
+			if (postProcId != null && postProcId > 0) {
+				Processor p = Processors.get(postProcId);
+				if (p != null && p.getFilePath() != null) {
+					job.setPostProcessor(p);
+				}
+			}
 		}
 		
 		int queueId = Integer.parseInt(jobElement.getAttribute("queue-id"));
@@ -194,9 +205,10 @@ public class JobUtil {
 		jobs.add(job);
 		
 		boolean submitSuccess = Jobs.add(job, spaceId);
-		//JobManager.submitJobs(jobs, queue, jobPairs.getLength());
 		if (!submitSuccess){
 			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
+		} else if (jobElement.getAttribute("start-paused") == "true") {
+			Jobs.pause(job.getId());
 		}
 		return submitSuccess;
 		
