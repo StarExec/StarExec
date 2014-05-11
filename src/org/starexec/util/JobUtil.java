@@ -20,6 +20,7 @@ import javax.xml.validation.Validator;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
@@ -127,9 +128,12 @@ public class JobUtil {
 		
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
-		job.setUserId(userId);		
-		job.setId(2040);
-
+		job.setUserId(userId);
+		
+		String jobId = jobElement.getAttribute("id");
+		if(jobId != "" && jobId != null){
+			job.setId(Integer.parseInt(jobId));
+		}
 		Integer preProcId = null;
 		String preProc = jobElement.getAttribute("preproc-id");
 		if (preProc != null && !preProc.equals("")){
@@ -147,14 +151,6 @@ public class JobUtil {
 		int queueId = Integer.parseInt(jobElement.getAttribute("queue-id"));
 		Queue queue = Queues.get(queueId);
 		job.setQueue(queue);
-//		Job job = JobManager.setupJob(
-//				userId, 
-//				jobElement.getAttribute("name"),
-//				"",
-//				preProcId, 
-//				postProcId, 
-//				Integer.parseInt(jobElement.getAttribute("queue-id"))
-//			);
 		job.setPrimarySpace(spaceId);
 		
 		
@@ -174,7 +170,6 @@ public class JobUtil {
 				
 				JobPair jobPair = new JobPair();
 				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("benchmark-id"));
-				int solverId = Integer.parseInt(jobPairElement.getAttribute("solver-id"));
 				int configId = Integer.parseInt(jobPairElement.getAttribute("configuration-id"));
 				
 				jobPair.setCpuTimeout(cpuTimeout);
@@ -182,7 +177,7 @@ public class JobUtil {
 				jobPair.setMaxMemory(memoryLimit);
 				
 				jobPair.setBench(Benchmarks.get(benchmarkId));
-				jobPair.setSolver(Solvers.get(solverId));
+				jobPair.setSolver(Solvers.getSolverByConfig(configId, false));
 				jobPair.setConfiguration(Solvers.getConfiguration(configId));
 				jobPair.setSpace(Spaces.get(spaceId));	
 				job.addJobPair(jobPair);
@@ -201,7 +196,7 @@ public class JobUtil {
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		//JobManager.submitJobs(jobs, queue, jobPairs.getLength());
 		if (!submitSuccess){
-			errorMessage = "Error: failed to add job with id " +job.getId() + " to space with id " + spaceId;
+			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
 		}
 		return submitSuccess;
 		

@@ -25,6 +25,7 @@
     	</sequence>
     	
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
+    	<attribute name="id" type="int" use="required"></attribute>
     	<attribute name="queue-id" type="int" use="required"></attribute>
     	<attribute name="preproc-id" type="int" use="optional"></attribute>
     	<attribute name="postproc-id" type="int" use="optional"></attribute>
@@ -38,7 +39,6 @@
     
     <complexType name="JobPair">
     	<attribute name="benchmark-id" type="int" use="required"></attribute>
-    	<attribute name="solver-id" type="int" use="required"></attribute>
     	<attribute name="configuration-id" type="int" use="required"></attribute>
     </complexType>
     
