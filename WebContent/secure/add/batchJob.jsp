@@ -10,7 +10,7 @@
 		// Verify this user can add spaces to this space
 		Permission userPerm = SessionUtil.getPermission(request, spaceId);
 		if(userPerm.canAddJob()) {
-			request.setAttribute("space", Spaces.get(2));
+			request.setAttribute("space", Spaces.get(spaceId));
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create jobs here");
 		}
@@ -31,7 +31,11 @@
 					<td>file location</td>
 					<td><input id="fileUpload" name="f" type="file" /></td>
 				</tr>
+				<tr>
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
+				</tr>
+				<tr>
+					<td>view the schema <a href="public/batchJobSchema.xsd">here</a></td>
 				</tr>
 			</table>																	
 		</fieldset>
