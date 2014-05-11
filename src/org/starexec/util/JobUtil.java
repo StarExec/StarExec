@@ -65,6 +65,12 @@ public class JobUtil {
 			return false;
 		}
 		
+		Permission p = Permissions.get(userId, spaceId);
+		if (!p.canAddJob()){
+			errorMessage = "You do not have permission to create a job on this space";
+			return false;
+		}
+		
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.parse(file);
