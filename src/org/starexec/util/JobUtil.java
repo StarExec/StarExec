@@ -229,9 +229,6 @@ public class JobUtil {
 			return false;
 		}
 		
-		List<Job> jobs = new LinkedList<Job>();
-		jobs.add(job);
-		
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		if (!submitSuccess){
 			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
