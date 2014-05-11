@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
@@ -21,6 +22,7 @@ import org.starexec.jobs.ProcessingManager;
 import org.starexec.test.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
+import org.starexec.util.LogManager;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -82,6 +84,7 @@ public class Starexec implements ServletContextListener {
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 										
 		log = Logger.getLogger(Starexec.class);
+		
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();

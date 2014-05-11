@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -68,6 +69,7 @@ import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
+import org.starexec.util.LogManager;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -3207,6 +3209,36 @@ public class RESTServices {
 			return gson.toJson(0);
 			
 		}
+	}
+	//Allows the administrator to set the current logging level across the entire system.
+	@POST
+	@Path("/logging/{level}")
+	@Produces("application/json")
+	public String setLoggingLevel(@PathParam("level") String level, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserChangeLogging(userId);
+		if (status!=0) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		if (level.equalsIgnoreCase("trace")) {
+			LogManager.setLoggingLevel(Level.TRACE);
+		} else if (level.equalsIgnoreCase("debug")) {
+			LogManager.setLoggingLevel(Level.DEBUG);
+		} else if (level.equalsIgnoreCase("info")) {
+			LogManager.setLoggingLevel(Level.INFO);
+		} else if (level.equalsIgnoreCase("error")) {
+			LogManager.setLoggingLevel(Level.ERROR);
+		} else if(level.equalsIgnoreCase("fatal")) {
+			LogManager.setLoggingLevel(Level.FATAL);
+		} else if (level.equalsIgnoreCase("off")) {
+			LogManager.setLoggingLevel(Level.OFF);
+		} else if (level.equalsIgnoreCase("warn")) {
+			LogManager.setLoggingLevel(Level.WARN);
+		} else {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		return gson.toJson(0);
 	}
 		
 	@POST
