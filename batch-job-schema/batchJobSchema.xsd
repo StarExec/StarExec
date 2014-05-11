@@ -24,22 +24,29 @@
     		</element>
     	</sequence>
     	
+    	<!-- The job name must be unique to the space -->
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
-    	<attribute name="id" type="int" use="required"></attribute>
+    	    	
+    	<!-- You can find the id of a queue on the Cluster=>Status page -->
     	<attribute name="queue-id" type="int" use="required"></attribute>
+    	
+    	<!-- The default for start-paused is false -->
+    	<attribute name="start-paused" type="boolean" use="optional"></attribute>
     	<attribute name="preproc-id" type="int" use="optional"></attribute>
     	<attribute name="postproc-id" type="int" use="optional"></attribute>
     	
     	<!-- Note: Timeouts are in seconds -->
     	<attribute name="cpu-timeout" type="int" use="required"></attribute>
     	<attribute name="wallclock-timeout" type="int" use="required"></attribute>
+    	
     	<!-- Note: This is in Gigabytes -->
     	<attribute name="mem-limit" type="double" use="required"></attribute>
     </complexType>
     
     <complexType name="JobPair">
-    	<attribute name="benchmark-id" type="int" use="required"></attribute>
-    	<attribute name="configuration-id" type="int" use="required"></attribute>
+    	<attribute name="bench-id" type="int" use="required"></attribute>
+    	<!-- A configuration id uniquely identifies a solver, so no more is required -->
+    	<attribute name="config-id" type="int" use="required"></attribute>
     </complexType>
     
     <simpleType name="PrimitiveName">

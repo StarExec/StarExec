@@ -132,9 +132,6 @@ public class JobUtil {
 	 */
 	private boolean createJobFromElement(int userId, Integer spaceId,
 			Element jobElement) {
-		// TODO Create a job object with a list of job pairs and
-		// 			use Jobs.add() to put the job on the space
-		
 		try {
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
 			errorMessage = "Error: The job should have a unique name in the space.";
@@ -196,8 +193,8 @@ public class JobUtil {
 				Element jobPairElement = (Element)jobPairNode;
 				
 				JobPair jobPair = new JobPair();
-				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("benchmark-id"));
-				int configId = Integer.parseInt(jobPairElement.getAttribute("configuration-id"));
+				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
+				int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
 				
 				jobPair.setCpuTimeout(cpuTimeout);
 				jobPair.setWallclockTimeout(wallclock);
@@ -238,15 +235,18 @@ public class JobUtil {
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		if (!submitSuccess){
 			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
-		} else if (jobElement.getAttribute("start-paused") == "true") {
+		} else if (Boolean.valueOf(jobElement.getAttribute("start-paused"))) {
 			JobManager.submitJobs(jobs, queue, job.getJobPairs().size());
 			Jobs.pause(job.getId());
+		} else {
+			JobManager.submitJobs(jobs, queue, job.getJobPairs().size());
 		}
 		return submitSuccess;
 		
 		}
 		catch (Exception e) {
-			errorMessage = e.toString();
+			log.error(e);
+			errorMessage = "Something went wrong when creating your job.";
 			return false;
 		}
 	}
