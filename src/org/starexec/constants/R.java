@@ -147,6 +147,7 @@ public class R {
 	public static String EXPECTED_RESULT = "starexec-expected-result";    // key for key value pair in benchmark attributes
 	public static String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description
 	public static String SOLVER_BUILD_SCRIPT="starexec_build";
+	public static String PROCSSESSOR_RUN_SCRIPT="process";
 	public static String BENCHMARK_DESC_PATH = "starexec_description.txt";	// File that can be included within the archive solver file to include the description
 	public static String DESC_PATH = "starexec_description.txt";
 	

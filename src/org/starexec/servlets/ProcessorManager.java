@@ -23,6 +23,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -38,6 +39,8 @@ public class ProcessorManager extends HttpServlet {
 
 	// The unique date stamped file name format (for saving processor files)
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+
 	
 	// Request attributes
 	private static final String PROCESSOR_NAME = "name";
@@ -143,13 +146,31 @@ public class ProcessorManager extends HttpServlet {
 			// Save the uploaded file to disk
 			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
 			File newFile = ProcessorManager.getProcessorFilePath(newProc.getCommunityId(), FilenameUtils.getName(processorFile.getName()));
-			processorFile.write(newFile);
 			
-			if (!newFile.setExecutable(true, false)) {			
+			File archiveFile=null;
+			
+			File uniqueDir = new File(R.PROCESSOR_DIR, "" + newProc.getCommunityId());
+			uniqueDir = new File(uniqueDir, newProc.getName());
+			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+			
+			uniqueDir.mkdirs();
+			
+			
+			archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
+			
+			processorFile.write(archiveFile);
+			newProc.setFilePath(uniqueDir.getAbsolutePath());
+
+				
+			
+			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
+			
+			File processorScript=new File(uniqueDir,R.PROCSSESSOR_RUN_SCRIPT);
+			if (!processorScript.setExecutable(true, false)) {			
 				log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
 			}
 			
-			newProc.setFilePath(newFile.getAbsolutePath());			
+	
 			log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), newProc.getCommunityId()));					
 			
 			int newProcId=Processors.add(newProc);
@@ -223,6 +244,13 @@ public class ProcessorManager extends HttpServlet {
 			if(!Validator.isValidPrimName((String)form.get(PROCESSOR_NAME))) {
 
 				return false;
+			}
+			
+			String fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
+			for(String ext : ProcessorManager.extensions) {
+				if(fileName.endsWith(ext)) {
+					return true;
+				}
 			}
 																	
 			if(!Validator.isValidPrimDescription((String)form.get(PROCESSOR_DESC))) {
