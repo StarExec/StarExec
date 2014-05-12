@@ -145,7 +145,6 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Save the uploaded file to disk
 			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
-			File newFile = ProcessorManager.getProcessorFilePath(newProc.getCommunityId(), FilenameUtils.getName(processorFile.getName()));
 			
 			File archiveFile=null;
 			
@@ -166,12 +165,16 @@ public class ProcessorManager extends HttpServlet {
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			
 			File processorScript=new File(uniqueDir,R.PROCSSESSOR_RUN_SCRIPT);
+			if (!processorScript.exists()) {
+				log.warn("the new processor did not have process script!");
+				return null;
+			}
 			if (!processorScript.setExecutable(true, false)) {			
-				log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
+				log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
 			}
 			
 	
-			log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), newProc.getCommunityId()));					
+			log.info(String.format("Wrote new %s processor to %s for community %d", procType, uniqueDir.getAbsolutePath(), newProc.getCommunityId()));					
 			
 			int newProcId=Processors.add(newProc);
 			if(newProcId>0) {

@@ -52,6 +52,23 @@ public class ProcessorSecurity {
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	
+	public static int canUserEditProcessor(int procId, int userId) {
+		Processor p=Processors.get(procId);
+		Permission perm= Permissions.get(userId,p.getCommunityId());
+		if (perm==null || !perm.isLeader()) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}		
+		
+		return 0;
+	}
+	
+	/** 
+	 * Checks to see whether the given user is allowed to edit the given processor
+	 * @param procId The ID of the processor being checked
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	
 	public static int canUserEditProcessor(int procId, int userId, String name, String desc) {
 		Processor p=Processors.get(procId);
 		Permission perm= Permissions.get(userId,p.getCommunityId());
