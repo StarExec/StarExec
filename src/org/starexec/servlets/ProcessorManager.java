@@ -135,7 +135,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @return true on success, false on failure. Failure will occur for a processor that is already in the new format
 	 * @throws Exception
 	 */
-	private boolean copyProcessorToNewFormat(Processor p) throws Exception {
+	private static boolean copyProcessorToNewFormat(Processor p) throws Exception {
 		File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
 		File curFile=new File(p.getFilePath());
 		if (curFile.exists() && newDirectory.exists() && !curFile.isDirectory()) {
