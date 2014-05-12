@@ -19,6 +19,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
+import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.GridEngineUtil;
@@ -218,7 +219,9 @@ public class Starexec implements ServletContextListener {
 		   // taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
-		}	
+		}
+		//TODO: this is a one time task! We should remove it after we have run it on production!
+		ProcessorManager.copyAllProcessorsToNewFormat();
 		
 	}
 	

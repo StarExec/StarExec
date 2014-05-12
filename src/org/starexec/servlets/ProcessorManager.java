@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -128,6 +130,44 @@ public class ProcessorManager extends HttpServlet {
 	}
 	
 	/**
+	 * Attempts to copy a processor in the old format over to the new format
+	 * @param p the processor to copy over
+	 * @return true on success, false on failure. Failure will occur for a processor that is already in the new format
+	 * @throws Exception
+	 */
+	private boolean copyProcessorToNewFormat(Processor p) throws Exception {
+		File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
+		File curFile=new File(p.getFilePath());
+		if (curFile.exists() && newDirectory.exists() && !curFile.isDirectory()) {
+			File destination=new File(newDirectory,R.PROCSSESSOR_RUN_SCRIPT);
+			FileUtils.copyFile(curFile,destination);
+			return Processors.updateFilePath(p.getId(), newDirectory.getAbsolutePath());
+		}
+		return false;
+	}
+	
+	/**
+	 * One time task for copying all existing processors over into the new format.
+	 */
+	public static void copyAllProcessorsToNewFormat() {
+		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
+		for (ProcessorType type : types) {
+			List<Processor> procs=Processors.getAll(type);
+			for (Processor p : procs) {
+				try {
+					if (!copyProcessorToNewFormat(p)) {
+						log.error("error when trying to copy processor id = "+p.getId());
+					}
+				} catch(Exception e ){
+					log.error("got an error when trying to copy processor id = "+p.getId());
+					log.error(e.getMessage(),e);
+				}
+				
+			}
+		}
+	}
+	
+	/**
 	 * Parses through form items and builds a new Processor object from it. Then it is
 	 * added to the database. Also writes the processor file to disk included in the request.
 	 * @param form The form fields for the request
@@ -148,15 +188,8 @@ public class ProcessorManager extends HttpServlet {
 			
 			File archiveFile=null;
 			
-			File uniqueDir = new File(R.PROCESSOR_DIR, "" + newProc.getCommunityId());
-			//use the date to make sure the directory is unique
-			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-			uniqueDir = new File(uniqueDir, newProc.getName());
-			
-			
-			uniqueDir.mkdirs();
-			
-			
+			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
+
 			archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
 			
 			processorFile.write(archiveFile);
@@ -214,20 +247,13 @@ public class ProcessorManager extends HttpServlet {
 	 * @param fileName The name of the file to create in the unique directory
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
-	public static File getProcessorFilePath(int communityId, String fileName) {
-		// Get the base benchmark type directory and add community ID
-		File saveDir = new File(R.PROCESSOR_DIR, "" + communityId);			
-		
-		// Then add the unique datetime to the path to ensure it's unique
-		saveDir = new File(saveDir, shortDate.format(new Date()));
-		
-		// Create the dirs
-		saveDir.mkdirs();
-		
-		// Finally tack on the file name
-		saveDir = new File(saveDir, fileName);
-		
-		return saveDir;
+	public static File getProcessorDirectory(int communityId, String procName) {
+		File uniqueDir = new File(R.PROCESSOR_DIR, "" + communityId);
+		//use the date to make sure the directory is unique
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		uniqueDir = new File(uniqueDir, procName);
+		uniqueDir.mkdirs();
+		return uniqueDir;
 	}
 	
 	/**

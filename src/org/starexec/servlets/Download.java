@@ -145,11 +145,14 @@ public class Download extends HttpServlet {
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
 				shortName="Processor";
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				if (request.getParameter("procClass").equals("post")) {
-					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+					
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.POST);
-				} else {
-					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				} else if (request.getParameter("procClass").equals("pre")){
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.PRE);
+				}
+				else {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
 				}
 				if (proc.size()>0) {
@@ -235,7 +238,12 @@ public class Download extends HttpServlet {
 			
 			List<File> files=new LinkedList<File>();
 			for (Processor x : procs) {
-				files.add(new File(x.getFilePath()));
+				File newProc=new File(x.getFilePath());
+				if (newProc.exists()) {
+					files.add(new File(x.getFilePath()));
+				} else {
+					log.warn("processor with id = "+x.getId()+" exists in the database but not on disk");
+				}
 			}
 			if (files.size()>0) {
 				ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");

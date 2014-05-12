@@ -446,7 +446,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadProcessorRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams,false);
+		int valid= isValidUploadRequestNoURL(commandParams,true);
 		if (valid<0) {
 			return valid;
 		}
