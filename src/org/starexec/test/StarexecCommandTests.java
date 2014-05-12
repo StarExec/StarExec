@@ -150,7 +150,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Test
 	private void deleteProcessor() {
-		Processor testProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, testCommunity.getId());
+		Processor testProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
 		Assert.assertNotNull(testProc);
 		Assert.assertNotNull(Processors.get(testProc.getId()));
 		List<Integer> procs=new ArrayList<Integer>();
@@ -599,7 +599,7 @@ public class StarexecCommandTests extends TestSequence {
 		solverFile=ResourceLoader.getResource("CVC4.zip");
 		benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
 		configFile=ResourceLoader.getResource("CVC4Config.txt");
-		processorFile=ResourceLoader.getResource("postproc.sh");
+		processorFile=ResourceLoader.getResource("postproc.zip");
 		Assert.assertNotNull(space1);
 		Assert.assertNotNull(space2);
 		
@@ -607,7 +607,7 @@ public class StarexecCommandTests extends TestSequence {
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
-		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, testCommunity.getId());
+		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
 		Assert.assertNotNull(solver);
 
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());

@@ -60,7 +60,7 @@ public class StressTest {
 			ResourceLoader.loadSolverIntoDatabase(solverName, s.getId(), ownerId);
 			ResourceLoader.loadBenchmarksIntoDatabase(benchmarkName, s.getId(), ownerId);
 		}
-		Processor postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, Spaces.GetCommunityOfSpace(parentSpaceId));
+		Processor postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Spaces.GetCommunityOfSpace(parentSpaceId));
 		Job job=ResourceLoader.loadJobHierarchyIntoDatabase(parentSpaceId, ownerId, 1, postProc.getId());
 		
 		//Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large

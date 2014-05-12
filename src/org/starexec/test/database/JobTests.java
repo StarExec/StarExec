@@ -152,7 +152,7 @@ public class JobTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, Communities.getTestCommunity().getId());
+		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
