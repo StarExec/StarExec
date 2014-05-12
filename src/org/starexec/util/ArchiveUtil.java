@@ -412,6 +412,8 @@ public class ArchiveUtil {
 		String newFileName=baseName;
 		ZipOutputStream stream=new ZipOutputStream(output);
 		for (File f : paths) {
+			log.debug("adding new file to zip = "+f.getAbsolutePath());
+			log.debug("directory status = "+f.isDirectory());
 			if (baseName==null || baseName.length()==0) {
 				newFileName=f.getName();
 			} else {

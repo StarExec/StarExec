@@ -149,8 +149,10 @@ public class ProcessorManager extends HttpServlet {
 			File archiveFile=null;
 			
 			File uniqueDir = new File(R.PROCESSOR_DIR, "" + newProc.getCommunityId());
-			uniqueDir = new File(uniqueDir, newProc.getName());
+			//use the date to make sure the directory is unique
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+			uniqueDir = new File(uniqueDir, newProc.getName());
+			
 			
 			uniqueDir.mkdirs();
 			
