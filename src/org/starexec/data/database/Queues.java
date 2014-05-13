@@ -493,11 +493,13 @@ public class Queues {
 			
 			 results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
-
+			
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
 				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				log.debug(jp.getBench());
 				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 				Status s = new Status();
@@ -507,7 +509,7 @@ public class Queues {
 				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
 				returnList.add(jp);
 			}			
-
+			log.debug("the returnlist had "+returnList.size()+" items");
 			Common.safeClose(results);
 			return returnList;			
 			

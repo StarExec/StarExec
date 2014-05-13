@@ -1663,7 +1663,7 @@ public class RESTHelpers {
     		// Create the benchmark link
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
-    		sb.append(j.getBench().getDescription());
+    		sb.append(j.getBench().getDescription()); // NULL POINTER HERE
     		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
     		sb.append(j.getBench().getId());
     		sb.append("\" target=\"_blank\">");
