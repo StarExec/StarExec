@@ -498,9 +498,11 @@ public class Queues {
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
-				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
+				
+				jp.setBench(Benchmarks.getIncludeDeletedAndRecycled(results.getInt("bench_id"),false));
 				log.debug(jp.getBench());
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
+				
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),true));
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 				Status s = new Status();
 
