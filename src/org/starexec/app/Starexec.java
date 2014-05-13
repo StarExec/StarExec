@@ -221,7 +221,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		}
 		//TODO: this is a one time task! We should remove it after we have run it on production!
-		//ProcessorManager.copyAllProcessorsToNewFormat();
+		ProcessorManager.copyAllProcessorsToNewFormat();
 		
 	}
 	
