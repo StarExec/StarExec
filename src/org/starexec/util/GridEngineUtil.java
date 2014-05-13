@@ -648,7 +648,7 @@ public class GridEngineUtil {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue30.q", envp);
+			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 					
 			//Transfer nodes out of @allhosts
 			for (WorkerNode n : transferNodes) {
@@ -800,7 +800,7 @@ public class GridEngineUtil {
 			e.printStackTrace();
 			return false;
 		}
-		Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue30.q", envp);
+		Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 					
 		
 
