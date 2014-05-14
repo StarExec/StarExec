@@ -559,7 +559,7 @@ public class Benchmarks {
 
 			try {
 				// Run the processor on the benchmark file
-				log.info("executing - " + p.getFilePath() + " \"" + b.getPath() + "\"");
+				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
 				procCmd[0] = p.getExecutablePath();
 				procCmd[1] = b.getPath();
@@ -606,7 +606,7 @@ public class Benchmarks {
 
 			try {
 				// Run the processor on the benchmark file
-				log.info("executing - " + p.getFilePath() + " \"" + b.getPath() + "\"");
+				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
 				
 				procCmd[0] = p.getExecutablePath();

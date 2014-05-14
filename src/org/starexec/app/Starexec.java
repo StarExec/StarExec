@@ -222,7 +222,7 @@ public class Starexec implements ServletContextListener {
 		}
 		//TODO: this is a one time task! We should remove it after we have run it on production!
 		ProcessorManager.copyAllProcessorsToNewFormat();
-		
+		ProcessorManager.setAllProcessorsExecutable();
 	}
 	
 }

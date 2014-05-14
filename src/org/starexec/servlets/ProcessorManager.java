@@ -168,6 +168,25 @@ public class ProcessorManager extends HttpServlet {
 	}
 	
 	/**
+	 * Sets all processors that are in the proper new format to executable
+	 */
+	public static void setAllProcessorsExecutable() {
+		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
+		for (ProcessorType type : types) {
+			List<Processor> procs=Processors.getAll(type);
+			for (Processor p : procs) {
+				
+				File exec=new File(p.getExecutablePath());
+				if (!exec.setExecutable(true, false)) {			
+					log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
+				}
+				
+				
+			}
+		}
+	}
+	
+	/**
 	 * Parses through form items and builds a new Processor object from it. Then it is
 	 * added to the database. Also writes the processor file to disk included in the request.
 	 * @param form The form fields for the request
