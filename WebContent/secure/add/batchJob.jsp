@@ -36,6 +36,9 @@
 				<tr>
 					<td><a href="../../public/batchJobSchema.xsd">view the schema here</a></td>
 				</tr>
+				<tr>
+					<td><a href="../../public/ExampleJob.xml">view an example file here</a></td>
+				</tr>
 			</table>																	
 		</fieldset>
 	</form>

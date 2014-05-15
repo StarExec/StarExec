@@ -216,14 +216,20 @@
 
 		<!-- Update the job schema to use the current server and app -->
 		<delete file="WebContent/public/batchJobSchema.xsd" />
+		<delete file="WebContent/public/ExampleJob.xml" />
 		<copy todir="WebContent/public/">
 			<fileset dir="batch-job-schema">
 				<include name="batchJobSchema.xsd" />
+				<include name="ExampleJob.xml" />
 			</fileset>
 		</copy>
 		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
 				replace="${server-name}/${appname}/" byline="false" />
 		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+		<replaceregexp file="WebContent/public/ExampleJob.xml" match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false" />
+		<replaceregexp file="WebContent/public/ExampleJob.xml" match="www.starexec.org/starexec/" 
 				replace="${server-name}/${appname}/" byline="false" />
 
 		<!-- Update the log4j config file to only record INFO level events  -->

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<tns:Jobs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.starexec.org/starexec/public/batchJobSchema.xsd batchJobSchema.xsd" xmlns:tns="https://www.starexec.org/starexec/public/batchJobSchema.xsd">
+<Job name="Example Job Name" cpu-timeout="10" wallclock-timeout="20" queue-id="1" mem-limit="1.0" start-paused="true" description="This example job runs solver config 1 with 6 benchmarks on all.q.">
+<JobPair bench-id="1" config-id="1"></JobPair>
+<JobPair bench-id="3" config-id="1"></JobPair>
+<JobPair bench-id="4" config-id="1"></JobPair>
+<JobPair bench-id="5" config-id="1"></JobPair>
+<JobPair bench-id="8" config-id="1"></JobPair>
+<JobPair bench-id="9" config-id="1"></JobPair>
+</Job>
+</tns:Jobs>
