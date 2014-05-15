@@ -57,9 +57,7 @@ function cleanWorkspace {
 
 	# Clear the output directory	
 	safeRm output-directory "$STAREXEC_OUT_DIR"
-	
-	
-	
+
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
 

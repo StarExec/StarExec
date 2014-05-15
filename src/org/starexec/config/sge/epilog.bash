@@ -84,9 +84,10 @@ function copyOutput {
 	log "job output copy complete - now sending stats"
 	updateStats $WATCHFILE
 	log "getting postprocessor"
-	cp $POST_PROCESSOR_PATH $STAREXEC_OUT_DIR/postProcessor
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
+	cp -r "$POST_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/postProcessor
 	log "executing post processor"
-	$STAREXEC_OUT_DIR/postProcessor $STAREXEC_OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$STAREXEC_OUT_DIR"/attributes.txt
+	$STAREXEC_OUT_DIR/postProcessor/process $STAREXEC_OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$STAREXEC_OUT_DIR"/attributes.txt
 	log "processing attributes"
 	#cat $STAREXEC_OUT_DIR/attributes.txt
 	processAttributes $STAREXEC_OUT_DIR/attributes.txt

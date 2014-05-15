@@ -56,6 +56,10 @@ LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
+
+# Path to where the pre-processor will be copied
+LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
+
 # Path to where benchmark will be stored after pre-processing
 LOCAL_PROCESSED_BENCH_DIR="$WORKING_DIR/procBenchmark"
 
@@ -158,9 +162,8 @@ _SOLVER_DIR)"
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-		cp "$PRE_PROCESSOR_PATH" "$STAREXEC_OUT_DIR/preProcessor"
 		log "executing pre processor"
-		"$STAREXEC_OUT_DIR/preProcessor" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
+		"$PRE_PROCESSOR_PATH/process" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
 		#use the processed benchmark in subsequent steps
 		LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
 	fi
@@ -174,7 +177,7 @@ _SOLVER_DIR)"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
 		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-			"$STAREXEC_OUT_DIR/preProcessor" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+			"$PRE_PROCESSOR_PATH/process" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		fi
