@@ -140,6 +140,7 @@ public class JobUtil {
 		
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
+		job.setDescription(jobElement.getAttribute("description"));
 		job.setUserId(userId);
 		
 		String jobId = jobElement.getAttribute("id");

@@ -26,7 +26,9 @@
     	
     	<!-- The job name must be unique to the space -->
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
-    	    	
+    	
+    	<attribute name="description" type="tns:Description" use="optional"></attribute>
+    	
     	<!-- You can find the id of a queue on the Cluster=>Status page -->
     	<attribute name="queue-id" type="int" use="required"></attribute>
     	
@@ -48,6 +50,12 @@
     	<!-- A configuration id uniquely identifies a solver, so no more is required -->
     	<attribute name="config-id" type="int" use="required"></attribute>
     </complexType>
+    
+    <simpleType name="Description">
+    	<restriction base="string">
+    		<pattern value="[^&lt;&gt;&quot;&apos;)(&amp;&#37;&#43;&#45;]{0,1024}" />
+    	</restriction>
+    </simpleType>
     
     <simpleType name="PrimitiveName">
   		<restriction base="string">
