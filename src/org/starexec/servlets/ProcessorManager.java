@@ -136,12 +136,17 @@ public class ProcessorManager extends HttpServlet {
 	 * @throws Exception
 	 */
 	private static boolean copyProcessorToNewFormat(Processor p) throws Exception {
-		File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
+		
 		File curFile=new File(p.getFilePath());
-		if (curFile.exists() && newDirectory.exists() && !curFile.isDirectory()) {
-			File destination=new File(newDirectory,R.PROCSSESSOR_RUN_SCRIPT);
-			FileUtils.copyFile(curFile,destination);
-			return Processors.updateFilePath(p.getId(), newDirectory.getAbsolutePath());
+		if (curFile.exists() && !curFile.isDirectory()) {
+			File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
+			if (newDirectory.exists()) {
+				File destination=new File(newDirectory,R.PROCSSESSOR_RUN_SCRIPT);
+				FileUtils.copyFile(curFile,destination);
+				return Processors.updateFilePath(p.getId(), newDirectory.getAbsolutePath());
+			}
+			
+			
 		}
 		return false;
 	}

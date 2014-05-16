@@ -257,11 +257,11 @@ public class Util {
 	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
 		Runtime r = Runtime.getRuntime();
 		//the final, empty string should be the directory to apply the command to
-		String[] chownCommand = {"sudo", "-u", "tomcat","chown", "-R", "sandbox", ""};
+		String[] chownCommand = {"chown", "-R", "sandbox", ""};
 		
 		//first, give the sandbox user ownership of every given directory
 		for (File f : authorizedDirs) {
-			chownCommand[4]=f.getAbsolutePath();
+			chownCommand[3]=f.getAbsolutePath();
 			Util.executeCommand(chownCommand,envp);
 		}
 		
@@ -313,10 +313,10 @@ public class Util {
 		    }
 		    
 		    //give back ownership of everything to tomcat
-		    chownCommand =new String[] {"sudo", "-u", "tomcat","chown", "-R", "tomcat", ""};
+		    chownCommand =new String[] {"chown", "-R", "tomcat", ""};
 		    
 		    for (File f : authorizedDirs) {
-				chownCommand[4]=f.getAbsolutePath();
+				chownCommand[3]=f.getAbsolutePath();
 				Util.executeCommand(chownCommand,envp);
 			}
 		    return reader;
