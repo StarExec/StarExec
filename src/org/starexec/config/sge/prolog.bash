@@ -164,6 +164,7 @@ _SOLVER_DIR)"
 	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
 		mkdir $STAREXEC_OUT_DIR/preProcessor
 		cp -r "$PRE_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/preProcessor
+		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
 		log "executing pre processor"
 		"$STAREXEC_OUT_DIR/preProcessor/process" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
 		#use the processed benchmark in subsequent steps
