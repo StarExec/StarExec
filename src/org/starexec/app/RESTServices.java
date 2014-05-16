@@ -69,7 +69,7 @@ import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
-import org.starexec.util.LogManager;
+import org.starexec.util.LoggingManager;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -3222,19 +3222,19 @@ public class RESTServices {
 		}
 		
 		if (level.equalsIgnoreCase("trace")) {
-			LogManager.setLoggingLevel(Level.TRACE);
+			LoggingManager.setLoggingLevel(Level.TRACE);
 		} else if (level.equalsIgnoreCase("debug")) {
-			LogManager.setLoggingLevel(Level.DEBUG);
+			LoggingManager.setLoggingLevel(Level.DEBUG);
 		} else if (level.equalsIgnoreCase("info")) {
-			LogManager.setLoggingLevel(Level.INFO);
+			LoggingManager.setLoggingLevel(Level.INFO);
 		} else if (level.equalsIgnoreCase("error")) {
-			LogManager.setLoggingLevel(Level.ERROR);
+			LoggingManager.setLoggingLevel(Level.ERROR);
 		} else if(level.equalsIgnoreCase("fatal")) {
-			LogManager.setLoggingLevel(Level.FATAL);
+			LoggingManager.setLoggingLevel(Level.FATAL);
 		} else if (level.equalsIgnoreCase("off")) {
-			LogManager.setLoggingLevel(Level.OFF);
+			LoggingManager.setLoggingLevel(Level.OFF);
 		} else if (level.equalsIgnoreCase("warn")) {
-			LogManager.setLoggingLevel(Level.WARN);
+			LoggingManager.setLoggingLevel(Level.WARN);
 		} else {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}

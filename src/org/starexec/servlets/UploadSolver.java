@@ -264,7 +264,7 @@ public class UploadSolver extends HttpServlet {
 			    } catch (FileNotFoundException e) {
 			        log.debug("Archive description method selected, but starexec_description was not found");
 			    } catch (IOException e) {
-			    	e.printStackTrace();
+			    	log.error(e.getMessage(),e);
 			    }
 			    if (!Validator.isValidPrimDescription(strUnzipped)) {
 			    	returnArray[0] = -3;
