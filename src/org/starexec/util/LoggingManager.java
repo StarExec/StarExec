@@ -10,6 +10,9 @@ public class LoggingManager {
 		Logger.getRootLogger().setLevel(level);
 	}
 	
+	public static void setLoggingLevelForClass(Level level, String className) {
+		Logger.getLogger(className).setLevel(level);
+	}
 	
 	
 }

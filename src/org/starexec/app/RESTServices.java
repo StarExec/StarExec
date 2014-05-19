@@ -3210,6 +3210,40 @@ public class RESTServices {
 			
 		}
 	}
+	
+	//Allows the administrator to set the current logging level for a specific class.
+	@POST
+	@Path("/logging/{level}/{className}")
+	@Produces("application/json")
+	public String setLoggingLevel(@PathParam("level") String level, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserChangeLogging(userId);
+		if (status!=0) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		if (level.equalsIgnoreCase("trace")) {
+			LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
+		} else if (level.equalsIgnoreCase("debug")) {
+			LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
+		} else if (level.equalsIgnoreCase("info")) {
+			LoggingManager.setLoggingLevelForClass(Level.INFO,className);
+		} else if (level.equalsIgnoreCase("error")) {
+			LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
+		} else if(level.equalsIgnoreCase("fatal")) {
+			LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
+		} else if (level.equalsIgnoreCase("off")) {
+			LoggingManager.setLoggingLevelForClass(Level.OFF,className);
+		} else if (level.equalsIgnoreCase("warn")) {
+			LoggingManager.setLoggingLevelForClass(Level.WARN,className);
+		} else if (level.equalsIgnoreCase("clear")) {
+			LoggingManager.setLoggingLevelForClass(null,className);
+		} else {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		return gson.toJson(0);
+	}
+	
 	//Allows the administrator to set the current logging level across the entire system.
 	@POST
 	@Path("/logging/{level}")

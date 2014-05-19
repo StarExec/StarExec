@@ -12,6 +12,7 @@
 					</tr>
 				</thead>
 				<tbody>
+					<tr id="clearRow" value="clear"><td>clear</td></tr>
 					<tr id="offRow" value="off"><td>off</td></tr>
 					<tr id="traceRow" value="trace"><td>trace</td></tr>
 					<tr id="debugRow" value="debug"><td>debug</td></tr>
@@ -25,7 +26,7 @@
 	</fieldset>
 		<fieldset id="actionField">
 			<legend>actions</legend>
-			
+			<input id="className" type="text"/>
 			<button id="applyAll">Apply Level</button>	
 			<button id="applyToClass">Apply Level to Class</button>
 		</fieldset>		

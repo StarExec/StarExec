@@ -35,15 +35,12 @@ function initUI(){
 				},
 				"json"
 		);
-		
-		
 	});
-	/*
+	
 	$("#applyToClass").click(function() {
 		value=getSelectedRow(levelTable);
-
 		$.post(
-			starexecRoot+"services/logging/"+value[0],
+			starexecRoot+"services/logging/"+value[0]+"/"+$("#className").val(),
 			{},
 			function(returnCode) {
 				if (returnCode=="0") {
@@ -54,8 +51,7 @@ function initUI(){
 			},
 			"json"
 		);
-		unselectAllRows(levelTable);
-	});*/
+	});
 	
 	
 	levelTable=$('#tableLevels').dataTable( {
