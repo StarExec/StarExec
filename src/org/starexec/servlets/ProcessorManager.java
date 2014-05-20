@@ -148,7 +148,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			
 		}
-		return false;
+		return true; //we didn't need to do anything, so this is a success
 	}
 	
 	/**
