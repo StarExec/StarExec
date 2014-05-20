@@ -894,14 +894,16 @@ public class Benchmarks {
 					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
 					// Make sure that the benchmark has a unique name in the space.
 					if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
-					    Uploads.setErrorMessage(statusId, "\""+b.getName() + "\" is not a unique name in the space.");
-					    return null;
+					    String msg = "\""+b.getName() + "\" is not a unique name in the space.";
+					    Uploads.setErrorMessage(statusId, msg);
+					    throw new Exception(msg);
 					}
 
 					space.addBenchmark(b);
 				} else {
-				    Uploads.setErrorMessage(statusId, "\""+f.getName() + "\" is not accepted as a legal benchmark name.");
-				    return null;
+				    String msg = "\""+f.getName() + "\" is not accepted as a legal benchmark name.";
+				    Uploads.setErrorMessage(statusId, msg);
+				    throw new Exception(msg);
 				}
 
 			}
