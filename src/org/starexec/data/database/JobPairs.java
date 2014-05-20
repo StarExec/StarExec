@@ -130,20 +130,21 @@ public class JobPairs {
 	 * @param processorId The ID of the processor in question
 	 * @return The properties on success, or null otherwise
 	 */
-	
+	//TODO: Sandbox this
 	private static Properties runPostProcessorOnPair(int pairId, int processorId) {
 		BufferedReader reader = null;
 		try {
 			Processor p=Processors.get(processorId);
 			// Run the processor on the benchmark file
 			String [] procCmd = new String[3];
-			procCmd[0] = p.getExecutablePath();
+			procCmd[0] = "./process";
 			
 			JobPair pair=JobPairs.getPairDetailed(pairId);
 			procCmd[1] = JobPairs.getFilePath(pair);
 			
 			procCmd[2] = pair.getBench().getPath();
-			reader = Util.executeCommand(procCmd,null);
+			reader = Util.executeCommandInDirectory(procCmd, null, new File(p.getFilePath()));
+			//reader = Util.executeCommand(procCmd,null);
 			
 			// Load results into a properties file
 			Properties prop = new Properties();

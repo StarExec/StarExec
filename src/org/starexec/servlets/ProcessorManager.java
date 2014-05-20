@@ -171,6 +171,23 @@ public class ProcessorManager extends HttpServlet {
 			}
 		}
 	}
+	/**
+	 * Given a directory, recursively sets all files in the directory as executable
+	 * @param directory The directory in quesiton
+	 */
+	private static void setAllFilesExecutable(File directory) {
+		for (File f : directory.listFiles()) {
+			if (f.isDirectory()) {
+				setAllFilesExecutable(f);
+			} else {
+				if (!f.setExecutable(true,false)) {
+					log.warn("Could not set processor as executable: " + f.getAbsolutePath());
+				} else {
+					log.debug("successfully set processor as executable: "+f.getAbsolutePath());
+				}
+			}
+		}
+	}
 	
 	/**
 	 * Sets all processors that are in the proper new format to executable
@@ -180,11 +197,11 @@ public class ProcessorManager extends HttpServlet {
 		for (ProcessorType type : types) {
 			List<Processor> procs=Processors.getAll(type);
 			for (Processor p : procs) {
-				
-				File exec=new File(p.getExecutablePath());
-				if (!exec.setExecutable(true, false)) {			
-					log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
-				}
+				setAllFilesExecutable(new File(p.getFilePath()));
+				//File exec=new File(p.getExecutablePath());
+				//if (!exec.setExecutable(true, false)) {			
+				//	log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
+				//}
 				
 				
 			}
