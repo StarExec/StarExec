@@ -165,8 +165,9 @@ _SOLVER_DIR)"
 		mkdir $STAREXEC_OUT_DIR/preProcessor
 		cp -r "$PRE_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/preProcessor
 		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
+		cd "$STAREXEC_OUT_DIR"/preProcessor
 		log "executing pre processor"
-		"$STAREXEC_OUT_DIR/preProcessor/process" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
+		./process "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
 		#use the processed benchmark in subsequent steps
 		LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
 	fi
@@ -180,7 +181,7 @@ _SOLVER_DIR)"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
 		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-			"$STAREXEC_OUT_DIR/preProcessor/process" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		fi

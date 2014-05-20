@@ -88,7 +88,6 @@ function copyOutput {
 		mkdir $STAREXEC_OUT_DIR/postProcessor
 		cp -r "$POST_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/postProcessor
 		chmod -R gu+rwx $STAREXEC_OUT_DIR/postProcessor
-		ls -R -l $STAREXEC_OUT_DIR/postProcessor
 		cd "$STAREXEC_OUT_DIR"/postProcessor
 		log "executing post processor"
 		./process $STAREXEC_OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$STAREXEC_OUT_DIR"/attributes.txt
