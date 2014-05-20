@@ -51,11 +51,6 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 #TODO: This will need to be set to either 1 or 2 depending on what sandbox we're using
 SANDBOX=1;
 
-
-
-
-
-
 if [ $SANDBOX -eq 1 ]
 then
 	cd /export/starexec/sandbox/solver/bin

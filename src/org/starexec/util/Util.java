@@ -253,7 +253,8 @@ public class Util {
 		return form;
 	}
 	
-	//TODO: Run this command as the sandboxed user with permissions only granted recursively to everything in authorizedDirs
+	
+	
 	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
 		Runtime r = Runtime.getRuntime();
 		//the final, empty string should be the directory to apply the command to
