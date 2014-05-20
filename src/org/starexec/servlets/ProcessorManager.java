@@ -197,11 +197,17 @@ public class ProcessorManager extends HttpServlet {
 		for (ProcessorType type : types) {
 			List<Processor> procs=Processors.getAll(type);
 			for (Processor p : procs) {
-				setAllFilesExecutable(new File(p.getFilePath()));
-				//File exec=new File(p.getExecutablePath());
-				//if (!exec.setExecutable(true, false)) {			
-				//	log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
-				//}
+				try {
+					setAllFilesExecutable(new File(p.getFilePath()));
+					//File exec=new File(p.getExecutablePath());
+					//if (!exec.setExecutable(true, false)) {			
+					//	log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
+					//}
+				} catch (Exception e) {
+					log.error("error setting processor executable id = "+p.getId());
+					log.error(e.getMessage(),e);
+				}
+				
 				
 				
 			}
