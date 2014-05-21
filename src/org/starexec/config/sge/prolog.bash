@@ -75,6 +75,9 @@ BENCH_NAME="${BENCH_PATH##*/}"
 # The path to the benchmark on the execution host
 LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
 
+# The path to the benchmark on the execution host
+LOCAL_PROCESSED_BENCH_PATH="$LOCAL_PROCESSED_BENCH_DIR/$BENCH_NAME"
+
 # The path to the config run script on the execution host
 CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
 
@@ -167,9 +170,10 @@ _SOLVER_DIR)"
 		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
 		cd "$STAREXEC_OUT_DIR"/preProcessor
 		log "executing pre processor"
-		./process "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
+		./process "$LOCAL_BENCH_PATH" > "$LOCAL_PROCESSED_BENCH_PATH"
 		#use the processed benchmark in subsequent steps
-		LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
+		rm "$LOCAL_BENCH_PATH"
+		mv "$LOCAL_PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
 	fi
 	
 	
