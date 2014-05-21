@@ -384,8 +384,12 @@ public class Validator {
 			return valid;
 		}
 		
+		
 		if (!paramsExist(new String[]{R.PARAM_BENCHTYPE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
+		}
+		if (!isValidPosInteger(commandParams.get(R.PARAM_BENCHTYPE))) {
+			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedUploadBenchmarksParams,commandParams);
 		return 0;

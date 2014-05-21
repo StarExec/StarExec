@@ -481,7 +481,6 @@ class ArgumentParser {
 	
 	protected int uploadBenchmarks(HashMap<String, String> commandParams) {
 		int valid=Validator.isValidUploadBenchmarkRequest(commandParams);
-		
 		if (valid<0) {
 			return valid;
 		}
@@ -531,7 +530,6 @@ class ArgumentParser {
 				p.setPermissionOn(x);
 			}
 		}
-		
 		return con.uploadBenchmarks(commandParams.get(R.PARAM_FILE), Integer.parseInt(type), Integer.parseInt(space), 
 				upMethod, p, url, downloadable,
 				hierarchy, dependency, depLinked,Integer.parseInt(depRoot));
