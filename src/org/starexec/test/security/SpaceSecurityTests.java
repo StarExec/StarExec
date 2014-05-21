@@ -164,6 +164,7 @@ public class SpaceSecurityTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		space1=ResourceLoader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
+		Assert.assertTrue(Permissions.get(owner.getId(), space1.getId()).isLeader() );
 		publicSpace=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), testCommunity.getId());
 		Users.associate(nonOwner.getId(), space2.getId());
 		Users.associate(noPerms.getId(),space2.getId());
