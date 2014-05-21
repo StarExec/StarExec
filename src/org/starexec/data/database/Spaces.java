@@ -83,8 +83,10 @@ public class Spaces {
 			procAddUser.setInt(2, newSpaceId);			
 			procAddUser.executeUpdate();
 			
+			Permission perm=new Permission(true);
+			perm.setLeader(true);
 			// Set maximal permissions for the user who added the space	
-			Permissions.set(userId, newSpaceId, new Permission(true), con);
+			Permissions.set(userId, newSpaceId, perm, con);
 			
 			//Do we necessarily want to end the transaction here?  I don't think we do.
 			//Common.endTransaction(con);
