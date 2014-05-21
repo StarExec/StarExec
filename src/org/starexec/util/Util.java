@@ -254,8 +254,15 @@ public class Util {
 	}
 	
 	
-	
-	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
+	/**
+	 * 
+	 * @param c
+	 * @param envp
+	 * @param authorizedDirs
+	 * @param workingDirectory The working directory for the command. If null, the working directory will not be changed
+	 * @return
+	 */
+	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs, File workingDirectory) {
 		Runtime r = Runtime.getRuntime();
 		//the final, empty string should be the directory to apply the command to
 		String[] chownCommand = {"sudo", "-u", "tomcat","chown", "-R", "sandbox", ""};
@@ -289,8 +296,8 @@ public class Util {
 			}
 
 			log.info(b.toString());
-			    
-			p = r.exec(command, envp);
+			
+			p = r.exec(command, envp,workingDirectory);
 		    
 		    InputStream in = p.getInputStream();
 		    BufferedInputStream buf = new BufferedInputStream(in);

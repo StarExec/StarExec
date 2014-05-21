@@ -550,6 +550,8 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
+	
+	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
@@ -561,9 +563,9 @@ public class Benchmarks {
 				// Run the processor on the benchmark file
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
-				procCmd[0] = p.getExecutablePath();
+				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 				procCmd[1] = b.getPath();
-				reader = Util.executeCommand(procCmd,null);
+				reader = Util.executeCommandInDirectory(procCmd,null,new File(p.getFilePath()));
 				if (reader == null){
 					log.error("Reader is null!");
 				}
@@ -597,6 +599,7 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
+	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
@@ -609,9 +612,9 @@ public class Benchmarks {
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
 				
-				procCmd[0] = p.getExecutablePath();
+				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 				procCmd[1] = b.getPath();
-				reader = Util.executeCommand(procCmd,null);
+				reader = Util.executeCommandInDirectory(procCmd,null,new File(p.getFilePath()));
 				log.debug("reader is null = " + (reader == null));
 				if (reader == null){
 					log.error("Reader is null!");

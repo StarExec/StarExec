@@ -26,8 +26,7 @@
 			//This is for the currently shuttered select from hierarchy
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
-			//TODO: put preprocessors there
-			request.setAttribute("preProcs", null);
+			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));

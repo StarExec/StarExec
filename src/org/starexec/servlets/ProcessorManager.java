@@ -251,9 +251,10 @@ public class ProcessorManager extends HttpServlet {
 				log.warn("the new processor did not have process script!");
 				return null;
 			}
-			if (!processorScript.setExecutable(true, false)) {			
-				log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
-			}
+			ProcessorManager.setAllFilesExecutable(new File(newProc.getFilePath()));
+			//if (!processorScript.setExecutable(true, false)) {			
+			//	log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
+			//}
 			
 	
 			log.info(String.format("Wrote new %s processor to %s for community %d", procType, uniqueDir.getAbsolutePath(), newProc.getCommunityId()));					

@@ -325,7 +325,7 @@ function attachFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
-	var formsToValidate = ['#addPreProcessorForm', '#newTypeForm'];
+	var formsToValidate = ['#addPostProcessorForm','#addPreProcessorForm', '#newTypeForm'];
 	
 	$.each(formsToValidate, function(i, selector) {
 		$(selector).validate({
@@ -337,7 +337,6 @@ function attachFormValidation(){
 					
 				},
 				desc: {
-					required : true,	
 					maxlength: $("#procDesc").attr("length"),
 					regex : getPrimDescRegex()
 					
