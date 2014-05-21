@@ -20,6 +20,9 @@ public abstract class RobustRunnable implements Runnable {
     	catch (Throwable e) {
     		log.warn(name+" caught throwable: "+e,e);
     	}
+	finally {
+	    log.info(name + " completed executing.");
+	}
     }
 }
 	

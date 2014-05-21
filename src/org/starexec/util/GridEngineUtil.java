@@ -401,52 +401,59 @@ public class GridEngineUtil {
     	java.util.Date today = new java.util.Date();
 		//java.util.Date today = new java.util.Date(113, 11, 10); // December 10, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
-		if (queueReservations != null) {
-			for (QueueRequest req : queueReservations) {
-				SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+		if (queueReservations == null) 
+		    log.info("No reservations found.");
+		else {
+		    for (QueueRequest req : queueReservations) {
+			log.info("Checking reservation for queue "+req.getQueueName());
+
+			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
 				
 		        Calendar cal = Calendar.getInstance();
 		        cal.setTime(today);
 		        cal.add(Calendar.DATE, -1);
 		        java.util.Date yesterday = cal.getTime();
 				
-				/**
-				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
-				 */
-				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
-				if (end_was_yesterday) {
-					cancelReservation(req);
-				}
-				
-				
-				/**
-				 * if today is when the reservation is starting
-				 */
-				boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
-				if (start_is_today) {
-					startReservation(req);
-				}
-				
-				int queueId = Queues.getIdByName(req.getQueueName());
-				int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
-				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
-				int actualNodeCount = actualNodes.size();
-				String queueName = Queues.getNameById(queueId);
-				String[] split = queueName.split("\\.");
-				String shortQueueName = split[0];
-
-
-				/**The Following code is for when the node count is changing throughout the reservation**/
-				//When the node count is decreasing for this reservation on this day
-				//Need to move a certain number of nodes back to all.q
-				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
-				
-				//When the node count is increasing for this reservation on this day
-				//Need to move a certain number of nodes from all.q to this queue
-				transferUnderflowNodes(req, shortQueueName, nodeCount, actualNodeCount);
-				
+			/**
+			 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
+			 */
+			boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
+			if (end_was_yesterday) {
+			    log.info("Reservation has ended for queue "+req.getQueueName()+".");
+			    cancelReservation(req);
 			}
+				
+				
+			/**
+			 * if today is when the reservation is starting
+			 */
+			boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
+			if (start_is_today) {
+			    log.info("Reservation begins today for queue "+req.getQueueName()+".");
+			    startReservation(req);
+			}
+				
+			int queueId = Queues.getIdByName(req.getQueueName());
+			int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+			List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
+			int actualNodeCount = actualNodes.size();
+			String queueName = Queues.getNameById(queueId);
+			String[] split = queueName.split("\\.");
+			String shortQueueName = split[0];
+
+
+			/**The Following code is for when the node count is changing throughout the reservation**/
+			//When the node count is decreasing for this reservation on this day
+			//Need to move a certain number of nodes back to all.q
+			transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+				
+			//When the node count is increasing for this reservation on this day
+			//Need to move a certain number of nodes from all.q to this queue
+			transferUnderflowNodes(req, shortQueueName, nodeCount, actualNodeCount);
+				
+		    }
 		}
+		log.info("Completed checking queue reservation.");
     }
 		
 	private static void transferOverflowNodes(QueueRequest req, String queueName, int nodeCount, int actualNodeCount, List<WorkerNode> actualNodes) {
