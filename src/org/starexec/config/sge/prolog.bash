@@ -60,9 +60,6 @@ LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 # Path to where the pre-processor will be copied
 LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 
-# Path to where benchmark will be stored after pre-processing
-LOCAL_PROCESSED_BENCH_DIR="$WORKING_DIR/procBenchmark"
-
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
 
@@ -76,7 +73,7 @@ BENCH_NAME="${BENCH_PATH##*/}"
 LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
 
 # The path to the benchmark on the execution host
-LOCAL_PROCESSED_BENCH_PATH="$LOCAL_PROCESSED_BENCH_DIR/$BENCH_NAME"
+PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 
 # The path to the config run script on the execution host
 CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
@@ -170,10 +167,10 @@ _SOLVER_DIR)"
 		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
 		cd "$STAREXEC_OUT_DIR"/preProcessor
 		log "executing pre processor"
-		./process "$LOCAL_BENCH_PATH" > "$LOCAL_PROCESSED_BENCH_PATH"
+		./process "$LOCAL_BENCH_PATH" > "$PROCESSED_BENCH_PATH"
 		#use the processed benchmark in subsequent steps
 		rm "$LOCAL_BENCH_PATH"
-		mv "$LOCAL_PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
 	fi
 	
 	
