@@ -772,7 +772,7 @@ public class Benchmarks {
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
-
+			
 			Util.safeDeleteDirectory(procedure.getString(2));		
 			return true;
 		} catch (Exception e){		

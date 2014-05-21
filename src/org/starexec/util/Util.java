@@ -757,7 +757,7 @@ public class Util {
     }
     
     /**
-     * Attempts to delete the directory specified the given path without
+     * Attempts to delete the directory or file specified the given path without
      * throwing any errors
      * @param path The path to the directory to delete
      * @return True on success, false otherwise
@@ -765,7 +765,12 @@ public class Util {
      */
     public static boolean safeDeleteDirectory(String path) {
     	try {
-    		FileUtils.deleteDirectory(new File(path));
+    		File file=new File(path);
+    		if (file.isDirectory()) {
+        		FileUtils.deleteDirectory(file);
+    		} else {
+    			FileUtils.deleteQuietly(file);
+    		}
     	} catch (Exception e) {
     		log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}
