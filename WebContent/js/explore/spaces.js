@@ -2066,14 +2066,14 @@ function updateButtonIds(id) {
 	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
-	$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
+	//$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
 	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 	
 	$("#downloadXML").unbind("click");
 	$('#downloadXML').click(function(e) {
-		e.preventDefault();
+		//e.preventDefault();
 		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
 
 		$('#dialog-spacexml-attributes').dialog({
@@ -2083,11 +2083,11 @@ function updateButtonIds(id) {
 			buttons: {
 				'yes': function() {
 					$('#dialog-spacexml-attributes').dialog('close');
-					createDownloadSpaceXMLRequest(true);		
+					createDownloadSpaceXMLRequest(true,id);		
 				},
 				"no": function() {
 					$('#dialog-spacexml-attributes').dialog('close');
-					createDownloadSpaceXMLRequest(false);		
+					createDownloadSpaceXMLRequest(false,id);		
 				},
 				"cancel": function() {
 					$(this).dialog("close");
@@ -2131,12 +2131,13 @@ function updateButtonIds(id) {
 	log('updated action button space ids to ' + id);
 }
 
-function createDownloadSpaceXMLRequest(includeAttrs) {
+function createDownloadSpaceXMLRequest(includeAttrs,id) {
   createDialog("Processing your download request, please wait. This will take some time for large spaces.");
   token=Math.floor(Math.random()*100000000);
-  href = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs;
+  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs;
   destroyOnReturn(token);
-  window.location.href = href;
+  window.location.href = myhref;
+ 
 }
 
 function createDownloadSpacePost(hierarchy,id) {
