@@ -125,12 +125,14 @@ public class GridEngineUtil {
 	private static void loadQueueDetails() {
 		BufferedReader queueResults = null;
 
+		log.info("Loading queue details into the db");
 		try {			
 			// Execute the SGE command to get the list of queues
 			queueResults = Util.executeCommand(R.QUEUE_LIST_COMMAND);
 
 			if(queueResults == null) {
 				// If the command failed, return now	
+				log.warn("Command to get queue details failed.");
 				return;
 			}
 
@@ -141,6 +143,8 @@ public class GridEngineUtil {
 			String line;		
 			while((line = queueResults.readLine()) != null) {
 				String name = line;
+
+				log.debug("Loading details for queue "+name);
 
 				// In the database, update the attributes for the queue
 				Queues.update(name,  GridEngineUtil.getQueueDetails(name));
@@ -287,12 +291,14 @@ public class GridEngineUtil {
 	public static synchronized void loadWorkerNodes() {
 		BufferedReader nodeResults = null;
 
+		log.info("Loading worker nodes into the db");
 		try {			
 			// Execute the SGE command to get the node list
 			nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
 
 			if(nodeResults == null) {
 				// If the command failed, return now				
+				log.warn("Command to get node list failed.");
 				return;
 			}
 
@@ -303,6 +309,7 @@ public class GridEngineUtil {
 			String line;		
 			while((line = nodeResults.readLine()) != null) {
 				String name = line;							
+				log.debug("Updating info for node "+name);
 				// In the database, update the attributes for the node
 				Cluster.updateNode(name,  GridEngineUtil.getNodeDetails(name));				
 				// Set the node as active (because we just saw it!)
@@ -452,6 +459,9 @@ public class GridEngineUtil {
 			transferUnderflowNodes(req, shortQueueName, nodeCount, actualNodeCount);
 				
 		    }
+		    GridEngineUtil.loadWorkerNodes();
+		    GridEngineUtil.loadQueues();
+
 		}
 		log.info("Completed checking queue reservation.");
     }

@@ -40,12 +40,6 @@ for f in src/org/starexec/config/sge/*.bash ; do
   chgrp -f star-web $SGE_SCRIPT_DIR/$b
 done
 
-echo "Copying batchSpaceSchema.xsd to $STAREXEC_DATA_DIR/batchSpace"
-mkdirIf $STAREXEC_DATA_DIR/batchSpace
-cp starexec_res/batch/batchSpaceSchema.xsd $STAREXEC_DATA_DIR/batchSpace
-chmod -f 775 STAREXEC_DATA_DIR/batchSpace/batchSpaceSchema.xsd
-chgrp -f star-web $STAREXEC_DATA_DIR/batchSpace/batchSpaceSchema.xsd
-
 echo "Copying default pictures $STAREXEC_DATA_DIR/pictures"
 for d in users solvers benchmarks ; do
  mkdirIf $STAREXEC_DATA_DIR/pictures/$d

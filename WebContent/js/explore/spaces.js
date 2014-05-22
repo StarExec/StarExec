@@ -2066,14 +2066,12 @@ function updateButtonIds(id) {
 	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
-	//$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
 	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 	
 	$("#downloadXML").unbind("click");
 	$('#downloadXML').click(function(e) {
-		//e.preventDefault();
 		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
 
 		$('#dialog-spacexml-attributes').dialog({

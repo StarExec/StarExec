@@ -13,6 +13,7 @@ public abstract class RobustRunnable implements Runnable {
     	name = _name;
     }
 
+    @Override
     public void run() {
     	try {
     		dorun();
@@ -21,7 +22,7 @@ public abstract class RobustRunnable implements Runnable {
     		log.warn(name+" caught throwable: "+e,e);
     	}
 	finally {
-	    log.info(name + " completed executing.");
+	    log.info(name + " completed one periodic execution.");
 	}
     }
 }

@@ -85,6 +85,7 @@ public class Starexec implements ServletContextListener {
 		log = Logger.getLogger(Starexec.class);
 		
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
+
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 		

@@ -1184,13 +1184,13 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 
 			Properties prop = new Properties();
-			HashMap<String,String> attrMap = new HashMap<String, String>();
 			while(results.next()){
-				attrMap.put(results.getString("attr_key"), results.getString("attr_value"));
+				prop.setProperty(results.getString("attr_key"), results.getString("attr_value"));
 			}
 
 			if(prop.size() <= 0) {
-				prop = null;
+			    log.debug("No attributes found for benchmark "+new Integer(benchId));
+			    prop = null;
 			}
 
 			return prop;
@@ -1686,11 +1686,11 @@ public class Benchmarks {
 			procedure.setInt(1, benchId);					
 			results = procedure.executeQuery();
 
-			TreeMap<String,String> sortedMap2 = new TreeMap<String,String>();
+			TreeMap<String,String> sortedMap = new TreeMap<String,String>();
 			while (results.next()){
-				sortedMap2.put(results.getString("attr_key"), results.getString("attr_value"));
+				sortedMap.put(results.getString("attr_key"), results.getString("attr_value"));
 			}
-			return sortedMap2;
+			return sortedMap;
 		} catch (Exception e) {
 			log.error("getSortedAttributes says "+e.getMessage(),e);
 		} finally {

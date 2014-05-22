@@ -306,7 +306,7 @@ public class Download extends HttpServlet {
 			files.add(file);
 			String baseFileName=space.getName()+"_XML";
 			
-			File schema = new File(R.SPACE_XML_SCHEMA_LOC);
+			File schema = new File(R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC);
 			files.add(schema);
 			
 			

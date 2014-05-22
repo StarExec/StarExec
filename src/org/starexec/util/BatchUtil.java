@@ -84,7 +84,7 @@ public class BatchUtil {
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
 		
-		validateAgainstSchema(file);
+		//validateAgainstSchema(file);
 		return file;
 	}
 	
@@ -224,14 +224,16 @@ public class BatchUtil {
 			benchElement.setAttribute("name", benchmark.getName());
 			if (includeAttributes) {
 			    Properties attrs = Benchmarks.getAttributes(benchmark.getId());
-			    Enumeration<Object> keys = attrs.keys();
-			    while (keys.hasMoreElements()) {
-				String attr = (String)keys.nextElement();
-				String val = (String)attrs.get(attr);
-				Element attre = doc.createElement("Attribute");
-				attre.setAttribute("name",attr);
-				attre.setAttribute("value",val);
-				benchElement.appendChild(attre);
+			    if (attrs != null) {
+				Enumeration<Object> keys = attrs.keys();
+				while (keys.hasMoreElements()) {
+				    String attr = (String)keys.nextElement();
+				    String val = (String)attrs.get(attr);
+				    Element attre = doc.createElement("Attribute");
+				    attre.setAttribute("name",attr);
+				    attre.setAttribute("value",val);
+				    benchElement.appendChild(attre);
+				}
 			    }
 			}
 			spaceElement.appendChild(benchElement);
@@ -266,7 +268,7 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			String schemaLoc = R.SPACE_XML_SCHEMA_LOC;
+			String schemaLoc = R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();

@@ -95,7 +95,7 @@ public class R {
     public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
     public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
     public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading
-    public static String SPACE_XML_SCHEMA_LOC = null;						// Where the schema for batch space xml is located. 
+    public static String SPACE_XML_SCHEMA_RELATIVE_LOC = null;						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
     public static String PICTURE_PATH = null;								// Where the pictures are located
     public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
