@@ -55,10 +55,11 @@ function isFieldsetOpen(fieldset){
  * Hides all jquery ui dialogs for page startup
  */
 function initDialogs() {	
-	$( "#dialog-confirm-copy" ).hide();
-	$( "#dialog-confirm-delete" ).hide();
+	$("#dialog-confirm-copy" ).hide();
+	$("#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
-	$( "#dialog-warning").hide();
+	$("#dialog-warning").hide();
+	$("#dialog-spacexml-attributes").hide();
 	$("#dialog-confirm-change").hide();
 	log('all confirmation dialogs hidden');
 }
@@ -2071,11 +2072,29 @@ function updateButtonIds(id) {
 	
 	
 	$("#downloadXML").unbind("click");
-	$('#downloadXML').click(function() {
-		createDialog("Processing your download request, please wait. This will take some time for large spaces.");
-		token=Math.floor(Math.random()*100000000);
-		$('#downloadXML').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id);
-		destroyOnReturn(token);
+	$('#downloadXML').click(function(e) {
+		e.preventDefault();
+		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
+
+		$('#dialog-spacexml-attributes').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'yes': function() {
+					$('#dialog-spacexml-attributes').dialog('close');
+					createDownloadSpaceXMLRequest(true);		
+				},
+				"no": function() {
+					$('#dialog-spacexml-attributes').dialog('close');
+					createDownloadSpaceXMLRequest(false);		
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+
 	});
 	
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
@@ -2110,6 +2129,14 @@ function updateButtonIds(id) {
 		});
 	});
 	log('updated action button space ids to ' + id);
+}
+
+function createDownloadSpaceXMLRequest(includeAttrs) {
+  createDialog("Processing your download request, please wait. This will take some time for large spaces.");
+  token=Math.floor(Math.random()*100000000);
+  href = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs;
+  destroyOnReturn(token);
+  window.location.href = href;
 }
 
 function createDownloadSpacePost(hierarchy,id) {

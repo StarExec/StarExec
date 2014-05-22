@@ -104,7 +104,11 @@ public class Download extends HttpServlet {
 				shortName=space.getName()+"_XML";
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleSpaceXML(space, u.getId(), ".zip", response);	
+				boolean includeAttributes = false;
+				if (Util.paramExists("includeattrs",request)) {
+				    includeAttributes=Boolean.parseBoolean(request.getParameter("includeattrs"));
+				}
+				success = handleSpaceXML(space, u.getId(), ".zip", response, includeAttributes);	
 			} else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
@@ -289,14 +293,15 @@ public class Download extends HttpServlet {
 	 * @throws Exception 
 	 */
 
-	private static boolean handleSpaceXML(Space space, int userId, String format, HttpServletResponse response) throws Exception {
+    private static boolean handleSpaceXML(Space space, int userId, String format, HttpServletResponse response,
+					  boolean includeAttributes) throws Exception {
 		
 		// If we can see this Space
 		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
 			List<File> files=new ArrayList<File>();
-			log.debug("Permission to download XML granted");			
+			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));		
 			BatchUtil butil = new BatchUtil();
-			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
+			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes);
 			
 			files.add(file);
 			String baseFileName=space.getName()+"_XML";

@@ -160,6 +160,9 @@
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
+	<div id="dialog-spacexml-attributes" title="include attributes">
+  	  <p><span id="dialog-spacexml-attributes-txt"></span></p>
+	</div>
 	<div id="dialog-download-space" title="download space">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-download-space-txt"></span></p><br>
 		<p><input type="radio" name="downloadOption" id="downloadSolvers"/> solvers only<br>
