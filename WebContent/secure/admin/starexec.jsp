@@ -28,7 +28,7 @@
 			<ul id="actionList">
 				<li><button type="button" id="restartStarExec">restart StarExec</button></li>	
 				<li><a href="/${starexecRoot}/secure/admin/cache.jsp"><button type="button" id="manageCache">manage cache</button></a></li>  
-				
+				<li><a href="/${starexecRoot}/secure/admin/logging.jsp"><button type="button" id="manageLogging">manage logging</button></a>
 			</ul>
 			<div id="dialog-confirm-restart" title="confirm restart">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>

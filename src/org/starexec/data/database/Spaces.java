@@ -17,6 +17,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Permission;
@@ -82,13 +83,15 @@ public class Spaces {
 			procAddUser.setInt(2, newSpaceId);			
 			procAddUser.executeUpdate();
 			
+			Permission perm=new Permission(true);
+			perm.setLeader(true);
 			// Set maximal permissions for the user who added the space	
-			Permissions.set(userId, newSpaceId, new Permission(true), con);
+			Permissions.set(userId, newSpaceId, perm, con);
 			
 			//Do we necessarily want to end the transaction here?  I don't think we do.
 			//Common.endTransaction(con);
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
-			Cache.invalidateAndDeleteCache(parentId, CacheType.CACHE_SPACE);
+			//Cache.invalidateAndDeleteCache(parentId, CacheType.CACHE_SPACE);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("Spaces.add says "+e.getMessage(),e);
@@ -140,7 +143,7 @@ public class Spaces {
 	 */
 	public static int addJobSpace(String name) {
 		Connection con = null;
-		log.debug("adding new job space with name ="+name);
+		log.debug("adding new job space with name = "+name);
 		try {
 			con=Common.getConnection();
 			int newSpaceId=addJobSpace(name,con);
@@ -482,9 +485,37 @@ public class Spaces {
 		}
 		return 0;
 	}
+	/**
+	 * Gets the number of subspaces a space has.
+	 * @param spaceId The ID of the space to retrieve the subspace count for
+	 * @return The integer number of spaces, or -1 on error
+	 */
+	public static int getCountInSpace(int spaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetSubspaceCountBySpaceIdAdmin(?)}");
+			procedure.setInt(1, spaceId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("spaceCount");
+			}
+		} catch (Exception e) {
+			log.error("getCountInSpace says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+		
+	}
+	
 	
 	/**
-	 * Gets the number of Spaces in a given space
+	 * Gets the number of Spaces in a given space that a given user can see
 	 * 
 	 * @param spaceId the id of the space to count the Spaces in
 	 * @param userId the id of the user making the request
@@ -494,7 +525,10 @@ public class Spaces {
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
 		//the admin can see every space, so we don't need to worry about finding only spaces some user can see
 		if (Users.isAdmin(userId)) {
-			return getCountInSpaceHierarchy(spaceId);
+			if (hierarchy) {
+				return getCountInSpaceHierarchy(spaceId);
+			}
+			return getCountInSpace(spaceId);
 		}
 		
 		Connection con = null;
@@ -580,7 +614,7 @@ public class Spaces {
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId));
-			s.setPublic(Spaces.isPublicSpace(spaceId));
+			//s.setPublic(Spaces.isPublicSpace(spaceId)); this should be there already
 			s.setPermission(Permissions.getSpaceDefault(spaceId));
 			return s;			
 		} catch (Exception e){			
@@ -1210,7 +1244,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			log.debug("Getting job space subspaces for job space id = "+jobSpaceId);
 			 procedure = con.prepareCall("{CALL GetJobSubSpaces(?)}");
 			procedure.setInt(1, jobSpaceId);
 			
@@ -1225,7 +1258,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				subSpaces.add(s);
 			}
 			
-			log.debug("Returning " +subSpaces.size()+ "subspaces for job space id = "+jobSpaceId);
 			return subSpaces;
 		} catch (Exception e) {
 			log.error("getSubSpacesForJob says "+e.getMessage(),e);
@@ -1479,7 +1511,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				procedure.setInt(1, subspaceId);
 				procedure.setInt(2, parentSpaceId);
 				procedure.executeUpdate();		
-				Cache.invalidateAndDeleteCache(subspaceId,CacheType.CACHE_SPACE);
+				//Cache.invalidateAndDeleteCache(subspaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -1558,7 +1590,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			// Commit changes to database
 			Common.endTransaction(con);
-			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
+			//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -1693,7 +1725,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			Common.beginTransaction(con);
 			Spaces.removeSolvers(solverIds, spaceId, con);
 			Common.endTransaction(con);
-			Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
+			//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -1742,10 +1774,24 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	}
 	
 	
-	
+	/**
+	 * For a given user, removes the given solver from every space in the hierarchy rooted at the given
+	 * space that they can see.
+	 * @param solverIds The IDs of the solvers to remove
+	 * @param rootSpaceId The ID of the root space of the hierarchy
+	 * @param userId
+	 * @return
+	 */
 	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds,int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
-		return removeSolversFromHierarchy(solverIds,subspaces);
+		subspaces.add(Spaces.get(rootSpaceId));
+		List<Space> allowedSpaces=new ArrayList<Space>();
+		for (Space s : subspaces) {
+			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId)==0) {
+				allowedSpaces.add(s);
+			}
+		}
+		return removeSolversFromHierarchy(solverIds,allowedSpaces);
 	}
 	
 	/** 
@@ -1767,7 +1813,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			for (Space space : subspaces) {
 				Spaces.removeSolvers(solverIds, space.getId(), con);
-				Cache.invalidateAndDeleteCache(space.getId(), CacheType.CACHE_SPACE);
+				//Cache.invalidateAndDeleteCache(space.getId(), CacheType.CACHE_SPACE);
 			}
 			
 			Common.endTransaction(con);
@@ -1988,6 +2034,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return true if successful
 	 * @author Ruoyu Zhang
 	 */
+	//TODO: This is pretty slow at handling a full hierarchy. It should be changed so that one query uses the closure table
+	//to do it all at once
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
 		if (status!=0){
@@ -2013,7 +2061,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
 			if (!pbc) {
-				Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
+				//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2187,6 +2235,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
+		if (Users.isAdmin(userId)){
+			return spaces;
+		}
 		Iterator<Space> iter = spaces.iterator();
 		while (iter.hasNext()) {
 			if (!Users.isMemberOfSpace(userId, iter.next().getId())) {
@@ -2249,7 +2300,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			}
 			
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
-			Cache.invalidateAndDeleteCache(s.getId(), CacheType.CACHE_SPACE);
+			//Cache.invalidateAndDeleteCache(s.getId(), CacheType.CACHE_SPACE);
 			return success;		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2391,5 +2442,34 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		}
 		ids.addAll(recGetStickyLeaders(Spaces.getParentSpace(spaceId)));
 		return ids;
+	}
+	public static List<Space> getAllSuperSpaces(int userId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL GetAllSuperSpacesByUser(?)}");
+			procedure.setInt(1, userId);					
+			results = procedure.executeQuery();			
+			
+			List<Space> spaces = new LinkedList<Space>();
+			
+			while (results.next()) {
+				Space s = new Space();
+				s.setId(results.getInt("id"));				
+				spaces.add(s);
+			}
+			
+			return spaces;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return null;
 	}
 }

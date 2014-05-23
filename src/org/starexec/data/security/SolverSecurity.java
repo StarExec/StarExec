@@ -3,6 +3,7 @@ package org.starexec.data.security;
 import java.util.List;
 
 import org.starexec.util.Validator;
+import org.starexec.command.Status;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -273,19 +274,20 @@ public class SolverSecurity {
 	
 	
 	/**
-	 * Checks to see whether a user is allowed to remove a solver from a space hierarchy
+	 * Checks to see whether a user is allowed to remove a solver from a space hierarchy. They
+	 * are allowed if they can remvoe the solver from the root plus ANY SUBSET of subspaces, including
+	 * the empty subset. Other validation needs to be done to make sure solvers are remove from only the
+	 * correct subspaces
 	 * @param rootSpaceId The ID of the space at the root of the hierarchy in question
 	 * @param userId The ID of the user making the request
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	public static int canUserRemoveSolverFromHierarchy(int rootSpaceId, int userId) {
-		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
-		for(Space s : subspaces) {
-			int status=canUserRemoveSolver(s.getId(),userId);
-			if (status<0) {
-				return 0;
-			}
+		int status=canUserRemoveSolver(rootSpaceId,userId);
+		if (status<0) {
+			return Status.ERROR_PERMISSION_DENIED;
 		}
+		
 		return 0;
 	}
 	

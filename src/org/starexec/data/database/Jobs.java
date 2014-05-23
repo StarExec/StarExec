@@ -282,7 +282,7 @@ public class Jobs {
 		}
 		Connection con=null;
 		try {
-			Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
+			//Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
 			
 			con=Common.getConnection();
 			return delete(jobId,con);
@@ -2178,40 +2178,8 @@ public class Jobs {
 
 		return null;		
 	}
-	
-	
-	
-	/**
-	 * @param statusCode which status to filter grid engine ids by
-	 * @return A list of SGE job id's that have the specified status
-	 */
-	public static List<Integer> getSgeIdsByStatus(int statusCode) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();									
-			 procedure = con.prepareCall("{CALL GetSGEIdsByStatus(?)}");			
-			procedure.setInt(1, statusCode);
 
-			 results = procedure.executeQuery();
-			List<Integer> ids = new ArrayList<Integer>();
-
-			while(results.next()){
-				ids.add(results.getInt("sge_id"));
-			}	
-			
-			return ids;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
+	
 	
 	/**
 	 * Retrieves a job with basic info from the database (excludes pair and queue/processor info) 
@@ -2260,12 +2228,12 @@ public class Jobs {
 	 * @param jobId The ID of the job for which to delete all associated cache entreis
 	 */
 	public static void invalidateAndDeleteJobRelatedCaches(int jobId) {
-		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_OUTPUT);
-		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV);
-		Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
+		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_OUTPUT);
+		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV);
+		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
 		List<JobPair> pairs = Jobs.getPairs(jobId);
 		for (JobPair pair : pairs) {
-			Cache.invalidateAndDeleteCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
+			//Cache.invalidateAndDeleteCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
 		}
 	}
 	
@@ -2836,7 +2804,6 @@ public class Jobs {
 			
 			if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
 				SolverStats newSolver=new SolverStats();
-				log.debug("adding solver "+jp.getSolver().getName()+ " with configuration "+jp.getConfiguration().getName()+" to stats");
 				
 				newSolver.setSolver(jp.getSolver());
 				newSolver.setConfiguration(jp.getConfiguration());

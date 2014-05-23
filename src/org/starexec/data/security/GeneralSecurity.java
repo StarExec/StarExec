@@ -15,6 +15,18 @@ public class GeneralSecurity {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Checks to see if the given user has permission to change logging settings
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	public static int canUserChangeLogging(int userId){
+		if (!Users.isAdmin(userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
 	/**
 	 * Checks to see if the given user has permission to view information related to
 	 * testing

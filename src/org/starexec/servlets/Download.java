@@ -2,17 +2,16 @@ package org.starexec.servlets;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -22,10 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cache;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -33,7 +30,6 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
@@ -62,7 +58,7 @@ public class Download extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		User u = SessionUtil.getUser(request);
-		File archive = null;
+		boolean success;
 		String shortName=null;
 		try {
 			if (false == validateRequest(request)) {
@@ -70,26 +66,49 @@ public class Download extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
 				return;
 			}
+			
+			Object check=request.getParameter("token");
+			//token is used to tell the client when the file has arrived
+			if (check!=null) {
+				String token=check.toString();
+				Cookie newCookie=new Cookie("fileDownloadToken", token);
+				newCookie.setMaxAge(60);
+				response.addCookie(newCookie);
+			}
+			
 			if (request.getParameter("type").equals("solver")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
 				shortName=s.getName();
-				archive = handleSolver(s, u.getId(), ".zip", response, false);
+				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handleSolver(s, u.getId(), ".zip", response, false);
 			} else if (request.getParameter("type").equals("reupload")) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
 				shortName=s.getName();
-				archive = handleSolver(s, u.getId(), ".zip", response, true);
+				shortName=shortName.replaceAll("\\s+",""); 
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handleSolver(s, u.getId(), ".zip", response, true);
 			} else if (request.getParameter("type").equals("bench")) {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
 				shortName=b.getName();
-				archive = handleBenchmark(b, u.getId(), ".zip", response);
+				shortName=shortName.replaceAll("\\s+","");
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handleBenchmark(b, u.getId(), ".zip", response);
 			} else if (request.getParameter("type").equals("jp_output")) {
-				JobPair jp = JobPairs.getPairDetailed(Integer.parseInt(request.getParameter("id")));
-				shortName="Pair"+jp.getId();
-				archive = handlePairOutput(jp, u.getId(), ".zip", response);				
+				int id =Integer.parseInt(request.getParameter("id"));
+				shortName="Pair_"+id;
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handlePairOutput(id, u.getId(), ".zip", response);				
 			} else if (request.getParameter("type").equals("spaceXML")) {
 				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
 				shortName=space.getName()+"_XML";
-				archive = handleSpaceXML(space, u.getId(), ".zip", response);	
+				shortName=shortName.replaceAll("\\s+","");
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				boolean includeAttributes = false;
+				if (Util.paramExists("includeattrs",request)) {
+				    includeAttributes=Boolean.parseBoolean(request.getParameter("includeattrs"));
+				}
+				success = handleSpaceXML(space, u.getId(), ".zip", response, includeAttributes);	
 			} else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
@@ -103,19 +122,9 @@ public class Download extends HttpServlet {
 					since=Integer.parseInt(lastSeen);
 				}
 				shortName="Job"+jobId+"_info";
-				archive = handleJob(jobId, u.getId(), ".zip", response, since,ids);
-			} else if (request.getParameter("type").equals("j_outputs")) {
-				int jobId=Integer.parseInt(request.getParameter("id"));
-				
-				String lastSeen=request.getParameter("since");
-				Integer since=null;
-				if (lastSeen!=null) {
-					since=Integer.parseInt(lastSeen);
-					System.out.println("found since = "+lastSeen);
-				}
-				shortName="Job"+jobId+"_output";
-				archive = handleJobOutputs(jobId, u.getId(), ".zip", response,since);
-			} else if (request.getParameter("type").equals("space")) {
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handleJob(jobId, u.getId(), ".zip", response, since,ids);
+			}  else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
 				//to get both solvers and benchmarks
@@ -128,48 +137,63 @@ public class Download extends HttpServlet {
 					includeBenchmarks=Boolean.parseBoolean(request.getParameter("includebenchmarks"));
 				}
 				shortName=space.getName();
+				shortName=shortName.replaceAll("\\s+","");
 				if(request.getParameter("hierarchy").equals("false")){
-					archive = handleSpace(space, u.getId(), ".zip", response,false,includeBenchmarks,includeSolvers);
+					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+					success = handleSpace(space, u.getId(), ".zip", response,false,includeBenchmarks,includeSolvers);
 				} else {
 					shortName=shortName+"_Hierarchy";
-					archive = handleSpace(space, u.getId(), ".zip", response,true,includeBenchmarks,includeSolvers);
+					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+					success = handleSpace(space, u.getId(), ".zip", response,true,includeBenchmarks,includeSolvers);
 				}
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
 				shortName="Processor";
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				if (request.getParameter("procClass").equals("post")) {
+					
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.POST);
-				} else {
+				} else if (request.getParameter("procClass").equals("pre")){
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.PRE);
+				}
+				else {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
 				}
-				archive=handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
-			}
-			// Redirect based on success/failure
-			if(archive != null) {
-				Object check=request.getParameter("token");
-				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
-				//token is used to tell the client when the file has arrived
-				if (check!=null) {
-					String token=check.toString();
-					Cookie newCookie=new Cookie("fileDownloadToken", token);
-					newCookie.setMaxAge(60);
-					response.addCookie(newCookie);
+				if (proc.size()>0) {
+					success= handleProc(proc,u.getId(),".zip",Integer.parseInt(request.getParameter("id")) , response);
+				} else {
+					response.sendError(HttpServletResponse.SC_NO_CONTENT,"There are no processors to download");
+					return;
 				}
-				FileInputStream stream=new FileInputStream(archive);
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				long size=FileUtils.sizeOf(archive);
-				log.debug("the size of the file being returned is "+size);
-				response.addHeader("Content-Length",String.valueOf(size));
-				IOUtils.copyLarge(stream, response.getOutputStream());
-				response.getOutputStream().close();
+			} else if (request.getParameter("type").equals("j_outputs")) {
+				int jobId=Integer.parseInt(request.getParameter("id"));
 				
-				stream.close();
+				String lastSeen=request.getParameter("since");
+				Integer since=null;
+				if (lastSeen!=null) {
+					since=Integer.parseInt(lastSeen);
+					System.out.println("found since = "+lastSeen);
+				}
+				shortName="Job"+jobId+"_output";
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success= handleJobOutputs(jobId, u.getId(), ".zip", response,since);
+				
+			} else {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"invalid download type specified");
+				return;
+			}
+			
+			if (success) {
+				response.getOutputStream().close();
 				return;
 			} else {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");	
-			}									
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
+				return;
+			}
+											
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			response.getOutputStream().close();
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			
 		}
@@ -184,88 +208,27 @@ public class Download extends HttpServlet {
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	private static File handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws IOException {
-		log.info("handleSolver");
+	private static boolean handleSolver(Solver s, int userId, String format, HttpServletResponse response, boolean reupload) throws Exception {
+		
 		
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
 
 		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
-				String cachedFilePath=null;
-				if(!reupload) {
-					cachedFilePath=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER);
-				} else {
-					cachedFilePath=Cache.getCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD);
-				}
-				
-				//if the entry was in the cache, we can just return it.
-				if (cachedFilePath!=null) {
-					File cachedFile = new File(cachedFilePath);
-					
-					log.debug("returning a cached file!");
-					return cachedFile;
-				}
-			
-			
-			// Path is /starexec/WebContent/secure/files/{random name}.{format}
-			// Create the file so we can use it, and the directory it will be placed in
-			String fileName = s.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			uniqueDir.createNewFile();
-
-			//String path = s.getPath();
-			//int index = path.lastIndexOf(File.separator);
-			//String tempdest = path.substring(index);
-
-			//File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + s.getName() + tempdest);
-			//tempDir.mkdirs();
-			//copySolverFile(s.getPath(), tempDir.getAbsolutePath(), description);
-
-			ArchiveUtil.createArchive(new File(s.getPath()), uniqueDir, format, baseName, reupload);
-			if (!reupload) {
-				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER,uniqueDir,fileName);
+			if (reupload) {
+				ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), "",true);
 			} else {
-				Cache.setCache(s.getId(),CacheType.CACHE_SOLVER_REUPLOAD,uniqueDir,fileName);
+				ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName,false);
 			}
-			//We return the fileName so the browser can redirect straight to it
-			return uniqueDir;
+		
+			return true;
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
 		}
 
-		return null;
+		return false;
 	}
-
-	private static void copySolverFile(String path, String dest, String description) throws IOException{				
-		File tempSrcFile = new File(path);
-		File tempDestFile = new File(dest);
-		tempDestFile.mkdirs();
-
-		File tempDescFile = new File(dest + File.separator + R.DESC_PATH);
-
-		FileUtils.copyDirectory(tempSrcFile, tempDestFile);
-
-		int index = dest.lastIndexOf(File.separator);
-		String tempdest = dest.substring(0, index);
-
-		//Write to description file
-		if (!(description.equals("no description"))) {
-			File description2 = new File(tempdest + File.separator + R.DESC_PATH);
-
-			FileWriter fw = new FileWriter(description2.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(description);
-			bw.close();
-
-			FileUtils.copyFile(description2, tempDescFile);
-			description = null;
-		}
-
-		tempDestFile = null;
-
-	}
-
 
 	/**
 	 * Handles requests for downloading post processors for a given community
@@ -273,22 +236,27 @@ public class Download extends HttpServlet {
 	 * @author Eric Burns
 	 */
 
-	private static File handleProc(List<Processor> procs, int userId, String format, int spaceId, HttpServletResponse response) throws IOException {
+	private static boolean handleProc(List<Processor> procs, int userId, String format, int spaceId, HttpServletResponse response) throws Exception {
 
 		if (Permissions.canUserSeeSpace(spaceId, userId)) {
-
-			String fileName="Community "+String.valueOf(spaceId)+"Procs" + "_("+UUID.randomUUID().toString()+")" +format;
-			File uniqueDir=new File(new File(R.STAREXEC_ROOT, R.CACHED_FILE_DIR), fileName);
-			uniqueDir.createNewFile();
+			
 			List<File> files=new LinkedList<File>();
 			for (Processor x : procs) {
-				files.add(new File(x.getFilePath()));
+				File newProc=new File(x.getFilePath());
+				if (newProc.exists()) {
+					files.add(new File(x.getFilePath()));
+				} else {
+					log.warn("processor with id = "+x.getId()+" exists in the database but not on disk");
+				}
 			}
-			ArchiveUtil.createArchive(files, uniqueDir, format);
+			if (files.size()>0) {
+				ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
+				return true;
+			}
 
-			return uniqueDir;
+			
 		}
-		return null;
+		return false;
 	}
 
 	/**
@@ -300,31 +268,18 @@ public class Download extends HttpServlet {
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark
 	 */
-	private static File handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws IOException {
+	private static boolean handleBenchmark(Benchmark b, int userId, String format, HttpServletResponse response) throws Exception {
 		// If we can see this benchmark AND the benchmark is downloadable...
 		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
-			String cachedFilePath=Cache.getCache(b.getId(),CacheType.CACHE_BENCHMARK);
-			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFilePath!=null) {
-				File cachedFile = new File(cachedFilePath);
 
-				return cachedFile;
-				
-			}
-			// Path is /starexec/WebContent/secure/files/{random name}.{format}
-			// Create the file so we can use it
-			String fileName = b.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			uniqueDir.createNewFile();
-			ArchiveUtil.createArchive(new File(b.getPath()), uniqueDir, format, false);
-			Cache.setCache(b.getId(),CacheType.CACHE_BENCHMARK,uniqueDir,fileName);
-			return uniqueDir;
+			ArchiveUtil.createAndOutputZip(new File(b.getPath()),response.getOutputStream(),"",false);
+			return true;
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
 		}
 
-		return null;
+		return false;
 	}
 
 	/**
@@ -338,61 +293,33 @@ public class Download extends HttpServlet {
 	 * @throws Exception 
 	 */
 
-	private static File handleSpaceXML(Space space, int userId, String format, HttpServletResponse response) throws Exception {
-		log.debug("Space XML download called");
-		Queue<String> descriptions=new LinkedList<String>();
-		descriptions.add(space.getDescription());
-		List<Space> children = space.getSubspaces();
-		for (Space child : children) {
-			descriptions.add(child.getDescription());
-		}
-
+    private static boolean handleSpaceXML(Space space, int userId, String format, HttpServletResponse response,
+					  boolean includeAttributes) throws Exception {
+		
 		// If we can see this Space
 		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
-			
-				String cachedFilePath=null;
-				cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_XML);
-				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFilePath!=null) {
-					File cachedFile = new File(cachedFilePath);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					
-						return cachedFile;
-					
-				}
-			
-			log.debug("Permission to download XML granted");			
+			List<File> files=new ArrayList<File>();
+			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));		
 			BatchUtil butil = new BatchUtil();
-			File file = null;
-			file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId);
+			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes);
+			
+			files.add(file);
 			String baseFileName=space.getName()+"_XML";
-			String fileNamewoFormat = baseFileName+"_("+ UUID.randomUUID().toString()+")";
-			String fileName = fileNamewoFormat + format;
-			//container has the xml schema and the newly created xml file.  uniqueDir is the compressed file downloaded by user
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			File container = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileNamewoFormat);
-			container.mkdirs();
+			
+			File schema = new File(R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC);
+			files.add(schema);
+			
+			
 
-			File schemaCopy = new File(R.STAREXEC_ROOT, "batchSpaceSchema.xsd");
-			FileUtils.moveFileToDirectory(file, container, false);
-			File schema = new File(R.SPACE_XML_SCHEMA_LOC);
-			InputStream schemaStream = new FileInputStream(schema);
-			FileUtils.copyInputStreamToFile(schemaStream, schemaCopy);
-			FileUtils.moveFileToDirectory(schemaCopy, container, false);
-			uniqueDir.createNewFile();
-
-			ArchiveUtil.createArchive(container, uniqueDir,format,baseFileName, false);
-			if (Spaces.isPublicHierarchy(space.getId())) {
-				log.debug("storing space hierarchy in the cache");
-				Cache.setCache(space.getId(), CacheType.CACHE_SPACE_XML,uniqueDir, fileName);
-			}
-			return uniqueDir;
+			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
+			
+			return true;
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
 		}
 
-		return null;
+		return false;
 	}
 
 	/**
@@ -405,37 +332,21 @@ public class Download extends HttpServlet {
 	 * @author Tyler Jensen
 	 */
 	
-	private static File handlePairOutput(JobPair jp, int userId, String format, HttpServletResponse response) throws IOException {    	
+	private static boolean handlePairOutput(int pairId, int userId, String format, HttpServletResponse response) throws Exception {    	
 		// If the user can actually see the job the pair is apart of
-		if (Permissions.canUserSeeJob(jp.getJobId(), userId)) {
+		if (Permissions.canUserSeeJob(pairId, userId)) {
 			
-			String cachedFilePath=Cache.getCache(jp.getId(),CacheType.CACHE_JOB_PAIR);
 			
-			//if the entry was in the cache, make sure the file actually exists
-			if (cachedFilePath!=null) {
-				File cachedFile = new File(cachedFilePath);
-				//it might have been cleared if it has been there too long, so make sure that hasn't happened
-				log.debug("returning a cached file!");
-				return cachedFile;
-				
-			}
-			// Path is /starexec/WebContent/secure/files/{random name}.{format}
-			// Create the file so we can use it
-			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			uniqueDir.createNewFile();
-
-			String outputPath = JobPairs.getFilePath(jp.getId());  
-			log.info("The download output path is " + outputPath);
-			ArchiveUtil.createArchive(new File(outputPath), uniqueDir, format, false);
-			Cache.setCache(jp.getId(), CacheType.CACHE_JOB_PAIR, uniqueDir, fileName);
-			return uniqueDir;
+			String outputPath = JobPairs.getFilePath(pairId);  
+			
+			ArchiveUtil.createAndOutputZip(new File(outputPath),response.getOutputStream(),"",false);
+			return true;
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
-		return null;
+		return false;
 	}
 
 	/**
@@ -449,24 +360,11 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static File handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws IOException {    	
+	private static boolean handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws Exception {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
-		boolean jobComplete=Jobs.isJobComplete(jobId);
+		
 		if (Permissions.canUserSeeJob(jobId, userId)) {
-			if (jobComplete && since==null) {
-				String cachedFilePath = null;
-				if (returnIds) {
-					cachedFilePath=Cache.getCache(jobId, CacheType.CACHE_JOB_CSV);
-				} else {
-					cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_CSV_NO_IDS);
-				}
-				if (cachedFilePath!= null) {
-					File cachedFile = new File(cachedFilePath);
-					log.debug("returning a cached file!");
-					return cachedFile;
-					
-				}
-			}
+			
 			Job job;
 			if (since==null) {
 				job = Jobs.getDetailed(jobId);
@@ -482,6 +380,7 @@ public class Download extends HttpServlet {
 					}
 				}
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+				boolean jobComplete=Jobs.isJobComplete(jobId);
 				try {
 					if (jobComplete) {
 						response.addCookie(new Cookie("Job-Complete","true"));
@@ -491,22 +390,17 @@ public class Download extends HttpServlet {
 				}
 			}
 
-			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-			uniqueDir.createNewFile();
 			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
 			String jobFile = CreateJobCSV(job, returnIds);
-			ArchiveUtil.createArchive(new File(jobFile), uniqueDir, format, false);
-			if (returnIds && jobComplete) {
-				Cache.setCache(jobId, CacheType.CACHE_JOB_CSV,uniqueDir, fileName);
-			}
-			return uniqueDir;
+			ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(),"",false);
+
+			return true;
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
-		return null;
+		return false;
 	}
 
 	/**
@@ -627,7 +521,45 @@ public class Download extends HttpServlet {
 		FileUtils.write(new File(filename), sb.toString());
 		return filename;
 	}
+	
+	
+	private static boolean addJobPairsToZipOutput(int jobId, List<JobPair> pairs, HttpServletResponse response) {
+		try {
+			String baseName="Job"+String.valueOf(jobId)+"_output_new";
+			ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
+			for (JobPair p : pairs ) {
+				File file=new File(JobPairs.getFilePath(p));
+				StringBuilder zipFileName=new StringBuilder(baseName);
+				zipFileName.append(File.separator);
+				
+				String path=p.getPath();
 
+				String [] spaces=path.split("/");
+				
+					
+				for (int index=0;index<spaces.length;index++) {
+					zipFileName.append(spaces[index]);
+					zipFileName.append(File.separator);
+				}
+					
+				
+				zipFileName.append(p.getSolver().getName());
+				zipFileName.append(File.separator);
+				zipFileName.append(p.getConfiguration().getName());
+				zipFileName.append(File.separator);
+				zipFileName.append(file.getName());
+				ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+				
+				
+			}
+			stream.close();
+			return true;
+		} catch (Exception e) {
+			log.error("addJobPairsToZipOutput says "+e.getMessage(),e);
+		} 
+		return false;
+	}
+	
 	/**
 	 * Get a zip file which contains the outputs of a job from all its job pairs.
 	 * @param j The job to be handled
@@ -638,95 +570,12 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static File handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws IOException {    	
+	private static boolean handleJobOutputs(int jobId, int userId, String format, HttpServletResponse response, Integer since) throws Exception {    	
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			log.debug("confirmed user can download job = "+jobId);
 			boolean jobComplete=Jobs.isJobComplete(jobId);
-			if (jobComplete && since==null) { //there is no cache for partial results
-				String cachedFilePath=null;
-				cachedFilePath=Cache.getCache(jobId,CacheType.CACHE_JOB_OUTPUT);
-				log.debug("checked in cache for job = "+jobId);
-
-				//if the entry was in the cache, make sure the file actually exists
-				if (cachedFilePath!=null) {
-					File cachedFile = new File(cachedFilePath);
-					//it might have been cleared if it has been there too long, so make sure that hasn't happened
-					log.debug("returning a cached file for job = "+jobId);
-					return cachedFile;
-					
-				}
-			}
-
-			// Path is /starexec/WebContent/secure/files/{random name}.{format}
-			// Create the file so we can use it
-			String fileName = UUID.randomUUID().toString() + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), fileName);
-
-			uniqueDir.createNewFile();
-			
-			File file, dir;
-			
-			//if we only want the new job pairs
-			if (since!=null) {
-				List<JobPair> pairs;
-				File tempDir=new File(new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR),fileName+"temp");
-				tempDir.mkdir();
-				log.debug("Getting incremental job output results");
-				pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
-				log.debug("Found "+ pairs.size()  + " new pairs");
-				int maxCompletion=since;
-				for (JobPair x : pairs) {
-					if (x.getCompletionId()>maxCompletion) {
-						maxCompletion=x.getCompletionId();
-					}
-				}
-				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
-				for (JobPair jp : pairs) {
-					file=new File(JobPairs.getFilePath(jp));
-
-					log.debug("Searching for pair output at" + file.getAbsolutePath());
-					if (file.exists()) {
-						log.debug("Adding job pair output file for "+jp.getBench().getName()+" to incremental results");
-
-						//store in the old format because the pair has no path
-						if (jp.getPath()==null) {
-							dir=new File(tempDir,jp.getSolver().getName());
-							dir.mkdir();
-							dir=new File(dir,jp.getConfiguration().getName());
-							dir.mkdir();
-						} else {
-							String path=jp.getPath();
-
-							String [] spaces=path.split("/");
-							dir=new File(tempDir,spaces[0]);
-							dir.mkdir();
-							for (int index=1;index<spaces.length;index++) {
-								dir=new File(dir,spaces[index]);
-								dir.mkdir();
-							}
-							dir=new File(dir,jp.getSolver().getName());
-							dir.mkdir();
-							dir=new File(dir,jp.getConfiguration().getName());
-							dir.mkdir();
-						}
-						FileUtils.copyFileToDirectory(file,dir);
-
-					}
-				}
-				ArchiveUtil.createArchive(tempDir, uniqueDir, format,"Job"+String.valueOf(jobId)+"_output_new",false);
-			} else {
-				log.debug("preparing to create archive for job = "+jobId);
-
-				ArchiveUtil.createArchive(new File(Jobs.getDirectory(jobId)), uniqueDir, format,"Job"+String.valueOf(jobId)+"_output",false);
-				log.debug("archive created for job = "+jobId);
-
-				if (jobComplete) {
-					Cache.setCache(jobId,CacheType.CACHE_JOB_OUTPUT,uniqueDir, fileName);
-				}
-			}
-
 			//if there are no pending pairs, the job is done
 			try {
 				if (jobComplete) {
@@ -735,14 +584,39 @@ public class Download extends HttpServlet {
 			} catch (Exception e) {
 				log.error(e);
 			}
-			return uniqueDir;
+
+			//if we only want the new job pairs
+			if (since!=null) {
+				
+				log.debug("Getting incremental job output results");
+				
+				List<JobPair> pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
+				
+				log.debug("Found "+ pairs.size()  + " new pairs");
+				int maxCompletion=since;
+				for (JobPair x : pairs) {
+					if (x.getCompletionId()>maxCompletion) {
+						maxCompletion=x.getCompletionId();
+					}
+				}
+				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
+				Download.addJobPairsToZipOutput(jobId,pairs,response);
+			
+			} else {
+				log.debug("preparing to create archive for job = "+jobId);
+				ArchiveUtil.createAndOutputZip(new File(Jobs.getDirectory(jobId)),response.getOutputStream(),"Job"+String.valueOf(jobId)+"_output",false);
+
+			}
+
+			return true;
 		}
 
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
 		}
 
-		return null;
+		return false;
 	}
 
 	/**
@@ -758,52 +632,30 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang + Eric Burns
 	 */
-	private File handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws IOException {
+	
+	//TODO: This can be made more efficient by simply copying the hierarchy into the output stream insead of storing it first.
+	private boolean handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws Exception {
 		// If we can see this space AND the space is downloadable...
 
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
-			//we are only caching hierarchies with benchmarks + solvers so far
-			if (includeBenchmarks && includeSolvers) {
-				String cachedFilePath=null;
-				if (hierarchy) {
-					cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY);
-				} else {
-					cachedFilePath=Cache.getCache(space.getId(),CacheType.CACHE_SPACE);
-				}
-				//if the entry was in the cache, we can return it
-				if (cachedFilePath!=null) {
-					File cachedFile = new File(cachedFilePath);
-					log.debug("returning a cached file!");
-					return cachedFile;
-					
-				}
-			}
+			
 			
 			String baseFileName=space.getName();
-			String fileName = space.getName() + "_(" + UUID.randomUUID().toString() + ")" + format;
-			File uniqueDir = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + File.separator), fileName);
-			uniqueDir.createNewFile();
 			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
 			
 			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
-			ArchiveUtil.createArchive(tempDir, uniqueDir, format, baseFileName, false);
+			ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
 			if(tempDir.exists()){
 				tempDir.delete();
 			}
 			
-			if (includeBenchmarks && includeSolvers) {
-				if (hierarchy) {
-					Cache.setCache(space.getId(),CacheType.CACHE_SPACE_HIERARCHY,uniqueDir, fileName);
-				} else {
-					Cache.setCache(space.getId(),CacheType.CACHE_SPACE,uniqueDir, fileName);
-				}
-			}
-			return uniqueDir;
+			
+			return true;
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
 		}
-		return null;
+		return false;
 	}
 
 

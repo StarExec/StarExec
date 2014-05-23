@@ -114,6 +114,15 @@ CREATE PROCEDURE GetAllSpaces()
 		FROM spaces;
 	END //
 
+-- Gets all superspaces of spaces a user is in
+DROP PROCEDURE IF EXISTS GetAllSuperSpacesByUser;
+CREATE PROCEDURE GetAllSuperSpacesByUser(IN _userId INT)
+	BEGIN
+		SELECT distinct ancestor AS id
+                FROM user_assoc JOIN closure ON user_assoc.space_id = closure.descendant
+                WHERE user_assoc.user_id = _userId;
+	END //
+
 -- Returns all super-spaces of the space with the given id.
 -- Author: Wyatt Kaiser
  DROP PROCEDURE IF EXISTS GetSuperSpacesById;
@@ -312,30 +321,39 @@ CREATE PROCEDURE GetTotalSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT)
 		FROM closure
 		WHERE ancestor=_spaceId AND ancestor!=descendant;
 	END //
+	
+-- Returns the number of subspaces in a given space without checking membership
+-- Author: Eric Burns
+
+DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdAdmin;
+CREATE PROCEDURE GetSubspaceCountBySpaceIdAdmin(IN _spaceId INT)
+	BEGIN
+		SELECT COUNT(*) AS spaceCount
+		FROM set_assoc
+		WHERE set_assoc.space_id=_spaceId;
+	END //
 -- Returns the number of subspaces in a given space
--- Author: Todd Elvers
+-- Author: Todd Elvers + Eric Burns
+
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
 CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
 	BEGIN
-		SELECT 	COUNT(*) AS spaceCount
-		FROM 	spaces
-		WHERE 	id 		IN (SELECT 	child_id
-							FROM	set_assoc
-							JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
-							WHERE 	set_assoc.space_id = _spaceId
-							AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId));	
+		SELECT 	COUNT(DISTINCT child_id) AS spaceCount
+		FROM	set_assoc
+		JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
+		WHERE 	set_assoc.space_id = _spaceId
+		AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId);	
 	END //
 -- Returns the number of subspaces in a given space that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery;
 CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId INT, IN _publicUserId INT, IN _query TEXT)
 	BEGIN
-		SELECT 	COUNT(*) AS spaceCount
-		FROM 	spaces
-		WHERE 	id 		IN (SELECT 	child_id
-							FROM	set_assoc
-							JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
-							WHERE 	set_assoc.space_id = _spaceId)											
+		SELECT 	COUNT(DISTINCT child_id) AS spaceCount
+		FROM	set_assoc
+		JOIN 	spaces ON spaces.id=set_assoc.child_id
+		JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
+		WHERE 	set_assoc.space_id = _spaceId											
 				AND 	(name			LIKE	CONCAT('%', _query, '%')
 				OR		description		LIKE 	CONCAT('%', _query, '%'));	
 	END //
@@ -346,10 +364,8 @@ DROP PROCEDURE IF EXISTS GetSubspaceCountByJobSpaceId;
 CREATE PROCEDURE GetSubspaceCountByJobSpaceId(IN _spaceId INT)
 	BEGIN
 		SELECT 	COUNT(*) AS spaceCount
-		FROM 	job_spaces
-		WHERE 	id 		IN (SELECT 	child_id
-							FROM	job_space_assoc
-							WHERE space_id=_spaceId);
+		FROM	job_space_assoc
+		WHERE space_id=_spaceId;
 	END //
 	
 	

@@ -301,6 +301,36 @@ public class Processors {
 	}
 	
 	/**
+	 * Updates the file path of a processor with the given processor id
+	 * 
+	 * @param processorId the id of the processor to update
+	 * @param newPath the new path to the directory containing this processor
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean updateFilePath(int processorId, String newPath){
+		Connection con = null;			
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL UpdateProcessorFilePath(?, ?)}");
+			procedure.setInt(1, processorId);					
+			procedure.setString(2, newPath);
+			
+			procedure.executeUpdate();			
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}	
+		
+	
+	/**
 	 * Updates the name of a processor with the given processor id
 	 * 
 	 * @param processorId the id of the processor to update

@@ -253,15 +253,23 @@ public class Util {
 		return form;
 	}
 	
-	//TODO: Run this command as the sandboxed user with permissions only granted recursively to everything in authorizedDirs
-	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs) {
+	
+	/**
+	 * 
+	 * @param c
+	 * @param envp
+	 * @param authorizedDirs
+	 * @param workingDirectory The working directory for the command. If null, the working directory will not be changed
+	 * @return
+	 */
+	public static BufferedReader executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs, File workingDirectory) {
 		Runtime r = Runtime.getRuntime();
 		//the final, empty string should be the directory to apply the command to
-		String[] chownCommand = {"sudo","chown", "-R", "sandbox", ""};
+		String[] chownCommand = {"sudo", "-u", "tomcat","chown", "-R", "sandbox", ""};
 		
 		//first, give the sandbox user ownership of every given directory
 		for (File f : authorizedDirs) {
-			chownCommand[4]=f.getAbsolutePath();
+			chownCommand[6]=f.getAbsolutePath();
 			Util.executeCommand(chownCommand,envp);
 		}
 		
@@ -288,8 +296,8 @@ public class Util {
 			}
 
 			log.info(b.toString());
-			    
-			p = r.exec(command, envp);
+			
+			p = r.exec(command, envp,workingDirectory);
 		    
 		    InputStream in = p.getInputStream();
 		    BufferedInputStream buf = new BufferedInputStream(in);
@@ -313,10 +321,10 @@ public class Util {
 		    }
 		    
 		    //give back ownership of everything to tomcat
-		    chownCommand =new String[] {"sudo","chown", "-R", "tomcat", ""};
+		    chownCommand =new String[] {"sudo", "-u", "tomcat","chown", "-R", "tomcat", ""};
 		    
 		    for (File f : authorizedDirs) {
-				chownCommand[4]=f.getAbsolutePath();
+				chownCommand[6]=f.getAbsolutePath();
 				Util.executeCommand(chownCommand,envp);
 			}
 		    return reader;
@@ -352,7 +360,7 @@ public class Util {
 		try {					
 		    Process p;
 		    if (command.length == 1) {
-			log.info("Executing the following command: " + command[0]);
+			log.debug("Executing the following command: " + command[0]);
 			
 			p = r.exec(command[0], envp);
 		    }
@@ -412,7 +420,7 @@ public class Util {
 		try {					
 		    Process p;
 		    if (command.length == 1) {
-			log.info("Executing the following command: " + command[0]);
+			log.debug("Executing the following command: " + command[0]);
 			
 			p = r.exec(command[0], envp);
 		    }
@@ -749,7 +757,7 @@ public class Util {
     }
     
     /**
-     * Attempts to delete the directory specified the given path without
+     * Attempts to delete the directory or file specified the given path without
      * throwing any errors
      * @param path The path to the directory to delete
      * @return True on success, false otherwise
@@ -757,7 +765,12 @@ public class Util {
      */
     public static boolean safeDeleteDirectory(String path) {
     	try {
-    		FileUtils.deleteDirectory(new File(path));
+    		File file=new File(path);
+    		if (file.isDirectory()) {
+        		FileUtils.deleteDirectory(file);
+    		} else {
+    			FileUtils.deleteQuietly(file);
+    		}
     	} catch (Exception e) {
     		log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}

@@ -55,10 +55,12 @@ function isFieldsetOpen(fieldset){
  * Hides all jquery ui dialogs for page startup
  */
 function initDialogs() {	
-	$( "#dialog-confirm-copy" ).hide();
-	$( "#dialog-confirm-delete" ).hide();
+	$("#dialog-confirm-copy" ).hide();
+	$("#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
-	$( "#dialog-warning").hide();
+	$("#dialog-warning").hide();
+	$("#dialog-spacexml-attributes").hide();
+	$("#dialog-confirm-change").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -134,8 +136,8 @@ function initButtonUI() {
 
 	$("#makePublic").click(function(){
 		// Display the confirmation dialog
-		$('#dialog-confirm-copy-txt').text('do you want to make the single space public or the hierarchy?');
-		$('#dialog-confirm-copy').dialog({
+		$('#dialog-confirm-change-txt').text('do you want to make the single space public or the hierarchy?');
+		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,
 			height: 165,
@@ -206,8 +208,8 @@ function initButtonUI() {
 	
 	$("#makePrivate").click(function(){
 		// Display the confirmation dialog
-		$('#dialog-confirm-copy-txt').text('do you want to make the single space private or the hierarchy?');
-		$('#dialog-confirm-copy').dialog({
+		$('#dialog-confirm-change-txt').text('do you want to make the single space private or the hierarchy?');
+		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,
 			height: 165,
@@ -2064,17 +2066,33 @@ function updateButtonIds(id) {
 	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
-	$('#downloadXML').attr('href', starexecRoot+"secure/download?token=test&type=spaceXML&id="+id);
 	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 	
 	$("#downloadXML").unbind("click");
-	$('#downloadXML').click(function() {
-		createDialog("Processing your download request, please wait. This will take some time for large spaces.");
-		token=Math.floor(Math.random()*100000000);
-		$('#downloadXML').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id);
-		destroyOnReturn(token);
+	$('#downloadXML').click(function(e) {
+		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
+
+		$('#dialog-spacexml-attributes').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'yes': function() {
+					$('#dialog-spacexml-attributes').dialog('close');
+					createDownloadSpaceXMLRequest(true,id);		
+				},
+				"no": function() {
+					$('#dialog-spacexml-attributes').dialog('close');
+					createDownloadSpaceXMLRequest(false,id);		
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+
 	});
 	
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
@@ -2109,6 +2127,15 @@ function updateButtonIds(id) {
 		});
 	});
 	log('updated action button space ids to ' + id);
+}
+
+function createDownloadSpaceXMLRequest(includeAttrs,id) {
+  createDialog("Processing your download request, please wait. This will take some time for large spaces.");
+  token=Math.floor(Math.random()*100000000);
+  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs;
+  destroyOnReturn(token);
+  window.location.href = myhref;
+ 
 }
 
 function createDownloadSpacePost(hierarchy,id) {

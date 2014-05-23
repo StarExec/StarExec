@@ -384,8 +384,12 @@ public class Validator {
 			return valid;
 		}
 		
+		
 		if (!paramsExist(new String[]{R.PARAM_BENCHTYPE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
+		}
+		if (!isValidPosInteger(commandParams.get(R.PARAM_BENCHTYPE))) {
+			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedUploadBenchmarksParams,commandParams);
 		return 0;
@@ -446,7 +450,7 @@ public class Validator {
 	 */
 	
 	public static int isValidUploadProcessorRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams,false);
+		int valid= isValidUploadRequestNoURL(commandParams,true);
 		if (valid<0) {
 			return valid;
 		}

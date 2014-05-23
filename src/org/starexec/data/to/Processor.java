@@ -2,6 +2,7 @@ package org.starexec.data.to;
 
 import java.io.File;
 
+import org.starexec.constants.R;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -107,10 +108,17 @@ public class Processor extends Identifiable {
 	}
 	
 	/**
-	 * @return The physical path to the script for this processor
+	 * @return The physical path to the directory containing this processor
 	 */
 	public String getFilePath() {
 		return this.filePath;
+	}
+	
+	/**
+	 * Gets the physical path to the executable script for this processor. Requires filePath to be set.
+	 */
+	public String getExecutablePath() {
+		return new File(this.getFilePath(),R.PROCSSESSOR_RUN_SCRIPT).getAbsolutePath();
 	}
 	
 	/**

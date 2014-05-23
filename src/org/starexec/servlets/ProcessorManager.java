@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -23,6 +25,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -38,6 +41,8 @@ public class ProcessorManager extends HttpServlet {
 
 	// The unique date stamped file name format (for saving processor files)
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+
 	
 	// Request attributes
 	private static final String PROCESSOR_NAME = "name";
@@ -125,6 +130,91 @@ public class ProcessorManager extends HttpServlet {
 	}
 	
 	/**
+	 * Attempts to copy a processor in the old format over to the new format
+	 * @param p the processor to copy over
+	 * @return true on success, false on failure. Failure will occur for a processor that is already in the new format
+	 * @throws Exception
+	 */
+	private static boolean copyProcessorToNewFormat(Processor p) throws Exception {
+		
+		File curFile=new File(p.getFilePath());
+		if (curFile.exists() && !curFile.isDirectory()) {
+			File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
+			if (newDirectory.exists()) {
+				File destination=new File(newDirectory,R.PROCSSESSOR_RUN_SCRIPT);
+				FileUtils.copyFile(curFile,destination);
+				return Processors.updateFilePath(p.getId(), newDirectory.getAbsolutePath());
+			}
+			
+			
+		}
+		return true; //we didn't need to do anything, so this is a success
+	}
+	
+	/**
+	 * One time task for copying all existing processors over into the new format.
+	 */
+	public static void copyAllProcessorsToNewFormat() {
+		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
+		for (ProcessorType type : types) {
+			List<Processor> procs=Processors.getAll(type);
+			for (Processor p : procs) {
+				try {
+					if (!copyProcessorToNewFormat(p)) {
+						log.error("error when trying to copy processor id = "+p.getId());
+					}
+				} catch(Exception e ){
+					log.error("got an error when trying to copy processor id = "+p.getId());
+					log.error(e.getMessage(),e);
+				}
+				
+			}
+		}
+	}
+	/**
+	 * Given a directory, recursively sets all files in the directory as executable
+	 * @param directory The directory in quesiton
+	 */
+	private static void setAllFilesExecutable(File directory) {
+		for (File f : directory.listFiles()) {
+			if (f.isDirectory()) {
+				setAllFilesExecutable(f);
+			} else {
+				if (!f.setExecutable(true,false)) {
+					log.warn("Could not set processor as executable: " + f.getAbsolutePath());
+				} else {
+					log.debug("successfully set processor as executable: "+f.getAbsolutePath());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Sets all processors that are in the proper new format to executable
+	 */
+	public static void setAllProcessorsExecutable() {
+		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
+		for (ProcessorType type : types) {
+			List<Processor> procs=Processors.getAll(type);
+			for (Processor p : procs) {
+				try {
+					setAllFilesExecutable(new File(p.getFilePath()));
+					//File exec=new File(p.getExecutablePath());
+					//if (!exec.setExecutable(true, false)) {			
+					//	log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
+					//}
+				} catch (Exception e) {
+					log.error("error setting processor executable id = "+p.getId());
+					log.error(e.getMessage(),e);
+				}
+				
+				
+				
+			}
+		}
+	}
+	
+	/**
 	 * Parses through form items and builds a new Processor object from it. Then it is
 	 * added to the database. Also writes the processor file to disk included in the request.
 	 * @param form The form fields for the request
@@ -142,15 +232,32 @@ public class ProcessorManager extends HttpServlet {
 			
 			// Save the uploaded file to disk
 			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
-			File newFile = ProcessorManager.getProcessorFilePath(newProc.getCommunityId(), FilenameUtils.getName(processorFile.getName()));
-			processorFile.write(newFile);
 			
-			if (!newFile.setExecutable(true, false)) {			
-				log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
+			File archiveFile=null;
+			
+			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
+
+			archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
+			
+			processorFile.write(archiveFile);
+			newProc.setFilePath(uniqueDir.getAbsolutePath());
+
+				
+			
+			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
+			
+			File processorScript=new File(uniqueDir,R.PROCSSESSOR_RUN_SCRIPT);
+			if (!processorScript.exists()) {
+				log.warn("the new processor did not have process script!");
+				return null;
 			}
+			ProcessorManager.setAllFilesExecutable(new File(newProc.getFilePath()));
+			//if (!processorScript.setExecutable(true, false)) {			
+			//	log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
+			//}
 			
-			newProc.setFilePath(newFile.getAbsolutePath());			
-			log.info(String.format("Wrote new %s processor to %s for community %d", procType, newFile.getAbsolutePath(), newProc.getCommunityId()));					
+	
+			log.info(String.format("Wrote new %s processor to %s for community %d", procType, uniqueDir.getAbsolutePath(), newProc.getCommunityId()));					
 			
 			int newProcId=Processors.add(newProc);
 			if(newProcId>0) {
@@ -188,20 +295,13 @@ public class ProcessorManager extends HttpServlet {
 	 * @param fileName The name of the file to create in the unique directory
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
-	public static File getProcessorFilePath(int communityId, String fileName) {
-		// Get the base benchmark type directory and add community ID
-		File saveDir = new File(R.PROCESSOR_DIR, "" + communityId);			
-		
-		// Then add the unique datetime to the path to ensure it's unique
-		saveDir = new File(saveDir, shortDate.format(new Date()));
-		
-		// Create the dirs
-		saveDir.mkdirs();
-		
-		// Finally tack on the file name
-		saveDir = new File(saveDir, fileName);
-		
-		return saveDir;
+	public static File getProcessorDirectory(int communityId, String procName) {
+		File uniqueDir = new File(R.PROCESSOR_DIR, "" + communityId);
+		//use the date to make sure the directory is unique
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		uniqueDir = new File(uniqueDir, procName);
+		uniqueDir.mkdirs();
+		return uniqueDir;
 	}
 	
 	/**
@@ -223,6 +323,13 @@ public class ProcessorManager extends HttpServlet {
 			if(!Validator.isValidPrimName((String)form.get(PROCESSOR_NAME))) {
 
 				return false;
+			}
+			
+			String fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
+			for(String ext : ProcessorManager.extensions) {
+				if(fileName.endsWith(ext)) {
+					return true;
+				}
 			}
 																	
 			if(!Validator.isValidPrimDescription((String)form.get(PROCESSOR_DESC))) {

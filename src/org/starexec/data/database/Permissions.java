@@ -397,6 +397,7 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	public static Permission get(int userId, int spaceId) {
+		log.debug("getting permissions for user id = "+userId+" and space id  = "+spaceId);
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;

@@ -10,6 +10,7 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
@@ -61,6 +62,7 @@ public class ResourceLoader {
 	 * @return 
 	 */
 	public static File getResource(String name) {
+		
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
 	
@@ -91,14 +93,16 @@ public class ResourceLoader {
 			p.setCommunityId(communityId);
 			p.setType(type);
 			
-			File newFile = ProcessorManager.getProcessorFilePath(communityId, p.getName());
+			File processorDir=ProcessorManager.getProcessorDirectory(communityId, p.getName());
 			File processorFile=getResource(fileName);
-			FileUtils.copyFile(processorFile, newFile);
-			
-			if (!newFile.setExecutable(true, false)) {			
-				log.warn("Could not set processor as executable: " + newFile.getAbsolutePath());
+			FileUtils.copyFileToDirectory(processorFile, processorDir);
+			ArchiveUtil.extractArchive(new File(processorDir,processorFile.getName()).getAbsolutePath());
+			File processorScript=new File(processorDir,R.PROCSSESSOR_RUN_SCRIPT);
+
+			if (!processorScript.setExecutable(true, false)) {			
+				log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
 			}
-			p.setFilePath(newFile.getAbsolutePath());			
+			p.setFilePath(processorDir.getAbsolutePath());			
 
 			int id=Processors.add(p);
 			if (id>0) {
@@ -124,9 +128,10 @@ public class ResourceLoader {
 	 * @param benchmarks The benchmarkIDs to run
 	 * @return The job object
 	 */
-	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds) {
+	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds,
+			int cpuTimeout, int wallclockTimeout, int memory) {
 		
-		Space space=Spaces.get(spaceId);
+		
 		String name=TestUtil.getRandomJobName();
 		Queue q=Queues.getUserQueues(userId).get(0);
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId());
@@ -140,7 +145,8 @@ public class ResourceLoader {
 		spaces.add(Spaces.get(spaceId));
 		HashMap<Integer,String> SP = new HashMap<Integer,String>();
 		SP.put(spaceId, Spaces.get(spaceId).getName());
-		JobManager.buildJob(job, userId, 100, 100, Util.gigabytesToBytes(1), benchmarkIds, solverIds, configIds, spaceId, SP);
+		log.debug("building a job with a total number of configs = "+configIds.size());
+		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, solverIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
 		return job;

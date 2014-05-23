@@ -289,7 +289,6 @@ public abstract class JobManager {
 			File file=new File(logPath);
 			file.getParentFile().mkdirs();
 			
-			//TODO: Make sure this works
 			sgeTemplate.setOutputPath(":" + logPath);
 			//log.debug("submitScript - Set Output Path for  " + pair.getId());
 

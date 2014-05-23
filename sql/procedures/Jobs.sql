@@ -478,17 +478,6 @@ CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN 
 	END //
 	
 
-	
--- Gets all SGE ids that have a certain status code
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetSGEIdsByStatus;
-CREATE PROCEDURE GetSGEIdsByStatus(IN _statusCode TINYINT)
-	BEGIN
-		SELECT sge_id
-		FROM job_pairs
-		WHERE status_code=_statusCode;
-	END //	
-
 -- Retrieves all jobs belonging to a user (but not their job pairs)
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS GetUserJobsById;

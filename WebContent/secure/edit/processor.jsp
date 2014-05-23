@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.ProcessorSecurity, java.util.List, org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -11,26 +11,18 @@ try {
 	int userId = SessionUtil.getUserId(request);
 	request.setAttribute("procType", request.getParameter("type"));
 	Processor proc=Processors.get(procId);
-	
-	// Only allowing editing of a processor if the user
-	// is a leader of the space the processor belongs to
-	List<User> leaders=Spaces.getLeaders(proc.getCommunityId());
+
 	
 	try {
 		List<String> settings=Communities.getDefaultSettings(proc.getCommunityId());
 		
 		request.setAttribute("defaultPPId",settings.get(4));
 	} catch (Exception e) {
-		
 		//We couldn't find the default post processor ID, which is not a big deal
 	}
 	boolean validUser=false;
-	
-	for (User x : leaders) {
-		if (x.getId()==userId) {
-			validUser=true;
-			break;
-		}
+	if (ProcessorSecurity.canUserEditProcessor(procId,userId)==0) {
+		validUser=true;
 	}
 	
 	if (!validUser) {

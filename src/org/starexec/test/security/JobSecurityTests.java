@@ -76,11 +76,11 @@ public class JobSecurityTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, Communities.getTestCommunity().getId());
+		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds);
+		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,100,100,1);
 		Assert.assertNotNull(Jobs.get(job.getId()));
 		
 	}
@@ -95,7 +95,7 @@ public class JobSecurityTests extends TestSequence {
 		Processors.delete(postProc.getId());
 		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());
 		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user.getId(),admin.getId());
+		Users.deleteUser(nonOwner.getId(),admin.getId());
 	}
 
 }

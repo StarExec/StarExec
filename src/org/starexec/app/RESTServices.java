@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -68,6 +69,7 @@ import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
+import org.starexec.util.LoggingManager;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -604,8 +606,12 @@ public class RESTServices {
 	public String getQueueJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
-
+		try {
+		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
+		}
+		catch(Exception e) {
+		    log.error(e);
+		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
@@ -670,7 +676,6 @@ public class RESTServices {
 		if(primType.startsWith("j")){
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
-			log.debug("getting next page of users");
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
 			
@@ -3209,6 +3214,70 @@ public class RESTServices {
 			
 		}
 	}
+	
+	//Allows the administrator to set the current logging level for a specific class.
+	@POST
+	@Path("/logging/{level}/{className}")
+	@Produces("application/json")
+	public String setLoggingLevel(@PathParam("level") String level, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserChangeLogging(userId);
+		if (status!=0) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		if (level.equalsIgnoreCase("trace")) {
+			LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
+		} else if (level.equalsIgnoreCase("debug")) {
+			LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
+		} else if (level.equalsIgnoreCase("info")) {
+			LoggingManager.setLoggingLevelForClass(Level.INFO,className);
+		} else if (level.equalsIgnoreCase("error")) {
+			LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
+		} else if(level.equalsIgnoreCase("fatal")) {
+			LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
+		} else if (level.equalsIgnoreCase("off")) {
+			LoggingManager.setLoggingLevelForClass(Level.OFF,className);
+		} else if (level.equalsIgnoreCase("warn")) {
+			LoggingManager.setLoggingLevelForClass(Level.WARN,className);
+		} else if (level.equalsIgnoreCase("clear")) {
+			LoggingManager.setLoggingLevelForClass(null,className);
+		} else {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		return gson.toJson(0);
+	}
+	
+	//Allows the administrator to set the current logging level across the entire system.
+	@POST
+	@Path("/logging/{level}")
+	@Produces("application/json")
+	public String setLoggingLevel(@PathParam("level") String level, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		int status=GeneralSecurity.canUserChangeLogging(userId);
+		if (status!=0) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		
+		if (level.equalsIgnoreCase("trace")) {
+			LoggingManager.setLoggingLevel(Level.TRACE);
+		} else if (level.equalsIgnoreCase("debug")) {
+			LoggingManager.setLoggingLevel(Level.DEBUG);
+		} else if (level.equalsIgnoreCase("info")) {
+			LoggingManager.setLoggingLevel(Level.INFO);
+		} else if (level.equalsIgnoreCase("error")) {
+			LoggingManager.setLoggingLevel(Level.ERROR);
+		} else if(level.equalsIgnoreCase("fatal")) {
+			LoggingManager.setLoggingLevel(Level.FATAL);
+		} else if (level.equalsIgnoreCase("off")) {
+			LoggingManager.setLoggingLevel(Level.OFF);
+		} else if (level.equalsIgnoreCase("warn")) {
+			LoggingManager.setLoggingLevel(Level.WARN);
+		} else {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		return gson.toJson(0);
+	}
 		
 	@POST
 	@Path("/restart/starexec")
@@ -3292,7 +3361,7 @@ public class RESTServices {
 				e1.printStackTrace();
 			}
 			
-			if (newDateSql.before(latestSql)) {
+			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
 				return gson.toJson(4);
 			}
 			

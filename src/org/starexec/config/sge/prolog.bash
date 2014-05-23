@@ -56,8 +56,9 @@ LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 # Path to where the benchmark will be copied
 LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 
-# Path to where benchmark will be stored after pre-processing
-LOCAL_PROCESSED_BENCH_DIR="$WORKING_DIR/procBenchmark"
+
+# Path to where the pre-processor will be copied
+LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
@@ -70,6 +71,9 @@ BENCH_NAME="${BENCH_PATH##*/}"
 
 # The path to the benchmark on the execution host
 LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
+
+# The path to the benchmark on the execution host
+PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 
 # The path to the config run script on the execution host
 CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
@@ -158,11 +162,15 @@ _SOLVER_DIR)"
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-		cp "$PRE_PROCESSOR_PATH" "$STAREXEC_OUT_DIR/preProcessor"
+		mkdir $STAREXEC_OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/preProcessor
+		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
+		cd "$STAREXEC_OUT_DIR"/preProcessor
 		log "executing pre processor"
-		"$STAREXEC_OUT_DIR/preProcessor" "$LOCAL_BENCH_DIR" > "$LOCAL_PROCESSED_BENCH_DIR"
+		./process "$LOCAL_BENCH_PATH" > "$PROCESSED_BENCH_PATH"
 		#use the processed benchmark in subsequent steps
-		LOCAL_BENCH_DIR="$LOCAL_PROCESSED_BENCH_DIR"
+		rm "$LOCAL_BENCH_PATH"
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
 	fi
 	
 	
@@ -174,7 +182,7 @@ _SOLVER_DIR)"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
 		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-			"$STAREXEC_OUT_DIR/preProcessor" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		fi

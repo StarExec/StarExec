@@ -40,7 +40,7 @@ public class Permission extends Identifiable {
 		this.removeUser = defaultPerm;
 		this.removeSpace = defaultPerm;
 		this.removeJob = defaultPerm;
-		this.isLeader = defaultPerm;
+		this.isLeader = false;
 	}
 	
 	/**

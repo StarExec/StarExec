@@ -51,9 +51,11 @@
 			<ul id="actionList">
 				<li><a id="joinComm" href="#">join</a></li>
 				<li><a id="leaveComm">leave</a></li>
-				<li><a id="editComm" href="#">edit</a></li>							
+				<li><a id="editComm" href="#">edit</a></li>			
+				<li><a id="downloadPreProcessors">download preprocessors</a></li>				
 				<li><a id="downloadPostProcessors">download postprocessors</a></li>
 				<li><a id="downloadBenchProcessors">download benchmark processors</a></li>
+				
 			</ul>
 		</fieldset>				
 	</div>	

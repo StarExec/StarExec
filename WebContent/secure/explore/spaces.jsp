@@ -130,7 +130,7 @@
 				<li><a class="btnUp" id="uploadBench" href="/${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
 				<li><a class="btnUp" id="uploadSolver" href="/${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>				
 				<li><a class="btnRun" id="addJob" href="/${starexecRoot}/secure/add/job.jsp">create job</a></li>
-				<li><a class="btnDown" id="downloadXML" href="/${starexecRoot}/secure/download">download space xml</a></li>				
+				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
@@ -151,12 +151,17 @@
 		</fieldset>	
 
 	</div>	
-	
+	<div id="dialog-confirm-change" title="confirm change">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
+	</div>
 	<div id="dialog-confirm-copy" title="confirm copy">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>
+	<div id="dialog-spacexml-attributes" title="include attributes">
+  	  <p><span id="dialog-spacexml-attributes-txt"></span></p>
 	</div>
 	<div id="dialog-download-space" title="download space">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-download-space-txt"></span></p><br>

@@ -78,7 +78,7 @@ public class ProcessorTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		community=Communities.getTestCommunity();
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.sh", ProcessorType.POST, community.getId());
+		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
 		
 	}
 

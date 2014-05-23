@@ -225,6 +225,14 @@ function getPrimDescRegex(){
 function getUserNameRegex(){
 	return "^[a-zA-Z\\-'\\s]+$";
 }
+
+/**
+ * Returns the regexp for validating names of GridEngine queues.
+ */
+function getQueueNameRegex(){
+	return "^[\\w]+$";
+}
+
 /**
  * Returns true if the string is "true" and false otherwise
  * @param string

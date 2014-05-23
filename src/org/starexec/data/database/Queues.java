@@ -493,12 +493,16 @@ public class Queues {
 			
 			 results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
-
+			
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
+				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
+				
+				jp.setBench(Benchmarks.getIncludeDeletedAndRecycled(results.getInt("bench_id"),false));
+				log.debug(jp.getBench());
+				
+				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),true));
 				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 				Status s = new Status();
 
@@ -507,7 +511,7 @@ public class Queues {
 				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
 				returnList.add(jp);
 			}			
-
+			log.debug("the returnlist had "+returnList.size()+" items");
 			Common.safeClose(results);
 			return returnList;			
 			
@@ -719,41 +723,20 @@ public class Queues {
 			return getQueues(0);
 		} else {
 			
-			List<Space> user_spaces = Spaces.GetSpacesByUser(userId);
-			List<Integer> all_spaces = new LinkedList<Integer>();
-			if (user_spaces != null) {
-				for (Space s : user_spaces) {
-					all_spaces.add(s.getId());
-				}
-				for (Space s : user_spaces) {
-					List<Space> superSpaces = Spaces.getSuperSpaces(s.getId());
-					for (Space s1 : superSpaces) {
-						if (!all_spaces.contains(s1.getId())) {
-							all_spaces.add(s1.getId());
-						}
-					}
-				}
-			}	
 			
-			log.debug("all_spaces" + all_spaces.size());
+			List<Space> spaces = Spaces.getAllSuperSpaces(userId);
 			
 			List<Queue> queues = new LinkedList<Queue>();
 			// First add all the queues that have been reserved for a 
 			// superspace that the user is a member of
-			if (all_spaces != null) {
-				for (int s : all_spaces) {
-					log.debug("space = " + s);
-					queues.addAll(Queues.getQueuesForSpace(s));
+			if (spaces != null) {
+				for (Space s : spaces) {
+					queues.addAll(Queues.getQueuesForSpace(s.getId()));
 				}
 			}
 			
-			log.debug("queues size = " + queues.size());
-			queues.addAll(Queues.getPermanentQueuesForUser(userId));
-			log.debug("queues size = " + queues.size());
-			
-			
-			
-			
+			//Then get the permanent queues for the user
+			queues.addAll(Queues.getPermanentQueuesForUser(userId));			
 			return queues;
 
 		}

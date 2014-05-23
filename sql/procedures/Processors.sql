@@ -81,6 +81,16 @@ CREATE PROCEDURE UpdateProcessorDescription(IN _id INT, IN _desc TEXT)
 		WHERE id=_id;
 	END //
 	
+-- Updates a processor's file path
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS UpdateProcessorFilePath;
+CREATE PROCEDURE UpdateProcessorFilePath(IN _id INT, IN _path TEXT)
+	BEGIN		
+		UPDATE processors
+		SET path=_path
+		WHERE id=_id;
+	END //
+	
 -- Updates a processor's name
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateProcessorName;

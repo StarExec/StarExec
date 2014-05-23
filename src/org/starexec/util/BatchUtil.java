@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -57,17 +59,18 @@ public class BatchUtil {
 	 *  @author Benton McCune
 	 *  @param space The space for which we want an xml representation.
 	 *  @param userId the id of the user making the request
+	 *  @param includeAttributes whether or not to include benchmark attributes
 	 *  @return xml file to represent space hierarchy of input space
 	 *  @throws Exception   
 	 */	
-	public File generateXMLfile(Space space, int userId) throws Exception{
+    public File generateXMLfile(Space space, int userId, boolean includeAttributes) throws Exception{
 		log.debug("Generating XML for Space = " +space.getId());			
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		
 		doc = docBuilder.newDocument();
-		Element rootSpace = generateSpacesXML(space, userId);
+		Element rootSpace = generateSpacesXML(space, userId, includeAttributes);
 		doc.appendChild(rootSpace);
 		
 		// write the content into xml file
@@ -81,7 +84,7 @@ public class BatchUtil {
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
 		
-		validateAgainstSchema(file);
+		//validateAgainstSchema(file);
 		return file;
 	}
 	
@@ -90,9 +93,10 @@ public class BatchUtil {
      *  @author Benton McCune
      *  @param space The space for which we want an xml representation.
      *  @param userId the id of the user making the request
+     *  @param includeAttributes whether or not to include benchmark attributes
      *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
      */	
-    public Element generateSpacesXML(Space space, int userId){		
+    public Element generateSpacesXML(Space space, int userId, boolean includeAttributes){		
 	log.debug("Generating Space XML for space " + space.getId());
 	Element spacesElement=null;
 
@@ -102,7 +106,7 @@ public class BatchUtil {
 	spacesElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
 		
-	Element rootSpaceElement = generateSpaceXML(space, userId);
+	Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes);
 	spacesElement.appendChild(rootSpaceElement);
 		
 	return spacesElement;
@@ -113,9 +117,10 @@ public class BatchUtil {
 	 *  @author Benton McCune
 	 *  @param space The space for which we want an xml representation.
 	 *  @param userId the id of the user making the request
+	 *  @param includeAttributes whether or not to include benchmark attributes
 	 *  @return spaceElement for xml file to represent space hierarchy of input space 
 	 */	
-	public Element generateSpaceXML(Space space, int userId){		
+    public Element generateSpaceXML(Space space, int userId, boolean includeAttributes){		
 		log.debug("Generating Space XML for space " + space.getId());
 		
 		Element spaceElement = doc.createElement("Space");
@@ -217,6 +222,20 @@ public class BatchUtil {
 			Element benchElement = doc.createElement("Benchmark");	
 			benchElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			benchElement.setAttribute("name", benchmark.getName());
+			if (includeAttributes) {
+			    Properties attrs = Benchmarks.getAttributes(benchmark.getId());
+			    if (attrs != null) {
+				Enumeration<Object> keys = attrs.keys();
+				while (keys.hasMoreElements()) {
+				    String attr = (String)keys.nextElement();
+				    String val = (String)attrs.get(attr);
+				    Element attre = doc.createElement("Attribute");
+				    attre.setAttribute("name",attr);
+				    attre.setAttribute("value",val);
+				    benchElement.appendChild(attre);
+				}
+			    }
+			}
 			spaceElement.appendChild(benchElement);
 		}
 		for (Solver solver:space.getSolvers()){		
@@ -226,7 +245,7 @@ public class BatchUtil {
 			spaceElement.appendChild(solverElement);
 		}	
 		for (Space subspace:space.getSubspaces()){			
-			spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId));
+		    spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId, includeAttributes));
 		}
 		
 		return spaceElement;
@@ -249,7 +268,7 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			String schemaLoc = R.SPACE_XML_SCHEMA_LOC;
+			String schemaLoc = R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();

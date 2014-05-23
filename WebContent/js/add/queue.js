@@ -58,7 +58,7 @@ function attachFormValidation() {
 				required: true,
 				minlength: 2,
 				maxlength: $("#txtQueueName").attr("length"),
-				regex : getPrimNameRegex()
+				regex : getQueueNameRegex()
 			},
 			node: {
 				required: true,

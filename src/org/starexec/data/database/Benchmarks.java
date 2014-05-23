@@ -82,7 +82,7 @@ public class Benchmarks {
 
 			} finally {
 				Common.safeClose(con);
-				Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
+				//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			}
 		} else {
 			log.debug("Add called on invalid benchmark, no additions will be made to the database");
@@ -530,7 +530,7 @@ public class Benchmarks {
 			}			
 
 			Common.endTransaction(con);
-			Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
+			//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -550,6 +550,8 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
+	
+	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
@@ -559,11 +561,11 @@ public class Benchmarks {
 
 			try {
 				// Run the processor on the benchmark file
-				log.info("executing - " + p.getFilePath() + " \"" + b.getPath() + "\"");
+				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
-				procCmd[0] = p.getFilePath();
+				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 				procCmd[1] = b.getPath();
-				reader = Util.executeCommand(procCmd,null);
+				reader = Util.executeCommandInDirectory(procCmd,null,new File(p.getFilePath()));
 				if (reader == null){
 					log.error("Reader is null!");
 				}
@@ -597,6 +599,7 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
+	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
@@ -606,11 +609,12 @@ public class Benchmarks {
 
 			try {
 				// Run the processor on the benchmark file
-				log.info("executing - " + p.getFilePath() + " \"" + b.getPath() + "\"");
+				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
-				procCmd[0] = p.getFilePath();
+				
+				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 				procCmd[1] = b.getPath();
-				reader = Util.executeCommand(procCmd,null);
+				reader = Util.executeCommandInDirectory(procCmd,null,new File(p.getFilePath()));
 				log.debug("reader is null = " + (reader == null));
 				if (reader == null){
 					log.error("Reader is null!");
@@ -760,15 +764,15 @@ public class Benchmarks {
 		CallableStatement procedure=null;
 		
 		try {
-			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
+			//Cache.invalidateSpacesAssociatedWithBench(id);
+			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL SetBenchmarkToDeletedById(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
-
+			
 			Util.safeDeleteDirectory(procedure.getString(2));		
 			return true;
 		} catch (Exception e){		
@@ -893,12 +897,16 @@ public class Benchmarks {
 					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
 					// Make sure that the benchmark has a unique name in the space.
 					if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
-						throw new Exception("\""+b.getName() + "\" is not a unique name in the space.");
+					    String msg = "\""+b.getName() + "\" is not a unique name in the space.";
+					    Uploads.setErrorMessage(statusId, msg);
+					    throw new Exception(msg);
 					}
 
 					space.addBenchmark(b);
 				} else {
-					throw new Exception("\""+f.getName() + "\" is not accepted as a legal benchmark name.");
+				    String msg = "\""+f.getName() + "\" is not accepted as a legal benchmark name.";
+				    Uploads.setErrorMessage(statusId, msg);
+				    throw new Exception(msg);
 				}
 
 			}
@@ -956,7 +964,7 @@ public class Benchmarks {
 	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws Exception {	
 		CallableStatement procedure=null;
 		ResultSet results=null;
-
+	
 		try {
 			if (!includeDeleted) {
 				procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
@@ -1176,13 +1184,13 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 
 			Properties prop = new Properties();
-			HashMap<String,String> attrMap = new HashMap<String, String>();
 			while(results.next()){
-				attrMap.put(results.getString("attr_key"), results.getString("attr_value"));
+				prop.setProperty(results.getString("attr_key"), results.getString("attr_value"));
 			}
 
 			if(prop.size() <= 0) {
-				prop = null;
+			    log.debug("No attributes found for benchmark "+new Integer(benchId));
+			    prop = null;
 			}
 
 			return prop;
@@ -1678,11 +1686,11 @@ public class Benchmarks {
 			procedure.setInt(1, benchId);					
 			results = procedure.executeQuery();
 
-			TreeMap<String,String> sortedMap2 = new TreeMap<String,String>();
+			TreeMap<String,String> sortedMap = new TreeMap<String,String>();
 			while (results.next()){
-				sortedMap2.put(results.getString("attr_key"), results.getString("attr_value"));
+				sortedMap.put(results.getString("attr_key"), results.getString("attr_value"));
 			}
-			return sortedMap2;
+			return sortedMap;
 		} catch (Exception e) {
 			log.error("getSortedAttributes says "+e.getMessage(),e);
 		} finally {
@@ -2059,8 +2067,8 @@ public class Benchmarks {
 		CallableStatement procedure=null;
 		
 		try {
-			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
+			//Cache.invalidateSpacesAssociatedWithBench(id);
+			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetBenchmarkRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -2101,8 +2109,8 @@ public class Benchmarks {
 			procedure.executeUpdate();					
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
 			//invalidate the cache of every space associated with this benchmark
-			Cache.invalidateSpacesAssociatedWithBench(id);
-			Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
+			//Cache.invalidateSpacesAssociatedWithBench(id);
+			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

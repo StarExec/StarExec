@@ -113,7 +113,7 @@ public class SolverTests extends TestSequence {
 	}
 	@Test 
 	private void deleteConfigTest() {
-		Configuration c=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config", solver.getId());
+		Configuration c=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
 		Assert.assertNotNull(c);
 		Assert.assertNotNull(Solvers.getConfiguration(c.getId()));
 		Assert.assertTrue(Solvers.deleteConfiguration(c.getId()));

@@ -267,11 +267,12 @@ CREATE TABLE job_pairs (
 	path VARCHAR(2048),
 	maximum_memory BIGINT DEFAULT 1073741824,
 	PRIMARY KEY(id),
-	UNIQUE KEY(sge_id),
+	KEY(sge_id),
 	KEY (job_space_id, config_id),
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
+--	KEY (status_code), -- TODO: Do we actually want this change
 	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index

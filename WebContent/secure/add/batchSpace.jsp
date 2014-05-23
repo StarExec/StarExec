@@ -31,7 +31,11 @@
 					<td>file location</td>
 					<td><input id="fileUpload" name="f" type="file" /></td>
 				</tr>
+				<tr>
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
+				</tr>
+				<tr>
+					<td><a href="../../public/batchSpaceSchema.xsd">view the schema here</a></td>
 				</tr>
 			</table>																	
 		</fieldset>

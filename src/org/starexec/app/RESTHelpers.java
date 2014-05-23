@@ -1115,92 +1115,97 @@ public class RESTHelpers {
 	 */
 
 	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
+		try {
+			// Parameter validation
+			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapCluster(type,
+					request);
+			if (null == attrMap) {
+				return null;
+			}
 
-		// Parameter validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapCluster(type,
-				request);
-		if (null == attrMap) {
+			List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+			int totalJobPairs = 0;
+
+			if (type.equals("queue")) {
+				// Retrieves the relevant Job objects to use in constructing the
+				// JSON to send to the client
+				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
+						attrMap.get(STARTING_RECORD), // Record to start at
+						attrMap.get(RECORDS_PER_PAGE), // Number of records to
+														// return
+						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																			// direction
+																			// (true
+																			// for
+																			// ASC)
+						attrMap.get(SORT_COLUMN), // Column sorted on
+						request.getParameter(SEARCH_QUERY), // Search query
+						id, // Parent space id
+						"queue" // It is a queue, not a node
+				);
+				List<JobPair> enqueuedPairs = Queues.getEnqueuedPairsDetailed(id);
+				totalJobPairs = enqueuedPairs.size();
+				/**
+				 * Used to display the 'total entries' information at the bottom of
+				 * the DataTable; also indirectly controls whether or not the
+				 * pagination buttons are toggle-able
+				 */
+				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
+				// TOTAL_RECORDS
+				if (attrMap.get(SEARCH_QUERY) == EMPTY) {
+					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+				}
+				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+				else {
+					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+				}
+				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,
+						totalJobPairs, attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
+						attrMap.get(SYNC_VALUE), userId);
+
+			} else if (type.equals("node")) {
+				// Retrieves the relevant Job objects to use in constructing the
+				// JSON to send to the client
+				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
+						attrMap.get(STARTING_RECORD), // Record to start at
+						attrMap.get(RECORDS_PER_PAGE), // Number of records to
+														// return
+						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																			// direction
+																			// (true
+																			// for
+																			// ASC)
+						attrMap.get(SORT_COLUMN), // Column sorted on
+						request.getParameter(SEARCH_QUERY), // Search query
+						id, // Parent space id
+						"node" // It is a node, not a queue
+				);
+				List<JobPair> runningPairs = Queues.getRunningPairsDetailed(id);
+				totalJobPairs = runningPairs.size();
+				/**
+				 * Used to display the 'total entries' information at the bottom of
+				 * the DataTable; also indirectly controls whether or not the
+				 * pagination buttons are toggle-able
+				 */
+				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
+				// TOTAL_RECORDS
+				if (attrMap.get(SEARCH_QUERY) == EMPTY) {
+					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+				}
+				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+				else {
+					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+				}
+				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,
+						totalJobPairs, attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
+						attrMap.get(SYNC_VALUE), userId);
+			}
 			return null;
-		}
-
-		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
-		int totalJobPairs = 0;
-
-		if (type.equals("queue")) {
-			// Retrieves the relevant Job objects to use in constructing the
-			// JSON to send to the client
-			jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
-					attrMap.get(STARTING_RECORD), // Record to start at
-					attrMap.get(RECORDS_PER_PAGE), // Number of records to
-													// return
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																		// direction
-																		// (true
-																		// for
-																		// ASC)
-					attrMap.get(SORT_COLUMN), // Column sorted on
-					request.getParameter(SEARCH_QUERY), // Search query
-					id, // Parent space id
-					"queue" // It is a queue, not a node
-			);
-			List<JobPair> enqueuedPairs = Queues.getEnqueuedPairsDetailed(id);
-			totalJobPairs = enqueuedPairs.size();
-			/**
-			 * Used to display the 'total entries' information at the bottom of
-			 * the DataTable; also indirectly controls whether or not the
-			 * pagination buttons are toggle-able
-			 */
-			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-			// TOTAL_RECORDS
-			if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
-			}
-			// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-			else {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
-			}
-			return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,
-					totalJobPairs, attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
-					attrMap.get(SYNC_VALUE), userId);
-
-		} else if (type.equals("node")) {
-			// Retrieves the relevant Job objects to use in constructing the
-			// JSON to send to the client
-			jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
-					attrMap.get(STARTING_RECORD), // Record to start at
-					attrMap.get(RECORDS_PER_PAGE), // Number of records to
-													// return
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																		// direction
-																		// (true
-																		// for
-																		// ASC)
-					attrMap.get(SORT_COLUMN), // Column sorted on
-					request.getParameter(SEARCH_QUERY), // Search query
-					id, // Parent space id
-					"node" // It is a node, not a queue
-			);
-			List<JobPair> runningPairs = Queues.getRunningPairsDetailed(id);
-			totalJobPairs = runningPairs.size();
-			/**
-			 * Used to display the 'total entries' information at the bottom of
-			 * the DataTable; also indirectly controls whether or not the
-			 * pagination buttons are toggle-able
-			 */
-			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-			// TOTAL_RECORDS
-			if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
-			}
-			// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-			else {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
-			}
-			return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,
-					totalJobPairs, attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
-					attrMap.get(SYNC_VALUE), userId);
+		} catch (Exception e) {
+			log.error("getNextDataTablesPageCluster says "+e.getMessage(),e);
 		}
 		return null;
+		
 	}
 
 	/**
@@ -1658,7 +1663,7 @@ public class RESTHelpers {
     		// Create the benchmark link
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
-    		sb.append(j.getBench().getDescription());
+    		sb.append(j.getBench().getDescription()); // NULL POINTER HERE
     		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
     		sb.append(j.getBench().getId());
     		sb.append("\" target=\"_blank\">");

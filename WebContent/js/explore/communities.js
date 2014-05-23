@@ -64,7 +64,7 @@ $(document).ready(function(){
 	$("#editComm").fadeOut('fast');
 	$("#downloadPostProcessors").fadeOut('fast');
 	$("#downloadBenchProcessors").fadeOut('fast');
-	
+	$("#downloadPreProcessors").fadeOut('fast');
 	
 	
 	
@@ -95,6 +95,11 @@ $(document).ready(function(){
 			secondary: "ui-icon-arrowthick-1-s"
 		}
 	});
+	$("#downloadPreProcessors").button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-s"
+		}
+	});
 	
 	initDialogs();
 	$("#leaveComm").click(function(){
@@ -121,6 +126,9 @@ $(document).ready(function(){
 	});
 	$("#downloadBenchProcessors").click(function(){
 		downloadProcs(id, "bench");
+	});
+	$("#downloadPreProcessors").click(function(){
+		downloadProcs(id, "pre");
 	});
 });
 
@@ -227,12 +235,14 @@ function checkPermissions(perms) {
 		$('#editComm').fadeOut('fast');
 		$('#downloadPostProcessors').fadeOut('fast');
 		$('#downloadBenchProcessors').fadeOut('fast');
+		$('#downloadPreProcessors').fadeOut('fast');
 		return;
 	} else {
 		$('#joinComm').fadeOut('fast');
 		$('#leaveComm').fadeIn('fast');
 		$('#downloadPostProcessors').fadeIn('fast');
 		$('#downloadBenchProcessors').fadeIn('fast');
+		$('#downloadPreProcessors').fadeIn('fast');
 	}
 	
 	if(perms.isLeader) {

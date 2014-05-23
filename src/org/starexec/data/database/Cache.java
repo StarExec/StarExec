@@ -259,7 +259,7 @@ public class Cache {
 				int spaceId=id;
 				//invalidate up to the root space
 				while (spaceId>1) {
-					Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE_HIERARCHY);
+					//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE_HIERARCHY);
 					int ancestorSpaceId=Spaces.getParentSpace(spaceId);
 					if (ancestorSpaceId==spaceId) {
 						break;
