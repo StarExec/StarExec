@@ -708,10 +708,10 @@ public class GridEngineUtil {
 			
 			for (WorkerNode n : transferNodes) {
 				//add it to @allhosts
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 				
 				//remove it from @<queueName>hosts
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
 			}
 		}		
 	}
@@ -730,10 +730,10 @@ public class GridEngineUtil {
 			
 			for (WorkerNode n : transferNodes) {
 				//add it to @<queueName>hosts
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
 				
 				//Remove it from allhosts
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}
 		}		
 	}
@@ -762,7 +762,7 @@ public class GridEngineUtil {
 		
 		if (nodes != null) {
 			for (WorkerNode n : nodes) {
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}
 		}
 		
@@ -772,12 +772,12 @@ public class GridEngineUtil {
 			Requests.DeleteReservation(req);
 
 			//DISABLE the queue: 
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
 			//DELETE the queue:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName(), envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName(), envp);
 			
 			//Delete the host group:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
 			
 		    GridEngineUtil.loadWorkerNodes();
 		    GridEngineUtil.loadQueues();
@@ -827,7 +827,7 @@ public class GridEngineUtil {
 			String[] envp = new String[1];
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 			log.debug("envp[0] = " + envp[0]);
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
 			
 			
 			
@@ -893,11 +893,11 @@ public class GridEngineUtil {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue30.q", envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 					
 			//Transfer nodes out of @allhosts
 			for (WorkerNode n : transferNodes) {
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}
 		    GridEngineUtil.loadWorkerNodes();
 		    GridEngineUtil.loadQueues();
@@ -935,7 +935,7 @@ public class GridEngineUtil {
 					String name = queue.getName();
 					String[] split3 = name.split("\\.");
 					String shortQName = split3[0];
-					Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
 				}
 			}
 			
@@ -953,7 +953,7 @@ public class GridEngineUtil {
 				sb.append(" ");
 				
 				// Transfer nodes out of @allhosts
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodes.get(i).getName() + " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodes.get(i).getName() + " @allhosts", envp);
 			}
 		}
 		
@@ -978,7 +978,7 @@ public class GridEngineUtil {
 
 		//Add the host
 
-		Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
+		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
 		
 			
 			
@@ -1045,7 +1045,7 @@ public class GridEngineUtil {
 			e.printStackTrace();
 			return false;
 		}
-		Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq tmp/newQueue30.q", envp);
+		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 					
 		
 
@@ -1075,7 +1075,7 @@ public class GridEngineUtil {
 		
 		if (nodes != null) {
 			for (WorkerNode n : nodes) {
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
 			}
 		}
 		
@@ -1085,12 +1085,12 @@ public class GridEngineUtil {
 			Queues.delete(queueId);
 			
 			//DISABLE the queue: 
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
 			//DELETE the queue:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
 			
 			//Delete the host group:
-			Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
 			
 		    GridEngineUtil.loadWorkerNodes();
 		    GridEngineUtil.loadQueues();		
@@ -1132,8 +1132,8 @@ public class GridEngineUtil {
 				String name = queue.getName();
 				String[] split3 = name.split("\\.");
 				String shortQName = split3[0];
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
-				Util.executeCommand("sudo -u sgeadmin /export/cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
 			}
 		}
 	    GridEngineUtil.loadWorkerNodes();
