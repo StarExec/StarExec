@@ -606,8 +606,12 @@ public class RESTServices {
 	public String getQueueJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
-
+		try {
+		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
+		}
+		catch(Exception e) {
+		    log.error(e);
+		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	

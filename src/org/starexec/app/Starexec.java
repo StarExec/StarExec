@@ -34,7 +34,7 @@ import org.starexec.util.Validator;
  */
 public class Starexec implements ServletContextListener {
     private Logger log;
-    private static final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);	
+    private ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);	
     private Session session; // GridEngine session
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
@@ -43,32 +43,34 @@ public class Starexec implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		try {
-			// Stop the task scheduler since it freezes in an unorderly shutdown...
-			log.debug("Stopping starexec task scheduler...");
-			taskScheduler.shutdown();
+		    log.info("Initiating shutdown of StarExec.");
+		    // Stop the task scheduler since it freezes in an unorderly shutdown...
+		    log.debug("Stopping starexec task scheduler...");
+		    taskScheduler.shutdown();
 			
-			// Make sure to clean up database resources
-			log.debug("Releasing database connections...");
-			Common.release();
+		    // Make sure to clean up database resources
+		    log.debug("Releasing database connections...");
+		    Common.release();
 			
-			log.debug("Releasing grid engine util threadpool...");
-			GridEngineUtil.shutdown();
+		    log.debug("Releasing grid engine util threadpool...");
+		    GridEngineUtil.shutdown();
 			
-			log.debug("session = " + session);
-			log.debug("session 2 = " + session.toString());
+		    log.debug("session = " + session);
+		    log.debug("session 2 = " + session.toString());
 			
-			if (!session.toString().contains("drmaa")) {
-
-				log.debug("Shutting down the session..." + session);
-				GridEngineUtil.destroySession(session);
-			}
-			// Wait for the task scheduler to finish
-			taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
-			taskScheduler.shutdownNow();
-			log.info("StarExec successfully shutdown");
+		    if (!session.toString().contains("drmaa")) {
+			log.debug("Shutting down the session..." + session);
+			GridEngineUtil.destroySession(session);
+		    }
+		    // Wait for the task scheduler to finish
+		    taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
+		    taskScheduler.shutdownNow();
+		    log.info("The task scheduler reports it was "+(taskScheduler.isTerminated() ? "" : "not ") 
+			     +"terminated successfully.");
+		    log.info("StarExec successfully shutdown");
 		} catch (Exception e) {
-			log.error(e);
-			log.error("StarExec unclean shutdown");
+		    log.error(e);
+		    log.error("StarExec unclean shutdown");
 		}		
 	}
 

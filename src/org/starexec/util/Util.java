@@ -360,7 +360,7 @@ public class Util {
 		try {					
 		    Process p;
 		    if (command.length == 1) {
-			log.info("Executing the following command: " + command[0]);
+			log.debug("Executing the following command: " + command[0]);
 			
 			p = r.exec(command[0], envp);
 		    }
@@ -420,7 +420,7 @@ public class Util {
 		try {					
 		    Process p;
 		    if (command.length == 1) {
-			log.info("Executing the following command: " + command[0]);
+			log.debug("Executing the following command: " + command[0]);
 			
 			p = r.exec(command[0], envp);
 		    }
