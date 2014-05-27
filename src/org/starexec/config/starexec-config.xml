@@ -64,7 +64,6 @@
 			<property key="TEST_USER_PASSWORD" value="null"/>
 	  		<property key="REPORT_HOST" value="starexec1.star.cs.uiowa.edu" />
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
-			<property key="MAX_PAIR_VMEM" value="4294967296" /> <!-- in bytes -->
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
    		</class>
@@ -78,7 +77,6 @@
 			<property key="TEST_COMMUNITY_ID" value="2"/>
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
 	  		<property key="NUM_JOB_SCRIPTS" value="20" />
-			<property key="MAX_PAIR_VMEM" value="4294967296" /> <!-- in bytes -->
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
                         <property key="MYSQL_USERNAME" value="stardev" />

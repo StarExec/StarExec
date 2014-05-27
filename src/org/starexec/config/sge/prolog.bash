@@ -274,6 +274,9 @@ NODE_MEM=$(($NODE_MEM/2))
 NODE_MEM=$(($NODE_MEM/1024))
 if [ $MAX_MEM -gt $NODE_MEM ]
 then
+
+echo "truncating max memory from $MAX_MEM to $NODE_MEM"
+
 MAX_MEM=$NODE_MEM
 
 fi
