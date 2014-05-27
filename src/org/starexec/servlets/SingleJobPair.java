@@ -52,7 +52,7 @@ public class SingleJobPair extends HttpServlet {
     private Integer postProcessorId = 0;
     private Integer cpuLimit = R.PUBLIC_CPU_LIMIT;
     private Integer clockTimeout = R.PUBLIC_CLOCK_TIMEOUT;
-    private long maxMemory=R.MAX_PAIR_VMEM;
+    private long maxMemory=R.DEFAULT_PAIR_VMEM;
     
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

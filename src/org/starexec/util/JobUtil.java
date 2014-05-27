@@ -183,7 +183,7 @@ public class JobUtil {
 		double memLimit = Double.parseDouble(jobElement.getAttribute("mem-limit"));
 		
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
-		memoryLimit = (memoryLimit <=0) ? R.MAX_PAIR_VMEM : memoryLimit;
+		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 		
 		HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);
 		

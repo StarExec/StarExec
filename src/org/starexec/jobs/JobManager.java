@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
@@ -320,6 +321,10 @@ public abstract class JobManager {
 		return -1;
 	}
 
+    protected static String base64encode(String s) {
+	return new String(Base64.encodeBase64(s.getBytes()));
+    }
+
 	/**
 	 * Creates a new job script file based on the given job and job pair.
 	 * @param template The template to base the new script off of
@@ -329,13 +334,14 @@ public abstract class JobManager {
 	 */
 	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
 		String jobScript = template;		
+
 		// General pair configuration
-		jobScript = jobScript.replace("$$SOLVER_PATH$$", pair.getSolver().getPath());
+		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getSolver().getPath()));
 		jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getSolver().getId()));
 		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getSolver().getMostRecentUpdate());
-		jobScript = jobScript.replace("$$SOLVER_NAME$$", pair.getSolver().getName());
+		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getSolver().getName()));
 		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
-		jobScript = jobScript.replace("$$BENCH$$", pair.getBench().getPath());
+		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
 		//Dependencies
@@ -351,7 +357,7 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
 		log.debug("the current job pair has a memory = "+pair.getMaxMemory());
-		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.clamp(1, Util.bytesToMegabytes(R.MAX_PAIR_VMEM), Util.bytesToMegabytes(pair.getMaxMemory())));
+		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(pair.getMaxMemory()));
 		log.debug("The jobscript is: "+jobScript);
 
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));

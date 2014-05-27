@@ -19,6 +19,23 @@
 # Include the predefined status codes and functions
 . /home/starexec/sge_scripts/status_codes.bash
 
+#################################################################################
+# base64 decode some names which could otherwise have nasty characters in them
+#################################################################################
+TMP=`mktemp`
+
+echo $SOLVER_NAME > $TMP
+SOLVER_NAME=`base64 -d $TMP`
+
+echo $SOLVER_PATH > $TMP
+SOLVER_PATH=`base64 -d $TMP`
+
+echo $BENCH_PATH > $TMP
+BENCH_PATH=`base64 -d $TMP`
+
+rm $TMP
+#################################################################################
+
 # DB username and password for status reporting
 DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
