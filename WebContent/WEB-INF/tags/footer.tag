@@ -35,6 +35,6 @@
 		</ul>
 	</c:if>
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy;
-		2012-2013 the university of iowa</a>
+		2012-2014 the university of iowa</a>
 </footer>
 
