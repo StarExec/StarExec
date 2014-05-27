@@ -47,9 +47,13 @@ CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHA
 DROP PROCEDURE IF EXISTS UpdateNodeId;
 CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128))
 	BEGIN
-		UPDATE job_pairs
-		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName)
-		WHERE id = _jobPairId;
+		DECLARE _nodeId INT;
+
+		SELECT id FROM nodes WHERE name=_nodeName INTO _nodeId;
+
+		DELETE FROM job_pairs where node_id = _nodeID;
+
+		UPDATE job_pairs SET node_id=_nodeId WHERE id = _jobPairId;
 	END //
 	
 -- Updates a job pair's status
