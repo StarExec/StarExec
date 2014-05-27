@@ -228,6 +228,22 @@ function sandboxWorkspace {
 	return 0
 }
 
+#################################################################################
+# base64 decode some names which could otherwise have nasty characters in them
+#################################################################################
+TMP=`mktemp`
+
+echo $SOLVER_NAME > $TMP
+SOLVER_NAME=`base64 -d $TMP`
+
+echo $SOLVER_PATH > $TMP
+SOLVER_PATH=`base64 -d $TMP`
+
+echo $BENCH_PATH > $TMP
+BENCH_PATH=`base64 -d $TMP`
+
+rm $TMP
+
 # /////////////////////////////////////////////
 # MAIN
 # /////////////////////////////////////////////
