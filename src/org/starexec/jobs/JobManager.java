@@ -290,6 +290,11 @@ public abstract class JobManager {
 			File file=new File(logPath);
 			file.getParentFile().mkdirs();
 			
+			if (file.exists()) {
+			    log.info("Deleting old log file for " + pair.getId());
+			    file.delete();
+			}
+
 			sgeTemplate.setOutputPath(":" + logPath);
 			//log.debug("submitScript - Set Output Path for  " + pair.getId());
 
