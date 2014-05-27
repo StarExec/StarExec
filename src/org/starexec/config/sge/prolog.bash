@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # /////////////////////////////////////////////
@@ -266,21 +267,23 @@ fi
 
 NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
 
-log "node memory in kilobytes =$NODE_MEM"
-#first, get half the memory
-NODE_MEM=$(($NODE_MEM/2))
-
 #then, convert kb to mb
 NODE_MEM=$(($NODE_MEM/1024))
+
+log "node memory in megabytes = $NODE_MEM"
+
+#then, set to half the memory
+NODE_MEM=$(($NODE_MEM/2))
+
 if [ $MAX_MEM -gt $NODE_MEM ]
 then
 
-echo "truncating max memory from $MAX_MEM to $NODE_MEM"
+echo "truncating max memory from requested $MAX_MEM to $NODE_MEM (half max memory on the node)"
 
 MAX_MEM=$NODE_MEM
 
 fi
 
-log "max memory in megabytes = $MAX_MEM"
+log "we will run the job pair with max memory in megabytes = $MAX_MEM"
 
 exit 0
