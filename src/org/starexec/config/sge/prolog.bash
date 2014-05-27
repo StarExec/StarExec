@@ -37,9 +37,6 @@ SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 #whether the solver was found in the cache
 SOLVER_CACHED=0
 
-
-
-
 if [ $SANDBOX -eq 1 ]
 then
 WORKING_DIR='/export/starexec/sandbox'
@@ -227,22 +224,6 @@ function sandboxWorkspace {
 	ls -lR "$WORKING_DIR"
 	return 0
 }
-
-#################################################################################
-# base64 decode some names which could otherwise have nasty characters in them
-#################################################################################
-TMP=`mktemp`
-
-echo $SOLVER_NAME > $TMP
-SOLVER_NAME=`base64 -d $TMP`
-
-echo $SOLVER_PATH > $TMP
-SOLVER_PATH=`base64 -d $TMP`
-
-echo $BENCH_PATH > $TMP
-BENCH_PATH=`base64 -d $TMP`
-
-rm $TMP
 
 # /////////////////////////////////////////////
 # MAIN
