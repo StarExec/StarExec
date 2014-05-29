@@ -48,6 +48,12 @@ for d in users solvers benchmarks ; do
  chgrp -f star-web $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg 
 done
 
+echo "Creating data directories if they are not present already"
+
+for d in Benchmarks Solvers processor_scripts jobin jobout joboutput joboutput/logs batchSpace/uploads ; do
+  mkdirIf $STAREXEC_DATA_DIR/$d
+done
+
 while [ -d $APPDIR ] ; do
   echo "waiting for tomcat to remove the app directory"
   sleep 4
