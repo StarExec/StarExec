@@ -1,7 +1,10 @@
 returnids
 login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
-pushbenchproc id=2 f=smt2-validator.zip n=smt2
+pushbenchproc id=2 f=smt2-validator.zip n=smt2orig
+pushbenchproc id=2 f=smt2nonincremental.zip n=smt2nonincremental
+pushsolver f=CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010 
+logout
+login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks.zip bt=2 hier=
-pushsolver f=CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
 logout
 exit

@@ -272,6 +272,7 @@ CREATE TABLE job_pairs (
 	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
+	KEY (node_id, status_code),
 --	KEY (status_code), -- TODO: Do we actually want this change
 	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index

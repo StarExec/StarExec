@@ -2249,8 +2249,19 @@ public class Benchmarks {
 		return false;
 	}
 	
-	
-	public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs) {
+    /**
+     * Re-process benchmarks in the given space.  Regular users can only re-process benchmarks they own.
+     * Community leaders can reprocess any benchmarks.
+     * @param spaceId the ID of the space in which to look for benchmarks to re-process
+     * @param p the Processor to apply
+     * @param hierarchy whether to process the hierarchy rooted at the space with the given ID, or just that space
+     * @param userId the ID of the user requesting re-processing
+     * @param clearOldAttrs true iff we should drop the old attributes we had from any earlier processing
+     * @param isCommunityLeader true iff the user with the given userID is a community leader 
+     * @author Eric Burns
+     */
+    public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs, 
+				  boolean isCommunityLeader) {
 		Integer statusId = Uploads.createUploadStatus(spaceId, userId);
 		Uploads.fileUploadComplete(statusId);
 		Uploads.fileExtractComplete(statusId);
@@ -2261,13 +2272,14 @@ public class Benchmarks {
 		final int u=userId;
 		final boolean c=clearOldAttrs;
 		final Integer st=statusId;
+		final boolean l=isCommunityLeader;
 		//It will delay the redirect until this method is finished which is why a new thread is used
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
 				try {
-					process(s,proc,h,u,c,st);
+				    process(s,proc,h,u,c,st,l);
 					Uploads.everythingComplete(st);
 				} catch (Exception e) {
 					
@@ -2291,9 +2303,14 @@ public class Benchmarks {
 	 */
 	
 	//TODO: What should we do about the type of the benchmarks?
-	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId) {
+	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
+				    boolean isCommunityLeader) {
 		Connection con=null;
 		
+		log.debug("Processing benchmarks in space "+new Integer(spaceId));
+		if (isCommunityLeader)
+		    log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+
 		try {
 			
 			con=Common.getConnection();
@@ -2302,7 +2319,7 @@ public class Benchmarks {
 			
 			for (Benchmark b : benchmarks) {
 				//only work on the benchmarks the given user owns
-				if (b.getUserId()!=userId) {
+				if (isCommunityLeader || b.getUserId()!=userId) {
 					continue;
 				}
 				if (clearOldAttrs) {
@@ -2318,7 +2335,7 @@ public class Benchmarks {
 			if (hierarchy) {
 				List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
 				for (Space s : spaces) {
-					Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId);
+				    Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
 				}
 			}
 			

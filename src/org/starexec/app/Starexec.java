@@ -106,6 +106,9 @@ public class Starexec implements ServletContextListener {
 		    log.info("Created GridEngine session");
 		}
 
+		System.setProperty("http.proxyHost","https://proxy.divms.uiowa.edu");
+		System.setProperty("http.proxyPort","443");
+
 		// Schedule necessary periodic tasks to run
 		this.scheduleRecurringTasks();		
 		

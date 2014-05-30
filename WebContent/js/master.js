@@ -172,9 +172,7 @@ function logout() {
 	$.post(  
 	    starexecRoot+"services/session/logout",  
 	    function(returnData){  
-	        if(returnData == 0) {
-	        	window.location.reload(true);
-	        }  
+       	        window.location.href = starexecRoot+"secure/index.jsp";
 	     },  
 	     "json"  
 	).error(function(){

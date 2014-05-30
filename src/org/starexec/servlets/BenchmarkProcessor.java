@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -15,6 +16,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.User;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -69,7 +71,15 @@ public class BenchmarkProcessor extends HttpServlet {
 			if (commId!=p.getCommunityId()) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You may only use processors that are a part of the current community");
 			}
-			Integer statusId=Benchmarks.process(spaceId, p, hier, userId, clearOld);
+			List<User> leaders = Spaces.getLeaders(commId);
+			boolean isCommunityLeader = false;
+			for (User u : leaders) {
+			    if (u.getId() == userId) {
+				isCommunityLeader = true;
+				break;
+			    }
+			}
+			Integer statusId=Benchmarks.process(spaceId, p, hier, userId, clearOld, isCommunityLeader);
 			if (statusId!=null) {
 				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId));
 			} else {

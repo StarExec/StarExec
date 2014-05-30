@@ -27,58 +27,6 @@
 # Include the predefined status codes and functions
 . /home/starexec/sge_scripts/functions.bash
 
-# Path to local workspace for each node in cluster.
-#TODO: Should be either sandbox1 or sandbox2
-SANDBOX=1
-
-#path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
-
-#whether the solver was found in the cache
-SOLVER_CACHED=0
-
-if [ $SANDBOX -eq 1 ]
-then
-WORKING_DIR='/export/starexec/sandbox'
-else
-WORKING_DIR='/export/starexec/sandbox2'
-fi
-
-
-# Path to Olivier Roussel's runSolver
-RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
-
-# Path to where the solver will be copied
-LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
-
-# Path to where the benchmark will be copied
-LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
-
-
-# Path to where the pre-processor will be copied
-LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
-
-# Path to the job input directory
-JOB_IN_DIR="$SHARED_DIR/jobin"
-
-# Actual qualified name of the config run script
-CONFIG_NAME="starexec_run_$CONFIG_NAME"
-
-# The benchmark's name
-BENCH_NAME="${BENCH_PATH##*/}"
-
-# The path to the benchmark on the execution host
-LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
-
-# The path to the benchmark on the execution host
-PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
-
-# The path to the config run script on the execution host
-CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/$CONFIG_NAME"
-
-# The path to the bin directory of the solver on the execution host
-BIN_PATH="$LOCAL_SOLVER_DIR/bin"
-
 # Array of secondary benchmarks starexec paths
 declare -a BENCH_DEPENDS_ARRAY
 
@@ -145,17 +93,16 @@ function copyDependencies {
 			fi
 		fi		
 	fi
-        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL\
-_SOLVER_DIR)"
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
         chmod -R gu+rwx $LOCAL_SOLVER_DIR
 
 	log "copying runSolver to execution host..."
-	cp "$RUNSOLVER_PATH" "$BIN_PATH"
+	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
 	log "runsolver copy complete"
-	ls -l "$BIN_PATH"
+	ls -l "$LOCAL_RUNSOLVER_PATH"
 
-	log "copying benchmark (${BENCH_PATH##*/}) to execution host..."
-	cp "$BENCH_PATH" "$LOCAL_BENCH_DIR"
+	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
+	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
 	log "benchmark copy complete"
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
@@ -194,7 +141,7 @@ _SOLVER_DIR)"
 #benchmark dependencies not currently verified.
 function verifyWorkspace { 
 	# Make sure the configuration exists before we execute it
-	if ! [ -x "$CONFIG_PATH" ]; then
+	if ! [ -x "$LOCAL_CONFIG_PATH" ]; then
 		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
 		#get rid of the cache, as if we're here then something is probably wrong with it
 		rm -r "$SOLVER_CACHE_PATH"
@@ -258,7 +205,6 @@ JOB_ERROR=`grep 'job error:' "$SGE_STDOUT_PATH"`
 
 # If there was no error...
 if [ "$JOB_ERROR" = "" ]; then
-	log "running $SOLVER_NAME ($CONFIG_NAME) on $BENCH_NAME"
 	sendStatus $STATUS_RUNNING
 fi
 

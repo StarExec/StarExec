@@ -193,7 +193,7 @@
 
 		<!-- Update the upload commands to use the correct app -->
 		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/" 
-				replace="login addr=https://${server-name}/${appname}/" byline="false" />
+				replace="login addr=https://${server-name}/${appname}/"  flags="g" byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
 		<!-- Update the schema to use the currect server and app -->

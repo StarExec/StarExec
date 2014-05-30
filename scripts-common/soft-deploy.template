@@ -33,7 +33,7 @@ fi
 
 echo "Copying the GridEngine epilog and prolog to $SGE_SCRIPT_DIR"
 mkdirIf $SGE_SCRIPT_DIR
-for f in src/org/starexec/config/sge/*.bash ; do
+for f in src/org/starexec/config/sge/{jobscript,*.bash} ; do
   b=`basename $f`
   cp $f $SGE_SCRIPT_DIR
   chmod -f 775 $SGE_SCRIPT_DIR/$b
@@ -46,6 +46,12 @@ for d in users solvers benchmarks ; do
  cp starexec_res/default-pics/$d/Pic0.jpg $STAREXEC_DATA_DIR/pictures/$d
  chmod -f 775 $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg
  chgrp -f star-web $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg 
+done
+
+echo "Creating data directories if they are not present already"
+
+for d in Benchmarks Solvers processor_scripts jobin jobout joboutput joboutput/logs batchSpace/uploads ; do
+  mkdirIf $STAREXEC_DATA_DIR/$d
 done
 
 while [ -d $APPDIR ] ; do

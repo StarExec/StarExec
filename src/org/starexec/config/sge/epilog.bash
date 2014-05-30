@@ -28,32 +28,6 @@ whoami
 #TODO: sandbox1 or 2.
 SANDBOX=1
 
-#TODO: "sandbox" needs to be "sandbox1"
-if [ $SANDBOX -eq 1 ]
-then
-WORKING_DIR='/export/starexec/sandbox'
-else
-WORKING_DIR='/export/starexec/sandbox2'
-fi
-
-# Path to where the solver will be copied
-LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
-
-# Path to where the benchmark will be copied
-LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
-
-# The benchmark's name
-BENCH_NAME="${BENCH_PATH##*/}"
-
-# The path to the benchmark on the execution host
-LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$BENCH_NAME"
-
-# Path to the job input directory
-JOB_IN_DIR="$SHARED_DIR/jobin"
-
-# Path to the job output directory
-JOB_OUT_DIR="$SHARED_DIR/joboutput"
-
 WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
 
 # /////////////////////////////////////////////
@@ -72,15 +46,7 @@ function copyOutput {
 	createDir "$RZ_OUT_DIR"
 
 	log "copying output to $RZ_OUT_DIR"
-	
-	# Copy output from local host output to master host output storage
-	#cp -r "$STAREXEC_OUT_DIR"/* "$UNIQUE_OUT_DIR"
-	
-	BENCH_NAME="${BENCH_PATH##*/}"
-	#log "Bench Name = $BENCH_NAME"
-	#log "target = $RZ_OUT_DIR/$BENCH_NAME"
 	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
-	#ls -l "$STAREXEC_OUT_DIR"
 	log "job output copy complete - now sending stats"
 	updateStats $WATCHFILE
 	if [ "$POST_PROCESSOR_PATH" != "null" ]; then
