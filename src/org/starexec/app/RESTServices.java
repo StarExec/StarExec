@@ -263,7 +263,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		int status=JobSecurity.canUserSeeJob(id, userId);
 		if (status!=0) {
-			return "not available";
+		    return ("user "+ new Integer(userId) + " does not have access to see job " + new Integer(id));
 		}
 					
 			String log = JobPairs.getJobLog(id);

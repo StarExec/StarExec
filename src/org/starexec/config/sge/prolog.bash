@@ -229,4 +229,9 @@ fi
 
 log "we will run the job pair with max memory in megabytes = $MAX_MEM"
 
+log "runsolver is $LOCAL_RUNSOLVER_PATH"
+log "solver is $LOCAL_CONFIG_PATH"
+log "benchmark is $LOCAL_BENCH_PATH"
+log "prolog ends"
+
 exit 0
