@@ -192,6 +192,12 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+
+	$("#jobXMLDownload").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+    });
 	
 	$('#clearCache').button( {
 		icons: {
@@ -547,6 +553,12 @@ function initUI(){
 			}
 		});
 
+	});
+
+	$('#jobXMLDownload').unbind("click");
+	$('#jobXMLDownload').click(function(e) {
+		e.preventDefault();
+		createDownloadRequest("#jobOutputDownload","jobXML");
 	});
 	
 	$('#jobOutputDownload').unbind("click");
