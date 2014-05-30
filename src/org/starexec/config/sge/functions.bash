@@ -40,10 +40,62 @@ rm $TMP
 DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
 
-#if [ -z $1 ]; then
-#  log "No argument passed"
-#  exit 1
-#fi
+# Path to local workspace for each node in cluster.
+#TODO: Should be either sandbox1 or sandbox2
+SANDBOX=1
+
+#TODO: "sandbox" needs to be "sandbox1"
+if [ $SANDBOX -eq 1 ]
+then
+WORKING_DIR='/export/starexec/sandbox'
+else
+WORKING_DIR='/export/starexec/sandbox2'
+fi
+
+# Path to where the solver will be copied
+LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
+
+# Path to where the benchmark will be copied
+LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
+
+# The benchmark's name
+BENCH_NAME="${BENCH_PATH##*/}"
+
+# The path to the benchmark on the execution host
+LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark"
+
+#path to where cached solvers are stored
+SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+
+#whether the solver was found in the cache
+SOLVER_CACHED=0
+
+# Path to Olivier Roussel's runSolver
+RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
+
+# Path to where the solver will be copied
+LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
+
+# Path to where the pre-processor will be copied
+LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
+
+# Path to the job input directory
+JOB_IN_DIR="$SHARED_DIR/jobin"
+
+# Path to the job output directory
+JOB_OUT_DIR="$SHARED_DIR/joboutput"
+
+# The path to the benchmark on the execution host
+PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
+
+# The path to the config run script on the execution host
+LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+
+# The path to the bin directory of the solver on the execution host
+LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+
+
+######################################################################
 
 function log {
 	echo "`date +'%D %r %Z'`: $1"
