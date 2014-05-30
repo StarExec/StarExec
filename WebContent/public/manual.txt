@@ -465,7 +465,7 @@ OPTIONAL: None
 REQUIRED: "id" "from", "to"
 OPTIONAL: "hier"
 
---linkuser -links an existing user and associates them with a space. "id" is a benchmark id, and "from" and "to" are
+--linkuser -links an existing user and associates them with a space. "id" is a user id, and "from" and "to" are
 space ids.
 REQUIRED: "id" "from" "to"
 OPTIONAL: None

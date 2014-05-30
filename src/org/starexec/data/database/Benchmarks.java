@@ -2307,6 +2307,10 @@ public class Benchmarks {
 				    boolean isCommunityLeader) {
 		Connection con=null;
 		
+		log.debug("Processing benchmarks in space "+new Integer(spaceId));
+		if (isCommunityLeader)
+		    log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+
 		try {
 			
 			con=Common.getConnection();
