@@ -119,6 +119,7 @@ function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
 	# change ownership and permissions to make sure we can clean everything up
+	log "WORKING_DIR is $WORKING_DIR"
 	sudo chown -R `whoami` $WORKING_DIR 
 	chmod -R gu+rxw $WORKING_DIR
 
