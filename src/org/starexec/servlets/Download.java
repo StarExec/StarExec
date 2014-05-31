@@ -113,7 +113,7 @@ public class Download extends HttpServlet {
 
 			} else if (request.getParameter("type").equals("jobXML")) {
 				Job job = Jobs.get(Integer.parseInt(request.getParameter("id")));
-				shortName=space.getName()+"_XML";
+				shortName=job.getName()+"_XML";
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJobXML(job, u.getId(), ".zip", response);

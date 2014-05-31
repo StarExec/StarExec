@@ -15,7 +15,6 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Space;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,7 +26,7 @@ import org.w3c.dom.Element;
  */
 
 public class JobToXMLer {
-	private static final Logger log = Logger.getLogger(JobToXMLer.class);
+    //private static final Logger log = Logger.getLogger(JobToXMLer.class);
 	
 	private Document doc = null;
 	
@@ -40,8 +39,8 @@ public class JobToXMLer {
 	 *  @throws Exception   
 	 */	
     public File generateXMLfile(Job job, int userId) throws Exception{
-    	//TODO : should be able to handle specific jobs?  Currently only handles all jobs from a space.
-		log.debug("Generating XML for Jobs from Space = " +space.getId());			
+    	
+	//log.debug("Start generating XML for Job = " +job.getId());			
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -56,7 +55,7 @@ public class JobToXMLer {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
 		
-		File file = new File(R.STAREXEC_ROOT, space.getName() +"-Jobs.xml");
+		File file = new File(R.STAREXEC_ROOT, job.getName() +"-Jobs.xml");
 		
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
@@ -72,7 +71,7 @@ public class JobToXMLer {
      *  @return jobsElement for the xml file to represent job hierarchy of input job	 *  
      */	
     public Element generateJobsXML(Job job, int userId){		
-	log.debug("Generating Jobs XML " + space.getId());
+	//log.debug("Generating Jobs XML " + job.getId());
 	Element jobsElement=null;
 
 	jobsElement = doc.createElementNS(Util.url("public/batchJobSchema.xsd"), "tns:Jobs");
@@ -97,7 +96,7 @@ public class JobToXMLer {
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
     public Element generateJobXML(Job job, int userId){		
-		log.debug("Generating Job XML for job " + job.getId());
+	//log.debug("Generating Job XML for job " + job.getId());
 		
 		Element jobElement = doc.createElement("Job");
 		
