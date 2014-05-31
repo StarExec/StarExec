@@ -111,11 +111,7 @@ public class JobToXMLer {
 		Element jobElement = doc.createElement("Job");
 		
 
-	
-		Attr id = doc.createAttribute("id");
-		id.setValue(Integer.toString(job.getId()));
-		jobElement.setAttributeNode(id);		
-		
+
 		Attr name = doc.createAttribute("name");
 		name.setValue(job.getName());
 		jobElement.setAttributeNode(name);
@@ -155,9 +151,9 @@ public class JobToXMLer {
 		wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
 		jobElement.setAttributeNode(wallClockTimeout);
 		
-		//Memory Limit (Gigabytes) : mem-limit
+		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
 		Attr memLimit = doc.createAttribute("mem-limit");
-		memLimit.setValue(Long.toString(Jobs.getMaximumMemory(job.getId())));
+		memLimit.setValue(Long.toString(1));
 		jobElement.setAttributeNode(memLimit);
 		
 		List<JobPair> pairs= Jobs.getPairsDetailed(job.getId());
