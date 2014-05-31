@@ -1,7 +1,8 @@
 package org.starexec.util;
 
 import java.io.File;
-import java.util.logging.Logger;
+import java.util.List;
+import org.apache.log4j.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -11,6 +12,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
@@ -18,6 +20,7 @@ import org.starexec.data.to.JobPair;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.starexec.servlets.Download;
 
 
 /**
@@ -26,7 +29,7 @@ import org.w3c.dom.Element;
  */
 
 public class JobToXMLer {
-    //private static final Logger log = Logger.getLogger(JobToXMLer.class);
+    private static final Logger log = Logger.getLogger(JobToXMLer.class);
 	
 	private Document doc = null;
 	
@@ -40,7 +43,8 @@ public class JobToXMLer {
 	 */	
     public File generateXMLfile(Job job, int userId) throws Exception{
     	
-	//log.debug("Start generating XML for Job = " +job.getId());			
+	log.info("Start generating XML for Job = " +job.getId());	
+			
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -55,12 +59,18 @@ public class JobToXMLer {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
 		
-		File file = new File(R.STAREXEC_ROOT, job.getName() +"-Jobs.xml");
+		File file = new File(R.STAREXEC_ROOT, job.getName() +".xml");
+		
+		/**
+		File file = new File(R.STAREXEC_DATA_DIR + File.separator +"jobxml",  "testname" +".xml");
+		**/
+		
 		
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
-		
+
 		return file;
+		
 	}
 	
     /**
@@ -71,12 +81,12 @@ public class JobToXMLer {
      *  @return jobsElement for the xml file to represent job hierarchy of input job	 *  
      */	
     public Element generateJobsXML(Job job, int userId){		
-	//log.debug("Generating Jobs XML " + job.getId());
+	log.info("Generating Jobs XML " + job.getId());
 	Element jobsElement=null;
 
 	jobsElement = doc.createElementNS(Util.url("public/batchJobSchema.xsd"), "tns:Jobs");
 	jobsElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		
+	//TODO : should be usuing batchJobSchema not batchSpaceSchema
 	jobsElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchJobSchema.xsd batchJobSchema.xsd"));
 	
@@ -96,7 +106,7 @@ public class JobToXMLer {
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
     public Element generateJobXML(Job job, int userId){		
-	//log.debug("Generating Job XML for job " + job.getId());
+	log.info("Generating Job XML for job " + job.getId());
 		
 		Element jobElement = doc.createElement("Job");
 		
@@ -109,9 +119,6 @@ public class JobToXMLer {
 		Attr name = doc.createAttribute("name");
 		name.setValue(job.getName());
 		jobElement.setAttributeNode(name);
-		
-		// New attributes to job XML elements
-		// @author Tim Smith
 		
 		// Description attribute : description
 		Attr description = doc.createAttribute("description");
@@ -127,7 +134,7 @@ public class JobToXMLer {
 		Attr startPaused = doc.createAttribute("start-paused");
 		startPaused.setValue(Boolean.toString(false));
 		jobElement.setAttributeNode(startPaused);
-		
+		/**
 		//Preprocessor ID : preproc-id
 		Attr preProcID = doc.createAttribute("preproc-id");
 		preProcID.setValue(Integer.toString(job.getPreProcessor().getId()));
@@ -137,7 +144,7 @@ public class JobToXMLer {
 		Attr postProcID = doc.createAttribute("postproc-id");
 		postProcID.setValue(Integer.toString(job.getPostProcessor().getId()));
 		jobElement.setAttributeNode(postProcID);
-		
+		**/
 		//CPU timeout (seconds) : cpu-timeout
 		Attr cpuTimeout = doc.createAttribute("cpu-timeout");
 		cpuTimeout.setValue(Integer.toString(Jobs.getCpuTimeout(job.getId())));
@@ -153,13 +160,21 @@ public class JobToXMLer {
 		memLimit.setValue(Long.toString(Jobs.getMaximumMemory(job.getId())));
 		jobElement.setAttributeNode(memLimit);
 		
-		// -------------------------------------------------
+		List<JobPair> pairs= Jobs.getPairsDetailed(job.getId());
+		log.info("Lenght of jobpairs list: " + pairs.size());
 		
-		for (JobPair jobpair:job.getJobPairs()){
-			Element jobPair = doc.createElement("JobPair");	
-			jobPair.setAttribute("bench-id", Integer.toString(jobpair.getBench().getId()));
-			jobPair.setAttribute("config-id", Integer.toString(jobpair.getConfiguration().getId()));
-			jobElement.appendChild(jobPair);
+		for (JobPair jobpair:pairs){
+			Element jp = doc.createElement("JobPair");
+
+			Attr benchID = doc.createAttribute("bench-id");
+			benchID.setValue(Integer.toString(jobpair.getBench().getId()));
+		        jp.setAttributeNode(benchID);
+			
+			Attr configID = doc.createAttribute("config-id");
+			configID.setValue(Integer.toString(jobpair.getConfiguration().getId()));
+			jp.setAttributeNode(configID);
+
+			jobElement.appendChild(jp);
 		}
 		
 		return jobElement;

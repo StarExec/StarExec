@@ -112,8 +112,9 @@ public class Download extends HttpServlet {
 				success = handleSpaceXML(space, u.getId(), ".zip", response, includeAttributes);
 
 			} else if (request.getParameter("type").equals("jobXML")) {
-				Job job = Jobs.get(Integer.parseInt(request.getParameter("id")));
-				shortName=job.getName()+"_XML";
+				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+
+				shortName="Job_"+ job.getId() + "_XML";
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJobXML(job, u.getId(), ".zip", response);
@@ -307,15 +308,18 @@ public class Download extends HttpServlet {
 		// If we can see this 
 	    if (Permissions.canUserSeeJob(job.getId(), userId)) {
 			List<File> files=new ArrayList<File>();
-			log.debug("Permission to download XML granted");		
+			log.debug("Permission to download XML granted");	
+			
 			JobToXMLer handler = new JobToXMLer();
 			File file = handler.generateXMLfile(job, userId);
 			
 			files.add(file);
-			String baseFileName=job.getName()+"_XML";
 			
-			File schema = new File(R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC);
-			files.add(schema);
+			String baseFileName="Job_XML";
+			
+			//TODO : should store public/batchJobSchema.xsd in a constant, in case it gets changed later
+				File schema = new File(R.STAREXEC_ROOT + File.separator + "public/batchJobSchema.xsd");
+				files.add(schema);
 			
 			
 
