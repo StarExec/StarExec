@@ -558,7 +558,7 @@ function initUI(){
 	$('#jobXMLDownload').unbind("click");
 	$('#jobXMLDownload').click(function(e) {
 		e.preventDefault();
-		createDownloadRequest("#jobOutputDownload","jobXML");
+		createDownloadRequest("#jobXMLDownload","jobXML");
 	});
 	
 	$('#jobOutputDownload').unbind("click");
