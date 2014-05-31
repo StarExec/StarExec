@@ -280,6 +280,7 @@
 				<legend>actions</legend>
 				<ul id="actionList">
 					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
+					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${jobId}" >job xml download</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
 					<c:if test="${isAdmin}">
 						<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
