@@ -53,42 +53,42 @@ public class Benchmarks {
 	 * @return The new benchmark ID on success, -1 otherwise
 	 * @author Tyler Jensen
 	 */
-	public static int add(Benchmark benchmark, int spaceId) throws Exception{
-		if (Benchmarks.isBenchValid(benchmark.getAttributes())){
-			Connection con = null;		
+    public static int add(Benchmark benchmark, int spaceId, Integer statusId) throws Exception{
+	if (Benchmarks.isBenchValid(benchmark.getAttributes())){
+	    Connection con = null;		
 			
 
-			try {
-				con = Common.getConnection();
-				Common.beginTransaction(con);
+	    try {
+		con = Common.getConnection();
+		Common.beginTransaction(con);
 
-				// Add benchmark to database
-				int benchId = Benchmarks.add(con, benchmark, spaceId);
+		// Add benchmark to database
+		int benchId = Benchmarks.add(con, benchmark, spaceId, statusId);
 
-				if(benchId>=0){
-					//Common.endTransaction(con);
-					log.debug("bench successfully added");
+		if(benchId>=0){
+		    //Common.endTransaction(con);
+		    log.debug("bench successfully added");
 					
-					return benchId;
-				} else {
-					//will throw exception in calling method
-					Common.doRollback(con);
-					return -1;
-				}
-			} catch (Exception e){
-				Common.doRollback(con);
-				log.error(e.getMessage(), e);	
-				throw e;
-
-			} finally {
-				Common.safeClose(con);
-				//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
-			}
+		    return benchId;
 		} else {
-			log.debug("Add called on invalid benchmark, no additions will be made to the database");
+		    //will throw exception in calling method
+		    Common.doRollback(con);
+		    return -1;
 		}
-		return -1;
+	    } catch (Exception e){
+		Common.doRollback(con);
+		log.error(e.getMessage(), e);	
+		throw e;
+
+	    } finally {
+		Common.safeClose(con);
+		//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
+	    }
+	} else {
+	    log.debug("Add called on invalid benchmark, no additions will be made to the database");
 	}
+	return -1;
+    }
 	
 	
 	public static boolean recycleAllOwnedByUser(Collection<Benchmark> benchmarks, int userId) {
@@ -102,15 +102,51 @@ public class Benchmarks {
 	}
 
 	
+    /** Add the given set of benchmark attributes to the database, if
+     *  isBenchValid() returns true for the attrs.
+     * @param con the db Connection to use
+     * @param attrs the attributes
+     * @param benchmark the Benchmark 
+     * @param statusId the id of the upload page, or null if there isn't one
+     */
+    protected static boolean addAttributeSetToDbIfValid(Connection con, Properties attrs, Benchmark benchmark, Integer statusId) {
+	if(!Benchmarks.isBenchValid(attrs)) {
+	    Uploads.setErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
+					       +benchmark.getName()+" (starexec-valid was not true)."));
+	    return false;
+	}
+
+	// Discard the valid attribute, we don't need it
+	attrs.remove("starexec-valid");
+	log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
+	// For each attribute (key, value)...
+	int count = 0;			
+	for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+	    // Add the attribute to the database
+	    count++;
+	    log.debug("Adding att number " + count + " " 
+		      + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
+	    if (!Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue())) {
+		Uploads.setErrorMessage(statusId, "Problem adding the following attribute-value pair to the db, for benchmark "
+					+benchmark.getId()+": "+(String)keyVal.getKey() + ", " + (String)keyVal.getValue());
+		return false;
+	    }
+	}							
+
+	return true;
+    }	
+
+
 	/**
 	 * Internal method which adds a single benchmark to the database under the given spaceId
 	 * @param con The connection the operation will take place on
 	 * @param benchmark The benchmark to add to the database
 	 * @param spaceId The id of the space the benchmark will belong to
+	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action.
 	 * @return The new benchmark ID on success, -1 otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, Benchmark benchmark, int spaceId) throws Exception {				
+    protected static int add(Connection con, Benchmark benchmark, int spaceId, Integer statusId) throws Exception {
 		
 		CallableStatement procedure=null;
 		try{
@@ -136,21 +172,9 @@ public class Benchmarks {
 			log.debug("new bench id is " + benchmark.getId());
 			// If the benchmark is valid according to its processor...
 
-			if(Benchmarks.isBenchValid(attrs)) {
-				// Discard the valid attribute, we don't need it
-				attrs.remove("starexec-valid");
-				log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
-				// For each attribute (key, value)...
-				int count = 0;			
-				for(Entry<Object, Object> keyVal : attrs.entrySet()) {
-					// Add the attribute to the database
-					count++;
-					log.debug("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
-					Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
-				}							
+			if (!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId))
+			    return -1;
 
-			}				
-			
 			log.info("(within internal add method) Added Benchmark " + benchmark.getName());	
 			return benchmark.getId();
 		}
@@ -173,17 +197,17 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static void add(Connection conParam, List<Benchmark> benchmarks, int spaceId) throws Exception {		
-		log.info("in add (list) method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
-		for(Benchmark b : benchmarks) {
-			if (Benchmarks.isBenchValid(b.getAttributes())){
-				if(Benchmarks.add(conParam, b, spaceId)<0) {
-					throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
-				}
-			}
-		}		
-		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
-	}
+    protected static void add(Connection conParam, List<Benchmark> benchmarks, int spaceId, Integer statusId) throws Exception {
+	log.info("in add (list) method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+	for(Benchmark b : benchmarks) {
+	    if (Benchmarks.isBenchValid(b.getAttributes())){
+		if(Benchmarks.add(conParam, b, spaceId,statusId)<0) {
+		    throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+		}
+	    }
+	}		
+	log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+    }
 	
 
 	/**
@@ -314,7 +338,8 @@ public class Benchmarks {
 	 * @throws Exception
 	 * @author Benton McCune
 	 */
-	protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct, Integer benchIndex) throws Exception {				
+    protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct, Integer benchIndex, 
+					       int statusId) throws Exception {				
 		Connection con = null;
 		CallableStatement procedure=null;
 
@@ -341,26 +366,15 @@ public class Benchmarks {
 
 			// If the benchmark is valid according to its processor...
 
-			if(Benchmarks.isBenchValid(attrs)) {
-				// Discard the valid attribute, we don't need it
-				attrs.remove("starexec-valid");
-				log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
-				// For each attribute (key, value)...
-				int count = 0;
-				//int bigSetAtts = attrs.entrySet().size()/10;
+			if(!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId))
+			    return null;
 
-				for(Entry<Object, Object> keyVal : attrs.entrySet()) {
-					// Add the attribute to the database
-					count++;
-					log.debug("Adding att number " + count + " " + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
-					Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
-				}							
-				//do previously validated dependencies here
-				Common.endTransaction(con);// benchmarks should be in db now
-				ArrayList<Integer> axiomIdList = dataStruct.getAxiomMap().get(benchIndex);
-				ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);			
-				Benchmarks.introduceDependencies(benchmark.getId(), axiomIdList, pathList);
-			}				
+			//do previously validated dependencies here
+			Common.endTransaction(con);// benchmarks should be in db now
+			ArrayList<Integer> axiomIdList = dataStruct.getAxiomMap().get(benchIndex);
+			ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);			
+			Benchmarks.introduceDependencies(benchmark.getId(), axiomIdList, pathList);
+
 			log.info("(within internal add method) Added Benchmark " + benchmark.getName());
 			return benchmark;
 		}
@@ -375,11 +389,11 @@ public class Benchmarks {
 	}	
 
 	
-	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, int spaceId, int statusId) throws Exception {		
+	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, int spaceId, Integer statusId) throws Exception {		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {
-			int id=Benchmarks.add(b, spaceId);
+		    int id=Benchmarks.add(b, spaceId,statusId);
 			if(id<0) {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setErrorMessage(statusId, message);
@@ -395,13 +409,14 @@ public class Benchmarks {
 		return benchmarkIds;
 	}
 
-	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, Integer statusId) throws Exception {		
+	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, 
+						       Integer statusId) throws Exception {		
 		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 
 		Benchmark b = new Benchmark();
 		for(int i = 0; i < benchmarks.size(); i++) {
 			b = benchmarks.get(i);
-			b = Benchmarks.addBenchWDepend(b, spaceId, dataStruct, i);
+			b = Benchmarks.addBenchWDepend(b, spaceId, dataStruct, i, statusId);
 			if(b == null) {
 				throw new Exception(String.format("Failed to add benchmark to space [%d]", spaceId));
 			}
@@ -424,7 +439,8 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection con, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection con, Integer depRootSpaceId, 
+						Boolean linked, Integer userId, Integer statusId) {
 		if (benchmarks.size()>0){
 			try {			
 				
@@ -480,7 +496,8 @@ public class Benchmarks {
 	 * @return A list of the IDs of the new benchmarks on success, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, 
+						Integer userId, Integer statusId) {
 		Connection con = null;			
 		log.info("Going to add " + benchmarks.size() + "benchmarks (with dependencies) to space " + spaceId);
 		try {			
@@ -550,55 +567,6 @@ public class Benchmarks {
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 */
-	
-	//TODO: Sandbox this
-	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p) {
-		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
-		int count = benchmarks.size();
-		// For each benchmark in the list to process...
-		for(Benchmark b : benchmarks) {
-			BufferedReader reader = null;
-
-			try {
-				// Run the processor on the benchmark file
-				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
-				String [] procCmd = new String[2];
-				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
-				procCmd[1] = b.getPath();
-				reader = Util.executeCommandInDirectory(procCmd,null,new File(p.getFilePath()));
-				if (reader == null){
-					log.error("Reader is null!");
-				}
-				// Load results into a properties file
-				Properties prop = new Properties();
-				if (reader != null){
-					prop.load(reader);							
-					reader.close();
-				}
-				// Attach the attributes to the benchmark
-				b.setAttributes(prop);
-				count--;			
-				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
-			} catch (Exception e) {
-				log.warn(e.getMessage(), e);
-				return false;
-			} finally {
-				if(reader != null) {
-					try { reader.close(); } catch(Exception e) {log.error(e);}
-				}
-
-			}
-		}
-		return true;
-	}
-	//TODO: Is it secure to run benchmark processors in this way?
-	/**
-	 * Given a set of benchmarks and a processor, this method runs each benchmark through
-	 * the processor and adds a hashmap of attributes to the benchmark that are given from
-	 * the processor.
-	 * @param benchmarks The set of benchmarks to get attributes for
-	 * @param p The processor to run each benchmark on
-	 */
 	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
@@ -624,10 +592,12 @@ public class Benchmarks {
 				if (reader != null){
 					prop.load(reader);							
 					reader.close();
+				        log.debug("read "+prop.size()+" properties");
 				}
 				// Attach the attributes to the benchmark
 				b.setAttributes(prop);
 				count--;
+				Uploads.incrementTotalBenchmarks(statusId);
 				if (Benchmarks.isBenchValid(prop)){
 					Uploads.incrementValidatedBenchmarks(statusId);
 				}
@@ -732,7 +702,7 @@ public class Benchmarks {
 			newBenchmark.setPath(uniqueDir.getAbsolutePath()+File.separator+benchmarkFile.getName());
 
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
-			int benchId= Benchmarks.add(newBenchmark, spaceId);
+			int benchId= Benchmarks.add(newBenchmark, spaceId, null);
 			if (benchId<0) {
 				log.error("Benchmark being copied could not be successfully added to the database");
 				return benchId;
@@ -2305,45 +2275,45 @@ public class Benchmarks {
 	//TODO: What should we do about the type of the benchmarks?
 	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
 				    boolean isCommunityLeader) {
-		Connection con=null;
+	    Connection con=null;
 		
-		log.debug("Processing benchmarks in space "+new Integer(spaceId));
-		if (isCommunityLeader)
-		    log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+	    log.debug("Processing benchmarks in space "+new Integer(spaceId));
+	    if (isCommunityLeader)
+		log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
 
-		try {
+	    try {
 			
-			con=Common.getConnection();
-			List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
-			Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
+		con=Common.getConnection();
+		List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
+		Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
 			
-			for (Benchmark b : benchmarks) {
-				//only work on the benchmarks the given user owns
-				if (isCommunityLeader || b.getUserId()!=userId) {
-					continue;
-				}
-				if (clearOldAttrs) {
-					Benchmarks.clearAttributes(b.getId(),con);
-				}
+		for (Benchmark b : benchmarks) {
+		    //only work on the benchmarks the given user owns
+		    if (!isCommunityLeader && b.getUserId()!=userId) {
+			log.debug("Skipping benchmark "+b.getName());
+			continue;
+		    }
+		    if (clearOldAttrs) {
+			Benchmarks.clearAttributes(b.getId(),con);
+		    }
 				
-				Properties attrs=b.getAttributes();
-				for(Entry<Object, Object> keyVal : attrs.entrySet()) {
-					log.debug("adding attr "+((String)keyVal.getKey())+" with value "+((String)keyVal.getValue()) +" to bench with id ="+b.getId());
-					Benchmarks.addBenchAttr(con, b.getId(), (String)keyVal.getKey(), (String)keyVal.getValue());
-				}	
-			}
-			if (hierarchy) {
-				List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
-				for (Space s : spaces) {
-				    Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
-				}
-			}
-			
-		} catch (Exception e) {
-			log.error("process says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
+		    Properties attrs=b.getAttributes();
+		    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId))
+			return;	
+		    Uploads.incrementCompletedBenchmarks(statusId);
 		}
+		if (hierarchy) {
+		    List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
+		    for (Space s : spaces) {
+			Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
+		    }
+		}
+			
+	    } catch (Exception e) {
+		log.error("process says "+e.getMessage(),e);
+	    } finally {
+		Common.safeClose(con);
+	    }
 		
 	}
 
