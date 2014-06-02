@@ -443,30 +443,32 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean setErrorMessage(Integer statusId, String message){
-		Connection con = null;	
-		CallableStatement procedure = null;
-		if (message.length() > 512){
-			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
-		}
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
+	    if (statusId == null)
+		return false;
+	    Connection con = null;	
+	    CallableStatement procedure = null;
+	    if (message.length() > 512){
+		throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
+	    }
+	    try {
+		con = Common.getConnection();	
+		Common.beginTransaction(con);
 				
-			 procedure = con.prepareCall("{CALL SetErrorMessage(?,?)}");
+		procedure = con.prepareCall("{CALL SetErrorMessage(?,?)}");
 		
-			procedure.setInt(1, statusId);
-			procedure.setString(2,message);
-			procedure.executeUpdate();			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
+		procedure.setInt(1, statusId);
+		procedure.setString(2,message);
+		procedure.executeUpdate();			
+		Common.endTransaction(con);
+		return true;
+	    } catch (Exception e){			
+		log.error(e.getMessage(), e);	
+		Common.doRollback(con);
+		return false;
+	    } finally {
+		Common.safeClose(con);
+		Common.safeClose(procedure);
+	    }
 	}
-
+    
 }

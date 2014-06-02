@@ -41,6 +41,7 @@ import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.util.JobToXMLer;
 
 /**
  * Handles requests to download files from starexec
@@ -108,7 +109,16 @@ public class Download extends HttpServlet {
 				if (Util.paramExists("includeattrs",request)) {
 				    includeAttributes=Boolean.parseBoolean(request.getParameter("includeattrs"));
 				}
-				success = handleSpaceXML(space, u.getId(), ".zip", response, includeAttributes);	
+				success = handleSpaceXML(space, u.getId(), ".zip", response, includeAttributes);
+
+			} else if (request.getParameter("type").equals("jobXML")) {
+				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+
+				shortName="Job_"+ job.getId() + "_XML";
+				shortName=shortName.replaceAll("\\s+","");
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handleJobXML(job, u.getId(), ".zip", response);
+
 			} else if (request.getParameter("type").equals("job")) {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
@@ -146,6 +156,8 @@ public class Download extends HttpServlet {
 					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 					success = handleSpace(space, u.getId(), ".zip", response,true,includeBenchmarks,includeSolvers);
 				}
+
+			  
 			} else if (request.getParameter("type").equals("proc")) {
 				List<Processor> proc=null;
 				shortName="Processor";
@@ -277,6 +289,46 @@ public class Download extends HttpServlet {
 		}
 		else {
 			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
+		}
+
+		return false;
+	}
+
+		/**
+	 *Processes a job xml file to be downloaded. 
+	 * @param job the job to be downloaded
+	 * @param userId the id of the user making the download request
+	 * @param format the user's preferred archive type
+	 * @return a file representing the archive to send back to the client
+	 * @author Julio Cervantes
+	 * @throws Exception 
+	 */
+	private static boolean handleJobXML(Job job, int userId, String format, HttpServletResponse response) throws Exception {
+	        
+		// If we can see this 
+	    if (Permissions.canUserSeeJob(job.getId(), userId)) {
+			List<File> files=new ArrayList<File>();
+			log.debug("Permission to download XML granted");	
+			
+			JobToXMLer handler = new JobToXMLer();
+			File file = handler.generateXMLfile(job, userId);
+			
+			files.add(file);
+			
+			String baseFileName="Job_XML";
+			
+			//TODO : should store public/batchJobSchema.xsd in a constant, in case it gets changed later
+				File schema = new File(R.STAREXEC_ROOT + File.separator + "public/batchJobSchema.xsd");
+				files.add(schema);
+			
+			
+
+			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
+			
+			return true;
+		}
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job.");
 		}
 
 		return false;
@@ -778,6 +830,7 @@ public class Download extends HttpServlet {
 					request.getParameter("type").equals("reupload") ||
 					request.getParameter("type").equals("bench") ||
 					request.getParameter("type").equals("spaceXML") ||
+			                request.getParameter("type").equals("jobXML") ||
 					request.getParameter("type").equals("jp_output") ||
 					request.getParameter("type").equals("job") ||
 					request.getParameter("type").equals("j_outputs") ||

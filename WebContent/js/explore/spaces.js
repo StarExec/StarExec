@@ -2069,7 +2069,7 @@ function updateButtonIds(id) {
 	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
-	
+
 	$("#downloadXML").unbind("click");
 	$('#downloadXML').click(function(e) {
 		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
@@ -2128,6 +2128,7 @@ function updateButtonIds(id) {
 	});
 	log('updated action button space ids to ' + id);
 }
+
 
 function createDownloadSpaceXMLRequest(includeAttrs,id) {
   createDialog("Processing your download request, please wait. This will take some time for large spaces.");

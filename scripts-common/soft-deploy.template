@@ -50,7 +50,7 @@ done
 
 echo "Creating data directories if they are not present already"
 
-for d in Benchmarks Solvers processor_scripts jobin jobout joboutput joboutput/logs batchSpace/uploads ; do
+for d in Benchmarks Solvers processor_scripts jobin jobxml jobout joboutput joboutput/logs batchSpace/uploads ; do
   mkdirIf $STAREXEC_DATA_DIR/$d
 done
 
