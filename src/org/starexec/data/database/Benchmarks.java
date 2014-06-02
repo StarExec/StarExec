@@ -597,7 +597,6 @@ public class Benchmarks {
 				// Attach the attributes to the benchmark
 				b.setAttributes(prop);
 				count--;
-				Uploads.incrementTotalBenchmarks(statusId);
 				if (Benchmarks.isBenchValid(prop)){
 					Uploads.incrementValidatedBenchmarks(statusId);
 				}
