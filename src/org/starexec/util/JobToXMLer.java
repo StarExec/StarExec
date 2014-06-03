@@ -17,6 +17,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -130,17 +131,22 @@ public class JobToXMLer {
 		Attr startPaused = doc.createAttribute("start-paused");
 		startPaused.setValue(Boolean.toString(false));
 		jobElement.setAttributeNode(startPaused);
-		/**
-		//Preprocessor ID : preproc-id
-		Attr preProcID = doc.createAttribute("preproc-id");
-		preProcID.setValue(Integer.toString(job.getPreProcessor().getId()));
-		jobElement.setAttributeNode(preProcID);
 		
+		//Preprocessor ID : preproc-id
+		Processor pre = job.getPreProcessor();
+		if(pre != null){
+		    Attr preProcID = doc.createAttribute("preproc-id");
+		    preProcID.setValue(Integer.toString(pre.getId()));
+		    jobElement.setAttributeNode(preProcID);
+		}
 		//Postprocessor ID : postproc-id
-		Attr postProcID = doc.createAttribute("postproc-id");
-		postProcID.setValue(Integer.toString(job.getPostProcessor().getId()));
-		jobElement.setAttributeNode(postProcID);
-		**/
+		Processor post = job.getPostProcessor();
+		if(post != null){
+		    Attr postProcID = doc.createAttribute("postproc-id");
+		    postProcID.setValue(Integer.toString(post.getId()));
+		    jobElement.setAttributeNode(postProcID);
+		}
+		
 		//CPU timeout (seconds) : cpu-timeout
 		Attr cpuTimeout = doc.createAttribute("cpu-timeout");
 		cpuTimeout.setValue(Integer.toString(Jobs.getCpuTimeout(job.getId())));
