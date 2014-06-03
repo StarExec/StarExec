@@ -262,6 +262,10 @@ OPTIONAL: "ow" "nosolve" "nobench"
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
+--getjobxml -Downloads an XML file representing a specific job
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+
 --polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved 
 archives will have name given plus "-info" or "-output" and an integer.
 REQUIRED: "id", "out", "t" 

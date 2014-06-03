@@ -681,6 +681,9 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_GETSPACEXML)) {
 				type="spaceXML";
 				
+			} else if (c.equals(R.COMMAND_GETJOBXML)){
+			        type="jobXML";
+
 			} else if (c.equals(R.COMMAND_GETSPACE)) {
 				hierarchy=false;
 				type="space";
