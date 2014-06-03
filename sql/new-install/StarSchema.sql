@@ -62,7 +62,7 @@ INSERT INTO permissions VALUES (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 -- solvers, benchmarks, users and jobs exist (think of it as a folder)
 CREATE TABLE spaces (
 	id INT NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(128) NOT NULL,
+	name VARCHAR(255) NOT NULL,
 	created TIMESTAMP DEFAULT 0,
 	description TEXT,
 	locked BOOLEAN DEFAULT 0,
