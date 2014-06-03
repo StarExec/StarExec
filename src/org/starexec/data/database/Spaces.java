@@ -65,7 +65,7 @@ public class Spaces {
 			procAddSpace.setInt(4, defaultPermId);
 			procAddSpace.setInt(5, parentId);
 			procAddSpace.setBoolean(6, s.isStickyLeaders());
-			procAddSpace.registerOutParameter(7, java.sql.Types.INTEGER);		
+			procAddSpace.registerOutParameter(7, java.sql.Types.INTEGER);	
 			procAddSpace.executeUpdate();
 			int newSpaceId = procAddSpace.getInt(7);
 			

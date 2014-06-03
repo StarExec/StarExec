@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="5/12/2014-1";
+	public static String VERSION="6/3/2014-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -65,7 +65,7 @@ public class R {
 	//constants and regular expressions from StarExec for validation
 	
 	 //maximum length properties
-    public static int SPACE_NAME_LEN=128;
+    public static int SPACE_NAME_LEN=255;
     public static int SPACE_DESC_LEN=1024;
     public static int USER_FIRST_LEN=32;
     public static int USER_LAST_LEN=32;

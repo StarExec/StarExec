@@ -8,7 +8,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddSpace;
-CREATE PROCEDURE AddSpace(IN _name VARCHAR(128), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, IN _sticky BOOLEAN, OUT id INT)
+CREATE PROCEDURE AddSpace(IN _name VARCHAR(255), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, IN _sticky BOOLEAN, OUT id INT)
 	BEGIN		
 		INSERT INTO spaces (name, created, description, locked, default_permission,sticky_leaders)
 		VALUES (_name, SYSDATE(), _desc, _locked, _permission,_sticky);
@@ -22,7 +22,7 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(128), IN _desc TEXT, IN _locked TINYI
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobSpace;
-CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(128), OUT id INT)
+CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), OUT id INT)
 	BEGIN		
 		INSERT INTO job_spaces (name)
 		VALUES (_name);
@@ -398,7 +398,7 @@ CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT, IN _parentspaceId INT)
 -- Updates the name of the space with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateSpaceName;
-CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(128))
+CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(255))
 	BEGIN
 		UPDATE spaces
 		SET name = _name
@@ -419,7 +419,7 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 -- help update default permissions.
 -- Author: Skylar Stark	
 DROP PROCEDURE IF EXISTS UpdateSpaceDetails;
-CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(128), IN _desc TEXT, IN _locked BOOLEAN, IN _sticky BOOLEAN, OUT _perm INT)
+CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(255), IN _desc TEXT, IN _locked BOOLEAN, IN _sticky BOOLEAN, OUT _perm INT)
 	BEGIN
 		UPDATE spaces
 		SET name = _name,
@@ -539,7 +539,7 @@ CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
 -- Count the number of solvers in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSpaceSolversByName;
-CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(128), IN _spaceId INT)
+CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(255), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM solvers JOIN solver_assoc ON id = solver_id WHERE name = _name AND space_id = _spaceId;		
 	END //
@@ -555,7 +555,7 @@ CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(256), IN _spaceId I
 -- Count the number of jobs in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSpaceJobsByName;
-CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(128), IN _spaceId INT)
+CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(255), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM jobs JOIN job_assoc ON id = job_id WHERE name = _name AND space_id = _spaceId;		
 	END //
@@ -563,7 +563,7 @@ CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(128), IN _spaceId INT)
 -- Count the number of subspaces in a specific space
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS countSubspacesByName;
-CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(128), IN _spaceId INT)
+CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(255), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) 
 		FROM spaces AS parent
