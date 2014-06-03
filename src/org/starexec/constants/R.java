@@ -21,7 +21,7 @@ public class R {
 	
 	
     //maximum length properties
-    public static int SPACE_NAME_LEN=255;
+    public static int SPACE_NAME_LEN=128;
     public static int SPACE_DESC_LEN=1024;
     public static int USER_FIRST_LEN=32;
     public static int USER_LAST_LEN=32;

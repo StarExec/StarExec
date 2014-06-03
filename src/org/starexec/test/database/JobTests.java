@@ -19,6 +19,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
+import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
@@ -82,7 +83,18 @@ public class JobTests extends TestSequence {
 	@Test
 	private void GetTotalCountTest() {
 		Assert.assertTrue(Jobs.getJobCount()>0);
-		
+	}
+	
+	@Test
+	private void GetCountInSpaceTest() {
+		Assert.assertEquals(2,Jobs.getCountInSpace(space.getId()));
+	}
+	
+	@Test
+	private void GetCountInSpaceWithQuery() {
+		Assert.assertEquals(1,Jobs.getCountInSpace(space.getId(), job.getName()));
+		Assert.assertEquals(1,Jobs.getCountInSpace(space.getId(),job2.getName()));
+		Assert.assertEquals(0,Jobs.getCountInSpace(space.getId(),TestUtil.getRandomJobName()));
 	}
 	
 	@Test
