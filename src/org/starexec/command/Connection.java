@@ -39,6 +39,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.util.EntityUtils;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -349,7 +350,6 @@ public class Connection {
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("file", fileBody);
 			post=(HttpPost) setHeaders(post);
-
 			post.setEntity(entity);
 			
 			HttpResponse response=client.execute(post);
@@ -482,6 +482,53 @@ public class Connection {
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}
+	}
+
+
+	/**
+	 * Uploads a job xml to specified space
+	 * @param filePath An absolute file path to the file to upload
+	 * @param spaceID The ID of the space where the job is being uploaded to
+	 * @return status code (0 on success)
+	 * @author Julio Cervantes
+	 */
+	public int uploadJobXML(String filePath, Integer spaceID) {
+	    
+		try {
+		    
+			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADJOBXML);
+			post=(HttpPost) setHeaders(post);
+			
+			MultipartEntity entity = new MultipartEntity();
+			entity.addPart("space",new StringBody(spaceID.toString(),utf8));
+			File f=new File(filePath);
+			FileBody fileBody = new FileBody(f);
+			entity.addPart("f", fileBody);
+			
+			post.setEntity(entity);
+			
+			HttpResponse response=client.execute(post);
+
+			EntityUtils.consume(entity);
+			
+			setSessionIDIfExists(response.getAllHeaders());
+			
+			
+			
+			int code = response.getStatusLine().getStatusCode();
+			if (code !=200 && code != 302 ) {
+				return Status.ERROR_SERVER;
+			}
+		        
+			
+			
+			return 0;
+		} catch (Exception e) {
+		    System.out.println("CONNECTION.JAVA : "+e);
+		    
+			return Status.ERROR_SERVER;
+		}
+	    
 	}
 	
 	/**

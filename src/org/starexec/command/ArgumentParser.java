@@ -656,6 +656,32 @@ class ArgumentParser {
 			return Status.ERROR_SERVER;
 		}
 	}
+
+	/**
+	 * This function handles user requests for uploading a job xml archive.
+	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
+	 * ID and File keys
+	 * @return 0 on success, and a negative error code otherwise
+	 * @author Julio Cervantes
+	 */
+	
+	protected int uploadJobXML(HashMap<String, String> commandParams) {
+		try {
+		   
+			int valid=Validator.isValidUploadJobXMLRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			return con.uploadJobXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)));
+			
+		} catch (Exception e) {
+
+		    System.out.println("ARGUMENTPARSER.JAVA : " +e);
+		  
+		    
+			return Status.ERROR_SERVER;
+		}
+	}
 	
 	
 	/**

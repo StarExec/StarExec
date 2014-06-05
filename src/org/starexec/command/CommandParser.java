@@ -63,6 +63,7 @@ class CommandParser {
 	 */
 	protected int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
+		    
 			int serverStatus;
 
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
@@ -75,6 +76,9 @@ class CommandParser {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
 				serverStatus=parser.uploadSpaceXML(commandParams);
+			} else if (c.equals(R.COMMAND_PUSHJOBXML)) {
+			    
+				serverStatus=parser.uploadJobXML(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}

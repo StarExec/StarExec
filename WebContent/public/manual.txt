@@ -342,6 +342,12 @@ OPTIONAL: "n" "d"
 REQUIRED: "f" "id"
 OPTIONAL: None
 
+--pushjobxml -This command is used for uploading  a job XML. The parameter "id" refers to a space 
+				
+REQUIRED: "f" "id"
+OPTIONAL: None
+
+
 Delete Commands
 ---------------
 

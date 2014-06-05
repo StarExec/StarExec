@@ -27,6 +27,7 @@ public class R {
 	public static String URL_UPLOADBENCHMARKS="/secure/upload/benchmarks";
 	public static String URL_UPLOADPROCESSOR="secure/processors/manager";
 	public static String URL_UPLOADSPACE="secure/upload/space";
+        public static String URL_UPLOADJOBXML="secure/upload/jobXML";
 	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space";
@@ -143,6 +144,7 @@ public class R {
 	public static String COMMAND_PUSHPOSTPROC="pushpostproc";
 	public static String COMMAND_PUSHBENCHPROC="pushbenchproc";
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
+        public static String COMMAND_PUSHJOBXML="pushjobxml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
 	
 	//deleting commands
