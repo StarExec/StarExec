@@ -12,7 +12,7 @@
 		if(jp == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	
 		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
-			Job j = Jobs.getShallow(jp.getJobId());
+			Job j = Jobs.get(jp.getJobId());
 			
 			User u = Users.get(j.getUserId());
 			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,100));
