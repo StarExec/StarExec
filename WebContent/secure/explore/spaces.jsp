@@ -137,7 +137,7 @@
 				<li><a class="btnRun" id="makePublic">make public</a></li>
 				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
-				<li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>
+				<!-- <li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>-->
 				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
 			

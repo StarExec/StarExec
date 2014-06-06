@@ -113,6 +113,7 @@ function copyDependencies {
 		cd "$STAREXEC_OUT_DIR"/preProcessor
 		log "executing pre processor"
 		log "random seed = "$RAND_SEED
+		
 		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
 		#use the processed benchmark in subsequent steps
 		rm "$LOCAL_BENCH_PATH"

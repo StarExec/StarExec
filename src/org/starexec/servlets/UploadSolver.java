@@ -172,7 +172,15 @@ public class UploadSolver extends HttpServlet {
 			String randomDirectory=TestUtil.getRandomAlphaString(64);
 			File sandboxDirectory=Util.getSandboxDirectory();
 			File tempDir=new File(sandboxDirectory,randomDirectory);
-			tempDir.mkdirs();
+			String[] mkdirCommand=new String[6];
+			mkdirCommand[0]="sudo";
+			mkdirCommand[1]="-u";
+			mkdirCommand[2]="sandbox";
+			mkdirCommand[3]="mkdir";
+			mkdirCommand[4]="-p";
+			mkdirCommand[5]=tempDir.getAbsolutePath();
+			Util.executeCommand(mkdirCommand);                          
+			//tempDir.mkdirs();
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
 			FileItem item=null;
 			String name=null;
