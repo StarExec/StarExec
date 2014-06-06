@@ -227,6 +227,7 @@ public class R {
 	public static String PARAM_TRAVERSAL="trav";
 	public static String PARAM_MEMORY="mem";
 	public static String PARAM_PAUSED="pause";
+	public static String PARAM_SEED="seed";
 	
 	public static String ARG_ROUNDROBIN="r";
 	public static String ARG_DEPTHFIRST="d";

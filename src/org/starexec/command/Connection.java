@@ -1654,9 +1654,8 @@ public class Connection {
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @return
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused, Long seed) {
 		try {
-			
 			
 			HttpGet get=new  HttpGet(baseURL+R.URL_ADDJOB+"?sid="+spaceId.toString());
 			get=(HttpGet) setHeaders(get);
@@ -1724,6 +1723,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("queue",queueId.toString()));
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
+			params.add(new BasicNameValuePair("seed",seed.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			params.add(new BasicNameValuePair("maxMem",mem));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));

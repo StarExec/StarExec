@@ -195,7 +195,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable cleanDatabaseTask = new RobustRunnable("cleanDatabaseTask") {
 			@Override
 			protected void dorun() {
-				log.info("cleanDatabaseTask (periodic");
+				log.info("cleanDatabaseTask (periodic)");
 				Solvers.cleanOrphanedDeletedSolvers();
 				Benchmarks.cleanOrphanedDeletedBenchmarks();
 				Jobs.cleanOrphanedDeletedJobs();

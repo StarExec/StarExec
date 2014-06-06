@@ -152,7 +152,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -170,12 +170,13 @@ public class Jobs {
 				procedure.setNull(6, java.sql.Types.INTEGER);
 			}		
 			procedure.setInt(7, job.getPrimarySpace());
+			procedure.setLong(8,job.getSeed());
 			// The procedure will return the job's new ID in this parameter
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(9, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(8));
+			job.setId(procedure.getInt(9));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
@@ -455,6 +456,7 @@ public class Jobs {
 				j.setPreProcessor(Processors.get(con,results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con,results.getInt("post_processor")));
 				j.setDescription(results.getString("description"));
+				j.setSeed(results.getLong("seed"));
 				return j;
 			}
 		} catch (Exception e) {
@@ -491,6 +493,15 @@ public class Jobs {
 		for (Space s : subspaces) {
 			pairs.addAll(getJobPairsForStatsInJobSpace(s.getId()));
 		}
+		
+		HashMap<Integer,String> expectedValues=Jobs.getAllAttrsOfNameForJob(jobId,R.EXPECTED_RESULT);
+		for (JobPair jp : pairs) {
+			if (expectedValues.containsKey(jp.getBench().getId())) {
+				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
+			} 
+		}
+		
+		
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
 		
 		saveStats(jobId,jobSpaceId,newStats);
@@ -522,7 +533,8 @@ public class Jobs {
 				j.setName(results.getString("name"));	
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));					
+				j.setCreateTime(results.getTimestamp("created"));	
+				j.setSeed(results.getLong("seed"));
 				jobs.add(j);				
 			}			
 			return jobs;
@@ -560,7 +572,9 @@ public class Jobs {
 				j.setName(results.getString("name"));		
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));					
+				j.setCreateTime(results.getTimestamp("created"));		
+				j.setSeed(results.getLong("seed"));
+
 				jobs.add(j);				
 			}			
 
@@ -676,7 +690,9 @@ public class Jobs {
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));				
+				j.setDescription(results.getString("description"));	
+				j.setSeed(results.getLong("seed"));
+
 				j.setCreateTime(results.getTimestamp("created"));				
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
@@ -1243,6 +1259,40 @@ public class Jobs {
 	}
 	
 	/**
+	 * Gets benchmarks attributes with a specific key for all benchmarks used by a given job
+	 * @param jobId The job in question
+	 * @param attrKey The string key of the attribute to return 
+	 * @return A hashmap mapping benchmark ids to attribute values
+	 */
+	public static HashMap<Integer,String> getAllAttrsOfNameForJob(int jobId, String attrKey) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetAttrsOfNameForJob(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setString(2, attrKey);
+			results=procedure.executeQuery();
+			HashMap<Integer,String> idsToValues=new HashMap<Integer,String>();
+			
+			while (results.next()) {
+				idsToValues.put(results.getInt("job_pairs.bench_id"), results.getString("attr_value"));
+			}
+			
+			return idsToValues;
+			
+		} catch (Exception e) {
+			log.error("getAllAttrsOfNameForJob says "+e.getMessage(),e );
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
 	 * Returns all of the job pairs in a given space, populated with all the fields necessary
 	 * to display in a SolverStats table
 	 * @param jobId The ID of the job in question
@@ -1267,6 +1317,7 @@ public class Jobs {
 				if (attrs.containsKey(jp.getId())) {
 					jp.setAttributes(attrs.get(jp.getId()));
 				}
+
 			}
 			return pairs;
 		} catch (Exception e) {
@@ -1508,6 +1559,8 @@ public class Jobs {
 				j.setDeleted(results.getBoolean("deleted"));
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
+				j.setSeed(results.getLong("seed"));
+
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
@@ -1577,7 +1630,9 @@ public class Jobs {
 					if (results.getBoolean("deleted")) {
 						j.setName(j.getName()+" (deleted)");
 					}
-					j.setDescription(results.getString("description"));				
+					j.setDescription(results.getString("description"));	
+					j.setSeed(results.getLong("seed"));
+
 					j.setCreateTime(results.getTimestamp("created"));
 					j.setLiteJobPairStats(liteJobPairStats);
 					jobs.add(j);	
@@ -2202,7 +2257,9 @@ public class Jobs {
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));
-				j.setDescription(results.getString("description"));				
+				j.setDescription(results.getString("description"));	
+				j.setSeed(results.getLong("seed"));
+
 				j.setCreateTime(results.getTimestamp("created"));				
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.getQueue().setId(results.getInt("queue_id"));
@@ -2860,8 +2917,10 @@ public class Jobs {
 		int id;
 		Solver solve=null;
 		Configuration config=null;
+		Benchmark bench=null;
 		while(results.next()){
 			JobPair jp = JobPairs.shallowResultToPair(results);
+			
 			id=results.getInt("solver_id");
 			if (!solvers.containsKey(id)) {
 				solve=new Solver();
@@ -2870,7 +2929,9 @@ public class Jobs {
 				solvers.put(id,solve);
 			}
 			jp.setSolver(solvers.get(id));
-
+			bench=new Benchmark();
+			bench.setId(results.getInt("bench_id"));
+			jp.setBench(bench);
 			id=results.getInt("config_id");
 			if (!configs.containsKey(id)) {
 				config=new Configuration();
@@ -3339,7 +3400,9 @@ public class Jobs {
 					j.setName(results.getString("name"));	
 					j.setPrimarySpace(results.getInt("primary_space"));
 					j.setDescription(results.getString("description"));				
-					j.setCreateTime(results.getTimestamp("created"));					
+					j.setCreateTime(results.getTimestamp("created"));		
+					j.setSeed(results.getLong("seed"));
+
 					jobs.add(j);
 				}
 			}

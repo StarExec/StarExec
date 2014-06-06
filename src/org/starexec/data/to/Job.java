@@ -25,6 +25,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	@Expose private String name;
 	@Expose private String description = "no description"; 
 	private Queue queue = null;
+	private long seed = 0;
 	@Expose private Timestamp createTime;
 	
 	// this is the root JOB SPACE for this job. It is NOT a space from the spaces table.
@@ -236,6 +237,14 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 
 	public boolean isPaused() {
 		return paused;
+	}
+
+	public void setSeed(long seed) {
+		this.seed = seed;
+	}
+
+	public long getSeed() {
+		return seed;
 	}
 
 	

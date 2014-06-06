@@ -50,6 +50,7 @@ public class SingleJobPair extends HttpServlet {
     private String jobDescription = "This is a public job.";
     private Integer preProcessorId = 0;
     private Integer postProcessorId = 0;
+    private long seed=0;
     private Integer cpuLimit = R.PUBLIC_CPU_LIMIT;
     private Integer clockTimeout = R.PUBLIC_CLOCK_TIMEOUT;
     private long maxMemory=R.DEFAULT_PAIR_VMEM;
@@ -143,7 +144,7 @@ public class SingleJobPair extends HttpServlet {
 				log.debug("userid " + R.PUBLIC_USER_ID);
 				log.debug("benchname = " + bench.getName());
 				log.debug("jobdescription = " + jobDescription);
-				Job j = JobManager.setupJob(R.PUBLIC_USER_ID, bench.getName(), jobDescription, preProcessorId, postProcessorId, queueId);  
+				Job j = JobManager.setupJob(R.PUBLIC_USER_ID, bench.getName(), jobDescription, preProcessorId, postProcessorId, queueId,seed);  
 				log.debug("job id is " + j.getId());
 				List<Integer> benchmarkIds = new LinkedList<Integer>();//Job methods takes lists so need this
 				benchmarkIds.add(bench.getId());

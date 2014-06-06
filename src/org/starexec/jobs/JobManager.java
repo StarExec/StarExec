@@ -148,6 +148,7 @@ public abstract class JobManager {
 			// jobTemplate is a version of mainTemplate customized for this job
 			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
 			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
+			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 
 			//Post processor
@@ -452,16 +453,17 @@ public abstract class JobManager {
 	 * @param preProcessorId the id of the pre-processor for the job
 	 * @param postProcessorId the id of the post-processor for the job
 	 * @param queueId the id of the queue for the job
+	 * @param randomSeed a seed to pass into preprocessors
 	 * @return the new job object with the specified properties
 	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId) {
+	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
 		// Set the job's name, submitter user id and description
 		j.setUserId(userId);
 		j.setName(name);		
-
+		j.setSeed(randomSeed);
 		if(description != null) {
 			j.setDescription(description);
 		}

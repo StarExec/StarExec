@@ -103,7 +103,7 @@ CREATE TABLE processors (
 
 -- The default 'no type' benchmark processor
 INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES 
-('no_type', 'this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type.', '/home/starexec/processor_scripts/no-type.bash', 1, 3, 145);
+('no_type', 'this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type.', '/home/starexec/processor_scripts', 1, 3, 145);
 
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
@@ -204,6 +204,7 @@ CREATE TABLE jobs (
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
+	seed BIGINT DEFAULT 0,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,

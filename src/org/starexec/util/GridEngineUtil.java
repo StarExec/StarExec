@@ -405,32 +405,49 @@ public class GridEngineUtil {
      * Cancels/Ends a reservation
      */
     public static void checkQueueReservations() {
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+
     	java.util.Date today = new java.util.Date();
-		//java.util.Date today = new java.util.Date(113, 11, 10); // December 10, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 		if (queueReservations == null) 
 		    log.info("No reservations found.");
 		else {
-		    for (QueueRequest req : queueReservations) {
-			log.info("Checking reservation for queue "+req.getQueueName());
+			//first, end all the reservations that need to be ended and take back nodes that reservations are done with
+			for (QueueRequest req : queueReservations) {
 
-			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-				
 		        Calendar cal = Calendar.getInstance();
 		        cal.setTime(today);
 		        cal.add(Calendar.DATE, -1);
 		        java.util.Date yesterday = cal.getTime();
+				/**
+				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
+				 */
+				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
+				if (end_was_yesterday) {
+				    log.info("Reservation has ended for queue "+req.getQueueName()+".");
+				    cancelReservation(req);
+				}
 				
-			/**
-			 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
-			 */
-			boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
-			if (end_was_yesterday) {
-			    log.info("Reservation has ended for queue "+req.getQueueName()+".");
-			    cancelReservation(req);
+				int queueId = Queues.getIdByName(req.getQueueName());
+				int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
+				int actualNodeCount = actualNodes.size();
+				String queueName = Queues.getNameById(queueId);
+				String[] split = queueName.split("\\.");
+				String shortQueueName = split[0];
+				
+				//When the node count is decreasing for this reservation on this day
+				//Need to move a certain number of nodes back to all.q
+				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+				
 			}
-				
-				
+			
+			
+			
+			//next, start up the new reservations and add nodes where they need to be
+		    for (QueueRequest req : queueReservations) {
+			log.info("Checking reservation for queue "+req.getQueueName());
+
 			/**
 			 * if today is when the reservation is starting
 			 */
@@ -450,9 +467,7 @@ public class GridEngineUtil {
 
 
 			/**The Following code is for when the node count is changing throughout the reservation**/
-			//When the node count is decreasing for this reservation on this day
-			//Need to move a certain number of nodes back to all.q
-			transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+
 				
 			//When the node count is increasing for this reservation on this day
 			//Need to move a certain number of nodes from all.q to this queue
