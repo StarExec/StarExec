@@ -99,7 +99,7 @@ public class ProcessorManager extends HttpServlet {
 			// If we're dealing with an upload request...
 			// Make sure the request is valid
 			if(!isValidCreateRequest(form)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark type request was malformed");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The processor request was malformed. ");
 
 				return;
 			}
@@ -119,8 +119,8 @@ public class ProcessorManager extends HttpServlet {
 				response.addCookie(new Cookie("New_ID",String.valueOf(result.getId())));
 			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));	
 			} else {
-
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new benchmark type.");	
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new processor. Please ensure the archive is in the correct format, with a " +
+						"process script in the top level.");	
 			}									
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -248,7 +248,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			File processorScript=new File(uniqueDir,R.PROCSSESSOR_RUN_SCRIPT);
 			if (!processorScript.exists()) {
-				log.warn("the new processor did not have process script!");
+				log.warn("the new processor did not have a process script!");
 				return null;
 			}
 			ProcessorManager.setAllFilesExecutable(new File(newProc.getFilePath()));

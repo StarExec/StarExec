@@ -111,6 +111,15 @@ public class Util {
 	}
 	
 	/**
+	 * Returns a File object representing the sandbox directory for the headnode
+	 * @return the File object
+	 * @author Eric Burns
+	 */
+	public static File getSandboxDirectory() {
+		return new File(R.SANDBOX_DIRECTORY);
+	}
+	
+	/**
 	 * Ensures a number is within a given range
 	 * @param min The minimum value the given value can be
 	 * @param max The maximum value the given value can be

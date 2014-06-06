@@ -473,7 +473,7 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			
+			response.getEntity().getContent().close();
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return Status.ERROR_SERVER;
 			}
@@ -512,16 +512,13 @@ public class Connection {
 			EntityUtils.consume(entity);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			
-			
-			
+
+			response.getEntity().getContent().close();
 			int code = response.getStatusLine().getStatusCode();
 			if (code !=200 && code != 302 ) {
 				return Status.ERROR_SERVER;
 			}
-		        
-			
-			
+
 			return 0;
 		} catch (Exception e) {
 		    System.out.println("CONNECTION.JAVA : "+e);
@@ -962,6 +959,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			response.getEntity().getContent().close();
+			
 			return true;
 		} catch (Exception e) {
 			

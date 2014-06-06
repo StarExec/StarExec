@@ -135,6 +135,60 @@ public class ArchiveUtil {
 		}
 	}
 	
+	public static Boolean extractArchiveAsSandbox(String fileName,String destination) {
+		log.debug("ExtractingArchive for " + fileName);
+		try {
+			// Check for the appropriate file extension and hand off to the appropriate method
+			if(fileName.endsWith(".zip")) {
+				String[] unzipCmd = new String[7];
+				unzipCmd[0] = "sudo";
+				unzipCmd[1] = "-u";
+				unzipCmd[2] = "sandbox";
+				unzipCmd[3] = "unzip";
+				unzipCmd[4] = fileName;
+				unzipCmd[5] = "-d";
+				unzipCmd[6] = destination;
+				log.debug("about to execute command tar command");
+				Util.executeCommand(unzipCmd);
+				//results = Util.bufferToString(reader);
+				//log.debug("command was executed, results = " + results);
+				log.debug("now removing the archived file " + fileName);
+				ArchiveUtil.removeArchive(fileName);
+				
+			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz") || fileName.endsWith(".tar")) {
+				// First rename it if it's a .tgz
+
+			
+				/* by default, tar applies (supposedly) the user's umask when setting
+				   permissions for extracted files.  So we do not need to do anything
+				   further with that. */
+				String[] tarCmd = new String[8];
+				tarCmd[0] = "sudo";
+				tarCmd[1] = "-u";
+				tarCmd[2] = "sandbox";
+				tarCmd[3] = "tar";
+				tarCmd[4] = "-xf";
+				tarCmd[5] = fileName;
+				tarCmd[6] = "-C";
+				tarCmd[7] = destination;
+				log.debug("about to execute command tar command");
+				Util.executeCommand(tarCmd);
+				ArchiveUtil.removeArchive(fileName);
+
+			} else {
+				// No valid file type found :(
+				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
+				return false;
+			}
+			
+			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
+			return true;
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+		}
+
+		return false;
+	}
 	
 	/**
 	 * Extracts/unpacks/uncompresses an archive file to a folder with the same name at the given destination.
@@ -174,7 +228,7 @@ public class ArchiveUtil {
 				log.debug("ls -l destination results = " + results);
 
 				/* by default, tar applies (supposedly) the user's umask when setting
-				   permissions for extracted files.  So we do not need to do anythin
+				   permissions for extracted files.  So we do not need to do anything
 				   further with that. */
 				String[] tarCmd = new String[5];
 				tarCmd[0] = "tar";

@@ -26,12 +26,15 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -106,7 +109,7 @@ public class UploadSolver extends HttpServlet {
 				int configs = result[1];
 			
 				// Redirect based on success/failure
-				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4) {
+				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4 && return_value!=-5) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
 					if (configs == -4) { //If there are no configs
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&flag=true"));
@@ -126,6 +129,8 @@ public class UploadSolver extends HttpServlet {
 					} else if (return_value==-4) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File is too large to fit in user's disk quota");
 						//Other Error
+					} else if (return_value==-5) {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST,"Only community leaders may upload solvers with starexec_build scripts");
 					} else {
 						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
 						return;
@@ -164,10 +169,15 @@ public class UploadSolver extends HttpServlet {
 			int[] returnArray = new int[2];
 			returnArray[0] = 0;
 			returnArray[1] = 0;
+			String randomDirectory=TestUtil.getRandomAlphaString(64);
+			File sandboxDirectory=Util.getSandboxDirectory();
+			File tempDir=new File(sandboxDirectory,randomDirectory);
+			tempDir.mkdirs();
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
 			FileItem item=null;
 			String name=null;
 			URL url=null;
+			Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 			if (upMethod.equals("local")) {
 				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
 			} else {
@@ -197,11 +207,11 @@ public class UploadSolver extends HttpServlet {
 			File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
 			uniqueDir = new File(uniqueDir, newSolver.getName());
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-
+			
 			newSolver.setPath(uniqueDir.getAbsolutePath());
 
 			uniqueDir.mkdirs();
-
+			
 			
 			//Process the archive file and extract
 			File archiveFile=null;
@@ -228,17 +238,47 @@ public class UploadSolver extends HttpServlet {
 				returnArray[0]=-4;
 				return returnArray;
 			}
-			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-			log.debug(uniqueDir.getAbsolutePath());
-			if (containsBuildScript(uniqueDir)) {
+			FileUtils.copyFileToDirectory(archiveFile, tempDir);
+			archiveFile.delete();
+			archiveFile=new File(tempDir,archiveFile.getName());
+			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
+			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
+				if (SolverSecurity.canUserRunStarexecBuild(userId, spaceId)!=0) {
+					FileUtils.deleteDirectory(tempDir);
+					FileUtils.deleteDirectory(uniqueDir);
+					returnArray[0]=-5;
+					return returnArray;
+				}
 				List<File> authorized=new ArrayList<File>();
 				authorized.add(uniqueDir);
-				String[] command=new String[1];
-				command[0]="./"+R.SOLVER_BUILD_SCRIPT;
+				String[] command=new String[4];
+				command[0]="sudo";
+				command[1]="-u";
+				command[2]="sandbox";
+				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
-				Util.executeSandboxedCommand(command, null, authorized,uniqueDir);
+				Util.executeCommandInDirectory(command, null,tempDir);
 			}
+			String[] chmodCommand=new String[7];
+			chmodCommand[0]="sudo";
+			chmodCommand[1]="-u";
+			chmodCommand[2]="sandbox";
+			chmodCommand[3]="chmod";
+			chmodCommand[4]="-R";
+			chmodCommand[5]="g+rx";		
+			chmodCommand[6]=tempDir.getAbsolutePath();
+			Util.executeCommand(chmodCommand);
+			for (File f : tempDir.listFiles()) {
+				if (f.isDirectory()) {
+					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
+				} else {
+					FileUtils.copyFileToDirectory(f, uniqueDir);
+				}
+			}
+			archiveFile.delete();
+			FileUtils.deleteDirectory(tempDir);
+			
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
 				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
@@ -284,7 +324,7 @@ public class UploadSolver extends HttpServlet {
 				returnArray[1] = -4; //It is empty
 			}
 			//Try adding the solver to the database
-			int solver_Success = Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
+			int solver_Success = Solvers.add(newSolver, spaceId);
 			returnArray[0] = solver_Success;
 			return returnArray;
 		} catch (Exception e) {

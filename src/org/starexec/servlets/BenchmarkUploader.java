@@ -191,7 +191,7 @@ public class BenchmarkUploader extends HttpServlet {
 						return null;
 					}
 				}
-
+				Uploads.processingBegun(statusId);
 				if (!hasDependencies){	
 					benchmarkIds.addAll(Benchmarks.add(results, spaceId, statusId));
 				}

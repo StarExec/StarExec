@@ -100,7 +100,9 @@ public class R {
     public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = null;
-    //Admin user info
+	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
+    
+	//Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
     public static String ADMIN_USER_PASSWORD = "admin";			
     public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue
