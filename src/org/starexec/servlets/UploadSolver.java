@@ -226,11 +226,11 @@ public class UploadSolver extends HttpServlet {
 			//String FileName=null;
 			if (upMethod.equals("local")) {
 				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
-				archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
+				archiveFile = new File(tempDir,  FilenameUtils.getName(item.getName()));
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
 			} else {
-				archiveFile=new File(uniqueDir, name);
+				archiveFile=new File(tempDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				FileUtils.copyURLToFile(url, archiveFile);
 			}
@@ -246,9 +246,7 @@ public class UploadSolver extends HttpServlet {
 				returnArray[0]=-4;
 				return returnArray;
 			}
-			FileUtils.copyFileToDirectory(archiveFile, tempDir);
-			archiveFile.delete();
-			archiveFile=new File(tempDir,archiveFile.getName());
+			
 			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
 			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
