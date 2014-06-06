@@ -226,11 +226,11 @@ public class UploadSolver extends HttpServlet {
 			//String FileName=null;
 			if (upMethod.equals("local")) {
 				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
-				archiveFile = new File(tempDir,  FilenameUtils.getName(item.getName()));
+				archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
 			} else {
-				archiveFile=new File(tempDir, name);
+				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				FileUtils.copyURLToFile(url, archiveFile);
 			}
@@ -246,7 +246,18 @@ public class UploadSolver extends HttpServlet {
 				returnArray[0]=-4;
 				return returnArray;
 			}
-			
+			String[] cpCmd =new String[6];
+			cpCmd[0]="sudo";
+			cpCmd[1]="-u";
+			cpCmd[2]="sandbox";
+			cpCmd[3]="cp";
+			cpCmd[4]=archiveFile.getAbsolutePath();
+			cpCmd[5]=tempDir.getAbsolutePath();
+			Util.executeCommand(cpCmd);
+			//FileUtils.copyFileToDirectory(archiveFile, tempDir);
+			archiveFile.delete();
+			archiveFile=new File(tempDir,archiveFile.getName());
+			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
 			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
 			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
