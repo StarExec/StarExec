@@ -144,7 +144,7 @@ public class GridEngineUtil {
 			while((line = queueResults.readLine()) != null) {
 				String name = line;
 
-				log.debug("Loading details for queue "+name);
+				log.info("Loading details for queue "+name);
 
 				// In the database, update the attributes for the queue
 				Queues.update(name,  GridEngineUtil.getQueueDetails(name));
@@ -161,6 +161,8 @@ public class GridEngineUtil {
 	      }				
 	      }
 			 */  
+			log.info("Setting the queue associations in the db");
+
 			//Adds all the associations to the db
 			GridEngineUtil.setQueueAssociationsInDb();
 		} catch (Exception e) {
@@ -169,6 +171,7 @@ public class GridEngineUtil {
 			// Try to close the result list if it is allowed
 			try { queueResults.close(); } catch (Exception e) { }
 		}
+		log.info("Completed loading the queue details into the db");
 	}
 
 	/**
@@ -214,16 +217,13 @@ public class GridEngineUtil {
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 
-		// Call SGE to get info on the queues
-		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
+		log.info("Updating the DB with associations between SGE queues to compute nodes.");
 
 		String[] envp = new String[2];
 		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
 		envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
 		BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
 		String results = Util.bufferToString(reader);
-		//String results = testString;
-		log.info("Updating the DB with associations between SGE queues to compute nodes.");
 
 		try {
 			reader.close();
@@ -242,11 +242,12 @@ public class GridEngineUtil {
 		while(matcher.find()) {
 			// Parse out the queue and node names from the regex parser and add it to the return list			
 			capture = matcher.group().split("@");
-			log.debug("queue = " + capture[0]);
-			log.debug("node = " + capture[1]);
+			log.info("queue = " + capture[0]);
+			log.info("node = " + capture[1]);
 			Queues.associate(capture[0], capture[1]);
 		}
 
+		log.info("Completed updating the DB with associations between SGE queues to compute nodes.");
 		return true;
 	}
 
@@ -309,7 +310,7 @@ public class GridEngineUtil {
 			String line;		
 			while((line = nodeResults.readLine()) != null) {
 				String name = line;							
-				log.debug("Updating info for node "+name);
+				log.info("Updating info for node "+name);
 				// In the database, update the attributes for the node
 				Cluster.updateNode(name,  GridEngineUtil.getNodeDetails(name));				
 				// Set the node as active (because we just saw it!)
@@ -321,6 +322,7 @@ public class GridEngineUtil {
 			// Try to close the result list if it is allowed
 			try { nodeResults.close(); } catch (Exception e) { }
 		}
+		log.info("Completed loading info for worker nodes into db");
 	}
 
 	/**
