@@ -423,8 +423,6 @@ public class Jobs {
 		return memory;
 	}
 	
-	
-	
 	/**
 	 * Gets information about the job with the given ID. Job pair information is not returned
 	 * @param jobId The ID of the job in question
@@ -1559,7 +1557,6 @@ public class Jobs {
 				j.setDeleted(results.getBoolean("deleted"));
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
-				j.setSeed(results.getLong("seed"));
 
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
@@ -1631,7 +1628,6 @@ public class Jobs {
 						j.setName(j.getName()+" (deleted)");
 					}
 					j.setDescription(results.getString("description"));	
-					j.setSeed(results.getLong("seed"));
 
 					j.setCreateTime(results.getTimestamp("created"));
 					j.setLiteJobPairStats(liteJobPairStats);
@@ -2236,48 +2232,7 @@ public class Jobs {
 
 	
 	
-	/**
-	 * Retrieves a job with basic info from the database (excludes pair and queue/processor info) 
-	 * @param jobId The id of the job to get information for 
-	 * @return A job object containing information about the requested job
-	 * @author Tyler Jensen
-	 */
-	public static Job getShallow(int jobId) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetJobById(?)}");
-			procedure.setInt(1, jobId);					
-			results = procedure.executeQuery();
-
-			if(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));
-				j.setDescription(results.getString("description"));	
-				j.setSeed(results.getLong("seed"));
-
-				j.setCreateTime(results.getTimestamp("created"));				
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.getQueue().setId(results.getInt("queue_id"));
-				j.getPreProcessor().setId(results.getInt("pre_processor"));
-				j.getPostProcessor().setId(results.getInt("post_processor"));				
-				log.debug("getShallow found job, returning it");
-				return j;
-			}		
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		log.debug("getShallow could not find job, returning null");
-		return null;
-	}
+	
 	
 	/**
 	 * Invalidates every type of cache related to this job (useful when deleting a job)
