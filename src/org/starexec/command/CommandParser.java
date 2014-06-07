@@ -75,10 +75,10 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
-			        serverStatus=parser.uploadXML(commandParams,false);
-			} else if (c.equals(R.COMMAND_PUSHJOBXML)) {
-			    
-			        serverStatus=parser.uploadXML(commandParams,true);
+			    serverStatus=parser.uploadXML(commandParams,false);
+
+			} else if (c.equals(R.COMMAND_PUSHJOBXML)) { 
+			    serverStatus=parser.uploadXML(commandParams,true);
 			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}

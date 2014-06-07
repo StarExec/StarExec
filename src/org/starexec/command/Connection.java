@@ -465,11 +465,11 @@ public class Connection {
 	 * @return status code (0 on success)
 	 * @author Julio Cervantes
 	 */
-    public int uploadXML(String filePath, Integer spaceID, boolean isJobUpload) {
+    public int uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
 	    
 		try {
 		        String ext = R.URL_UPLOADSPACE;
-			if(isJobUpload){
+			if(isJobXML){
 			    ext = R.URL_UPLOADJOBXML;
 			}
 			HttpPost post=new HttpPost(baseURL+ext);
@@ -1758,3 +1758,4 @@ public class Connection {
 	}
 	
 }
+

@@ -38,19 +38,14 @@ public class UploadJobXML extends HttpServlet {
 	private static final String SPACE_ID = "space";
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    //TODO : remove
-	    
     	int userId = SessionUtil.getUserId(request);
     	try {	
     		// If we're dealing with an upload request...
-	    
 			if (ServletFileUpload.isMultipartContent(request)) {
-			    
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
 				// Make sure the request is valid
 				if(!this.isValidRequest(form)) {
-				    
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload job xml request was malformed");
 					return;
 				} 
@@ -59,7 +54,6 @@ public class UploadJobXML extends HttpServlet {
 				
 				// Redirect based on success/failure
 				if(result.getJobCreationSuccess()) {
-				    
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Job XML - " + result.getErrorMessage());	
@@ -83,7 +77,6 @@ public class UploadJobXML extends HttpServlet {
 	private JobUtil handleXMLFile(int userId, HashMap<String, Object> form) {
 		try {
 			log.debug("Handling Upload of XML File from User " + userId);
-			
 			FileItem item = (FileItem)form.get(UploadJobXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
 			
@@ -99,8 +92,6 @@ public class UploadJobXML extends HttpServlet {
 			File archiveFile = new File(uniqueDir,  item.getName());
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);
-
-			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
 			

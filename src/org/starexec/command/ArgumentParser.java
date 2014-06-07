@@ -133,7 +133,7 @@ class ArgumentParser {
 		return con.logout();
 		
 	}
-	
+
 	/**
 	 * Creates a POST request to StarExec to create a new job
 	 * @param commandParams A HashMap containing key/value pairs gathered from the user input at the command line
@@ -191,14 +191,13 @@ class ArgumentParser {
 			if (commandParams.containsKey(R.PARAM_SEED)) {
 				seed=Long.parseLong(commandParams.get(R.PARAM_SEED));
 			}
-			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc, 
-					Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),
-					wallclock, cpu,useDepthFirst,maxMemory,startPaused,seed);
+			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),wallclock, cpu,useDepthFirst,maxMemory,startPaused,seed);
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}
 	}
+
 	
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
@@ -649,14 +648,14 @@ class ArgumentParser {
 	 * @author Julio Cervantes
 	 */
 	
-    protected int uploadXML(HashMap<String, String> commandParams,boolean isJobUpload) {
+    protected int uploadXML(HashMap<String, String> commandParams,boolean isJobXML) {
 		try {
 		   
 			int valid=Validator.isValidUploadXMLRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
-			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)), isJobUpload);
+			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
 			
 		} catch (Exception e) {
 

@@ -486,6 +486,7 @@ List Commands
 -------------
 
 These commands will print the contents of a given space to the console. IDs and names will be printed.
+All lists are terminated by the newline character "\n".
 Every command in this category requires the "id" parameter, specifying a space. The parameter "limit"
 is optional, and indicates that at most "limit" primitives should be printed. An example is given below
 

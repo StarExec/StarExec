@@ -40,6 +40,7 @@ public class Validator {
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
+        private static String[] allowedCopyHierParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE,R.PARAM_TEST};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
@@ -237,17 +238,11 @@ public class Validator {
     	
     	//the hierarchy parameter is also acceptable if the type is either solver or space
     	if (type=="solver" || type== "space") {
-    		String[] a=new String[allowedCopyParams.length+1];
-    		for (int index=0;index<allowedCopyParams.length;index++) {
-    			a[index]=allowedCopyParams[index];
-    			
-    		}
-    		a[a.length-1]=R.PARAM_HIERARCHY;
-    		findUnnecessaryParams(a,commandParams);
+    		findUnnecessaryParams(allowedCopyHierParams,commandParams);
     	} else {
     		findUnnecessaryParams(allowedCopyParams,commandParams);
     	}
-    	findUnnecessaryParams(allowedCopyParams,commandParams);
+    	
     	return 0;
     }
     
