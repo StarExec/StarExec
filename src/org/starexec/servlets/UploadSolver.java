@@ -172,15 +172,15 @@ public class UploadSolver extends HttpServlet {
 			String randomDirectory=TestUtil.getRandomAlphaString(64);
 			File sandboxDirectory=Util.getSandboxDirectory();
 			File tempDir=new File(sandboxDirectory,randomDirectory);
-			String[] mkdirCommand=new String[6];
-			mkdirCommand[0]="sudo";
-			mkdirCommand[1]="-u";
-			mkdirCommand[2]="sandbox";
-			mkdirCommand[3]="mkdir";
-			mkdirCommand[4]="-p";
-			mkdirCommand[5]=tempDir.getAbsolutePath();
-			Util.executeCommand(mkdirCommand);                          
-			//tempDir.mkdirs();
+			//String[] mkdirCommand=new String[6];
+			//mkdirCommand[0]="sudo";
+			//mkdirCommand[1]="-u";
+			//mkdirCommand[2]="sandbox";
+			//mkdirCommand[3]="mkdir";
+			//mkdirCommand[4]="-p";
+			//mkdirCommand[5]=tempDir.getAbsolutePath();
+			//Util.executeCommand(mkdirCommand);                          
+			tempDir.mkdirs();
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
 			FileItem item=null;
 			String name=null;
@@ -246,15 +246,15 @@ public class UploadSolver extends HttpServlet {
 				returnArray[0]=-4;
 				return returnArray;
 			}
-			String[] cpCmd =new String[6];
-			cpCmd[0]="sudo";
-			cpCmd[1]="-u";
-			cpCmd[2]="sandbox";
-			cpCmd[3]="cp";
-			cpCmd[4]=archiveFile.getAbsolutePath();
-			cpCmd[5]=tempDir.getAbsolutePath();
-			Util.executeCommand(cpCmd);
-			//FileUtils.copyFileToDirectory(archiveFile, tempDir);
+			//String[] cpCmd =new String[6];
+			//cpCmd[0]="sudo";
+			//cpCmd[1]="-u";
+			//cpCmd[2]="sandbox";
+			//cpCmd[3]="cp";
+			//cpCmd[4]=archiveFile.getAbsolutePath();
+			//cpCmd[5]=tempDir.getAbsolutePath();
+			//Util.executeCommand(cpCmd);
+			FileUtils.copyFileToDirectory(archiveFile, tempDir);
 			archiveFile.delete();
 			archiveFile=new File(tempDir,archiveFile.getName());
 			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
@@ -277,6 +277,11 @@ public class UploadSolver extends HttpServlet {
 				
 				Util.executeCommandInDirectory(command, null,tempDir);
 			}
+			String[] chownCommand=new String[3];
+			chownCommand[0]="chown";
+			chownCommand[1]="sandbox";
+			chownCommand[2]=tempDir.getAbsolutePath();
+			Util.executeCommand(chownCommand);
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
 			chmodCommand[1]="-u";
