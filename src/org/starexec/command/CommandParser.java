@@ -75,10 +75,10 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
-				serverStatus=parser.uploadSpaceXML(commandParams);
+			        serverStatus=parser.uploadXML(commandParams,false);
 			} else if (c.equals(R.COMMAND_PUSHJOBXML)) {
 			    
-				serverStatus=parser.uploadJobXML(commandParams);
+			        serverStatus=parser.uploadXML(commandParams,true);
 			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}
@@ -93,6 +93,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
+		    System.out.println("CommandParser.java : " + e);
 			return Status.ERROR_INTERNAL;
 		}
 	}

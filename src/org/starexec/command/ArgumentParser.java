@@ -641,46 +641,26 @@ class ArgumentParser {
 	}
 	
 	/**
-	 * This function handles user requests for uploading a space XML archive.
+	 * This function handles user requests for uploading an xml archive (space or job).
 	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
 	 * ID and File keys
-	 * @return 0 on success, and a negative error code otherwise
-	 * @author Eric Burns
-	 */
-	
-	protected int uploadSpaceXML(HashMap<String, String> commandParams) {
-		try {
-			int valid=Validator.isValidUploadSpaceXMLRequest(commandParams);
-			if (valid<0) {
-				return valid;
-			}
-			return con.uploadSpaceXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)));
-			
-		} catch (Exception e) {
-			return Status.ERROR_SERVER;
-		}
-	}
-
-	/**
-	 * This function handles user requests for uploading a job xml archive.
-	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
-	 * ID and File keys
+	 * @param isJobUpload true if job xml upload, false otherwise
 	 * @return 0 on success, and a negative error code otherwise
 	 * @author Julio Cervantes
 	 */
 	
-	protected int uploadJobXML(HashMap<String, String> commandParams) {
+    protected int uploadXML(HashMap<String, String> commandParams,boolean isJobUpload) {
 		try {
 		   
-			int valid=Validator.isValidUploadJobXMLRequest(commandParams);
+			int valid=Validator.isValidUploadXMLRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
-			return con.uploadJobXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)));
+			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)), isJobUpload);
 			
 		} catch (Exception e) {
 
-		    System.out.println("ARGUMENTPARSER.JAVA : " +e);
+		    System.out.println("ArgumentParser.java : " +e);
 		  
 		    
 			return Status.ERROR_SERVER;

@@ -456,47 +456,23 @@ public class Connection {
 	}
 	
 	
-	
-	public int uploadSpaceXML(String filePath, Integer spaceID) {
-		try {
-			
-			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADSPACE);
-			post=(HttpPost) setHeaders(post);
-			
-			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("space",new StringBody(spaceID.toString(),utf8));
-			File f=new File(filePath);
-			FileBody fileBody = new FileBody(f);
-			entity.addPart("f", fileBody);
-			
-			
-			HttpResponse response=client.execute(post);
-			
-			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
-			if (response.getStatusLine().getStatusCode()!=200) {
-				return Status.ERROR_SERVER;
-			}
-			
-			return 0;
-		} catch (Exception e) {
-			return Status.ERROR_SERVER;
-		}
-	}
-
 
 	/**
-	 * Uploads a job xml to specified space
+	 * Uploads an xml (job or space) to specified space
 	 * @param filePath An absolute file path to the file to upload
 	 * @param spaceID The ID of the space where the job is being uploaded to
+	 * @param isJobUpload true if job xml upload, false otherwise
 	 * @return status code (0 on success)
 	 * @author Julio Cervantes
 	 */
-	public int uploadJobXML(String filePath, Integer spaceID) {
+    public int uploadXML(String filePath, Integer spaceID, boolean isJobUpload) {
 	    
 		try {
-		    
-			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADJOBXML);
+		        String ext = R.URL_UPLOADSPACE;
+			if(isJobUpload){
+			    ext = R.URL_UPLOADJOBXML;
+			}
+			HttpPost post=new HttpPost(baseURL+ext);
 			post=(HttpPost) setHeaders(post);
 			
 			MultipartEntity entity = new MultipartEntity();
@@ -509,19 +485,27 @@ public class Connection {
 			
 			HttpResponse response=client.execute(post);
 
-			EntityUtils.consume(entity);
+			
+
+			
 			
 			setSessionIDIfExists(response.getAllHeaders());
-
 			response.getEntity().getContent().close();
+			
+			//EntityUtils.consume(response.getEntity());
+			
 			int code = response.getStatusLine().getStatusCode();
+			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
+			        System.out.println("Connection.java : "+code);
 				return Status.ERROR_SERVER;
 			}
-
+		        
+			
+			
 			return 0;
 		} catch (Exception e) {
-		    System.out.println("CONNECTION.JAVA : "+e);
+		    System.out.println("Connection.java : "+e);
 		    
 			return Status.ERROR_SERVER;
 		}
@@ -959,7 +943,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			response.getEntity().getContent().close();
-			
 			return true;
 		} catch (Exception e) {
 			
@@ -1652,8 +1635,9 @@ public class Connection {
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @return
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused, Long seed) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused) {
 		try {
+			
 			
 			HttpGet get=new  HttpGet(baseURL+R.URL_ADDJOB+"?sid="+spaceId.toString());
 			get=(HttpGet) setHeaders(get);
@@ -1721,7 +1705,6 @@ public class Connection {
 			params.add(new BasicNameValuePair("queue",queueId.toString()));
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
-			params.add(new BasicNameValuePair("seed",seed.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			params.add(new BasicNameValuePair("maxMem",mem));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));

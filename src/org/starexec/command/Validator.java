@@ -55,8 +55,7 @@ public class Validator {
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
 	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
-	private static String[] allowedUploadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
-        private static String[] allowedUploadJobXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
+        private static String[] allowedUploadXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
 	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT,R.PARAM_USER}; 
 	
 	/**
@@ -421,35 +420,19 @@ public class Validator {
 		
 	}
 	
-	/**
-	 * Validates a request to upload an archive containing a space XML file
-	 * @param commandParams The parameters given by the user
-	 * @return 0 if the request is valid and a negative error code otherwise
-	 * 
-	 */
-	//TODO: Do we need an archive here?
-	public static int isValidUploadSpaceXMLRequest(HashMap<String,String> commandParams) {
-		int valid= isValidUploadRequestNoURL(commandParams, true);
-		if (valid<0) {
-			return valid;
-		}
-		findUnnecessaryParams(allowedUploadSpaceXMLParams,commandParams);
-		return 0;
-		
-	}
 
 	/**
-	 * Validates a request to upload an archive containing a job XML file
+	 * Validates a request to upload an archive containing a an XML file
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 * @author Julio Cervantes
 	 */
-	public static int isValidUploadJobXMLRequest(HashMap<String,String> commandParams) {
+	public static int isValidUploadXMLRequest(HashMap<String,String> commandParams) {
 		int valid= isValidUploadRequestNoURL(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
-		findUnnecessaryParams(allowedUploadJobXMLParams,commandParams);
+		findUnnecessaryParams(allowedUploadXMLParams,commandParams);
 		return 0;
 		
 	}

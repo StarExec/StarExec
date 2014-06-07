@@ -39,27 +39,27 @@ public class UploadJobXML extends HttpServlet {
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	    //TODO : remove
-	    System.out.println("1 : UploadJob");
+	    
     	int userId = SessionUtil.getUserId(request);
     	try {	
     		// If we're dealing with an upload request...
-	    System.out.println("2");
+	    
 			if (ServletFileUpload.isMultipartContent(request)) {
-			    System.out.println("3");
+			    
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
 				// Make sure the request is valid
 				if(!this.isValidRequest(form)) {
-				    System.out.println("4");
+				    
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload job xml request was malformed");
 					return;
 				} 
-				System.out.println("5 : "+form);
+				
 				JobUtil result = this.handleXMLFile(userId, form);
 				
 				// Redirect based on success/failure
 				if(result.getJobCreationSuccess()) {
-				    System.out.println("6");
+				    
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Job XML - " + result.getErrorMessage());	
@@ -83,10 +83,10 @@ public class UploadJobXML extends HttpServlet {
 	private JobUtil handleXMLFile(int userId, HashMap<String, Object> form) {
 		try {
 			log.debug("Handling Upload of XML File from User " + userId);
-			System.out.println("7");
+			
 			FileItem item = (FileItem)form.get(UploadJobXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
-			System.out.println("8");
+			
 			// TODO Should we use the same directory as batchSpaces with a slightly different name for job xml uploads?
 			File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "Job" + userId);
 			uniqueDir = new File(uniqueDir, "TEMP_JOB_XML_FOLDER_");
@@ -99,8 +99,8 @@ public class UploadJobXML extends HttpServlet {
 			File archiveFile = new File(uniqueDir,  item.getName());
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);
-			System.out.println("9");
-			System.out.println(archiveFile.getAbsolutePath());
+
+			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
 			
