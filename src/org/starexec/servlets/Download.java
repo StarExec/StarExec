@@ -693,7 +693,7 @@ public class Download extends HttpServlet {
 			
 			
 			String baseFileName=space.getName();
-			File tempDir = new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
+			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
 			
 			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
 			ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
