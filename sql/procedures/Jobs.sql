@@ -265,7 +265,7 @@ DROP PROCEDURE IF EXISTS GetAttrsOfNameForJob;
 CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 	BEGIN
 		SELECT job_pairs.bench_id, attr_value 
-		FROM job_pairs JOIN bench_attributes ON job_pairs.bench_id = bench_attributes.attr_key
+		FROM job_pairs JOIN bench_attributes ON job_pairs.bench_id = bench_attributes.bench_id
 		
 		WHERE attr_key=_attrName AND job_id=_jobId;
 	END  //
