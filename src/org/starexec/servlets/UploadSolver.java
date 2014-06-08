@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -267,8 +268,22 @@ public class UploadSolver extends HttpServlet {
 					returnArray[0]=-5;
 					return returnArray;
 				}
-				List<File> authorized=new ArrayList<File>();
-				authorized.add(uniqueDir);
+				
+				String[] lsCommand=new String[5];
+				lsCommand[0]="sudo";
+				lsCommand[1]="-u";
+				lsCommand[2]="sandbox";
+				lsCommand[3]="ls";
+				lsCommand[4]="-l";
+				
+				
+				BufferedReader reader=Util.executeCommandInDirectory(lsCommand,null,tempDir);
+				String line=reader.readLine();
+				while (line!=null) {
+					log.debug(line);
+					line=reader.readLine();
+				}
+				reader.close();
 				String[] command=new String[4];
 				command[0]="sudo";
 				command[1]="-u";
@@ -317,9 +332,9 @@ public class UploadSolver extends HttpServlet {
 						if (!Validator.isValidPrimDescription(description)) {
 					    	returnArray[0] = -3;
 					    	return returnArray;
-					    } else {
-					    	newSolver.setDescription(description);
 					    }
+					    newSolver.setDescription(description);
+					    
 					} else {
 						log.debug("description file option chosen, but file was not present");
 					}
