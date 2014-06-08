@@ -359,13 +359,14 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getCommunityDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
 		Space community = Communities.getDetails(id);
-		
+		int userId=SessionUtil.getUserId(request);
 		if(community != null) {
 			community.setUsers(Spaces.getUsers(id));
 			Permission p = SessionUtil.getPermission(request, id);
 			List<User> leaders = Spaces.getLeaders(id);
 			List<Website> sites = Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE);
-			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites));
+			
+			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites,Users.isMemberOfCommunity(userId, id)));
 		}
 		
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
