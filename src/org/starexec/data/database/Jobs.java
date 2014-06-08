@@ -498,7 +498,11 @@ public class Jobs {
 				log.debug("now placing an expected result into a job pair!");
 				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
 			} 
+			for (Object o : jp.getAttributes().keySet()) {
+				log.debug(o.toString()+":"+jp.getAttributes().get(o));
+			}
 		}
+		
 		
 		
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
