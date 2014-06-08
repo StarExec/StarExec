@@ -495,6 +495,7 @@ public class Jobs {
 		HashMap<Integer,String> expectedValues=Jobs.getAllAttrsOfNameForJob(jobId,R.EXPECTED_RESULT);
 		for (JobPair jp : pairs) {
 			if (expectedValues.containsKey(jp.getBench().getId())) {
+				log.debug("now placing an expected result into a job pair!");
 				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
 			} 
 		}
@@ -1277,7 +1278,7 @@ public class Jobs {
 			while (results.next()) {
 				idsToValues.put(results.getInt("job_pairs.bench_id"), results.getString("attr_value"));
 			}
-			
+			log.debug("found this number of attrs = "+idsToValues.size());
 			return idsToValues;
 			
 		} catch (Exception e) {
@@ -2838,6 +2839,7 @@ public class Jobs {
 			    	//if the attributes don't have an expected result, we don't know whether the pair
 			    	//was correct or incorrect
 			    	if (attrs.contains(R.STAREXEC_RESULT) && attrs.contains(R.EXPECTED_RESULT)) {
+			    		log.debug("found a pair with both an expected result and a result!");
 			    		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
 			    			curSolver.incrementIncorrectJobPairs();
 			    		} else {
