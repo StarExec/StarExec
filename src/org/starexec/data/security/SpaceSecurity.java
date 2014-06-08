@@ -3,6 +3,8 @@ package org.starexec.data.security;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.starexec.app.RESTServices;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -22,7 +24,8 @@ import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
 
 public class SpaceSecurity {
-	
+	private static final Logger log = Logger.getLogger(SpaceSecurity.class);			
+
 	/**
 	 * Checks to see whether the given user is allowed to associate a website with a space
 	 * @param spaceId The ID of the space that would be given a website
@@ -771,37 +774,45 @@ public class SpaceSecurity {
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	public static int canRemoveUsersFromSpaces(List<Integer> userIdsBeingRemoved, int userIdDoingRemoval, int rootSpaceId, boolean hierarchy) {
-		
-		Permission perm = Permissions.get(userIdDoingRemoval, rootSpaceId);
-		if(perm == null || !perm.canRemoveUser()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
-		}
-		
-		if (!Users.isAdmin(userIdDoingRemoval)) {
-			// Validate the list of users to remove by:
-			// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
-			// 2 - Ensuring other leaders of the space aren't in the list of users to remove
-			for(int userId : userIdsBeingRemoved){
-				if(userId == userIdDoingRemoval){
-					return SecurityStatusCodes.ERROR_CANT_REMOVE_SELF;
-				}
-				perm = Permissions.get(userId, rootSpaceId);
-				if(perm.isLeader()){
-					return SecurityStatusCodes.ERROR_CANT_REMOVE_LEADER;
+		try {
+			Permission perm = Permissions.get(userIdDoingRemoval, rootSpaceId);
+			if(perm == null || !perm.canRemoveUser()) {
+				return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			}
+			
+			if (!Users.isAdmin(userIdDoingRemoval)) {
+				// Validate the list of users to remove by:
+				// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
+				// 2 - Ensuring other leaders of the space aren't in the list of users to remove
+				for(int userId : userIdsBeingRemoved){
+					if(userId == userIdDoingRemoval){
+						return SecurityStatusCodes.ERROR_CANT_REMOVE_SELF;
+					}
+					perm = Permissions.get(userId, rootSpaceId);
+					if(perm!=null && perm.isLeader()){
+						return SecurityStatusCodes.ERROR_CANT_REMOVE_LEADER;
+					}
 				}
 			}
+			if (hierarchy) {
+				List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingRemoval, Spaces.getSubSpaceHierarchy(rootSpaceId, userIdDoingRemoval));
+				// Iterate once through all subspaces of the destination space to ensure the user has removeUser permissions in each
+				for(Space subspace : subspaces) {
+					
+					int status=canRemoveUsersFromSpaces(userIdsBeingRemoved,userIdDoingRemoval,subspace.getId(),false);
+					if (status!=0) {
+						return status;
+					}	
+				}
+			}		
+			return 0;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			
+			
 		}
-		if (hierarchy) {
-			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingRemoval, Spaces.getSubSpaceHierarchy(rootSpaceId, userIdDoingRemoval));
-			// Iterate once through all subspaces of the destination space to ensure the user has removeUser permissions in each
-			for(Space subspace : subspaces) {
-				int status=canRemoveUsersFromSpaces(userIdsBeingRemoved,userIdDoingRemoval,subspace.getId(),false);
-				if (status!=0) {
-					return status;
-				}	
-			}
-		}		
-		return 0;
+		return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		
 	}
 	
 	/**
