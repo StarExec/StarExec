@@ -153,7 +153,8 @@ function initUI(){
 	$('#btnPrev').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
-	}}).click(function(){
+	}}).click(function(e){
+		e.preventDefault();
 		history.back(-1);
 	});
 	
