@@ -295,7 +295,7 @@ public class UploadSolver extends HttpServlet {
 					FileUtils.copyFileToDirectory(f, uniqueDir);
 				}
 			}
-			//archiveFile.delete();
+			
 			try {
 				FileUtils.deleteDirectory(tempDir);
 			} catch (Exception e) {
@@ -310,32 +310,23 @@ public class UploadSolver extends HttpServlet {
 				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 				newSolver.setDescription(item_desc.getString());
 			} else {	//Upload starexec_description.txt
-				String Destination = archiveFile.getParentFile().getCanonicalPath() + File.separator;
-				String strUnzipped = "";		
-			    try {
-			        FileInputStream fis = new FileInputStream(Destination +"/" + R.SOLVER_DESC_PATH);
-			        BufferedInputStream bis = new BufferedInputStream(fis);
-			        DataInputStream dis = new DataInputStream(bis);
-			        String text;
-			        //dis.available() returns 0 if the file does not have more lines
-			        while(dis.available() !=0) {
-			            text=dis.readLine().toString();
-			            strUnzipped = strUnzipped + text;
-			        }
-			        fis.close();
-			        bis.close();
-			        dis.close();
-			    } catch (FileNotFoundException e) {
-			        log.debug("Archive description method selected, but starexec_description was not found");
-			    } catch (IOException e) {
+				try {	
+					File descriptionFile=new File(uniqueDir,R.SOLVER_DESC_PATH);
+					if (descriptionFile.exists()) {
+						String description=FileUtils.readFileToString(descriptionFile);
+						if (!Validator.isValidPrimDescription(description)) {
+					    	returnArray[0] = -3;
+					    	return returnArray;
+					    } else {
+					    	newSolver.setDescription(description);
+					    }
+					} else {
+						log.debug("description file option chosen, but file was not present");
+					}
+				} catch (Exception e) {
 			    	log.error(e.getMessage(),e);
 			    }
-			    if (!Validator.isValidPrimDescription(strUnzipped)) {
-			    	returnArray[0] = -3;
-			    	return returnArray;
-			    } else {
-			    newSolver.setDescription(strUnzipped);
-			    }
+			    
 			}
 			
 			
