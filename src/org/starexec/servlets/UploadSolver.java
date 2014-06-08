@@ -268,7 +268,18 @@ public class UploadSolver extends HttpServlet {
 					returnArray[0]=-5;
 					return returnArray;
 				}
-				
+				String[] chmod=new String[7];
+				chmod[0]="sudo";
+				chmod[1]="-u";
+				chmod[2]="sandbox";
+				chmod[3]="chmod";
+				chmod[4]="-R";
+				chmod[5]="u+rwx";	
+				for (File f : tempDir.listFiles()) {
+					chmod[6]=f.getAbsolutePath();
+					Util.executeCommand(chmod);
+				}
+
 				String[] lsCommand=new String[5];
 				lsCommand[0]="sudo";
 				lsCommand[1]="-u";
