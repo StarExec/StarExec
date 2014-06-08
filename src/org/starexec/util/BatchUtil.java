@@ -336,9 +336,9 @@ public class BatchUtil {
 					return false;
 				}
 				log.debug("Space Name = " + name);
-				if (name.length()<2){
+				if (name.length()<1){
 					log.debug("Name was not long enough");
-					errorMessage = name + "is not a valid name.  It must have two characters.";
+					errorMessage = name + "is not a valid name.  It must have at least one character.";
 					return false;
 				}
 				
