@@ -283,7 +283,7 @@ public class UploadSolver extends HttpServlet {
 			chmodCommand[2]="sandbox";
 			chmodCommand[3]="chmod";
 			chmodCommand[4]="-R";
-			chmodCommand[5]="g+rx";	
+			chmodCommand[5]="g+rwx";	
 			for (File f : tempDir.listFiles()) {
 				chmodCommand[6]=f.getAbsolutePath();
 				Util.executeCommand(chmodCommand);
@@ -295,8 +295,13 @@ public class UploadSolver extends HttpServlet {
 					FileUtils.copyFileToDirectory(f, uniqueDir);
 				}
 			}
-			archiveFile.delete();
-			FileUtils.deleteDirectory(tempDir);
+			//archiveFile.delete();
+			try {
+				FileUtils.deleteDirectory(tempDir);
+			} catch (Exception e) {
+				log.error("unable to delete temporary directory at "+tempDir.getAbsolutePath());
+				log.error(e.getMessage(),e);
+			}
 			
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
