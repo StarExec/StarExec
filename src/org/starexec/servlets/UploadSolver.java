@@ -277,20 +277,17 @@ public class UploadSolver extends HttpServlet {
 				
 				Util.executeCommandInDirectory(command, null,tempDir);
 			}
-			String[] chownCommand=new String[3];
-			chownCommand[0]="chown";
-			chownCommand[1]="sandbox";
-			chownCommand[2]=tempDir.getAbsolutePath();
-			Util.executeCommand(chownCommand);
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
 			chmodCommand[1]="-u";
 			chmodCommand[2]="sandbox";
 			chmodCommand[3]="chmod";
 			chmodCommand[4]="-R";
-			chmodCommand[5]="g+rx";		
-			chmodCommand[6]=tempDir.getAbsolutePath();
-			Util.executeCommand(chmodCommand);
+			chmodCommand[5]="g+rx";	
+			for (File f : tempDir.listFiles()) {
+				chmodCommand[6]=f.getAbsolutePath();
+				Util.executeCommand(chmodCommand);
+			}
 			for (File f : tempDir.listFiles()) {
 				if (f.isDirectory()) {
 					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
