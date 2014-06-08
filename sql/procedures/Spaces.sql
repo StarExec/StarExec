@@ -526,6 +526,7 @@ CREATE PROCEDURE IsPublicHierarchy(IN _spaceId INT)
 
 	END //
 	
+
 -- Change a space to a public space or a private one
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS setPublicSpace;

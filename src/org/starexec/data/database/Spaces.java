@@ -2034,8 +2034,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return true if successful
 	 * @author Ruoyu Zhang
 	 */
-	//TODO: This is pretty slow at handling a full hierarchy. It should be changed so that one query uses the closure table
-	//to do it all at once
+	//TODO: This is pretty slow at handling a full hierarchy. It would be nice to get rid of associating the "public user" to spaces
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
 		if (status!=0){
@@ -2060,9 +2059,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			procedure.setInt(1, spaceId);
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
-			if (!pbc) {
+			//if (!pbc) {
 				//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
-			}
+			//}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

@@ -46,7 +46,51 @@ CREATE PROCEDURE AddUserToCommunity(IN _userId INT, IN _communityId INT)
 		VALUES(_userId, _communityId, _newPermId);
 		
 	END //
-
+	
+-- Removes the user given by _userId from every space in the hierarchy rooted at _spaceId that _requestUserId can see
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveUserFromSpaceHierarchy;
+CREATE PROCEDURE RemoveUserFromSpaceHierarchy(IN _userId INT, IN _spaceId INT, IN _requestUserId INT)
+	BEGIN
+		DECLARE _newPermId INT;
+		DECLARE _pid INT;
+		
+		-- Remove the permission associated with this user/community
+		DELETE FROM permissions
+			WHERE id IN (SELECT permission FROM user_assoc 
+						JOIN closure ON descendant=_spaceId
+						JOIN user_assoc AS ua ON ( (ua.user_id = _requestUserId OR spaces.public_access) AND ua.space_id=descendant)
+						WHERE user_id = _userId);
+			
+		DELETE FROM user_assoc
+		WHERE user_id=_userId AND space_id IN (SELECT descendant
+		FROM closure JOIN spaces ON descendant=spaces.id
+		JOIN user_assoc ON ( (user_assoc.user_id = _requestUserId OR spaces.public_access) AND user_assoc.space_id=descendant)
+		WHERE ancestor=_spaceId);
+		
+		
+	END // 	
+	
+-- Adds the user given by _userId to every space in the hierarchy rooted at _spaceId that _requestUserId can see
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS AddUserToSpaceHierarchy;
+CREATE PROCEDURE AddUserToSpaceHierarchy(IN _userId INT, IN _spaceId INT, IN _requestUserId INT)
+	BEGIN
+		DECLARE _newPermId INT;
+		DECLARE _pid INT;
+		
+		-- Copy the default permission for the community 					
+		SELECT default_permission FROM spaces WHERE id=_spaceId INTO _pid;
+		CALL CopyPermissions(_pid, _newPermId);
+		
+		INSERT IGNORE INTO user_assoc (user_id, space_id, permission)
+		SELECT _userId, descendant, _newPermId
+		FROM closure JOIN spaces ON descendant=spaces.id
+		JOIN user_assoc ON ( (user_assoc.user_id = _requestUserId OR spaces.public_access) AND user_assoc.space_id=descendant)
+		WHERE ancestor=_spaceId;
+		
+	END // 
+	
 -- Adds an association between a user and a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddUserToSpace;

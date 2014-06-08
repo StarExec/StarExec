@@ -98,11 +98,13 @@ function clearPanels() {
 		panelArray[i].fnDestroy();
 		$(panelArray[i]).remove();
 	}
+	$(".panelField").remove();
+	panelArray=null;
 }
 
 
 function reloadTables(id) {
-	//we  only need to update if we've actually selected a new space
+	//we only need to update if we've actually selected a new space
 	if (curSpaceId!=id) {
 		curSpaceId=id;
 		summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
@@ -759,17 +761,19 @@ function initializePanels() {
 			$("#subspaceSummaryField").show();
 		}
 		for (i=0;i<spaces.length;i++) {
-			//if the user has changed spaces since this request was sent, we don't want to continue
-			//generating panels for the old space.
-			if (sentSpaceId!=curSpaceId) {
-				return;
-			}
+			
 			space=$(spaces[i]);
 			spaceName=space.attr("name");
 			spaceId=parseInt(space.attr("id"));
 			
 			child=getPanelTable(space);
+			//if the user has changed spaces since this request was sent, we don't want to continue
+			//generating panels for the old space.
+			if (sentSpaceId!=curSpaceId) {
+				return;
+			}
 			$("#panelActions").after(child); //put the table after the panelActions fieldset
+			
 			panelArray[i]=$("#panel"+spaceId).dataTable({
 		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
