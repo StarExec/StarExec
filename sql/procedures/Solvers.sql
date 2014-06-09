@@ -327,7 +327,7 @@ DROP PROCEDURE IF EXISTS GetRecycledSolverPaths;
 CREATE PROCEDURE GetRecycledSolverPaths(IN _userId INT)
 	BEGIN
 		SELECT path,id FROM solvers
-		WHERE recycled=true AND user_id=_userId;
+		WHERE recycled=true AND user_id=_userId AND deleted=false;
 	END //
 
 -- Sets all the solvers the user has in the database to "deleted"
