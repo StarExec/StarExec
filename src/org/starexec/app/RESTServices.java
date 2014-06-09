@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -296,6 +298,33 @@ public class RESTServices {
 			}	
 		}
 
+		return "not available";
+	}
+	
+	/**
+	 * @return a string that holds the build log for a solver
+	 * @author Eric Burns
+	 */
+	@GET
+	@Path("/solvers/{id}/buildoutput")
+	@Produces("text/plain")	
+	public String getSolverBuildLog(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+	
+		int status=SolverSecurity.canUserSeeBuildLog(id, userId);
+		if (status!=0) {
+			return "not available";
+		}
+		try {
+			File output=Solvers.getSolverBuildOutput(id);
+			if(output.exists()) {			
+				return FileUtils.readFileToString(output);			
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		
 		return "not available";
 	}
 	

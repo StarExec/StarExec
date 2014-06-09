@@ -167,6 +167,8 @@ public class UploadSolver extends HttpServlet {
 	
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
+			boolean build=false;
+			StringBuilder buildOutput=new StringBuilder();
 			int[] returnArray = new int[2];
 			returnArray[0] = 0;
 			returnArray[1] = 0;
@@ -301,7 +303,13 @@ public class UploadSolver extends HttpServlet {
 				command[2]="sandbox";
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
-				Util.executeCommandInDirectory(command, null,tempDir);
+				reader=Util.executeCommandInDirectory(command, null,tempDir);
+				line=reader.readLine();
+				while (line!=null) {
+					buildOutput.append(line);
+					line=reader.readLine();
+				}
+				reader.close();
 			}
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
@@ -366,6 +374,10 @@ public class UploadSolver extends HttpServlet {
 			}
 			//Try adding the solver to the database
 			int solver_Success = Solvers.add(newSolver, spaceId);
+			if (solver_Success>0 && build) {
+				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
+				FileUtils.writeStringToFile(buildOutputFile, buildOutput.toString());
+			}
 			returnArray[0] = solver_Success;
 			return returnArray;
 		} catch (Exception e) {

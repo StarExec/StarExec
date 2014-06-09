@@ -38,6 +38,14 @@ public class SolverSecurity {
 		return 0;
 	}
 	
+	public static int canUserSeeBuildLog(int solverId,int userId) {
+		Solver s=Solvers.get(solverId);
+		if (userId!=s.getUserId()) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
+	
 	public static int canUserRunStarexecBuild(int userId, int spaceId) {
 		if (!Permissions.get(userId, Spaces.GetCommunityOfSpace(spaceId)).isLeader()) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;

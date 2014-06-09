@@ -81,6 +81,8 @@ public class R {
 	
     // Global path information
     public static String SOLVER_PATH = null;								// The top-level directory in which to save the solver file(s)
+    public static String SOLVER_BUILD_OUTPUT_DIR=null;                      // The top-level directory in which to save solver build script output
+    public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
     public static String BENCHMARK_PATH = null;								// The top-level directory in which to save the benchmark file(s)
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path

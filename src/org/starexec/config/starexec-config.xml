@@ -13,6 +13,7 @@
 			<property key="SPACE_XML_SCHEMA_RELATIVE_LOC" value="public/batchSpaceSchema.xsd" /> 
 			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
 			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
+			<property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/Solvers/buildoutput"/>
 			<property key="PROCESSOR_DIR" value="/home/starexec/processor_scripts" />											
 			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />
 			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
@@ -24,6 +25,7 @@
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
 			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
+			<property key="SOLVER_BUILD_OUTPUT" value="starexec_build_log"/>;
 			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />	
 			<property key="CACHED_FILE_DIR" value="/secure/cache"/>
 			<property key="JOBGRAPH_FILE_DIR" value="/secure/jobgraphs"/>
@@ -94,6 +96,7 @@
                 <property key="STAREXEC_APPNAME" value="starexec_astump"/>
                 <property key="BENCHMARK_PATH" value="/home/astump/starexec_astump_data/Benchmarks" />
                 <property key="SOLVER_PATH" value="/home/astump/starexec_astump_data/Solvers" />
+                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/astump/starexec_astump_data/Solvers/buildoutput"/>
                 <property key="PROCESSOR_DIR" value="/home/astump/starexec_astump_data/processor_scripts" />           
 		<property key="STAREXEC_DATA_DIR" value="/home/astump/starexec_astump_data" />
                 <property key="JOB_INBOX_DIR" value="/home/astump/starexec_astump_data/jobin" />
@@ -115,6 +118,7 @@
                 <property key="STAREXEC_APPNAME" value="starexec_jccervantes"/>
                 <property key="BENCHMARK_PATH" value="/home/jccervantes/starexec_jccervantes_data/Benchmarks" />
                 <property key="SOLVER_PATH" value="/home/jccervantes/starexec_jccervantes_data/Solvers" />
+                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/jccervantes/starexec_jccervantes_data/Solvers/buildoutput"/>
                 <property key="PROCESSOR_DIR" value="/home/jccervantes/starexec_jccervantes_data/processor_scripts" />           
 		<property key="STAREXEC_DATA_DIR" value="/home/jccervantes/starexec_jccervantes_data" />
                 <property key="JOB_INBOX_DIR" value="/home/jccervantes/starexec_jccervantes_data/jobin" />
@@ -135,6 +139,7 @@
                 <property key="STAREXEC_APPNAME" value="starexec_eaburns"/>
                 <property key="BENCHMARK_PATH" value="/home/starexec/starexec_eaburns/data_dir/Benchmarks" />
                 <property key="SOLVER_PATH" value="/home/starexec/starexec_eaburns/data_dir/Solvers" />
+                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/Solvers/buildoutput"/>
                 <property key="PROCESSOR_DIR" value="/home/starexec/starexec_eaburns/data_dir/processor_scripts" />           
 		<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_eaburns/data_dir" />
                 <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobin" />
@@ -169,6 +174,7 @@
  <!--   Path Configuration   --> 
 	  <property key="BENCHMARK_PATH" value="/home/astump/lstarexec/benchmarks" /> 
 	  <property key="SOLVER_PATH" value="/home/astump/lstarexec/solvers" /> 
+	  <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/astump/lstarexec/solvers/buildoutput"/>
 	  <property key="CONFIG_PATH" value="/home/astump/starexec/src/org/starexec/config" /> 
 	  <property key="JOB_INBOX_DIR" value="/home/astump/lstarexec/jobs" /> 
 	  <property key="NODE_WORKING_DIR" value="/home/astump/lstarexec/nodes" /> 
@@ -197,6 +203,7 @@
  <!--   Path Configuration   --> 
 	  <property key="BENCHMARK_PATH" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\benchmarks" /> 
 	  <property key="SOLVER_PATH" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\solvers" /> 
+	  <property key="SOLVER_BUILD_OUTPUT_DIR" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\solvers\\buildoutput"/>
 	  <property key="CONFIG_PATH" value="C:\\Users\\Eric\\workspace\\starexec\\src\\org\\starexec\\config" /> 
 	  <property key="JOB_INBOX_DIR" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\jobs" /> 
 	  <property key="NODE_WORKING_DIR" value="C:\\Users\\Eric\\workspace\\starexec\\starexec_res\\nodes" /> 
