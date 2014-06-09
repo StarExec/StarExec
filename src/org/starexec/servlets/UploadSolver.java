@@ -163,8 +163,6 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	@SuppressWarnings("deprecation")	
-	
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			boolean build=false;
@@ -304,6 +302,7 @@ public class UploadSolver extends HttpServlet {
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
 				reader=Util.executeCommandInDirectory(command, null,tempDir);
+				build=true;
 				line=reader.readLine();
 				while (line!=null) {
 					buildOutput.append(line);
