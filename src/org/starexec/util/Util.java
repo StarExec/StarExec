@@ -159,12 +159,15 @@ public class Util {
 		file.mkdir();
 		file=new File(R.SOLVER_PATH);
 		file.mkdir();
+		file=new File(R.SOLVER_BUILD_OUTPUT_DIR);
+		file.mkdir();
 		file=new File(R.PROCESSOR_DIR);
 		file.mkdir();
 		file=new File(R.NEW_JOB_OUTPUT_DIR);
 		file.mkdir();
 		file=new File(R.PICTURE_PATH);
 		file.mkdir();
+		
 		
 		
 		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
