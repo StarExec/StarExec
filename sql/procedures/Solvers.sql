@@ -326,7 +326,7 @@ CREATE PROCEDURE GetRecycledSolverCountByUser(IN _userId INT, IN _query TEXT)
 DROP PROCEDURE IF EXISTS GetRecycledSolverPaths;
 CREATE PROCEDURE GetRecycledSolverPaths(IN _userId INT)
 	BEGIN
-		SELECT path FROM solvers
+		SELECT path,id FROM solvers
 		WHERE recycled=true AND user_id=_userId;
 	END //
 

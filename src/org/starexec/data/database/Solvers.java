@@ -1666,6 +1666,10 @@ public class Solvers {
 			
 			while (results.next()) {
 				Util.safeDeleteDirectory(results.getString("path")); 
+				File buildOutput=Solvers.getSolverBuildOutput(results.getInt("id"));
+				if (buildOutput.exists()) {
+					Util.safeDeleteDirectory(buildOutput.getParent());
+				}
 			}
 			Common.safeClose(procedure);
 			procedure=con.prepareCall("CALL SetRecycledSolversToDeleted(?)");
