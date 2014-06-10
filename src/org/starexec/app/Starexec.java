@@ -56,7 +56,6 @@ public class Starexec implements ServletContextListener {
 		    GridEngineUtil.shutdown();
 			
 		    log.debug("session = " + session);
-		    log.debug("session 2 = " + session.toString());
 			
 		    if (!session.toString().contains("drmaa")) {
 			log.debug("Shutting down the session..." + session);

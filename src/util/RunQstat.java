@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 /**
@@ -22,13 +24,15 @@ public class RunQstat {
     public static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
     public static Pattern queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
 
-    public static BufferedReader executeCommand(String command, String[] env) {
+    protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
+
+    public static String executeCommand(String command, String[] env) {
 	String[] cmd = new String[1];
 	cmd[0] = command;
 	return executeCommand(cmd,env);
     }
 
-    public static BufferedReader executeCommand(String[] command, String[] envp) {
+    public static String executeCommand(String[] command, String[] envp) {
 	Runtime r = Runtime.getRuntime();
 		
 	BufferedReader reader = null;		
@@ -52,6 +56,14 @@ public class RunQstat {
 			    
 		p = r.exec(command, envp);
 	    }
+	
+	    System.out.println("Command initiated.");
+
+	    /*	    if (p.waitFor() != 0) {
+		System.out.println("Command "+command[0]+" failed with value " + p.exitValue());				
+		} 
+	    System.out.println("Command finished.");*/
+
 	    InputStream in = p.getInputStream();
 	    BufferedInputStream buf = new BufferedInputStream(in);
 	    InputStreamReader inread = new InputStreamReader(buf);
@@ -59,19 +71,33 @@ public class RunQstat {
 			
 	    //Also handle error stream
 	    InputStream err = p.getErrorStream();
-	    BufferedInputStream bufErr = new BufferedInputStream(err);
-	    InputStreamReader inreadErr = new InputStreamReader(bufErr);
-	    BufferedReader errReader = new BufferedReader(inreadErr);
-	    String errLine = null;
-	    while ((errLine = errReader.readLine()) != null){
-		System.out.println("stdErr = " + errLine);
-	    }
-	    errReader.close();
-	    //This will hang indefinitely if the stream is too large.  TODO: fix increase size?
-	    if (p.waitFor() != 0) {
-		System.out.println("Command "+command[0]+" failed with value " + p.exitValue());				
-	    }
-	    return reader;
+	    InputStreamReader inreadErr = new InputStreamReader(err);
+	    final BufferedReader errReader = new BufferedReader(inreadErr);
+	    StringBuilder sb = new StringBuilder();
+			
+	    threadPool.execute(new Runnable() {
+		    @Override
+	            public void run() {
+			String line = null;
+			try {
+			    while ((line = errReader.readLine()) != null)
+				System.out.println("stdErr: "+line);
+			    System.out.println("Done reading error output of command."); 
+			    errReader.close();
+			}
+			catch(Exception e) {
+			    System.out.println("Error: "+e.toString());
+			}
+		    }
+		});
+	    String line = null;
+	    while ((line = reader.readLine()) != null)
+		sb.append(line + System.getProperty("line.separator"));
+	    
+	    reader.close();
+
+	    System.out.println("Done reading regular output of command."); 
+	    return sb.toString();
 	} catch (Exception e) {
 	    System.out.println("execute command says " + e.getMessage());		
 	}
@@ -80,42 +106,14 @@ public class RunQstat {
     }
 
 
-    public static String bufferToString(BufferedReader reader) {
-	try {
-	    StringBuilder sb = new StringBuilder();
-			
-	    String line;		
-	    while((line = reader.readLine()) != null) {
-		sb.append(line + System.getProperty("line.separator"));
-	    }
-			
-	    return sb.toString();
-	} catch (Exception e) {
-	    System.out.println(e.getMessage());
-	} finally {
-	    // Try to safely close the reader
-	    try { reader.close(); } catch (Exception e) {}
-	}
-		
-	return null;
-    }
-
     public static void qstat() {
 
-	System.out.println("Completed running qstat and parsing the output.");
+	System.out.println("Beginning to run qstat and parsing the output.");
 
 	String[] envp = new String[2];
 	envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
 	envp[1] = "SGE_ROOT=/cluster/sge-6.2u5"; // it seems we need to set this explicitly if we change the environment.
-	BufferedReader reader = executeCommand("qstat -f -u tomcat",envp);
-	String results = bufferToString(reader);
-
-	try {
-	    reader.close();
-	}
-	catch (Exception e) {
-	    System.out.println("set Queue Associations says " + e.getMessage());
-	}
+	String results = executeCommand("qstat -f -u tomcat",envp);
 
 	// Parse the output from the SGE call to get the child worker nodes
 	java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
@@ -135,5 +133,7 @@ public class RunQstat {
 	
     public static void main(String args[]) {
 	qstat();
+	threadPool.shutdown();
+	System.out.println("qstat complete.");
     }
 }
