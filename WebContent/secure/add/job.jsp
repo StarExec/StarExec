@@ -132,7 +132,7 @@
 						</td>
 					</tr>
 					<tr class="noHover" title="a random value that will be passed into any preprocessor used for this job">
-						<td class="label"><p>random seed</p></td>
+						<td class="label"><p>pre-processor seed</p></td>
 						<td>
 							<input type="text" name="seed" id="seed" value="0">
 						</td>

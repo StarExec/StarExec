@@ -258,32 +258,32 @@ function updateActionId(id, type, permanent, global) {
 					log('user confirmed queue removal.');
 					$('#dialog-confirm-remove').dialog('close');
 					$.post(
-							starexecRoot+"services/remove/queue/" + id,
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "the queue was successfully removed", 5000);
-										//window.location = starexecRoot+'secure/admin/cluster.jsp';
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "queue was not deleted; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the admin can delete this queue", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
-								}
-							},
-							"json"
-					);
+					       starexecRoot+"services/remove/queue/" + id,
+					       function(returnCode) {
+						   switch (returnCode) {
+						   case 0:
+						       showMessage('success', "the queue was successfully removed", 5000);
+						       //window.location = starexecRoot+'secure/admin/cluster.jsp';
+						       setTimeout(function(){document.location.reload(true);}, 1000);
+						       break;
+						   case 1:
+						       showMessage('error', "queue was not deleted; please try again", 5000);
+						       break;
+						   case 2:
+						       showMessage('error', "only the admin can delete this queue", 5000);
+						       break;
+						   default:
+						       showMessage('error', "invalid parameters", 5000);
+						       break;
+						   }
+					       },
+					       "json"
+					       );
 				},
-				"cancel": function() {
-					log('user canceled queue removal');
-					$(this).dialog("close");
-				}
+			       "cancel": function() {
+				   log('user canceled queue removal');
+				   $(this).dialog("close");
+			       }
 			}
 		});
 	});	

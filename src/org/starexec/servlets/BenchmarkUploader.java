@@ -45,8 +45,6 @@ public class BenchmarkUploader extends HttpServlet {
 	// Valid file types for uploads
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
-        protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
-
 	// Request attributes
 	private static final String SPACE_ID = "space";
 	private static final String UPLOAD_METHOD = "upMethod";
@@ -247,7 +245,7 @@ public class BenchmarkUploader extends HttpServlet {
 		log.debug("upload status id is " + statusId);
 		
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		threadPool.execute(new Runnable() {
+		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){
 				try{
@@ -280,7 +278,6 @@ public class BenchmarkUploader extends HttpServlet {
 				}
 				finally{
 					Uploads.everythingComplete(statusId);
-					threadPool.shutdown();
 				}
 			}
 		});

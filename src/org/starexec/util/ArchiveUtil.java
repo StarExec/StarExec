@@ -218,13 +218,11 @@ public class ArchiveUtil {
 				log.debug("destination is " + destination);
 
 				lsCmd[2] = fileName;
-				BufferedReader reader = Util.executeCommand(lsCmd);
-				String results = Util.bufferToString(reader);
+				String results = Util.executeCommand(lsCmd);
 				log.debug("ls -l of tgz results = " + results);
 
 				lsCmd[2] = destination;
-				reader = Util.executeCommand(lsCmd);
-				results = Util.bufferToString(reader);
+				results = Util.executeCommand(lsCmd);
 				log.debug("ls -l destination results = " + results);
 
 				/* by default, tar applies (supposedly) the user's umask when setting
@@ -237,14 +235,12 @@ public class ArchiveUtil {
 				tarCmd[3] = "-C";
 				tarCmd[4] = destination;
 				log.debug("about to execute command tar command");
-				reader = Util.executeCommand(tarCmd);
-				results = Util.bufferToString(reader);
+				results = Util.executeCommand(tarCmd);
 				log.debug("command was executed, results = " + results);
 				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
 				lsCmd[2] = destination;
-				reader = Util.executeCommand(lsCmd);
-				results = Util.bufferToString(reader);
+				results = Util.executeCommand(lsCmd);
 				log.debug("command was executed - ls -l destination results = " + results);
 
 			} else {
@@ -559,7 +555,7 @@ public class ArchiveUtil {
 		zipCommand[4]=tempDest.getAbsolutePath();
 		zipCommand[5]=path.getName(); //we are trying to run this command in the required directory, so an absolute path is not needed
 	
-		Util.executeCommandInDirectory(zipCommand,null,cd);
+		Util.executeCommand(zipCommand,null,cd);
 		
 		//put the dashes back into the file path
 		if (!destName.equals(newDestName)) {
@@ -610,7 +606,7 @@ public class ArchiveUtil {
 			zipCommand[2]="-q";
 			zipCommand[3]=tempDest.getAbsolutePath();
 			zipCommand[4]=file.getName(); //we will be executing the command from the parent directory of the needed file
-			Util.executeCommandInDirectory(zipCommand,null,file.getParentFile());
+			Util.executeCommand(zipCommand,null,file.getParentFile());
 		}
 		
 		//put the dashes back into the file path

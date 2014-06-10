@@ -166,7 +166,7 @@ public class UploadSolver extends HttpServlet {
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			boolean build=false;
-			StringBuilder buildOutput=new StringBuilder();
+			String buildstr=null;
 			int[] returnArray = new int[2];
 			returnArray[0] = 0;
 			returnArray[1] = 0;
@@ -288,27 +288,16 @@ public class UploadSolver extends HttpServlet {
 				lsCommand[4]="-l";
 				
 				
-				BufferedReader reader=Util.executeCommandInDirectory(lsCommand,null,tempDir);
-				String line=reader.readLine();
-				while (line!=null) {
-					log.debug(line);
-					line=reader.readLine();
-				}
-				reader.close();
+				String lsstr=Util.executeCommand(lsCommand,null,tempDir);
+				log.debug(lsstr);
+
 				String[] command=new String[4];
 				command[0]="sudo";
 				command[1]="-u";
 				command[2]="sandbox";
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
-				reader=Util.executeCommandInDirectory(command, null,tempDir);
-				build=true;
-				line=reader.readLine();
-				while (line!=null) {
-					buildOutput.append(line);
-					line=reader.readLine();
-				}
-				reader.close();
+				buildstr=Util.executeCommand(command, null,tempDir);
 			}
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
@@ -376,7 +365,7 @@ public class UploadSolver extends HttpServlet {
 			if (solver_Success>0 && build) {
 				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
 				buildOutputFile.getParentFile().mkdirs();
-				FileUtils.writeStringToFile(buildOutputFile, buildOutput.toString());
+				FileUtils.writeStringToFile(buildOutputFile, buildstr);
 			}
 			returnArray[0] = solver_Success;
 			return returnArray;

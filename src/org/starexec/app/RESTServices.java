@@ -3236,7 +3236,6 @@ public class RESTServices {
 	
 		if (!Queues.isQueuePermanent(queueId)) {
 			QueueRequest req = Requests.getRequestForReservation(queueId);
-			log.debug("req = " + req);
 			GridEngineUtil.cancelReservation(req);
 			return gson.toJson(0);
 		} else {
