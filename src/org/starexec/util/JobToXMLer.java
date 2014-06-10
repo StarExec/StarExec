@@ -14,6 +14,7 @@ import javax.xml.transform.stream.StreamResult;
 
 
 import org.starexec.constants.R;
+import org.starexec.util.Util;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -154,12 +155,12 @@ public class JobToXMLer {
 		
 		//Wall Clock timeout (seconds) : wallclock-timeout
 		Attr wallClockTimeout = doc.createAttribute("wallclock-timeout");
-		wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
+                wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
 		jobElement.setAttributeNode(wallClockTimeout);
 		
 		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
 		Attr memLimit = doc.createAttribute("mem-limit");
-		memLimit.setValue(Long.toString(1));
+		memLimit.setValue(Double.toString(Util.bytesToGigabytes(Jobs.getMaximumMemory(job.getId()))));
 		jobElement.setAttributeNode(memLimit);
 		
 		List<JobPair> pairs= Jobs.getPairsDetailed(job.getId());

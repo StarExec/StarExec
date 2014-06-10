@@ -409,17 +409,21 @@ class ArgumentParser {
 				return errorMap;
 			}
 			Integer id=-1;
+			Integer limit = null;
 			if (commandParams.containsKey(R.PARAM_ID)) {
 				id=Integer.parseInt(commandParams.get(R.PARAM_ID));
 			}
-			if (commandParams.containsKey(R.PARAM_LIMIT)) {
-				return con.getPrims(id, Integer.parseInt(commandParams.get(R.PARAM_LIMIT)), 
-						commandParams.containsKey(R.PARAM_USER), type);
-			} else {
-				return con.getPrims(id, null, 
-						commandParams.containsKey(R.PARAM_USER), type);
+			if(commandParams.containsKey(R.PARAM_LIMIT)){
+			    limit=Integer.parseInt(commandParams.get(R.PARAM_LIMIT));
 			}
-			
+			if(type.equals("solverconfigs")){
+				return con.getSolverConfigs(id,limit);
+
+			}else{
+			    
+			       return con.getPrims(id, limit,commandParams.containsKey(R.PARAM_USER), type);
+
+			}
 		
 		} catch (Exception e) {
 			errorMap.put(Status.ERROR_SERVER, null);

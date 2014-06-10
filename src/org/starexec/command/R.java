@@ -34,6 +34,7 @@ public class R {
 	public static String URL_UPLOADCONFIG="secure/upload/configurations";
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
+        public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
 	public static String URL_GETID="services/users/getid";
@@ -179,6 +180,7 @@ public class R {
 	
 	//listing commands
 	public static String COMMAND_LISTSOLVERS="lssolvers";
+        public static String COMMAND_LISTSOLVERCONFIGS="lssolverconfigs";
 	public static String COMMAND_LISTPRIMITIVES="ls";
 	public static String COMMAND_LISTBENCHMARKS="lsbenchmarks";
 	public static String COMMAND_LISTJOBS="lsjobs";

@@ -510,6 +510,10 @@ OPTIONAL: "limit"
 REQUIRED: ("id" OR "u")
 OPTIONAL: "limit"
 
+--lssolverconfigs -Lists the IDs and names of all configurations of a solver (id refers to a solver's id)
+REQUIRED: "id"
+OPTIONAL: "limit"
+
 --lssubspaces -Lists the IDs and names of all subspaces in the space the current user is authorized to see
 REQUIRED: "id"
 OPTIONAL: "limit"

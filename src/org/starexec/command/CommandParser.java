@@ -303,7 +303,9 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_LISTBENCHMARKS)) {
 				type="benchmarks";
 				
-			} else if (c.equals(R.COMMAND_LISTJOBS)) {
+			} else if (c.equals(R.COMMAND_LISTSOLVERCONFIGS)){
+			    type="solverconfigs";
+			}else if (c.equals(R.COMMAND_LISTJOBS)) {
 				type="jobs";
 				
 			} else if(c.equals(R.COMMAND_LISTUSERS)) {
