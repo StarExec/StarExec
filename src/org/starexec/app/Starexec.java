@@ -52,11 +52,10 @@ public class Starexec implements ServletContextListener {
 		    log.debug("Releasing database connections...");
 		    Common.release();
 			
-		    log.debug("Releasing grid engine util threadpool...");
-		    GridEngineUtil.shutdown();
+		    log.debug("Releasing Util threadpool...");
+		    Util.shutdownThreadPool();
 			
 		    log.debug("session = " + session);
-		    log.debug("session 2 = " + session.toString());
 			
 		    if (!session.toString().contains("drmaa")) {
 			log.debug("Shutting down the session..." + session);
@@ -195,7 +194,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable cleanDatabaseTask = new RobustRunnable("cleanDatabaseTask") {
 			@Override
 			protected void dorun() {
-				log.info("cleanDatabaseTask (periodic");
+				log.info("cleanDatabaseTask (periodic)");
 				Solvers.cleanOrphanedDeletedSolvers();
 				Benchmarks.cleanOrphanedDeletedBenchmarks();
 				Jobs.cleanOrphanedDeletedJobs();

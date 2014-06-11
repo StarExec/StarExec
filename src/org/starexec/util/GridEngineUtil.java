@@ -42,7 +42,6 @@ public class GridEngineUtil {
 	private static Pattern nodeKeyValPattern;
 	private static Pattern queueKeyValPattern;
 	private static Pattern queueAssocPattern;
-	private static ExecutorService threadPool = null;
 
 	@SuppressWarnings("unused")
 	private static String testString = "queuename                      qtype resv/used/tot. load_avg arch          states\r\n" + 
@@ -69,16 +68,6 @@ public class GridEngineUtil {
 		queueKeyValPattern = Pattern.compile(R.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
 
-
-		threadPool = Executors.newCachedThreadPool();		
-	}
-
-	/**
-	 * Shuts down the reserved threadpool this util uses.
-	 */
-	public static void shutdown() throws Exception {
-		threadPool.shutdown();
-		threadPool.awaitTermination(10, TimeUnit.SECONDS);
 	}
 
 	public static Session createSession() {
@@ -115,7 +104,6 @@ public class GridEngineUtil {
 	 */
 	public static synchronized void loadQueues() {
 		GridEngineUtil.loadQueueDetails();
-		//		GridEngineUtil.loadQueueUsage();
 	}
 
 	/**
@@ -123,91 +111,32 @@ public class GridEngineUtil {
 	 * as well as their associations to worker nodes that belong to each queue.
 	 */
 	private static void loadQueueDetails() {
-		BufferedReader queueResults = null;
-
 		log.info("Loading queue details into the db");
 		try {			
 			// Execute the SGE command to get the list of queues
-			queueResults = Util.executeCommand(R.QUEUE_LIST_COMMAND);
-
-			if(queueResults == null) {
-				// If the command failed, return now	
-				log.warn("Command to get queue details failed.");
-				return;
-			}
+			String queuestr = Util.executeCommand(R.QUEUE_LIST_COMMAND);
 
 			// Set all queues as inactive (we will set them as active when we see them)
 			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
 
 			// Read the queue names one at a time
-			String line;		
-			while((line = queueResults.readLine()) != null) {
-				String name = line;
+			String[] lines = queuestr.split(System.getProperty("line.separator"));		
+			for (int i = 0; i < lines.length; i++) {
+			    String name = lines[i];
 
-				log.info("Loading details for queue "+name);
+			    log.debug("Loading details for queue "+name);
 
-				// In the database, update the attributes for the queue
-				Queues.update(name,  GridEngineUtil.getQueueDetails(name));
+			    // In the database, update the attributes for the queue
+			    Queues.update(name,  GridEngineUtil.getQueueDetails(name));
 
-				// Set the queue as active since we just saw it
-				Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
+			    // Set the queue as active since we just saw it
+			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
 			}
-			/*		// For each of the queue's node's, add an association
-	      for(WorkerNode node : GridEngineUtil.getQueueAssociations(name)) {
-	      log.debug("[loadQueueDetails] Associating queue (" + name + 
-	      ") with node ("
-	      + node.getName());
-	      Queues.associate(name, node.getName());	
-	      }				
-	      }
-			 */  
-			log.info("Setting the queue associations in the db");
-
 			//Adds all the associations to the db
 			GridEngineUtil.setQueueAssociationsInDb();
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
-		} finally {
-			// Try to close the result list if it is allowed
-			try { queueResults.close(); } catch (Exception e) { }
-		}
-		log.info("Completed loading the queue details into the db");
-	}
-
-	/**
-	 * Grabs queue usage information from SGE and dumps it in the database. Usage is in terms of
-	 * job slots available, used, reserved and total.
-	 */
-	public static void loadQueueUsage() { 
-		try {
-			// Call SGE to get details about the usage of all queues
-			BufferedReader buff = Util.executeCommand(R.QUEUE_USAGE_COMMAND);
-
-			// Read line twice to skip past the header info returned
-			buff.readLine();
-			buff.readLine();
-
-			String line = "";
-			// For each queue output...
-			while((line = buff.readLine()) != null) {
-				// The output is separated by white spaces, split on whitespace to get the data in array form
-				String[] data = line.split("\\s+");
-
-				// Create a new queue and pick out the data we want from the output (0 = name, 2-5 = usage stats)
-				Queue q = new Queue();
-				q.setName(data[0]);
-				q.setSlotsUsed(Integer.parseInt(data[2]));
-				q.setSlotsReserved(Integer.parseInt(data[3]));
-				q.setSlotsAvailable(Integer.parseInt(data[4]));
-				q.setSlotsTotal(Integer.parseInt(data[5]));
-
-				// Update the database with the new usage stats
-				Queues.updateUsage(q);
-			}	
-			buff.close();
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
-		}
+		} 
 	}
 
 	/**
@@ -217,20 +146,15 @@ public class GridEngineUtil {
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 
-		log.info("Updating the DB with associations between SGE queues to compute nodes.");
+		// Call SGE to get info on the queues
+		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
 
 		String[] envp = new String[2];
 		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
 		envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
-		BufferedReader reader = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
-		String results = Util.bufferToString(reader);
-
-		try {
-			reader.close();
-		}
-		catch (Exception e) {
-			log.warn("set Queue Associations says " + e.getMessage(), e);
-		}
+		String results = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
+		//String results = testString;
+		log.info("Updating the DB with associations between SGE queues to compute nodes.");
 
 		// Parse the output from the SGE call to get the child worker nodes
 		java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
@@ -242,12 +166,11 @@ public class GridEngineUtil {
 		while(matcher.find()) {
 			// Parse out the queue and node names from the regex parser and add it to the return list			
 			capture = matcher.group().split("@");
-			log.info("queue = " + capture[0]);
-			log.info("node = " + capture[1]);
+			log.debug("queue = " + capture[0]);
+			log.debug("node = " + capture[1]);
 			Queues.associate(capture[0], capture[1]);
 		}
 
-		log.info("Completed updating the DB with associations between SGE queues to compute nodes.");
 		return true;
 	}
 
@@ -261,15 +184,8 @@ public class GridEngineUtil {
 		HashMap<String, String> details = new HashMap<String, String>();
 
 		// Call SGE to get details for the given node
-		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
-		BufferedReader reader = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
-		String results = Util.bufferToString(reader);
-		try {
-			reader.close();
-		}
-		catch (Exception e) {
-			log.warn("get Queue Details says " + e.getMessage(), e);
-		}
+		String results = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
+
 		// Parse the output from the SGE call to get the key/value pairs for the node
 		java.util.regex.Matcher matcher = queueKeyValPattern.matcher(results);
 
@@ -290,27 +206,20 @@ public class GridEngineUtil {
 	 * BEFORE queues have been loaded as the queues will make associations to the nodes.
 	 */
 	public static synchronized void loadWorkerNodes() {
-		BufferedReader nodeResults = null;
 
 		log.info("Loading worker nodes into the db");
 		try {			
 			// Execute the SGE command to get the node list
-			nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
-
-			if(nodeResults == null) {
-				// If the command failed, return now				
-				log.warn("Command to get node list failed.");
-				return;
-			}
+			String nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
 
 			// Set all nodes as inactive (we will update them to active as we see them)
 			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
 
 			// Read the nodes one at a time
-			String line;		
-			while((line = nodeResults.readLine()) != null) {
-				String name = line;							
-				log.info("Updating info for node "+name);
+			String[] lines = nodeResults.split(System.getProperty("line.separator"));		
+			for (int i = 0; i < lines.length; i++) {
+				String name = lines[i];
+				log.debug("Updating info for node "+name);
 				// In the database, update the attributes for the node
 				Cluster.updateNode(name,  GridEngineUtil.getNodeDetails(name));				
 				// Set the node as active (because we just saw it!)
@@ -318,11 +227,7 @@ public class GridEngineUtil {
 			}
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
-		} finally {
-			// Try to close the result list if it is allowed
-			try { nodeResults.close(); } catch (Exception e) { }
 		}
-		log.info("Completed loading info for worker nodes into db");
 	}
 
 	/**
@@ -335,14 +240,7 @@ public class GridEngineUtil {
 		HashMap<String, String> details = new HashMap<String, String>();
 
 		// Call SGE to get details for the given node
-		BufferedReader reader = Util.executeCommand(R.NODE_DETAILS_COMMAND + name);
-		String results = Util.bufferToString(reader);
-		try {
-			reader.close();
-		}
-		catch (Exception e) {
-			log.warn("get Node Details says " + e.getMessage(), e);
-		}
+		String results = Util.executeCommand(R.NODE_DETAILS_COMMAND + name);
 
 		// Parse the output from the SGE call to get the key/value pairs for the node
 		java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(results);
@@ -407,32 +305,49 @@ public class GridEngineUtil {
      * Cancels/Ends a reservation
      */
     public static void checkQueueReservations() {
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+
     	java.util.Date today = new java.util.Date();
-		//java.util.Date today = new java.util.Date(113, 11, 10); // December 10, 2013
 		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
 		if (queueReservations == null) 
 		    log.info("No reservations found.");
 		else {
-		    for (QueueRequest req : queueReservations) {
-			log.info("Checking reservation for queue "+req.getQueueName());
+			//first, end all the reservations that need to be ended and take back nodes that reservations are done with
+			for (QueueRequest req : queueReservations) {
 
-			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-				
 		        Calendar cal = Calendar.getInstance();
 		        cal.setTime(today);
 		        cal.add(Calendar.DATE, -1);
 		        java.util.Date yesterday = cal.getTime();
+				/**
+				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
+				 */
+				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
+				if (end_was_yesterday) {
+				    log.info("Reservation has ended for queue "+req.getQueueName()+".");
+				    cancelReservation(req);
+				}
 				
-			/**
-			 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
-			 */
-			boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
-			if (end_was_yesterday) {
-			    log.info("Reservation has ended for queue "+req.getQueueName()+".");
-			    cancelReservation(req);
+				int queueId = Queues.getIdByName(req.getQueueName());
+				int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
+				int actualNodeCount = actualNodes.size();
+				String queueName = Queues.getNameById(queueId);
+				String[] split = queueName.split("\\.");
+				String shortQueueName = split[0];
+				
+				//When the node count is decreasing for this reservation on this day
+				//Need to move a certain number of nodes back to all.q
+				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+				
 			}
-				
-				
+			
+			
+			
+			//next, start up the new reservations and add nodes where they need to be
+		    for (QueueRequest req : queueReservations) {
+			log.info("Checking reservation for queue "+req.getQueueName());
+
 			/**
 			 * if today is when the reservation is starting
 			 */
@@ -452,9 +367,7 @@ public class GridEngineUtil {
 
 
 			/**The Following code is for when the node count is changing throughout the reservation**/
-			//When the node count is decreasing for this reservation on this day
-			//Need to move a certain number of nodes back to all.q
-			transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+
 				
 			//When the node count is increasing for this reservation on this day
 			//Need to move a certain number of nodes from all.q to this queue
@@ -512,51 +425,59 @@ public class GridEngineUtil {
 		}		
 	}
 
-	public static void cancelReservation(QueueRequest req) {
-		log.debug("Begin cancelReservation");
-		String queueName = req.getQueueName();
-		String[] split = queueName.split("\\.");
-		String shortQueueName = split[0];
-		int queueId = Queues.getIdByName(queueName);
-		
-		//Pause jobs that are running on the queue
-		List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+    public static void cancelReservation(QueueRequest req) {
+	String queueName = req.getQueueName();
+	log.debug("Begin cancelReservation for queue " + queueName);
 
-		if (jobs != null) {
-			for (Job j : jobs) {
-				Jobs.pause(j.getId());
-			}
-		}
-		
+	String[] split = queueName.split("\\.");
+	String shortQueueName = split[0];
+	int queueId = Queues.getIdByName(queueName);
+	    
+	//Pause jobs that are running on the queue
+	List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
 
-		String[] envp = new String[1];
-		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-		//Move associated Nodes back to default queue
-		List<WorkerNode> nodes = Queues.getNodes(queueId);
-		
-		if (nodes != null) {
-			for (WorkerNode n : nodes) {
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
-			}
-		}
-		
-		
-		/***** DELETE THE QUEUE *****/		
-			//Database modification:
-			Requests.DeleteReservation(req);
+	log.debug("Pausing jobs on queue "+queueName);
 
-			//DISABLE the queue: 
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
-			//DELETE the queue:
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName(), envp);
-			
-			//Delete the host group:
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
-			
-		    GridEngineUtil.loadWorkerNodes();
-		    GridEngineUtil.loadQueues();
-			
+	if (jobs != null) {
+	    for (Job j : jobs) {
+		log.debug("Pausing job " + new Integer(j.getId()) + " on queue " + queueName);
+		Jobs.pause(j.getId());
+	    }
 	}
+		
+
+	String[] envp = new String[1];
+	envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+	//Move associated Nodes back to default queue
+	List<WorkerNode> nodes = Queues.getNodes(queueId);
+		
+	log.debug("Moving nodes back to @allhosts for queue "+queueName);
+
+	if (nodes != null) {
+	    for (WorkerNode n : nodes) {
+		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
+	    }
+	}
+		
+	log.debug("Now deleting queue "+queueName+" from the db and grid engine");
+		
+	/***** DELETE THE QUEUE *****/		
+	//Database modification:
+	Requests.DeleteReservation(req);
+
+	//DISABLE the queue: 
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
+
+	//DELETE the queue:
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName(), envp);
+			
+	//Delete the host group:
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+			
+	GridEngineUtil.loadWorkerNodes();
+	GridEngineUtil.loadQueues();
+			
+    }
 	
 	public static void startReservation (QueueRequest req) {
 		log.debug("begin startReservation");
@@ -871,47 +792,62 @@ public class GridEngineUtil {
 		    GridEngineUtil.loadQueues();		
 	}
 
-	public static void moveNodes(QueueRequest req, HashMap<WorkerNode, Queue> NQ) {
-		String queueName = req.getQueueName();
-		String[] split = queueName.split("\\.");
-		String shortQueueName = split[0];
-		List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
-		StringBuilder sb = new StringBuilder();
+    public static void moveNodes(QueueRequest req, HashMap<WorkerNode, Queue> NQ) {
+	String queueName = req.getQueueName();
+	log.debug("moveNodes begins, for queue "+queueName);
+	String[] split = queueName.split("\\.");
+	String shortQueueName = split[0];
+	List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
+	StringBuilder sb = new StringBuilder();
 		
-		String[] envp = new String[1];
-		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+	String[] envp = new String[1];
+	envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 
-		Set<WorkerNode> nodes = NQ.keySet();
-		if (nodes != null) {
-			for (WorkerNode n : nodes) {
-				transferNodes.add(n);
-				String fullName = n.getName();
-				String[] split2 = fullName.split("\\.");
-				String shortName = split2[0];
-				sb.append(shortName);
-				sb.append(" ");
+	Set<WorkerNode> nodes = NQ.keySet();
+	if (nodes == null)
+		log.warn("No nodes to move");
+	else {
+	    for (WorkerNode n : nodes) {
+		transferNodes.add(n);
+		String fullName = n.getName();
+		String[] split2 = fullName.split("\\.");
+		String shortName = split2[0];
+		sb.append(shortName);
+		sb.append(" ");
 				
-				//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
-				Queue queue = NQ.get(n);
+		log.debug("moving node "+fullName);
+
+		//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
+		Queue queue = NQ.get(n);
+		
+		if (queue != null) {
+		    // orphaned nodes could have null queues
 				
-				//if this is going to make the queue empty...... need to pause all jobs first
-				if (Cluster.getNodesForQueue(queue.getId()).size() == 1 ) {
-					List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
-					if (jobs != null) {
-						for (Job j : jobs) {
-							Jobs.pause(j.getId());
-						}
-					}
+		    //if this is going to make the queue empty...... need to pause all jobs first
+		    List<WorkerNode> workers = Cluster.getNodesForQueue(queue.getId());
+		    if (workers != null) {
+			if (workers.size() == 1 ) {
+			    log.debug("checking for jobs running on queue "+queueName+", since this is the last node in the queue.");
+			    List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
+			    if (jobs != null) {
+				for (Job j : jobs) {
+				    Jobs.pause(j.getId());
 				}
-				
-				String name = queue.getName();
-				String[] split3 = name.split("\\.");
-				String shortQName = split3[0];
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
+			    }
 			}
+		    }
+		    
+		    String name = queue.getName();
+		    String[] split3 = name.split("\\.");
+		    String shortQName = split3[0];
+		    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
 		}
-	    GridEngineUtil.loadWorkerNodes();
-	    GridEngineUtil.loadQueues();
+
+		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
+	    }
 	}
+	GridEngineUtil.loadWorkerNodes();
+	GridEngineUtil.loadQueues();
+	log.debug("Move nodes ending.");
+    }
 }

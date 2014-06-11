@@ -39,11 +39,13 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.util.EntityUtils;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
+
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -349,7 +351,6 @@ public class Connection {
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("file", fileBody);
 			post=(HttpPost) setHeaders(post);
-
 			post.setEntity(entity);
 			
 			HttpResponse response=client.execute(post);
@@ -456,11 +457,23 @@ public class Connection {
 	}
 	
 	
-	
-	public int uploadSpaceXML(String filePath, Integer spaceID) {
+
+	/**
+	 * Uploads an xml (job or space) to specified space
+	 * @param filePath An absolute file path to the file to upload
+	 * @param spaceID The ID of the space where the job is being uploaded to
+	 * @param isJobUpload true if job xml upload, false otherwise
+	 * @return status code (0 on success)
+	 * @author Julio Cervantes
+	 */
+    public int uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
+	    
 		try {
-			
-			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADSPACE);
+		        String ext = R.URL_UPLOADSPACE;
+			if(isJobXML){
+			    ext = R.URL_UPLOADJOBXML;
+			}
+			HttpPost post=new HttpPost(baseURL+ext);
 			post=(HttpPost) setHeaders(post);
 			
 			MultipartEntity entity = new MultipartEntity();
@@ -469,19 +482,35 @@ public class Connection {
 			FileBody fileBody = new FileBody(f);
 			entity.addPart("f", fileBody);
 			
+			post.setEntity(entity);
 			
 			HttpResponse response=client.execute(post);
+
+			
+
+			
 			
 			setSessionIDIfExists(response.getAllHeaders());
+			response.getEntity().getContent().close();
 			
-			if (response.getStatusLine().getStatusCode()!=200) {
+			//EntityUtils.consume(response.getEntity());
+			
+			int code = response.getStatusLine().getStatusCode();
+			//if space, gives 200 code.  if job, gives 302
+			if (code !=200 && code != 302 ) {
+			        System.out.println("Connection.java : "+code);
 				return Status.ERROR_SERVER;
 			}
+		        
+			
 			
 			return 0;
 		} catch (Exception e) {
+		    System.out.println("Connection.java : "+e);
+		    
 			return Status.ERROR_SERVER;
 		}
+	    
 	}
 	
 	/**
@@ -1206,7 +1235,73 @@ public class Connection {
 		return getPrims(null, null, true, "jobs");
 	}
 
-	
+	/**
+	 * @param solverID Integer id of a solver
+	 * @param limit Integer limiting number of configurations displayed
+	 * @return A HashMap mapping IDs to names If there was an error, the HashMap will contain only one key, and it will
+	 * be negative, whereas all IDs must be positive.
+	 */
+    protected HashMap<Integer,String> getSolverConfigs(Integer solverID, Integer limit){
+	HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
+	HashMap<Integer,String> prims=new HashMap<Integer,String>();
+	try{
+	    String serverURL = baseURL+R.URL_GETSOLVERCONFIGS;
+	    
+	    HttpPost post=new HttpPost(serverURL);
+	    post=(HttpPost) setHeaders(post);
+
+		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+		urlParameters.add(new BasicNameValuePair("solverid",solverID.toString()));
+		if(limit != null){
+		    urlParameters.add(new BasicNameValuePair("limit",limit.toString()));
+		}
+		else{
+		    // -1 is a null value
+		    urlParameters.add(new BasicNameValuePair("limit","-1"));
+		}
+		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+	    /**		
+	    MultipartEntity entity = new MultipartEntity();
+	    entity.addPart("solverid",new StringBody(solverID.toString(),utf8));
+			
+			
+	    post.setEntity(entity);
+	    **/
+		
+	    HttpResponse response=client.execute(post);
+
+			
+			
+	    setSessionIDIfExists(response.getAllHeaders());
+			
+	    
+	    final BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+	    
+	    String line;
+	    while((line = br.readLine()) != null){
+		System.out.println(line);
+		
+	    }
+	    
+			
+	    
+			
+	    int code = response.getStatusLine().getStatusCode();
+	    //if space, gives 200 code.  if job, gives 302
+	    if (code !=200 && code != 302 ) {
+		System.out.println("Connection.java : "+code + " " +response.getStatusLine().getReasonPhrase());
+				
+	    }
+		        
+			
+			
+	    return prims;
+	}catch (Exception e) {
+		    errorMap.put(Status.ERROR_SERVER, e.getMessage());
+			
+			return errorMap;
+		}
+    }
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
 	 * @param urlParams Parameters to be encoded into the URL to send to the server
@@ -1220,6 +1315,8 @@ public class Connection {
 		HashMap<Integer,String> prims=new HashMap<Integer,String>();
 		
 		try {
+		    
+			
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 			
 			urlParams.put(R.FORMPARAM_TYPE, type);
@@ -1323,8 +1420,9 @@ public class Connection {
 			}
 			
 			return prims;
+		
 		} catch (Exception e) {
-			errorMap.put(Status.ERROR_SERVER, null);
+		    errorMap.put(Status.ERROR_SERVER, e.getMessage());
 			
 			return errorMap;
 		}
@@ -1607,7 +1705,7 @@ public class Connection {
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @return
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed) {
 		try {
 			
 			
@@ -1677,6 +1775,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("queue",queueId.toString()));
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
+			params.add(new BasicNameValuePair("seed",seed.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
 			params.add(new BasicNameValuePair("maxMem",mem));
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
@@ -1729,3 +1828,4 @@ public class Connection {
 	}
 	
 }
+

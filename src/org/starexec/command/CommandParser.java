@@ -63,6 +63,7 @@ class CommandParser {
 	 */
 	protected int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
+		    
 			int serverStatus;
 
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
@@ -74,7 +75,10 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
-				serverStatus=parser.uploadSpaceXML(commandParams);
+			    serverStatus=parser.uploadXML(commandParams,false);
+
+			} else if (c.equals(R.COMMAND_PUSHJOBXML)) { 
+			    serverStatus=parser.uploadXML(commandParams,true);
 			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}
@@ -89,6 +93,7 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
+		    System.out.println("CommandParser.java : " + e);
 			return Status.ERROR_INTERNAL;
 		}
 	}
@@ -298,7 +303,9 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_LISTBENCHMARKS)) {
 				type="benchmarks";
 				
-			} else if (c.equals(R.COMMAND_LISTJOBS)) {
+			} else if (c.equals(R.COMMAND_LISTSOLVERCONFIGS)){
+			    type="solverconfigs";
+			}else if (c.equals(R.COMMAND_LISTJOBS)) {
 				type="jobs";
 				
 			} else if(c.equals(R.COMMAND_LISTUSERS)) {
@@ -681,6 +688,9 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_GETSPACEXML)) {
 				type="spaceXML";
 				
+			} else if (c.equals(R.COMMAND_GETJOBXML)){
+			        type="jobXML";
+
 			} else if (c.equals(R.COMMAND_GETSPACE)) {
 				hierarchy=false;
 				type="space";

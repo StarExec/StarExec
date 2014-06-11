@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,8 +23,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -573,8 +572,6 @@ public class Benchmarks {
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
 		for(Benchmark b : benchmarks) {
-			BufferedReader reader = null;
-
 			try {
 				// Run the processor on the benchmark file
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
@@ -582,18 +579,13 @@ public class Benchmarks {
 				
 				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 				procCmd[1] = b.getPath();
-				reader = Util.executeCommandInDirectory(procCmd,null,new File(p.getFilePath()));
-				log.debug("reader is null = " + (reader == null));
-				if (reader == null){
-					log.error("Reader is null!");
-				}
+				String propstr = Util.executeCommand(procCmd,null,new File(p.getFilePath()));
+
 				// Load results into a properties file
 				Properties prop = new Properties();
-				if (reader != null){
-					prop.load(reader);							
-					reader.close();
-				        log.debug("read "+prop.size()+" properties");
-				}
+				prop.load(new StringReader(propstr));							
+				log.debug("read "+prop.size()+" properties");
+
 				// Attach the attributes to the benchmark
 				b.setAttributes(prop);
 				count--;
@@ -619,12 +611,7 @@ public class Benchmarks {
 			} catch (Exception e) {
 				log.warn(e.getMessage(), e);
 				return false;
-			} finally {
-				if(reader != null) {
-					try { reader.close(); } catch(Exception e) {log.error(e);}
-				}
-
-			}
+			} 
 		}
 		return true;
 	}
@@ -2243,8 +2230,7 @@ public class Benchmarks {
 		final Integer st=statusId;
 		final boolean l=isCommunityLeader;
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		threadPool.execute(new Runnable() {
+		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){
 				try {

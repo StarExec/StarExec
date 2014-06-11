@@ -71,13 +71,13 @@
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				
-				//TODO: I don't think this is right. The primary space is a JOB SPACE, and we just want a space
 				request.setAttribute("queues", Queues.getQueuesForUser(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
 				request.setAttribute("cpu",cpu);
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
+				request.setAttribute("seed",j.getSeed());
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -270,6 +270,11 @@
 						<tr title="the maximum memory each pair in the job was allowed to use, in gigabytes">
 							<td>max memory</td>
 							<td>${maxMemory}</td>
+						</tr>
+						<tr title="the random seed given to the preprocessor used by each job pair">
+							<td>random seed</td>
+							<td>${seed}</td>
+						
 						</tr>
 					</tbody>
 				</table>	

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="5/12/2014-1";
+	public static String VERSION="6/3/2014-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -27,12 +27,14 @@ public class R {
 	public static String URL_UPLOADBENCHMARKS="/secure/upload/benchmarks";
 	public static String URL_UPLOADPROCESSOR="secure/processors/manager";
 	public static String URL_UPLOADSPACE="secure/upload/space";
+        public static String URL_UPLOADJOBXML="secure/upload/jobXML";
 	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space";
 	public static String URL_UPLOADCONFIG="secure/upload/configurations";
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
+        public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
 	public static String URL_GETID="services/users/getid";
@@ -65,7 +67,7 @@ public class R {
 	//constants and regular expressions from StarExec for validation
 	
 	 //maximum length properties
-    public static int SPACE_NAME_LEN=128;
+    public static int SPACE_NAME_LEN=255;
     public static int SPACE_DESC_LEN=1024;
     public static int USER_FIRST_LEN=32;
     public static int USER_LAST_LEN=32;
@@ -117,6 +119,7 @@ public class R {
 	public static String COMMAND_GETJOBINFO="getjobinfo";
 	public static String COMMAND_GETSOLVER="getsolver";
 	public static String COMMAND_GETSPACEXML="getspacexml";
+        public static String COMMAND_GETJOBXML="getjobxml";
 	public static String COMMAND_GETBENCH="getbench";
 	public static String COMMAND_GETJOBPAIR="getjobpair";
 	public static String COMMAND_GETSPACE="getspace";
@@ -142,6 +145,7 @@ public class R {
 	public static String COMMAND_PUSHPOSTPROC="pushpostproc";
 	public static String COMMAND_PUSHBENCHPROC="pushbenchproc";
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
+        public static String COMMAND_PUSHJOBXML="pushjobxml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
 	
 	//deleting commands
@@ -176,6 +180,7 @@ public class R {
 	
 	//listing commands
 	public static String COMMAND_LISTSOLVERS="lssolvers";
+        public static String COMMAND_LISTSOLVERCONFIGS="lssolverconfigs";
 	public static String COMMAND_LISTPRIMITIVES="ls";
 	public static String COMMAND_LISTBENCHMARKS="lsbenchmarks";
 	public static String COMMAND_LISTJOBS="lsjobs";
@@ -224,6 +229,7 @@ public class R {
 	public static String PARAM_TRAVERSAL="trav";
 	public static String PARAM_MEMORY="mem";
 	public static String PARAM_PAUSED="pause";
+	public static String PARAM_SEED="seed";
 	
 	public static String ARG_ROUNDROBIN="r";
 	public static String ARG_DEPTHFIRST="d";

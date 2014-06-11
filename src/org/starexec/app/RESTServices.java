@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -261,7 +263,8 @@ public class RESTServices {
 	@Produces("text/plain")		
 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserSeeJob(id, userId);
+		int jobId=JobPairs.getPair(id).getJobId();
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
 		if (status!=0) {
 		    return ("user "+ new Integer(userId) + " does not have access to see job " + new Integer(id));
 		}
@@ -299,6 +302,33 @@ public class RESTServices {
 	}
 	
 	/**
+	 * @return a string that holds the build log for a solver
+	 * @author Eric Burns
+	 */
+	@GET
+	@Path("/solvers/{id}/buildoutput")
+	@Produces("text/plain")	
+	public String getSolverBuildLog(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+	
+		int status=SolverSecurity.canUserSeeBuildLog(id, userId);
+		if (status!=0) {
+			return "not available";
+		}
+		try {
+			File output=Solvers.getSolverBuildOutput(id);
+			if(output.exists()) {			
+				return FileUtils.readFileToString(output);			
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		
+		return "not available";
+	}
+	
+	/**
 	 * @return a string that holds the std out of job pair with the given id
 	 * @author Tyler Jensen
 	 */
@@ -314,7 +344,7 @@ public class RESTServices {
 		}
 		if(jp != null) {			
 			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
-				Jobs.getShallow(jp.getJobId());			
+				Jobs.get(jp.getJobId());			
 				String stdout = GridEngineUtil.getStdOut(jp, limit);
 				if(!Util.isNullOrEmpty(stdout)) {
 					return stdout;
@@ -358,13 +388,14 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getCommunityDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
 		Space community = Communities.getDetails(id);
-		
+		int userId=SessionUtil.getUserId(request);
 		if(community != null) {
 			community.setUsers(Spaces.getUsers(id));
 			Permission p = SessionUtil.getPermission(request, id);
 			List<User> leaders = Spaces.getLeaders(id);
 			List<Website> sites = Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE);
-			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites));
+			
+			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites,Users.isMemberOfCommunity(userId, id)));
 		}
 		
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
@@ -3205,7 +3236,6 @@ public class RESTServices {
 	
 		if (!Queues.isQueuePermanent(queueId)) {
 			QueueRequest req = Requests.getRequestForReservation(queueId);
-			log.debug("req = " + req);
 			GridEngineUtil.cancelReservation(req);
 			return gson.toJson(0);
 		} else {

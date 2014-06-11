@@ -103,6 +103,7 @@
 							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
 						</td>
 					</tr>
+					
 					<tr class="noHover" title="which queue should this job be submitted to?">
 						<td class="label"><p>worker queue</p></td>
 						<td>
@@ -128,6 +129,12 @@
 						<td>
 							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
 							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
+						</td>
+					</tr>
+					<tr class="noHover" title="a random value that will be passed into any preprocessor used for this job">
+						<td class="label"><p>pre-processor seed</p></td>
+						<td>
+							<input type="text" name="seed" id="seed" value="0">
 						</td>
 					</tr>							
 				</tbody>					

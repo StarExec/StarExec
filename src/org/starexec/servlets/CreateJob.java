@@ -71,6 +71,7 @@ public class CreateJob extends HttpServlet {
 	private static final String traversal = "traversal";
 	private static final String pause = "pause";
 	private static final String maxMemory="maxMem";
+	private static final String randSeed="seed";
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -92,6 +93,7 @@ public class CreateJob extends HttpServlet {
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
 		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
+		long seed=Long.parseLong(request.getParameter(randSeed));
 		
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
@@ -115,7 +117,8 @@ public class CreateJob extends HttpServlet {
 				(String)request.getParameter(description),
 				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
-				Integer.parseInt((String)request.getParameter(workerQueue)));
+				Integer.parseInt((String)request.getParameter(workerQueue)),
+				seed);
 		j.setPrimarySpace(space);
 		//Create the HashMap to be used for creating job-pair path
 		log.debug("started building the new job");

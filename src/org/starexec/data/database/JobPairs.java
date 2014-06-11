@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -132,7 +133,6 @@ public class JobPairs {
 	 */
 	//TODO: Sandbox this
 	private static Properties runPostProcessorOnPair(int pairId, int processorId) {
-		BufferedReader reader = null;
 		try {
 			Processor p=Processors.get(processorId);
 			// Run the processor on the benchmark file
@@ -143,26 +143,16 @@ public class JobPairs {
 			procCmd[1] = JobPairs.getFilePath(pair);
 			
 			procCmd[2] = pair.getBench().getPath();
-			reader = Util.executeCommandInDirectory(procCmd, null, new File(p.getFilePath()));
+			String propstr = Util.executeCommand(procCmd, null, new File(p.getFilePath()));
 			
 			// Load results into a properties file
 			Properties prop = new Properties();
-			if (reader != null){
-				prop.load(reader);							
-				reader.close();
-			}
+			prop.load(new StringReader(propstr));
+
 			return prop;
 		} catch (Exception e) {
 			log.error("runPostProcessorOnPair says "+e.getMessage(),e);
-		} finally {
-			if(reader != null) {
-				try { 
-					reader.close(); 
-				} catch(Exception e) {
-					//ignore
-				}
-			}
-		}
+		} 
 		return null;
 	}
 	

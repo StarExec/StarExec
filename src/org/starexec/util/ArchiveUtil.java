@@ -135,6 +135,60 @@ public class ArchiveUtil {
 		}
 	}
 	
+	public static Boolean extractArchiveAsSandbox(String fileName,String destination) {
+		log.debug("ExtractingArchive for " + fileName);
+		try {
+			// Check for the appropriate file extension and hand off to the appropriate method
+			if(fileName.endsWith(".zip")) {
+				String[] unzipCmd = new String[7];
+				unzipCmd[0] = "sudo";
+				unzipCmd[1] = "-u";
+				unzipCmd[2] = "sandbox";
+				unzipCmd[3] = "unzip";
+				unzipCmd[4] = fileName;
+				unzipCmd[5] = "-d";
+				unzipCmd[6] = destination;
+				log.debug("about to execute command tar command");
+				Util.executeCommand(unzipCmd);
+				//results = Util.bufferToString(reader);
+				//log.debug("command was executed, results = " + results);
+				log.debug("now removing the archived file " + fileName);
+				ArchiveUtil.removeArchive(fileName);
+				
+			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz") || fileName.endsWith(".tar")) {
+				// First rename it if it's a .tgz
+
+			
+				/* by default, tar applies (supposedly) the user's umask when setting
+				   permissions for extracted files.  So we do not need to do anything
+				   further with that. */
+				String[] tarCmd = new String[8];
+				tarCmd[0] = "sudo";
+				tarCmd[1] = "-u";
+				tarCmd[2] = "sandbox";
+				tarCmd[3] = "tar";
+				tarCmd[4] = "-xf";
+				tarCmd[5] = fileName;
+				tarCmd[6] = "-C";
+				tarCmd[7] = destination;
+				log.debug("about to execute command tar command");
+				Util.executeCommand(tarCmd);
+				ArchiveUtil.removeArchive(fileName);
+
+			} else {
+				// No valid file type found :(
+				log.warn(String.format("Unsupported file extension for [%s] attempted to uncompress", fileName));
+				return false;
+			}
+			
+			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
+			return true;
+		} catch (Exception e) {
+			log.error("Archive Util says " + e.getMessage(), e);
+		}
+
+		return false;
+	}
 	
 	/**
 	 * Extracts/unpacks/uncompresses an archive file to a folder with the same name at the given destination.
@@ -164,17 +218,15 @@ public class ArchiveUtil {
 				log.debug("destination is " + destination);
 
 				lsCmd[2] = fileName;
-				BufferedReader reader = Util.executeCommand(lsCmd);
-				String results = Util.bufferToString(reader);
+				String results = Util.executeCommand(lsCmd);
 				log.debug("ls -l of tgz results = " + results);
 
 				lsCmd[2] = destination;
-				reader = Util.executeCommand(lsCmd);
-				results = Util.bufferToString(reader);
+				results = Util.executeCommand(lsCmd);
 				log.debug("ls -l destination results = " + results);
 
 				/* by default, tar applies (supposedly) the user's umask when setting
-				   permissions for extracted files.  So we do not need to do anythin
+				   permissions for extracted files.  So we do not need to do anything
 				   further with that. */
 				String[] tarCmd = new String[5];
 				tarCmd[0] = "tar";
@@ -183,14 +235,12 @@ public class ArchiveUtil {
 				tarCmd[3] = "-C";
 				tarCmd[4] = destination;
 				log.debug("about to execute command tar command");
-				reader = Util.executeCommand(tarCmd);
-				results = Util.bufferToString(reader);
+				results = Util.executeCommand(tarCmd);
 				log.debug("command was executed, results = " + results);
 				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
 				lsCmd[2] = destination;
-				reader = Util.executeCommand(lsCmd);
-				results = Util.bufferToString(reader);
+				results = Util.executeCommand(lsCmd);
 				log.debug("command was executed - ls -l destination results = " + results);
 
 			} else {
@@ -505,7 +555,7 @@ public class ArchiveUtil {
 		zipCommand[4]=tempDest.getAbsolutePath();
 		zipCommand[5]=path.getName(); //we are trying to run this command in the required directory, so an absolute path is not needed
 	
-		Util.executeCommandInDirectory(zipCommand,null,cd);
+		Util.executeCommand(zipCommand,null,cd);
 		
 		//put the dashes back into the file path
 		if (!destName.equals(newDestName)) {
@@ -556,7 +606,7 @@ public class ArchiveUtil {
 			zipCommand[2]="-q";
 			zipCommand[3]=tempDest.getAbsolutePath();
 			zipCommand[4]=file.getName(); //we will be executing the command from the parent directory of the needed file
-			Util.executeCommandInDirectory(zipCommand,null,file.getParentFile());
+			Util.executeCommand(zipCommand,null,file.getParentFile());
 		}
 		
 		//put the dashes back into the file path

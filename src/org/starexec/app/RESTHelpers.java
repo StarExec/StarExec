@@ -295,13 +295,16 @@ public class RESTHelpers {
 		private List<User> leaders;
 		@Expose
 		private List<Website> websites;
-
+		
+		@Expose
+		private Boolean isMember;
 		public CommunityDetails(Space s, Permission p, List<User> leaders,
-				List<Website> websites) {
+				List<Website> websites,Boolean member) {
 			this.space = s;
 			this.perm = p;
 			this.leaders = leaders;
 			this.websites = websites;
+			this.isMember = member;
 		}
 	}
 

@@ -133,7 +133,7 @@ class ArgumentParser {
 		return con.logout();
 		
 	}
-	
+
 	/**
 	 * Creates a POST request to StarExec to create a new job
 	 * @param commandParams A HashMap containing key/value pairs gathered from the user input at the command line
@@ -187,14 +187,17 @@ class ArgumentParser {
 			if (commandParams.containsKey(R.PARAM_PAUSED)) {
 				startPaused=true;
 			}
-			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc, 
-					Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),
-					wallclock, cpu,useDepthFirst,maxMemory,startPaused);
+			long seed=0;
+			if (commandParams.containsKey(R.PARAM_SEED)) {
+				seed=Long.parseLong(commandParams.get(R.PARAM_SEED));
+			}
+			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),wallclock, cpu,useDepthFirst,maxMemory,startPaused,seed);
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}
 	}
+
 	
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
@@ -355,7 +358,7 @@ class ArgumentParser {
 	
 	protected int downloadArchive(String type,Integer since,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
 		try {
-			Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			
+			Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			 
 			int valid=Validator.isValidDownloadRequest(commandParams,type);
 			if (valid<0) {
 				return valid;
@@ -406,17 +409,21 @@ class ArgumentParser {
 				return errorMap;
 			}
 			Integer id=-1;
+			Integer limit = null;
 			if (commandParams.containsKey(R.PARAM_ID)) {
 				id=Integer.parseInt(commandParams.get(R.PARAM_ID));
 			}
-			if (commandParams.containsKey(R.PARAM_LIMIT)) {
-				return con.getPrims(id, Integer.parseInt(commandParams.get(R.PARAM_LIMIT)), 
-						commandParams.containsKey(R.PARAM_USER), type);
-			} else {
-				return con.getPrims(id, null, 
-						commandParams.containsKey(R.PARAM_USER), type);
+			if(commandParams.containsKey(R.PARAM_LIMIT)){
+			    limit=Integer.parseInt(commandParams.get(R.PARAM_LIMIT));
 			}
-			
+			if(type.equals("solverconfigs")){
+				return con.getSolverConfigs(id,limit);
+
+			}else{
+			    
+			       return con.getPrims(id, limit,commandParams.containsKey(R.PARAM_USER), type);
+
+			}
 		
 		} catch (Exception e) {
 			errorMap.put(Status.ERROR_SERVER, null);
@@ -637,22 +644,28 @@ class ArgumentParser {
 	}
 	
 	/**
-	 * This function handles user requests for uploading a space XML archive.
+	 * This function handles user requests for uploading an xml archive (space or job).
 	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
 	 * ID and File keys
+	 * @param isJobUpload true if job xml upload, false otherwise
 	 * @return 0 on success, and a negative error code otherwise
-	 * @author Eric Burns
+	 * @author Julio Cervantes
 	 */
 	
-	protected int uploadSpaceXML(HashMap<String, String> commandParams) {
+    protected int uploadXML(HashMap<String, String> commandParams,boolean isJobXML) {
 		try {
-			int valid=Validator.isValidUploadSpaceXMLRequest(commandParams);
+		   
+			int valid=Validator.isValidUploadXMLRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
-			return con.uploadSpaceXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)));
+			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
 			
 		} catch (Exception e) {
+
+		    System.out.println("ArgumentParser.java : " +e);
+		  
+		    
 			return Status.ERROR_SERVER;
 		}
 	}

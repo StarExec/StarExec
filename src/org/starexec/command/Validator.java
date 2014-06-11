@@ -40,6 +40,7 @@ public class Validator {
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
+        private static String[] allowedCopyHierParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE,R.PARAM_TEST};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
@@ -47,7 +48,7 @@ public class Validator {
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED};
+		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED, R.PARAM_SEED};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE};
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
@@ -55,7 +56,7 @@ public class Validator {
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
 	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
-	private static String[] allowedUploadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
+        private static String[] allowedUploadXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
 	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT,R.PARAM_USER}; 
 	
 	/**
@@ -96,6 +97,15 @@ public class Validator {
 		}
 		findUnnecessaryParams(allowedDeleteParams,commandParams);
 		return 0;
+	}
+	
+	public static boolean isValidInteger(String str) {
+		try {
+			long check=Long.parseLong(str);
+			return true;
+		} catch(Exception e) {
+			return false;
+		}
 	}
 	
 	/**
@@ -228,17 +238,11 @@ public class Validator {
     	
     	//the hierarchy parameter is also acceptable if the type is either solver or space
     	if (type=="solver" || type== "space") {
-    		String[] a=new String[allowedCopyParams.length+1];
-    		for (int index=0;index<allowedCopyParams.length;index++) {
-    			a[index]=allowedCopyParams[index];
-    			
-    		}
-    		a[a.length-1]=R.PARAM_HIERARCHY;
-    		findUnnecessaryParams(a,commandParams);
+    		findUnnecessaryParams(allowedCopyHierParams,commandParams);
     	} else {
     		findUnnecessaryParams(allowedCopyParams,commandParams);
     	}
-    	findUnnecessaryParams(allowedCopyParams,commandParams);
+    	
     	return 0;
     }
     
@@ -411,26 +415,30 @@ public class Validator {
 		
 	}
 	
+
 	/**
-	 * Validates a request to upload an archive containing a space XML file
+	 * Validates a request to upload an archive containing a an XML file
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
+	 * @author Julio Cervantes
 	 */
-	//TODO: Do we need an archive here?
-	public static int isValidUploadSpaceXMLRequest(HashMap<String,String> commandParams) {
+	public static int isValidUploadXMLRequest(HashMap<String,String> commandParams) {
 		int valid= isValidUploadRequestNoURL(commandParams, true);
 		if (valid<0) {
 			return valid;
 		}
-		findUnnecessaryParams(allowedUploadSpaceXMLParams,commandParams);
+		findUnnecessaryParams(allowedUploadXMLParams,commandParams);
 		return 0;
 		
 	}
+	
+
 	
 	/**
 	 * Validates a request to upload a configuration
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
+	 * 
 	 */
 	
 	public static int isValidUploadConfigRequest(HashMap<String,String> commandParams) {
@@ -520,6 +528,12 @@ public class Validator {
 			String traversalMethod=commandParams.get(R.PARAM_TRAVERSAL);
 			if (!traversalMethod.equals(R.ARG_ROUNDROBIN) && !traversalMethod.equals(R.ARG_DEPTHFIRST)) {
 				return Status.ERROR_BAD_TRAVERSAL_TYPE;
+			}
+		}
+		
+		if (commandParams.containsKey(R.PARAM_SEED)) {
+			if (!isValidInteger(commandParams.get(R.PARAM_SEED))) {
+				return Status.ERROR_SEED;
 			}
 		}
 		

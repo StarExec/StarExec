@@ -112,9 +112,9 @@ public class Download extends HttpServlet {
 				success = handleSpaceXML(space, u.getId(), ".zip", response, includeAttributes);
 
 			} else if (request.getParameter("type").equals("jobXML")) {
-				Job job = Jobs.getDetailed(Integer.parseInt(request.getParameter("id")));
+				Job job = Jobs.get(Integer.parseInt(request.getParameter("id")));
 
-				shortName="Job_"+ job.getId() + "_XML";
+				shortName="Job"+ job.getId() + "_XML";
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJobXML(job, u.getId(), ".zip", response);
@@ -315,7 +315,7 @@ public class Download extends HttpServlet {
 			
 			files.add(file);
 			
-			String baseFileName="Job_XML";
+			String baseFileName="Job" + job.getId()+ "_XML";
 			
 			//TODO : should store public/batchJobSchema.xsd in a constant, in case it gets changed later
 				File schema = new File(R.STAREXEC_ROOT + File.separator + "public/batchJobSchema.xsd");
@@ -693,7 +693,7 @@ public class Download extends HttpServlet {
 			
 			
 			String baseFileName=space.getName();
-			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR + UUID.randomUUID().toString() + File.separator + space.getName());
+			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
 			
 			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
 			ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);

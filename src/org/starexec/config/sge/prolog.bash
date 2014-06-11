@@ -112,7 +112,9 @@ function copyDependencies {
 		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
 		cd "$STAREXEC_OUT_DIR"/preProcessor
 		log "executing pre processor"
-		./process "$LOCAL_BENCH_PATH" > "$PROCESSED_BENCH_PATH"
+		log "random seed = "$RAND_SEED
+		
+		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
 		#use the processed benchmark in subsequent steps
 		rm "$LOCAL_BENCH_PATH"
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
@@ -127,7 +129,7 @@ function copyDependencies {
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
 		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		fi

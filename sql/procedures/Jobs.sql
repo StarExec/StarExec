@@ -204,6 +204,18 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 		WHERE id = _id;
 	END //	
 
+
+
+-- Retrieves basic info about job pairs for the given job id (simple version)
+-- Author: Julio Cervantes
+DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
+CREATE PROCEDURE GetJobPairsByJobCesar(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+		WHERE job_pairs.job_id=_id;
+	END //
+
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairsByJob;
@@ -259,7 +271,16 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 
-
+-- Gets all the attribute values for benchmarks in the given job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetAttrsOfNameForJob;
+CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
+	BEGIN
+		SELECT job_pairs.bench_id, attr_value 
+		FROM job_pairs JOIN bench_attributes ON job_pairs.bench_id = bench_attributes.bench_id
+		
+		WHERE attr_key=_attrName AND job_id=_jobId;
+	END  //
 
 
 -- Gets all the job pairs for a given job in a particular space
@@ -267,7 +288,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
 CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
 	BEGIN
-		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,wallclock,job_pairs.id
+		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,wallclock,job_pairs.id,bench_id
 		FROM job_pairs 				
 		WHERE job_space_id =_jobSpaceId;
 	END //
@@ -470,10 +491,10 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
-CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _preProcessor INT, IN _postProcessor INT, IN _spaceId INT, OUT _id INT)
+CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _preProcessor INT, IN _postProcessor INT, IN _spaceId INT, IN _seed BIGINT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, pre_processor, post_processor, primary_space)
-		VALUES (_userId, _name, _desc, _queueId, _preProcessor, _postProcessor, _spaceId);
+		INSERT INTO jobs (user_id, name, description, queue_id, pre_processor, post_processor, primary_space,seed)
+		VALUES (_userId, _name, _desc, _queueId, _preProcessor, _postProcessor, _spaceId,_seed);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	

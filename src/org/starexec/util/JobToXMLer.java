@@ -12,11 +12,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-
 import org.starexec.constants.R;
+import org.starexec.util.Util;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.Status;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -130,17 +132,22 @@ public class JobToXMLer {
 		Attr startPaused = doc.createAttribute("start-paused");
 		startPaused.setValue(Boolean.toString(false));
 		jobElement.setAttributeNode(startPaused);
-		/**
-		//Preprocessor ID : preproc-id
-		Attr preProcID = doc.createAttribute("preproc-id");
-		preProcID.setValue(Integer.toString(job.getPreProcessor().getId()));
-		jobElement.setAttributeNode(preProcID);
 		
+		//Preprocessor ID : preproc-id
+		Processor pre = job.getPreProcessor();
+		if(pre != null){
+		    Attr preProcID = doc.createAttribute("preproc-id");
+		    preProcID.setValue(Integer.toString(pre.getId()));
+		    jobElement.setAttributeNode(preProcID);
+		}
 		//Postprocessor ID : postproc-id
-		Attr postProcID = doc.createAttribute("postproc-id");
-		postProcID.setValue(Integer.toString(job.getPostProcessor().getId()));
-		jobElement.setAttributeNode(postProcID);
-		**/
+		Processor post = job.getPostProcessor();
+		if(post != null){
+		    Attr postProcID = doc.createAttribute("postproc-id");
+		    postProcID.setValue(Integer.toString(post.getId()));
+		    jobElement.setAttributeNode(postProcID);
+		}
+		
 		//CPU timeout (seconds) : cpu-timeout
 		Attr cpuTimeout = doc.createAttribute("cpu-timeout");
 		cpuTimeout.setValue(Integer.toString(Jobs.getCpuTimeout(job.getId())));
@@ -148,16 +155,17 @@ public class JobToXMLer {
 		
 		//Wall Clock timeout (seconds) : wallclock-timeout
 		Attr wallClockTimeout = doc.createAttribute("wallclock-timeout");
-		wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
+                wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
 		jobElement.setAttributeNode(wallClockTimeout);
 		
 		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
 		Attr memLimit = doc.createAttribute("mem-limit");
-		memLimit.setValue(Long.toString(1));
+		memLimit.setValue(Double.toString(Util.bytesToGigabytes(Jobs.getMaximumMemory(job.getId()))));
 		jobElement.setAttributeNode(memLimit);
 		
-		List<JobPair> pairs= Jobs.getPairsDetailed(job.getId());
-		log.info("Lenght of jobpairs list: " + pairs.size());
+		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
+		log.info("Length of jobpairs list Cesar: " + pairs.size());
+		int count = 1;
 		
 		for (JobPair jobpair:pairs){
 			Element jp = doc.createElement("JobPair");
@@ -171,6 +179,8 @@ public class JobToXMLer {
 			jp.setAttributeNode(configID);
 
 			jobElement.appendChild(jp);
+			log.info("jobpair #" + count + " : " + jobpair.getStatus().getCode().getVal() + " " + jobpair.getStatus().getDescription() );
+			count++;
 		}
 		
 		return jobElement;

@@ -369,6 +369,10 @@ public class Solvers {
 			//Cache.invalidateSpacesAssociatedWithSolver(id);
 			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
 			//Cache.invalidateAndDeleteCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
+			File buildOutput=Solvers.getSolverBuildOutput(id);
+			if (buildOutput.exists()) {
+				Util.safeDeleteDirectory(buildOutput.getParent());
+			}
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL SetSolverToDeletedById(?, ?)}");
@@ -1662,6 +1666,10 @@ public class Solvers {
 			
 			while (results.next()) {
 				Util.safeDeleteDirectory(results.getString("path")); 
+				File buildOutput=Solvers.getSolverBuildOutput(results.getInt("id"));
+				if (buildOutput.exists()) {
+					Util.safeDeleteDirectory(buildOutput.getParent());
+				}
 			}
 			Common.safeClose(procedure);
 			procedure=con.prepareCall("CALL SetRecycledSolversToDeleted(?)");
@@ -1922,6 +1930,22 @@ public class Solvers {
 		uniqueDir = new File(uniqueDir, solverName);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		return uniqueDir.getAbsolutePath();
+	}
+	/**
+	 * Gets the file where build information is stored
+	 * @param solverId
+	 * @return The File object, or null if one cannot be found
+	 */
+	public static File getSolverBuildOutput(int solverId) {
+		try {
+			File buildFile=new File(R.SOLVER_BUILD_OUTPUT_DIR,""+solverId);
+			buildFile=new File(buildFile,R.SOLVER_BUILD_OUTPUT);
+			return buildFile;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+		
 	}
 	
 }

@@ -217,7 +217,7 @@ function populateDetails(jsonData) {
 	});*/
 	
 	// Check the new permissions for the loaded space
-	checkPermissions(jsonData.perm);	
+	checkPermissions(jsonData.perm,jsonData.isMember);	
 	
 	// Done loading, hide the loader
 	$('#loader').hide();	
@@ -228,23 +228,25 @@ function populateDetails(jsonData) {
  * the user's permissions
  * @param perms The JSON permission object representing permissions for the current space
  */
-function checkPermissions(perms) {	
+function checkPermissions(perms,isMember) {	
+	//we can have permissions even if we are not a member, if the community is public
 	if(perms == null) {
-		$('#joinComm').fadeIn('fast');
-		$('#leaveComm').fadeOut('fast');
-		$('#editComm').fadeOut('fast');
 		$('#downloadPostProcessors').fadeOut('fast');
 		$('#downloadBenchProcessors').fadeOut('fast');
 		$('#downloadPreProcessors').fadeOut('fast');
 		return;
 	} else {
-		$('#joinComm').fadeOut('fast');
-		$('#leaveComm').fadeIn('fast');
 		$('#downloadPostProcessors').fadeIn('fast');
 		$('#downloadBenchProcessors').fadeIn('fast');
 		$('#downloadPreProcessors').fadeIn('fast');
 	}
-	
+	if (!isMember) {
+		$('#joinComm').fadeIn('fast');
+		$('#leaveComm').fadeOut('fast');
+	} else {
+		$('#joinComm').fadeOut('fast');
+		$('#leaveComm').fadeIn('fast');
+	}
 	if(perms.isLeader) {
 		$('#editComm').fadeIn('fast');
 	} else {

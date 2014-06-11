@@ -101,6 +101,8 @@ corresponds to a dependent bench space.
 
 "qid" -Specifies a queue id (used only in job creation).
 
+"seed" -An integer that will be passed into the preprocessor when it is used for a particular job.
+
 "since" -When downloading job info, specifies the earliest completed pair after which to get info.
 
 "t" -When using 'sleep,' specifies the amount of time in seconds. Decimal values are permitted.
@@ -262,6 +264,10 @@ OPTIONAL: "ow" "nosolve" "nobench"
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
+--getjobxml -Downloads an XML file representing a specific job
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+
 --polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved 
 archives will have name given plus "-info" or "-output" and an integer.
 REQUIRED: "id", "out", "t" 
@@ -337,6 +343,12 @@ OPTIONAL: "n" "d"
 				ID and is required. The ID of the newly created spaces will NOT be printed, even if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: None
+
+--pushjobxml -This command is used for uploading  a job XML. The parameter "id" refers to a space 
+				
+REQUIRED: "f" "id"
+OPTIONAL: None
+
 
 Delete Commands
 ---------------
@@ -414,7 +426,7 @@ varied set of parameters.
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
 REQUIRED: "id"  "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause"
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause" "seed"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r pause='
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.
@@ -474,6 +486,7 @@ List Commands
 -------------
 
 These commands will print the contents of a given space to the console. IDs and names will be printed.
+All lists are terminated by the newline character "\n".
 Every command in this category requires the "id" parameter, specifying a space. The parameter "limit"
 is optional, and indicates that at most "limit" primitives should be printed. An example is given below
 
@@ -495,6 +508,10 @@ OPTIONAL: "limit"
 
 --lssolvers -Lists the IDs and names of all solvers in the space.
 REQUIRED: ("id" OR "u")
+OPTIONAL: "limit"
+
+--lssolverconfigs -Lists the IDs and names of all configurations of a solver (id refers to a solver's id)
+REQUIRED: "id"
 OPTIONAL: "limit"
 
 --lssubspaces -Lists the IDs and names of all subspaces in the space the current user is authorized to see

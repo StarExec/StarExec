@@ -81,6 +81,8 @@ public class R {
 	
     // Global path information
     public static String SOLVER_PATH = null;								// The top-level directory in which to save the solver file(s)
+    public static String SOLVER_BUILD_OUTPUT_DIR=null;                      // The top-level directory in which to save solver build script output
+    public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
     public static String BENCHMARK_PATH = null;								// The top-level directory in which to save the benchmark file(s)
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
@@ -100,7 +102,9 @@ public class R {
     public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = null;
-    //Admin user info
+	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
+    
+	//Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
     public static String ADMIN_USER_PASSWORD = "admin";			
     public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue

@@ -650,6 +650,7 @@ public class Queues {
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));	
 				j.setPrimarySpace(results.getInt("primary_space"));
+				j.setSeed(results.getLong("seed"));
 				j.getQueue().setId(results.getInt("queue_id"));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));

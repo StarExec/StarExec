@@ -191,7 +191,7 @@ public class BenchmarkUploader extends HttpServlet {
 						return null;
 					}
 				}
-
+				Uploads.processingBegun(statusId);
 				if (!hasDependencies){	
 					benchmarkIds.addAll(Benchmarks.add(results, spaceId, statusId));
 				}
@@ -245,8 +245,7 @@ public class BenchmarkUploader extends HttpServlet {
 		log.debug("upload status id is " + statusId);
 		
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		threadPool.execute(new Runnable() {
+		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){
 				try{
@@ -279,7 +278,6 @@ public class BenchmarkUploader extends HttpServlet {
 				}
 				finally{
 					Uploads.everythingComplete(statusId);
-					threadPool.shutdown();
 				}
 			}
 		});

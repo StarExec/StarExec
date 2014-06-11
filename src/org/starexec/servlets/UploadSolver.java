@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,12 +27,15 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -106,7 +110,7 @@ public class UploadSolver extends HttpServlet {
 				int configs = result[1];
 			
 				// Redirect based on success/failure
-				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4) {
+				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4 && return_value!=-5) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
 					if (configs == -4) { //If there are no configs
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&flag=true"));
@@ -126,6 +130,8 @@ public class UploadSolver extends HttpServlet {
 					} else if (return_value==-4) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File is too large to fit in user's disk quota");
 						//Other Error
+					} else if (return_value==-5) {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST,"Only community leaders may upload solvers with starexec_build scripts");
 					} else {
 						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
 						return;
@@ -157,17 +163,30 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	@SuppressWarnings("deprecation")	
-	
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
+			boolean build=false;
+			String buildstr=null;
 			int[] returnArray = new int[2];
 			returnArray[0] = 0;
 			returnArray[1] = 0;
+			String randomDirectory=TestUtil.getRandomAlphaString(64);
+			File sandboxDirectory=Util.getSandboxDirectory();
+			File tempDir=new File(sandboxDirectory,randomDirectory);
+			//String[] mkdirCommand=new String[6];
+			//mkdirCommand[0]="sudo";
+			//mkdirCommand[1]="-u";
+			//mkdirCommand[2]="sandbox";
+			//mkdirCommand[3]="mkdir";
+			//mkdirCommand[4]="-p";
+			//mkdirCommand[5]=tempDir.getAbsolutePath();
+			//Util.executeCommand(mkdirCommand);                          
+			tempDir.mkdirs();
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
 			FileItem item=null;
 			String name=null;
 			URL url=null;
+			Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 			if (upMethod.equals("local")) {
 				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
 			} else {
@@ -197,11 +216,11 @@ public class UploadSolver extends HttpServlet {
 			File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
 			uniqueDir = new File(uniqueDir, newSolver.getName());
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-
+			
 			newSolver.setPath(uniqueDir.getAbsolutePath());
 
 			uniqueDir.mkdirs();
-
+			
 			
 			//Process the archive file and extract
 			File archiveFile=null;
@@ -228,17 +247,84 @@ public class UploadSolver extends HttpServlet {
 				returnArray[0]=-4;
 				return returnArray;
 			}
-			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-			log.debug(uniqueDir.getAbsolutePath());
-			if (containsBuildScript(uniqueDir)) {
+			//String[] cpCmd =new String[6];
+			//cpCmd[0]="sudo";
+			//cpCmd[1]="-u";
+			//cpCmd[2]="sandbox";
+			//cpCmd[3]="cp";
+			//cpCmd[4]=archiveFile.getAbsolutePath();
+			//cpCmd[5]=tempDir.getAbsolutePath();
+			//Util.executeCommand(cpCmd);
+			FileUtils.copyFileToDirectory(archiveFile, tempDir);
+			archiveFile.delete();
+			archiveFile=new File(tempDir,archiveFile.getName());
+			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
+			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
+			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
-				List<File> authorized=new ArrayList<File>();
-				authorized.add(uniqueDir);
-				String[] command=new String[1];
-				command[0]="./"+R.SOLVER_BUILD_SCRIPT;
+				if (SolverSecurity.canUserRunStarexecBuild(userId, spaceId)!=0) {
+					FileUtils.deleteDirectory(tempDir);
+					FileUtils.deleteDirectory(uniqueDir);
+					returnArray[0]=-5;
+					return returnArray;
+				}
+				String[] chmod=new String[7];
+				chmod[0]="sudo";
+				chmod[1]="-u";
+				chmod[2]="sandbox";
+				chmod[3]="chmod";
+				chmod[4]="-R";
+				chmod[5]="u+rwx";	
+				for (File f : tempDir.listFiles()) {
+					chmod[6]=f.getAbsolutePath();
+					Util.executeCommand(chmod);
+				}
+
+				String[] lsCommand=new String[5];
+				lsCommand[0]="sudo";
+				lsCommand[1]="-u";
+				lsCommand[2]="sandbox";
+				lsCommand[3]="ls";
+				lsCommand[4]="-l";
 				
-				Util.executeSandboxedCommand(command, null, authorized,uniqueDir);
+				
+				String lsstr=Util.executeCommand(lsCommand,null,tempDir);
+				log.debug(lsstr);
+
+				String[] command=new String[4];
+				command[0]="sudo";
+				command[1]="-u";
+				command[2]="sandbox";
+				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
+				
+				buildstr=Util.executeCommand(command, null,tempDir);
 			}
+			String[] chmodCommand=new String[7];
+			chmodCommand[0]="sudo";
+			chmodCommand[1]="-u";
+			chmodCommand[2]="sandbox";
+			chmodCommand[3]="chmod";
+			chmodCommand[4]="-R";
+			chmodCommand[5]="g+rwx";	
+			for (File f : tempDir.listFiles()) {
+				chmodCommand[6]=f.getAbsolutePath();
+				Util.executeCommand(chmodCommand);
+			}
+			for (File f : tempDir.listFiles()) {
+				if (f.isDirectory()) {
+					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
+				} else {
+					FileUtils.copyFileToDirectory(f, uniqueDir);
+				}
+			}
+			
+			try {
+				FileUtils.deleteDirectory(tempDir);
+			} catch (Exception e) {
+				log.error("unable to delete temporary directory at "+tempDir.getAbsolutePath());
+				log.error(e.getMessage(),e);
+			}
+			
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 			if (DescMethod.equals("text")){
 				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
@@ -246,32 +332,23 @@ public class UploadSolver extends HttpServlet {
 				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
 				newSolver.setDescription(item_desc.getString());
 			} else {	//Upload starexec_description.txt
-				String Destination = archiveFile.getParentFile().getCanonicalPath() + File.separator;
-				String strUnzipped = "";		
-			    try {
-			        FileInputStream fis = new FileInputStream(Destination +"/" + R.SOLVER_DESC_PATH);
-			        BufferedInputStream bis = new BufferedInputStream(fis);
-			        DataInputStream dis = new DataInputStream(bis);
-			        String text;
-			        //dis.available() returns 0 if the file does not have more lines
-			        while(dis.available() !=0) {
-			            text=dis.readLine().toString();
-			            strUnzipped = strUnzipped + text;
-			        }
-			        fis.close();
-			        bis.close();
-			        dis.close();
-			    } catch (FileNotFoundException e) {
-			        log.debug("Archive description method selected, but starexec_description was not found");
-			    } catch (IOException e) {
+				try {	
+					File descriptionFile=new File(uniqueDir,R.SOLVER_DESC_PATH);
+					if (descriptionFile.exists()) {
+						String description=FileUtils.readFileToString(descriptionFile);
+						if (!Validator.isValidPrimDescription(description)) {
+					    	returnArray[0] = -3;
+					    	return returnArray;
+					    }
+					    newSolver.setDescription(description);
+					    
+					} else {
+						log.debug("description file option chosen, but file was not present");
+					}
+				} catch (Exception e) {
 			    	log.error(e.getMessage(),e);
 			    }
-			    if (!Validator.isValidPrimDescription(strUnzipped)) {
-			    	returnArray[0] = -3;
-			    	return returnArray;
-			    } else {
-			    newSolver.setDescription(strUnzipped);
-			    }
+			    
 			}
 			
 			
@@ -284,7 +361,12 @@ public class UploadSolver extends HttpServlet {
 				returnArray[1] = -4; //It is empty
 			}
 			//Try adding the solver to the database
-			int solver_Success = Solvers.add(newSolver, Integer.parseInt((String)form.get(SPACE_ID)));
+			int solver_Success = Solvers.add(newSolver, spaceId);
+			if (solver_Success>0 && build) {
+				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
+				buildOutputFile.getParentFile().mkdirs();
+				FileUtils.writeStringToFile(buildOutputFile, buildstr);
+			}
 			returnArray[0] = solver_Success;
 			return returnArray;
 		} catch (Exception e) {

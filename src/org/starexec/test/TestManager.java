@@ -130,7 +130,8 @@ public class TestManager {
 				
 				
 				TestSequence test = getTestSequence(t);
-				
+				test.clearResults();
+
 				executeTest(test);
 				isRunning.set(false);
 			}

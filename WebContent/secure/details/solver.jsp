@@ -184,6 +184,8 @@
 			
 			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 			<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
+			<a href="/${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" class="popoutLink">see build info</a>
+			
 		</c:if>
 		<c:if test="${isAdmin}">
 			<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
