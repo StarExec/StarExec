@@ -2457,7 +2457,7 @@ public class RESTHelpers {
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(solverLink));
 				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive((js.getCompleteJobPairs() +js.getCorrectJobPairs()) +" / "+js.getTotalJobPairs() ));
+				entry.add(new JsonPrimitive((js.getCorrectJobPairs()) +" / "+js.getTotalJobPairs() ));
 				entry.add(new JsonPrimitive(js.getTime()));
 				dataTablePageEntries.add(entry);
 			}

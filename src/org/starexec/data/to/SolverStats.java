@@ -35,10 +35,8 @@ public class SolverStats extends Identifiable {
 	}
 	
 	public int getTotalJobPairs() {
-		return completeJobPairs+failedJobPairs+incorrectJobPairs+incompleteJobPairs;
+		return completeJobPairs+failedJobPairs+incompleteJobPairs;
 	}
-	
-	
 	
 	public void setSolver(Solver solver) {
 		this.solver = solver;
