@@ -1840,10 +1840,71 @@ public class Jobs {
 		}
 		return null;
 	}
+
+	/**
+	 * Gets all job pairs for the given job non-recursively (simple version)
+	 * (Worker node, benchmark and solver will NOT be populated)
+	 * only populates status code id, bench id and config id
+	 * @param con The connection to make the query on 
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author Julio Cervantes
+	 */
+	protected static List<JobPair> getPairsSimple(Connection con, int jobId) throws Exception {			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		 try {
+			procedure = con.prepareCall("{CALL GetJobPairsByJobSimple(?)}");
+			procedure.setInt(1, jobId);					
+			 results = procedure.executeQuery();
+			List<JobPair> returnList = new LinkedList<JobPair>();
+
+			while(results.next()){
+			    JobPair jp = new JobPair();
+			    
+			    jp.getStatus().setCode(results.getInt("status_code"));
+			    jp.getBench().setId(results.getInt("bench_id"));
+			    jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
+			    returnList.add(jp);
+			}			
+			Common.safeClose(results);
+			return returnList;
+		} catch (Exception e) {
+			log.error("getPairsSimple says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+			
+		}
+		 return null;
+	}
+
+	/**
+	 * Gets all job pairs for the given job non-recursively (simple version to test job xml bug)
+	 * (Worker node, status, benchmark and solver will NOT be populated) 
+	 * only populates status code id, bench id and config id
+	 * @param jobId The id of the job to get pairs for
+	 * @return A list of job pair objects that belong to the given job.
+	 * @author Julio Cervantes
+	 */
+	public static List<JobPair> getPairsSimple (int jobId) {
+		Connection con = null;			
+		try {			
+			con = Common.getConnection();			
+			return getPairsSimple(con,jobId);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;		
+	}
 	
 	
 	/**
-	 * Gets all job pairs for the given job non-recursively 
+	 * Gets all job pairs for the given job non-recursively
 	 * (Worker node, benchmark and solver will NOT be populated)
 	 * @param con The connection to make the query on 
 	 * @param jobId The id of the job to get pairs for

@@ -204,6 +204,18 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 		WHERE id = _id;
 	END //	
 
+
+
+-- Retrieves basic info about job pairs for the given job id (simple version)
+-- Author: Julio Cervantes
+DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
+CREATE PROCEDURE GetJobPairsByJobCesar(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs
+		WHERE job_pairs.job_id=_id;
+	END //
+
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairsByJob;

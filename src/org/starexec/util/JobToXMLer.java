@@ -12,13 +12,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-
 import org.starexec.constants.R;
 import org.starexec.util.Util;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Status;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -163,8 +163,9 @@ public class JobToXMLer {
 		memLimit.setValue(Double.toString(Util.bytesToGigabytes(Jobs.getMaximumMemory(job.getId()))));
 		jobElement.setAttributeNode(memLimit);
 		
-		List<JobPair> pairs= Jobs.getPairsDetailed(job.getId());
-		log.info("Lenght of jobpairs list: " + pairs.size());
+		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
+		log.info("Length of jobpairs list Cesar: " + pairs.size());
+		int count = 1;
 		
 		for (JobPair jobpair:pairs){
 			Element jp = doc.createElement("JobPair");
@@ -178,6 +179,8 @@ public class JobToXMLer {
 			jp.setAttributeNode(configID);
 
 			jobElement.appendChild(jp);
+			log.info("jobpair #" + count + " : " + jobpair.getStatus().getCode().getVal() + " " + jobpair.getStatus().getDescription() );
+			count++;
 		}
 		
 		return jobElement;
