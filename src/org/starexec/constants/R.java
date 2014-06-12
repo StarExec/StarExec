@@ -69,6 +69,10 @@ public class R {
     public static String EMAIL_USER = null;
     public static String EMAIL_PWD = null;
 	
+    // http properties
+    public static String HTTP_PROXY_HOST = "https://proxy.divms.uiowa.edu";
+    public static String HTTP_PROXY_PORT = "8888";
+
     // MySQL properties
     public static String MYSQL_DATABASE = null;								// Name of the MySQL database
     public static String MYSQL_URL = null;									// MySQL connection string for JDBC
