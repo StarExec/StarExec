@@ -61,7 +61,7 @@ LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 # The benchmark's name
 BENCH_NAME="${BENCH_PATH##*/}"
 
-BENCH_FILE_EXTENSION="${BENCH_PATH##.}"
+BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
 
 # The path to the benchmark on the execution host 
 LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
