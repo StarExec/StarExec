@@ -510,7 +510,7 @@ OPTIONAL: "limit"
 REQUIRED: ("id" OR "u")
 OPTIONAL: "limit"
 
---lssolverconfigs -Lists the IDs and names of all configurations of a solver (id refers to a solver's id)
+--lsconfigs -Lists the IDs and names of all configurations of a solver (id refers to a solver's id)
 REQUIRED: "id"
 OPTIONAL: "limit"
 

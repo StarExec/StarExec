@@ -603,10 +603,12 @@ public abstract class JobManager {
 		for (Benchmark b : benchmarks) {
 			log.debug("BENCH PATH = " + b.getPath());
 			for (Solver s : solvers) {
+			    log.debug("solver = " + s.getName());
 				// Get the configurations for the current solver
 				configs = Solvers.getConfigsForSolver(s.getId());
 				for (Configuration c : configs) {
 
+				    log.debug("configuration = " + c.getName());
 					Solver clone = JobManager.cloneSolver(s);
 					// Now we're going to work with this solver with this configuration
 					clone.addConfiguration(c);

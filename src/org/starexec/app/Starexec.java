@@ -105,8 +105,8 @@ public class Starexec implements ServletContextListener {
 		    log.info("Created GridEngine session");
 		}
 
-		System.setProperty("http.proxyHost","https://proxy.divms.uiowa.edu");
-		System.setProperty("http.proxyPort","443");
+		System.setProperty("http.proxyHost",R.HTTP_PROXY_HOST);
+		System.setProperty("http.proxyPort",R.HTTP_PROXY_PORT);
 
 		// Schedule necessary periodic tasks to run
 		this.scheduleRecurringTasks();		
@@ -219,8 +219,11 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.HOURS);
-		   // taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-		    taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
+		    // taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
+
+		    // this task seems to have a number of problems currently, such as leaving jobs paused after it runs
+		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
+
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		}
 		

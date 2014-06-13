@@ -103,12 +103,13 @@ public class Communities {
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
 			
+			int community;
 			if (results.next()) {
-			    int ret = results.getInt("community");
+			    community = results.getInt("community");
 			    Common.safeClose(results);
 			    Common.safeClose(procedure);
 			    procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");
-			    procedure.setInt(1, ret);
+			    procedure.setInt(1, community);
 			    results = procedure.executeQuery();
 			} else {
 				log.error("We were unable to find the community for the space ="+id);
@@ -128,10 +129,10 @@ public class Communities {
 			else {
 			        Common.safeClose(procedure);
 				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?)}");
-				procedure.setInt(1, id);
+				procedure.setInt(1, community);
 				procedure.setInt(2, 1);
-				procedure.setInt(3, 1);
-				procedure.setInt(4, 1);
+				procedure.setInt(3, 10);
+				procedure.setInt(4, 10);
 				procedure.setInt(5, 0);
 				procedure.setObject(6, null);
 				procedure.setLong(7,1073741824); //memory initialized to 1 gigabyte

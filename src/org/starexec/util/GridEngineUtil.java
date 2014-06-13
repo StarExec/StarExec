@@ -137,6 +137,7 @@ public class GridEngineUtil {
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		} 
+		log.info("Completed loading the queue details into the db");
 	}
 
 	/**
@@ -146,15 +147,12 @@ public class GridEngineUtil {
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 
-		// Call SGE to get info on the queues
-		//String results = Util.bufferToString(Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name));
+		log.info("Updating the DB with associations between SGE queues to compute nodes.");
 
 		String[] envp = new String[2];
 		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
 		envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
 		String results = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
-		//String results = testString;
-		log.info("Updating the DB with associations between SGE queues to compute nodes.");
 
 		// Parse the output from the SGE call to get the child worker nodes
 		java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
@@ -171,6 +169,7 @@ public class GridEngineUtil {
 			Queues.associate(capture[0], capture[1]);
 		}
 
+		log.info("Completed updating the DB with associations between SGE queues to compute nodes.");
 		return true;
 	}
 
@@ -228,6 +227,7 @@ public class GridEngineUtil {
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
+		log.info("Completed loading info for worker nodes into db");
 	}
 
 	/**

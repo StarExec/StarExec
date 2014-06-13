@@ -790,7 +790,7 @@ function initializePanels() {
 			});
 			
 		});
-		$(".panelField").expandable();
+		$(".panelField").expandable(true);
 	});
 	
 }

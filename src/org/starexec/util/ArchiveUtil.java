@@ -148,10 +148,8 @@ public class ArchiveUtil {
 				unzipCmd[4] = fileName;
 				unzipCmd[5] = "-d";
 				unzipCmd[6] = destination;
-				log.debug("about to execute command tar command");
+				log.debug("about to execute command unzip command");
 				Util.executeCommand(unzipCmd);
-				//results = Util.bufferToString(reader);
-				//log.debug("command was executed, results = " + results);
 				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
 				

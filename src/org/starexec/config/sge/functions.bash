@@ -61,8 +61,10 @@ LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 # The benchmark's name
 BENCH_NAME="${BENCH_PATH##*/}"
 
-# The path to the benchmark on the execution host
-LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark"
+BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
+
+# The path to the benchmark on the execution host 
+LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
 
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
@@ -141,7 +143,10 @@ function cleanWorkspace {
 }
 
 function sendStatus {
-    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)"
+    fi
 	log "sent job status $1 to $REPORT_HOST"
 	return $?
 }
@@ -187,36 +192,44 @@ done < $1
 }
 
 
-# updates stats for the pair - parameter is watcher.out from runsolver
+# updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
 # Ben McCune
 function updateStats {
 
-if [ -z $1 ]; then
-  log "No argument passed"
-  exit 1
-fi
 
-WALLCLOCK_TIME=`awk '/Real time \(s\):/ { print $4 }' $1`
-CPU_TIME=`awk '/CPU time \(s\):/ { print $4 }' $1`
-CPU_USER_TIME=`awk '/CPU user time \(s\):/ { print $5 }' $1`
-SYSTEM_TIME=`awk '/CPU system time \(s\):/ { print $5 }' $1`
-MAX_VIRTUAL_MEMORY=`awk '/Max. virtual memory/ { print $9 }' $1`
-MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $1`
-PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $1`
-PAGE_FAULTS=`awk '/page faults/ { print $3 }' $1`
-BLOCK_INPUT=`awk '/block input/ { print $4 }' $1`
-BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $1`
-VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $1`
-INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $1`
+WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
+CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
+CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
+SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
+MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+
+MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
+PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
+PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
+BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
+BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
+VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
+INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
+
+# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
+if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
+if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
+if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
+if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
+if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
+if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
+if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
 log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $PAGE_RECLAIMS, $PAGE_FAULTS, $BLOCK_INPUT, $BLOCK_OUTPUT, $VOL_CONTEXT_SWITCHES, $INVOL_CONTEXT_SWITCHES)\""
 
 if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $PAGE_RECLAIMS, $PAGE_FAULTS, $BLOCK_INPUT, $BLOCK_OUTPUT, $VOL_CONTEXT_SWITCHES, $INVOL_CONTEXT_SWITCHES)" ; then
-log "Error copying stats from watchfile into database. Copying watchfile to log {"
+log "Error copying stats from watchfile into database. Copying varfile to log {"
 cat $1
+log "} End varfile."
+log "Copying watchfile to log {"
+cat $2
 log "} End watchfile."
-
 fi
 
 #log "job is $JOB_ID"

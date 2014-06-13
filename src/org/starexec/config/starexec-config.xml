@@ -91,6 +91,7 @@
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_astump" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+		<property key="SANDBOX_DIRECTORY" value="/home/astump/starexec_astump_data/sandbox"/>
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_astump"/>

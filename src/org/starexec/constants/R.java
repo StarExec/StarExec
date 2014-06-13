@@ -69,6 +69,10 @@ public class R {
     public static String EMAIL_USER = null;
     public static String EMAIL_PWD = null;
 	
+    // http properties
+    public static String HTTP_PROXY_HOST = "https://proxy.divms.uiowa.edu";
+    public static String HTTP_PROXY_PORT = "8888";
+
     // MySQL properties
     public static String MYSQL_DATABASE = null;								// Name of the MySQL database
     public static String MYSQL_URL = null;									// MySQL connection string for JDBC
@@ -136,7 +140,7 @@ public class R {
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
     public static boolean RUN_PERIODIC_SGE_TASKS = true;  // should we run SGE tasks (see app/Starexec.java)
-    public static int CLUSTER_UPDATE_PERIOD = 60;							// How often (in seconds) to update the cluster's current usage status
+    public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
     public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
     public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes

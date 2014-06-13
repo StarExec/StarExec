@@ -180,7 +180,7 @@ public class R {
 	
 	//listing commands
 	public static String COMMAND_LISTSOLVERS="lssolvers";
-        public static String COMMAND_LISTSOLVERCONFIGS="lssolverconfigs";
+        public static String COMMAND_LISTSOLVERCONFIGS="lsconfigs";
 	public static String COMMAND_LISTPRIMITIVES="ls";
 	public static String COMMAND_LISTBENCHMARKS="lsbenchmarks";
 	public static String COMMAND_LISTJOBS="lsjobs";

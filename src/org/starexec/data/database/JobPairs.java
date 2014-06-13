@@ -247,7 +247,7 @@ public class JobPairs {
 		try {
 			double db1=0;
 			double db2=0;
-			if (sortIndex==4) {
+			if (sortIndex==2) {
 				db1=jp1.getWallclockTime();
 				db2=jp2.getWallclockTime();
 			}
@@ -712,7 +712,7 @@ public class JobPairs {
 	 * @param sortColumn The column to sort on. 0 = benchmark name
 	 * 0 = benchmark name
 	 * 1 = status name
-	 * 2 = cpu time
+	 * 2 = wallclock time
 	 * 3 = starexec-result attr
 	 * any other = solver name
 	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
@@ -748,7 +748,7 @@ public class JobPairs {
 	/**
 	 * Sorts the given list of job pairs on the column given by the integer sortColumn
 	 * @param pairs The list  of pairs to sort
-	 * @param sortColumn The 
+	 * @param sortColumn Determines what attribute pairs are sorted on.
 	 * @param Whether to sort ASC or DESC
 	 * @return
 	 */

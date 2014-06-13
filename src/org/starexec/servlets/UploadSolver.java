@@ -260,6 +260,7 @@ public class UploadSolver extends HttpServlet {
 			archiveFile=new File(tempDir,archiveFile.getName());
 			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
 			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
+			//ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
 			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
 				if (SolverSecurity.canUserRunStarexecBuild(userId, spaceId)!=0) {
@@ -319,7 +320,7 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			try {
-				FileUtils.deleteDirectory(tempDir);
+			    FileUtils.deleteDirectory(tempDir);
 			} catch (Exception e) {
 				log.error("unable to delete temporary directory at "+tempDir.getAbsolutePath());
 				log.error(e.getMessage(),e);
