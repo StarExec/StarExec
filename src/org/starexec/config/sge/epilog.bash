@@ -28,7 +28,9 @@ whoami
 #TODO: sandbox1 or 2.
 SANDBOX=1
 
+# runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
+VARFILE="$STAREXEC_OUT_DIR"/var.out
 
 # /////////////////////////////////////////////
 # Functions
@@ -48,7 +50,7 @@ function copyOutput {
 	log "copying output to $RZ_OUT_DIR"
 	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
 	log "job output copy complete - now sending stats"
-	updateStats $WATCHFILE
+	updateStats $VARFILE $WATCHFILE
 	if [ "$POST_PROCESSOR_PATH" != "null" ]; then
 		log "getting postprocessor"
 		mkdir $STAREXEC_OUT_DIR/postProcessor
