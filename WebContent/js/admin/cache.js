@@ -17,6 +17,13 @@ function initUI(){
 		}
 	});
 	
+	$("#clearStatsCache").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	
+	
 	$("#clearAll").click(function() {
 		$.post(
 				starexecRoot+"services/cache/clearAll",
@@ -50,6 +57,23 @@ function initUI(){
 		);
 		unselectAllRows(typeTable);
 	});
+	
+	$("#clearStatsCache").click(function() {
+		$.post(
+			starexecRoot+"services/cache/clearStats",
+			{},
+			function(returnCode) {
+				if (returnCode=="0") {
+					showMessage("success"," cache cleared successfully",5000);
+				} else {
+					showMessage("error","There was an error while trying to clear the cache",5000);
+				}
+			},
+			"json"
+		);
+		unselectAllRows(typeTable);
+	});
+	
 	
 	typeTable=$('#tableTypes').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',

@@ -61,7 +61,8 @@
 		<fieldset id="actionField">
 			<legend>actions</legend>
 			<button id="clearSelected">Clear Selected Types</button>	
-			<button id="clearAll">Clear Entire Cache</button>	
+			<button id="clearAll">Clear Entire Cache</button>
+			<button id="clearStatsCache">Clear Job Stats</button>	
 		</fieldset>		
 	
 </star:template>

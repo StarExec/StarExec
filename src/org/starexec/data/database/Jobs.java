@@ -284,8 +284,8 @@ public class Jobs {
 		Connection con=null;
 		try {
 			//Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
-			
 			con=Common.getConnection();
+			Jobs.removeCachedJobStats(jobId,con);
 			return delete(jobId,con);
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
@@ -3330,6 +3330,42 @@ public class Jobs {
 			log.error("removeCachedJobStats says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	public static boolean removeAllCachedJobStats(Connection con) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL RemoveAllJobStats()}");
+			procedure.executeUpdate();
+			Common.safeClose(procedure);
+			
+			return true;
+		} catch (Exception e) {
+			log.error("removeCachedJobStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Removes the cached job results for every job
+	 * @return True if successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean removeAllCachedJobStats() {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return removeAllCachedJobStats(con);
+			
+		} catch (Exception e) {
+			log.error("removeAllCachedJobStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
 		}
 		return false;
 	}
