@@ -225,7 +225,7 @@ then
 
 echo "truncating max memory from requested $MAX_MEM to $NODE_MEM (half max memory on the node)"
 
-MAX_MEM=$NODE_MEM
+export MAX_MEM=$NODE_MEM
 
 fi
 
