@@ -3780,13 +3780,13 @@ public class RESTServices {
 	@Path("/admin/pauseAll")
 	@Produces("application/json")
 	public String pauseAll(@Context HttpServletRequest request) {
-		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
 		
 		int status=JobSecurity.canUserPauseAllJobs(userId);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
+		log.info("Pausing all jobs in admin/pauseAll REST service");
 		return Jobs.pauseAll() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
