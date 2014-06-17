@@ -2907,6 +2907,10 @@ public class Jobs {
 			    	//was correct or incorrect
 			    	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.containsKey(R.EXPECTED_RESULT)) {
 			    		log.debug("found a pair with both an expected result and a result!");
+			    		if (attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
+			    			//don't know the result, so don't mark as correct or incorrect.
+			    			continue;
+			    		}
 			    		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
 			    			curSolver.incrementIncorrectJobPairs();
 			    		} else {

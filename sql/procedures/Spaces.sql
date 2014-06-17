@@ -146,7 +146,7 @@ CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 				(SELECT MIN(id)
 				FROM spaces);
 		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
-			SELECT spaces.name,spaces.description,spaces.locked,spaces.id 
+			SELECT UNIQUE spaces.name,spaces.description,spaces.locked,spaces.id 
 			FROM closure
 				JOIN spaces ON spaces.id=closure.descendant
 				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 

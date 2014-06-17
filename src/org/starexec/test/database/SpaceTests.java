@@ -22,6 +22,8 @@ public class SpaceTests extends TestSequence {
 	Space subspace=null;
 	User leader=null;
 	User admin=null;
+	User member1=null;
+	User member2=null;
 	@Test
 	private void getSpaceTest() {
 		Space test=Spaces.get(community.getId());
@@ -31,7 +33,12 @@ public class SpaceTests extends TestSequence {
 		Assert.assertNotNull(test);
 		Assert.assertEquals(community.getId(), test.getId());
 	}
-	
+	@Test
+	private void getSpaceHierarchyTest() {
+		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
+		Assert.assertEquals(2, spaces.size());
+		
+	}
 	@Test
 	private void getAllSpacesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
@@ -176,15 +183,25 @@ public class SpaceTests extends TestSequence {
 	@Override
 	protected void setup() {
 		leader=ResourceLoader.loadUserIntoDatabase();
+		member1=ResourceLoader.loadUserIntoDatabase();
+		member2=ResourceLoader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
 		community = ResourceLoader.loadSpaceIntoDatabase(leader.getId(), 1);	
 		subspace=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		Users.associate(member1.getId(), community.getId());
+		Users.associate(member2.getId(), community.getId());
+		Users.associate(member1.getId(), subspace.getId());
+		Users.associate(member2.getId(), subspace.getId());
+
 	}
 	
 	@Override
 	protected void teardown() {
 		Users.deleteUser(leader.getId(),admin.getId());
-		
+		Users.deleteUser(member1.getId(),admin.getId());
+		Users.deleteUser(member2.getId(),admin.getId());
+		Spaces.removeSubspaces(subspace.getId(), 1, Users.getAdmins().get(0).getId());
+
 		boolean success=Spaces.removeSubspaces(community.getId(), 1, Users.getAdmins().get(0).getId());
 		Assert.assertTrue(success);
 	}
