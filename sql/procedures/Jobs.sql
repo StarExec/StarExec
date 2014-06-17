@@ -145,7 +145,14 @@ CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT)
 			JOIN solvers AS solver ON solver.id=config.solver_id
 		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
-
+-- Clears the entire cache of job stats
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveAllJobStats;
+CREATE PROCEDURE RemoveAllJobStats()
+	BEGIN
+		DELETE FROM job_stats;
+	END //
+	
 -- Removes the cached job results for the hierarchy rooted at the given job space
 -- Author: Eric Burns	
 

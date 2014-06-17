@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="starexec help">
+<star:template title="StarExec Support">
 	
 		<style type="text/css">
 			#content a:link {
@@ -15,25 +15,37 @@
 				padding: 3px;
 			}
 		</style>		
-		<p>Some of the documentation below needs to be updated, but this should still be helpful.  We are also working to create on-page documentation, via the help link at the top of the page. </p>
-		<br/><br/>		
+    <br>		
 		<li>
-			<a href="http://starexec.cs.uiowa.edu/starexec/public/quickReference.jsp">quick reference</a>
+			<a href="/${starexecRoot}/secure/help.jsp">On-page documentation</a>, 
+			also available via the Help link at the top of the page
+			<br><br>
 		</li>
 		<li>
-			<a href="http://wiki.uiowa.edu/display/stardev/User+Guide">user guide</a>
+			<a href="/${starexecRoot}/public/quickReference.jsp">Quick Reference</a>
+			<br><br>
+		</li>
+		<li>
+			<a href="http://wiki.uiowa.edu/display/stardev/User+Guide">User Guide</a>, 
+			detailed description of StarExec features and functionality
+			<br><br>
 		</li>		
 		<li>
-			<a href="http://wiki.uiowa.edu/display/stardev/Home">public dev wiki</a>
-		</li>
-
-		<li>
-			<a href="http://starexec.wordpress.com">StarExec blog</a>, for upcoming features and current issues
+			<a href="http://starexec.wordpress.com">StarExec Blog</a>, 
+			for upcoming features and current issues
+			<br><br>
 		</li>
 		<li>
-			<a href="http://starexec.forumotion.com">StarExec Forum for questions, bug reports, feature requests</a>
+			<a href="http://starexec.forumotion.com">StarExec Forum</a>, 
+			for questions, bug reports, feature requests
+			<br><br>
+		</li>
+		<li>
+			<a href="http://wiki.uiowa.edu/display/stardev/Home">Public Developers Wiki</a>, 
+			for those intestered in development aspects
+			<br>
 		</li>
 		<br/><br/>
-		<p>this build was last updated on ${buildDate}</p>
+		<!-- <p>this build was last updated on ${buildDate}</p> -->
 
 </star:template>

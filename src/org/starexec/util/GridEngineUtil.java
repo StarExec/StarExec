@@ -794,7 +794,7 @@ public class GridEngineUtil {
 
     public static void moveNodes(QueueRequest req, HashMap<WorkerNode, Queue> NQ) {
 	String queueName = req.getQueueName();
-	log.debug("moveNodes begins, for queue "+queueName);
+	log.info("moveNodes begins, for queue "+queueName);
 	String[] split = queueName.split("\\.");
 	String shortQueueName = split[0];
 	List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
@@ -827,7 +827,7 @@ public class GridEngineUtil {
 		    List<WorkerNode> workers = Cluster.getNodesForQueue(queue.getId());
 		    if (workers != null) {
 			if (workers.size() == 1 ) {
-			    log.debug("checking for jobs running on queue "+queueName+", since this is the last node in the queue.");
+			    log.info("checking for jobs running on queue "+queueName+", since this is the last node in the queue.");
 			    List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
 			    if (jobs != null) {
 				for (Job j : jobs) {

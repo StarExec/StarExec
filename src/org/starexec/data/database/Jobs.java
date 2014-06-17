@@ -284,8 +284,8 @@ public class Jobs {
 		Connection con=null;
 		try {
 			//Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
-			
 			con=Common.getConnection();
+			Jobs.removeCachedJobStats(jobId,con);
 			return delete(jobId,con);
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
@@ -2704,42 +2704,43 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	
-	protected static boolean pause(int jobId, Connection con) {
-		CallableStatement procedure = null;
-		try {
-			 procedure = con.prepareCall("{CALL PauseJob(?)}");
-			procedure.setInt(1, jobId);		
-			procedure.executeUpdate();	
+    protected static boolean pause(int jobId, Connection con) {
+	log.info("Pausing job "+new Integer(jobId));
+	CallableStatement procedure = null;
+	try {
+	    procedure = con.prepareCall("{CALL PauseJob(?)}");
+	    procedure.setInt(1, jobId);		
+	    procedure.executeUpdate();	
 
-			log.debug("Pausation of job id = " + jobId + " was successful");
+	    log.debug("Pausation of job id = " + jobId + " was successful");
 			
-			//Get the enqueued job pairs and remove them
-			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
-			for (JobPair jp : jobPairsEnqueued) {
-				int sge_id = jp.getGridEngineId();
-				Util.executeCommand("qdel " + sge_id);
-				log.debug("enqueued: Just executed qdel " + sge_id);
-				JobPairs.UpdateStatus(jp.getId(), 20);
-			}
-			//Get the running job pairs and remove them
-			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
-			if (jobPairsRunning != null) {
-				for (JobPair jp: jobPairsRunning) {
-					int sge_id = jp.getGridEngineId();
-					Util.executeCommand("qdel " + sge_id);
-					log.debug("running: Just executed qdel " + sge_id);
-					JobPairs.UpdateStatus(jp.getId(), 20);
-				}
-			}
-			log.debug("Deletion of paused job pairs from queue was succesful");
-			return true;
-		} catch (Exception e) {
-			log.error("Pause Job says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
+	    //Get the enqueued job pairs and remove them
+	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
+	    for (JobPair jp : jobPairsEnqueued) {
+		int sge_id = jp.getGridEngineId();
+		Util.executeCommand("qdel " + sge_id);
+		log.debug("enqueued: Just executed qdel " + sge_id);
+		JobPairs.UpdateStatus(jp.getId(), 20);
+	    }
+	    //Get the running job pairs and remove them
+	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
+	    if (jobPairsRunning != null) {
+		for (JobPair jp: jobPairsRunning) {
+		    int sge_id = jp.getGridEngineId();
+		    Util.executeCommand("qdel " + sge_id);
+		    log.debug("running: Just executed qdel " + sge_id);
+		    JobPairs.UpdateStatus(jp.getId(), 20);
 		}
-		return false;
+	    }
+	    log.debug("Deletion of paused job pairs from queue was succesful");
+	    return true;
+	} catch (Exception e) {
+	    log.error("Pause Job says "+e.getMessage(),e);
+	} finally {
+	    Common.safeClose(procedure);
 	}
+	return false;
+    }
 	
 	public static boolean isTestJob(int jobId) {
 		return Users.isTestUser(Jobs.get(jobId).getUserId());
@@ -2756,6 +2757,7 @@ public class Jobs {
 	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
+		log.info("Pausing all jobs");
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL PauseAll()}");
@@ -3330,6 +3332,42 @@ public class Jobs {
 			log.error("removeCachedJobStats says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	public static boolean removeAllCachedJobStats(Connection con) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL RemoveAllJobStats()}");
+			procedure.executeUpdate();
+			Common.safeClose(procedure);
+			
+			return true;
+		} catch (Exception e) {
+			log.error("removeCachedJobStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Removes the cached job results for every job
+	 * @return True if successful, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean removeAllCachedJobStats() {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return removeAllCachedJobStats(con);
+			
+		} catch (Exception e) {
+			log.error("removeAllCachedJobStats says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
 		}
 		return false;
 	}

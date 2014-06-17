@@ -97,7 +97,7 @@
 							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
 						</td>
 					</tr>
-					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The maximum of this value and half the available memory on the nodes will be used.">
+					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The minimum of this value and half the available memory on the nodes will be used.">
 						<td class="label"><p>maximum memory</p></td>
 						<td>	
 							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>

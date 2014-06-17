@@ -44,7 +44,6 @@
                         <property key="RUN_PERIODIC_SGE_TASKS" value="true"/>
 			<property key="SGE_ROOT" value="/cluster/sge-6.2u5" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
-			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
 			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
@@ -69,11 +68,13 @@
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
+			<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
    		</class>
     </configuration>
 	<configuration name="stardev" inherit="common_core">
    		<class name="org.starexec.constants.R">   		
 			<property key="PUBLIC_USER_ID" value="3" /> 
+			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 	  		<property key="PUBLIC_SPACE_ID" value="3" />
 	  		<property key="TEST_USER_ID" value="4"/>
 	  		<property key="TEST_USER_PASSWORD" value="Starexec4ever"/>
@@ -106,6 +107,28 @@
                 <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/astump/starexec_astump_data/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/astump/starexec_astump_data/batchSpace/uploads" />           
+		</class>
+	</configuration>
+	<configuration name="stardev_tinelli" inherit="stardev">
+		<class name="org.starexec.constants.R">
+                <!-- MYSQL Configuration -->   
+                <property key="MYSQL_DATABASE" value="starexec_tinelli" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tinelli?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+		<property key="SANDBOX_DIRECTORY" value="/home/tinelli/starexec_tinelli_data/sandbox"/>
+		<property key="PUBLIC_USER_ID" value="3" /> 
+                <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
+                <property key="STAREXEC_APPNAME" value="starexec_tinelli"/>
+                <property key="BENCHMARK_PATH" value="/home/tinelli/starexec_tinelli_data/Benchmarks" />
+                <property key="SOLVER_PATH" value="/home/tinelli/starexec_tinelli_data/Solvers" />
+                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/tinelli/starexec_tinelli_data/Solvers/buildoutput"/>
+                <property key="PROCESSOR_DIR" value="/home/tinelli/starexec_tinelli_data/processor_scripts" />           
+		<property key="STAREXEC_DATA_DIR" value="/home/tinelli/starexec_tinelli_data" />
+                <property key="JOB_INBOX_DIR" value="/home/tinelli/starexec_tinelli_data/jobin" />
+                <property key="JOB_OUTPUT_DIR" value="/home/tinelli/starexec_tinelli_data/jobout" />     
+		<property key="NEW_JOB_OUTPUT_DIR" value="/home/tinelli/starexec_tinelli_data/joboutput"/>	
+                <property key="JOB_LOG_DIR" value="/home/tinelli/starexec_tinelli_data/joboutput/logs" />
+                <property key="PICTURE_PATH" value="/home/tinelli/starexec_tinelli_data/pictures" /> 
+                <property key="BATCH_SPACE_XML_DIR" value="/home/tinelli/starexec_tinelli_data/batchSpace/uploads" />           
 		</class>
 	</configuration>
 

@@ -2235,7 +2235,7 @@ public class Benchmarks {
 			public void run(){
 				try {
 				    process(s,proc,h,u,c,st,l);
-					Uploads.everythingComplete(st);
+				    Uploads.everythingComplete(st);
 				} catch (Exception e) {
 					
 				}
@@ -2262,7 +2262,7 @@ public class Benchmarks {
 				    boolean isCommunityLeader) {
 	    Connection con=null;
 		
-	    log.debug("Processing benchmarks in space "+new Integer(spaceId));
+	    log.info("Processing benchmarks in space "+new Integer(spaceId));
 	    if (isCommunityLeader)
 		log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
 
