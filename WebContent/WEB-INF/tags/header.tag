@@ -9,7 +9,7 @@
 			<ul>
 				<c:if test="${user.role == 'admin'}">
 				<li class="round">
-					<a href="#">admin</a>  
+					<a href="#">Admin</a>  
 			        <ul class="subnav round">  
 			            <li class="round"><a href="/${starexecRoot}/secure/admin/user.jsp">Users</a></li>  
 			            <li class="round"><a href="/${starexecRoot}/secure/admin/cluster.jsp">Cluster</a></li>
