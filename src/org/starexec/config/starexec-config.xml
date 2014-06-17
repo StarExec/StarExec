@@ -44,7 +44,6 @@
                         <property key="RUN_PERIODIC_SGE_TASKS" value="true"/>
 			<property key="SGE_ROOT" value="/cluster/sge-6.2u5" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
-			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
 			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
@@ -69,11 +68,13 @@
 	  		<property key="NUM_JOB_SCRIPTS" value="800" />
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
+			<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
    		</class>
     </configuration>
 	<configuration name="stardev" inherit="common_core">
    		<class name="org.starexec.constants.R">   		
 			<property key="PUBLIC_USER_ID" value="3" /> 
+			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 	  		<property key="PUBLIC_SPACE_ID" value="3" />
 	  		<property key="TEST_USER_ID" value="4"/>
 	  		<property key="TEST_USER_PASSWORD" value="Starexec4ever"/>
