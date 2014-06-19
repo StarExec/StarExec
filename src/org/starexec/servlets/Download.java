@@ -698,7 +698,13 @@ public class Download extends HttpServlet {
 			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
 			ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
 			if(tempDir.exists()){
-				FileUtils.deleteQuietly(tempDir);
+				try {
+					FileUtils.deleteDirectory(tempDir);
+
+				} catch (Exception e) {
+					log.error("unable to delete directory because "+e.getMessage(),e);
+				}
+				
 			}
 			
 			

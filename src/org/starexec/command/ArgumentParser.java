@@ -8,6 +8,7 @@ package org.starexec.command;
  */
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -652,21 +653,23 @@ class ArgumentParser {
 	 * @author Julio Cervantes
 	 */
 	
-    protected int uploadXML(HashMap<String, String> commandParams,boolean isJobXML) {
-		try {
-		   
+    protected List<Integer> uploadXML(HashMap<String, String> commandParams,boolean isJobXML) {
+		   List<Integer> fail=new ArrayList<Integer>();
+
+    	try {
 			int valid=Validator.isValidUploadXMLRequest(commandParams);
 			if (valid<0) {
-				return valid;
+				fail.add(valid);
+				return fail;
 			}
 			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
 			
 		} catch (Exception e) {
 
-		    System.out.println("ArgumentParser.java : " +e);
+		    //System.out.println("ArgumentParser.java : " +e);
 		  
-		    
-			return Status.ERROR_SERVER;
+		    fail.add(Status.ERROR_SERVER);
+			return fail;
 		}
 	}
 	

@@ -20,6 +20,7 @@ public class SpaceTests extends TestSequence {
 	
 	Space community=null;
 	Space subspace=null;
+	Space subspace2=null;
 	User leader=null;
 	User admin=null;
 	User member1=null;
@@ -188,11 +189,13 @@ public class SpaceTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		community = ResourceLoader.loadSpaceIntoDatabase(leader.getId(), 1);	
 		subspace=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		subspace2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
 		Users.associate(member1.getId(), community.getId());
 		Users.associate(member2.getId(), community.getId());
 		Users.associate(member1.getId(), subspace.getId());
 		Users.associate(member2.getId(), subspace.getId());
-
+		Users.associate(member1.getId(), subspace2.getId());
+		Users.associate(member2.getId(), subspace2.getId());
 	}
 	
 	@Override
@@ -201,6 +204,7 @@ public class SpaceTests extends TestSequence {
 		Users.deleteUser(member1.getId(),admin.getId());
 		Users.deleteUser(member2.getId(),admin.getId());
 		Spaces.removeSubspaces(subspace.getId(), 1, Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(subspace2.getId(), 1, Users.getAdmins().get(0).getId());
 
 		boolean success=Spaces.removeSubspaces(community.getId(), 1, Users.getAdmins().get(0).getId());
 		Assert.assertTrue(success);

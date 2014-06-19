@@ -302,11 +302,11 @@ public class BatchUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public Boolean createSpacesFromFile(File file, int userId, int parentSpaceId) throws SAXException, ParserConfigurationException, IOException{
-		
+	public List<Integer> createSpacesFromFile(File file, int userId, int parentSpaceId) throws SAXException, ParserConfigurationException, IOException{
+		List<Integer> spaceIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
 			log.warn("File from User " + userId + " is not Schema valid.");
-			return false;
+			return null;
 		}
 		
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -333,13 +333,13 @@ public class BatchUtil {
 				if (name == null) {
 					log.debug("Name not found");
 					errorMessage = "Space elements must include a 'name' attribute.";
-					return false;
+					return null;
 				}
 				log.debug("Space Name = " + name);
 				if (name.length()<1){
 					log.debug("Name was not long enough");
 					errorMessage = name + "is not a valid name.  It must have at least one character.";
-					return false;
+					return null;
 				}
 				
 			}
@@ -357,7 +357,7 @@ public class BatchUtil {
 				log.info("Solver Id = " + id + ", User can see = " + canSee);
 				if (!canSee){
 					errorMessage = "You do not have access to a solver with id = " + id;
-					return false;
+					return null;
 				}
 			}
 			else{
@@ -376,7 +376,7 @@ public class BatchUtil {
 				
 				if (!canSee){
 					errorMessage = "You do not have access to a benchmark with id = " + id;
-					return false;
+					return null;
 				}
 			}
 			else{
@@ -389,11 +389,13 @@ public class BatchUtil {
 			Node spaceNode = listOfRootSpaceElements.item(i);
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
+				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId);
+				spaceIds.add(spaceId);
 				
-				spaceCreationSuccess = spaceCreationSuccess && createSpaceFromElement(spaceElement, parentSpaceId, userId);
+				spaceCreationSuccess = spaceCreationSuccess && (spaceId!=-1);
 			}
 		}
-		return spaceCreationSuccess;
+		return spaceIds;
 	}
 	
 
@@ -406,9 +408,10 @@ public class BatchUtil {
 	 * @param spaceElement the element that 
 	 * @param parentId id of parent space
 	 * @param userId id of user making request
+	 * @return Integer the id of the new space or -1 on error
 	 * @return
 	 */
-	public Boolean createSpaceFromElement(Element spaceElement, int parentId, int userId){
+	public Integer createSpaceFromElement(Element spaceElement, int parentId, int userId){
 		Space space = new Space();
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
@@ -486,7 +489,7 @@ public class BatchUtil {
 			space.setName(baseSpaceName+appendInt);
 			if (attempt>1000) {
 				//give up
-				return false;
+				return -1;
 			}
 			attempt++;
 		}
@@ -551,7 +554,7 @@ public class BatchUtil {
 		if (!solvers.isEmpty()){
 			Solvers.associate(solvers, spaceId);
 		}	
-		return true;
+		return spaceId;
 	}
 	/**
 	 * @return doc the document object

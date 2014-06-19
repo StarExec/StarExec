@@ -53,6 +53,11 @@ class CommandParser {
 		}
 	}
 	
+	private void printID(int id) {
+		System.out.println("id="+id);
+
+	}
+	
 	/**
 	 * Handles all commands that start with "push," which are commands
 	 * for uploading things.
@@ -63,7 +68,7 @@ class CommandParser {
 	 */
 	protected int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
-		    
+		    List<Integer> ids=null;
 			int serverStatus;
 
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
@@ -74,11 +79,15 @@ class CommandParser {
 				serverStatus=parser.uploadPostProc(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
-			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
-			    serverStatus=parser.uploadXML(commandParams,false);
-
-			} else if (c.equals(R.COMMAND_PUSHJOBXML)) { 
-			    serverStatus=parser.uploadXML(commandParams,true);
+			}  else if (c.equals(R.COMMAND_PUSHSPACEXML) || c.equals(R.COMMAND_PUSHJOBXML)) {
+				
+			    ids=parser.uploadXML(commandParams,false);
+			    if (ids.size()==0){
+			    	serverStatus=Status.ERROR_INTERNAL;
+			    } else {
+			    	//if the first value is positive, it is an id and we were successful. Otherwise, it is an error code
+			    	serverStatus=Math.min(0, ids.get(0));
+			    }
 			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}
@@ -87,13 +96,18 @@ class CommandParser {
 			}
 			if (serverStatus>0) {
 				if (returnIDsOnUpload) {
-					System.out.println("id="+serverStatus);
+					printID(serverStatus);
 				}
 				return 0;
 			}
+			if (ids!=null && serverStatus==0 && returnIDsOnUpload) {
+				for (Integer id : ids) {
+					printID(id);
+				}
+			}
 			return serverStatus;
 		} catch (Exception e) {
-		    System.out.println("CommandParser.java : " + e);
+		    //System.out.println("CommandParser.java : " + e);
 			return Status.ERROR_INTERNAL;
 		}
 	}

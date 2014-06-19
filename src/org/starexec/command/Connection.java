@@ -463,11 +463,11 @@ public class Connection {
 	 * @param filePath An absolute file path to the file to upload
 	 * @param spaceID The ID of the space where the job is being uploaded to
 	 * @param isJobUpload true if job xml upload, false otherwise
-	 * @return status code (0 on success)
+	 * @return The ids of the newly created jobs. On failure, a size 1 list with a negative error code
 	 * @author Julio Cervantes
 	 */
-    public int uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
-	    
+    public List<Integer> uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
+	    List<Integer> ids=new ArrayList<Integer>();
 		try {
 		        String ext = R.URL_UPLOADSPACE;
 			if(isJobXML){
@@ -487,9 +487,6 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 
 			
-
-			
-			
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
 			
@@ -498,17 +495,21 @@ public class Connection {
 			int code = response.getStatusLine().getStatusCode();
 			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
-			        System.out.println("Connection.java : "+code);
-				return Status.ERROR_SERVER;
+			        //System.out.println("Connection.java : "+code);
+			    ids.add(Status.ERROR_SERVER);  
+				return ids;
 			}
 		        
 			
-			
-			return 0;
+			String[] newIds=HTMLParser.extractMultipartCookie(response.getAllHeaders(),"New_ID");
+			for (String s : newIds){
+				ids.add(Integer.parseInt(s));
+			}
+			return ids;
 		} catch (Exception e) {
 		    System.out.println("Connection.java : "+e);
-		    
-			return Status.ERROR_SERVER;
+		    ids.add(Status.ERROR_SERVER);  
+			return ids;
 		}
 	    
 	}

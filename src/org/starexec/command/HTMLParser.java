@@ -5,6 +5,7 @@ package org.starexec.command;
  */
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicNameValuePair;
@@ -160,7 +161,14 @@ class HTMLParser {
 		return null;
 	}
 	
-
+	protected static String[] extractMultipartCookie(Header[] headers, String cookieName) {
+		String value=extractCookie(headers,cookieName);
+		if (value==null){
+			return null;
+			
+		}
+		return value.split(",");
+	}
 	
 	/**
 	 * Given the headers of an HttpResponse and the name of a cookie,

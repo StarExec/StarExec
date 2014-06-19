@@ -2,6 +2,7 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,21 +55,23 @@ public class JobUtil {
 	 * @param file the xml file we wish to create jobs from
 	 * @param userId the userId of the user making the request
 	 * @param spaceId the space that will serve as the root for jobs to run under
-	 * @return Boolean true if the jobs are successfully created
+	 * @return List<Integer> Null on failure, and a list of jobIds on success. Some jobs may have failed,
+	 * resulting in values of -1 in the list.
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public Boolean createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
 			log.warn("File from User " + userId + " is not Schema valid.");
-			return false;
+			return null;
 		}
 		
 		Permission p = Permissions.get(userId, spaceId);
 		if (!p.canAddJob()){
 			errorMessage = "You do not have permission to create a job on this space";
-			return false;
+			return null;
 		}
 		
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -94,13 +97,13 @@ public class JobUtil {
 				if (name == null) {
 					log.debug("Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
-					return false;
+					return null;
 				}
 				log.debug("Space Name = " + name);
 				if (name.length()<2){
 					log.debug("Name was not long enough");
 					errorMessage = name + "is not a valid name.  It must have two characters.";
-					return false;
+					return null;
 				}
 				
 			}
@@ -115,12 +118,12 @@ public class JobUtil {
 			Node jobNode = listOfJobElements.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
+				jobIds.add(createJobFromElement(userId, spaceId, jobElement));
 				
-				jobCreationSuccess = jobCreationSuccess && createJobFromElement(userId, spaceId, jobElement);
 			}
 		}
 		
-		return jobCreationSuccess;
+		return jobIds;
 	}
 	
 	/**
@@ -128,14 +131,15 @@ public class JobUtil {
 	 * @param userId the ID of the user creating the job
 	 * @param spaceId the space in which the job will be created
 	 * @param jobElement the XML job element as defined in the deployed public/batchJobSchema.xsd
+	 * @return The id of the new job on success or -1 on failure
 	 * @author Tim Smith
 	 */
-	private boolean createJobFromElement(int userId, Integer spaceId,
+	private Integer createJobFromElement(int userId, Integer spaceId,
 			Element jobElement) {
 		try {
 		if (Spaces.notUniquePrimitiveName(jobElement.getAttribute("name"), spaceId, 3)) {
 			errorMessage = "Error: The job should have a unique name in the space.";
-			return false;
+			return -1;
 		}
 		
 		Job job = new Job();
@@ -204,14 +208,14 @@ public class JobUtil {
 				Benchmark b = Benchmarks.get(benchmarkId);
 				if (!Permissions.canUserSeeBench(benchmarkId, userId)){
 					errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					return false;
+					return -1;
 				}
 				jobPair.setBench(b);
 				
 				Solver s = Solvers.getSolverByConfig(configId, false);
 				if (!Permissions.canUserSeeSolver(s.getId(), userId)){
 					errorMessage = "You do not have permission to see the solver " + s.getId();
-					return false;
+					return -1;
 				}
 				
 				jobPair.setSolver(s);
@@ -227,22 +231,23 @@ public class JobUtil {
 		if (job.getJobPairs().size() == 0) {
 			// No pairs in the job means something is wrong; error out
 			errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
-			return false;
+			return -1;
 		}
 		
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		if (!submitSuccess){
 			errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
+			return -1;
 		} else if (Boolean.valueOf(jobElement.getAttribute("start-paused"))) {
 			Jobs.pause(job.getId());
 		}
-		return submitSuccess;
+		return job.getId();
 		
 		}
 		catch (Exception e) {
 			log.error(e);
 			errorMessage = "Something went wrong when creating your job.";
-			return false;
+			return -1;
 		}
 	}
 
