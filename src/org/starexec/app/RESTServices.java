@@ -1668,11 +1668,9 @@ public class RESTServices {
 			List<Integer>newSolverIds=new ArrayList<Integer>();
 			newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 			selectedSolvers=newSolverIds;
-			for (Integer id: selectedSolvers) {
-				if (id!=-1) {
-					response.addCookie(new Cookie("New_ID", String.valueOf(id)));
-				}
-			}
+			response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));
+
+		
 		}
 		
 		//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
@@ -1727,12 +1725,9 @@ public class RESTServices {
 		if (copy) {
 			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs,true);
 			List<Integer> benches=Benchmarks.copyBenchmarks(oldBenchs, requestUserId, spaceId);	
-			for (Integer id: benches) {
-				if (id!=-1) {
-					log.debug("new benchmark id = "+id);
-					response.addCookie(new Cookie("New_ID", String.valueOf(id)));
-				}
-			}
+			response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(benches)));
+
+			
 			return gson.toJson(0);
 		} else {
 			// Return a value based on results from database operation
@@ -2880,7 +2875,7 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-
+		List<Integer>newSpaceIds = new ArrayList<Integer>();
 		// Add the subSpaces to the destination space
 		if (!copyHierarchy) {
 			for (int id : selectedSubSpaces) {
@@ -2889,7 +2884,7 @@ public class RESTServices {
 				if (newSpaceId == 0){
 					return gson.toJson(ERROR_DATABASE);
 				}
-				response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
+				newSpaceIds.add(newSpaceId);
 
 			}
 		} else {
@@ -2899,10 +2894,12 @@ public class RESTServices {
 				if (newSpaceId == 0){
 					return gson.toJson(ERROR_DATABASE);
 				}
-				response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
+				newSpaceIds.add(newSpaceId);
 
 			}
 		}
+		response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(newSpaceIds)));
+
 		return gson.toJson(0);
 	}
 	

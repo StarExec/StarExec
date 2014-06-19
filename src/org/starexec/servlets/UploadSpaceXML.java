@@ -61,12 +61,8 @@ public class UploadSpaceXML extends HttpServlet {
 				
 				// Redirect based on success/failure
 				if(ids!=null) {
-					for (Integer id: ids) {
-						if (id!=-1) {
-							log.debug("new id = "+id);
-							response.addCookie(new Cookie("New_ID", String.valueOf(id)));
-						}
-					}
+					response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(ids)));
+
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Space XML - ");// + result.getErrorMessage());	

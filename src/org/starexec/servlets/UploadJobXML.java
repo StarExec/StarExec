@@ -58,12 +58,9 @@ public class UploadJobXML extends HttpServlet {
 				// Redirect based on success/failure
 				if(result!=null) {
 					//send back new ids to the user
-					for (Integer id: result) {
-						if (id!=-1) {
-							log.debug("new id = "+id);
-							response.addCookie(new Cookie("New_ID", String.valueOf(id)));
-						}
-					}
+					response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(result)));
+
+					
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Job XML - "); //+ result.getErrorMessage());	

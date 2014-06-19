@@ -167,7 +167,8 @@ class HTMLParser {
 			return null;
 			
 		}
-		return value.split(",");
+
+		return value.replace("\"", "").split(",");
 	}
 	
 	/**

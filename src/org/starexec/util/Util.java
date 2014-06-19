@@ -582,6 +582,17 @@ public class Util {
 	}
     }
 	
+    public static String makeCommaSeparatedList(List<Integer> nums) {
+    	StringBuilder sb=new StringBuilder();
+    	for (Integer id : nums) {
+    		sb.append(id);
+    		sb.append(",");
+    	}
+    	sb.delete(sb.length()-1, sb.length());
+    	return sb.toString(); 
+    	
+    }
+    
     /**
      * Deletes all files in the given directory that are as old as, or older than the specified number of days
      * @param directory The directory to clear old files out of (non-recursive)
