@@ -1634,48 +1634,52 @@ public class RESTServices {
 	@Produces("application/json")
 	
 	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request,@Context HttpServletResponse response) {
-		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
-		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
-				|| !Util.paramExists("copyToSubspaces", request)
-				|| !Util.paramExists("copy", request)
-				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
-				|| !Validator.isValidBool(request.getParameter("copy"))){
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
-		
-		// Get the id of the user who initiated the request
-		int requestUserId = SessionUtil.getUserId(request);
-		
-		// Get the space the solver is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
-		
-		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
-		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
-		
-		//Get the flag that indicates whether the solver is being copied or linked
-		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
-		// Convert the solvers to copy to an int list
-		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
-		
+		log.debug("entering the copy function");
+		try {
+			// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+			if(null == request.getParameterValues("selectedIds[]") 
+					|| !Util.paramExists("fromSpace", request)
+					|| !Util.paramExists("copyToSubspaces", request)
+					|| !Util.paramExists("copy", request)
+					|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
+					|| !Validator.isValidBool(request.getParameter("copy"))){
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
 			
-		int status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
-		if (status!=0) {
-			return gson.toJson(status);
+			// Get the id of the user who initiated the request
+			int requestUserId = SessionUtil.getUserId(request);
+			
+			// Get the space the solver is being copied from
+			int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
+			
+			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
+			boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
+			
+			//Get the flag that indicates whether the solver is being copied or linked
+			boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
+			// Convert the solvers to copy to an int list
+			List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
+			
+				
+			int status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
+			if (status!=0) {
+				return gson.toJson(status);
+			}
+			if (copy) {
+				List<Solver> oldSolvers=Solvers.get(selectedSolvers);
+				List<Integer>newSolverIds=new ArrayList<Integer>();
+				newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
+				selectedSolvers=newSolverIds;
+				response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));		
+			}
+			
+			//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
+			return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		if (copy) {
-			List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-			List<Integer>newSolverIds=new ArrayList<Integer>();
-			newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
-			selectedSolvers=newSolverIds;
-			response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));
-
-		
-		}
-		
-		//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
-		return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		
+		return gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
