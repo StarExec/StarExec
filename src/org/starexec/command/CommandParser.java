@@ -187,26 +187,34 @@ class CommandParser {
 	protected int handleCopyCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus=0;
-			
+			List<Integer> ids=null;
 			if (c.equals(R.COMMAND_COPYSOLVER)) {
-				serverStatus=parser.copyPrimitives(commandParams, true,"solver");
+				ids=parser.copyPrimitives(commandParams,"solver");
+				serverStatus=Math.min(0, ids.get(0));
 			} else if (c.equals(R.COMMAND_LINKSOLVER)) {
-				serverStatus=parser.copyPrimitives(commandParams, false,"solver");
+				serverStatus=parser.linkPrimitives(commandParams,"solver");
 			}  else if (c.equals(R.COMMAND_COPYBENCH)) {
-				serverStatus=parser.copyPrimitives(commandParams, true,"benchmark");
+				ids=parser.copyPrimitives(commandParams,"benchmark");
+				serverStatus=Math.min(0, ids.get(0));
 			} else if(c.equals(R.COMMAND_LINKBENCH))  {
-				serverStatus=parser.copyPrimitives(commandParams, false,"benchmark");;
+				serverStatus=parser.linkPrimitives(commandParams, "benchmark");;
 			} else if (c.equals(R.COMMAND_COPYSPACE)) {
 				
-				serverStatus=parser.copyPrimitives(commandParams,true,"space");
+				ids=parser.copyPrimitives(commandParams,"space");
+				serverStatus=Math.min(0, ids.get(0));
 			} else if (c.equals(R.COMMAND_LINKJOB)) {
-				serverStatus=parser.copyPrimitives(commandParams,false,"job");
+				serverStatus=parser.linkPrimitives(commandParams,"job");
 			} else if (c.equals(R.COMMAND_LINKUSER)) {
-				serverStatus=parser.copyPrimitives(commandParams, false, "user");
+				serverStatus=parser.linkPrimitives(commandParams, "user");
 			}
 			else {
 				
 				return Status.ERROR_BAD_COMMAND;
+			}
+			if (serverStatus==0 && ids!=null && returnIDsOnUpload) {
+				for (Integer id : ids) {
+					printID(id);
+				}
 			}
 			
 			return serverStatus;

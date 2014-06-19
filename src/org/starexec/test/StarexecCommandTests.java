@@ -321,7 +321,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void  copySolverTest() {
 		Integer[] solverArr=new Integer[1];
 		solverArr[0]=solver.getId();
-		int status=con.copySolvers(solverArr, space1.getId(), space2.getId(), false);
+		int status=Math.min(0,con.copySolvers(solverArr, space1.getId(), space2.getId(), false).get(0));
 		Assert.assertEquals(0, status);
 		HashMap<Integer,String> solvers=con.getSolversInSpace(space2.getId());
 		
@@ -350,7 +350,7 @@ public class StarexecCommandTests extends TestSequence {
 			benchArr[index]=benchmarkIds.get(index);
 		}
 		
-		int status=con.copyBenchmarks(benchArr, space1.getId(), toCopy.getId());
+		int status=Math.min(0,con.copyBenchmarks(benchArr, space1.getId(), toCopy.getId()).get(0));
 		Assert.assertEquals(0, status);
 		
 		HashMap<Integer,String> benches=con.getBenchmarksInSpace(toCopy.getId());
@@ -466,7 +466,7 @@ public class StarexecCommandTests extends TestSequence {
 		Integer[] spaceArr=new Integer[1];
 		List<Space> before=Spaces.getSubSpaces(space2.getId(), user.getId());
 		spaceArr[0]=space1.getId();
-		int status=con.copySpaces(spaceArr, Spaces.getParentSpace(space1.getId()), space2.getId(), false);
+		int status=Math.min(0,con.copySpaces(spaceArr, Spaces.getParentSpace(space1.getId()), space2.getId(), false).get(0));
 		Assert.assertEquals(0, status);
 		List<Space> after=Spaces.getSubSpaces(space2.getId(), user.getId());
 		Assert.assertTrue(after.size()>before.size());

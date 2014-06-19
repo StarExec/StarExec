@@ -1015,36 +1015,40 @@ public class Connection {
 	}
 	
 	public int linkSolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyOrLinkPrimitives(solverIds,oldSpaceId,newSpaceId,false,hierarchy,"solver");
+		return linkPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,"solver");
 	}
 	
 	public int linkBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
-		return copyOrLinkPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,false,"benchmark");
+		return linkPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,"benchmark");
 	}
 	
 	public int linkJobs(Integer[] jobIds, Integer oldSpaceId, Integer newSpaceId) {
-		return copyOrLinkPrimitives(jobIds,oldSpaceId,newSpaceId,false,false,"job");
+		return linkPrimitives(jobIds,oldSpaceId,newSpaceId,false,"job");
 	}
 	public int linkUsers(Integer[] userIds, Integer oldSpaceId, Integer newSpaceId) {
-		return copyOrLinkPrimitives(userIds,oldSpaceId,newSpaceId,false,false,"user");
+		return linkPrimitives(userIds,oldSpaceId,newSpaceId,false,"user");
 	}
 	
 	
-	public int copySolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyOrLinkPrimitives(solverIds,oldSpaceId,newSpaceId,true,hierarchy,"solver");
+	public List<Integer> copySolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
+		return copyPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,"solver");
 	}
 	
-	public int copyBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
-		return copyOrLinkPrimitives(benchmarkIds,oldSpaceId,newSpaceId,true,false,"benchmark");
+	public List<Integer> copyBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
+		return copyPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,"benchmark");
 	}
 	
-	public int copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyOrLinkPrimitives(spaceIds,oldSpaceId,newSpaceId,true,hierarchy,"space");
+	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
+		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,"space");
 	}
 	
+	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
+		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, true, hierarchy, type);
+	}
 	
-	
-	
+	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
+		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, type).get(0);
+	}
 	
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
@@ -1054,7 +1058,9 @@ public class Connection {
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
-	protected int copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, String type) {
+	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, String type) {
+		List<Integer> fail=new ArrayList<Integer>();
+
 		try {
 			String urlExtension;
 			if (type.equals("solver")) {
@@ -1095,21 +1101,36 @@ public class Connection {
 			response.getEntity().getContent().close();
 			JsonPrimitive p=jsonE.getAsJsonPrimitive();
 			if (p.getAsInt()==0) {
+				List<Integer> newPrimIds=new ArrayList<Integer>();
+				String[] newIds=HTMLParser.extractMultipartCookie(response.getAllHeaders(),"New_ID");
+				if (newIds!=null) {
+					for (String s : newIds){
+						newPrimIds.add(Integer.parseInt(s));
+					}
+					
+				} else {
+					newPrimIds.add(0);
+				}
 				
-				return 0;
+				return newPrimIds;
 				
 			} else if (p.getAsInt()>=3 && p.getAsInt()<=6) {
-				return Status.ERROR_PERMISSION_DENIED;
+				fail.add(Status.ERROR_PERMISSION_DENIED);
+				return fail;
 			} else if (p.getAsInt()==7) {
-				return Status.ERROR_NAME_NOT_UNIQUE;
+				fail.add(Status.ERROR_NAME_NOT_UNIQUE);
+				return fail;
 			} else if (p.getAsInt()==8) {
-				return Status.ERROR_INSUFFICIENT_QUOTA;
+				fail.add(Status.ERROR_INSUFFICIENT_QUOTA);
+				return fail;
 			} 
 			else {
-				return Status.ERROR_SERVER;
+				fail.add(Status.ERROR_SERVER);
+				return fail;
 			}
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			fail.add(Status.ERROR_SERVER);
+			return fail;
 		}
 	}
 	

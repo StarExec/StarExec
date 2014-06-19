@@ -688,30 +688,31 @@ public class Download extends HttpServlet {
 	//TODO: This can be made more efficient by simply copying the hierarchy into the output stream insead of storing it first.
 	private boolean handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws Exception {
 		// If we can see this space AND the space is downloadable...
-
-		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
-			
-			
-			String baseFileName=space.getName();
-			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
-			
-			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
-			ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
-			if(tempDir.exists()){
-				try {
-					FileUtils.deleteDirectory(tempDir);
-
-				} catch (Exception e) {
-					log.error("unable to delete directory because "+e.getMessage(),e);
+		try {
+			if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
+				
+				
+				String baseFileName=space.getName();
+				File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
+				
+				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
+				ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
+				if(tempDir.exists()){
+					
+						FileUtils.deleteDirectory(tempDir);
+						log.debug("space directory exists = "+tempDir.exists());
+					
+					
 				}
 				
+				
+				return true;
 			}
-			
-			
-			return true;
-		}
-		else {
-			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			else {
+				//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			}
+		} catch (Exception e) {
+			log.error("unable to delete directory because "+e.getMessage(),e);
 		}
 		return false;
 	}

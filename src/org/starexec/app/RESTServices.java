@@ -13,7 +13,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -1631,7 +1633,7 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
 	
-	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request,@Context HttpServletResponse response) {
 		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
@@ -1666,7 +1668,13 @@ public class RESTServices {
 			List<Integer>newSolverIds=new ArrayList<Integer>();
 			newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 			selectedSolvers=newSolverIds;
+			for (Integer id: selectedSolvers) {
+				if (id!=-1) {
+					response.addCookie(new Cookie("New_ID", String.valueOf(id)));
+				}
+			}
 		}
+		
 		//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
 		return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		
@@ -1691,7 +1699,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
-	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") 
@@ -1718,7 +1726,13 @@ public class RESTServices {
 		}
 		if (copy) {
 			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs,true);
-			Benchmarks.copyBenchmarks(oldBenchs, requestUserId, spaceId);		
+			List<Integer> benches=Benchmarks.copyBenchmarks(oldBenchs, requestUserId, spaceId);	
+			for (Integer id: benches) {
+				if (id!=-1) {
+					log.debug("new benchmark id = "+id);
+					response.addCookie(new Cookie("New_ID", String.valueOf(id)));
+				}
+			}
 			return gson.toJson(0);
 		} else {
 			// Return a value based on results from database operation
@@ -2843,7 +2857,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/copySpace")
 	@Produces("application/json")
-	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
@@ -2875,13 +2889,18 @@ public class RESTServices {
 				if (newSpaceId == 0){
 					return gson.toJson(ERROR_DATABASE);
 				}
+				response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
+
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
+				//TODO: Should this return a list of ids of every space in the hierarchy?
 				int newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
 				if (newSpaceId == 0){
 					return gson.toJson(ERROR_DATABASE);
 				}
+				response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
+
 			}
 		}
 		return gson.toJson(0);

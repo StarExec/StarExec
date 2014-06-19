@@ -60,6 +60,7 @@ public class UploadJobXML extends HttpServlet {
 					//send back new ids to the user
 					for (Integer id: result) {
 						if (id!=-1) {
+							log.debug("new id = "+id);
 							response.addCookie(new Cookie("New_ID", String.valueOf(id)));
 						}
 					}
