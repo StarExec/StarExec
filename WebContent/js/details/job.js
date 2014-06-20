@@ -27,12 +27,15 @@ $(document).ready(function(){
 	reloadTables($("#spaceId").attr("value"));
 });
 
-function createDownloadRequest(item,type,returnIds) {
+function createDownloadRequest(item,type,returnIds,getCompleted) {
 	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
 	token=Math.floor(Math.random()*100000000);
 	href = starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
 	if (returnIds!=undefined) {
 		href=href+"&returnids="+returnIds;
+	}
+	if (getCompleted!=undefined) {
+		href=href+"&getcompleted="+getCompleted;
 	}
 	$(item).attr('href', href);
 	destroyOnReturn(token);		//when we see the download token as a cookie, destroy the dialog box
@@ -541,13 +544,9 @@ function initUI(){
 			width: 380,
 			height: 165,
 			buttons: {
-				'yes': function() {
+				'download': function() {
 					$('#dialog-return-ids').dialog('close');
-					createDownloadRequest("#jobDownload","job",true);		
-				},
-				"no": function() {
-					$('#dialog-return-ids').dialog('close');
-					createDownloadRequest("#jobDownload","job",false);		
+					createDownloadRequest("#jobDownload","job",$("#includeids").prop("checked"),$("#getcompleted").prop("checked"));		
 				},
 				"cancel": function() {
 					$(this).dialog("close");
