@@ -2705,9 +2705,7 @@ public class Jobs {
 	 */
 	
     protected static boolean pause(int jobId, Connection con) {
-	log.warn("Would have paused job "+new Integer(jobId));
-	if (true)
-	    return true;
+	log.info("Pausing job "+new Integer(jobId));
 
 	CallableStatement procedure = null;
 	try {
@@ -2760,12 +2758,8 @@ public class Jobs {
 	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
-		log.warn("Would have paused all jobs");
+		log.warn("Pausing all jobs");
 
-		if (true)
-		    // just do not actually pause jobs
-		    return true;
-		
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL PauseAll()}");
