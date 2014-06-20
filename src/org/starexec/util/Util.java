@@ -598,7 +598,7 @@ public class Util {
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
      */
-    public static void clearOldFiles(String directory, int daysAgo){
+    public static void clearOldFiles(String directory, int daysAgo,boolean recursive){
 	try {
 	    File dir = new File(directory);
 			
@@ -612,9 +612,14 @@ public class Util {
 			
 	    // Create a new filter for files older than this new time
 	    IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
-			
+	    Collection<File> outdatedFiles;
 	    // Get all of the outdated files
-	    Collection<File> outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
+	    if (!recursive) {
+		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
+
+	    } else {
+	    	outdatedFiles=FileUtils.listFiles(dir,dateFilter,dateFilter);
+	    }
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 	    // Remove them all
 	    for(File f : outdatedFiles) {
