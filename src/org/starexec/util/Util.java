@@ -615,10 +615,10 @@ public class Util {
 	    // Get all of the outdated files
 	    if (!recursive) {
 		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-
+		    
 	    } else {
-	    	
-	    	outdatedFiles=FileUtils.listFiles(dir,dateFilter,dateFilter);
+	    	IOFileFilter dateDirFilter=FileFilterUtils.makeDirectoryOnly(dateFilter);
+	    	outdatedFiles=FileUtils.listFiles(dir,dateFilter,dateDirFilter);
 	    }
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 	    // Remove them all
