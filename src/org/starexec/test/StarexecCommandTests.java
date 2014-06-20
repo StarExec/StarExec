@@ -478,7 +478,7 @@ public class StarexecCommandTests extends TestSequence {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
 		Assert.assertFalse(downloadDir.exists());
-		Assert.assertEquals(0,con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true));
+		Assert.assertEquals(0,con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true,false));
 		Assert.assertTrue(downloadDir.exists());
 	}
 	

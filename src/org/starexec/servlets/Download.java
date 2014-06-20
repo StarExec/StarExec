@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -123,7 +124,12 @@ public class Download extends HttpServlet {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
 				String returnids=request.getParameter("returnids");
+				String getCompleted=request.getParameter("getcompleted");
 				Boolean ids=false;
+				Boolean complete=false;
+				if (getCompleted!=null) {
+					complete=Boolean.parseBoolean(getCompleted);
+				}
 				if (returnids!=null) {
 					ids=Boolean.parseBoolean(returnids);
 				}
@@ -133,7 +139,7 @@ public class Download extends HttpServlet {
 				}
 				shortName="Job"+jobId+"_info";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleJob(jobId, u.getId(), ".zip", response, since,ids);
+				success = handleJob(jobId, u.getId(), ".zip", response, since,ids,complete);
 			}  else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
@@ -412,7 +418,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static boolean handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws Exception {    	
+	private static boolean handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds, Boolean onlyCompleted) throws Exception {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		
 		if (Permissions.canUserSeeJob(jobId, userId)) {
@@ -443,7 +449,7 @@ public class Download extends HttpServlet {
 			}
 
 			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
-			String jobFile = CreateJobCSV(job, returnIds);
+			String jobFile = CreateJobCSV(job, returnIds,onlyCompleted);
 			ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(),"",false);
 
 			return true;
@@ -462,7 +468,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static String CreateJobCSV(Job job, Boolean returnIds) throws IOException {
+	private static String CreateJobCSV(Job job, Boolean returnIds, Boolean getOnlyCompleted) throws IOException {
 		log.debug("CreateJobCSV called with returnIds set to "+returnIds);
 		StringBuilder sb = new StringBuilder();
 		sb.delete(0, sb.length());
@@ -487,7 +493,12 @@ public class Download extends HttpServlet {
 			sb.append("pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time,wallclock time,result");
 		}
 		
-
+		HashMap<Integer,String> expectedValues=Jobs.getAllAttrsOfNameForJob(job.getId(),R.EXPECTED_RESULT);
+		for (JobPair jp : pairs) {
+			if (expectedValues.containsKey(jp.getBench().getId())) {
+				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
+			}
+		}
 		/* use the attribute names for the first completed job pair (if any) for more headings for the table
 	    We will put result first, then expected if it is there; other attributes follow */
 		Set<String> attrNames = job.attributeNames(); 
@@ -512,6 +523,12 @@ public class Download extends HttpServlet {
 		
 		while(itr.hasNext()) {
 			JobPair pair = itr.next();
+			//users can optionally get only completed pairs
+			if (getOnlyCompleted) {
+				if (pair.getStatus().getCode().incomplete()) {
+					continue;
+				}
+			}
 			if (returnIds) {
 				sb.append(pair.getId());
 				sb.append(",");

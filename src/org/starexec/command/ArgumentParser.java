@@ -396,7 +396,7 @@ class ArgumentParser {
 			//First, put in the request for the server to generate the desired archive			
 			return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),
 					commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(R.PARAM_INCLUDE_IDS),
-					hierarchy,procClass);
+					hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED));
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;

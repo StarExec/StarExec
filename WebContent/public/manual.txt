@@ -48,6 +48,8 @@ corresponding permission should be set to true. None requires a value.
 
 "bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload.
 
+"comp" -When downloading hob information, indicates only completed pairs should be included in the csv
+
 "cpu" -Specifies the cpu timeout that should be used for a new job, in seconds.
 
 "d" -Specifies a description. When optional, the empty string is used as a default.
@@ -216,7 +218,7 @@ OPTIONAL: "ow"
 
 --getjobinfo -Get the CSV pertaining to the job associated with the given id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow" "incids"
+OPTIONAL: "ow" "incids" "comp"
 EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.tar incids='
 
 --getjobout -Gets the output for all the job pairs associated with the job with the given id.

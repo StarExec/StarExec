@@ -45,7 +45,7 @@ public class Status {
 		    return (val >= 8 && val <= 18) || val == 0;
 		}
 		public boolean incomplete() {
-		    return (val<=6 || val==19 || val == 20 || val == 21);
+		    return (val<=6 || val>=19);
 		}
 		public boolean complete() {
 		    return val==7;

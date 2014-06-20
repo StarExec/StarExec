@@ -34,7 +34,7 @@ public class Validator {
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedDownloadSpaceParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_EXCLUDE_BENCHMARKS,R.PARAM_EXCLUDE_SOLVERS};
-	private static String[] allowedDownloadCSVParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_INCLUDE_IDS};
+	private static String[] allowedDownloadCSVParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_INCLUDE_IDS, R.PARAM_ONLY_COMPLETED};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};

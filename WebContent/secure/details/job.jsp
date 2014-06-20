@@ -241,6 +241,15 @@
 							<td>created</td>			
 							<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
 						</tr>					
+						<tr title="the preprocessor that was used to process benchmarks for this job">
+							<td>preprocessor</td>
+							<c:if test="${not empty job.preProcessor}">			
+							<td title="${job.preProcessor.description}">${job.preProcessor.name}</td>
+							</c:if>
+							<c:if test="${empty job.preProcessor}">			
+							<td>none</td>
+							</c:if>
+						</tr>
 						<tr title="the postprocessor that was used to process output for this job">
 							<td>postprocessor</td>
 							<c:if test="${not empty job.postProcessor}">			

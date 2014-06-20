@@ -453,6 +453,7 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user in question
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
 	 */
+	//TODO: fail gracefully with bad solver ids
 	private static boolean doesUserHaveDiskQuotaForSolvers(List<Integer> solverIds,int userId) {
 		List<Solver> oldSolvers=Solvers.get(solverIds);
 		//first, validate that the user has enough disk quota to copy all the selected solvers
