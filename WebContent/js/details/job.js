@@ -32,9 +32,11 @@ function createDownloadRequest(item,type,returnIds,getCompleted) {
 	token=Math.floor(Math.random()*100000000);
 	href = starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
 	if (returnIds!=undefined) {
+		alert(returnIds);
 		href=href+"&returnids="+returnIds;
 	}
 	if (getCompleted!=undefined) {
+		alert(getCompleted);
 		href=href+"&getcompleted="+getCompleted;
 	}
 	$(item).attr('href', href);
@@ -542,7 +544,7 @@ function initUI(){
 		$('#dialog-return-ids').dialog({
 			modal: true,
 			width: 380,
-			height: 165,
+			height: 200,
 			buttons: {
 				'download': function() {
 					$('#dialog-return-ids').dialog('close');

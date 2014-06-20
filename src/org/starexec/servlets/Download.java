@@ -137,6 +137,8 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
+				log.debug("getCompleted = "+complete);
+				log.debug("returnids = "+ids);
 				shortName="Job"+jobId+"_info";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJob(jobId, u.getId(), ".zip", response, since,ids,complete);
