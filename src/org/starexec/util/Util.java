@@ -609,7 +609,6 @@ public class Util {
 	    // Subtract days from the current time
 	    Calendar calendar = Calendar.getInstance();
 	    calendar.add(Calendar.DATE, -daysAgo);			
-			
 	    // Create a new filter for files older than this new time
 	    IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
 	    Collection<File> outdatedFiles;
@@ -618,6 +617,7 @@ public class Util {
 		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
 
 	    } else {
+	    	
 	    	outdatedFiles=FileUtils.listFiles(dir,dateFilter,dateFilter);
 	    }
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);

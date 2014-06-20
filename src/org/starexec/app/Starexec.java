@@ -182,7 +182,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 0,true);
+				Util.clearOldFiles(R.JOB_LOG_DIR, 1,true);
 				Util.clearOldFiles(R.JOB_INBOX_DIR,1,false);
 				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1,false);
 			}
