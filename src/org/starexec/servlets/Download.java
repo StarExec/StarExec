@@ -528,6 +528,7 @@ public class Download extends HttpServlet {
 			//users can optionally get only completed pairs
 			if (getOnlyCompleted) {
 				if (pair.getStatus().getCode().incomplete()) {
+					log.debug("found an incomplete pair to exclude!");
 					continue;
 				}
 			}

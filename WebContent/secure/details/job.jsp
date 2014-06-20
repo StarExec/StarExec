@@ -339,7 +339,7 @@
 				<div id="dialog-return-ids" title="return ids">
 					<p><span id="dialog-return-ids-txt"></span></p>
 					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
-					<input type="checkbox" name="getcompleted" id="getcompleted" checked="checked"/>include incomplete pairs<br></p>
+					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br></p>
 				</div>
 				<div id="dialog-solverComparison" title="solver comparison chart">
 					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>
