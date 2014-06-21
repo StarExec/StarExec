@@ -3,19 +3,6 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <star:template title="StarExec Support">
-	
-<!--		<style type="text/css">
-			#content a:link {
-				text-decoration: underline;
-			}
-			#content ul {
-				margin-left: 40px;
-			}
-			#content ul li {
-				padding: 3px;
-			}
-		</style>		
--->
     <br>		
 		<li>
 			<a href="/${starexecRoot}/secure/help.jsp">On-page documentation</a>, 
@@ -46,7 +33,6 @@
 			for those intestered in development aspects
 			<br>
 		</li>
-		<br/><br/>
-		<!-- <p>this build was last updated on ${buildDate}</p> -->
-
+		<br/>
+    <br/>
 </star:template>
