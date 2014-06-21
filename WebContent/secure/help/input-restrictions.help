@@ -1,0 +1,56 @@
+<h1>Input Restrictions</h1>
+
+<p>This page summarizes the character restrictions that exist for all uploads 
+to StarExec.
+</p>
+
+<h2>Length Restrictions</h2>
+
+<p>For all primitives except for spaces, the maximum length for a name is
+128 characters. Space names may have 255 characters. All names must be at least
+1 character.</p>
+
+<p>All descriptions must be between 0 and 1024 characters, inclusive. 
+Messages, which are required when requesting a queue reservation or trying 
+to join a new community, must be bewtween 2 and 512 characters.
+</p>
+
+<h2>Character Restrictions</h2>
+
+<p>In all cases, StarExec is case insensitive for validation.</p>
+
+<p>Names for users may only contain letters, hyphens, and whitespace.</p>
+
+<p>Primitive names may contain all of the following characters, but no others:
+<code>a-z 0-9 whitespace - . + ^ = , ! ? : $ % # @</code>
+</p>
+
+<p>In descriptions, all characters are permitted except for the following characters:
+<code>< > " ' % ; ) ( & \ + -</code>
+</p>
+
+<h2>Regular Expressions</h2>
+
+<p>These are the regular expressions that are applied to validate inputs. 
+If there appears to be a contradiction between these regular expressions and 
+the rules laid out above, then these expressions take precedence:
+
+<dl>
+<dt>user name pattern</dt>
+  <dd><code>"^[A-Za-z\\-\\s']{2,32}$"</code></dd>
+<dt>institution name pattern</dt>
+  <dd><code>"^[\\w\\-\\s']{2,64}$"</code></dd>
+<dt>email pattern</dt>
+  <dd><code>"^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$"</code></dd>
+<dt>url pattern</dt>
+  <dd><code>"https?://.\\S+{2,128}"</code></dd>
+<dt>name pattern for all primitives</dt>
+  <dd><code>"^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$" (space names may be 255 characters long)</code></dd>
+<dt>request message pattern</dt>
+  <dd><code>"^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"</code></dd>
+<dt>description pattern</dt>
+  <dd><code>"^[^<>\"\'%;)(&\\+-]{0,1024}$"</code></dd>
+<dt>password pattern</dt>
+  <dd><code>"^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$"</code></dd>
+</dl>
+</p>

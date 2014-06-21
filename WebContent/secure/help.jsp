@@ -36,14 +36,14 @@
   <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-results.help">Viewing results</a></li>
   <li class="topicHeader">Solvers</li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/uploading-solvers.help">Uploading solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-solver.help">Viewing solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/editing-solver.help">Editing solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-solvers.help">Viewing solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/help/editing-solvers.help">Editing solvers</a></li>
   <li class="topicHeader">Benchmarks</li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/uploading-benchmarks.help">Uploading benchmarks</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-benchmarks.help">Viewing benchmarks</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/editing-benchmarks.help">Editing benchmarks</a></li>
   <li class="topicHeader">General</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/characters.help">Character Restrictions</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/help/input-restrictions.help">Input restrictions</a></li>
 </ul>
 </div>
 	
