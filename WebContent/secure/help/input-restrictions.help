@@ -31,9 +31,9 @@ to join a new community, must be bewtween 2 and 512 characters.
 
 <h2>Regular Expressions</h2>
 
-<p>These are the regular expressions that are applied to validate inputs. 
-If there appears to be a contradiction between these regular expressions and 
-the rules laid out above, then these expressions take precedence:
+<p>These are the regular expressions, in Java syntax, that are applied to validate 
+inputs. If there appears to be a contradiction between these regular expressions 
+and the rules laid out above, then these expressions take precedence:
 
 <dl>
 <dt>user name pattern</dt>
@@ -45,7 +45,8 @@ the rules laid out above, then these expressions take precedence:
 <dt>url pattern</dt>
   <dd><code>"https?://.\\S+{2,128}"</code></dd>
 <dt>name pattern for all primitives</dt>
-  <dd><code>"^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$" (space names may be 255 characters long)</code></dd>
+  <dd><code>"^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$"code</dd>
+  <dd>(space names may be 255 characters long)</dd>
 <dt>request message pattern</dt>
   <dd><code>"^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"</code></dd>
 <dt>description pattern</dt>

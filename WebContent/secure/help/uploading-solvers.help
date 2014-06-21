@@ -4,7 +4,7 @@
 (and have the corresponding suffix): 
 <code>tar</code>, <code>tar.gz</code>, <code>tgz</code>, and <code>zip</code>. 
 A solver can contain any collection of folders and files as long as it contains 
-at least one run script (aka configuration).
+at least one run script (aka <em>configuration</em>).
 </p>
 
 <h2>Solver info</h2>
@@ -14,15 +14,21 @@ and choose the action "upload solver" from the list at the bottom of the space
 explorer page.
 Once you do that, you will be asked for several pieces of information, 
 as described next.
-You specify if you want upload the solver from a local file or from a web address.
-You provide a name and a description for the solver, where the latter is 
-a brief text, up to 1024 characters, describing the solver.
-Youc an type in the description directly. Alternatively, you can upload a text
+<ul>
+<li>You specify if you want upload the solver from a local disk or from a web 
+address.
+</li>
+<li>You enter a name for the solver.</li>
+<li>You provide a brief solver description of up to 1024 characters.
+You can type in the description directly. Alternatively, you can upload a text
 file containing it, or include that in the solver's archive with name
 <code>starexec_description.txt</code>.
-You must also specify if you want your solvable to be downloadable by others or
+</li>
+<li>You also specify if you want your solvable to be downloadable by others or
 not. In the latter case, and you make the solver public, other users will be
 able to run the solver on StarExec but not to download a copy of it.
+</li>
+</ul>
 </p>
 
 

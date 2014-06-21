@@ -1,9 +1,9 @@
 #topicList a.active {
-	border: 1px dashed #008d03;
+	border: 1px dashed rgb(230, 46, 37);
 }
 
 #topicList a:hover{
-  background-color: #008d03;
+  background-color: rgb(230, 46, 37);
 	border-radius:2px;
 }
 
@@ -44,6 +44,8 @@
 
 #detailPanel a:hover {
   color: white;
+  background-color: rgb(230, 46, 37);
+	border-radius:2px;
 }
 
 
@@ -84,9 +86,14 @@
 	color: #666666;
 	font-style: italic;
 }
+
 #detailPanel ul {
 	margin-left: 40px;
 	margin-bottom: 18px;
+}
+
+#detailPanel ul li {
+	margin-bottom: 10px;
 }
 
 #detailPanel code {
