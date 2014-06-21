@@ -1,10 +1,23 @@
-<h3>Cluster status</h3>
+<h1>Checking cluster status</h1>
 
-<p>This page shows the current queues for StarExec.  The queue all.q
-is available for everyone to use.  The other queues serve special
-functions or are reserved for exclusive use by a community.  Note that
-only community leaders can request reservation of a queue.  You can
-select a queue to see pending job pairs for that queue, or a node
-to see currently executing job pairs on that node.  In the latter
+<p>This page shows the current queues for StarExec.  The queues 
+<ul>
+<li>all.q</li>
+<li>all2.q</li>
+</ul>
+are available for everyone to use.  The other queues serve special
+functions or are reserved for exclusive use by a community (for instance,
+for competitions).
+Compute nodes are moved from one queue to another depending on need.
+</p>
+
+<p>Note that only community leaders can request reservation of a queue.  
+</p>
+
+<p>You can select a queue to see pending job pairs for that queue, or a node
+to see currently executing job pairs on that node.  
+<!-- In the latter
 case, you may sometimes see multiple job pairs listed when only
-one is running (this is a bug we have not resolved yet). </p>
+one is running (this is a bug we have not resolved yet).
+-->
+</p>

@@ -24,38 +24,38 @@
 %>
 <star:template title="Help Pages" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, help/help, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, help/help">			
 
-	<span id="reference" href="${ref}"></span>
-	<div id="helpTopics">
-		<ul id="topicList">
-			<li class="topicHeader">Exploring</li>
-			<li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/explore/cluster.help">Cluster status</a></li>
-			<li class="topicHeader">Jobs</li>
-			<li class="subject"><a href="/${starexecRoot}/secure/add/job.help">Running jobs</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/details/job.help">Viewing results</a></li>
-			<li class="topicHeader">Solvers</li>
-			<li class="subject"><a href="/${starexecRoot}/secure/add/solver.help">Uploading solvers</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
-			<li class="topicHeader">Benchmarks</li>
-			<li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Uploading benchmarks</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing benchmarks</a></li>
-			<li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing benchmarks</a></li>
-			<li class="stub"><a href="/${starexecRoot}/secure/details/recycleBin.help"></a></li>
-		</ul>
-	</div>
+<span id="reference" href="${ref}"></span>
+<div id="helpTopics">
+ <ul id="topicList">
+  <li class="topicHeader">Exploring</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/cluster.help">Checking cluster status</a></li>
+  <li class="topicHeader">Jobs</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/job.help">Running jobs</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/job.help">Viewing results</a></li>
+  <li class="topicHeader">Solvers</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/solver.help">Uploading solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
+  <li class="topicHeader">Benchmarks</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Uploading benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing benchmarks</a></li>
+  <li class="stub"><a href="/${starexecRoot}/secure/details/recycleBin.help"></a></li>
+</ul>
+</div>
 	
-	<div id="detailPanel">	
-		<p>These are the StarExec help pages.
-		</p>
-		<p>Please select a topic from the left hand side.
-		</p>
-		<br><br>
-		<p>You can also check our 
-		<a href="/${starexecRoot}/public/quickReference.jsp">Quick Reference</a> guide.
-		</p>
-		
-	</div>	
+<div id="detailPanel">	
+ <p>These are the StarExec help pages.
+ </p>
+ <p>Please select a topic from the left hand side.
+ </p>
+ <br><br>
+ <p>You can also check our 
+ <a href="/${starexecRoot}/public/quickReference.jsp">Quick Reference</a> guide.
+</p>		
+</div>
+	
 </star:template>
 

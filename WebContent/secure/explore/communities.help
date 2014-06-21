@@ -1,4 +1,4 @@
-<h3>StarExec Communities</h3>
+<h1>Exploring Communities</h1>
 
 <p>The communities page shows spaces for entire logic-solving
 communities.  If you are in the community or the community is public,
@@ -6,18 +6,20 @@ you should see it listed on this page.  You can request to join or
 leave a community, and you can also download the community's
 processors, registered with StarExec by the community leaders.
 Processors are currently likely to be scripts, but could also be
-arbitrary programs.</p>
+arbitrary programs.
+</p>
 
-<p><u>Benchmark processors</u>: these can be run when benchmarks are
+<p><strong>Benchmark processors:</strong> these can be run when benchmarks are
 uploaded, to check syntactic properties of the benchmark and to
 extract benchmark attributes of interest for the community.  Those
-attributes are then stored in the StarExec database.</p>
+attributes are then stored in the StarExec database.
+</p>
 
-<p> <u>Postprocessors</u>: these are called on the output a
+<p> <strong>Postprocessors:</strong> these are called on the output a
 solver produces for a single benchmark, and can again extract
 arbitrary attributes for the database, including a special attribute
 <b>starexec-result</b>, intended to represent the logical status
-returned by the solver for the benchmark.</p>
+returned by the solver for the benchmark.
+</p>
 
-</ul>
  

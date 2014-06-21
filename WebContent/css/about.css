@@ -1,4 +1,4 @@
-h2 {
+#content h2 {
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size: 16pt;
 	color: gray;
@@ -6,7 +6,22 @@ h2 {
 	padding-bottom: 10px;
 }
 
-p {
+#content p {
 	margin-top: 1em;
 	margin-bottom: 1em;
 }
+
+#content a:link, #content a:visited {
+  color: rgb(230, 46, 37);
+	text-decoration: none;
+}
+
+#content a:hover {
+  color: white;
+}
+
+#content ul {
+	margin-left: 40px;
+	margin-bottom: 18px;
+}
+

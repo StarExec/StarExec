@@ -1,30 +1,50 @@
-<h3>Creating and running jobs</h3>
+<h1>Running jobs</h1>
+
+<h2>Creating jobs</h2>
 
 <p>To create and (immediately) execute a job, select "Create job" from
-the space explorer page.  Then set parameters for execution of the job
-including wallclock timeout and CPU timeout (see <a
+the space explorer page.  Then set the given execution parameters such as
+including wall clock timeout and CPU timeout (see <a
 href="http://en.wikipedia.org/wiki/Wall-clock_time">here</a> for the
-difference).  You can also select a queue for execution of your job.
-The queue all.q is always available for all users to use.  Community
-leaders may request creation of queues for exclusive access to nodes,
-for special jobs for a community (like running a competition).  There
-is an option to execute job pairs in depth-first order, which will
+difference).  
+</p>
+
+<h2>Selecting an execution queue</h2>
+
+<p>You can also select a queue for execution of your job.
+Each job queue is assigned a number of nodes with identical technical specs.
+The queues all.q and all2.q are always available for all users to use.
+They differ in the kind of compute nodes that are assigned to them.
+Those in all2.q are slightly slower and have less RAM.
+Community leaders may request the creation of new queues for exclusive access 
+to nodes, for special, community-related tasks (such as running a competition).  
+</p>
+
+<h2>Choosing an execution order</h2>
+
+<p>There is an option to execute job pairs in depth-first order, which will
 execute all job pairs in one subspace before moving on to the next; or
 else round-robin, which will result in a workload where all subspaces
 make progress in the execution concurrently.  After setting these
-options, select next.</p>
+options, select "next".
+</p>
 
-<p>You can then select whether to "run and keep the hierarchy
-structure" or choose which benchmarks and solvers to execute.  The
-first option will find all subspaces in the current hierarchy (where
-you are creating the job) which have solvers and benchmarks in that
-particular subspace, and execute all possible combinations of those
-benchmarks and solvers.  So to run several divisions of a competition,
-for example, you can create a subspace for each division, copy the
-solvers and benchmarks for that division into that subspace, and
-the run a single job from the space containing those subspaces.</p>
+<p>You can then select whether to "run and keep the hierarchy structure" or
+choose which benchmarks and solvers to execute.  The first option will find 
+all subspaces in the current hierarchy (rooted at the node where you are 
+creating the job) which have solvers and benchmarks, and execute all possible 
+combinations of those benchmarks and solvers.  So to run several divisions of 
+a competition, for example, you can create a subspace for each division, 
+copy the solvers and benchmarks for that division into that subspace, and
+the run a single job from the space containing those subspaces.
+</p>
+
+<h2>Monitoring the execution</h2>
 
 <p>Once the job is created, it will begin queueing immediately.  If
 other jobs are running, of course, it may take some time for your job
-to make it through the queue to execute on the compute nodes.  You can
-use the <a href="explore/cluster.jsp">cluster status page</a> to monitor queues and nodes.</p>
+to make it through the queue to execute on the compute nodes.  
+You can look at the <a href="explore/cluster.jsp">cluster status page</a> 
+to monitor queues and nodes.
+</p>
+

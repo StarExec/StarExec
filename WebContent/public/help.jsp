@@ -4,7 +4,7 @@
 
 <star:template title="StarExec Support">
 	
-		<style type="text/css">
+<!--		<style type="text/css">
 			#content a:link {
 				text-decoration: underline;
 			}
@@ -15,6 +15,7 @@
 				padding: 3px;
 			}
 		</style>		
+-->
     <br>		
 		<li>
 			<a href="/${starexecRoot}/secure/help.jsp">On-page documentation</a>, 
